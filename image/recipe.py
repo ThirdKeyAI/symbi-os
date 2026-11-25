@@ -29,7 +29,7 @@ def render(config, variant, root=ROOT):
     if key.is_absolute() or ".." in key.parts or key.parts[:2] != ("image", "keys"):
         raise ValueError("base public key must be a committed path under image/keys")
     resolved = (root / key).resolve(strict=True)
-    if not resolved.is_relative_to((root / "image/keys").resolve()):
+    if not resolved.is_relative_to(root.resolve() / "image/keys"):
         raise ValueError("base public key escapes image/keys")
     if hashlib.sha256(resolved.read_bytes()).hexdigest() != pin.get("public_key_sha256"):
         raise ValueError("base public key hash mismatch")

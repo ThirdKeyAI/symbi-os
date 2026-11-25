@@ -11,7 +11,7 @@ not a claim that the build tools or future runtime have been audited.
 | Cedar CLI | 4.5.2 | Matches Cedar in the selected runtime's Cargo.lock; schema fixture tests only |
 | cargo-deny | 0.20.2 | Advisory, licence, version, and source checks |
 | cargo-vet | 0.10.3 | Enforces explicit audit requirements as crates enter the graph |
-| actions/checkout | 34e114876b0b11c390a56381ad16ebd13914f8d5 (v4.3.1) | Only workflow action; credential persistence disabled |
+| actions/checkout | 34e114876b0b11c390a56381ad16ebd13914f8d5 (v4.3.1) | Workspace checkout; credential persistence disabled |
 | Symbiont | deddb9e997244d2289c217ad76b8fde0e9b0339b (3.0.0) | Plan's revision resolved to full SHA; metadata only, not yet integrated |
 
 Primary references: [pinned runtime lockfile](https://github.com/ThirdKeyAI/Symbiont/blob/deddb9e997244d2289c217ad76b8fde0e9b0339b/Cargo.lock),
