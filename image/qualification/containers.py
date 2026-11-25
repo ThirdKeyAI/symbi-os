@@ -64,11 +64,13 @@ def validate_container(container, runtime, image_id):
     require(container.get("Config", {}).get("User") == "65534:65534", "worker must use the non-root UID")
     expected = {"Runtime": runtime, "NetworkMode": "none", "Privileged": False,
                 "ReadonlyRootfs": True, "Memory": 268435456, "MemorySwap": 268435456,
-                "NanoCpus": 500000000, "PidsLimit": 32, "IpcMode": "private", "CgroupnsMode": "private"}
+                "NanoCpus": 500000000, "PidsLimit": 32, "IpcMode": "private", "CgroupnsMode": "private",
+                "PidMode": "", "UTSMode": ""}
     for key, value in expected.items():
         require(key in host and host[key] == value, f"container {key} differs from the bounded profile")
     require(host.get("CapDrop") == ["ALL"] and not host.get("CapAdd"), "capabilities must be dropped")
-    require("no-new-privileges=true" in host.get("SecurityOpt", []), "no-new-privileges required")
+    require(host.get("SecurityOpt") == ["no-new-privileges=true"], "unexpected security override or missing no-new-privileges")
+    require(host.get("Tmpfs") == {"/tmp": "rw,noexec,nosuid,nodev,size=16777216"}, "scratch mount is not the bounded profile")
     require(host.get("LogConfig", {}).get("Type") == "none", "daemon log storage is not allowed")
     require(not host.get("Binds"), "host bind mounts are not allowed in probes")
     require(all(m.get("Type") == "tmpfs" and m.get("Destination") == "/tmp"

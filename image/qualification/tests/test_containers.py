@@ -23,6 +23,8 @@ class ContainerEvidence(unittest.TestCase):
                                          "SecurityOpt": ["no-new-privileges=true"], "Memory": 268435456,
                                          "MemorySwap": 268435456, "NanoCpus": 500000000, "PidsLimit": 32,
                                          "IpcMode": "private", "CgroupnsMode": "private",
+                                         "PidMode": "", "UTSMode": "",
+                                         "Tmpfs": {"/tmp": "rw,noexec,nosuid,nodev,size=16777216"},
                                          "Binds": [], "LogConfig": {"Type": "none"}}, "Mounts": []}
 
     def test_complete_synthetic_inspection_passes(self):
@@ -43,7 +45,9 @@ class ContainerEvidence(unittest.TestCase):
         for field, value in [("Runtime", "runc"), ("NetworkMode", "bridge"), ("Privileged", True),
                              ("ReadonlyRootfs", False), ("Memory", 0), ("MemorySwap", -1),
                              ("NanoCpus", 0), ("PidsLimit", 0), ("CapAdd", ["SYS_ADMIN"]),
-                             ("SecurityOpt", []), ("IpcMode", "host"), ("CgroupnsMode", "host")]:
+                             ("SecurityOpt", []), ("SecurityOpt", ["no-new-privileges=true", "seccomp=unconfined"]),
+                             ("IpcMode", "host"), ("CgroupnsMode", "host"), ("PidMode", "host"),
+                             ("UTSMode", "host"), ("Tmpfs", {})]:
             with self.subTest(field=field):
                 candidate = copy.deepcopy(self.container)
                 candidate["HostConfig"][field] = value
