@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$HOME/.config}
+/usr/libexec/symbi-seed-config
+exec /usr/bin/Hyprland --config "$XDG_CONFIG_HOME/hypr/hyprland.conf"

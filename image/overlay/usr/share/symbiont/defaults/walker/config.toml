@@ -1,0 +1,11 @@
+# Adapted from the pinned Omarchy configuration; local applications only.
+force_keyboard_focus = true
+selection_wrap = true
+hide_action_hints = true
+
+[keybinds]
+quick_activate = []
+
+[providers]
+max_results = 128
+default = ["desktopapplications"]

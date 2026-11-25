@@ -95,6 +95,8 @@ Register each invariant as a control in Symbiont's catalogue (`docs/security/con
 
 The product image is Fedora Atomic (bootc), built with [BlueBuild](https://blue-build.org) on top of [secureblue](https://github.com/secureblue/secureblue)'s `wayblue-hyprland-main-userns-hardened` image, plus an `-nvidia` variant. Everything is built and tested on this image from day one, including Phase 1. Useful [Ombuntu](https://ombuntu.org) pieces are ported to it instead of running on Ubuntu (see the porting table below).
 
+**Implementation finding (25 Nov 2026):** upstream has retired the named Hyprland family and separate userns variants. The original choice below is not a usable current pin. See [OQ-07](open-questions.md) and [the image preparation record](../image/README.md); selecting a replacement must preserve the trusted-compositor requirements.
+
 **Why this base:** current kernel and Hyprland, SELinux, signed images with atomic rollback, and hardening already done. Debian stable ships Hyprland 0.41.2 against 0.57.x upstream, so it would mean maintaining Hyprland packaging ourselves. The `userns` variant is required because the Claude Code and Codex sandboxes use bubblewrap.
 
 **Image contents**
@@ -518,7 +520,7 @@ Open questions raised: <links, or none>
 | --- | --- | --- | --- | --- | --- |
 | P0-01 | Repo scaffold, CI, cargo-deny/vet, Cedar schema skeleton | none | INV-12 | Codex | In progress |
 | P0-02 | TLA+ models: GrantLifecycle, TrustedInput, Freeze, JournalBeforeEffect, SessionClass | none | INV-2, 3, 4, 5, 8, 10 | Codex | In review |
-| P0-03 | Base image: BlueBuild recipe on secureblue, cosign signing, SBOM, ported Ombuntu defaults | P0-01 | INV-12 |  | Not started |
+| P0-03 | Base image: BlueBuild recipe on secureblue, cosign signing, SBOM, ported Ombuntu defaults | P0-01 | INV-12 | Codex | Blocked (OQ-02, OQ-03, OQ-07); preparation ready |
 | P0-04 | Qualify Symbiont 3.0's Landlock route on the Fedora Atomic image (platform diagnostic and release driver); retain the report | P0-03 | INV-1, 7 |  | Not started |
 | P0-05 | Container tier on Fedora Atomic: moby-engine or Podman for Symbiont's Docker and gVisor routes; qualify the choice | P0-03 | INV-1 |  | Not started |
 | P1-01 | symbi-common: principal IDs, D-Bus types, Symbiont API and journal clients | P0-01 | INV-5 |  | Not started |
@@ -560,7 +562,7 @@ Open questions raised: <links, or none>
 
 ## Risks and open questions
 
-Implementation notes raised by P0-01: see [docs/open-questions.md](open-questions.md) for CI/review setup, unresolved model attributes, build-tool lockfile review, and qualification prerequisites. The original questions below remain open.
+Implementation notes raised during P0: see [docs/open-questions.md](open-questions.md) for CI/review setup, the retired base image, signing setup, unresolved model attributes, build-tool lockfile review, and qualification prerequisites. The original questions below remain open.
 
 The biggest risk is the Hyprland patch for the trusted path; everything else has a known fallback.
 

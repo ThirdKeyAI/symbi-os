@@ -1,0 +1,27 @@
+# Sources for the initial image defaults
+
+The project remains Apache-2.0. Adapted third-party portions retain these MIT
+notices; the generated recipe installs both notices with the project's license.
+
+| Source | Immutable revision | Included material |
+| --- | --- | --- |
+| [Ombuntu](https://github.com/Ombuntu/Ombuntu/tree/8f2085cb73520fc3558f1248dadd1fca5e69cfcc) | `8f2085cb73520fc3558f1248dadd1fca5e69cfcc` | Original browser privacy JSON and MIT license under `vendor/ombuntu`; adapted browser policies, probe/telemetry opt-outs and portal default |
+| [Omarchy v3.8.4](https://github.com/omacom/omarchy/tree/8fcc9d6048af4cb0e3af8512c78049857a3b53dd) | `8fcc9d6048af4cb0e3af8512c78049857a3b53dd` | Original Hyprland input, Waybar and Walker configs and MIT license under `vendor/omarchy`; reduced local defaults in the overlay |
+| [BlueBuild v0.9.42](https://github.com/blue-build/cli/tree/cdca92e8d65d9fd4f6bedac0e88a8f9479d70da6) | `cdca92e8d65d9fd4f6bedac0e88a8f9479d70da6` | Recipe v2 interface reference, no vendored executable |
+
+Omarchy's revision is the one pinned by Ombuntu's `install/lib.sh`, not the
+current moving Omarchy branch. `vendor/SHA256SUMS` binds the original copied
+files; `scripts/check-image.sh` checks it offline. Changes to the adapted files
+are reviewable alongside the originals.
+
+The overlay does not import the upstream installers, hook/menu extension
+loaders, web search, remote themes, weather polling or browser extension
+auto-install lists. It keeps a small local desktop configuration. New commands
+and the appearance stylesheet are project code. No vendored script executes at
+login or image build time.
+
+Firefox uses its documented system path `/etc/firefox/policies/policies.json`.
+Chromium uses `/etc/chromium/policies/managed`; the selected base's actual browser
+and Flatpak policy integration must be qualified separately. Privacy defaults do
+not turn off browser security updates. The portal setting changes the default
+choice; it does not prove that explicit restore-token requests are refused.

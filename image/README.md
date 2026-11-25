@@ -1,6 +1,77 @@
-# Fedora Atomic image
+# Fedora Atomic image preparation
 
-P0-03 owns the BlueBuild recipe, verified secureblue digest, cosign signing,
-SBOM/provenance, and ported defaults. P0-04 qualifies the upstream runtime on the
-built image; P0-05 qualifies the container tier. Systemd units and SELinux policy
-are added with their implementing cards. There is no unsigned placeholder image.
+P0-03 is **blocked on base selection and release trust setup**, with independent
+preparation implemented here. No image has been built, signed, booted or qualified.
+
+The original plan names secureblue's `wayblue-hyprland-main-userns-hardened`.
+[secureblue's pinned deprecation notice](https://github.com/secureblue/secureblue/blob/353366bb6d031e66fc565b0b101a8a069f32fcdb/files/system/usr/libexec/deprecated-images.json.md)
+retires the Hyprland family and the separate `userns` images. Its suggested
+`sericea` replacement uses Sway and would change the planned trusted compositor.
+We have not substituted it or selected an obsolete base. See OQ-07.
+
+## Implemented preparation
+
+- `overlay/` contains minimal Hyprland, Waybar and Walker defaults, managed
+  Firefox/Chromium privacy policies, developer opt-outs and the NetworkManager
+  probe setting. Sources, revisions and licenses are in [THIRD_PARTY.md](THIRD_PARTY.md).
+- The Symbiont session copies defaults from `/usr/share/symbiont/defaults` before
+  Hyprland starts. Existing user files and file symlinks are preserved. Directory
+  symlinks are refused. This is an ordinary user-session helper, not a privileged
+  writer or a defense against concurrent changes by that same user.
+- `harden-image.sh` runs only inside a Fedora build container. It checks required
+  desktop tools, rejects detected passwordless sudo, masks ABRT services and
+  removes `hyprpm`. It deliberately fails when the selected base lacks packages;
+  package installation and RPM key pins must be reviewed for that base.
+- `recipe.py` renders BlueBuild v2 JSON, which is valid YAML. It accepts only
+  SHA-256 image references and a hash-checked local public key. It refuses to
+  render while `base-images.json` has no selected variant. No placeholder digest
+  or tag-only base is provided. Only the built-in `containerfile` module is used;
+  no moving module image or CLI is installed in the desktop image.
+
+Run `bash scripts/check-image.sh` for the small offline checks. After a reviewed
+base pin is committed, `python3 image/recipe.py --variant generic` emits the
+recipe; `--variant nvidia` needs its own independently verified base pin. The
+renderer is not a signature verifier. Do not build until the signature and all
+release prerequisites below are satisfied.
+
+## Required build and release sequence
+
+1. Select a maintained Hyprland base strategy, independently authenticate its
+   signing key, verify its OCI signature and record the exact generic/NVIDIA
+   digests and public-key SHA-256 values in `base-images.json`. Recheck signatures
+   at build time. Review RPM repositories, their GPG key fingerprints and every
+   downloaded asset; use only checksummed, signed artifacts.
+2. Provision a trusted isolated runner with a reviewed, hash-pinned BlueBuild
+   v0.9.42 build that enables recipe v2, cosign, an SBOM generator and Podman.
+   Recipe v2 is feature-gated upstream; source compatibility alone does not prove
+   the release CLI enables it. Verify the actual CLI and generated Containerfile.
+   All external `FROM`/mount images must be digest-pinned. Never bypass validation
+   or signature verification to get a build through.
+3. Generate/build one architecture and one variant at a time. Use one build
+   process, a 2 GiB build-container memory ceiling, one CPU and no extra swap.
+   Keep layers on disk, not `/tmp`. A resource-limit failure fails the build;
+   do not automatically raise limits or start a second build on this workstation.
+4. Apply base-specific hardening: disable the actual compositor plugin-loading
+   API (removing `hyprpm` is insufficient); authenticate RPM repos; prevent
+   autologin; enforce repeated screen-share consent; qualify keyring storage for
+   the installed browser. Existing user configs remain user-owned and are not
+   silently replaced. The privacy files alone do not prove these properties.
+5. Build the pinned Symbiont source and capture its binary digest/build provenance.
+   Run P0-04 and P0-05 inside the built Fedora deployment. Retain their reports,
+   the compositor plugin negative test, signed/unsigned rebase test and rollback
+   boot smoke test. A host test or mocked report cannot satisfy this step.
+6. Generate an SPDX SBOM for the exact output digest and a SLSA provenance
+   predicate binding source commit, base digest, tool pins and actual builder
+   invocation. Sign the image and attestations with the selected ThirdKey key.
+   Verify signatures, subjects and identities before promoting a release tag.
+   Publishing a provenance statement alone does not establish a SLSA level.
+7. Ship an enforcing containers signature policy scoped to the selected image
+   repository and ThirdKey public key. Use the documented signed rebase transport;
+   do not emit an unsigned installation fallback. A nightly base-update candidate
+   must repeat these checks and open a review PR only after they pass.
+
+The publishing workflow is intentionally not enabled before registry, key custody
+and isolated-runner access are known (OQ-02/OQ-03). Signing with an invented test
+key, omitting VM gates or silently changing compositor would violate the plan.
+The Agents menu and runtime units arrive with their implementing cards; the
+current launcher exposes local applications only.
