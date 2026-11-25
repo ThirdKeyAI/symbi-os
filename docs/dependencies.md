@@ -136,3 +136,20 @@ before execution. The initial key trust remains the pinned publisher HTTPS
 source, as documented in the earlier verification record. This adds no Cargo
 crate, no release credential and no dependency-audit exemption. Tests use only
 upstream fixture/disposable keys; retained failure logs omit private test PEMs.
+
+## P0-03 Fedora compositor development inputs
+
+`image/hyprland/build-rpms.lock.json` records 162 exact Fedora 45 RPMs and their
+Fedora signing fingerprint, bytes, hashes, NEVRAs and RPM license metadata.
+The authenticated hosted bundle is used only in a disposable offline build
+container. It includes Mesa versions older than the selected secureblue base;
+that transaction is not approved for the product. Runtime compatibility and
+final-package license/SBOM review remain separate gates.
+
+The compositor and seven native libraries use the full Git commits already
+recorded in `image/hyprland/candidate-inputs.json`, plus pinned Glaze and udis86.
+The selected CMake dependency requirements and build entry points were inspected.
+Network-free compilation uses a private prefix and RPATH; it cannot fetch a
+replacement for a missing dependency. Exact Git object checks establish source
+selection, not publisher-signature evidence or a full source audit. This is a
+development build, with no release publication or new Cargo dependencies.

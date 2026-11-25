@@ -69,3 +69,37 @@ never rerun floating package resolution implicitly during a release build.
 
 No package or compositor is qualified by the offline parser tests. The discovery
 job has no release secrets or registry writes, and never executes locally.
+
+## Verified RPM inputs and offline compositor build
+
+[Run 45695030159](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45695030159)
+verified all 162 Fedora RPM candidates (150,552,075 bytes), rejected an RPM with
+no trusted key and a modified payload, and confirmed the installed RPM database
+was unchanged. Exact NEVRAs, hashes, full signing fingerprints, original evidence
+hashes and cryptographic logs are retained under
+`docs/security/reports/P0-03-fedora-packages/45695030159/`. The guest peaked at 529,846,272 bytes with
+no memory-limit events. The outer pull/discovery unit recorded memory pressure
+but no OOM or OOM kill; its raw counters are retained.
+
+`image/hyprland/build-rpms.lock.json` binds that immutable hosted artifact and
+every package. These are disposable build-stage inputs: the six proposed Mesa
+downgrades are not product installation inputs. The new hosted build checks the
+bundle before extraction, re-verifies RPM signatures, installs offline in a
+private container, and compiles exact source revisions as an unprivileged user.
+The product base is not modified. Private Hyprland libraries use a dedicated
+prefix and RPATH. Glaze is preinstalled from its pin, FetchContent is disconnected,
+Tracy and hyprpm are disabled, and compilation uses one job without debug symbols.
+
+The parent hosted unit has 8 GiB/two CPUs/zero swap and a 130-minute deadline;
+the compiler container has 6 GiB/two CPUs and the separate native-loading probe
+has 2 GiB/one CPU. Both containers have no network. The workflow has read-only
+repository/artifact access and no release authority. Seven archive-validation
+regressions cover changed packages, traversal/extra/missing/duplicate entries,
+symlinks, signature requirements and real negative-control evidence. Local
+compilation and large artifact downloads remain disabled.
+
+Compilation and the constructor probe are not yet executed. Even a passing
+result covers this disposable development stage only; compatibility against the
+selected secureblue runtime libraries, packaged Fedora boot, signing, rollback
+and dependency review remain required. The development artifact must not be
+copied into a release image without those checks.

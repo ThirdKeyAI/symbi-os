@@ -1,0 +1,485 @@
+File: guest/rpm-000-identity.log
+R-srpm-macros-1.3.7-3.fc45.noarch	Fedora Project	MIT
+
+File: guest/rpm-001-identity.log
+abseil-cpp-devel-20260526.0-3.fc45.x86_64	Fedora Project	Apache-2.0 AND LicenseRef-Fedora-Public-Domain
+
+File: guest/rpm-002-identity.log
+abseil-cpp-testing-20260526.0-3.fc45.x86_64	Fedora Project	Apache-2.0 AND LicenseRef-Fedora-Public-Domain
+
+File: guest/rpm-003-identity.log
+add-determinism-0.7.3-3.fc45.x86_64	Fedora Project	GPL-3.0-or-later AND MIT AND Unicode-DFS-2016 AND (0BSD OR MIT OR Apache-2.0) AND (Apache-2.0 OR MIT) AND (Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT) AND (BSD-2-Clause OR Apache-2.0 OR MIT) AND (MIT OR Zlib OR Apache-2.0) AND (Unlicense OR MIT)
+
+File: guest/rpm-004-identity.log
+annobin-docs-13.28-1.fc45.noarch	Fedora Project	GPL-3.0-or-later AND LGPL-2.0-or-later AND (GPL-2.0-or-later WITH GCC-exception-2.0) AND (LGPL-2.0-or-later WITH GCC-exception-2.0) AND GFDL-1.3-or-later
+
+File: guest/rpm-005-identity.log
+annobin-plugin-gcc-13.28-1.fc45.x86_64	Fedora Project	GPL-3.0-or-later AND LGPL-2.0-or-later AND (GPL-2.0-or-later WITH GCC-exception-2.0) AND (LGPL-2.0-or-later WITH GCC-exception-2.0) AND GFDL-1.3-or-later
+
+File: guest/rpm-006-identity.log
+ansible-srpm-macros-1-22.fc45.noarch	Fedora Project	GPL-3.0-or-later
+
+File: guest/rpm-007-identity.log
+at-spi2-atk-devel-2.62.1-1.fc45.x86_64	Fedora Project	LGPL-2.1-or-later
+
+File: guest/rpm-008-identity.log
+at-spi2-core-devel-2.62.1-1.fc45.x86_64	Fedora Project	LGPL-2.1-or-later
+
+File: guest/rpm-009-identity.log
+atk-devel-2.62.1-1.fc45.x86_64	Fedora Project	LGPL-2.1-or-later
+
+File: guest/rpm-010-identity.log
+brotli-1.2.1-1.fc45.x86_64	Fedora Project	MIT
+
+File: guest/rpm-011-identity.log
+brotli-devel-1.2.1-1.fc45.x86_64	Fedora Project	MIT
+
+File: guest/rpm-012-identity.log
+build-reproducibility-srpm-macros-0.7.3-3.fc45.noarch	Fedora Project	GPL-3.0-or-later
+
+File: guest/rpm-013-identity.log
+bzip2-devel-1.0.8-24.fc45.x86_64	Fedora Project	BSD-4-Clause
+
+File: guest/rpm-014-identity.log
+cairo-devel-1.18.6-1.fc45.x86_64	Fedora Project	LGPL-2.1-only OR MPL-1.1
+
+File: guest/rpm-015-identity.log
+cairo-gobject-devel-1.18.6-1.fc45.x86_64	Fedora Project	LGPL-2.1-only OR MPL-1.1
+
+File: guest/rpm-016-identity.log
+cmake-4.3.0-7.fc45.x86_64	Fedora Project	BSD-3-Clause AND MIT-open-group AND Zlib AND Apache-2.0
+
+File: guest/rpm-017-identity.log
+cmake-data-4.3.0-7.fc45.noarch	Fedora Project	BSD-3-Clause AND MIT-open-group AND Zlib AND Apache-2.0
+
+File: guest/rpm-018-identity.log
+cmake-rpm-macros-4.3.0-7.fc45.noarch	Fedora Project	BSD-3-Clause AND MIT-open-group AND Zlib AND Apache-2.0
+
+File: guest/rpm-019-identity.log
+cmake-srpm-macros-4.3.0-7.fc45.noarch	Fedora Project	BSD-3-Clause AND MIT-open-group AND Zlib AND Apache-2.0
+
+File: guest/rpm-020-identity.log
+dbus-devel-1:1.16.4-2.fc45.x86_64	Fedora Project	(AFL-2.1 OR GPL-2.0-or-later) AND GPL-2.0-or-later
+
+File: guest/rpm-021-identity.log
+debugedit-5.4-1.fc45.x86_64	Fedora Project	GPL-3.0-or-later AND GPL-2.0-or-later AND LGPL-2.0-or-later
+
+File: guest/rpm-022-identity.log
+dwz-0.17-3.fc45.x86_64	Fedora Project	GPL-3.0-or-later AND (GPL-3.0-or-later WITH GCC-exception-3.1) AND GPL-2.0-or-later AND (GPL-2.0-or-later WITH GCC-exception-2.0) AND LGPL-2.0-or-later
+
+File: guest/rpm-023-identity.log
+efi-srpm-macros-6-9.fc45.noarch	Fedora Project	GPL-3.0-or-later
+
+File: guest/rpm-024-identity.log
+elfutils-0.197-1.fc45.x86_64	Fedora Project	GPL-3.0-or-later AND (GPL-2.0-or-later OR LGPL-3.0-or-later) AND GFDL-1.3-no-invariants-or-later
+
+File: guest/rpm-025-identity.log
+erlang-srpm-macros-0.4.2-1.fc45.noarch	Fedora Project	MIT
+
+File: guest/rpm-026-identity.log
+file-devel-5.48-3.fc45.x86_64	Fedora Project	BSD-2-Clause-Darwin AND BSD-2-Clause
+
+File: guest/rpm-027-identity.log
+filesystem-srpm-macros-3.18-59.fc45.noarch	Fedora Project	LicenseRef-Fedora-Public-Domain
+
+File: guest/rpm-028-identity.log
+fontconfig-devel-2.18.3-2.fc45.x86_64	Fedora Project	HPND AND LicenseRef-Fedora-Public-Domain AND Unicode-DFS-2016
+
+File: guest/rpm-029-identity.log
+fonts-srpm-macros-1:5.0.0-4.fc45.noarch	Fedora Project	GPL-3.0-or-later
+
+File: guest/rpm-030-identity.log
+forge-srpm-macros-0.4.0-5.fc45.noarch	Fedora Project	GPL-1.0-or-later
+
+File: guest/rpm-031-identity.log
+fpc-srpm-macros-1.3-17.fc45.noarch	Fedora Project	MIT
+
+File: guest/rpm-032-identity.log
+freetype-devel-2.14.3-3.fc45.x86_64	Fedora Project	(FTL OR GPL-2.0-or-later) AND BSD-3-Clause AND MIT AND MIT-Modern-Variant AND LicenseRef-Fedora-Public-Domain AND Zlib
+
+File: guest/rpm-033-identity.log
+fribidi-devel-1.0.18-1.fc45.x86_64	Fedora Project	LGPL-2.1-or-later AND Unicode-DFS-2016
+
+File: guest/rpm-034-identity.log
+gap-srpm-macros-2-3.fc45.noarch	Fedora Project	MIT
+
+File: guest/rpm-035-identity.log
+gcc-c++-16.2.1-3.fc45.x86_64	Fedora Project	GPL-3.0-or-later AND LGPL-3.0-or-later AND (GPL-3.0-or-later WITH GCC-exception-3.1) AND (GPL-3.0-or-later WITH Texinfo-exception) AND (LGPL-2.1-or-later WITH GCC-exception-2.0) AND (GPL-2.0-or-later WITH GCC-exception-2.0) AND (GPL-2.0-or-later WITH GNU-compiler-exception) AND BSL-1.0 AND GFDL-1.3-or-later AND Linux-man-pages-copyleft-2-para AND SunPro AND BSD-1-Clause AND BSD-2-Clause AND BSD-2-Clause-Views AND BSD-3-Clause AND BSD-4-Clause AND BSD-Source-Code AND Zlib AND MIT AND Apache-2.0 AND (Apache-2.0 WITH LLVM-Exception) AND ZPL-2.1 AND ISC AND LicenseRef-Fedora-Public-Domain AND HP-1986 AND curl AND Martin-Birgmeier AND HPND-Markus-Kuhn AND dtoa AND SMLNJ AND AMD-newlib AND OAR AND HPND-merchantability-variant AND HPND-Intel
+
+File: guest/rpm-036-identity.log
+gcc-plugin-annobin-16.2.1-3.fc45.x86_64	Fedora Project	GPL-3.0-or-later AND LGPL-3.0-or-later AND (GPL-3.0-or-later WITH GCC-exception-3.1) AND (GPL-3.0-or-later WITH Texinfo-exception) AND (LGPL-2.1-or-later WITH GCC-exception-2.0) AND (GPL-2.0-or-later WITH GCC-exception-2.0) AND (GPL-2.0-or-later WITH GNU-compiler-exception) AND BSL-1.0 AND GFDL-1.3-or-later AND Linux-man-pages-copyleft-2-para AND SunPro AND BSD-1-Clause AND BSD-2-Clause AND BSD-2-Clause-Views AND BSD-3-Clause AND BSD-4-Clause AND BSD-Source-Code AND Zlib AND MIT AND Apache-2.0 AND (Apache-2.0 WITH LLVM-Exception) AND ZPL-2.1 AND ISC AND LicenseRef-Fedora-Public-Domain AND HP-1986 AND curl AND Martin-Birgmeier AND HPND-Markus-Kuhn AND dtoa AND SMLNJ AND AMD-newlib AND OAR AND HPND-merchantability-variant AND HPND-Intel
+
+File: guest/rpm-037-identity.log
+gdb-minimal-18.1-1.fc45.x86_64	Fedora Project	GPL-3.0-or-later AND BSD-3-Clause AND FSFAP AND LGPL-2.1-or-later AND GPL-2.0-or-later AND LGPL-2.0-or-later AND LicenseRef-Fedora-Public-Domain AND GFDL-1.3-or-later AND LGPL-2.0-or-later WITH GCC-exception-2.0 AND GPL-3.0-or-later WITH GCC-exception-3.1 AND GPL-2.0-or-later WITH GNU-compiler-exception AND MIT
+
+File: guest/rpm-038-identity.log
+gdk-pixbuf2-devel-2.44.8-3.fc45.x86_64	Fedora Project	LGPL-2.1-or-later
+
+File: guest/rpm-039-identity.log
+ghc-srpm-macros-1.10-2.fc45.noarch	Fedora Project	GPL-2.0-or-later
+
+File: guest/rpm-040-identity.log
+glib2-devel-2.90.1-1.fc45.x86_64	Fedora Project	LGPL-2.1-or-later
+
+File: guest/rpm-041-identity.log
+glslang-16.3.0-2.fc45.x86_64	Fedora Project	BSD-2-Clause AND BSD-3-Clause AND GPL-3.0-or-later AND Apache-2.0
+
+File: guest/rpm-042-identity.log
+glslang-devel-16.3.0-2.fc45.x86_64	Fedora Project	BSD-2-Clause AND BSD-3-Clause AND GPL-3.0-or-later AND Apache-2.0
+
+File: guest/rpm-043-identity.log
+glycin-devel-2.2.6-1.fc45.x86_64	Fedora Project	(MPL-2.0 OR LGPL-2.1-or-later) AND Apache-2.0 WITH LLVM-exception AND BSD-3-Clause AND CC0-1.0 AND GPL-3.0-or-later AND IJG AND ISC AND MIT AND Unicode-3.0 AND Unicode-DFS-2016 AND (0BSD OR MIT OR Apache-2.0) AND (Apache-2.0 OR MIT) AND (Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT) AND (BSD-2-Clause OR Apache-2.0 OR MIT) AND (BSD-3-Clause OR Apache-2.0) AND (MIT OR Apache-2.0 OR Zlib) AND (Unlicense OR MIT)
+
+File: guest/rpm-044-identity.log
+gmock-1.17.0-3.fc45.x86_64	Fedora Project	BSD-3-Clause and Apache-2.0
+
+File: guest/rpm-045-identity.log
+gnat-srpm-macros-7-3.fc45.noarch	Fedora Project	FSFAP
+
+File: guest/rpm-046-identity.log
+gnome-srpm-macros-1.0-2.fc45.noarch	Fedora Project	Zlib
+
+File: guest/rpm-047-identity.log
+go-srpm-macros-3.8.0-3.fc45.noarch	Fedora Project	GPL-3.0-or-later
+
+File: guest/rpm-048-identity.log
+gpgverify-2.2-5.fc45.noarch	Fedora Project	Boehm-GC
+
+File: guest/rpm-049-identity.log
+graphite2-devel-1.3.14-22.fc45.x86_64	Fedora Project	LGPL-2.1-or-later OR MPL-2.0 OR GPL-2.0-or-later
+
+File: guest/rpm-050-identity.log
+gtest-1.17.0-3.fc45.x86_64	Fedora Project	BSD-3-Clause and Apache-2.0
+
+File: guest/rpm-051-identity.log
+gtest-devel-1.17.0-3.fc45.x86_64	Fedora Project	BSD-3-Clause and Apache-2.0
+
+File: guest/rpm-052-identity.log
+gtk2-2.24.33-28.fc45.x86_64	Fedora Project	LicenseRef-Callaway-LGPLv2+
+
+File: guest/rpm-053-identity.log
+gtk2-devel-2.24.33-28.fc45.x86_64	Fedora Project	LicenseRef-Callaway-LGPLv2+
+
+File: guest/rpm-054-identity.log
+gtk3-devel-3.24.52-6.fc45.x86_64	Fedora Project	LGPL-2.0-or-later
+
+File: guest/rpm-055-identity.log
+harfbuzz-cairo-15.0.0-2.fc45.x86_64	Fedora Project	MIT-Modern-Variant
+
+File: guest/rpm-056-identity.log
+harfbuzz-devel-15.0.0-2.fc45.x86_64	Fedora Project	MIT-Modern-Variant
+
+File: guest/rpm-057-identity.log
+harfbuzz-gpu-15.0.0-2.fc45.x86_64	Fedora Project	MIT-Modern-Variant
+
+File: guest/rpm-058-identity.log
+harfbuzz-raster-15.0.0-2.fc45.x86_64	Fedora Project	MIT-Modern-Variant
+
+File: guest/rpm-059-identity.log
+harfbuzz-vector-15.0.0-2.fc45.x86_64	Fedora Project	MIT-Modern-Variant
+
+File: guest/rpm-060-identity.log
+hwdata-devel-0.413-1.fc45.noarch	Fedora Project	GPL-2.0-or-later
+
+File: guest/rpm-061-identity.log
+ibus-gtk2-1.5.35-2.fc45.x86_64	Fedora Project	LGPL-2.1-or-later
+
+File: guest/rpm-062-identity.log
+java-srpm-macros-1-9.fc45.noarch	Fedora Project	MIT-0
+
+File: guest/rpm-063-identity.log
+kernel-srpm-macros-1.0-30.fc45.noarch	Fedora Project	MIT
+
+File: guest/rpm-064-identity.log
+lcms2-devel-2.16-8.fc45.x86_64	Fedora Project	MIT AND GPL-3.0-or-later
+
+File: guest/rpm-065-identity.log
+libGLEW-2.2.0-13.fc45.x86_64	Fedora Project	BSD-3-Clause AND MIT AND MIT-Khronos-old
+
+File: guest/rpm-066-identity.log
+libX11-devel-1.8.13-3.fc45.x86_64	Fedora Project	MIT AND X11
+
+File: guest/rpm-067-identity.log
+libXau-devel-1.0.12-5.fc45.x86_64	Fedora Project	MIT-open-group
+
+File: guest/rpm-068-identity.log
+libXcomposite-devel-0.4.6-8.fc45.x86_64	Fedora Project	MIT AND HPND-sell-variant
+
+File: guest/rpm-069-identity.log
+libXcursor-devel-1.2.3-5.fc45.x86_64	Fedora Project	HPND-sell-variant
+
+File: guest/rpm-070-identity.log
+libXdamage-devel-1.1.6-8.fc45.x86_64	Fedora Project	HPND-sell-variant
+
+File: guest/rpm-071-identity.log
+libXext-devel-1.3.6-6.fc45.x86_64	Fedora Project	MIT-open-group AND X11 AND HPND AND HPND-sell-variant AND SMLNJ AND MIT AND ISC AND HPND-doc AND HPND-doc-sell
+
+File: guest/rpm-072-identity.log
+libXfixes-devel-6.0.1-8.fc45.x86_64	Fedora Project	MIT AND HPND-sell-variant
+
+File: guest/rpm-073-identity.log
+libXft-devel-2.3.8-11.fc45.x86_64	Fedora Project	HPND-sell-variant
+
+File: guest/rpm-074-identity.log
+libXi-devel-1.8.4-1.fc45.x86_64	Fedora Project	MIT-open-group AND SMLNJ AND MIT
+
+File: guest/rpm-075-identity.log
+libXinerama-devel-1.1.5-11.fc45.x86_64	Fedora Project	MIT AND MIT-open-group AND X11
+
+File: guest/rpm-076-identity.log
+libXrandr-devel-1.5.4-8.fc45.x86_64	Fedora Project	HPND-sell-variant
+
+File: guest/rpm-077-identity.log
+libXrender-devel-0.9.12-5.fc45.x86_64	Fedora Project	HPND-sell-variant
+
+File: guest/rpm-078-identity.log
+libXtst-devel-1.2.5-5.fc45.x86_64	Fedora Project	MIT-open-group AND HPND-sell-variant AND X11 AND HPND-doc AND HPND-doc-sell
+
+File: guest/rpm-079-identity.log
+libblkid-devel-2.42.4-1.fc45.x86_64	Fedora Project	LGPL-2.1-or-later
+
+File: guest/rpm-080-identity.log
+libcanberra-devel-0.30-52.fc45.x86_64	Fedora Project	LGPL-2.1-or-later
+
+File: guest/rpm-081-identity.log
+libcanberra-gtk2-0.30-52.fc45.x86_64	Fedora Project	LGPL-2.1-or-later
+
+File: guest/rpm-082-identity.log
+libcloudproviders-devel-0.4.1-1.fc45.x86_64	Fedora Project	LGPL-3.0-or-later
+
+File: guest/rpm-083-identity.log
+libdatrie-devel-0.2.14-3.fc45.x86_64	Fedora Project	LGPL-2.1-or-later
+
+File: guest/rpm-084-identity.log
+libdav1d-devel-1.5.4-1.fc45.x86_64	Fedora Project	BSD-2-Clause AND ISC
+
+File: guest/rpm-085-identity.log
+libdisplay-info-devel-0.3.0-2.fc45.x86_64	Fedora Project	MIT
+
+File: guest/rpm-086-identity.log
+libdrm-devel-2.4.134-2.fc45.x86_64	Fedora Project	MIT
+
+File: guest/rpm-087-identity.log
+libeis-1.6.0-3.fc45.x86_64	Fedora Project	MIT
+
+File: guest/rpm-088-identity.log
+libeis-devel-1.6.0-3.fc45.x86_64	Fedora Project	MIT
+
+File: guest/rpm-089-identity.log
+libepoxy-devel-1.5.10-13.fc45.x86_64	Fedora Project	MIT
+
+File: guest/rpm-090-identity.log
+libffi-devel-3.5.2-3.fc45.x86_64	Fedora Project	MIT AND CC-PDDC AND (GPL-3.0-or-later WITH Texinfo-exception)
+
+File: guest/rpm-091-identity.log
+libglvnd-core-devel-1:1.7.0-10.fc45.x86_64	Fedora Project	MIT-feh AND MIT-Modern-Variant AND BSD-1-Clause AND BSD-3-Clause AND GPL-3.0-or-later WITH Autoconf-exception-macro
+
+File: guest/rpm-092-identity.log
+libglvnd-devel-1:1.7.0-10.fc45.x86_64	Fedora Project	MIT-feh AND MIT-Modern-Variant AND BSD-1-Clause AND BSD-3-Clause AND GPL-3.0-or-later WITH Autoconf-exception-macro
+
+File: guest/rpm-093-identity.log
+libicu-devel-78.3-9.fc45.x86_64	Fedora Project	Unicode-DFS-2016 AND BSD-2-Clause AND BSD-3-Clause AND NAIST-2003 AND LicenseRef-Fedora-Public-Domain
+
+File: guest/rpm-094-identity.log
+libinput-devel-1.32.0-1.fc45.x86_64	Fedora Project	MIT
+
+File: guest/rpm-095-identity.log
+libjpeg-turbo-devel-3.1.4.1-2.fc45.x86_64	Fedora Project	Zlib AND BSD-3-Clause AND MIT AND IJG
+
+File: guest/rpm-096-identity.log
+libmount-devel-2.42.4-1.fc45.x86_64	Fedora Project	LGPL-2.1-or-later
+
+File: guest/rpm-097-identity.log
+libpciaccess-devel-0.16-18.fc45.x86_64	Fedora Project	HPND AND MIT
+
+File: guest/rpm-098-identity.log
+libpng-devel-2:1.6.59-1.fc45.x86_64	Fedora Project	zlib
+
+File: guest/rpm-099-identity.log
+librsvg2-devel-2.63.2-2.fc45.x86_64	Fedora Project	LGPL-2.1-or-later AND Apache-2.0 AND BSD-3-Clause AND MIT AND MPL-2.0 AND Unicode-3.0 AND Unicode-DFS-2016 AND (0BSD OR MIT OR Apache-2.0) AND (Apache-2.0 OR MIT) AND (BSD-3-Clause OR Apache-2.0) AND (MIT OR Apache-2.0 OR Zlib) AND (Unlicense OR MIT)
+
+File: guest/rpm-100-identity.log
+libseat-devel-0.9.3-2.fc45.x86_64	Fedora Project	MIT
+
+File: guest/rpm-101-identity.log
+libseccomp-devel-2.6.1-3.fc45.x86_64	Fedora Project	LGPL-2.1-only
+
+File: guest/rpm-102-identity.log
+libselinux-devel-3.11-5.fc45.x86_64	Fedora Project	LicenseRef-Fedora-Public-Domain
+
+File: guest/rpm-103-identity.log
+libsepol-devel-3.11-2.fc45.x86_64	Fedora Project	LGPL-2.1-or-later
+
+File: guest/rpm-104-identity.log
+libstdc++-devel-16.2.1-3.fc45.x86_64	Fedora Project	GPL-3.0-or-later AND LGPL-3.0-or-later AND (GPL-3.0-or-later WITH GCC-exception-3.1) AND (GPL-3.0-or-later WITH Texinfo-exception) AND (LGPL-2.1-or-later WITH GCC-exception-2.0) AND (GPL-2.0-or-later WITH GCC-exception-2.0) AND (GPL-2.0-or-later WITH GNU-compiler-exception) AND BSL-1.0 AND GFDL-1.3-or-later AND Linux-man-pages-copyleft-2-para AND SunPro AND BSD-1-Clause AND BSD-2-Clause AND BSD-2-Clause-Views AND BSD-3-Clause AND BSD-4-Clause AND BSD-Source-Code AND Zlib AND MIT AND Apache-2.0 AND (Apache-2.0 WITH LLVM-Exception) AND ZPL-2.1 AND ISC AND LicenseRef-Fedora-Public-Domain AND HP-1986 AND curl AND Martin-Birgmeier AND HPND-Markus-Kuhn AND dtoa AND SMLNJ AND AMD-newlib AND OAR AND HPND-merchantability-variant AND HPND-Intel
+
+File: guest/rpm-105-identity.log
+libthai-devel-0.1.30-3.fc45.x86_64	Fedora Project	LGPL-2.1-or-later
+
+File: guest/rpm-106-identity.log
+libuuid-devel-2.42.4-1.fc45.x86_64	Fedora Project	BSD-3-Clause AND LGPL-2.1-or-later
+
+File: guest/rpm-107-identity.log
+libwebp-devel-1.6.0-4.fc45.x86_64	Fedora Project	Apache-2.0 AND BSD-3-Clause WITH Google-Patent-WebM AND BSD-3-Clause AND FSFULLRWD
+
+File: guest/rpm-108-identity.log
+libxcb-devel-1.17.0-8.fc45.x86_64	Fedora Project	X11
+
+File: guest/rpm-109-identity.log
+libxkbcommon-devel-1.13.1-4.fc45.x86_64	Fedora Project	MIT AND X11 AND MIT-CMU
+
+File: guest/rpm-110-identity.log
+libxml2-devel-2.15.4-1.fc45.x86_64	Fedora Project	MIT AND ISC-Veillard AND W3C
+
+File: guest/rpm-111-identity.log
+libzip-devel-1.12.1-1.fc45.x86_64	Fedora Project	BSD-3-Clause
+
+File: guest/rpm-112-identity.log
+linkdupes-0.7.3-3.fc45.x86_64	Fedora Project	GPL-3.0-or-later AND MIT AND Unicode-DFS-2016 AND (0BSD OR MIT OR Apache-2.0) AND (Apache-2.0 OR MIT) AND (BSD-2-Clause OR Apache-2.0 OR MIT) AND (MIT OR Zlib OR Apache-2.0) AND (Unlicense OR MIT)
+
+File: guest/rpm-113-identity.log
+lua-5.5.1-2.fc45.x86_64	Fedora Project	MIT
+
+File: guest/rpm-114-identity.log
+lua-devel-5.5.1-2.fc45.x86_64	Fedora Project	MIT
+
+File: guest/rpm-115-identity.log
+lua-rpm-macros-1-18.fc45.noarch	Fedora Project	MIT
+
+File: guest/rpm-116-identity.log
+lua-srpm-macros-1-18.fc45.noarch	Fedora Project	MIT
+
+File: guest/rpm-117-identity.log
+lzo-devel-2.10-17.fc45.x86_64	Fedora Project	gpl-2.0-or-later
+
+File: guest/rpm-118-identity.log
+lzo-minilzo-2.10-17.fc45.x86_64	Fedora Project	gpl-2.0-or-later
+
+File: guest/rpm-119-identity.log
+mesa-dri-drivers-26.2.7-1.fc45.x86_64	Fedora Project	MIT AND BSD-3-Clause AND SGI-B-2.0
+
+File: guest/rpm-120-identity.log
+mesa-filesystem-26.2.7-1.fc45.x86_64	Fedora Project	MIT AND BSD-3-Clause AND SGI-B-2.0
+
+File: guest/rpm-121-identity.log
+mesa-libEGL-26.2.7-1.fc45.x86_64	Fedora Project	MIT AND BSD-3-Clause AND SGI-B-2.0
+
+File: guest/rpm-122-identity.log
+mesa-libGL-26.2.7-1.fc45.x86_64	Fedora Project	MIT AND BSD-3-Clause AND SGI-B-2.0
+
+File: guest/rpm-123-identity.log
+mesa-libgbm-26.2.7-1.fc45.x86_64	Fedora Project	MIT AND BSD-3-Clause AND SGI-B-2.0
+
+File: guest/rpm-124-identity.log
+mesa-libgbm-devel-26.2.7-1.fc45.x86_64	Fedora Project	MIT AND BSD-3-Clause AND SGI-B-2.0
+
+File: guest/rpm-125-identity.log
+mesa-vulkan-drivers-26.2.7-1.fc45.x86_64	Fedora Project	MIT AND BSD-3-Clause AND SGI-B-2.0
+
+File: guest/rpm-126-identity.log
+meson-1.12.1-3.fc45.noarch	Fedora Project	Apache-2.0
+
+File: guest/rpm-127-identity.log
+meson-srpm-macros-1.12.1-3.fc45.noarch	Fedora Project	Apache-2.0
+
+File: guest/rpm-128-identity.log
+muParser-2.3.5-6.fc45.x86_64	Fedora Project	BSD-2-Clause
+
+File: guest/rpm-129-identity.log
+muParser-devel-2.3.5-6.fc45.x86_64	Fedora Project	BSD-2-Clause
+
+File: guest/rpm-130-identity.log
+ninja-build-1.13.2-6.fc45.x86_64	Fedora Project	Apache-2.0
+
+File: guest/rpm-131-identity.log
+ocaml-srpm-macros-11-4.fc45.noarch	Fedora Project	GPL-2.0-or-later
+
+File: guest/rpm-132-identity.log
+openblas-srpm-macros-2-22.fc45.noarch	Fedora Project	MIT
+
+File: guest/rpm-133-identity.log
+package-notes-srpm-macros-0.20-2.fc45.noarch	Fedora Project	0BSD
+
+File: guest/rpm-134-identity.log
+pango-devel-1.58.2-1.fc45.x86_64	Fedora Project	LGPL-2.0-or-later
+
+File: guest/rpm-135-identity.log
+pcre2-devel-10.49-1.fc45.x86_64	Fedora Project	BSD-3-Clause AND FSFULLR AND X11 AND GPL-2.0-or-later AND FSFAP AND FSFUL AND GPL-3.0-or-later
+
+File: guest/rpm-136-identity.log
+perl-srpm-macros-1-65.fc45.noarch	Fedora Project	GPL-3.0-or-later
+
+File: guest/rpm-137-identity.log
+pixman-devel-0.46.2-4.fc45.x86_64	Fedora Project	MIT
+
+File: guest/rpm-138-identity.log
+pugixml-devel-1.16-2.fc45.x86_64	Fedora Project	MIT
+
+File: guest/rpm-139-identity.log
+pyproject-srpm-macros-1.24.0-1.fc45.noarch	Fedora Project	MIT
+
+File: guest/rpm-140-identity.log
+python-srpm-macros-3.15-2.fc45.noarch	Fedora Project	MIT AND PSF-2.0 AND GPL-2.0-or-later
+
+File: guest/rpm-141-identity.log
+qt5-srpm-macros-5.15.18-3.fc45.noarch	Fedora Project	GPL-3.0-only
+
+File: guest/rpm-142-identity.log
+qt6-srpm-macros-6.11.2-1.fc45.noarch	Fedora Project	GPL-3.0-only
+
+File: guest/rpm-143-identity.log
+re2-devel-2:20251105-19.fc45.x86_64	Fedora Project	BSD-3-Clause
+
+File: guest/rpm-144-identity.log
+redhat-rpm-config-345-5.fc45.noarch	Fedora Project	GPL-1.0-or-later AND GPL-2.0-or-later AND GPL-3.0-or-later WITH Autoconf-exception-generic
+
+File: guest/rpm-145-identity.log
+rhash-1.4.5-5.fc45.x86_64	Fedora Project	MIT
+
+File: guest/rpm-146-identity.log
+rpm-build-6.1.0-1.fc45.x86_64	Fedora Project	GPL-2.0-or-later
+
+File: guest/rpm-147-identity.log
+rust-srpm-macros-28.5-2.fc45.noarch	Fedora Project	MIT
+
+File: guest/rpm-148-identity.log
+sysprof-capture-devel-51.0-1.fc45.x86_64	Fedora Project	BSD-2-Clause-Patent
+
+File: guest/rpm-149-identity.log
+systemd-devel-262.1-1.fc45.x86_64	Fedora Project	LGPL-2.1-or-later AND MIT
+
+File: guest/rpm-150-identity.log
+systemd-rpm-macros-262.1-1.fc45.noarch	Fedora Project	LGPL-2.1-or-later AND MIT AND GPL-2.0-or-later
+
+File: guest/rpm-151-identity.log
+tomlplusplus-3.4.0-8.fc45.x86_64	Fedora Project	MIT
+
+File: guest/rpm-152-identity.log
+tomlplusplus-devel-3.4.0-8.fc45.x86_64	Fedora Project	MIT
+
+File: guest/rpm-153-identity.log
+tree-sitter-srpm-macros-0.4.6-2.fc45.noarch	Fedora Project	MIT
+
+File: guest/rpm-154-identity.log
+wayland-devel-1.26.0-3.fc45.x86_64	Fedora Project	MIT
+
+File: guest/rpm-155-identity.log
+wayland-protocols-devel-1.50-1.fc45.noarch	Fedora Project	MIT
+
+File: guest/rpm-156-identity.log
+xcb-util-errors-devel-1.0.1-8.fc45.x86_64	Fedora Project	X11
+
+File: guest/rpm-157-identity.log
+xcb-util-wm-devel-0.4.2-10.fc45.x86_64	Fedora Project	X11-distribute-modifications-variant
+
+File: guest/rpm-158-identity.log
+xorg-x11-proto-devel-2025.1-3.fc45.noarch	Fedora Project	BSD-2-Clause AND HPND AND HPND-sell-variant AND ICU AND MIT AND MIT-open-group AND SGI-B-2.0 AND SMLNJ AND X11 AND X11-distribute-modifications-variant
+
+File: guest/rpm-159-identity.log
+xz-devel-1:5.8.3-2.fc45.x86_64	Fedora Project	0BSD
+
+File: guest/rpm-160-identity.log
+zig-srpm-macros-1-9.fc45.noarch	Fedora Project	MIT
+
+File: guest/rpm-161-identity.log
+zlib-ng-compat-devel-2.3.3-6.fc45.x86_64	Fedora Project	Zlib

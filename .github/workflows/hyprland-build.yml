@@ -1,0 +1,56 @@
+name: Offline Hyprland build
+
+on:
+  pull_request:
+    paths:
+      - image/hyprland/**
+      - image/base-images.json
+      - image/toolchain/bootstrap_cosign.py
+      - image/toolchain/cosign.json
+      - image/toolchain/keys/**
+      - scripts/check-hyprland-build.sh
+      - .github/workflows/hyprland-build.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: hyprland-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compositor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 140
+    steps:
+      - name: Check out proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Download exact previously verified RPM artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache
+          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15060562373/zip > .cache/hyprland-rpms.zip
+          echo '23a5ba8b77dca596642db250e35044603620eebc5af3e12c4dc5bc2a7bbefb7f  .cache/hyprland-rpms.zip' | sha256sum --check --strict
+      - name: Build offline and test native-loading refusal
+        run: bash scripts/check-hyprland-build.sh
+      - name: Retain public build evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hyprland-build-evidence
+          path: .cache/hyprland-build-evidence/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Retain development prefix for separate base-compatibility checks
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hyprland-development-prefix
+          path: .cache/hyprland-build-payload/hyprland-prefix.tar.gz
+          retention-days: 14
+          compression-level: 0
+          if-no-files-found: error
