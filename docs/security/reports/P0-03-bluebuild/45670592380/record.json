@@ -1,0 +1,28 @@
+{
+  "run_url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45670592380",
+  "head": "55ab7085f4086126f79fe2dd55897ee245e100c5",
+  "job_id": 139404494630,
+  "conclusion": "failure",
+  "cause": "Rust 1.95.0 lacks stable Option::map_or_default; no CLI acceptance cases executed",
+  "artifact_digest": "sha256:75bbe88016599e2004266d5a0fcf8005d5dc645adbf7e7381331188ef49bdcd3",
+  "retention_format": "Public artifact text with trailing line whitespace removed; original hashes below",
+  "files": {
+    "cgroup-limits.json": {
+      "artifact_sha256": "793978dd325346b691df2874b59d3c299548bcedf446ccf30ba3aa0783f25dd2",
+      "retained_sha256": "793978dd325346b691df2874b59d3c299548bcedf446ccf30ba3aa0783f25dd2"
+    },
+    "hosted-build.log": {
+      "artifact_sha256": "4a54c9628614b46086f2aee64e23d6b4f04f1bd98dfd2c1d8dac6ae2c1ae8acf",
+      "retained_sha256": "4a54c9628614b46086f2aee64e23d6b4f04f1bd98dfd2c1d8dac6ae2c1ae8acf"
+    },
+    "source-build.json": {
+      "artifact_sha256": "e693132c9d96941af190b50c0c87fa3a3037651f72d9c6604ef4160645334eb1",
+      "retained_sha256": "e693132c9d96941af190b50c0c87fa3a3037651f72d9c6604ef4160645334eb1"
+    },
+    "systemd-result.txt": {
+      "artifact_sha256": "5617c34061f58fb643ac4a90169e28d91898ea0e6797514212f3c2240d03f7b7",
+      "retained_sha256": "5617c34061f58fb643ac4a90169e28d91898ea0e6797514212f3c2240d03f7b7"
+    }
+  },
+  "os_qualified": false
+}

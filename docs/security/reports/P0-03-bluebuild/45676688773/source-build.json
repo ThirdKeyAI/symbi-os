@@ -1,0 +1,42 @@
+{
+  "source_revision": "a654ee8810c637aa00356999488e97259061275d",
+  "source_clean_before_build": true,
+  "cargo_lock_sha256": "a8a3744f502d44cf98b0ad6916c5b308b33b9f107b1903985b845c4548d9df34",
+  "rust": "1.100.0",
+  "features": [
+    "v1_0_0"
+  ],
+  "profile": "dev",
+  "build_passed": true,
+  "cli_acceptance_passed": true,
+  "upstream_unit_tests_passed": true,
+  "patches": [
+    {
+      "path": "image/toolchain/patches/0001-validate-os-recipe-v2.patch",
+      "sha256": "47e8de584f0a54a00e8b2145339e0bfd00868cf577f74d71681d9c57fa9d3342"
+    }
+  ],
+  "applied_diff_sha256": "05093832a9384b0ed0a37b479a7e2e09f1154405ac8ddda9bca2055cddd1d751",
+  "rustc": "rustc 1.100.0 (0ef1bc386 2026-11-09)\nbinary: rustc\ncommit-hash: 0ef1bc386059596dada8fb65b50425aab2ea637a\ncommit-date: 2026-11-09\nhost: x86_64-unknown-linux-gnu\nrelease: 1.100.0\nLLVM version: 23.1.5",
+  "command": [
+    "cargo",
+    "+1.100.0",
+    "build",
+    "--locked",
+    "--bin",
+    "bluebuild",
+    "--no-default-features",
+    "--features",
+    "v1_0_0"
+  ],
+  "test_command": [
+    "cargo",
+    "+1.100.0",
+    "test",
+    "--workspace",
+    "--locked",
+    "--no-default-features",
+    "--features",
+    "v1_0_0"
+  ]
+}

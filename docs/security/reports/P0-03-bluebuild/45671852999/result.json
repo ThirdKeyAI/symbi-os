@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "binary_sha256": "f55cdf016d74d9045653896bf2effd28e2fcebe4572149c22687f6c751589c45",
+  "source_revision": "a654ee8810c637aa00356999488e97259061275d",
+  "checks": [
+    {
+      "name": "version",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/bluebuild-target/debug/bluebuild",
+        "--version"
+      ],
+      "expected": "success",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "generic-validate",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/bluebuild-target/debug/bluebuild",
+        "validate",
+        "--all-errors",
+        "/home/runner/work/symbi-os/symbi-os/.cache/image-tool-evidence/generic.json"
+      ],
+      "expected": "success",
+      "exit_code": 1,
+      "passed": false
+    }
+  ],
+  "recipe_validation_passed": false,
+  "containerfiles_generated": false,
+  "os_qualified": false
+}
