@@ -96,7 +96,7 @@ typo. It does not add v2 validation: `ValidateCommand` still requests the v1
 schema and deserializes `RecipeV1`. GitHub reports the selected commit signature
 verified; that is not a full source/dependency audit.
 
-The build uses Rust 1.95.0, `--locked --no-default-features --features v1_0_0`,
+The BlueBuild build uses Rust 1.100.0, `--locked --no-default-features --features v1_0_0`,
 one Cargo job, no debug symbols or incremental output, and a hosted cgroup
 with 4 GiB memory, zero swap and at most two CPUs. It records the source SHA,
 lockfile SHA-256, compiler version, binary SHA-256 and actual CLI results.
@@ -109,3 +109,10 @@ Public evidence upload uses
 (v4.6.2, MIT), the pin used by Symbiont. GitHub reports its merge signature
 verified. Only `.cache/image-tool-evidence/` is uploaded for fourteen days;
 no signing environment, private material or compiler target directory is attached.
+
+The first hosted attempt on Rust 1.95.0 failed with E0658 at three upstream
+`Option::map_or_default` calls; recipe tests did not run. The dedicated BlueBuild
+compiler is now pinned to [Rust 1.100.0](https://github.com/rust-lang/rust/releases/tag/1.100.0),
+where [that API is stable](https://doc.rust-lang.org/1.100.0/std/option/enum.Option.html#method.map_or_default).
+The workspace MSRV and existing checker toolchain pins are unchanged. This uses
+a stable supported API rather than enabling unstable compiler features.

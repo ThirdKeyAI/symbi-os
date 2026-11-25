@@ -1,0 +1,9 @@
+RuntimeMaxUSec=45min
+Result=exit-code
+ExecMainStatus=1
+MemoryPeak=3808313344
+CPUUsageNSec=215086130000
+CPUQuotaPerSecUSec=2s
+MemoryMax=4294967296
+MemorySwapMax=0
+TasksMax=256

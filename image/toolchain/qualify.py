@@ -51,7 +51,8 @@ def main():
         log = evidence / (name + ".log")
         with log.open("wb") as output:
             try:
-                process = subprocess.run(command, cwd=root, stdout=output, stderr=subprocess.STDOUT,
+                env = dict(os.environ, DOCKER_HOST="unix:///dev/null", CONTAINER_HOST="unix:///dev/null")
+                process = subprocess.run(command, cwd=root, env=env, stdout=output, stderr=subprocess.STDOUT,
                                          timeout=180, check=False)
                 record["exit_code"] = process.returncode
             except subprocess.TimeoutExpired:
@@ -99,6 +100,24 @@ def main():
     value = copy.deepcopy(recipes["generic"][0])
     value["unrecognized-field"] = True
     bad.append(("unknown-field", value))
+    value = copy.deepcopy(recipes["generic"][0])
+    value.pop("version")
+    bad.append(("missing-version", value))
+    value = copy.deepcopy(recipes["generic"][0])
+    value["modules"] = [{"from-file": "https://example.invalid/modules.yml"}]
+    bad.append(("external-module-include", value))
+    value = copy.deepcopy(recipes["generic"][0])
+    value["spec"]["tool-versions"]["bluebuild"] = "latest"
+    bad.append(("moving-tool-image", value))
+    value = copy.deepcopy(recipes["generic"][0])
+    value["base"]["image"]["digest"] = "sha256:" + "0" * 64
+    bad.append(("zero-digest", value))
+    value = copy.deepcopy(recipes["generic"][0])
+    value["base"]["public-key"] = "https://example.invalid/key.pub"
+    bad.append(("remote-public-key", value))
+    value = copy.deepcopy(recipes["generic"][0])
+    value["base"]["public-key"] = "image/keys/../unreviewed.pub"
+    bad.append(("escaping-public-key", value))
     for name, value in bad:
         path = evidence / (name + ".json")
         path.write_text(json.dumps(value, indent=2) + "\n")
@@ -110,7 +129,7 @@ def main():
         output = evidence / (variant + ".Containerfile")
         run(variant + "-generate", ["generate", str(path), "--output", str(output),
             "--registry", "ghcr.io", "--registry-namespace", "thirdkeyai",
-            "--inspect-driver", "oci-client", "--build-driver", "docker", "--platform", "linux/amd64"])
+            "--inspect-driver", "oci-client", "--build-driver", "docker", "--run-driver", "docker", "--platform", "linux/amd64"])
         if not output.is_file() or output.stat().st_size == 0:
             raise SystemExit("CLI returned success without a Containerfile")
     result["containerfiles_generated"] = True

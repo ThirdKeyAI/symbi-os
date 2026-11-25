@@ -98,7 +98,7 @@ current launcher exposes local applications only.
 ## Hosted BlueBuild compatibility check
 
 `image/toolchain/bluebuild.json` pins the experimental source build to
-`a654ee8810c637aa00356999488e97259061275d`, with Rust 1.95.0, the unchanged
+`a654ee8810c637aa00356999488e97259061275d`, with Rust 1.100.0, the unchanged
 upstream lockfile and the explicit `v1_0_0` feature. The separate
 `Image tool compatibility` workflow compiles it only on a GitHub-hosted runner,
 under a verified 4 GiB memory limit, no swap, two CPUs, one Cargo job and a
