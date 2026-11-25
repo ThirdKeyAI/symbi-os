@@ -1,0 +1,6697 @@
+{
+  "schema": 1,
+  "scope": "Candidate RPM download and signature verification; no package install or build",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "key": {
+    "path": "image/hyprland/keys/fedora-45-primary.asc",
+    "sha256": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425",
+    "fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E",
+    "identity": "Fedora (45) <fedora-45-primary@fedoraproject.org>"
+  },
+  "requirements": {
+    "schema": 1,
+    "scope": "Candidate Fedora providers for reviewed pinned CMake requirements; resolve before compiling",
+    "source_inputs": "image/hyprland/candidate-inputs.json",
+    "hyprland_revision": "11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947",
+    "packages": [
+      "gcc-c++",
+      "cmake",
+      "ninja-build",
+      "meson",
+      "git-core",
+      "rpm-build",
+      "glslang-devel",
+      "pkgconfig(xkbcommon)",
+      "pkgconfig(uuid)",
+      "pkgconfig(wayland-server)",
+      "pkgconfig(wayland-client)",
+      "pkgconfig(wayland-protocols)",
+      "pkgconfig(cairo)",
+      "pkgconfig(pango)",
+      "pkgconfig(pangocairo)",
+      "pkgconfig(pixman-1)",
+      "pkgconfig(xcursor)",
+      "pkgconfig(libdrm)",
+      "pkgconfig(libinput)",
+      "pkgconfig(libeis-1.0)",
+      "pkgconfig(gbm)",
+      "pkgconfig(gio-2.0)",
+      "pkgconfig(re2)",
+      "pkgconfig(muparser)",
+      "pkgconfig(lcms2)",
+      "pkgconfig(libcanberra)",
+      "pkgconfig(lua)",
+      "pkgconfig(libseat)",
+      "pkgconfig(libudev)",
+      "pkgconfig(libdisplay-info)",
+      "pkgconfig(hwdata)",
+      "pkgconfig(libzip)",
+      "pkgconfig(librsvg-2.0)",
+      "pkgconfig(tomlplusplus)",
+      "pkgconfig(libjpeg)",
+      "pkgconfig(libwebp)",
+      "pkgconfig(libmagic)",
+      "pkgconfig(libpng)",
+      "pkgconfig(pugixml)",
+      "pkgconfig(egl)",
+      "pkgconfig(gl)",
+      "pkgconfig(glesv2)",
+      "pkgconfig(xcb)",
+      "pkgconfig(xcb-render)",
+      "pkgconfig(xcb-xfixes)",
+      "pkgconfig(xcb-icccm)",
+      "pkgconfig(xcb-composite)",
+      "pkgconfig(xcb-res)",
+      "pkgconfig(xcb-errors)",
+      "pkgconfig(gtest)",
+      "pkgconfig(readline)",
+      "pkgconfig(libffi)"
+    ],
+    "notes": [
+      "Hyprland libraries, scanner, protocols and Glaze come from separately pinned sources",
+      "CMake must still enforce upstream version requirements on installed candidates",
+      "No RPM install, compositor compile or dependency qualification is implied by this list"
+    ]
+  },
+  "limits": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128"
+  },
+  "commands": [
+    {
+      "name": "installed-before",
+      "command": [
+        "rpm",
+        "-qa",
+        "--qf",
+        "%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "public-key",
+      "command": [
+        "gpg",
+        "--homedir",
+        "/output/gnupg",
+        "--batch",
+        "--no-options",
+        "--with-colons",
+        "--show-keys",
+        "/inputs/fedora-45-primary.asc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "import-key",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--import",
+        "/inputs/fedora-45-primary.asc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "keyring",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--list"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "resolve-download",
+      "command": [
+        "dnf5",
+        "--config=/inputs/dnf.conf",
+        "--releasever=45",
+        "--assumeyes",
+        "--disable-plugin=*",
+        "install",
+        "--downloadonly",
+        "--",
+        "gcc-c++",
+        "cmake",
+        "ninja-build",
+        "meson",
+        "git-core",
+        "rpm-build",
+        "glslang-devel",
+        "pkgconfig(xkbcommon)",
+        "pkgconfig(uuid)",
+        "pkgconfig(wayland-server)",
+        "pkgconfig(wayland-client)",
+        "pkgconfig(wayland-protocols)",
+        "pkgconfig(cairo)",
+        "pkgconfig(pango)",
+        "pkgconfig(pangocairo)",
+        "pkgconfig(pixman-1)",
+        "pkgconfig(xcursor)",
+        "pkgconfig(libdrm)",
+        "pkgconfig(libinput)",
+        "pkgconfig(libeis-1.0)",
+        "pkgconfig(gbm)",
+        "pkgconfig(gio-2.0)",
+        "pkgconfig(re2)",
+        "pkgconfig(muparser)",
+        "pkgconfig(lcms2)",
+        "pkgconfig(libcanberra)",
+        "pkgconfig(lua)",
+        "pkgconfig(libseat)",
+        "pkgconfig(libudev)",
+        "pkgconfig(libdisplay-info)",
+        "pkgconfig(hwdata)",
+        "pkgconfig(libzip)",
+        "pkgconfig(librsvg-2.0)",
+        "pkgconfig(tomlplusplus)",
+        "pkgconfig(libjpeg)",
+        "pkgconfig(libwebp)",
+        "pkgconfig(libmagic)",
+        "pkgconfig(libpng)",
+        "pkgconfig(pugixml)",
+        "pkgconfig(egl)",
+        "pkgconfig(gl)",
+        "pkgconfig(glesv2)",
+        "pkgconfig(xcb)",
+        "pkgconfig(xcb-render)",
+        "pkgconfig(xcb-xfixes)",
+        "pkgconfig(xcb-icccm)",
+        "pkgconfig(xcb-composite)",
+        "pkgconfig(xcb-res)",
+        "pkgconfig(xcb-errors)",
+        "pkgconfig(gtest)",
+        "pkgconfig(readline)",
+        "pkgconfig(libffi)"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-000-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/R-srpm-macros-1.3.7-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-000-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/R-srpm-macros-1.3.7-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-001-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/abseil-cpp-devel-20260526.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-001-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/abseil-cpp-devel-20260526.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-002-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/abseil-cpp-testing-20260526.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-002-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/abseil-cpp-testing-20260526.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-003-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/add-determinism-0.7.3-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-003-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/add-determinism-0.7.3-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-004-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/annobin-docs-13.28-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-004-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/annobin-docs-13.28-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-005-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/annobin-plugin-gcc-13.28-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-005-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/annobin-plugin-gcc-13.28-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-006-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/ansible-srpm-macros-1-22.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-006-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/ansible-srpm-macros-1-22.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-007-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/at-spi2-atk-devel-2.62.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-007-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/at-spi2-atk-devel-2.62.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-008-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/at-spi2-core-devel-2.62.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-008-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/at-spi2-core-devel-2.62.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-009-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/atk-devel-2.62.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-009-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/atk-devel-2.62.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-010-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/brotli-1.2.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-010-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/brotli-1.2.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-011-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/brotli-devel-1.2.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-011-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/brotli-devel-1.2.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-012-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/build-reproducibility-srpm-macros-0.7.3-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-012-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/build-reproducibility-srpm-macros-0.7.3-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-013-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/bzip2-devel-1.0.8-24.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-013-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/bzip2-devel-1.0.8-24.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-014-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/cairo-devel-1.18.6-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-014-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/cairo-devel-1.18.6-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-015-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/cairo-gobject-devel-1.18.6-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-015-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/cairo-gobject-devel-1.18.6-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-016-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/cmake-4.3.0-7.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-016-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/cmake-4.3.0-7.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-017-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/cmake-data-4.3.0-7.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-017-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/cmake-data-4.3.0-7.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-018-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/cmake-rpm-macros-4.3.0-7.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-018-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/cmake-rpm-macros-4.3.0-7.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-019-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/cmake-srpm-macros-4.3.0-7.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-019-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/cmake-srpm-macros-4.3.0-7.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-020-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/dbus-devel-1.16.4-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-020-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/dbus-devel-1.16.4-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-021-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/debugedit-5.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-021-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/debugedit-5.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-022-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/dwz-0.17-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-022-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/dwz-0.17-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-023-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/efi-srpm-macros-6-9.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-023-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/efi-srpm-macros-6-9.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-024-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/elfutils-0.197-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-024-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/elfutils-0.197-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-025-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/erlang-srpm-macros-0.4.2-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-025-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/erlang-srpm-macros-0.4.2-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-026-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/file-devel-5.48-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-026-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/file-devel-5.48-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-027-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/filesystem-srpm-macros-3.18-59.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-027-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/filesystem-srpm-macros-3.18-59.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-028-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/fontconfig-devel-2.18.3-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-028-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/fontconfig-devel-2.18.3-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-029-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/fonts-srpm-macros-5.0.0-4.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-029-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/fonts-srpm-macros-5.0.0-4.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-030-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/forge-srpm-macros-0.4.0-5.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-030-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/forge-srpm-macros-0.4.0-5.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-031-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/fpc-srpm-macros-1.3-17.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-031-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/fpc-srpm-macros-1.3-17.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-032-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/freetype-devel-2.14.3-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-032-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/freetype-devel-2.14.3-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-033-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/fribidi-devel-1.0.18-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-033-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/fribidi-devel-1.0.18-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-034-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/gap-srpm-macros-2-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-034-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/gap-srpm-macros-2-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-035-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/gcc-c++-16.2.1-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-035-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/gcc-c++-16.2.1-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-036-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/gcc-plugin-annobin-16.2.1-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-036-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/gcc-plugin-annobin-16.2.1-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-037-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/gdb-minimal-18.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-037-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/gdb-minimal-18.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-038-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/gdk-pixbuf2-devel-2.44.8-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-038-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/gdk-pixbuf2-devel-2.44.8-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-039-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/ghc-srpm-macros-1.10-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-039-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/ghc-srpm-macros-1.10-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-040-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/glib2-devel-2.90.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-040-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/glib2-devel-2.90.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-041-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/glslang-16.3.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-041-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/glslang-16.3.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-042-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/glslang-devel-16.3.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-042-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/glslang-devel-16.3.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-043-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/glycin-devel-2.2.6-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-043-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/glycin-devel-2.2.6-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-044-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/gmock-1.17.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-044-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/gmock-1.17.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-045-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/gnat-srpm-macros-7-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-045-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/gnat-srpm-macros-7-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-046-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/gnome-srpm-macros-1.0-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-046-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/gnome-srpm-macros-1.0-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-047-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/go-srpm-macros-3.8.0-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-047-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/go-srpm-macros-3.8.0-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-048-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/gpgverify-2.2-5.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-048-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/gpgverify-2.2-5.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-049-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/graphite2-devel-1.3.14-22.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-049-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/graphite2-devel-1.3.14-22.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-050-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/gtest-1.17.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-050-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/gtest-1.17.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-051-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/gtest-devel-1.17.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-051-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/gtest-devel-1.17.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-052-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/gtk2-2.24.33-28.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-052-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/gtk2-2.24.33-28.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-053-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/gtk2-devel-2.24.33-28.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-053-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/gtk2-devel-2.24.33-28.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-054-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/gtk3-devel-3.24.52-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-054-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/gtk3-devel-3.24.52-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-055-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/harfbuzz-cairo-15.0.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-055-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/harfbuzz-cairo-15.0.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-056-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/harfbuzz-devel-15.0.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-056-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/harfbuzz-devel-15.0.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-057-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/harfbuzz-gpu-15.0.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-057-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/harfbuzz-gpu-15.0.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-058-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/harfbuzz-raster-15.0.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-058-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/harfbuzz-raster-15.0.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-059-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/harfbuzz-vector-15.0.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-059-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/harfbuzz-vector-15.0.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-060-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/hwdata-devel-0.413-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-060-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/hwdata-devel-0.413-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-061-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/ibus-gtk2-1.5.35-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-061-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/ibus-gtk2-1.5.35-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-062-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/java-srpm-macros-1-9.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-062-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/java-srpm-macros-1-9.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-063-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/kernel-srpm-macros-1.0-30.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-063-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/kernel-srpm-macros-1.0-30.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-064-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/lcms2-devel-2.16-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-064-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/lcms2-devel-2.16-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-065-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libGLEW-2.2.0-13.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-065-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libGLEW-2.2.0-13.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-066-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libX11-devel-1.8.13-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-066-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libX11-devel-1.8.13-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-067-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libXau-devel-1.0.12-5.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-067-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libXau-devel-1.0.12-5.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-068-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libXcomposite-devel-0.4.6-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-068-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libXcomposite-devel-0.4.6-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-069-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libXcursor-devel-1.2.3-5.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-069-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libXcursor-devel-1.2.3-5.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-070-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libXdamage-devel-1.1.6-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-070-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libXdamage-devel-1.1.6-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-071-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libXext-devel-1.3.6-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-071-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libXext-devel-1.3.6-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-072-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libXfixes-devel-6.0.1-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-072-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libXfixes-devel-6.0.1-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-073-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libXft-devel-2.3.8-11.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-073-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libXft-devel-2.3.8-11.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-074-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libXi-devel-1.8.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-074-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libXi-devel-1.8.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-075-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libXinerama-devel-1.1.5-11.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-075-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libXinerama-devel-1.1.5-11.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-076-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libXrandr-devel-1.5.4-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-076-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libXrandr-devel-1.5.4-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-077-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libXrender-devel-0.9.12-5.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-077-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libXrender-devel-0.9.12-5.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-078-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libXtst-devel-1.2.5-5.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-078-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libXtst-devel-1.2.5-5.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-079-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libblkid-devel-2.42.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-079-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libblkid-devel-2.42.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-080-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libcanberra-devel-0.30-52.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-080-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libcanberra-devel-0.30-52.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-081-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libcanberra-gtk2-0.30-52.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-081-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libcanberra-gtk2-0.30-52.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-082-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libcloudproviders-devel-0.4.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-082-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libcloudproviders-devel-0.4.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-083-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libdatrie-devel-0.2.14-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-083-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libdatrie-devel-0.2.14-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-084-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libdav1d-devel-1.5.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-084-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libdav1d-devel-1.5.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-085-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libdisplay-info-devel-0.3.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-085-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libdisplay-info-devel-0.3.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-086-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libdrm-devel-2.4.134-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-086-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libdrm-devel-2.4.134-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-087-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libeis-1.6.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-087-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libeis-1.6.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-088-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libeis-devel-1.6.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-088-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libeis-devel-1.6.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-089-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libepoxy-devel-1.5.10-13.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-089-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libepoxy-devel-1.5.10-13.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-090-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libffi-devel-3.5.2-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-090-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libffi-devel-3.5.2-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-091-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libglvnd-core-devel-1.7.0-10.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-091-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libglvnd-core-devel-1.7.0-10.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-092-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libglvnd-devel-1.7.0-10.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-092-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libglvnd-devel-1.7.0-10.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-093-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libicu-devel-78.3-9.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-093-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libicu-devel-78.3-9.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-094-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libinput-devel-1.32.0-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-094-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libinput-devel-1.32.0-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-095-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libjpeg-turbo-devel-3.1.4.1-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-095-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libjpeg-turbo-devel-3.1.4.1-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-096-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libmount-devel-2.42.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-096-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libmount-devel-2.42.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-097-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libpciaccess-devel-0.16-18.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-097-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libpciaccess-devel-0.16-18.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-098-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libpng-devel-1.6.59-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-098-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libpng-devel-1.6.59-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-099-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/librsvg2-devel-2.63.2-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-099-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/librsvg2-devel-2.63.2-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-100-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libseat-devel-0.9.3-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-100-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libseat-devel-0.9.3-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-101-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libseccomp-devel-2.6.1-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-101-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libseccomp-devel-2.6.1-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-102-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libselinux-devel-3.11-5.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-102-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libselinux-devel-3.11-5.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-103-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libsepol-devel-3.11-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-103-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libsepol-devel-3.11-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-104-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libstdc++-devel-16.2.1-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-104-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libstdc++-devel-16.2.1-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-105-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libthai-devel-0.1.30-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-105-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libthai-devel-0.1.30-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-106-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libuuid-devel-2.42.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-106-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libuuid-devel-2.42.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-107-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libwebp-devel-1.6.0-4.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-107-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libwebp-devel-1.6.0-4.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-108-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libxcb-devel-1.17.0-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-108-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libxcb-devel-1.17.0-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-109-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libxkbcommon-devel-1.13.1-4.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-109-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libxkbcommon-devel-1.13.1-4.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-110-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libxml2-devel-2.15.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-110-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libxml2-devel-2.15.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-111-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libzip-devel-1.12.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-111-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libzip-devel-1.12.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-112-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/linkdupes-0.7.3-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-112-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/linkdupes-0.7.3-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-113-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/lua-5.5.1-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-113-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/lua-5.5.1-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-114-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/lua-devel-5.5.1-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-114-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/lua-devel-5.5.1-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-115-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/lua-rpm-macros-1-18.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-115-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/lua-rpm-macros-1-18.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-116-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/lua-srpm-macros-1-18.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-116-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/lua-srpm-macros-1-18.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-117-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/lzo-devel-2.10-17.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-117-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/lzo-devel-2.10-17.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-118-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/lzo-minilzo-2.10-17.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-118-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/lzo-minilzo-2.10-17.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-119-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/mesa-dri-drivers-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-119-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/mesa-dri-drivers-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-120-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/mesa-filesystem-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-120-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/mesa-filesystem-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-121-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/mesa-libEGL-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-121-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/mesa-libEGL-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-122-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/mesa-libGL-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-122-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/mesa-libGL-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-123-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/mesa-libgbm-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-123-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/mesa-libgbm-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-124-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/mesa-libgbm-devel-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-124-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/mesa-libgbm-devel-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-125-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/mesa-vulkan-drivers-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-125-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/mesa-vulkan-drivers-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-126-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/meson-1.12.1-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-126-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/meson-1.12.1-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-127-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/meson-srpm-macros-1.12.1-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-127-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/meson-srpm-macros-1.12.1-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-128-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/muParser-2.3.5-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-128-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/muParser-2.3.5-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-129-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/muParser-devel-2.3.5-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-129-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/muParser-devel-2.3.5-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-130-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/ncurses-c++-libs-6.6-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-130-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/ncurses-c++-libs-6.6-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-131-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/ncurses-devel-6.6-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-131-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/ncurses-devel-6.6-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-132-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/ninja-build-1.13.2-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-132-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/ninja-build-1.13.2-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-133-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/ocaml-srpm-macros-11-4.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-133-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/ocaml-srpm-macros-11-4.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-134-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/openblas-srpm-macros-2-22.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-134-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/openblas-srpm-macros-2-22.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-135-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/package-notes-srpm-macros-0.20-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-135-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/package-notes-srpm-macros-0.20-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-136-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/pango-devel-1.58.2-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-136-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/pango-devel-1.58.2-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-137-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/pcre2-devel-10.49-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-137-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/pcre2-devel-10.49-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-138-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/perl-srpm-macros-1-65.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-138-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/perl-srpm-macros-1-65.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-139-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/pixman-devel-0.46.2-4.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-139-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/pixman-devel-0.46.2-4.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-140-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/pugixml-devel-1.16-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-140-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/pugixml-devel-1.16-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-141-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/pyproject-srpm-macros-1.24.0-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-141-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/pyproject-srpm-macros-1.24.0-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-142-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/python-srpm-macros-3.15-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-142-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/python-srpm-macros-3.15-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-143-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/qt5-srpm-macros-5.15.18-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-143-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/qt5-srpm-macros-5.15.18-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-144-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/qt6-srpm-macros-6.11.2-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-144-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/qt6-srpm-macros-6.11.2-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-145-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/re2-devel-20251105-19.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-145-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/re2-devel-20251105-19.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-146-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/readline-devel-8.3-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-146-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/readline-devel-8.3-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-147-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/redhat-rpm-config-345-5.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-147-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/redhat-rpm-config-345-5.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-148-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/rhash-1.4.5-5.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-148-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/rhash-1.4.5-5.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-149-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/rpm-build-6.1.0-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-149-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/rpm-build-6.1.0-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-150-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/rust-srpm-macros-28.5-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-150-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/rust-srpm-macros-28.5-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-151-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/sysprof-capture-devel-51.0-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-151-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/sysprof-capture-devel-51.0-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-152-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/systemd-devel-262.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-152-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/systemd-devel-262.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-153-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/systemd-rpm-macros-262.1-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-153-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/systemd-rpm-macros-262.1-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-154-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/tomlplusplus-3.4.0-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-154-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/tomlplusplus-3.4.0-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-155-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/tomlplusplus-devel-3.4.0-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-155-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/tomlplusplus-devel-3.4.0-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-156-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/tree-sitter-srpm-macros-0.4.6-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-156-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/tree-sitter-srpm-macros-0.4.6-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-157-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/wayland-devel-1.26.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-157-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/wayland-devel-1.26.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-158-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/wayland-protocols-devel-1.50-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-158-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/wayland-protocols-devel-1.50-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-159-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/xcb-util-errors-devel-1.0.1-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-159-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/xcb-util-errors-devel-1.0.1-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-160-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/xcb-util-wm-devel-0.4.2-10.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-160-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/xcb-util-wm-devel-0.4.2-10.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-161-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/xorg-x11-proto-devel-2025.1-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-161-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/xorg-x11-proto-devel-2025.1-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-162-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/xz-devel-5.8.3-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-162-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/xz-devel-5.8.3-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-163-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/zig-srpm-macros-1-9.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-163-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/zig-srpm-macros-1-9.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-164-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/zlib-ng-compat-devel-2.3.3-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-164-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/zlib-ng-compat-devel-2.3.3-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "missing-key-control",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/empty-keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/mesa-vulkan-drivers-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 1
+    },
+    {
+      "name": "tampered-package-control",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/tampered.rpm"
+      ],
+      "exit_code": 1
+    },
+    {
+      "name": "installed-after",
+      "command": [
+        "rpm",
+        "-qa",
+        "--qf",
+        "%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "packages": [
+    {
+      "filename": "R-srpm-macros-1.3.7-3.fc45.noarch.rpm",
+      "bytes": 11417,
+      "sha256": "e80b03dec2ffc525d92e8700ca9667d143db818117e99623db0a310067f9795a",
+      "nevra": "R-srpm-macros-1.3.7-3.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "abseil-cpp-devel-20260526.0-3.fc45.x86_64.rpm",
+      "bytes": 947175,
+      "sha256": "035a4b3ded6e9064cd5a0c423bf72cec3ff9d5066fc5fc75065a769b658220b1",
+      "nevra": "abseil-cpp-devel-20260526.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0 AND LicenseRef-Fedora-Public-Domain",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "abseil-cpp-testing-20260526.0-3.fc45.x86_64.rpm",
+      "bytes": 182249,
+      "sha256": "26863b11b1d16c88911aa06706e9fc56db9eb32ace216907e030fa0923bf98ec",
+      "nevra": "abseil-cpp-testing-20260526.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0 AND LicenseRef-Fedora-Public-Domain",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "add-determinism-0.7.3-3.fc45.x86_64.rpm",
+      "bytes": 865958,
+      "sha256": "2494613e28f0f4410bd373ff25a8c84e3205e4bf6dea1bbff2e8d23c56c97670",
+      "nevra": "add-determinism-0.7.3-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later AND MIT AND Unicode-DFS-2016 AND (0BSD OR MIT OR Apache-2.0) AND (Apache-2.0 OR MIT) AND (Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT) AND (BSD-2-Clause OR Apache-2.0 OR MIT) AND (MIT OR Zlib OR Apache-2.0) AND (Unlicense OR MIT)",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "annobin-docs-13.28-1.fc45.noarch.rpm",
+      "bytes": 89428,
+      "sha256": "b3bf6e049c5caa5e0192f7a7016273d0639f3dedab9d10c22cbb667ed78383c9",
+      "nevra": "annobin-docs-13.28-1.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later AND LGPL-2.0-or-later AND (GPL-2.0-or-later WITH GCC-exception-2.0) AND (LGPL-2.0-or-later WITH GCC-exception-2.0) AND GFDL-1.3-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "annobin-plugin-gcc-13.28-1.fc45.x86_64.rpm",
+      "bytes": 711938,
+      "sha256": "2e3db7044765752421c96c8cf11eaad436583d9a727f8869b3124d247f7614d5",
+      "nevra": "annobin-plugin-gcc-13.28-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later AND LGPL-2.0-or-later AND (GPL-2.0-or-later WITH GCC-exception-2.0) AND (LGPL-2.0-or-later WITH GCC-exception-2.0) AND GFDL-1.3-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "ansible-srpm-macros-1-22.fc45.noarch.rpm",
+      "bytes": 20318,
+      "sha256": "baf636ef0b5545d5551c121bcdaadb724d0d7183543ebc0f159f904ac6927bce",
+      "nevra": "ansible-srpm-macros-1-22.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "at-spi2-atk-devel-2.62.1-1.fc45.x86_64.rpm",
+      "bytes": 12108,
+      "sha256": "9b2ede5961cdfddd8b2d25cebfd4a4cd8d112d620bde9ecbb9414c6efcf1495b",
+      "nevra": "at-spi2-atk-devel-2.62.1-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "at-spi2-core-devel-2.62.1-1.fc45.x86_64.rpm",
+      "bytes": 371240,
+      "sha256": "a0184200ff543329464adffc0df6b665f03911512896196677beae032f50e5ed",
+      "nevra": "at-spi2-core-devel-2.62.1-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "atk-devel-2.62.1-1.fc45.x86_64.rpm",
+      "bytes": 460034,
+      "sha256": "d2bc651621f2460bbae4bc4602a835411bb46780f414c35b0a6f6821e28726cd",
+      "nevra": "atk-devel-2.62.1-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "brotli-1.2.1-1.fc45.x86_64.rpm",
+      "bytes": 24637,
+      "sha256": "bd7b50ca397f5e1bc5645091ea102d3cc6ac5724428dad71abdcbcf7240428a8",
+      "nevra": "brotli-1.2.1-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "brotli-devel-1.2.1-1.fc45.x86_64.rpm",
+      "bytes": 35464,
+      "sha256": "9407679b559ef12bd44008071a94423ec89be4032f9e9b6babe84bc93b3029a9",
+      "nevra": "brotli-devel-1.2.1-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "build-reproducibility-srpm-macros-0.7.3-3.fc45.noarch.rpm",
+      "bytes": 11093,
+      "sha256": "9476c29390c8c5c41507382bfc4ad65b263cc7ac52a7e6b4773e5969a72f455e",
+      "nevra": "build-reproducibility-srpm-macros-0.7.3-3.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "bzip2-devel-1.0.8-24.fc45.x86_64.rpm",
+      "bytes": 218673,
+      "sha256": "4e37ddc32e16d12a61e7e7f5dc54740edc327f5434c9dd30af9ec766ddcd71dd",
+      "nevra": "bzip2-devel-1.0.8-24.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-4-Clause",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "cairo-devel-1.18.6-1.fc45.x86_64.rpm",
+      "bytes": 196326,
+      "sha256": "093ba6659769160e40468051b0ef77ce7c1e77cd4c0edaae4d73bd16a08dd97c",
+      "nevra": "cairo-devel-1.18.6-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-only OR MPL-1.1",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "cairo-gobject-devel-1.18.6-1.fc45.x86_64.rpm",
+      "bytes": 11159,
+      "sha256": "bfef33c1090df19f895903e20270fdf0397809de1df5182706e87f43e90d1710",
+      "nevra": "cairo-gobject-devel-1.18.6-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-only OR MPL-1.1",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "cmake-4.3.0-7.fc45.x86_64.rpm",
+      "bytes": 15109160,
+      "sha256": "062773590bba065fb4443cb4377b9339b3c60b3d06d6e24528416cf43cf7cfdf",
+      "nevra": "cmake-4.3.0-7.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause AND MIT-open-group AND Zlib AND Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "cmake-data-4.3.0-7.fc45.noarch.rpm",
+      "bytes": 2810569,
+      "sha256": "7cfd8f3cd9496fcd7f1475eb92e39fdb432d50205a11af51aa3c2e960c486020",
+      "nevra": "cmake-data-4.3.0-7.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause AND MIT-open-group AND Zlib AND Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "cmake-rpm-macros-4.3.0-7.fc45.noarch.rpm",
+      "bytes": 14013,
+      "sha256": "cdf1b6feff347799d0b0ac09ee6fb3f09f520a30406beaaf7a12e49251398e04",
+      "nevra": "cmake-rpm-macros-4.3.0-7.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause AND MIT-open-group AND Zlib AND Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "cmake-srpm-macros-4.3.0-7.fc45.noarch.rpm",
+      "bytes": 10548,
+      "sha256": "754ced4b57ee135ee3cb45b160c1a45e25b820a4ac3d1db23e96ba8502ba0dfb",
+      "nevra": "cmake-srpm-macros-4.3.0-7.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause AND MIT-open-group AND Zlib AND Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "dbus-devel-1.16.4-2.fc45.x86_64.rpm",
+      "bytes": 40172,
+      "sha256": "5e12b76b3b0c13d37a55672e84bec981665e158b4d6105e55bce5b689dbb302b",
+      "nevra": "dbus-devel-1:1.16.4-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "(AFL-2.1 OR GPL-2.0-or-later) AND GPL-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "debugedit-5.4-1.fc45.x86_64.rpm",
+      "bytes": 90050,
+      "sha256": "23763de0365f296372531acc67c3a585c383fd95f01bdceacff8abb8ccf6b5b6",
+      "nevra": "debugedit-5.4-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later AND GPL-2.0-or-later AND LGPL-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "dwz-0.17-3.fc45.x86_64.rpm",
+      "bytes": 142550,
+      "sha256": "cbd5a8e6f1a072976de8537e155fcdfa4873099edb145c89819e237164563ec2",
+      "nevra": "dwz-0.17-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later AND (GPL-3.0-or-later WITH GCC-exception-3.1) AND GPL-2.0-or-later AND (GPL-2.0-or-later WITH GCC-exception-2.0) AND LGPL-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "efi-srpm-macros-6-9.fc45.noarch.rpm",
+      "bytes": 21960,
+      "sha256": "67a5cc6d095a5ba4073f558f5ce916c594ef7ca046f8bbc1c58563de2bb60bdb",
+      "nevra": "efi-srpm-macros-6-9.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "elfutils-0.197-1.fc45.x86_64.rpm",
+      "bytes": 640402,
+      "sha256": "46c498fc255dada98dfb250cfde0cd9c46b0e3e3855df643879db3b04ed23c64",
+      "nevra": "elfutils-0.197-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later AND (GPL-2.0-or-later OR LGPL-3.0-or-later) AND GFDL-1.3-no-invariants-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "erlang-srpm-macros-0.4.2-1.fc45.noarch.rpm",
+      "bytes": 10269,
+      "sha256": "2741c6b8b48512d305202307aaa0a6d739d16bc30df2ec63878c2bc62918c1a9",
+      "nevra": "erlang-srpm-macros-0.4.2-1.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "file-devel-5.48-3.fc45.x86_64.rpm",
+      "bytes": 16690,
+      "sha256": "dfdc7f9789fc1b5d75639c7e01104cbe82857d00bde887d8e5b0510291a23d07",
+      "nevra": "file-devel-5.48-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-2-Clause-Darwin AND BSD-2-Clause",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "filesystem-srpm-macros-3.18-59.fc45.noarch.rpm",
+      "bytes": 27043,
+      "sha256": "997bf36654c74a67552c8fbbbf985178e9688fcf4d141086b99edfb80a198d2a",
+      "nevra": "filesystem-srpm-macros-3.18-59.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "LicenseRef-Fedora-Public-Domain",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "fontconfig-devel-2.18.3-2.fc45.x86_64.rpm",
+      "bytes": 198871,
+      "sha256": "072d10d913e38a5ad3f61c1912655b09415ba354cd0587165215ae5faca310e6",
+      "nevra": "fontconfig-devel-2.18.3-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "HPND AND LicenseRef-Fedora-Public-Domain AND Unicode-DFS-2016",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "fonts-srpm-macros-5.0.0-4.fc45.noarch.rpm",
+      "bytes": 27805,
+      "sha256": "db07eef2d7b9c8f3e8518d8212b7ab0198a088d314b538cb125e17cd30d282af",
+      "nevra": "fonts-srpm-macros-1:5.0.0-4.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "forge-srpm-macros-0.4.0-5.fc45.noarch.rpm",
+      "bytes": 20202,
+      "sha256": "cf58d9dbf2e13c11b5004c19353f30c4f6860687ac43953fcdea7ccafb2535b3",
+      "nevra": "forge-srpm-macros-0.4.0-5.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "GPL-1.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "fpc-srpm-macros-1.3-17.fc45.noarch.rpm",
+      "bytes": 7949,
+      "sha256": "9ed9a5534637cf37a8b59dcc6641fa93fca6af469dca15c9be2025912856902c",
+      "nevra": "fpc-srpm-macros-1.3-17.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "freetype-devel-2.14.3-3.fc45.x86_64.rpm",
+      "bytes": 1091811,
+      "sha256": "47cd872d0dcce6b32f57ef649d25facfff0980725e5364c25950fd68e1c7ea76",
+      "nevra": "freetype-devel-2.14.3-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "(FTL OR GPL-2.0-or-later) AND BSD-3-Clause AND MIT AND MIT-Modern-Variant AND LicenseRef-Fedora-Public-Domain AND Zlib",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "fribidi-devel-1.0.18-1.fc45.x86_64.rpm",
+      "bytes": 29781,
+      "sha256": "7febf72e2b24c48320175d58f66b1f271f6e3d55f388fdb4bedc7cc9cbdac8ce",
+      "nevra": "fribidi-devel-1.0.18-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later AND Unicode-DFS-2016",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gap-srpm-macros-2-3.fc45.noarch.rpm",
+      "bytes": 9531,
+      "sha256": "d9b70c2ee43b4a902fff11a5f132796f164c229b0597067b76946110c662d7c4",
+      "nevra": "gap-srpm-macros-2-3.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gcc-c++-16.2.1-3.fc45.x86_64.rpm",
+      "bytes": 18147803,
+      "sha256": "0292692244413b8242fc62ccd21bcc8b9857a7ff0b5fe2873f8f9ef3187dfa9b",
+      "nevra": "gcc-c++-16.2.1-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later AND LGPL-3.0-or-later AND (GPL-3.0-or-later WITH GCC-exception-3.1) AND (GPL-3.0-or-later WITH Texinfo-exception) AND (LGPL-2.1-or-later WITH GCC-exception-2.0) AND (GPL-2.0-or-later WITH GCC-exception-2.0) AND (GPL-2.0-or-later WITH GNU-compiler-exception) AND BSL-1.0 AND GFDL-1.3-or-later AND Linux-man-pages-copyleft-2-para AND SunPro AND BSD-1-Clause AND BSD-2-Clause AND BSD-2-Clause-Views AND BSD-3-Clause AND BSD-4-Clause AND BSD-Source-Code AND Zlib AND MIT AND Apache-2.0 AND (Apache-2.0 WITH LLVM-Exception) AND ZPL-2.1 AND ISC AND LicenseRef-Fedora-Public-Domain AND HP-1986 AND curl AND Martin-Birgmeier AND HPND-Markus-Kuhn AND dtoa AND SMLNJ AND AMD-newlib AND OAR AND HPND-merchantability-variant AND HPND-Intel",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gcc-plugin-annobin-16.2.1-3.fc45.x86_64.rpm",
+      "bytes": 64182,
+      "sha256": "f21b305b26f4045fca92d023d5f379d9e65c3da264a08f57a4d6677cebc999b8",
+      "nevra": "gcc-plugin-annobin-16.2.1-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later AND LGPL-3.0-or-later AND (GPL-3.0-or-later WITH GCC-exception-3.1) AND (GPL-3.0-or-later WITH Texinfo-exception) AND (LGPL-2.1-or-later WITH GCC-exception-2.0) AND (GPL-2.0-or-later WITH GCC-exception-2.0) AND (GPL-2.0-or-later WITH GNU-compiler-exception) AND BSL-1.0 AND GFDL-1.3-or-later AND Linux-man-pages-copyleft-2-para AND SunPro AND BSD-1-Clause AND BSD-2-Clause AND BSD-2-Clause-Views AND BSD-3-Clause AND BSD-4-Clause AND BSD-Source-Code AND Zlib AND MIT AND Apache-2.0 AND (Apache-2.0 WITH LLVM-Exception) AND ZPL-2.1 AND ISC AND LicenseRef-Fedora-Public-Domain AND HP-1986 AND curl AND Martin-Birgmeier AND HPND-Markus-Kuhn AND dtoa AND SMLNJ AND AMD-newlib AND OAR AND HPND-merchantability-variant AND HPND-Intel",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gdb-minimal-18.1-1.fc45.x86_64.rpm",
+      "bytes": 5036438,
+      "sha256": "7daacb46e6bb25bddc7a90f0d6e675420b3bf1b49d818ad6ffeaaca6f75602b9",
+      "nevra": "gdb-minimal-18.1-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later AND BSD-3-Clause AND FSFAP AND LGPL-2.1-or-later AND GPL-2.0-or-later AND LGPL-2.0-or-later AND LicenseRef-Fedora-Public-Domain AND GFDL-1.3-or-later AND LGPL-2.0-or-later WITH GCC-exception-2.0 AND GPL-3.0-or-later WITH GCC-exception-3.1 AND GPL-2.0-or-later WITH GNU-compiler-exception AND MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gdk-pixbuf2-devel-2.44.8-3.fc45.x86_64.rpm",
+      "bytes": 379009,
+      "sha256": "8c969a7c2c8a17797e175451da50d5efa45ef88caa2d9e35f08ece22729a1549",
+      "nevra": "gdk-pixbuf2-devel-2.44.8-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "ghc-srpm-macros-1.10-2.fc45.noarch.rpm",
+      "bytes": 8697,
+      "sha256": "ba32e62acc048c6686d47157d34886fa5e5d6d535b4c5763cf84643f79e70d56",
+      "nevra": "ghc-srpm-macros-1.10-2.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "GPL-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "glib2-devel-2.90.1-1.fc45.x86_64.rpm",
+      "bytes": 1584172,
+      "sha256": "ff86c635832ee3f6e80ed04d681fed4251459da40abad43329826aceae3d990e",
+      "nevra": "glib2-devel-2.90.1-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "glslang-16.3.0-2.fc45.x86_64.rpm",
+      "bytes": 1226203,
+      "sha256": "1c6480a9216ca261f00154120ad6ba1dad58744893a450607accea0199c1dfa6",
+      "nevra": "glslang-16.3.0-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-2-Clause AND BSD-3-Clause AND GPL-3.0-or-later AND Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "glslang-devel-16.3.0-2.fc45.x86_64.rpm",
+      "bytes": 22398479,
+      "sha256": "78a3224193e739524c73811733c5687e11c0efc73d02a4c2d6f52591a74a14b9",
+      "nevra": "glslang-devel-16.3.0-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-2-Clause AND BSD-3-Clause AND GPL-3.0-or-later AND Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "glycin-devel-2.2.6-1.fc45.x86_64.rpm",
+      "bytes": 28353,
+      "sha256": "5b757fdcfd3d5e114345c0576cc46761fddb39a013d9c1ef98521210a76a3531",
+      "nevra": "glycin-devel-2.2.6-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "(MPL-2.0 OR LGPL-2.1-or-later) AND Apache-2.0 WITH LLVM-exception AND BSD-3-Clause AND CC0-1.0 AND GPL-3.0-or-later AND IJG AND ISC AND MIT AND Unicode-3.0 AND Unicode-DFS-2016 AND (0BSD OR MIT OR Apache-2.0) AND (Apache-2.0 OR MIT) AND (Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT) AND (BSD-2-Clause OR Apache-2.0 OR MIT) AND (BSD-3-Clause OR Apache-2.0) AND (MIT OR Apache-2.0 OR Zlib) AND (Unlicense OR MIT)",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gmock-1.17.0-3.fc45.x86_64.rpm",
+      "bytes": 68146,
+      "sha256": "96d34e8513476ba04fdd8249b0e63f00bdbe9f260b588253625e59dbcc2a900a",
+      "nevra": "gmock-1.17.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause and Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gnat-srpm-macros-7-3.fc45.noarch.rpm",
+      "bytes": 8775,
+      "sha256": "1661266fa47f369bbe65321cd25b29a20b45c9f8313105f7a1d0d3c791e4fd55",
+      "nevra": "gnat-srpm-macros-7-3.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "FSFAP",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gnome-srpm-macros-1.0-2.fc45.noarch.rpm",
+      "bytes": 9040,
+      "sha256": "6961d447327ee77c549850822aff95e30a9298eb896ccc41bbc9bc5050031898",
+      "nevra": "gnome-srpm-macros-1.0-2.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "Zlib",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "go-srpm-macros-3.8.0-3.fc45.noarch.rpm",
+      "bytes": 28474,
+      "sha256": "bb5d4a1f2c6055f6d73ed184f59b6cc35a9294aa2b035437ecc4cfacb476104f",
+      "nevra": "go-srpm-macros-3.8.0-3.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gpgverify-2.2-5.fc45.noarch.rpm",
+      "bytes": 11582,
+      "sha256": "89c00ade3314367729c7e4ae61688a0b290e08ee468e53c0d4afc6a5b789037c",
+      "nevra": "gpgverify-2.2-5.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "Boehm-GC",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "graphite2-devel-1.3.14-22.fc45.x86_64.rpm",
+      "bytes": 20936,
+      "sha256": "0ca603f653cb1f5c8ff554b5cb644fb9fba2ab0d4143c1e9ecfe5f2b81a5c820",
+      "nevra": "graphite2-devel-1.3.14-22.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later OR MPL-2.0 OR GPL-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gtest-1.17.0-3.fc45.x86_64.rpm",
+      "bytes": 196532,
+      "sha256": "9ff56a56a8c8d82b356b7f212e7cb5d9deb58f1f09afcda1c2ec48f86c9cbd1a",
+      "nevra": "gtest-1.17.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause and Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gtest-devel-1.17.0-3.fc45.x86_64.rpm",
+      "bytes": 263371,
+      "sha256": "9847d0b4c107ef85bb597eba1148387d50fb2df1787a1acb3d26f28ba420906c",
+      "nevra": "gtest-devel-1.17.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause and Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gtk2-2.24.33-28.fc45.x86_64.rpm",
+      "bytes": 3595298,
+      "sha256": "a1f1830a24caca77602d3218c7874d830f8c84e0ecddc2426e34e2a84bd0e691",
+      "nevra": "gtk2-2.24.33-28.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LicenseRef-Callaway-LGPLv2+",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gtk2-devel-2.24.33-28.fc45.x86_64.rpm",
+      "bytes": 2911203,
+      "sha256": "a8f5861a2b6bf783e68c89e3649e8f3ce068829bce5fe70beb8a19d748ca4977",
+      "nevra": "gtk2-devel-2.24.33-28.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LicenseRef-Callaway-LGPLv2+",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gtk3-devel-3.24.52-6.fc45.x86_64.rpm",
+      "bytes": 4522793,
+      "sha256": "e77ab295d7f1a80235576d4f97040996081f1ae9e86288866ba9bbc1bba7e977",
+      "nevra": "gtk3-devel-3.24.52-6.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "harfbuzz-cairo-15.0.0-2.fc45.x86_64.rpm",
+      "bytes": 31512,
+      "sha256": "3fb2158736e431b09d144c82f73334abb0153e55f2d2b27d1d8b3fe77edf0da8",
+      "nevra": "harfbuzz-cairo-15.0.0-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-Modern-Variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "harfbuzz-devel-15.0.0-2.fc45.x86_64.rpm",
+      "bytes": 664273,
+      "sha256": "120ccf33fceadd6017674e9869023801457b7283e5273e304c89141fa8047cc9",
+      "nevra": "harfbuzz-devel-15.0.0-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-Modern-Variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "harfbuzz-gpu-15.0.0-2.fc45.x86_64.rpm",
+      "bytes": 53912,
+      "sha256": "7cbfa894256567e6218ba499c7517b01e77410bff5e78022ed349a423934cd67",
+      "nevra": "harfbuzz-gpu-15.0.0-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-Modern-Variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "harfbuzz-raster-15.0.0-2.fc45.x86_64.rpm",
+      "bytes": 68941,
+      "sha256": "8552843d9320ec909ac01ae859a6a9a398f4bf06fd989ccd74462f25bb88432c",
+      "nevra": "harfbuzz-raster-15.0.0-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-Modern-Variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "harfbuzz-vector-15.0.0-2.fc45.x86_64.rpm",
+      "bytes": 61355,
+      "sha256": "69ed1124667e4ef35d96d835a98845b74a1526309e08ff7acbd2da692b7e7168",
+      "nevra": "harfbuzz-vector-15.0.0-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-Modern-Variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "hwdata-devel-0.413-1.fc45.noarch.rpm",
+      "bytes": 9151,
+      "sha256": "7e10e5dbfcb4a1be9feb912cbc036dc6f5dbaea6e698b71d42343d0da7dc2cdc",
+      "nevra": "hwdata-devel-0.413-1.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "GPL-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "ibus-gtk2-1.5.35-2.fc45.x86_64.rpm",
+      "bytes": 33767,
+      "sha256": "3ad649def6455d288f7dd877487cf7ef9d9f5638b40e526c0347451984319765",
+      "nevra": "ibus-gtk2-1.5.35-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "java-srpm-macros-1-9.fc45.noarch.rpm",
+      "bytes": 8483,
+      "sha256": "899bfeb15f3379579b581e5714071db5a03f49faaad272f9ce02ef3799b418d0",
+      "nevra": "java-srpm-macros-1-9.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "MIT-0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "kernel-srpm-macros-1.0-30.fc45.noarch.rpm",
+      "bytes": 8489,
+      "sha256": "5a02e601fc156f752acf7f4636f690de136196f5a737a5a7a6c21454929ec351",
+      "nevra": "kernel-srpm-macros-1.0-30.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "lcms2-devel-2.16-8.fc45.x86_64.rpm",
+      "bytes": 32444,
+      "sha256": "ad6d0fa7adfde5f855c9630540654f64bde7ec29fe2496efefd853e9e93f5ebb",
+      "nevra": "lcms2-devel-2.16-8.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND GPL-3.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libGLEW-2.2.0-13.fc45.x86_64.rpm",
+      "bytes": 175312,
+      "sha256": "1c26a704d9cf837384faa2eeeda2f690b647b5338ac54b2848e87fe8bef90487",
+      "nevra": "libGLEW-2.2.0-13.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause AND MIT AND MIT-Khronos-old",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libX11-devel-1.8.13-3.fc45.x86_64.rpm",
+      "bytes": 1110416,
+      "sha256": "78a5c21fba8a8d0303c87c716c416c6e6717d9fd3ed7577582d4f439e08ec7a4",
+      "nevra": "libX11-devel-1.8.13-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND X11",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libXau-devel-1.0.12-5.fc45.x86_64.rpm",
+      "bytes": 14212,
+      "sha256": "e4ba9e2efb3d1b177f5cc2fe5cb53acd971046cfd5e9c29c82d17ce5dd635048",
+      "nevra": "libXau-devel-1.0.12-5.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-open-group",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libXcomposite-devel-0.4.6-8.fc45.x86_64.rpm",
+      "bytes": 16138,
+      "sha256": "7f961e282836a29c76cdf19fc73407706a0f3852b76c58f72e66166054126dfa",
+      "nevra": "libXcomposite-devel-0.4.6-8.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND HPND-sell-variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libXcursor-devel-1.2.3-5.fc45.x86_64.rpm",
+      "bytes": 40342,
+      "sha256": "29215a11b7cd05638d80ebbabd3f1c465d1d1164ae9730385e76f430aa7a1ddc",
+      "nevra": "libXcursor-devel-1.2.3-5.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "HPND-sell-variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libXdamage-devel-1.1.6-8.fc45.x86_64.rpm",
+      "bytes": 9560,
+      "sha256": "8a36babe91d29f23f782d982c0d272a7f7d25b7fcc23c754d32a93760a2a083d",
+      "nevra": "libXdamage-devel-1.1.6-8.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "HPND-sell-variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libXext-devel-1.3.6-6.fc45.x86_64.rpm",
+      "bytes": 90485,
+      "sha256": "d18b419cec89d6affe5478d3d7308acd4077b5dafd9b272f145d163744b39fbe",
+      "nevra": "libXext-devel-1.3.6-6.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-open-group AND X11 AND HPND AND HPND-sell-variant AND SMLNJ AND MIT AND ISC AND HPND-doc AND HPND-doc-sell",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libXfixes-devel-6.0.1-8.fc45.x86_64.rpm",
+      "bytes": 12726,
+      "sha256": "a7f52db07ff4823bdb4aaf8faf8a1624894bef77ac371e5adbc14bc7e149abf0",
+      "nevra": "libXfixes-devel-6.0.1-8.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND HPND-sell-variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libXft-devel-2.3.8-11.fc45.x86_64.rpm",
+      "bytes": 50423,
+      "sha256": "e6d5d36f90faa5550593fe4f2d2e966125c4b6cf497e4c22e6fe975f9a5e1e0d",
+      "nevra": "libXft-devel-2.3.8-11.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "HPND-sell-variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libXi-devel-1.8.4-1.fc45.x86_64.rpm",
+      "bytes": 124321,
+      "sha256": "a1e21c05772a647cca77303fc9675cbaec36ae9baaa93cddbd66663d33316596",
+      "nevra": "libXi-devel-1.8.4-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-open-group AND SMLNJ AND MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libXinerama-devel-1.1.5-11.fc45.x86_64.rpm",
+      "bytes": 13453,
+      "sha256": "ee96e0a5ac6c07a047b4a9580b1b67d67d97a178bef5a568750717771a118303",
+      "nevra": "libXinerama-devel-1.1.5-11.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND MIT-open-group AND X11",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libXrandr-devel-1.5.4-8.fc45.x86_64.rpm",
+      "bytes": 19691,
+      "sha256": "649fac9ea2e6850af9c86899d2f1781b0ea352b9d374d253ff6f4b1d9a868ad7",
+      "nevra": "libXrandr-devel-1.5.4-8.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "HPND-sell-variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libXrender-devel-0.9.12-5.fc45.x86_64.rpm",
+      "bytes": 19349,
+      "sha256": "ac903ad3aba24ff968f83dc0921ed8158ef87fca546cd93a159129e910612f43",
+      "nevra": "libXrender-devel-0.9.12-5.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "HPND-sell-variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libXtst-devel-1.2.5-5.fc45.x86_64.rpm",
+      "bytes": 16147,
+      "sha256": "e68f119677eb43aec098f38488248e0f5eef3e4214362f0612b64724c4d64b4f",
+      "nevra": "libXtst-devel-1.2.5-5.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-open-group AND HPND-sell-variant AND X11 AND HPND-doc AND HPND-doc-sell",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libblkid-devel-2.42.4-1.fc45.x86_64.rpm",
+      "bytes": 24968,
+      "sha256": "da3968f0bcd02fdfa7380302a19e3cb660e044c1da5766e4f7f1a5826e6830eb",
+      "nevra": "libblkid-devel-2.42.4-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libcanberra-devel-0.30-52.fc45.x86_64.rpm",
+      "bytes": 31611,
+      "sha256": "834dbef2eb6a17770417664e5f0133b90aab76867c68db72453bc650cb77e4ef",
+      "nevra": "libcanberra-devel-0.30-52.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libcanberra-gtk2-0.30-52.fc45.x86_64.rpm",
+      "bytes": 25808,
+      "sha256": "6e46d52754bafdc4ba8e165a7fb85c95bc8373308e7e6d68e14b7d975de899e3",
+      "nevra": "libcanberra-gtk2-0.30-52.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libcloudproviders-devel-0.4.1-1.fc45.x86_64.rpm",
+      "bytes": 125597,
+      "sha256": "3b7bab684cf50073a84709b861b300b795052d1b783d0c03d9f723a44a465563",
+      "nevra": "libcloudproviders-devel-0.4.1-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-3.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libdatrie-devel-0.2.14-3.fc45.x86_64.rpm",
+      "bytes": 92538,
+      "sha256": "c6e057fda6dbbe7e314a042c808be643c906eef26a69878558be67c6ee80d92b",
+      "nevra": "libdatrie-devel-0.2.14-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libdav1d-devel-1.5.4-1.fc45.x86_64.rpm",
+      "bytes": 19701,
+      "sha256": "e9ddb78ec4f971d5f002487991512c87ac9c4d7485d88cc2f3014d58f9049557",
+      "nevra": "libdav1d-devel-1.5.4-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-2-Clause AND ISC",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libdisplay-info-devel-0.3.0-2.fc45.x86_64.rpm",
+      "bytes": 30945,
+      "sha256": "915bc02c522d5945d961e5043d976ea8b26951994a3fd352204f97fd7daba24f",
+      "nevra": "libdisplay-info-devel-0.3.0-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libdrm-devel-2.4.134-2.fc45.x86_64.rpm",
+      "bytes": 192185,
+      "sha256": "dbf5dc81b086a4fb6c96c73535620f19f6da4a51b351746e17e14bb1f6038e36",
+      "nevra": "libdrm-devel-2.4.134-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libeis-1.6.0-3.fc45.x86_64.rpm",
+      "bytes": 59677,
+      "sha256": "44ccf3c6f99af7f0aa9522fe2080164754644a74615612ea67e3b82ca8ac9e97",
+      "nevra": "libeis-1.6.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libeis-devel-1.6.0-3.fc45.x86_64.rpm",
+      "bytes": 20732,
+      "sha256": "0a533bfb23ffc9ac33419ddc8c2786b807f2559858e7ce9e58ca9874f1e5675d",
+      "nevra": "libeis-devel-1.6.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libepoxy-devel-1.5.10-13.fc45.x86_64.rpm",
+      "bytes": 136042,
+      "sha256": "15b493b8fd639014108ba94a4e53a53dacb4648277887d23154ef8cdae74075b",
+      "nevra": "libepoxy-devel-1.5.10-13.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libffi-devel-3.5.2-3.fc45.x86_64.rpm",
+      "bytes": 30221,
+      "sha256": "6219efdc76ca35e0150d79f5f29b445c47f6bcc8d2f396c6b4e0b53cfc321c6e",
+      "nevra": "libffi-devel-3.5.2-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND CC-PDDC AND (GPL-3.0-or-later WITH Texinfo-exception)",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libglvnd-core-devel-1.7.0-10.fc45.x86_64.rpm",
+      "bytes": 17528,
+      "sha256": "b07312160cc0c894ddd870ecadf1aba88a37338fe3bdcae81d37146377ed1869",
+      "nevra": "libglvnd-core-devel-1:1.7.0-10.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-feh AND MIT-Modern-Variant AND BSD-1-Clause AND BSD-3-Clause AND GPL-3.0-or-later WITH Autoconf-exception-macro",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libglvnd-devel-1.7.0-10.fc45.x86_64.rpm",
+      "bytes": 165873,
+      "sha256": "622fca5b44d3296ae0e42a146ef71db878ae033fe68f995057fc291746bc28f6",
+      "nevra": "libglvnd-devel-1:1.7.0-10.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-feh AND MIT-Modern-Variant AND BSD-1-Clause AND BSD-3-Clause AND GPL-3.0-or-later WITH Autoconf-exception-macro",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libicu-devel-78.3-9.fc45.x86_64.rpm",
+      "bytes": 829407,
+      "sha256": "dce4e38f2a72e6a05ef7c93f5dba4907930fa7233b8070563a7bf9247893fa4b",
+      "nevra": "libicu-devel-78.3-9.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Unicode-DFS-2016 AND BSD-2-Clause AND BSD-3-Clause AND NAIST-2003 AND LicenseRef-Fedora-Public-Domain",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libinput-devel-1.32.0-1.fc45.x86_64.rpm",
+      "bytes": 44992,
+      "sha256": "06e6945287af508322425bf908401999de73a6b99945567abebe2afc2a8e54c5",
+      "nevra": "libinput-devel-1.32.0-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libjpeg-turbo-devel-3.1.4.1-2.fc45.x86_64.rpm",
+      "bytes": 99687,
+      "sha256": "6d55d27350fda33f5a15197952b9b9bb7896c1eb45615bbcd2dd861b3df18d71",
+      "nevra": "libjpeg-turbo-devel-3.1.4.1-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Zlib AND BSD-3-Clause AND MIT AND IJG",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libmount-devel-2.42.4-1.fc45.x86_64.rpm",
+      "bytes": 26263,
+      "sha256": "a2e874839bc6bc105ba7ebdb1c1511b161b3b63c3c3ddecc0fb93ba7ef501ab7",
+      "nevra": "libmount-devel-2.42.4-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libpciaccess-devel-0.16-18.fc45.x86_64.rpm",
+      "bytes": 12657,
+      "sha256": "2dcc5ff94c36b773e9fc2b885047d1fccbe80e5945970d81370b62d265ad4977",
+      "nevra": "libpciaccess-devel-0.16-18.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "HPND AND MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libpng-devel-1.6.59-1.fc45.x86_64.rpm",
+      "bytes": 310561,
+      "sha256": "fc59100d2027d3acf90c3bcbc3dbc26ba8d0029295499469ab11cda3b274e09d",
+      "nevra": "libpng-devel-2:1.6.59-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "zlib",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "librsvg2-devel-2.63.2-2.fc45.x86_64.rpm",
+      "bytes": 119679,
+      "sha256": "1b4874bb83c9e2248a419e61b35adf84a29d2d5b8af0a355834cd961d9a402c8",
+      "nevra": "librsvg2-devel-2.63.2-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later AND Apache-2.0 AND BSD-3-Clause AND MIT AND MPL-2.0 AND Unicode-3.0 AND Unicode-DFS-2016 AND (0BSD OR MIT OR Apache-2.0) AND (Apache-2.0 OR MIT) AND (BSD-3-Clause OR Apache-2.0) AND (MIT OR Apache-2.0 OR Zlib) AND (Unlicense OR MIT)",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libseat-devel-0.9.3-2.fc45.x86_64.rpm",
+      "bytes": 10736,
+      "sha256": "49657a2eca3c30100f522e66b7b8f1fb3db2ced77379de4d0459383c35c2e8c4",
+      "nevra": "libseat-devel-0.9.3-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libseccomp-devel-2.6.1-3.fc45.x86_64.rpm",
+      "bytes": 68228,
+      "sha256": "7841d427928ec001160847ac3ee975b78cc73fe5337f9b5a990637cf227785f5",
+      "nevra": "libseccomp-devel-2.6.1-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-only",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libselinux-devel-3.11-5.fc45.x86_64.rpm",
+      "bytes": 164512,
+      "sha256": "e4239939b07c59dd0bde5538215d2114aef05186a9627480fd044810a0338a6c",
+      "nevra": "libselinux-devel-3.11-5.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LicenseRef-Fedora-Public-Domain",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libsepol-devel-3.11-2.fc45.x86_64.rpm",
+      "bytes": 49486,
+      "sha256": "a44dfd62d6be8fa643c3a990a1d153e02e8cccde0744cc69c7ead5960cce5779",
+      "nevra": "libsepol-devel-3.11-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libstdc++-devel-16.2.1-3.fc45.x86_64.rpm",
+      "bytes": 6290292,
+      "sha256": "828b507f240cc46b11226d7edcbd5de63d5b8007337169a138fa4ac34cf05593",
+      "nevra": "libstdc++-devel-16.2.1-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later AND LGPL-3.0-or-later AND (GPL-3.0-or-later WITH GCC-exception-3.1) AND (GPL-3.0-or-later WITH Texinfo-exception) AND (LGPL-2.1-or-later WITH GCC-exception-2.0) AND (GPL-2.0-or-later WITH GCC-exception-2.0) AND (GPL-2.0-or-later WITH GNU-compiler-exception) AND BSL-1.0 AND GFDL-1.3-or-later AND Linux-man-pages-copyleft-2-para AND SunPro AND BSD-1-Clause AND BSD-2-Clause AND BSD-2-Clause-Views AND BSD-3-Clause AND BSD-4-Clause AND BSD-Source-Code AND Zlib AND MIT AND Apache-2.0 AND (Apache-2.0 WITH LLVM-Exception) AND ZPL-2.1 AND ISC AND LicenseRef-Fedora-Public-Domain AND HP-1986 AND curl AND Martin-Birgmeier AND HPND-Markus-Kuhn AND dtoa AND SMLNJ AND AMD-newlib AND OAR AND HPND-merchantability-variant AND HPND-Intel",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libthai-devel-0.1.30-3.fc45.x86_64.rpm",
+      "bytes": 82999,
+      "sha256": "444eafb72e2c5bfc4ffba84f043cd8d8ee5398202fb41a69b591fb9cdcedf5d1",
+      "nevra": "libthai-devel-0.1.30-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libuuid-devel-2.42.4-1.fc45.x86_64.rpm",
+      "bytes": 33620,
+      "sha256": "85bdf8f82aeef5aaa04777f8128a7c4161139c23c1b41784ea8c5929baf888a9",
+      "nevra": "libuuid-devel-2.42.4-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause AND LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libwebp-devel-1.6.0-4.fc45.x86_64.rpm",
+      "bytes": 39994,
+      "sha256": "cb0c0777dfefe7585aab8c2c560c2dcf39795ead9309137e8dc3ca2a2bf16ae0",
+      "nevra": "libwebp-devel-1.6.0-4.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0 AND BSD-3-Clause WITH Google-Patent-WebM AND BSD-3-Clause AND FSFULLRWD",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libxcb-devel-1.17.0-8.fc45.x86_64.rpm",
+      "bytes": 1577431,
+      "sha256": "999cbe249c5a7840355b21c85f1bcd98113c693079f4e6fe9360a391746973bf",
+      "nevra": "libxcb-devel-1.17.0-8.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "X11",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libxkbcommon-devel-1.13.1-4.fc45.x86_64.rpm",
+      "bytes": 76110,
+      "sha256": "834489e0eb7f4cb5a0addf9557f36ff592d295b130ba9121ec2868413abb9584",
+      "nevra": "libxkbcommon-devel-1.13.1-4.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND X11 AND MIT-CMU",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libxml2-devel-2.15.4-1.fc45.x86_64.rpm",
+      "bytes": 549233,
+      "sha256": "ff9f7ea82537dfd36bda8da887ed3990c595ebda3cf05d06f9287017ca795afc",
+      "nevra": "libxml2-devel-2.15.4-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND ISC-Veillard AND W3C",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libzip-devel-1.12.1-1.fc45.x86_64.rpm",
+      "bytes": 258306,
+      "sha256": "3c4f5660a6a806c59b26421219baec5c9cadbabb8abed28ee221f7c5a32850e5",
+      "nevra": "libzip-devel-1.12.1-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "linkdupes-0.7.3-3.fc45.x86_64.rpm",
+      "bytes": 347389,
+      "sha256": "98559f70930cc1c414e4ea28f778bc1e7b21f0f87b321dc870a6a299f53ac4e2",
+      "nevra": "linkdupes-0.7.3-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later AND MIT AND Unicode-DFS-2016 AND (0BSD OR MIT OR Apache-2.0) AND (Apache-2.0 OR MIT) AND (BSD-2-Clause OR Apache-2.0 OR MIT) AND (MIT OR Zlib OR Apache-2.0) AND (Unlicense OR MIT)",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "lua-5.5.1-2.fc45.x86_64.rpm",
+      "bytes": 214140,
+      "sha256": "87b592f2744cbdbadab42568a11945c6d79060596e532679c0138e2b98678758",
+      "nevra": "lua-5.5.1-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "lua-devel-5.5.1-2.fc45.x86_64.rpm",
+      "bytes": 22518,
+      "sha256": "62cdb25adcb4ed7e23a11ffe2cee0b7787e729b5c55f1808137eb00540b9b3a6",
+      "nevra": "lua-devel-5.5.1-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "lua-rpm-macros-1-18.fc45.noarch.rpm",
+      "bytes": 9392,
+      "sha256": "71fbc236dab934d32b320fd4f205ac7583424f243f6c7a36ecb203fb29c96699",
+      "nevra": "lua-rpm-macros-1-18.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "lua-srpm-macros-1-18.fc45.noarch.rpm",
+      "bytes": 8892,
+      "sha256": "2cd3c62b0ba3a4264d07e280610de89a23ac84df7a5bd3f08b48445f537ad269",
+      "nevra": "lua-srpm-macros-1-18.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "lzo-devel-2.10-17.fc45.x86_64.rpm",
+      "bytes": 40017,
+      "sha256": "8766a12a94473d81425e8469e9f461686e0b5170d6cbecc5190f419743867c50",
+      "nevra": "lzo-devel-2.10-17.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "gpl-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "lzo-minilzo-2.10-17.fc45.x86_64.rpm",
+      "bytes": 24914,
+      "sha256": "161c8c70b5ae7a4ff52141d8ab45117a0b348901c5f3629e8efe1b401004cfd8",
+      "nevra": "lzo-minilzo-2.10-17.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "gpl-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "mesa-dri-drivers-26.2.7-1.fc45.x86_64.rpm",
+      "bytes": 14530677,
+      "sha256": "65e2787b78689ec2b2d88542d2355106f50795afdacb3bc975749889acf6238f",
+      "nevra": "mesa-dri-drivers-26.2.7-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND BSD-3-Clause AND SGI-B-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "mesa-filesystem-26.2.7-1.fc45.x86_64.rpm",
+      "bytes": 15386,
+      "sha256": "b8426c978be557473a3b1da150381b7f4d981a8f321863a16140dc5375a35a5e",
+      "nevra": "mesa-filesystem-26.2.7-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND BSD-3-Clause AND SGI-B-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "mesa-libEGL-26.2.7-1.fc45.x86_64.rpm",
+      "bytes": 150020,
+      "sha256": "a03a69a954fa86e7caeac20530c94a76eb743f3380d4171e7b6c31a5bc55ee2a",
+      "nevra": "mesa-libEGL-26.2.7-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND BSD-3-Clause AND SGI-B-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "mesa-libGL-26.2.7-1.fc45.x86_64.rpm",
+      "bytes": 148037,
+      "sha256": "ca2ae8fdf36db645f08d2ba096e0f730ebdff53b0d6b113128f153ebc089c9f5",
+      "nevra": "mesa-libGL-26.2.7-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND BSD-3-Clause AND SGI-B-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "mesa-libgbm-26.2.7-1.fc45.x86_64.rpm",
+      "bytes": 21529,
+      "sha256": "4df3cd9776644e2958a18bb725bd0e042e5825c9676be236a3ec9604c12231d0",
+      "nevra": "mesa-libgbm-26.2.7-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND BSD-3-Clause AND SGI-B-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "mesa-libgbm-devel-26.2.7-1.fc45.x86_64.rpm",
+      "bytes": 20606,
+      "sha256": "b3c2fe70acb0df12fa7398e1dfefdd9c85b40347532af15a0183ca3c505eb176",
+      "nevra": "mesa-libgbm-devel-26.2.7-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND BSD-3-Clause AND SGI-B-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "mesa-vulkan-drivers-26.2.7-1.fc45.x86_64.rpm",
+      "bytes": 29018593,
+      "sha256": "e644e5d7a4b6a80d38756e27add2b0416232fc794f9b25fafa94749eaac1442a",
+      "nevra": "mesa-vulkan-drivers-26.2.7-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND BSD-3-Clause AND SGI-B-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "meson-1.12.1-3.fc45.noarch.rpm",
+      "bytes": 2818166,
+      "sha256": "5d91a870df816e7d0a91812844ddb84daf20c35e1f5dc2da18c63e740f8280f8",
+      "nevra": "meson-1.12.1-3.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "meson-srpm-macros-1.12.1-3.fc45.noarch.rpm",
+      "bytes": 12196,
+      "sha256": "f87653a7a9edecd11db48bd6c04dc0494c0aea6db2707fb91495029108ca0ed6",
+      "nevra": "meson-srpm-macros-1.12.1-3.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "muParser-2.3.5-6.fc45.x86_64.rpm",
+      "bytes": 185483,
+      "sha256": "b86f69f9300cc8ba09662f4d196eb2a1b431c7548d21bc33c53636dfb2a5fcd2",
+      "nevra": "muParser-2.3.5-6.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-2-Clause",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "muParser-devel-2.3.5-6.fc45.x86_64.rpm",
+      "bytes": 31754,
+      "sha256": "b432f631495f985ad2b0d30d530df84dfb7f0fa4f6e4d5e31324da56c123dd7c",
+      "nevra": "muParser-devel-2.3.5-6.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-2-Clause",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "ncurses-c++-libs-6.6-3.fc45.x86_64.rpm",
+      "bytes": 39473,
+      "sha256": "29a8191ec4f716ec88b9d32db724a7e3327fd022f8021ae2494139124ed46d58",
+      "nevra": "ncurses-c++-libs-6.6-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-open-group",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "ncurses-devel-6.6-3.fc45.x86_64.rpm",
+      "bytes": 620296,
+      "sha256": "95dc3ba5d02b5cc3cb61cfdfa19740fab34ef927aa7842f8fc89394f1de47575",
+      "nevra": "ncurses-devel-6.6-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-open-group",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "ninja-build-1.13.2-6.fc45.x86_64.rpm",
+      "bytes": 208002,
+      "sha256": "312a3498621f9588079d9dd141d2fcd4015365cfafea49399798b3bd6d2cdc08",
+      "nevra": "ninja-build-1.13.2-6.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "ocaml-srpm-macros-11-4.fc45.noarch.rpm",
+      "bytes": 9166,
+      "sha256": "73a45af0d5dd2118f2812e456ec9713b7028c74762b992821128d2f6acbafd86",
+      "nevra": "ocaml-srpm-macros-11-4.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "GPL-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "openblas-srpm-macros-2-22.fc45.noarch.rpm",
+      "bytes": 7692,
+      "sha256": "366df3478c46ddff4b4f93034b01207c69429198da83dc599d22f8c46e55cb37",
+      "nevra": "openblas-srpm-macros-2-22.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "package-notes-srpm-macros-0.20-2.fc45.noarch.rpm",
+      "bytes": 10750,
+      "sha256": "a12f25c672e269eebdf363ebd1568826995e8d6079339ce9e96c5469d39b43c2",
+      "nevra": "package-notes-srpm-macros-0.20-2.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "0BSD",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "pango-devel-1.58.2-1.fc45.x86_64.rpm",
+      "bytes": 167794,
+      "sha256": "1714121398a76b9583b5bd149f3af14f3294d9156826c888084638b16f9eb8f3",
+      "nevra": "pango-devel-1.58.2-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "pcre2-devel-10.49-1.fc45.x86_64.rpm",
+      "bytes": 575100,
+      "sha256": "b63038d2ead88457584a6a0f5f6ed22058f2c36ca421b16b21fe9bcf8615700e",
+      "nevra": "pcre2-devel-10.49-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause AND FSFULLR AND X11 AND GPL-2.0-or-later AND FSFAP AND FSFUL AND GPL-3.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "perl-srpm-macros-1-65.fc45.noarch.rpm",
+      "bytes": 8553,
+      "sha256": "195951557bb5f64fb4b0b91ce20fe5c4bdfbacedeaabae1405c1086b20febb27",
+      "nevra": "perl-srpm-macros-1-65.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "pixman-devel-0.46.2-4.fc45.x86_64.rpm",
+      "bytes": 18157,
+      "sha256": "a1948f5eaf031644540bbcf04ea3f18b245ec412dc8706c4429c291db8efa584",
+      "nevra": "pixman-devel-0.46.2-4.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "pugixml-devel-1.16-2.fc45.x86_64.rpm",
+      "bytes": 24117,
+      "sha256": "88b2534252292d3333cb50c4630665d28842975684792ddc8d9ae91422de17e8",
+      "nevra": "pugixml-devel-1.16-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "pyproject-srpm-macros-1.24.0-1.fc45.noarch.rpm",
+      "bytes": 15771,
+      "sha256": "6411e0735fec28065ef7b08137c0354e90f124d4111b9dcc27f37df470ec8010",
+      "nevra": "pyproject-srpm-macros-1.24.0-1.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "python-srpm-macros-3.15-2.fc45.noarch.rpm",
+      "bytes": 24425,
+      "sha256": "de405f8e5f3f90b5bf6e787c19d9bbbbdf7e166281a06694f014a64293182d1c",
+      "nevra": "python-srpm-macros-3.15-2.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "MIT AND PSF-2.0 AND GPL-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "qt5-srpm-macros-5.15.18-3.fc45.noarch.rpm",
+      "bytes": 8257,
+      "sha256": "7a6ea370d1b0ade487612001d88707efa192b996ecf61bdf3e23699176e57a84",
+      "nevra": "qt5-srpm-macros-5.15.18-3.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-only",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "qt6-srpm-macros-6.11.2-1.fc45.noarch.rpm",
+      "bytes": 9297,
+      "sha256": "976a6b603da6a87ff98f1afeafaade6d9daae03cd11ff3244f7fd0832c71a056",
+      "nevra": "qt6-srpm-macros-6.11.2-1.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-only",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "re2-devel-20251105-19.fc45.x86_64.rpm",
+      "bytes": 39475,
+      "sha256": "66b9a02c843de91307a3a4d8a1e5c66fca92dd2b0156b32b9c238b430304fb70",
+      "nevra": "re2-devel-2:20251105-19.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "readline-devel-8.3-6.fc45.x86_64.rpm",
+      "bytes": 224134,
+      "sha256": "6d1d2f67c2b9fa702a06d2e721214c979f17e1432b52e5512b5a5ed7e5527c1d",
+      "nevra": "readline-devel-8.3-6.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later AND GPL-2.0-or-later AND GFDL-1.3-no-invariants-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "redhat-rpm-config-345-5.fc45.noarch.rpm",
+      "bytes": 80010,
+      "sha256": "bbddf47a4c28e3e59f0ade33b5058f353102f9eaf190f5e26404d5c08d0946c6",
+      "nevra": "redhat-rpm-config-345-5.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "GPL-1.0-or-later AND GPL-2.0-or-later AND GPL-3.0-or-later WITH Autoconf-exception-generic",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "rhash-1.4.5-5.fc45.x86_64.rpm",
+      "bytes": 206495,
+      "sha256": "b5af3f599abc526ec82ded9534985d608b89ae9be744c46029ed36f51325740f",
+      "nevra": "rhash-1.4.5-5.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "rpm-build-6.1.0-1.fc45.x86_64.rpm",
+      "bytes": 161921,
+      "sha256": "6083526a0ae6f2aa1e29c3227a12e303886e5928b0f3dcb2176a100cada56ee9",
+      "nevra": "rpm-build-6.1.0-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "rust-srpm-macros-28.5-2.fc45.noarch.rpm",
+      "bytes": 11644,
+      "sha256": "a58ce1036c27ac26fba581e590a1776cbfdaa4185ef08c6f36944ceb40b3bb66",
+      "nevra": "rust-srpm-macros-28.5-2.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "sysprof-capture-devel-51.0-1.fc45.x86_64.rpm",
+      "bytes": 187081,
+      "sha256": "b1d4502ec2d71a9b2c583ede8382e8143e47ddd0bb802ba2645661ef8dc2bbfb",
+      "nevra": "sysprof-capture-devel-51.0-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-2-Clause-Patent",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "systemd-devel-262.1-1.fc45.x86_64.rpm",
+      "bytes": 781676,
+      "sha256": "ae76aa4c797f3489f75572de35fbc2a7bd78c15fa31a554417e1b99fbf21c27a",
+      "nevra": "systemd-devel-262.1-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later AND MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "systemd-rpm-macros-262.1-1.fc45.noarch.rpm",
+      "bytes": 21644,
+      "sha256": "bad96bea86f3be842c51bf5abca326cbc8aed91084e8381a0cf37c78e43d26de",
+      "nevra": "systemd-rpm-macros-262.1-1.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later AND MIT AND GPL-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "tomlplusplus-3.4.0-8.fc45.x86_64.rpm",
+      "bytes": 108860,
+      "sha256": "f3ae3af984a168fc5eb2b0c6a12b6aab057bfc9bd40f5d280a99a50324d89d17",
+      "nevra": "tomlplusplus-3.4.0-8.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "tomlplusplus-devel-3.4.0-8.fc45.x86_64.rpm",
+      "bytes": 114248,
+      "sha256": "cdad40520a3b8b0786f11686c82b9292c7cd65858847422e00b223ced4e6ca02",
+      "nevra": "tomlplusplus-devel-3.4.0-8.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "tree-sitter-srpm-macros-0.4.6-2.fc45.noarch.rpm",
+      "bytes": 14338,
+      "sha256": "59546a786f686d3d40749525b990e94872d97aa7de06964d27ab436f736d3410",
+      "nevra": "tree-sitter-srpm-macros-0.4.6-2.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "wayland-devel-1.26.0-3.fc45.x86_64.rpm",
+      "bytes": 165162,
+      "sha256": "63b336994ed7eb16743daca9dd84f73cbc757c912bd54ff10cd9fe7077c553d0",
+      "nevra": "wayland-devel-1.26.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "wayland-protocols-devel-1.50-1.fc45.noarch.rpm",
+      "bytes": 192609,
+      "sha256": "6640dc9f022247951db15882ab205d9e4360b71fd4b3278d63a2975fb3e977db",
+      "nevra": "wayland-protocols-devel-1.50-1.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "xcb-util-errors-devel-1.0.1-8.fc45.x86_64.rpm",
+      "bytes": 10401,
+      "sha256": "f9f8edc3ef284471449e64b08eae57561cab3aaf3b3248a2a48fe3cf2f62f3dd",
+      "nevra": "xcb-util-errors-devel-1.0.1-8.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "X11",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "xcb-util-wm-devel-0.4.2-10.fc45.x86_64.rpm",
+      "bytes": 23956,
+      "sha256": "6731c4854ed02ec4b25648d114c05fc9b647c9a0f95447fe3218cb2dfdab5d12",
+      "nevra": "xcb-util-wm-devel-0.4.2-10.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "X11-distribute-modifications-variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "xorg-x11-proto-devel-2025.1-3.fc45.noarch.rpm",
+      "bytes": 309408,
+      "sha256": "4b665eaad4e91e61bee14502ab264002506ff91a51d6ba88ab3a26ac82e14a9e",
+      "nevra": "xorg-x11-proto-devel-2025.1-3.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "BSD-2-Clause AND HPND AND HPND-sell-variant AND ICU AND MIT AND MIT-open-group AND SGI-B-2.0 AND SMLNJ AND X11 AND X11-distribute-modifications-variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "xz-devel-5.8.3-2.fc45.x86_64.rpm",
+      "bytes": 68000,
+      "sha256": "b90ee9cee39e37d4a25af07a1ee4ad39b0fb9d58a27e19cd4f8fa025f63346ae",
+      "nevra": "xz-devel-1:5.8.3-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "0BSD",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "zig-srpm-macros-1-9.fc45.noarch.rpm",
+      "bytes": 9024,
+      "sha256": "a3219b98bc197471d7a15fc7819b6863040d620a3e323187d6f3807dbf369975",
+      "nevra": "zig-srpm-macros-1-9.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "zlib-ng-compat-devel-2.3.3-6.fc45.x86_64.rpm",
+      "bytes": 38733,
+      "sha256": "ea3cf02979f8726e00f27b62e17d54668e5142bd8095be406f179380258f73fb",
+      "nevra": "zlib-ng-compat-devel-2.3.3-6.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Zlib",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    }
+  ],
+  "passed": true,
+  "os_qualified": false,
+  "installed_packages_unchanged": true,
+  "negative_controls": {
+    "missing_key_rejected": true,
+    "tampered_package_rejected": true
+  }
+}

@@ -48,8 +48,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p .cache
-          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15060562373/zip > .cache/hyprland-rpms.zip
-          echo '23a5ba8b77dca596642db250e35044603620eebc5af3e12c4dc5bc2a7bbefb7f  .cache/hyprland-rpms.zip' | sha256sum --check --strict
+          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15064875311/zip > .cache/hyprland-rpms.zip
+          echo 'b24ccbcc952c24102cf5dea0fcf5f912145d91b2f99a692a754d9474db65859a  .cache/hyprland-rpms.zip' | sha256sum --check --strict
       - name: Build offline and test native-loading refusal
         run: bash scripts/check-hyprland-build.sh
       - name: Retain public build evidence including failures

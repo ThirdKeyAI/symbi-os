@@ -114,3 +114,26 @@ RPM requirements. Source and license evidence are retained. The old RPM artifact
 is deliberately not relabeled as satisfying these additions. Compilation now
 refuses stale requirements before downloading that large bundle; the package
 discovery workflow must produce a reviewed replacement lock first.
+
+## Expanded signed RPM set accepted for the build stage
+
+Run 45702843932 successfully resolved the expanded requirements. All 165 RPMs
+passed full-fingerprint signature and payload checks against the pinned Fedora
+45 key, and the actual missing-key/tampered-payload controls both failed as
+required. Reinspection of every retained signature log agrees with the manifest.
+Installed RPM state remained unchanged. The prior 162 package records are
+identical; the three additions are readline-devel 8.3-6.fc45, ncurses-devel and
+ncurses-c++-libs 6.6-3.fc45. libffi-devel was already in the verified set.
+
+The immutable 151,655,394-byte hosted RPM ZIP and its 165 package records now
+replace the stale lock. The manifest hash is
+`9556ccf3d57f745b9de520d24d4545619a8cc3be474e93b76e96c6969e25c306`;
+the ZIP hash is
+`b24ccbcc952c24102cf5dea0fcf5f912145d91b2f99a692a754d9474db65859a`.
+Only the 166,765-byte evidence artifact was downloaded locally. Retained evidence
+is under `P0-03-fedora-packages/45702843932/`. The discovery guest peaked at
+526,548,992 bytes with no memory-limit events; its parent had memory pressure
+but no OOM or OOM kill. These remain build-stage inputs, including the unchanged
+six Mesa downgrade candidates; product installation and dependency approval
+remain separate. The offline compositor build can now resume against the current
+requirements and exact hyprwire source pin.

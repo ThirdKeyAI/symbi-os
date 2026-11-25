@@ -1,17 +1,17 @@
 {
   "schema": 1,
   "scope": "Offline disposable Hyprland build stage only; product RPM installation is not authorized by this manifest",
-  "run_id": 45695030159,
-  "head_sha": "970d9e8212363dea328151f323fe94e668d64213",
-  "checked_merge_sha": "68f979095979f54733eee61aac9cff0bfc73858a",
+  "run_id": 45702843932,
+  "head_sha": "7c18ae1102303ed124e75b570ed430c8d378c9d4",
+  "checked_merge_sha": "d5cd472345ea85d659b4c84cc84b7aae6ce8b9df",
   "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
   "artifact": {
-    "id": 15060562373,
+    "id": 15064875311,
     "name": "fedora-build-rpm-candidates",
-    "bytes": 150767591,
-    "sha256": "23a5ba8b77dca596642db250e35044603620eebc5af3e12c4dc5bc2a7bbefb7f"
+    "bytes": 151655394,
+    "sha256": "b24ccbcc952c24102cf5dea0fcf5f912145d91b2f99a692a754d9474db65859a"
   },
-  "manifest_sha256": "ef0d04777d63968f5127261093a5310f992da28c8334bc30f8a6d67c3556a360",
+  "manifest_sha256": "9556ccf3d57f745b9de520d24d4545619a8cc3be474e93b76e96c6969e25c306",
   "packages": [
     {
       "filename": "R-srpm-macros-1.3.7-3.fc45.noarch.rpm",
@@ -1314,6 +1314,26 @@
       "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
     },
     {
+      "filename": "ncurses-c++-libs-6.6-3.fc45.x86_64.rpm",
+      "bytes": 39473,
+      "sha256": "29a8191ec4f716ec88b9d32db724a7e3327fd022f8021ae2494139124ed46d58",
+      "nevra": "ncurses-c++-libs-6.6-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-open-group",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "ncurses-devel-6.6-3.fc45.x86_64.rpm",
+      "bytes": 620296,
+      "sha256": "95dc3ba5d02b5cc3cb61cfdfa19740fab34ef927aa7842f8fc89394f1de47575",
+      "nevra": "ncurses-devel-6.6-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-open-group",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
       "filename": "ninja-build-1.13.2-6.fc45.x86_64.rpm",
       "bytes": 208002,
       "sha256": "312a3498621f9588079d9dd141d2fcd4015365cfafea49399798b3bd6d2cdc08",
@@ -1450,6 +1470,16 @@
       "nevra": "re2-devel-2:20251105-19.fc45.x86_64",
       "vendor": "Fedora Project",
       "license": "BSD-3-Clause",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "readline-devel-8.3-6.fc45.x86_64.rpm",
+      "bytes": 224134,
+      "sha256": "6d1d2f67c2b9fa702a06d2e721214c979f17e1432b52e5512b5a5ed7e5527c1d",
+      "nevra": "readline-devel-8.3-6.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later AND GPL-2.0-or-later AND GFDL-1.3-no-invariants-or-later",
       "signature_verified": true,
       "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
     },
@@ -1697,7 +1727,9 @@
       "pkgconfig(xcb-composite)",
       "pkgconfig(xcb-res)",
       "pkgconfig(xcb-errors)",
-      "pkgconfig(gtest)"
+      "pkgconfig(gtest)",
+      "pkgconfig(readline)",
+      "pkgconfig(libffi)"
     ],
     "notes": [
       "Hyprland libraries, scanner, protocols and Glaze come from separately pinned sources",

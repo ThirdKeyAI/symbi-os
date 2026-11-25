@@ -163,3 +163,11 @@ includes libffi and readline. Signed Fedora resolution must finish and its exact
 artifact be reviewed before updating the build lock. Existing verified RPMs
 remain immutable; the guard refuses compilation with stale requirements. This
 is candidate input discovery, not a completed dependency/security audit.
+
+The expanded P0-03 Fedora discovery (45702843932) verified 165 candidate build
+RPMs. The unchanged prior 162 records are supplemented by readline-devel
+8.3-6.fc45 (Fedora license field: GPL-3.0-or-later AND GPL-2.0-or-later AND
+GFDL-1.3-no-invariants-or-later), ncurses-devel and ncurses-c++-libs 6.6-3.fc45
+(MIT-open-group). Exact bytes, licenses and signatures are in the build lock and
+retained report. These are development-stage inputs, not a completed audit or
+permission to overwrite the product base libraries.
