@@ -8,7 +8,10 @@ build inputs, not qualified RPMs. No local compositor build has run.
 The hosted `Fedora base inventory` workflow authenticates Cosign, verifies the
 exact base signature and repository identity, then pulls only that digest.
 A read-only container without networking records installed RPM versions, public
-RPM key files and repository configuration. It installs nothing. The outer
+RPM key files and repository configuration from the normal, bootc and
+secureblue backup locations. An empty repository/key discovery fails and retains
+partial output for diagnosis. Discovered key bytes are not yet approved RPM trust
+anchors. It installs nothing. The outer
 hosted unit has 2 GiB RAM, one CPU, zero swap and a 30-minute deadline; the
 inventory container has 512 MiB, half a CPU and no swap. It has no host mounts,
 release secrets or publishing permission. Local invocation is refused.

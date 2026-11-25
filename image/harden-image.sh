@@ -6,7 +6,10 @@ set -euo pipefail
   exit 1
 }
 source /etc/os-release
-[[ $ID == fedora ]] || { printf 'Fedora base required.\n' >&2; exit 1; }
+[[ $ID == fedora || ( $ID == secureblue && " ${ID_LIKE:-} " == *" fedora "* ) ]] || {
+  printf 'Fedora or the selected Fedora-based secureblue family required.\n' >&2
+  exit 1
+}
 # The selected immutable base must include these or a separately pinned RPM
 # installation step must be reviewed. No silent network installation fallback.
 for executable in Hyprland waybar walker foot bootc; do

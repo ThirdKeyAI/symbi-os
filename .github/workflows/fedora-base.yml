@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - image/hyprland/inventory.py
+      - image/hyprland/guest_inventory.py
       - image/base-images.json
       - image/toolchain/bootstrap_cosign.py
       - image/toolchain/cosign.json

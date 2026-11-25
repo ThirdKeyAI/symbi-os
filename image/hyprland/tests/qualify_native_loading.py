@@ -9,6 +9,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import platform
 import signal
 import subprocess
 import sys
@@ -32,9 +33,9 @@ def main():
     args = parser.parse_args()
     if os.geteuid() == 0:
         raise SystemExit("Run as the disposable guest's unprivileged test user")
-    release = Path("/etc/os-release").read_text()
-    if not any(line in {"ID=fedora", 'ID="fedora"'} for line in release.splitlines()):
-        raise SystemExit("Fedora guest/container required")
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from guest_inventory import require_fedora_family
+    require_fedora_family(platform.freedesktop_os_release())
     cgroup = Path("/sys/fs/cgroup") / Path(Path("/proc/self/cgroup").read_text().strip().split("::", 1)[1]).relative_to("/")
     limits = {key: (cgroup / key).read_text().strip() for key in ("memory.max", "memory.swap.max", "cpu.max")}
     quota, period = limits["cpu.max"].split()

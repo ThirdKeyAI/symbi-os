@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Inventory the authenticated Fedora base on a disposable hosted runner."""
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -24,31 +25,13 @@ def require_subject(signatures, image):
             raise ValueError("Verified subject does not match selected base")
 
 
-CONTAINER_INVENTORY = r'''
-import hashlib,json,pathlib,subprocess
-root=pathlib.Path('/')
-group=pathlib.Path('/sys/fs/cgroup')/pathlib.Path(pathlib.Path('/proc/self/cgroup').read_text().strip().split('::',1)[1]).relative_to('/')
-limits={name:(group/name).read_text().strip() for name in ('memory.max','memory.swap.max','cpu.max','pids.max')}
-assert limits=={'memory.max':'536870912','memory.swap.max':'0','cpu.max':'50000 100000','pids.max':'64'},limits
-release=(root/'etc/os-release').read_text()
-assert any(line in ('ID=fedora','ID="fedora"') for line in release.splitlines())
-files={}
-paths=[root/'etc/os-release',root/'etc/dnf/dnf.conf',root/'etc/containers/policy.json']
-paths+=sorted((root/'etc/yum.repos.d').glob('*.repo'))
-paths+=sorted((root/'etc/pki/rpm-gpg').glob('*'))
-for path in paths:
-    if not path.is_file(): continue
-    data=path.read_bytes()
-    assert len(data)<=262144,str(path)
-    assert b'PRIVATE KEY' not in data,str(path)
-    files[str(path)]={'sha256':hashlib.sha256(data).hexdigest(),'text':data.decode()}
-packages=subprocess.check_output(['rpm','-qa','--qf','%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n'],text=True)
-keys=subprocess.run(['rpm','-q','gpg-pubkey','--qf','%{NAME}-%{VERSION}-%{RELEASE}\n'],capture_output=True,text=True)
-tools={name: (root/'usr/bin'/name).is_file() for name in ('dnf','dnf5','rpm','gpg','gcc','g++','cmake','ninja','Hyprland','waybar','walker','foot','bootc')}
-print(json.dumps({'scope':'Read-only authenticated image inventory, no package installation or Fedora boot',
-                 'files':files,'installed_packages':sorted(packages.splitlines()),
-                 'rpm_key_query':{'exit_code':keys.returncode,'stdout':keys.stdout,'stderr':keys.stderr},'tools':tools,'limits':limits,'os_qualified':False},indent=2))
-'''
+def collect_inventory(command, script, output):
+    # Keep partial discovery on nonzero exit or timeout for diagnosis; neither
+    # becomes a passing inventory. stderr remains in the hosted execution log.
+    with output.open("w") as stream:
+        subprocess.run(command, input=script, text=True, stdout=stream,
+                       check=True, timeout=90)
+    return json.loads(output.read_text())
 
 
 def main():
@@ -93,16 +76,15 @@ def main():
                            stdout=log, stderr=subprocess.STDOUT, check=True, timeout=1200)
         inspected = subprocess.check_output(podman + ["image", "inspect", pin["image"]], text=True, timeout=30)
         (evidence / "image-inspect.json").write_text(inspected)
-        command = podman + ["run", "--rm", "--pull=never", "--read-only", "--network=none",
+        command = podman + ["run", "--rm", "--interactive", "--user=0", "--pull=never", "--read-only", "--network=none",
                             "--cgroup-parent=/" + str(cgroup.relative_to("/sys/fs/cgroup")),
                             "--cap-drop=ALL", "--security-opt=no-new-privileges", "--pids-limit=64",
                             "--memory=512m", "--memory-swap=512m", "--cpus=0.5",
-                            "--entrypoint=/usr/bin/python3", pin["image"], "-c", CONTAINER_INVENTORY]
-        inventory = subprocess.check_output(command, text=True, timeout=90)
-        json.loads(inventory)
-        (evidence / "inventory.json").write_text(inventory)
+                            "--entrypoint=/usr/bin/python3", pin["image"], "-"]
+        guest_script = (root / "image/hyprland/guest_inventory.py").read_text()
+        collect_inventory(command, guest_script, evidence / "inventory.json")
         result = {"schema": 1, "base": pin, "signature_verified_before_pull": True,
-                  "inventory_completed": True, "network_inside_inventory": "none",
+                  "inventory_completed": True, "guest_script_sha256": hashlib.sha256(guest_script.encode()).hexdigest(), "network_inside_inventory": "none",
                   "source_commit": os.environ["GITHUB_SHA"], "os_qualified": False,
                   "scope": "Input discovery only; no new packages, compositor build, signing or publication"}
         result["podman_version"] = subprocess.check_output(["podman", "--version"], text=True).strip()
