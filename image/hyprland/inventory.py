@@ -43,11 +43,11 @@ for path in paths:
     assert b'PRIVATE KEY' not in data,str(path)
     files[str(path)]={'sha256':hashlib.sha256(data).hexdigest(),'text':data.decode()}
 packages=subprocess.check_output(['rpm','-qa','--qf','%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n'],text=True)
-keys=subprocess.check_output(['rpm','-q','gpg-pubkey','--qf','%{NAME}-%{VERSION}-%{RELEASE}\n'],text=True)
+keys=subprocess.run(['rpm','-q','gpg-pubkey','--qf','%{NAME}-%{VERSION}-%{RELEASE}\n'],capture_output=True,text=True)
 tools={name: (root/'usr/bin'/name).is_file() for name in ('dnf','dnf5','rpm','gpg','gcc','g++','cmake','ninja','Hyprland','waybar','walker','foot','bootc')}
 print(json.dumps({'scope':'Read-only authenticated image inventory, no package installation or Fedora boot',
                  'files':files,'installed_packages':sorted(packages.splitlines()),
-                 'rpm_key_records':keys.splitlines(),'tools':tools,'limits':limits,'os_qualified':False},indent=2))
+                 'rpm_key_query':{'exit_code':keys.returncode,'stdout':keys.stdout,'stderr':keys.stderr},'tools':tools,'limits':limits,'os_qualified':False},indent=2))
 '''
 
 
@@ -63,7 +63,13 @@ def main():
     from recipe import render
     evidence = root / ".cache/fedora-base-evidence"
     evidence.mkdir(parents=True, exist_ok=True)
-    cgroup = Path("/sys/fs/cgroup") / Path(Path("/proc/self/cgroup").read_text().strip().split("::", 1)[1]).relative_to("/")
+    process_group = Path("/sys/fs/cgroup") / Path(Path("/proc/self/cgroup").read_text().strip().split("::", 1)[1]).relative_to("/")
+    # DelegateSubgroup keeps the supervising process out of the unit's internal
+    # cgroup, so Podman's sibling container can receive domain controllers.
+    assert process_group.name == "supervisor"
+    cgroup = process_group.parent
+    assert cgroup.name.startswith("symbi-fedora-base-") and cgroup.name.endswith(".service")
+    assert not (cgroup / "cgroup.procs").read_text().strip()
     names = ("memory.max", "memory.swap.max", "cpu.max", "pids.max")
     limits = {name: (cgroup / name).read_text().strip() for name in names}
     (evidence / "cgroup-limits.json").write_text(json.dumps(limits, indent=2) + "\n")
