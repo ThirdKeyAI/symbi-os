@@ -1,0 +1,165 @@
+{
+  "passed": true,
+  "qualified": false,
+  "runs": [
+    {
+      "backend": "docker",
+      "driver": "test-filesystem-grants.py",
+      "command": [
+        "python3",
+        "-B",
+        "scripts/test-filesystem-grants.py",
+        "--binary",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/bin/symbi",
+        "--image",
+        "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc",
+        "--report",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/public/fixtures/docker-test-filesystem-grants.json"
+      ],
+      "passed": true,
+      "exit_code": 0,
+      "elapsed_seconds": 14.306570008000008,
+      "log_sha256": "56adaea32d22d09519e1ffe0b8589b86ec6c5502c7eee7a6197ca7f7eca4a9d2",
+      "remaining_containers": [],
+      "report_sha256": "842a852eb6bc205c34669c2c8554d6591458ee4e2f38157b17bc0fc2873b7f5a",
+      "observed_runtimes": [
+        "runc"
+      ]
+    },
+    {
+      "backend": "docker",
+      "driver": "test-source-broker.py",
+      "command": [
+        "python3",
+        "-B",
+        "scripts/test-source-broker.py",
+        "--binary",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/bin/symbi",
+        "--image",
+        "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc",
+        "--report",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/public/fixtures/docker-test-source-broker.json"
+      ],
+      "passed": true,
+      "exit_code": 0,
+      "elapsed_seconds": 6.364587284999999,
+      "log_sha256": "83387fcd9726cf62a23fab61c283209e6664ba0b6bd15f213c96cdcc2ce30770",
+      "remaining_containers": [],
+      "report_sha256": "64a40e0afa50a4bddc90bd124fe5b6ee7e7ef9c016bdd8b378577b36e2580ffc",
+      "observed_runtimes": [
+        "runc"
+      ]
+    },
+    {
+      "backend": "docker",
+      "driver": "test-git-source.py",
+      "command": [
+        "python3",
+        "-B",
+        "scripts/test-git-source.py",
+        "--binary",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/bin/symbi",
+        "--image",
+        "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc",
+        "--report",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/public/fixtures/docker-test-git-source.json"
+      ],
+      "passed": true,
+      "exit_code": 0,
+      "elapsed_seconds": 10.185663590999994,
+      "log_sha256": "e3d6a9b4d3fce7a865013b1dd46ac7255f643eb3f1ac08713902587cee9146f6",
+      "remaining_containers": [],
+      "report_sha256": "c112fd1c233e6d3d6ba4c372e7b85792bf17f9ab4486c00ecc541f231aac0f33",
+      "observed_runtimes": [
+        "runc"
+      ]
+    },
+    {
+      "backend": "gvisor",
+      "driver": "test-filesystem-grants.py",
+      "command": [
+        "python3",
+        "-B",
+        "scripts/test-filesystem-grants.py",
+        "--binary",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/bin/symbi",
+        "--image",
+        "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc",
+        "--report",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/public/fixtures/gvisor-test-filesystem-grants.json",
+        "--gvisor",
+        "--runsc-binary",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/runsc/usr/bin/runsc"
+      ],
+      "passed": true,
+      "exit_code": 0,
+      "elapsed_seconds": 15.626122879000008,
+      "log_sha256": "d491a294ec3ce3d2fd6bf727c5e3b6822485702ed24fdc133c011beb28c470c8",
+      "remaining_containers": [],
+      "report_sha256": "9821c2adc5fe42ddf1739739e0d3be1111f717f24250e95d866f4e4104eb4d09",
+      "observed_runtimes": [
+        "runsc"
+      ]
+    },
+    {
+      "backend": "gvisor",
+      "driver": "test-source-broker.py",
+      "command": [
+        "python3",
+        "-B",
+        "scripts/test-source-broker.py",
+        "--binary",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/bin/symbi",
+        "--image",
+        "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc",
+        "--report",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/public/fixtures/gvisor-test-source-broker.json",
+        "--gvisor",
+        "--runsc-binary",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/runsc/usr/bin/runsc"
+      ],
+      "passed": true,
+      "exit_code": 0,
+      "elapsed_seconds": 7.734616531,
+      "log_sha256": "143d0092cc6c0e3747ae4d5b8e0fec0407cdb4660559d1a5d877a35a38829b50",
+      "remaining_containers": [],
+      "report_sha256": "45364ea51bd8a21d9ad1898f019deb084798f4c13393377967d987fbb26f50cc",
+      "observed_runtimes": [
+        "runsc"
+      ]
+    },
+    {
+      "backend": "gvisor",
+      "driver": "test-git-source.py",
+      "command": [
+        "python3",
+        "-B",
+        "scripts/test-git-source.py",
+        "--binary",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/bin/symbi",
+        "--image",
+        "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc",
+        "--report",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/public/fixtures/gvisor-test-git-source.json",
+        "--gvisor",
+        "--runsc-binary",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/runsc/usr/bin/runsc"
+      ],
+      "passed": true,
+      "exit_code": 0,
+      "elapsed_seconds": 10.224183366999995,
+      "log_sha256": "89f31b751d1b3166657dcf624015ed71aced32674b97ad7effb0b87d1ba2d25f",
+      "remaining_containers": [],
+      "report_sha256": "975d331c3a548ef8662650b4a70df45d2a9d5dd0536ba94e2c72fc67170309ac",
+      "observed_runtimes": [
+        "runsc"
+      ]
+    }
+  ],
+  "source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+  "fixture_commit": "c1fac8aab6c5d399abb39036ba35b9636212e17f",
+  "patch_sha256": "a4545649b1c83f0a3402781f815ebc66ea2b507128d17f61e76c4febb5017bda",
+  "binary_sha256": "1e90af1fe424ec37ad716bbc1e069c0bc7a78f59c49871b7e79506bda69f49c7",
+  "image_id": "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc",
+  "scope": "Hosted Ubuntu container tool-worker fixtures; no Fedora, managed-CLI or escape-suite qualification"
+}

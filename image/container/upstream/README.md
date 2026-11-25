@@ -32,7 +32,8 @@ The earlier local baseline and focused failures are retained in P0-04. Its
 scheduler test assumes two simultaneous default allocations of 512 MiB and one
 CPU each, exceeding the small helper VM's capacity. Hosted validation supplies
 that capacity without increasing workstation usage. The separate coordinator
-failure remains an unresolved observation until the unchanged hosted tests run.
+failure was not reproduced on the unchanged hosted source; its earlier cause
+was not isolated.
 
 
 The first Rust 1.100 hosted attempt hit the 4 GiB build cgroup ceiling while
@@ -48,21 +49,24 @@ abrupt termination cannot erase which gate was active.
 
 ## Validated and published draft
 
-Run 45688918098 passed all baseline and patched workspace gates and the sixteen
-focused Python tests. Its source/lock/patch/binary bindings and resource counters
-are retained in the P0-05 report. The exact patch is now upstream draft PR 24;
-the OS runtime pin remains unchanged. Actual container execution is prepared in
-`../hosted/README.md`, reusing the checked binaries on a hosted runner. The local
-VM is off. Passing workspace checks do not qualify Fedora or live containment.
-
-The PR 24 review reproduced a missing filesystem between-case checkpoint in the
-published patch. The revised cumulative patch is
+Revised run 45702056794 passed all baseline and patched workspace gates and all
+seventeen focused Python tests for cumulative patch
 `a4545649b1c83f0a3402781f815ebc66ea2b507128d17f61e76c4febb5017bda`.
-It retains the selected artifact report in `Backend` and verifies it in
-`cleaned()` before the driver marks each case passed. A regression exercises
-that actual caller with changed executable/sidecar bytes, sidecar permissions,
-added/removed sidecars and a changed registered path, then restores the originals
-before completion. All six mutations were missed before the fix; all seventeen
-focused tests pass after it. Full hosted workspace validation of this revision
-is pending before its upstream follow-up commit. The prior passing workspace
-and published upstream commit remain evidence for the previous patch only.
+Upstream draft PR 24 contains follow-up commit
+`c1fac8aab6c5d399abb39036ba35b9636212e17f`. The OS runtime pin is unchanged.
+Exact source, lockfile, patch, binary and resource records are retained under
+`docs/security/reports/P0-05-runtime-workspace/45702056794/`.
+
+The filesystem `Backend.cleaned()` checkpoint verifies the selected artifacts
+before the driver marks each case passed. Its caller-level regression changes
+runsc and sidecar bytes, permissions, added/removed sidecars and runtime
+registration, then restores originals before completion. All six mutations were
+missed before the fix and rejected afterward.
+
+Hosted run 45708951490 then passed all six Docker/gVisor fixture profiles: nine
+filesystem, nine source-broker and fourteen Git-source cases per backend, or 64
+total. Observed runtimes matched runc/runsc, and no workers, leases or containers
+remained. Exact reports and bindings are retained under
+`docs/security/reports/P0-05-hosted-containers/45708951490/`. The local VM stays
+off. These are Ubuntu tool-worker results; actual signed Fedora, managed-CLI,
+escape-suite and release acceptance remain required.

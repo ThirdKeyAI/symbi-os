@@ -1,0 +1,408 @@
+{
+  "passed": true,
+  "qualified": false,
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "source-init",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/source",
+        "init"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-fetch-baseline",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/source",
+        "fetch",
+        "--depth=1",
+        "--no-tags",
+        "https://github.com/ThirdKeyAI/Symbiont.git",
+        "deddb9e997244d2289c217ad76b8fde0e9b0339b"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-fetch",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/source",
+        "fetch",
+        "--depth=1",
+        "--no-tags",
+        "https://github.com/ThirdKeyAI/Symbiont.git",
+        "c1fac8aab6c5d399abb39036ba35b9636212e17f"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-checkout",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/source",
+        "checkout",
+        "--detach",
+        "FETCH_HEAD"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "gvisor-signature",
+      "command": [
+        "gpgv",
+        "--homedir",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/gvisor-gpg",
+        "--keyring",
+        "/home/runner/work/symbi-os/symbi-os/image/container/hosted/gvisor/archive.gpg",
+        "--status-fd=1",
+        "/home/runner/work/symbi-os/symbi-os/image/container/hosted/gvisor/Release.gpg",
+        "/home/runner/work/symbi-os/symbi-os/image/container/hosted/gvisor/Release"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "download-runsc",
+      "command": [
+        "curl",
+        "--fail",
+        "--silent",
+        "--show-error",
+        "--location",
+        "--proto",
+        "=https",
+        "--proto-redir",
+        "=https",
+        "--tlsv1.2",
+        "--connect-timeout",
+        "20",
+        "--max-time",
+        "600",
+        "--limit-rate",
+        "5M",
+        "--max-filesize",
+        "87651624",
+        "--output",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/runsc.deb",
+        "https://storage.googleapis.com/gvisor/releases/pool/20261123.0/binary-amd64/runsc.deb"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "extract-runsc",
+      "command": [
+        "dpkg-deb",
+        "--extract",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/runsc.deb",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/runsc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "runsc-version",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/runsc/usr/bin/runsc",
+        "--version"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "ubuntu-signature",
+      "command": [
+        "gpgv",
+        "--homedir",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/ubuntu-gpg",
+        "--keyring",
+        "/home/runner/work/symbi-os/symbi-os/image/container/hosted/ubuntu/archive.gpg",
+        "--status-fd=1",
+        "/home/runner/work/symbi-os/symbi-os/image/container/hosted/ubuntu/SHA256SUMS.gpg",
+        "/home/runner/work/symbi-os/symbi-os/image/container/hosted/ubuntu/SHA256SUMS"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "download-rootfs",
+      "command": [
+        "curl",
+        "--fail",
+        "--silent",
+        "--show-error",
+        "--location",
+        "--proto",
+        "=https",
+        "--proto-redir",
+        "=https",
+        "--tlsv1.2",
+        "--connect-timeout",
+        "20",
+        "--max-time",
+        "600",
+        "--limit-rate",
+        "5M",
+        "--max-filesize",
+        "30028293",
+        "--output",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/fixture-image/ubuntu-base-24.04.5-base-amd64.tar.gz",
+        "https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.5-base-amd64.tar.gz"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "initial-containers",
+      "command": [
+        "docker",
+        "ps",
+        "-aq"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "stop-runner-docker",
+      "command": [
+        "systemctl",
+        "stop",
+        "docker.service",
+        "docker.socket"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "validate-daemon",
+      "command": [
+        "dockerd",
+        "--validate",
+        "--config-file",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/daemon.json"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "docker-version",
+      "command": [
+        "docker",
+        "version",
+        "--format",
+        "{{json .}}"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "docker-info",
+      "command": [
+        "docker",
+        "info",
+        "--format",
+        "{{json .}}"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "fixture-image-build",
+      "command": [
+        "docker",
+        "build",
+        "--pull=false",
+        "--rm",
+        "--force-rm",
+        "--memory=512m",
+        "--memory-swap=512m",
+        "--cpu-period=100000",
+        "--cpu-quota=100000",
+        "--network=host",
+        "--iidfile",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/fixture-image-id",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/fixture-image"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "fixture-image-inspect",
+      "command": [
+        "docker",
+        "image",
+        "inspect",
+        "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "create-evidence-container",
+      "command": [
+        "docker",
+        "create",
+        "--network=none",
+        "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "copy-fixture-packages",
+      "command": [
+        "docker",
+        "cp",
+        "51fd7bb7840874c5e5bec8096af86d7f3ab2f833b6093d6f9de53ef4a79431b3:/usr/share/symbi-fixture-evidence/.",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/public/fixture-packages"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "remove-evidence-container",
+      "command": [
+        "docker",
+        "rm",
+        "51fd7bb7840874c5e5bec8096af86d7f3ab2f833b6093d6f9de53ef4a79431b3"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "probe-create-runc",
+      "command": [
+        "docker",
+        "create",
+        "--runtime=runc",
+        "--network=none",
+        "--read-only",
+        "--cap-drop=ALL",
+        "--security-opt=no-new-privileges",
+        "--user=1000:1000",
+        "--memory=256m",
+        "--memory-swap=256m",
+        "--cpus=1",
+        "--pids-limit=64",
+        "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc",
+        "python3",
+        "-c",
+        "import time; time.sleep(30)"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "probe-start-runc",
+      "command": [
+        "docker",
+        "start",
+        "15136e68ad3229cc218898aed6c074c47b8abc1b89cdceaf83f9ea9694158166"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "probe-inspect-runc",
+      "command": [
+        "docker",
+        "inspect",
+        "15136e68ad3229cc218898aed6c074c47b8abc1b89cdceaf83f9ea9694158166"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "probe-remove-runc",
+      "command": [
+        "docker",
+        "rm",
+        "--force",
+        "15136e68ad3229cc218898aed6c074c47b8abc1b89cdceaf83f9ea9694158166"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "probe-create-runsc",
+      "command": [
+        "docker",
+        "create",
+        "--runtime=runsc",
+        "--network=none",
+        "--read-only",
+        "--cap-drop=ALL",
+        "--security-opt=no-new-privileges",
+        "--user=1000:1000",
+        "--memory=256m",
+        "--memory-swap=256m",
+        "--cpus=1",
+        "--pids-limit=64",
+        "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc",
+        "python3",
+        "-c",
+        "import time; time.sleep(30)"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "probe-start-runsc",
+      "command": [
+        "docker",
+        "start",
+        "cdebd6d4fb08bed4b92a2d20c7d533c7a3202e0039dfca5315ececc86b6689f1"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "probe-inspect-runsc",
+      "command": [
+        "docker",
+        "inspect",
+        "cdebd6d4fb08bed4b92a2d20c7d533c7a3202e0039dfca5315ececc86b6689f1"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "probe-remove-runsc",
+      "command": [
+        "docker",
+        "rm",
+        "--force",
+        "cdebd6d4fb08bed4b92a2d20c7d533c7a3202e0039dfca5315ececc86b6689f1"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "complete-fixtures",
+      "command": [
+        "/usr/sbin/runuser",
+        "-u",
+        "runner",
+        "--",
+        "env",
+        "-i",
+        "PATH=/usr/bin:/bin",
+        "GITHUB_ACTIONS=true",
+        "RUNNER_ENVIRONMENT=github-hosted",
+        "PYTHONDONTWRITEBYTECODE=1",
+        "python3",
+        "/home/runner/work/symbi-os/symbi-os/image/container/hosted/run_fixtures.py",
+        "--work",
+        "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "source_commit": "55b97b8e3846dfd7420bf7fab852f15f887dae79",
+  "scope": "Ubuntu Docker/gVisor development fixtures; no Fedora or release qualification",
+  "daemon_stopped": true
+}

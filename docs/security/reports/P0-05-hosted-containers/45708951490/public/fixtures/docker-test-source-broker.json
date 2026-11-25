@@ -1,0 +1,2339 @@
+{
+  "passed": true,
+  "fixture": "/tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys",
+  "binary_sha256": "1e90af1fe424ec37ad716bbc1e069c0bc7a78f59c49871b7e79506bda69f49c7",
+  "driver_sha256": "ae2b6490cca43924e0f14aa84e71943c4684f298103db72b62eef534a16d1d2e",
+  "cases": [
+    {
+      "name": "read",
+      "passed": true,
+      "config_sha256": "fdcf02afc59f0d92083b755d3ce1bad9be7152c9dc805a03a3226127be6f7e3b",
+      "policy_sha256": "ae6f3bbc10d4275226be91b066f1cc3f381fdfef0924005ad6d9c410c2f9d5df",
+      "workers": [],
+      "exit_code": 0,
+      "stdout": "\u2192 Running agent: fixture (agents/fixture.symbi)\n\u2192 Input: {\"tool\": \"read_file\", \"args\": {\"path\": \"alpha.txt\", \"offset\": \"6\", \"limit\": \"23\"}}\n\nfixture complete\n",
+      "stderr": "Loaded environment from /tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.env\nInvocation ID: 6879fd98-17d2-4363-90d2-e58d036b7252\nAudit run: 5494a9c9-e835-40a2-aba0-5b08a2bc5fd3\nAudit journal: /tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.symbiont/governed/5e265a16-273b-40bf-b1cf-4cc59fbe5d01.5494a9c9-e835-40a2-aba0-5b08a2bc5fd3.jsonl\nAudit public key: aa35f247287ef5a5a539ef7a6a436b68c68150ce46b7ca1d39454a6d0bc8b9ec\n\u2713 Cedar policy gate wired (1 policy file(s) loaded)\n\n--- 2 iterations, 4 tokens, terminated: Completed ---\n",
+      "requests": [
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"tool\": \"read_file\", \"args\": {\"path\": \"alpha.txt\", \"offset\": \"6\", \"limit\": \"23\"}}"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "grep_files",
+                "description": "Search regular source files for a literal string using bounded reads without following symlinks. Reports incomplete searches explicitly.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "needle": {
+                      "type": "string",
+                      "description": "Literal UTF-8 text, at most 1024 bytes"
+                    }
+                  },
+                  "required": [
+                    "needle"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "description": "List regular source files below the authorized working directory, without following symlinks. Reports truncation at directory, file or output limits.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "description": "Read a bounded byte range from a regular source file below the authorized working directory. Symlinks and parent traversal are refused.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Relative path from list_files, without parent traversal"
+                    },
+                    "offset": {
+                      "type": "string",
+                      "description": "",
+                      "default": "0"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "description": "",
+                      "default": "32768"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "scratch",
+                "description": "Scratch isolation control",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"tool\": \"read_file\", \"args\": {\"path\": \"alpha.txt\", \"offset\": \"6\", \"limit\": \"23\"}}"
+            },
+            {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "id": "source",
+                  "type": "function",
+                  "function": {
+                    "name": "read_file",
+                    "arguments": "{\"path\": \"alpha.txt\", \"offset\": \"6\", \"limit\": \"23\"}"
+                  }
+                }
+              ]
+            },
+            {
+              "role": "tool",
+              "content": "{\"status\":\"success\",\"tool\":\"read_file\",\"results\":{\"path\":\"alpha.txt\",\"offset\":6,\"bytes\":23,\"size\":34,\"text\":\"needle.* useful result\\n\"},\"output_hash\":\"sha256:f79147f697f8b2bd5ec3f12308d06117bb5582039cddb9747956ff748acfe9d8\",\"created_files\":[],\"execution_transport\":\"fixed_source_broker\"}",
+              "tool_call_id": "source"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "grep_files",
+                "description": "Search regular source files for a literal string using bounded reads without following symlinks. Reports incomplete searches explicitly.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "needle": {
+                      "type": "string",
+                      "description": "Literal UTF-8 text, at most 1024 bytes"
+                    }
+                  },
+                  "required": [
+                    "needle"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "description": "List regular source files below the authorized working directory, without following symlinks. Reports truncation at directory, file or output limits.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "description": "Read a bounded byte range from a regular source file below the authorized working directory. Symlinks and parent traversal are refused.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Relative path from list_files, without parent traversal"
+                    },
+                    "offset": {
+                      "type": "string",
+                      "description": "",
+                      "default": "0"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "description": "",
+                      "default": "32768"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "scratch",
+                "description": "Scratch isolation control",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "journal": {
+        "path": "/tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.symbiont/governed/5e265a16-273b-40bf-b1cf-4cc59fbe5d01.5494a9c9-e835-40a2-aba0-5b08a2bc5fd3.jsonl",
+        "sha256": "992a7f99d3180ac1f2a710f75206b51aa8c06201485aa6ee5b8e7683345cac0e",
+        "grants": [
+          {
+            "action": {
+              "ToolCall": {
+                "arguments": "{\"limit\":\"23\",\"offset\":\"6\",\"path\":\"alpha.txt\"}",
+                "call_id": "source",
+                "name": "read_file"
+              }
+            },
+            "approval": null,
+            "arguments": {
+              "limit": "23",
+              "offset": "6",
+              "path": "alpha.txt"
+            },
+            "authorization_binding": "sha256:f5a99d40a3e92689b6feaa22dc10dde501e2b244a4260b61857d1319c218a540",
+            "contract": {
+              "action_id": "tool_call::read_file",
+              "action_type": "Action",
+              "digest": "sha256:c6953379aa06abed91516b484408e61f83a3620c8f3286f7306b129cdaf84537",
+              "name": "read_file",
+              "requires_approval": false,
+              "resource_id": "default",
+              "resource_type": "Resource",
+              "version": "1.1.0"
+            },
+            "fingerprint": "sha256:ffe51eea2697c1dc27f063788cfb02596a43b19a46dbf85dbb4e19cac53c66c2",
+            "resolved": {
+              "base_tool": "read_file",
+              "command_boundary": {
+                "container": {
+                  "cpu_limit": "1",
+                  "image": "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc",
+                  "max_execution_seconds": 300,
+                  "max_file_bytes": 67108864,
+                  "max_output_bytes": 10485760,
+                  "memory_limit": "512m",
+                  "mounts": [],
+                  "network_mode": "none",
+                  "open_files_limit": 1024,
+                  "pids_limit": 128,
+                  "user": "65534:65534",
+                  "working_dir": "/source"
+                },
+                "filesystem": {
+                  "atomic_tree_snapshot": false,
+                  "create": [],
+                  "excluded_directories": [
+                    ".git",
+                    ".symbiont"
+                  ],
+                  "host_mounts": [],
+                  "input_snapshots": true,
+                  "max_depth": 32,
+                  "max_entries": 10000,
+                  "max_file_bytes": 1048576,
+                  "max_files": 2000,
+                  "max_matches": 200,
+                  "max_path_bytes": 65536,
+                  "max_scan_bytes": 8388608,
+                  "operation": "read_file",
+                  "read": [
+                    {
+                      "bytes": 23,
+                      "observed_size": 34,
+                      "offset": 6,
+                      "path": "alpha.txt",
+                      "sha256": "5075b7d3da563da78c6337a1d50ffb72e9a220947a4b52cf7b7bcca5c767340e"
+                    }
+                  ],
+                  "result_sha256": "sha256:f79147f697f8b2bd5ec3f12308d06117bb5582039cddb9747956ff748acfe9d8",
+                  "transport": "fixed_source_broker",
+                  "working_dir": "/source"
+                },
+                "profile_digest": "sha256:9342f37a61711d9dd02367e571cf6626b371bd9dae89da4e562ed42bd4b03325",
+                "tier": "docker"
+              },
+              "execution_transport": "fixed_source_broker",
+              "risk_tier": "low"
+            },
+            "source_policy": {
+              "agent_name": "fixture",
+              "declaration_hash": "sha256:84d7e8b4cd1bb3bc0c84a085c4e8483e1f16b6c5780b5f7f6e425e956ca70bee",
+              "policies": [],
+              "semantics": "inline_effect_policy_v1",
+              "source_hash": "sha256:46505b9f94f710c65f3993f9894cc450857c1fa37690d6b60425d3fcd4b84d87"
+            }
+          }
+        ]
+      },
+      "envelope": {
+        "status": "success",
+        "tool": "read_file",
+        "results": {
+          "path": "alpha.txt",
+          "offset": 6,
+          "bytes": 23,
+          "size": 34,
+          "text": "needle.* useful result\n"
+        },
+        "output_hash": "sha256:f79147f697f8b2bd5ec3f12308d06117bb5582039cddb9747956ff748acfe9d8",
+        "created_files": [],
+        "execution_transport": "fixed_source_broker"
+      }
+    },
+    {
+      "name": "list",
+      "passed": true,
+      "config_sha256": "fdcf02afc59f0d92083b755d3ce1bad9be7152c9dc805a03a3226127be6f7e3b",
+      "policy_sha256": "ae6f3bbc10d4275226be91b066f1cc3f381fdfef0924005ad6d9c410c2f9d5df",
+      "workers": [],
+      "exit_code": 0,
+      "stdout": "\u2192 Running agent: fixture (agents/fixture.symbi)\n\u2192 Input: {\"tool\": \"list_files\", \"args\": {}}\n\nfixture complete\n",
+      "stderr": "Loaded environment from /tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.env\nInvocation ID: f1a8d92c-5afe-457f-989b-06b648357185\nAudit run: c1626b34-4e04-4bea-a04d-b0d4ea140c29\nAudit journal: /tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.symbiont/governed/2801fd9b-1018-4aa8-ac0c-3866c6242e50.c1626b34-4e04-4bea-a04d-b0d4ea140c29.jsonl\nAudit public key: aa35f247287ef5a5a539ef7a6a436b68c68150ce46b7ca1d39454a6d0bc8b9ec\n\u2713 Cedar policy gate wired (1 policy file(s) loaded)\n\n--- 2 iterations, 4 tokens, terminated: Completed ---\n",
+      "requests": [
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"tool\": \"list_files\", \"args\": {}}"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "grep_files",
+                "description": "Search regular source files for a literal string using bounded reads without following symlinks. Reports incomplete searches explicitly.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "needle": {
+                      "type": "string",
+                      "description": "Literal UTF-8 text, at most 1024 bytes"
+                    }
+                  },
+                  "required": [
+                    "needle"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "description": "List regular source files below the authorized working directory, without following symlinks. Reports truncation at directory, file or output limits.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "description": "Read a bounded byte range from a regular source file below the authorized working directory. Symlinks and parent traversal are refused.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Relative path from list_files, without parent traversal"
+                    },
+                    "offset": {
+                      "type": "string",
+                      "description": "",
+                      "default": "0"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "description": "",
+                      "default": "32768"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "scratch",
+                "description": "Scratch isolation control",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"tool\": \"list_files\", \"args\": {}}"
+            },
+            {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "id": "source",
+                  "type": "function",
+                  "function": {
+                    "name": "list_files",
+                    "arguments": "{}"
+                  }
+                }
+              ]
+            },
+            {
+              "role": "tool",
+              "content": "{\"status\":\"success\",\"tool\":\"list_files\",\"results\":{\"files\":[\"alpha.txt\",\"beta.txt\"],\"truncated\":true,\"skipped\":2},\"output_hash\":\"sha256:f9fe585c35516aa8db9da089a386d75dff9adb4c409f9443a0bac24ae673b494\",\"created_files\":[],\"execution_transport\":\"fixed_source_broker\"}",
+              "tool_call_id": "source"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "grep_files",
+                "description": "Search regular source files for a literal string using bounded reads without following symlinks. Reports incomplete searches explicitly.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "needle": {
+                      "type": "string",
+                      "description": "Literal UTF-8 text, at most 1024 bytes"
+                    }
+                  },
+                  "required": [
+                    "needle"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "description": "List regular source files below the authorized working directory, without following symlinks. Reports truncation at directory, file or output limits.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "description": "Read a bounded byte range from a regular source file below the authorized working directory. Symlinks and parent traversal are refused.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Relative path from list_files, without parent traversal"
+                    },
+                    "offset": {
+                      "type": "string",
+                      "description": "",
+                      "default": "0"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "description": "",
+                      "default": "32768"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "scratch",
+                "description": "Scratch isolation control",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "journal": {
+        "path": "/tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.symbiont/governed/2801fd9b-1018-4aa8-ac0c-3866c6242e50.c1626b34-4e04-4bea-a04d-b0d4ea140c29.jsonl",
+        "sha256": "82d614bc876dc5e5180b3a9be4f49586ccdfe0c416452cb175575bdb49cf709d",
+        "grants": [
+          {
+            "action": {
+              "ToolCall": {
+                "arguments": "{}",
+                "call_id": "source",
+                "name": "list_files"
+              }
+            },
+            "approval": null,
+            "arguments": {},
+            "authorization_binding": "sha256:c47627e65c4d6aa7e8dd9b562551538927502509aa0197ca6b6c7bd6b6c5d62b",
+            "contract": {
+              "action_id": "tool_call::list_files",
+              "action_type": "Action",
+              "digest": "sha256:7f42f29d1b34fd5c0c576aebf03970b1ae80bb4ea3d9d8c29439efa0322069f6",
+              "name": "list_files",
+              "requires_approval": false,
+              "resource_id": "default",
+              "resource_type": "Resource",
+              "version": "1.1.0"
+            },
+            "fingerprint": "sha256:bdbec4d158fe7c12c7749b36b8308cb4d320dadc0d6e2e578c5780132854a664",
+            "resolved": {
+              "base_tool": "list_files",
+              "command_boundary": {
+                "container": {
+                  "cpu_limit": "1",
+                  "image": "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc",
+                  "max_execution_seconds": 300,
+                  "max_file_bytes": 67108864,
+                  "max_output_bytes": 10485760,
+                  "memory_limit": "512m",
+                  "mounts": [],
+                  "network_mode": "none",
+                  "open_files_limit": 1024,
+                  "pids_limit": 128,
+                  "user": "65534:65534",
+                  "working_dir": "/source"
+                },
+                "filesystem": {
+                  "atomic_tree_snapshot": false,
+                  "create": [],
+                  "excluded_directories": [
+                    ".git",
+                    ".symbiont"
+                  ],
+                  "host_mounts": [],
+                  "input_snapshots": true,
+                  "max_depth": 32,
+                  "max_entries": 10000,
+                  "max_file_bytes": 1048576,
+                  "max_files": 2000,
+                  "max_matches": 200,
+                  "max_path_bytes": 65536,
+                  "max_scan_bytes": 8388608,
+                  "metadata_only": true,
+                  "operation": "list_files",
+                  "read": [],
+                  "result_sha256": "sha256:f9fe585c35516aa8db9da089a386d75dff9adb4c409f9443a0bac24ae673b494",
+                  "skipped": 2,
+                  "transport": "fixed_source_broker",
+                  "truncated": true,
+                  "working_dir": "/source"
+                },
+                "profile_digest": "sha256:9342f37a61711d9dd02367e571cf6626b371bd9dae89da4e562ed42bd4b03325",
+                "tier": "docker"
+              },
+              "execution_transport": "fixed_source_broker",
+              "risk_tier": "low"
+            },
+            "source_policy": {
+              "agent_name": "fixture",
+              "declaration_hash": "sha256:84d7e8b4cd1bb3bc0c84a085c4e8483e1f16b6c5780b5f7f6e425e956ca70bee",
+              "policies": [],
+              "semantics": "inline_effect_policy_v1",
+              "source_hash": "sha256:46505b9f94f710c65f3993f9894cc450857c1fa37690d6b60425d3fcd4b84d87"
+            }
+          }
+        ]
+      },
+      "envelope": {
+        "status": "success",
+        "tool": "list_files",
+        "results": {
+          "files": [
+            "alpha.txt",
+            "beta.txt"
+          ],
+          "truncated": true,
+          "skipped": 2
+        },
+        "output_hash": "sha256:f9fe585c35516aa8db9da089a386d75dff9adb4c409f9443a0bac24ae673b494",
+        "created_files": [],
+        "execution_transport": "fixed_source_broker"
+      }
+    },
+    {
+      "name": "grep",
+      "passed": true,
+      "config_sha256": "fdcf02afc59f0d92083b755d3ce1bad9be7152c9dc805a03a3226127be6f7e3b",
+      "policy_sha256": "ae6f3bbc10d4275226be91b066f1cc3f381fdfef0924005ad6d9c410c2f9d5df",
+      "workers": [],
+      "exit_code": 0,
+      "stdout": "\u2192 Running agent: fixture (agents/fixture.symbi)\n\u2192 Input: {\"tool\": \"grep_files\", \"args\": {\"needle\": \"needle.*\"}}\n\nfixture complete\n",
+      "stderr": "Loaded environment from /tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.env\nInvocation ID: 554f7020-c397-4b41-b442-cdfffb8d4b79\nAudit run: 1e44a278-b567-430a-9a57-e9b0c9ae92b1\nAudit journal: /tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.symbiont/governed/919025a4-243a-48ca-940b-be8f627b4f13.1e44a278-b567-430a-9a57-e9b0c9ae92b1.jsonl\nAudit public key: aa35f247287ef5a5a539ef7a6a436b68c68150ce46b7ca1d39454a6d0bc8b9ec\n\u2713 Cedar policy gate wired (1 policy file(s) loaded)\n\n--- 2 iterations, 4 tokens, terminated: Completed ---\n",
+      "requests": [
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"tool\": \"grep_files\", \"args\": {\"needle\": \"needle.*\"}}"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "grep_files",
+                "description": "Search regular source files for a literal string using bounded reads without following symlinks. Reports incomplete searches explicitly.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "needle": {
+                      "type": "string",
+                      "description": "Literal UTF-8 text, at most 1024 bytes"
+                    }
+                  },
+                  "required": [
+                    "needle"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "description": "List regular source files below the authorized working directory, without following symlinks. Reports truncation at directory, file or output limits.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "description": "Read a bounded byte range from a regular source file below the authorized working directory. Symlinks and parent traversal are refused.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Relative path from list_files, without parent traversal"
+                    },
+                    "offset": {
+                      "type": "string",
+                      "description": "",
+                      "default": "0"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "description": "",
+                      "default": "32768"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "scratch",
+                "description": "Scratch isolation control",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"tool\": \"grep_files\", \"args\": {\"needle\": \"needle.*\"}}"
+            },
+            {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "id": "source",
+                  "type": "function",
+                  "function": {
+                    "name": "grep_files",
+                    "arguments": "{\"needle\": \"needle.*\"}"
+                  }
+                }
+              ]
+            },
+            {
+              "role": "tool",
+              "content": "{\"status\":\"success\",\"tool\":\"grep_files\",\"results\":{\"matches\":[{\"path\":\"alpha.txt\",\"line\":2,\"text\":\"needle.* useful result\"}],\"truncated\":true,\"skipped\":2,\"files_scanned\":2},\"output_hash\":\"sha256:b4344713068b5c669ddcb320b9cf82889fbc6ed893cc4fc111cf28e0c7c7d6f2\",\"created_files\":[],\"execution_transport\":\"fixed_source_broker\"}",
+              "tool_call_id": "source"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "grep_files",
+                "description": "Search regular source files for a literal string using bounded reads without following symlinks. Reports incomplete searches explicitly.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "needle": {
+                      "type": "string",
+                      "description": "Literal UTF-8 text, at most 1024 bytes"
+                    }
+                  },
+                  "required": [
+                    "needle"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "description": "List regular source files below the authorized working directory, without following symlinks. Reports truncation at directory, file or output limits.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "description": "Read a bounded byte range from a regular source file below the authorized working directory. Symlinks and parent traversal are refused.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Relative path from list_files, without parent traversal"
+                    },
+                    "offset": {
+                      "type": "string",
+                      "description": "",
+                      "default": "0"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "description": "",
+                      "default": "32768"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "scratch",
+                "description": "Scratch isolation control",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "journal": {
+        "path": "/tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.symbiont/governed/919025a4-243a-48ca-940b-be8f627b4f13.1e44a278-b567-430a-9a57-e9b0c9ae92b1.jsonl",
+        "sha256": "780c27bc180b80af1af7270a763b7fef82b090018d00d0528cd74bef9831c917",
+        "grants": [
+          {
+            "action": {
+              "ToolCall": {
+                "arguments": "{\"needle\":\"needle.*\"}",
+                "call_id": "source",
+                "name": "grep_files"
+              }
+            },
+            "approval": null,
+            "arguments": {
+              "needle": "needle.*"
+            },
+            "authorization_binding": "sha256:e41b6b2edc16a85e0eabf6115f9ddbfa88b2dd030cfd61585a6e7c38cb762f8c",
+            "contract": {
+              "action_id": "tool_call::grep_files",
+              "action_type": "Action",
+              "digest": "sha256:29356d2939436f339139ea9e1a645c76553fa87336f9fd18e30869cc20f1a66a",
+              "name": "grep_files",
+              "requires_approval": false,
+              "resource_id": "default",
+              "resource_type": "Resource",
+              "version": "1.1.0"
+            },
+            "fingerprint": "sha256:e78edcc3a71af67512ee8497b2899e266f0112b65e53658559142f4ef8c45d44",
+            "resolved": {
+              "base_tool": "grep_files",
+              "command_boundary": {
+                "container": {
+                  "cpu_limit": "1",
+                  "image": "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc",
+                  "max_execution_seconds": 300,
+                  "max_file_bytes": 67108864,
+                  "max_output_bytes": 10485760,
+                  "memory_limit": "512m",
+                  "mounts": [],
+                  "network_mode": "none",
+                  "open_files_limit": 1024,
+                  "pids_limit": 128,
+                  "user": "65534:65534",
+                  "working_dir": "/source"
+                },
+                "filesystem": {
+                  "atomic_tree_snapshot": false,
+                  "create": [],
+                  "excluded_directories": [
+                    ".git",
+                    ".symbiont"
+                  ],
+                  "host_mounts": [],
+                  "input_snapshots": true,
+                  "max_depth": 32,
+                  "max_entries": 10000,
+                  "max_file_bytes": 1048576,
+                  "max_files": 2000,
+                  "max_matches": 200,
+                  "max_path_bytes": 65536,
+                  "max_scan_bytes": 8388608,
+                  "metadata_only": false,
+                  "operation": "grep_files",
+                  "read": [
+                    {
+                      "bytes": 34,
+                      "path": "alpha.txt",
+                      "sha256": "0d28d843d0cb9594a9410cb4e9f05d0817fc100a07782c1594893096b5343389",
+                      "truncated": false
+                    },
+                    {
+                      "bytes": 20,
+                      "path": "beta.txt",
+                      "sha256": "4f397d4b83e32d96b326561406f1742817f7b20278d31dbe24e482649627c588",
+                      "truncated": false
+                    }
+                  ],
+                  "result_sha256": "sha256:b4344713068b5c669ddcb320b9cf82889fbc6ed893cc4fc111cf28e0c7c7d6f2",
+                  "skipped": 2,
+                  "transport": "fixed_source_broker",
+                  "truncated": true,
+                  "working_dir": "/source"
+                },
+                "profile_digest": "sha256:9342f37a61711d9dd02367e571cf6626b371bd9dae89da4e562ed42bd4b03325",
+                "tier": "docker"
+              },
+              "execution_transport": "fixed_source_broker",
+              "risk_tier": "low"
+            },
+            "source_policy": {
+              "agent_name": "fixture",
+              "declaration_hash": "sha256:84d7e8b4cd1bb3bc0c84a085c4e8483e1f16b6c5780b5f7f6e425e956ca70bee",
+              "policies": [],
+              "semantics": "inline_effect_policy_v1",
+              "source_hash": "sha256:46505b9f94f710c65f3993f9894cc450857c1fa37690d6b60425d3fcd4b84d87"
+            }
+          }
+        ]
+      },
+      "envelope": {
+        "status": "success",
+        "tool": "grep_files",
+        "results": {
+          "matches": [
+            {
+              "path": "alpha.txt",
+              "line": 2,
+              "text": "needle.* useful result"
+            }
+          ],
+          "truncated": true,
+          "skipped": 2,
+          "files_scanned": 2
+        },
+        "output_hash": "sha256:b4344713068b5c669ddcb320b9cf82889fbc6ed893cc4fc111cf28e0c7c7d6f2",
+        "created_files": [],
+        "execution_transport": "fixed_source_broker"
+      }
+    },
+    {
+      "name": "traversal",
+      "passed": true,
+      "config_sha256": "fdcf02afc59f0d92083b755d3ce1bad9be7152c9dc805a03a3226127be6f7e3b",
+      "policy_sha256": "ae6f3bbc10d4275226be91b066f1cc3f381fdfef0924005ad6d9c410c2f9d5df",
+      "workers": [],
+      "exit_code": 0,
+      "stdout": "\u2192 Running agent: fixture (agents/fixture.symbi)\n\u2192 Input: {\"tool\": \"read_file\", \"args\": {\"path\": \"../observer/canary\"}}\n\nfixture complete\n",
+      "stderr": "Loaded environment from /tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.env\nInvocation ID: d61aa11b-f6c2-494b-be2c-1bddcb93bb44\nAudit run: a1003b5c-b742-4b0d-8b76-d40e923a5709\nAudit journal: /tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.symbiont/governed/b5b7d3c3-a4a9-47b2-99df-6ed293908dcd.a1003b5c-b742-4b0d-8b76-d40e923a5709.jsonl\nAudit public key: aa35f247287ef5a5a539ef7a6a436b68c68150ce46b7ca1d39454a6d0bc8b9ec\n\u2713 Cedar policy gate wired (1 policy file(s) loaded)\n\n--- 2 iterations, 4 tokens, terminated: Completed ---\n",
+      "requests": [
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"tool\": \"read_file\", \"args\": {\"path\": \"../observer/canary\"}}"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "grep_files",
+                "description": "Search regular source files for a literal string using bounded reads without following symlinks. Reports incomplete searches explicitly.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "needle": {
+                      "type": "string",
+                      "description": "Literal UTF-8 text, at most 1024 bytes"
+                    }
+                  },
+                  "required": [
+                    "needle"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "description": "List regular source files below the authorized working directory, without following symlinks. Reports truncation at directory, file or output limits.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "description": "Read a bounded byte range from a regular source file below the authorized working directory. Symlinks and parent traversal are refused.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Relative path from list_files, without parent traversal"
+                    },
+                    "offset": {
+                      "type": "string",
+                      "description": "",
+                      "default": "0"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "description": "",
+                      "default": "32768"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "scratch",
+                "description": "Scratch isolation control",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"tool\": \"read_file\", \"args\": {\"path\": \"../observer/canary\"}}"
+            },
+            {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "id": "source",
+                  "type": "function",
+                  "function": {
+                    "name": "read_file",
+                    "arguments": "{\"path\": \"../observer/canary\"}"
+                  }
+                }
+              ]
+            },
+            {
+              "role": "tool",
+              "content": "[Policy denied] filesystem grants require normalized relative file paths",
+              "tool_call_id": "source"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "grep_files",
+                "description": "Search regular source files for a literal string using bounded reads without following symlinks. Reports incomplete searches explicitly.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "needle": {
+                      "type": "string",
+                      "description": "Literal UTF-8 text, at most 1024 bytes"
+                    }
+                  },
+                  "required": [
+                    "needle"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "description": "List regular source files below the authorized working directory, without following symlinks. Reports truncation at directory, file or output limits.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "description": "Read a bounded byte range from a regular source file below the authorized working directory. Symlinks and parent traversal are refused.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Relative path from list_files, without parent traversal"
+                    },
+                    "offset": {
+                      "type": "string",
+                      "description": "",
+                      "default": "0"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "description": "",
+                      "default": "32768"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "scratch",
+                "description": "Scratch isolation control",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "journal": {
+        "path": "/tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.symbiont/governed/b5b7d3c3-a4a9-47b2-99df-6ed293908dcd.a1003b5c-b742-4b0d-8b76-d40e923a5709.jsonl",
+        "sha256": "7109fd410a97b1c63608102a739ecedb9ea6d45a7e3d5080980bf8d4aca3df32",
+        "grants": []
+      }
+    },
+    {
+      "name": "symlink",
+      "passed": true,
+      "config_sha256": "fdcf02afc59f0d92083b755d3ce1bad9be7152c9dc805a03a3226127be6f7e3b",
+      "policy_sha256": "ae6f3bbc10d4275226be91b066f1cc3f381fdfef0924005ad6d9c410c2f9d5df",
+      "workers": [],
+      "exit_code": 0,
+      "stdout": "\u2192 Running agent: fixture (agents/fixture.symbi)\n\u2192 Input: {\"tool\": \"read_file\", \"args\": {\"path\": \"link\"}}\n\nfixture complete\n",
+      "stderr": "Loaded environment from /tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.env\nInvocation ID: 02699c88-fef8-4718-8049-a42f0f3559bf\nAudit run: a60643a5-cd05-4d9c-a2e7-645638306e73\nAudit journal: /tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.symbiont/governed/e7a74fd8-ddfd-4b72-91d2-defbcbf832de.a60643a5-cd05-4d9c-a2e7-645638306e73.jsonl\nAudit public key: aa35f247287ef5a5a539ef7a6a436b68c68150ce46b7ca1d39454a6d0bc8b9ec\n\u2713 Cedar policy gate wired (1 policy file(s) loaded)\n\n--- 2 iterations, 4 tokens, terminated: Completed ---\n",
+      "requests": [
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"tool\": \"read_file\", \"args\": {\"path\": \"link\"}}"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "grep_files",
+                "description": "Search regular source files for a literal string using bounded reads without following symlinks. Reports incomplete searches explicitly.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "needle": {
+                      "type": "string",
+                      "description": "Literal UTF-8 text, at most 1024 bytes"
+                    }
+                  },
+                  "required": [
+                    "needle"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "description": "List regular source files below the authorized working directory, without following symlinks. Reports truncation at directory, file or output limits.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "description": "Read a bounded byte range from a regular source file below the authorized working directory. Symlinks and parent traversal are refused.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Relative path from list_files, without parent traversal"
+                    },
+                    "offset": {
+                      "type": "string",
+                      "description": "",
+                      "default": "0"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "description": "",
+                      "default": "32768"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "scratch",
+                "description": "Scratch isolation control",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"tool\": \"read_file\", \"args\": {\"path\": \"link\"}}"
+            },
+            {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "id": "source",
+                  "type": "function",
+                  "function": {
+                    "name": "read_file",
+                    "arguments": "{\"path\": \"link\"}"
+                  }
+                }
+              ]
+            },
+            {
+              "role": "tool",
+              "content": "[Policy denied] source must be a regular file without links",
+              "tool_call_id": "source"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "grep_files",
+                "description": "Search regular source files for a literal string using bounded reads without following symlinks. Reports incomplete searches explicitly.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "needle": {
+                      "type": "string",
+                      "description": "Literal UTF-8 text, at most 1024 bytes"
+                    }
+                  },
+                  "required": [
+                    "needle"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "description": "List regular source files below the authorized working directory, without following symlinks. Reports truncation at directory, file or output limits.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "description": "Read a bounded byte range from a regular source file below the authorized working directory. Symlinks and parent traversal are refused.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Relative path from list_files, without parent traversal"
+                    },
+                    "offset": {
+                      "type": "string",
+                      "description": "",
+                      "default": "0"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "description": "",
+                      "default": "32768"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "scratch",
+                "description": "Scratch isolation control",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "journal": {
+        "path": "/tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.symbiont/governed/e7a74fd8-ddfd-4b72-91d2-defbcbf832de.a60643a5-cd05-4d9c-a2e7-645638306e73.jsonl",
+        "sha256": "8a6cea6964fe9e561334fd0bd1aa1c8ec289a4b623551a15f774161d9ef859af",
+        "grants": []
+      }
+    },
+    {
+      "name": "hardlink",
+      "passed": true,
+      "config_sha256": "fdcf02afc59f0d92083b755d3ce1bad9be7152c9dc805a03a3226127be6f7e3b",
+      "policy_sha256": "ae6f3bbc10d4275226be91b066f1cc3f381fdfef0924005ad6d9c410c2f9d5df",
+      "workers": [],
+      "exit_code": 0,
+      "stdout": "\u2192 Running agent: fixture (agents/fixture.symbi)\n\u2192 Input: {\"tool\": \"read_file\", \"args\": {\"path\": \"hardlink\"}}\n\nfixture complete\n",
+      "stderr": "Loaded environment from /tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.env\nInvocation ID: 3dbe0b01-367c-4a25-810c-a1fa8853b76e\nAudit run: 58c2ae89-093f-466a-9e42-8f9b0d1e9a8b\nAudit journal: /tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.symbiont/governed/1c9d1ec0-3dda-483c-889e-9a9a0753d6bd.58c2ae89-093f-466a-9e42-8f9b0d1e9a8b.jsonl\nAudit public key: aa35f247287ef5a5a539ef7a6a436b68c68150ce46b7ca1d39454a6d0bc8b9ec\n\u2713 Cedar policy gate wired (1 policy file(s) loaded)\n\n--- 2 iterations, 4 tokens, terminated: Completed ---\n",
+      "requests": [
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"tool\": \"read_file\", \"args\": {\"path\": \"hardlink\"}}"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "grep_files",
+                "description": "Search regular source files for a literal string using bounded reads without following symlinks. Reports incomplete searches explicitly.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "needle": {
+                      "type": "string",
+                      "description": "Literal UTF-8 text, at most 1024 bytes"
+                    }
+                  },
+                  "required": [
+                    "needle"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "description": "List regular source files below the authorized working directory, without following symlinks. Reports truncation at directory, file or output limits.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "description": "Read a bounded byte range from a regular source file below the authorized working directory. Symlinks and parent traversal are refused.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Relative path from list_files, without parent traversal"
+                    },
+                    "offset": {
+                      "type": "string",
+                      "description": "",
+                      "default": "0"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "description": "",
+                      "default": "32768"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "scratch",
+                "description": "Scratch isolation control",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"tool\": \"read_file\", \"args\": {\"path\": \"hardlink\"}}"
+            },
+            {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "id": "source",
+                  "type": "function",
+                  "function": {
+                    "name": "read_file",
+                    "arguments": "{\"path\": \"hardlink\"}"
+                  }
+                }
+              ]
+            },
+            {
+              "role": "tool",
+              "content": "[Policy denied] source must be a regular file without links",
+              "tool_call_id": "source"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "grep_files",
+                "description": "Search regular source files for a literal string using bounded reads without following symlinks. Reports incomplete searches explicitly.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "needle": {
+                      "type": "string",
+                      "description": "Literal UTF-8 text, at most 1024 bytes"
+                    }
+                  },
+                  "required": [
+                    "needle"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "description": "List regular source files below the authorized working directory, without following symlinks. Reports truncation at directory, file or output limits.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "description": "Read a bounded byte range from a regular source file below the authorized working directory. Symlinks and parent traversal are refused.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Relative path from list_files, without parent traversal"
+                    },
+                    "offset": {
+                      "type": "string",
+                      "description": "",
+                      "default": "0"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "description": "",
+                      "default": "32768"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "scratch",
+                "description": "Scratch isolation control",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "journal": {
+        "path": "/tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.symbiont/governed/1c9d1ec0-3dda-483c-889e-9a9a0753d6bd.58c2ae89-093f-466a-9e42-8f9b0d1e9a8b.jsonl",
+        "sha256": "7637119b292d2a17fa2c2f660580a1a541b507d2142ef02f21191c18087c95cb",
+        "grants": []
+      }
+    },
+    {
+      "name": "no_ceiling",
+      "passed": true,
+      "config_sha256": "4005b48d60fbe810c68036b4133e9912ed299067986403a1102781238cc20ad7",
+      "policy_sha256": "ae6f3bbc10d4275226be91b066f1cc3f381fdfef0924005ad6d9c410c2f9d5df",
+      "workers": [],
+      "exit_code": 0,
+      "stdout": "\u2192 Running agent: fixture (agents/fixture.symbi)\n\u2192 Input: {\"tool\": \"list_files\", \"args\": {}}\n\nfixture complete\n",
+      "stderr": "Loaded environment from /tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.env\nInvocation ID: db04d2e4-303a-4ff5-9f74-2dcbb8b33e27\nAudit run: 15cb6725-db70-46c1-be9b-c7f5845753b4\nAudit journal: /tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.symbiont/governed/7168afb6-9a80-4f9f-aeeb-63d675e1ba6f.15cb6725-db70-46c1-be9b-c7f5845753b4.jsonl\nAudit public key: aa35f247287ef5a5a539ef7a6a436b68c68150ce46b7ca1d39454a6d0bc8b9ec\n\u2713 Cedar policy gate wired (1 policy file(s) loaded)\n\n--- 2 iterations, 4 tokens, terminated: Completed ---\n",
+      "requests": [
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"tool\": \"list_files\", \"args\": {}}"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "grep_files",
+                "description": "Search regular source files for a literal string using bounded reads without following symlinks. Reports incomplete searches explicitly.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "needle": {
+                      "type": "string",
+                      "description": "Literal UTF-8 text, at most 1024 bytes"
+                    }
+                  },
+                  "required": [
+                    "needle"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "description": "List regular source files below the authorized working directory, without following symlinks. Reports truncation at directory, file or output limits.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "description": "Read a bounded byte range from a regular source file below the authorized working directory. Symlinks and parent traversal are refused.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Relative path from list_files, without parent traversal"
+                    },
+                    "offset": {
+                      "type": "string",
+                      "description": "",
+                      "default": "0"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "description": "",
+                      "default": "32768"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "scratch",
+                "description": "Scratch isolation control",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"tool\": \"list_files\", \"args\": {}}"
+            },
+            {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "id": "source",
+                  "type": "function",
+                  "function": {
+                    "name": "list_files",
+                    "arguments": "{}"
+                  }
+                }
+              ]
+            },
+            {
+              "role": "tool",
+              "content": "[Policy denied] source query has no configured mount ceiling",
+              "tool_call_id": "source"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "grep_files",
+                "description": "Search regular source files for a literal string using bounded reads without following symlinks. Reports incomplete searches explicitly.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "needle": {
+                      "type": "string",
+                      "description": "Literal UTF-8 text, at most 1024 bytes"
+                    }
+                  },
+                  "required": [
+                    "needle"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "description": "List regular source files below the authorized working directory, without following symlinks. Reports truncation at directory, file or output limits.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "description": "Read a bounded byte range from a regular source file below the authorized working directory. Symlinks and parent traversal are refused.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Relative path from list_files, without parent traversal"
+                    },
+                    "offset": {
+                      "type": "string",
+                      "description": "",
+                      "default": "0"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "description": "",
+                      "default": "32768"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "scratch",
+                "description": "Scratch isolation control",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "journal": {
+        "path": "/tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.symbiont/governed/7168afb6-9a80-4f9f-aeeb-63d675e1ba6f.15cb6725-db70-46c1-be9b-c7f5845753b4.jsonl",
+        "sha256": "e998010a74c8f7cb41a8b994147f7306390840448f6445550ce969560ccd2ac2",
+        "grants": []
+      }
+    },
+    {
+      "name": "denied",
+      "passed": true,
+      "config_sha256": "fdcf02afc59f0d92083b755d3ce1bad9be7152c9dc805a03a3226127be6f7e3b",
+      "policy_sha256": "025c836914d0890a6fc147645fcfe8a705f9cfa48bf1717be4c3f82d9f1a8545",
+      "workers": [],
+      "exit_code": 0,
+      "stdout": "\u2192 Running agent: fixture (agents/fixture.symbi)\n\u2192 Input: {\"tool\": \"grep_files\", \"args\": {\"needle\": \"DENIED\"}}\n\nfixture complete\n",
+      "stderr": "Loaded environment from /tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.env\nInvocation ID: 2577a717-441e-4e34-bd37-fbe24da142bf\nAudit run: 3e5cc576-21fd-48a0-9da4-6279fee56bca\nAudit journal: /tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.symbiont/governed/456dc179-3b3e-4c5d-9d5b-5c4278f93d68.3e5cc576-21fd-48a0-9da4-6279fee56bca.jsonl\nAudit public key: aa35f247287ef5a5a539ef7a6a436b68c68150ce46b7ca1d39454a6d0bc8b9ec\n\u2713 Cedar policy gate wired (1 policy file(s) loaded)\n\n--- 2 iterations, 4 tokens, terminated: Completed ---\n",
+      "requests": [
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"tool\": \"grep_files\", \"args\": {\"needle\": \"DENIED\"}}"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "grep_files",
+                "description": "Search regular source files for a literal string using bounded reads without following symlinks. Reports incomplete searches explicitly.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "needle": {
+                      "type": "string",
+                      "description": "Literal UTF-8 text, at most 1024 bytes"
+                    }
+                  },
+                  "required": [
+                    "needle"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "description": "List regular source files below the authorized working directory, without following symlinks. Reports truncation at directory, file or output limits.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "description": "Read a bounded byte range from a regular source file below the authorized working directory. Symlinks and parent traversal are refused.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Relative path from list_files, without parent traversal"
+                    },
+                    "offset": {
+                      "type": "string",
+                      "description": "",
+                      "default": "0"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "description": "",
+                      "default": "32768"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "scratch",
+                "description": "Scratch isolation control",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"tool\": \"grep_files\", \"args\": {\"needle\": \"DENIED\"}}"
+            },
+            {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "id": "source",
+                  "type": "function",
+                  "function": {
+                    "name": "grep_files",
+                    "arguments": "{\"needle\": \"DENIED\"}"
+                  }
+                }
+              ]
+            },
+            {
+              "role": "tool",
+              "content": "[Policy denied] Cedar denied action 'tool_call::grep_files' for agent 456dc179-3b3e-4c5d-9d5b-5c4278f93d68",
+              "tool_call_id": "source"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "grep_files",
+                "description": "Search regular source files for a literal string using bounded reads without following symlinks. Reports incomplete searches explicitly.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "needle": {
+                      "type": "string",
+                      "description": "Literal UTF-8 text, at most 1024 bytes"
+                    }
+                  },
+                  "required": [
+                    "needle"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "description": "List regular source files below the authorized working directory, without following symlinks. Reports truncation at directory, file or output limits.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "description": "Read a bounded byte range from a regular source file below the authorized working directory. Symlinks and parent traversal are refused.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Relative path from list_files, without parent traversal"
+                    },
+                    "offset": {
+                      "type": "string",
+                      "description": "",
+                      "default": "0"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "description": "",
+                      "default": "32768"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "scratch",
+                "description": "Scratch isolation control",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "journal": {
+        "path": "/tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.symbiont/governed/456dc179-3b3e-4c5d-9d5b-5c4278f93d68.3e5cc576-21fd-48a0-9da4-6279fee56bca.jsonl",
+        "sha256": "565491ba69d8d9a60bce02b7d31505960ebb487fd051820b98fc8d3ba860f589",
+        "grants": []
+      }
+    },
+    {
+      "name": "scratch",
+      "passed": true,
+      "config_sha256": "fdcf02afc59f0d92083b755d3ce1bad9be7152c9dc805a03a3226127be6f7e3b",
+      "policy_sha256": "ae6f3bbc10d4275226be91b066f1cc3f381fdfef0924005ad6d9c410c2f9d5df",
+      "workers": [
+        {
+          "id": "40a4b440c196",
+          "mounts": [],
+          "runtime": "runc"
+        }
+      ],
+      "exit_code": 0,
+      "stdout": "\u2192 Running agent: fixture (agents/fixture.symbi)\n\u2192 Input: {\"tool\": \"scratch\", \"args\": {}}\n\nfixture complete\n",
+      "stderr": "Loaded environment from /tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.env\nInvocation ID: 87f47b93-cf80-446c-a59e-199a6ba00dd8\nAudit run: fd679a57-448c-4013-94f5-3ec442ead409\nAudit journal: /tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.symbiont/governed/762af9a3-b0cb-415a-9780-63e617791d5a.fd679a57-448c-4013-94f5-3ec442ead409.jsonl\nAudit public key: aa35f247287ef5a5a539ef7a6a436b68c68150ce46b7ca1d39454a6d0bc8b9ec\n\u2713 Cedar policy gate wired (1 policy file(s) loaded)\n\n--- 2 iterations, 4 tokens, terminated: Completed ---\n",
+      "requests": [
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"tool\": \"scratch\", \"args\": {}}"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "grep_files",
+                "description": "Search regular source files for a literal string using bounded reads without following symlinks. Reports incomplete searches explicitly.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "needle": {
+                      "type": "string",
+                      "description": "Literal UTF-8 text, at most 1024 bytes"
+                    }
+                  },
+                  "required": [
+                    "needle"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "description": "List regular source files below the authorized working directory, without following symlinks. Reports truncation at directory, file or output limits.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "description": "Read a bounded byte range from a regular source file below the authorized working directory. Symlinks and parent traversal are refused.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Relative path from list_files, without parent traversal"
+                    },
+                    "offset": {
+                      "type": "string",
+                      "description": "",
+                      "default": "0"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "description": "",
+                      "default": "32768"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "scratch",
+                "description": "Scratch isolation control",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"tool\": \"scratch\", \"args\": {}}"
+            },
+            {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "id": "source",
+                  "type": "function",
+                  "function": {
+                    "name": "scratch",
+                    "arguments": "{}"
+                  }
+                }
+              ]
+            },
+            {
+              "role": "tool",
+              "content": "{\"status\":\"success\",\"scan_id\":\"1795643908-f6274eee3c7046b98d2be560334da259\",\"tool\":\"scratch\",\"command\":\"python3 -c import json,os,pathlib,time; time.sleep(2); print(json.dumps(dict(source_visible=pathlib.Path(\\\"alpha.txt\\\").exists(),host_visible=pathlib.Path('/tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/observer/canary').exists(), uid=os.getuid())))\",\"duration_ms\":2231,\"timestamp\":\"2026-11-25T21:58:30.759663305+00:00\",\"output_hash\":\"sha256:17cc62dc30ea13fccbb541da3169ffe2c7ba18a487f46d230968bbdd8b134e4e\",\"output_truncated\":false,\"exit_code\":0,\"stderr\":\"\",\"results\":{\"source_visible\":false,\"host_visible\":false,\"uid\":65534,\"exit_code\":0},\"created_files\":[]}",
+              "tool_call_id": "source"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "grep_files",
+                "description": "Search regular source files for a literal string using bounded reads without following symlinks. Reports incomplete searches explicitly.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "needle": {
+                      "type": "string",
+                      "description": "Literal UTF-8 text, at most 1024 bytes"
+                    }
+                  },
+                  "required": [
+                    "needle"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "list_files",
+                "description": "List regular source files below the authorized working directory, without following symlinks. Reports truncation at directory, file or output limits.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "read_file",
+                "description": "Read a bounded byte range from a regular source file below the authorized working directory. Symlinks and parent traversal are refused.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "description": "Relative path from list_files, without parent traversal"
+                    },
+                    "offset": {
+                      "type": "string",
+                      "description": "",
+                      "default": "0"
+                    },
+                    "limit": {
+                      "type": "string",
+                      "description": "",
+                      "default": "32768"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "function",
+              "function": {
+                "name": "scratch",
+                "description": "Scratch isolation control",
+                "parameters": {
+                  "type": "object",
+                  "properties": {},
+                  "required": []
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "journal": {
+        "path": "/tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/.symbiont/governed/762af9a3-b0cb-415a-9780-63e617791d5a.fd679a57-448c-4013-94f5-3ec442ead409.jsonl",
+        "sha256": "8f238f989cf66d3bcfdc0bb057a1b5e77ec5371a53a7f887593b936e637fe234",
+        "grants": [
+          {
+            "action": {
+              "ToolCall": {
+                "arguments": "{}",
+                "call_id": "source",
+                "name": "scratch"
+              }
+            },
+            "approval": null,
+            "arguments": {},
+            "authorization_binding": "sha256:22b450253f8fc03a17ae00cd4cb6eb169b96c5f3dd34245331e100af28ea46eb",
+            "contract": {
+              "action_id": "tool_call::scratch",
+              "action_type": "Action",
+              "digest": "sha256:62e05e216ba784adc2aa67487cdbf99ae49baaa2a46c3e33ae983ce142f59d11",
+              "name": "scratch",
+              "requires_approval": false,
+              "resource_id": "default",
+              "resource_type": "Resource",
+              "version": "1"
+            },
+            "fingerprint": "sha256:e65e9d2945f1c381713952ef28daa98933bfc8eafd36671f154720b3739f418f",
+            "resolved": {
+              "argv": [
+                "python3",
+                "-c",
+                "import json,os,pathlib,time; time.sleep(2); print(json.dumps(dict(source_visible=pathlib.Path(\"alpha.txt\").exists(),host_visible=pathlib.Path('/tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/observer/canary').exists(), uid=os.getuid())))"
+              ],
+              "base_tool": "scratch",
+              "command_boundary": {
+                "container": {
+                  "cpu_limit": "1",
+                  "image": "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc",
+                  "max_execution_seconds": 300,
+                  "max_file_bytes": 67108864,
+                  "max_output_bytes": 10485760,
+                  "memory_limit": "512m",
+                  "mounts": [],
+                  "network_mode": "none",
+                  "open_files_limit": 1024,
+                  "pids_limit": 128,
+                  "user": "65534:65534",
+                  "working_dir": "/source"
+                },
+                "filesystem": {
+                  "create": [],
+                  "input_snapshots": true,
+                  "max_file_bytes": 0,
+                  "output_parent_identity": null,
+                  "overwrite": false,
+                  "read": []
+                },
+                "profile_digest": "sha256:9342f37a61711d9dd02367e571cf6626b371bd9dae89da4e562ed42bd4b03325",
+                "tier": "docker"
+              },
+              "execution_transport": "selected_command_boundary",
+              "risk_tier": "low"
+            },
+            "source_policy": {
+              "agent_name": "fixture",
+              "declaration_hash": "sha256:84d7e8b4cd1bb3bc0c84a085c4e8483e1f16b6c5780b5f7f6e425e956ca70bee",
+              "policies": [],
+              "semantics": "inline_effect_policy_v1",
+              "source_hash": "sha256:46505b9f94f710c65f3993f9894cc450857c1fa37690d6b60425d3fcd4b84d87"
+            }
+          }
+        ]
+      },
+      "envelope": {
+        "status": "success",
+        "scan_id": "1795643908-f6274eee3c7046b98d2be560334da259",
+        "tool": "scratch",
+        "command": "python3 -c import json,os,pathlib,time; time.sleep(2); print(json.dumps(dict(source_visible=pathlib.Path(\"alpha.txt\").exists(),host_visible=pathlib.Path('/tmp/sf-dzl13wh2/symbi-source-e2e-0uu9txys/observer/canary').exists(), uid=os.getuid())))",
+        "duration_ms": 2231,
+        "timestamp": "2026-11-25T21:58:30.759663305+00:00",
+        "output_hash": "sha256:17cc62dc30ea13fccbb541da3169ffe2c7ba18a487f46d230968bbdd8b134e4e",
+        "output_truncated": false,
+        "exit_code": 0,
+        "stderr": "",
+        "results": {
+          "source_visible": false,
+          "host_visible": false,
+          "uid": 65534,
+          "exit_code": 0
+        },
+        "created_files": []
+      }
+    }
+  ],
+  "provider_errors": [],
+  "image": "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc",
+  "manifests": {
+    "read_file": "a39dcea5a34440edada97b3366c66e3e4fe19993a5152981399a7871e559fe86",
+    "list_files": "ab74a30975d00cb8029c5ed551d5ecff121f17397d2a7faf1383079d6ea56c29",
+    "grep_files": "d3dd036cb5e581cef8ff7b1e2f3184dd2bceffb55146e244de8f8292675ec549"
+  },
+  "public_key": "aa35f247287ef5a5a539ef7a6a436b68c68150ce46b7ca1d39454a6d0bc8b9ec",
+  "verifier_sha256": "9e975bf4d8c55c8925dfd730adbd20bee77e81f05170715f23085a9acb135374",
+  "backend": "docker",
+  "container_profile_sha256": "b9f4d369e513f86d622ada90f3fb0aa3185fd022af719ec9b7170f710793d2be",
+  "remaining_workers": [],
+  "remaining_leases": []
+}
