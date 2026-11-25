@@ -25,6 +25,15 @@ def require_subject(signatures, image):
             raise ValueError("Verified subject does not match selected base")
 
 
+def collect_inventory(command, script, output):
+    # Keep partial discovery on nonzero exit or timeout for diagnosis; neither
+    # becomes a passing inventory. stderr remains in the hosted execution log.
+    with output.open("w") as stream:
+        subprocess.run(command, input=script, text=True, stdout=stream,
+                       check=True, timeout=90)
+    return json.loads(output.read_text())
+
+
 def main():
     if os.environ.get("GITHUB_ACTIONS") != "true" or os.environ.get("RUNNER_ENVIRONMENT") != "github-hosted":
         raise SystemExit("Refusing local image pull or execution")
@@ -73,9 +82,7 @@ def main():
                             "--memory=512m", "--memory-swap=512m", "--cpus=0.5",
                             "--entrypoint=/usr/bin/python3", pin["image"], "-"]
         guest_script = (root / "image/hyprland/guest_inventory.py").read_text()
-        inventory = subprocess.check_output(command, input=guest_script, text=True, timeout=90)
-        json.loads(inventory)
-        (evidence / "inventory.json").write_text(inventory)
+        collect_inventory(command, guest_script, evidence / "inventory.json")
         result = {"schema": 1, "base": pin, "signature_verified_before_pull": True,
                   "inventory_completed": True, "guest_script_sha256": hashlib.sha256(guest_script.encode()).hexdigest(), "network_inside_inventory": "none",
                   "source_commit": os.environ["GITHUB_SHA"], "os_qualified": False,
