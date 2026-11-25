@@ -1,0 +1,43 @@
+
+running 1 test
+test api::coordinator_tests::delegated_turns_link_distinct_child_runs_before_inference ... FAILED
+
+failures:
+
+---- api::coordinator_tests::delegated_turns_link_distinct_child_runs_before_inference stdout ----
+
+thread 'api::coordinator_tests::delegated_turns_link_distinct_child_runs_before_inference' (18323) panicked at crates/runtime/src/api/coordinator_tests.rs:683:57:
+The recorded run did not complete; inspect its protected audit. No work repeated.
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: symbi_runtime::api::coordinator_tests::delegated_turns_link_distinct_child_runs_before_inference::{{closure}}
+   3: <core::pin::Pin<P> as core::future::future::Future>::poll
+   4: <core::pin::Pin<P> as core::future::future::Future>::poll
+   5: tokio::runtime::scheduler::current_thread::CoreGuard::block_on::{{closure}}::{{closure}}::{{closure}}
+   6: tokio::runtime::scheduler::current_thread::CoreGuard::block_on::{{closure}}::{{closure}}
+   7: tokio::runtime::scheduler::current_thread::Context::enter
+   8: tokio::runtime::scheduler::current_thread::CoreGuard::block_on::{{closure}}
+   9: tokio::runtime::scheduler::current_thread::CoreGuard::enter::{{closure}}
+  10: tokio::runtime::context::scoped::Scoped<T>::set
+  11: tokio::runtime::context::set_scheduler::{{closure}}
+  12: std::thread::local::LocalKey<T>::try_with
+  13: std::thread::local::LocalKey<T>::with
+  14: tokio::runtime::context::set_scheduler
+  15: tokio::runtime::scheduler::current_thread::CoreGuard::enter
+  16: tokio::runtime::scheduler::current_thread::CoreGuard::block_on
+  17: tokio::runtime::scheduler::current_thread::CurrentThread::block_on::{{closure}}
+  18: tokio::runtime::context::runtime::enter_runtime
+  19: tokio::runtime::scheduler::current_thread::CurrentThread::block_on
+  20: tokio::runtime::runtime::Runtime::block_on_inner
+  21: tokio::runtime::runtime::Runtime::block_on
+  22: symbi_runtime::api::coordinator_tests::delegated_turns_link_distinct_child_runs_before_inference
+  23: symbi_runtime::api::coordinator_tests::delegated_turns_link_distinct_child_runs_before_inference::{{closure}}
+  24: core::ops::function::FnOnce::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    api::coordinator_tests::delegated_turns_link_distinct_child_runs_before_inference
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1534 filtered out; finished in 21.03s

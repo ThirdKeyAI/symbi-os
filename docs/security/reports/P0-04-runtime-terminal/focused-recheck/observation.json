@@ -1,0 +1,26 @@
+{
+  "observed_at_utc": "2026-11-25T19:11:05.158208+00:00",
+  "unit": {
+    "MainPID": "18265",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "ActiveState": "active",
+    "SubState": "running"
+  },
+  "observation_only": true,
+  "files": {
+    "result.json": {
+      "sha256": "ee654b91acecc8a5da0b3a5de8119c9822d3c64682d2da44e31c8f64f8c79314",
+      "bytes": 1242
+    },
+    "focused-0.log": {
+      "sha256": "c92743d671ca451b9e6ae94a3acaa44af1b3cc9386cb457403f46857967add7a",
+      "bytes": 2481
+    },
+    "focused-1.log": {
+      "sha256": "0171d3e1648d55bd50204dd0d701184d8c446a066dd6fb1a365a4e6b2a95bf17",
+      "bytes": 2582
+    }
+  },
+  "qualified": false
+}
