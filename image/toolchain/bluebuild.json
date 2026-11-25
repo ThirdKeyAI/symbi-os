@@ -8,5 +8,11 @@
   ],
   "profile": "dev",
   "qualified": false,
-  "scope": "Hosted tool compatibility experiment; no image build, signing, or release"
+  "scope": "Hosted tool compatibility experiment; no image build, signing, or release",
+  "patches": [
+    {
+      "path": "image/toolchain/patches/0001-validate-os-recipe-v2.patch",
+      "sha256": "47e8de584f0a54a00e8b2145339e0bfd00868cf577f74d71681d9c57fa9d3342"
+    }
+  ]
 }

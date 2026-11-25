@@ -37,7 +37,9 @@ def main():
     renderer = importlib.util.module_from_spec(module_spec)
     module_spec.loader.exec_module(renderer)
     pins = json.loads((root / "image/base-images.json").read_text())
-    result = {"schema": 1, "binary_sha256": hashlib.file_digest(binary.open("rb"), "sha256").hexdigest(),
+    with binary.open("rb") as stream:
+        binary_hash = hashlib.file_digest(stream, "sha256").hexdigest()
+    result = {"schema": 1, "binary_sha256": binary_hash,
               "source_revision": os.environ["BLUEBUILD_REVISION"], "checks": [],
               "recipe_validation_passed": False, "containerfiles_generated": False,
               "os_qualified": False}

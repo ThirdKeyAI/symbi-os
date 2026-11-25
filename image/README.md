@@ -109,8 +109,9 @@ The acceptance script invokes the actual CLI with validation enabled for both
 OS recipes, then malformed/unpinned recipe cases, then Containerfile generation.
 Positive cases run first so tool/network failures cannot count as negative-test
 evidence. The strict cases describe the OS recipe profile, not every recipe
-that upstream BlueBuild may support. The first unmodified-source run is expected
-to expose the v1-only validator; its outcome must be retained before a fix.
+that upstream BlueBuild may support. The unmodified-source run on Rust 1.100.0
+[compiled successfully and rejected the v2 recipe](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45671852999)
+through its v1 validator. That result is retained before the downstream fix.
 No validation bypass is available in this workflow.
 
 The workflow has read-only repository permission, no release environment, no
@@ -118,3 +119,22 @@ OIDC permission and no registry write permission. It uploads public logs, pins
 and generated text as evidence, not a compiler binary or image. Even a passing
 CLI check does not establish source audit coverage, authenticate an OS build,
 or qualify generated external image references; those remain separate gates.
+
+The downstream patch in `toolchain/patches/` adds a closed, embedded schema for
+this OS's v2 recipe profile, then requires successful upstream typed parsing and
+OCI-reference parsing. It supports only the two OS image names, amd64, local
+key paths, nonzero SHA-256 base digests and built-in Containerfile snippets.
+Remote schemas/includes, additional stages, other modules and moving tool images
+are outside this profile and rejected. The legacy v1 validation code remains
+in place; this is not general BlueBuild v2 support. The patch is hash-checked
+before application to the exact source revision and recorded in build evidence.
+
+Containerfile generation is denied access to a container daemon. If registry
+metadata lacks the OS version and BlueBuild tries to run an image as a fallback,
+this check fails instead of pulling/executing that image. Public registry
+metadata inspection remains allowed; generated external references still need
+a separate review before any image build.
+
+After the CLI acceptance cases pass, the same hosted unit runs the upstream
+workspace unit tests with the selected features, one test thread and no debug
+symbols. A failure is retained as a failure; no test is omitted to pass this gate.

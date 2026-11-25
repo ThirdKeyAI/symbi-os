@@ -116,3 +116,12 @@ compiler is now pinned to [Rust 1.100.0](https://github.com/rust-lang/rust/relea
 where [that API is stable](https://doc.rust-lang.org/1.100.0/std/option/enum.Option.html#method.map_or_default).
 The workspace MSRV and existing checker toolchain pins are unchanged. This uses
 a stable supported API rather than enabling unstable compiler features.
+
+The downstream `0001-validate-os-recipe-v2.patch` adds a standalone schema and
+a validation route for the closed OS profile. It reuses BlueBuild's already
+locked `jsonschema` and recipe crates, adding no crate and changing no lockfile.
+The patch preserves the existing v1 validator, does not use skip flags, and
+checks schema plus upstream typed/OCI parsing. Hash checks bind the patch before
+application, and actual applied source differences are retained with the tool
+result. Twelve rejected profile cases and both real rendered recipes exercise
+the compiled CLI; an offline Python schema preflight is only preliminary evidence.

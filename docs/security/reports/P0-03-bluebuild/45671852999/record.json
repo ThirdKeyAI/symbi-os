@@ -1,0 +1,44 @@
+{
+  "run_url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45671852999",
+  "head": "98ee252f4809c87f2cdf4b4b81319e68a9f28206",
+  "job_id": 139408948144,
+  "conclusion": "failure",
+  "cause": "Unmodified BlueBuild compiled on Rust1.100.0, then rejected the v2 generic recipe with v1-required properties and version=1 expectation. No Containerfile generated.",
+  "artifact_digest": "sha256:39630dcb42e0f3f3c225884ae962943632afdceb74feef11d0a8d267914be186",
+  "retention_format": "Public artifact text with trailing line whitespace removed; original hashes below",
+  "files": {
+    "cgroup-limits.json": {
+      "artifact_sha256": "793978dd325346b691df2874b59d3c299548bcedf446ccf30ba3aa0783f25dd2",
+      "retained_sha256": "793978dd325346b691df2874b59d3c299548bcedf446ccf30ba3aa0783f25dd2"
+    },
+    "generic-validate.log": {
+      "artifact_sha256": "e60e6f2da1f6674da31a9e3a71178d7f0b8d3061e83b8850e01c282afd8d8822",
+      "retained_sha256": "e60e6f2da1f6674da31a9e3a71178d7f0b8d3061e83b8850e01c282afd8d8822"
+    },
+    "generic.json": {
+      "artifact_sha256": "d2a0392f3a0ffb3f21dafff336b29c1667a5273513255d9dbbd9d06698a51655",
+      "retained_sha256": "d2a0392f3a0ffb3f21dafff336b29c1667a5273513255d9dbbd9d06698a51655"
+    },
+    "hosted-build.log": {
+      "artifact_sha256": "6530cfd21edf57a6beea59507fefed265ff457165016f7f87350f29969709828",
+      "retained_sha256": "6530cfd21edf57a6beea59507fefed265ff457165016f7f87350f29969709828"
+    },
+    "result.json": {
+      "artifact_sha256": "422251b3ef653cfb3713644759441c0b5ba64d5da9926b86f1fc6c1bd89ae2c5",
+      "retained_sha256": "422251b3ef653cfb3713644759441c0b5ba64d5da9926b86f1fc6c1bd89ae2c5"
+    },
+    "source-build.json": {
+      "artifact_sha256": "d475926e778d9709a23eaf759a3c78a672a62716016749dbd36e9d44408b6dd3",
+      "retained_sha256": "d475926e778d9709a23eaf759a3c78a672a62716016749dbd36e9d44408b6dd3"
+    },
+    "systemd-result.txt": {
+      "artifact_sha256": "28679a38276b6789edfff6dda91e07f52b587904a833a00005cc3fe3fb1f1bfd",
+      "retained_sha256": "28679a38276b6789edfff6dda91e07f52b587904a833a00005cc3fe3fb1f1bfd"
+    },
+    "version.log": {
+      "artifact_sha256": "cc4c8a33e754d537fa1b5a87480c88f4da55679e1843897cb4d085cf64313572",
+      "retained_sha256": "cc4c8a33e754d537fa1b5a87480c88f4da55679e1843897cb4d085cf64313572"
+    }
+  },
+  "os_qualified": false
+}
