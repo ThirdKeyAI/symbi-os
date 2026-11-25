@@ -9,7 +9,7 @@ upstream reviewed commit after the required checks pass.
 
 `Pinned runtime workspace` runs on a disposable GitHub-hosted Ubuntu runner.
 It checks the clean full source revision and unchanged Cargo.lock, uses Rust
-1.95.0, then runs all four required workspace gates. Only a passing baseline
+1.100.0, then runs all four required workspace gates. Only a passing baseline
 allows the hash-bound patch to be applied. The same unit then runs the sixteen
 focused Python tests and all four workspace gates on the patched source.
 No feature, test or timeout is altered to pass validation. Upstream's ordinary

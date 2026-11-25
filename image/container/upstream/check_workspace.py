@@ -12,6 +12,7 @@ import time
 import tomllib
 
 
+RUST = "1.100.0"
 PIN = "deddb9e997244d2289c217ad76b8fde0e9b0339b"
 PATCH = "a7fd467722ecd498e095402466cbf56f4f3461df2c39e2e9471c1e2e1200e76c"
 FILES = {"docs/gvisor-fixture-qualification.md", "scripts/container_fixture_profile.py",
@@ -36,7 +37,7 @@ def main():
     limits = {name: (cgroup / name).read_text().strip() for name in names}
     (evidence / "cgroup-limits.json").write_text(json.dumps(limits, indent=2) + "\n")
     assert limits == {"memory.max": "4294967296", "memory.swap.max": "0", "cpu.max": "200000 100000", "pids.max": "256"}
-    record = {"schema": 1, "source_revision": PIN, "patch_sha256": PATCH, "checks": [],
+    record = {"schema": 1, "source_revision": PIN, "rust_version": RUST, "patch_sha256": PATCH, "checks": [],
               "baseline_passed": False, "patched_workspace_passed": False,
               "os_qualified": False, "source_commit": os.environ["GITHUB_SHA"],
               "scope": "Ubuntu hosted workspace and Python fixture checks; no Fedora, container or escape qualification"}
@@ -78,7 +79,7 @@ def main():
                                     ("test", ["test", "--workspace", "--locked"], 1800),
                                     ("clippy", ["clippy", "--workspace", "--locked", "--", "-D", "warnings"], 1800),
                                     ("fmt", ["fmt", "--check"], 180)):
-            outcomes.append(run(phase, name, ["cargo", "+1.95.0", *args], timeout))
+            outcomes.append(run(phase, name, ["cargo", "+" + RUST, *args], timeout))
         return all(outcomes)
 
     try:
@@ -89,9 +90,9 @@ def main():
         record["cargo_lock_sha256"] = lock_hash
         record["started_at_utc"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
         save()
-        subprocess.run(["rustup", "toolchain", "install", "1.95.0", "--profile", "minimal",
+        subprocess.run(["rustup", "toolchain", "install", RUST, "--profile", "minimal",
                         "--component", "clippy", "--component", "rustfmt", "--no-self-update"], check=True, timeout=300)
-        record["rustc"] = subprocess.check_output(["rustc", "+1.95.0", "--version", "--verbose"], text=True)
+        record["rustc"] = subprocess.check_output(["rustc", "+" + RUST, "--version", "--verbose"], text=True)
         record["protoc"] = subprocess.check_output(["protoc", "--version"], text=True).strip()
         save()
         record["baseline_passed"] = workspace("baseline")
