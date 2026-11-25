@@ -1,0 +1,67 @@
+{
+  "run_url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45683459254",
+  "head": "bb9d29a65ab1dab4854d1d9854898917154bc31d",
+  "job_id": 139449738498,
+  "conclusion": "failure",
+  "artifact_id": 15056000759,
+  "artifact_digest": "sha256:fa24acf41f7f536afbd9b4d5928391cd3849cb23bb52becfff42caee356c428c",
+  "observation": "Exact-base signature verified; container started and validated all inner resource limits. The Fedora-ID-only guard then failed before inventory, because secureblue intentionally sets ID=secureblue and ID_LIKE=fedora.",
+  "source_evidence": "https://github.com/secureblue/secureblue/blob/353366bb6d031e66fc565b0b101a8a069f32fcdb/files/scripts/addimageinfo.sh",
+  "remedy": "Accept Fedora or exactly the selected secureblue family with Fedora in ID_LIKE; arbitrary derivatives remain rejected. Base signature/digest/identity checks and all resource caps remain mandatory.",
+  "os_qualified": false,
+  "retention_format": "Trim trailing whitespace and blank EOF lines; binary signature bytes preserved.",
+  "files": {
+    "base-signature.json": {
+      "artifact_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    "cgroup-final.json": {
+      "artifact_sha256": "8001653dc92449c0b20c35ec5fb2739b6ffb1ea6b779ecee82ccbc2977e94bf9",
+      "retained_sha256": "8001653dc92449c0b20c35ec5fb2739b6ffb1ea6b779ecee82ccbc2977e94bf9"
+    },
+    "cgroup-limits.json": {
+      "artifact_sha256": "8bd076d24f6839602a9c7787589223b61fc161814a0f952af1c54e7ebdbbff38",
+      "retained_sha256": "8bd076d24f6839602a9c7787589223b61fc161814a0f952af1c54e7ebdbbff38"
+    },
+    "cosign-bootstrap/cosign-linux-amd64-kms.sigstore.json": {
+      "artifact_sha256": "9640eb9b9f1236bbb145197cc6cf098ed1fb5f7613c6c731647a2431d0dac518",
+      "retained_sha256": "f8544777412708f16351db61792c6c39e24814beba79708e3fe9cc0e871ec93f"
+    },
+    "cosign-bootstrap/openssl-verification.txt": {
+      "artifact_sha256": "80a53f76c7ed6969dade3b6ee47cdb753162db7c00be625448999d08bae77ed8",
+      "retained_sha256": "80a53f76c7ed6969dade3b6ee47cdb753162db7c00be625448999d08bae77ed8"
+    },
+    "cosign-bootstrap/pins.json": {
+      "artifact_sha256": "c74acffb1d898498582110862650a81960afacd8f2e60916ea3cacee292591cc",
+      "retained_sha256": "c74acffb1d898498582110862650a81960afacd8f2e60916ea3cacee292591cc"
+    },
+    "cosign-bootstrap/release-cosign.pub": {
+      "artifact_sha256": "f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126",
+      "retained_sha256": "f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126"
+    },
+    "cosign-bootstrap/release-kms.sig": {
+      "artifact_sha256": "f3070066acae000e6d65060ac17903d2547fd65d26c0a4207d3809e7031ad088",
+      "retained_sha256": "f3070066acae000e6d65060ac17903d2547fd65d26c0a4207d3809e7031ad088"
+    },
+    "cosign-bootstrap/verification.json": {
+      "artifact_sha256": "822329e8d7bf8c27b1a527c931c9bbab901db2f6fce88cb5f53d7dc33e547e35",
+      "retained_sha256": "822329e8d7bf8c27b1a527c931c9bbab901db2f6fce88cb5f53d7dc33e547e35"
+    },
+    "cosign-bootstrap/version.json": {
+      "artifact_sha256": "9bf60bbeb52675a2074a4c4066bcb0710f861555e9fb5391fb6d65ce7014b3af",
+      "retained_sha256": "9bf60bbeb52675a2074a4c4066bcb0710f861555e9fb5391fb6d65ce7014b3af"
+    },
+    "hosted-inventory.log": {
+      "artifact_sha256": "12805315b259a4c30a9c93fda3dfc0cdee0997aebf05fe817acd6f1d498ed22c",
+      "retained_sha256": "12805315b259a4c30a9c93fda3dfc0cdee0997aebf05fe817acd6f1d498ed22c"
+    },
+    "image-inspect.json": {
+      "artifact_sha256": "d712296a04db6c58431cb82adf3a84743ca97dbd02c2b1a762c996652e9d1035",
+      "retained_sha256": "d712296a04db6c58431cb82adf3a84743ca97dbd02c2b1a762c996652e9d1035"
+    },
+    "pull.log": {
+      "artifact_sha256": "a4e23283207f73a14cfe91e49dc6fc171560ab6682e1cdfdb5b7099c67ed8a0d",
+      "retained_sha256": "a4e23283207f73a14cfe91e49dc6fc171560ab6682e1cdfdb5b7099c67ed8a0d"
+    }
+  }
+}
