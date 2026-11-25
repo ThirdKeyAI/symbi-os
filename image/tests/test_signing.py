@@ -32,11 +32,14 @@ class SigningPolicy(unittest.TestCase):
     def bundle(self):
         return self.module.render(self.release, self.bases, self.root)
 
-    def test_unconfigured_release_trust_fails(self):
+    def test_committed_trust_refuses_partial_configuration(self):
         config = json.loads((ROOT / "image/release-trust.json").read_text())
-        if not config["repositories"]:
-            with self.assertRaisesRegex(ValueError, "release trust setup"):
-                self.module.render(config, self.bases, ROOT)
+        bases = json.loads((ROOT / "image/base-images.json").read_text())
+        if not config["repositories"] or not config["public_key"] or not bases["variants"]:
+            with self.assertRaises(ValueError):
+                self.module.render(config, bases, ROOT)
+        else:
+            self.module.render(config, bases, ROOT)
 
     def test_default_reject_and_explicit_key_repository_bindings(self):
         bundle = self.bundle()

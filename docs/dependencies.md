@@ -53,6 +53,27 @@ the product. The commit is not publisher-signature evidence, and these tools
 remain outside the runtime cargo-vet graph. Java is host/runner-provided,
 not part of a reproducible image toolchain claim. See `formal/VERIFY.md`.
 
+## P0-03 signature-verification tool
+
+Input authentication and dedicated OS key generation used upstream Cosign
+**v3.1.5**, source `e5a0818ca5729481095773409e9c1b60cc278e8d`, with the Linux
+amd64 binary pinned to SHA-256
+`912502def4baf810eaf36b210a4f51e1da214f9f6d664e2a9a2154cfc67ee0d6`.
+The publisher's KMS signature was verified before executing the binary. Its
+signed checksum manifest was then verified with normal transparency and SCT
+checks, exact certificate identity `keyless@projectsigstore.iam.gserviceaccount.com`
+and issuer `https://accounts.google.com`. Public authentication inputs and
+results are retained under `security/reports/P0-03-base-signatures/`.
+
+This Go executable is a build/admin tool, not a Cargo workspace dependency or
+an OS payload. Publisher authentication is not a source audit. Initial key
+trust comes from the pinned official HTTPS publisher source, with no separate
+out-of-band claim. A full-binary bundle check exceeded its 128 MiB limit; the
+small signed checksum check passed under that same cap. No verification flag
+or resource ceiling was relaxed. Release signing must explicitly emit legacy
+image attachments until the installed bootc verifier supports and qualifies
+another format; Cosign's current default is not assumed compatible.
+
 ## Adding a dependency
 
 Pin a registry dependency to an exact version and commit Cargo.lock. For Git

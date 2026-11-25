@@ -3,7 +3,33 @@
 `signing.py` prepares the desktop's containers/image policy after the owner has
 selected the release repositories and ThirdKey public key. It does not create
 keys, sign/publish an image, install policy on the host or perform a rebase.
-`release-trust.json` deliberately has no release repository or public key yet.
+`release-trust.json` binds `ghcr.io/thirdkeyai/symbiont-os` and its `-nvidia`
+variant to [the dedicated OS public key](keys/thirdkey-os-2026.pub), whose
+SHA-256 is `f95a39bcd37e640d179a1f8f2cb2baeb44162e8d19f5b75e0fe1553f3ef777ac`.
+The encrypted private key and password are GitHub environment secrets in
+`ThirdKeyAI/symbi-os` / `symbi-os-release`; only public custody metadata is
+[retained here](keys/thirdkey-os-2026.json). The temporary local private material
+was removed after successful storage. No image has been signed with this key.
+
+The owner selected the same release infrastructure as Symbiont on 25 Nov 2026.
+Its GitHub Actions workflows sign keylessly with the GitHub OIDC issuer. That
+identity can authenticate release attestations, but it cannot be substituted
+for the public key in this image-update policy. The current verifier matches
+Fulcio email SANs, not GitHub workflow URI SANs. The successor container-libs
+implementation at
+[`d770b1d3725a48ed32a92fe0adbe20a21d01e7df`](https://github.com/podman-container-tools/container-libs/blob/d770b1d3725a48ed32a92fe0adbe20a21d01e7df/image/signature/fulcio_cert.go)
+still has that restriction. Bundle support is an
+[unmerged upstream change](https://github.com/podman-container-tools/container-libs/pull/1153),
+not an available verification path to assume in a release.
+
+The owner selected a dedicated key in protected GitHub secrets, with
+Symbiont-style keyless attestations alongside it.
+Use legacy signature attachments for the image policy until the actual target
+stack supports and qualifies a replacement. Pin and verify the signing tool;
+do not assume the default output of a newer Cosign release is compatible.
+Key generation used Cosign v3.1.5 after publisher-signature and signed-checksum
+verification. The public-key round trip and ECDSA P-256 parsing passed. See
+[RELEASE-PLAN.md](RELEASE-PLAN.md) for the remaining setup and release gates.
 
 The source interface follows containers/image at
 [`df7e80d2d19872b61f352a8a182ec934dc0c2346`](https://github.com/containers/image/tree/df7e80d2d19872b61f352a8a182ec934dc0c2346),

@@ -1,13 +1,19 @@
 # Fedora Atomic image preparation
 
-P0-03 is **blocked on base selection and release trust setup**, with independent
-preparation implemented here. No image has been built, signed, booted or qualified.
+P0-03 uses the owner-selected strategy **retain secureblue hardening and package
+maintained Hyprland**. The GitHub release environment and dedicated signing key
+are configured. Generic and NVIDIA base signatures have been verified at the
+digests in `base-images.json`. Hyprland/RPM inputs and release execution remain incomplete.
+No Symbiont OS image has been built, signed, booted or qualified.
 
 The original plan names secureblue's `wayblue-hyprland-main-userns-hardened`.
 [secureblue's pinned deprecation notice](https://github.com/secureblue/secureblue/blob/353366bb6d031e66fc565b0b101a8a069f32fcdb/files/system/usr/libexec/deprecated-images.json.md)
 retires the Hyprland family and the separate `userns` images. Its suggested
 `sericea` replacement uses Sway and would change the planned trusted compositor.
-We have not substituted it or selected an obsolete base. See OQ-07.
+The owner selected the strategy above on 25 Nov 2026. A maintained secureblue
+desktop can supply the base hardening; Hyprland must still be packaged and
+qualified as Symbiont's compositor. See [the implementation decisions](RELEASE-PLAN.md)
+and OQ-07. A Sericea base does not make Sway the product's trusted compositor.
 
 ## Implemented preparation
 
@@ -24,26 +30,29 @@ We have not substituted it or selected an obsolete base. See OQ-07.
   package installation and RPM key pins must be reviewed for that base.
 - `recipe.py` renders BlueBuild v2 JSON, which is valid YAML. It accepts only
   SHA-256 image references and a hash-checked local public key. It refuses to
-  render while `base-images.json` has no selected variant. No placeholder digest
-  or tag-only base is provided. Only the built-in `containerfile` module is used;
+  render an absent variant or changed key. The selected secureblue desktop bases
+  have retained [signature evidence](../docs/security/reports/P0-03-base-signatures/result.json).
+  No placeholder digest or tag-only base is provided. Only the built-in `containerfile` module is used;
   no moving module image or CLI is installed in the desktop image.
 
 - `signing.py` prepares a default-reject containers/image policy with hash-bound
   public keys, exact signed repository identities and signature-attachment lookup.
-  Base rollback is restricted to the selected digest. `release-trust.json` remains
-  empty until OQ-03 is answered; see [the trust-policy procedure](SIGNING.md).
+  Base rollback is restricted to the selected digest. `release-trust.json` now
+  binds the dedicated OS public key and two GHCR destinations; see
+  [the trust-policy procedure](SIGNING.md). Symbiont's GitHub workflow signing
+  identity remains an additional attestation identity, not the OS update key.
 
-Run `bash scripts/check-image.sh` for the small offline checks. After a reviewed
-base pin is committed, `python3 image/recipe.py --variant generic` emits the
-recipe; `--variant nvidia` needs its own independently verified base pin. The
+Run `bash scripts/check-image.sh` for the small offline checks.
+`python3 image/recipe.py --variant generic` emits the recipe; `--variant nvidia`
+uses its separately verified base pin. The
 renderer is not a signature verifier. Do not build until the signature and all
 release prerequisites below are satisfied.
 
 ## Required build and release sequence
 
-1. Select a maintained Hyprland base strategy, independently authenticate its
-   signing key, verify its OCI signature and record the exact generic/NVIDIA
-   digests and public-key SHA-256 values in `base-images.json`. Recheck signatures
+1. Implement the selected secureblue plus maintained Hyprland strategy,
+   using the verified generic/NVIDIA digests and publisher key in `base-images.json`.
+   Recheck those signatures
    at build time. Review RPM repositories, their GPG key fingerprints and every
    downloaded asset; use only checksummed, signed artifacts.
 2. Provision a trusted isolated runner with a reviewed, hash-pinned BlueBuild
@@ -75,8 +84,12 @@ release prerequisites below are satisfied.
    do not emit an unsigned installation fallback. A nightly base-update candidate
    must repeat these checks and open a review PR only after they pass.
 
-The publishing workflow is intentionally not enabled before registry, key custody
-and isolated-runner access are known (OQ-02/OQ-03). Signing with an invented test
-key, omitting VM gates or silently changing compositor would violate the plan.
+The owner selected Symbiont's release infrastructure: GitHub Actions and GHCR.
+The public OS execution repository and protected signing environment are now
+configured. Image publishing remains disabled pending the real build and
+qualification gates (OQ-03). See
+[RELEASE-PLAN.md](RELEASE-PLAN.md) for the concrete destinations and gates to
+configure. Signing with an invented test key, omitting VM gates or silently
+changing compositor would violate the plan.
 The Agents menu and runtime units arrive with their implementing cards; the
 current launcher exposes local applications only.

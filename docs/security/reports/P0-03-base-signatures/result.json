@@ -1,0 +1,76 @@
+{
+  "started_at_utc": "2026-11-25T17:12:56.322170+00:00",
+  "all_signatures_verified": true,
+  "os_qualified": false,
+  "public_key_sha256": "9cbd48de48d467f86e0f31f9454c6e0bb663f3d033ecd92143f62577eb1cb5eb",
+  "public_key_source": "https://github.com/secureblue/secureblue/blob/353366bb6d031e66fc565b0b101a8a069f32fcdb/cosign.pub",
+  "source_commit_verified_by_github": true,
+  "bootstrap_trust": "Owner-selected secureblue publisher; key from its pinned official HTTPS source. No separate out-of-band key confirmation claimed.",
+  "cosign_binary_sha256": "912502def4baf810eaf36b210a4f51e1da214f9f6d664e2a9a2154cfc67ee0d6",
+  "variants": {
+    "generic": {
+      "repository": "ghcr.io/secureblue/sericea-main-hardened",
+      "discovery_tag": "latest",
+      "verified": true,
+      "discover_command": [
+        "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/.cache/cosign-3.1.5-bootstrap/cosign-linux-amd64",
+        "verify",
+        "--max-workers=1",
+        "--key",
+        "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/.cache/secureblue-base-verification-20261125/secureblue.pub",
+        "--output=json",
+        "ghcr.io/secureblue/sericea-main-hardened:latest"
+      ],
+      "discover_exit_code": 0,
+      "digest_command": [
+        "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/.cache/cosign-3.1.5-bootstrap/cosign-linux-amd64",
+        "verify",
+        "--max-workers=1",
+        "--key",
+        "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/.cache/secureblue-base-verification-20261125/secureblue.pub",
+        "--output=json",
+        "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f"
+      ],
+      "digest_exit_code": 0,
+      "image": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f"
+    },
+    "nvidia": {
+      "repository": "ghcr.io/secureblue/sericea-nvidia-hardened",
+      "discovery_tag": "latest",
+      "verified": true,
+      "discover_command": [
+        "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/.cache/cosign-3.1.5-bootstrap/cosign-linux-amd64",
+        "verify",
+        "--max-workers=1",
+        "--key",
+        "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/.cache/secureblue-base-verification-20261125/secureblue.pub",
+        "--output=json",
+        "ghcr.io/secureblue/sericea-nvidia-hardened:latest"
+      ],
+      "discover_exit_code": 0,
+      "digest_command": [
+        "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/.cache/cosign-3.1.5-bootstrap/cosign-linux-amd64",
+        "verify",
+        "--max-workers=1",
+        "--key",
+        "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/.cache/secureblue-base-verification-20261125/secureblue.pub",
+        "--output=json",
+        "ghcr.io/secureblue/sericea-nvidia-hardened@sha256:9b8053d581db16d47b1df18698ffe8cc3f70c45a3758363fdc8d85c1b0fcaf5e"
+      ],
+      "digest_exit_code": 0,
+      "image": "ghcr.io/secureblue/sericea-nvidia-hardened@sha256:9b8053d581db16d47b1df18698ffe8cc3f70c45a3758363fdc8d85c1b0fcaf5e"
+    }
+  },
+  "completed_at_utc": "2026-11-25T17:13:06.494922+00:00",
+  "files": {
+    "nvidia-digest.log": "39a953066ed0102cf84a250555efa0a7350243d23d0daddd3d10a108155ad2ba",
+    "nvidia-discover.log": "8761b8b327438f9cfa1f3da99228890f1138dba7b9687d9b975b82a6b196703a",
+    "generic-digest.log": "b941cd0137db303b01ea68883a3c7198a62418ad62ea1e9189530126d024897d",
+    "generic-discover.json": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+    "nvidia-discover.json": "532ed726fe31b7514acc9969d576f7a53d0b83e18cdc6b29e5cfea73063fc380",
+    "generic-discover.log": "6e82d3bdac6ad8b89ef55eb69cbbe8125ddd868b844349a8dcd8cd56e212e6ad",
+    "secureblue.pub": "9cbd48de48d467f86e0f31f9454c6e0bb663f3d033ecd92143f62577eb1cb5eb",
+    "generic-digest.json": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+    "nvidia-digest.json": "532ed726fe31b7514acc9969d576f7a53d0b83e18cdc6b29e5cfea73063fc380"
+  }
+}
