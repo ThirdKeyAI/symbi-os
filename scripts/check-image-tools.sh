@@ -28,8 +28,15 @@ sudo systemd-run --unit="$unit" --wait --pipe \
   python3 image/toolchain/build.py 2>&1 | tee "$evidence/hosted-build.log"
 status=${PIPESTATUS[0]}
 set -e
-sudo systemctl show "$unit" \
-  --property=Result --property=ExecMainStatus --property=MemoryPeak --property=MemoryMax \
-  --property=MemorySwapMax --property=CPUQuotaPerSecUSec --property=CPUUsageNSec \
-  --property=TasksMax --property=RuntimeMaxUSec > "$evidence/systemd-result.txt"
+# Successful transient units may be collected before this query. Never present
+# default properties of a missing unit as measured runtime statistics.
+load_state=$(sudo systemctl show "$unit" --property=LoadState --value)
+if [[ "$load_state" == not-found ]]; then
+  printf 'LoadState=not-found\nObservation=unit collected; use cgroup-final.json and completion log\n' > "$evidence/systemd-result.txt"
+else
+  sudo systemctl show "$unit" \
+    --property=LoadState --property=Result --property=ExecMainStatus --property=MemoryPeak --property=MemoryMax \
+    --property=MemorySwapMax --property=CPUQuotaPerSecUSec --property=CPUUsageNSec \
+    --property=TasksMax --property=RuntimeMaxUSec > "$evidence/systemd-result.txt"
+fi
 exit "$status"

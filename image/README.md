@@ -154,3 +154,13 @@ publisher key and OpenSSL before running any downloaded code. The authenticated
 binary enters only this job's test PATH; small public verification records are
 retained. No release credential is provided. The full upstream tests remain
 mandatory, including the previously failing Cosign/Sigstore compatibility tests.
+
+The complete rerun [45676688773](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45676688773)
+passed the actual CLI checks and all 151 upstream workspace tests with authenticated
+Cosign available. Its source, compiler, lockfile, patch, binary and generated-file
+hashes are retained in the P0-03 report. Tool compatibility is now evidenced for
+these exact inputs; it does not qualify a built OS image or complete dependency
+audits. The initial and final cgroup counters are collected inside the unit;
+a post-exit systemd query labels a garbage-collected unit instead of showing
+default limits as measured values. The first success predates the final-counter
+fix and records that evidence limitation explicitly.

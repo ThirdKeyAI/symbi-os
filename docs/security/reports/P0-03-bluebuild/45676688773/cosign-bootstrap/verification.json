@@ -1,0 +1,9 @@
+{
+  "binary_sha256": "912502def4baf810eaf36b210a4f51e1da214f9f6d664e2a9a2154cfc67ee0d6",
+  "source_revision": "e5a0818ca5729481095773409e9c1b60cc278e8d",
+  "public_key_sha256": "f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126",
+  "signature_verified_before_execution": true,
+  "authentication": "Pinned publisher public key and OpenSSL SHA-256 verification of release KMS signature",
+  "trust_origin": "https://raw.githubusercontent.com/sigstore/cosign/e5a0818ca5729481095773409e9c1b60cc278e8d/release/release-cosign.pub",
+  "scope": "Hosted BlueBuild tests only; no release credentials or publication"
+}

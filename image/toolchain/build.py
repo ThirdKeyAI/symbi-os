@@ -24,6 +24,19 @@ def main():
     (evidence / "cgroup-limits.json").write_text(json.dumps(limits, indent=2) + "\n")
     assert limits == {"memory.max": "4294967296", "memory.swap.max": "0",
                       "cpu.max": "200000 100000", "pids.max": "256"}, limits
+    try:
+        run_build(root, evidence)
+    finally:
+        final = {name: (cgroup / name).read_text().strip() for name in
+                 ("memory.max", "memory.swap.max", "cpu.max", "pids.max", "memory.peak",
+                  "memory.events", "cpu.stat")}
+        (evidence / "cgroup-final.json").write_text(json.dumps(final, indent=2) + "\n")
+        if any(final[name] != value for name, value in limits.items()):
+            raise RuntimeError("Hosted cgroup limits changed during the run")
+
+
+def run_build(root, evidence):
+    config = json.loads((root / "image/toolchain/bluebuild.json").read_text())
     cosign = bootstrap(root, evidence)
     os.environ["PATH"] = str(cosign.parent) + os.pathsep + os.environ["PATH"]
     source = root / ".cache/bluebuild-source"
