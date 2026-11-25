@@ -75,7 +75,9 @@ def main():
         assert lock['base'] == base['image']
         unpack_rpms(root / '.cache/hyprland-runtime-rpms.zip', lock, inputs / 'packages')
         prefix_lock = json.loads((root / 'image/hyprland/development-prefix.lock.json').read_text())
-        manifest = unpack_prefix(root / '.cache/hyprland-development-prefix.zip', prefix_lock, inputs / 'prefix')
+        record['prefix_link_rewrites'] = []
+        manifest = unpack_prefix(root / '.cache/hyprland-development-prefix.zip', prefix_lock,
+                                 inputs / 'prefix', record['prefix_link_rewrites'])
         assert manifest['base'] == base['image']
         assert manifest['rpm_lock_sha256'] == digest(root / 'image/hyprland/build-rpms.lock.json')
         assert manifest['native_patch_sha256'] == digest(root / 'image/hyprland/patches/0001-disable-native-loading.patch')

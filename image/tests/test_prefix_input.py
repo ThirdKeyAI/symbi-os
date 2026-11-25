@@ -61,6 +61,44 @@ class PrefixInput(unittest.TestCase):
             self.assertEqual((target/'hyprland/bin/Hyprland').stat().st_mode & 0o7777, 0o755)
             self.assertEqual((target/'hyprland').stat().st_mode & 0o7777, 0o755)
 
+    def test_only_reviewed_absolute_executable_alias_is_relocated(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            alias = tarfile.TarInfo('hyprland/bin/hyprland')
+            alias.type = tarfile.SYMTYPE
+            alias.linkname = '/usr/lib/symbi/hyprland/bin/Hyprland'
+            archive, lock = self.bundle(root, extra=[alias])
+            target, rewrites = root/'prefix', []
+            manifest = prefix.unpack_prefix(archive, lock, target)
+            link = target/'hyprland/bin/hyprland'
+            self.assertEqual(link.readlink(), Path('Hyprland'))
+            self.assertEqual(link.read_bytes(), b'compositor')
+            self.assertEqual(prefix.digest(link), manifest['binaries']['Hyprland'])
+            prefix.unpack_prefix(archive, lock, root/'second-prefix', rewrites)
+            self.assertEqual(rewrites, [{'name': alias.name, 'original_target': alias.linkname,
+                                         'relative_target': 'Hyprland'}])
+
+    def test_other_absolute_aliases_keep_failing_with_bounded_diagnostics(self):
+        cases = [('hyprland/bin/hyprland', '/usr/lib/symbi/hyprland/bin/../bin/Hyprland'),
+                 ('hyprland/bin/hyprland', '/usr/lib/symbi/hyprland/bin/hyprctl'),
+                 ('hyprland/bin/other', '/usr/lib/symbi/hyprland/bin/Hyprland'),
+                 ('hyprland/bin/hyprland', '/etc/shadow'),
+                 ('hyprland/bin/escape', '../../../../outside'),
+                 ('hyprland/bin/'+'x'*500, '/outside\n'+'y'*500)]
+        for name, linkname in cases:
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                alias = tarfile.TarInfo(name)
+                alias.type, alias.linkname = tarfile.SYMTYPE, linkname
+                archive, lock = self.bundle(root, extra=[alias])
+                with self.assertRaises(ValueError) as failure:
+                    prefix.unpack_prefix(archive, lock, root/'prefix')
+                self.assertIn(repr(name[:160]), str(failure.exception))
+                self.assertIn(repr(linkname[:160]), str(failure.exception))
+                self.assertLess(len(str(failure.exception)), 400)
+                self.assertNotIn('\n', str(failure.exception))
+                self.assertFalse((root/'prefix').exists())
+
     def test_changed_payload_or_binary_does_not_leave_a_reusable_prefix(self):
         for binary in (False, True):
             with self.subTest(binary=binary), tempfile.TemporaryDirectory() as directory:

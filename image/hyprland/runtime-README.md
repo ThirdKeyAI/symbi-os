@@ -24,3 +24,17 @@ A passing result qualifies only these runtime dependencies and parser inputs.
 Native constructor/IPC/reload refusal still needs the real graphics route;
 launcher packaging, image assembly, browser/keyring/portal controls, release
 signatures, boot/update/rollback and P0-04/P0-05 acceptance remain separate gates.
+
+The pinned [Hyprland installer](https://github.com/hyprwm/Hyprland/blob/11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947/CMakeLists.txt#L636)
+creates `bin/hyprland` as an absolute alias of the installed `bin/Hyprland`.
+Extraction relocates only the exact pair
+`hyprland/bin/hyprland -> /usr/lib/symbi/hyprland/bin/Hyprland` to `Hyprland`.
+The target remains a regular executable checked against the retained hash;
+all other absolute links, escaping relatives and linked parents are rejected.
+The hosted result records the original and relative targets actually converted.
+Refusal diagnostics quote and bound the rejected name and target.
+
+The first reuse run, 45722401293, failed at link validation before package
+installation. Its retained report did not identify the particular link; the
+source-backed alias conversion still requires confirmation on the actual
+locked archive. No acceptance claim follows from synthetic archive tests.

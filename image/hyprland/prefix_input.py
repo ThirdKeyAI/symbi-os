@@ -15,7 +15,7 @@ def digest(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
-def unpack_prefix(archive, lock, destination):
+def unpack_prefix(archive, lock, destination, link_rewrites=None):
     if archive.is_symlink() or not archive.is_file():
         raise ValueError('Expected the regular hosted prefix artifact')
     if archive.stat().st_size != lock['artifact']['bytes'] or digest(archive) != lock['artifact']['sha256']:
@@ -25,7 +25,7 @@ def unpack_prefix(archive, lock, destination):
     if (destination.exists() or destination.is_symlink() or not destination.parent.is_dir()
             or destination.parent.resolve() != destination.parent):
         raise ValueError('Use a new destination under an existing nonsymlinked parent')
-    created = False
+    created, rewrites = False, []
     try:
         with tempfile.TemporaryDirectory(prefix='prefix-input-', dir=destination.parent) as temporary:
             payload = Path(temporary) / 'payload.tar.gz'
@@ -70,10 +70,19 @@ def unpack_prefix(archive, lock, destination):
                     if total > 1024**3:
                         raise ValueError('Oversized expanded compiler prefix')
                     if member.issym():
+                        # Pinned Hyprland CMakeLists.txt installs exactly this alias
+                        # using CMAKE_INSTALL_FULL_BINDIR. Relocate only that pair;
+                        # arbitrary absolute links remain forbidden.
+                        if (name == 'hyprland/bin/hyprland'
+                                and member.linkname == '/usr/lib/symbi/hyprland/bin/Hyprland'):
+                            rewrites.append({'name': name, 'original_target': member.linkname,
+                                             'relative_target': 'Hyprland'})
+                            member.linkname = 'Hyprland'
                         target = posixpath.normpath(posixpath.join(str(path.parent), member.linkname))
                         if (not member.linkname or member.linkname.startswith('/') or '\\' in member.linkname
                                 or not target.startswith('hyprland/')):
-                            raise ValueError('Library link escapes the private prefix')
+                            raise ValueError('Compiler link escapes the private prefix: '
+                                             f'{name[:160]!r} -> {member.linkname[:160]!r}')
                     entries[name] = member
                 for name in entries:
                     for parent in PurePosixPath(name).parents:
@@ -111,6 +120,8 @@ def unpack_prefix(archive, lock, destination):
                 binary = destination / 'hyprland/bin' / name
                 if binary.is_symlink() or not binary.is_file() or digest(binary) != manifest['binaries'][name]:
                     raise ValueError('Compiled executable differs from the retained manifest')
+        if link_rewrites is not None:
+            link_rewrites.extend(rewrites)
         return manifest
     except BaseException:
         if created:
