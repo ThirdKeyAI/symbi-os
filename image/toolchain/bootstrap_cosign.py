@@ -94,6 +94,6 @@ def bootstrap(root, evidence):
               "public_key_sha256": pins["public_key_sha256"], "signature_verified_before_execution": True,
               "authentication": "Pinned publisher public key and OpenSSL SHA-256 verification of release KMS signature",
               "trust_origin": pins["public_key_source"],
-              "scope": "Hosted BlueBuild tests only; no release credentials or publication"}
+              "scope": "Hosted image tooling only; no release credentials or publication"}
     (retained / "verification.json").write_text(json.dumps(record, indent=2) + "\n")
     return installed

@@ -1,0 +1,19 @@
+{
+  "source_revision": "11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947",
+  "patch_sha256": "068d061f29c6ccbef25d402972a14c72195811e40888027b71760f6656f6eeff",
+  "git_apply_checked": true,
+  "compiled": false,
+  "native_probe_executed": false,
+  "files": {
+    "src/plugins/PluginSystem.cpp": {
+      "source_git_blob": "4cf9522d6ebcfbb4bfe2e487745c2a6a5db79f08",
+      "source_sha256": "c1620c93defa02b887dfec88697cb32ac13ab7e3feef291dd524b722339b4466",
+      "patched_sha256": "8d72f664a4566158cfbbad51239ef463bf4ba2031bdebb8267d4601806f813c1"
+    },
+    "src/config/lua/ConfigManager.cpp": {
+      "source_git_blob": "e062db29b64bd50ad1dec852e1442e2d3117a104",
+      "source_sha256": "776df9467b0f216b51e0acd1992308dc6ffc44a32b059bff59618304425bb1df",
+      "patched_sha256": "857838394327e082162c2406d84f6d9c339086f0666e7b767dc2401f6595b2a5"
+    }
+  }
+}
