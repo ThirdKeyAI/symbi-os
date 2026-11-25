@@ -16,7 +16,7 @@ No feature, test or timeout is altered to pass validation. Upstream's ordinary
 ignored integration tests are not claimed as executed by `cargo test`.
 
 The compiler has one job and one test thread, no debug symbols or incremental
-compilation, and a verified 4 GiB/two-CPU/zero-swap hosted cgroup. The unit has a
+compilation, and a verified 8 GiB/two-CPU/zero-swap hosted cgroup. The unit has a
 110-minute deadline. Timeouts end the run rather than starting another build;
 failures retain evidence and prevent upstream commit. The workflow has read-only
 repository permission, no release environment and no publishing authority.
@@ -33,3 +33,15 @@ scheduler test assumes two simultaneous default allocations of 512 MiB and one
 CPU each, exceeding the small helper VM's capacity. Hosted validation supplies
 that capacity without increasing workstation usage. The separate coordinator
 failure remains an unresolved observation until the unchanged hosted tests run.
+
+
+The first Rust 1.100 hosted attempt hit the 4 GiB build cgroup ceiling while
+compiling the runtime crate. No workspace check completed and no fixture patch
+was applied. Its logs and outer systemd OOM/peak counters are retained under
+`docs/security/reports/P0-05-runtime-workspace/45685781772/`. The next attempt
+requires at least 14 GiB total and 10 GiB currently available on the hosted VM
+before starting the bounded 8 GiB compiler. One build/test thread, two CPUs,
+zero swap, source/lock/compiler/profile pins and all four gates stay unchanged.
+This is hosted build capacity, not a worker security-policy change. The local
+helper VM remains off. Started checks are now saved before execution so an
+abrupt termination cannot erase which gate was active.

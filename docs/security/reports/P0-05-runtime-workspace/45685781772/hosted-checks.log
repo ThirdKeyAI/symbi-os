@@ -1,0 +1,13 @@
+Running as unit: symbi-runtime-workspace-45685781772-1.service
+info: syncing channel updates for 1.100.0-x86_64-unknown-linux-gnu
+info: latest update on 2026-11-12 for version 1.100.0 (0ef1bc386 2026-11-09)
+info: downloading 5 components
+
+  1.100.0-x86_64-unknown-linux-gnu installed - rustc 1.100.0 (0ef1bc386 2026-11-09)
+
+{"phase": "baseline", "check": "build", "state": "started"}
+          Finished with result: oom-kill
+Main processes terminated with: code=killed, status=15/TERM
+               Service runtime: 10min 14.972s
+             CPU time consumed: 9min 59.154s
+                   Memory peak: 4G (swap: 0B)

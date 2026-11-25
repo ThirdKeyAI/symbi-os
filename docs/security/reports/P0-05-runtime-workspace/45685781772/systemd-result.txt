@@ -1,0 +1,9 @@
+LoadState=loaded
+RuntimeMaxUSec=1h 50min
+Result=oom-kill
+ExecMainStatus=15
+MemoryPeak=4294967296
+CPUUsageNSec=599154213000
+CPUQuotaPerSecUSec=2s
+MemoryMax=4294967296
+MemorySwapMax=0

@@ -11,7 +11,7 @@ unit="symbi-runtime-workspace-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
 set +e
 sudo systemd-run --unit="$unit" --wait --pipe \
   --uid="$(id -u)" --gid="$(id -g)" --working-directory="$root" \
-  --property=MemoryMax=4G --property=MemorySwapMax=0 --property=CPUQuota=200% \
+  --property=MemoryMax=8G --property=MemorySwapMax=0 --property=CPUQuota=200% \
   --property=TasksMax=256 --property=Nice=10 --property=RuntimeMaxSec=110min \
   --property=KillMode=control-group \
   /usr/bin/env -i "PATH=$PATH" "HOME=$HOME" "USER=$USER" \

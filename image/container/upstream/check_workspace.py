@@ -25,6 +25,19 @@ def digest(path):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
+def require_host_capacity(meminfo):
+    measurements = {}
+    for line in meminfo.splitlines():
+        fields = line.split()
+        if fields and fields[0] in {"MemTotal:", "MemAvailable:"}:
+            if len(fields) != 3 or fields[2] != "kB" or fields[0][:-1] in measurements:
+                raise ValueError("Unexpected hosted memory measurement")
+            measurements[fields[0][:-1]] = int(fields[1]) * 1024
+    if measurements.get("MemTotal", 0) < 14 * 1024**3 or measurements.get("MemAvailable", 0) < 10 * 1024**3:
+        raise ValueError("Hosted builder needs at least 14 GiB total and 10 GiB available before its bounded 8 GiB compile")
+    return measurements
+
+
 def main():
     if os.environ.get("GITHUB_ACTIONS") != "true" or os.environ.get("RUNNER_ENVIRONMENT") != "github-hosted":
         raise SystemExit("Refusing local runtime compilation")
@@ -36,7 +49,7 @@ def main():
     names = ("memory.max", "memory.swap.max", "cpu.max", "pids.max")
     limits = {name: (cgroup / name).read_text().strip() for name in names}
     (evidence / "cgroup-limits.json").write_text(json.dumps(limits, indent=2) + "\n")
-    assert limits == {"memory.max": "4294967296", "memory.swap.max": "0", "cpu.max": "200000 100000", "pids.max": "256"}
+    assert limits == {"memory.max": "8589934592", "memory.swap.max": "0", "cpu.max": "200000 100000", "pids.max": "256"}
     record = {"schema": 1, "source_revision": PIN, "rust_version": RUST, "patch_sha256": PATCH, "checks": [],
               "baseline_passed": False, "patched_workspace_passed": False,
               "os_qualified": False, "source_commit": os.environ["GITHUB_SHA"],
@@ -50,6 +63,8 @@ def main():
 
     def run(phase, name, command, timeout):
         started = time.monotonic()
+        record["active_check"] = {"phase": phase, "name": name, "command": command}
+        save()  # Survives whole-unit termination, including a cgroup OOM kill.
         print(json.dumps({"phase": phase, "check": name, "state": "started"}), flush=True)
         with (evidence / f"{phase}-{name}.log").open("wb") as log:
             child = subprocess.Popen(command, cwd=source, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
@@ -67,6 +82,7 @@ def main():
                "timeout": timed_out, "elapsed_seconds": round(time.monotonic() - started, 3),
                "passed": not timed_out and child.returncode == 0}
         record["checks"].append(row)
+        del record["active_check"]
         save()
         print(json.dumps(row), flush=True)
         if timed_out:
@@ -89,6 +105,7 @@ def main():
         lock_hash = digest(source / "Cargo.lock")
         record["cargo_lock_sha256"] = lock_hash
         record["started_at_utc"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        record["host_memory_bytes"] = require_host_capacity(Path("/proc/meminfo").read_text())
         save()
         subprocess.run(["rustup", "toolchain", "install", RUST, "--profile", "minimal",
                         "--component", "clippy", "--component", "rustfmt", "--no-self-update"], check=True, timeout=300)
