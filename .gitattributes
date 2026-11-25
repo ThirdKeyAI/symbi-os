@@ -1,1 +1,5 @@
 * text=auto eol=lf
+
+# Unified-diff context lines contain a required leading space, including blank lines.
+image/toolchain/patches/*.patch whitespace=-blank-at-eol
+docs/security/reports/P0-03-bluebuild/*/applied-source.patch whitespace=-blank-at-eol

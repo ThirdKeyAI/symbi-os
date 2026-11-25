@@ -1,0 +1,38 @@
+{
+  "source_revision": "a654ee8810c637aa00356999488e97259061275d",
+  "os_qualified": false,
+  "variants": {
+    "generic": {
+      "artifact_sha256": "7dd06666cea0f5c233bd255f57323b5ca1eb55a04bd90dfd6764f95d20a2e7b8",
+      "external_base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+      "from_instructions": [
+        "FROM \"${BASE_IMAGE}\" AS symbiont-os",
+        "FROM scratch AS stage-files",
+        "FROM scratch AS stage-keys",
+        "FROM symbiont-os"
+      ],
+      "additional_external_stage_or_copy_reference": false,
+      "build_script_source": ".bluebuild-scripts_a654ee88",
+      "observation": "Generated FROM directives resolve to the previously publisher-verified base digest and local stages. The second BASE_IMAGE argument is metadata inside the final stage."
+    },
+    "nvidia": {
+      "artifact_sha256": "7a8fa128f28178891b0ac7714faca2a95c93132d5e754585984b71a500fb140b",
+      "external_base": "ghcr.io/secureblue/sericea-nvidia-hardened@sha256:9b8053d581db16d47b1df18698ffe8cc3f70c45a3758363fdc8d85c1b0fcaf5e",
+      "from_instructions": [
+        "FROM \"${BASE_IMAGE}\" AS symbiont-os-nvidia",
+        "FROM scratch AS stage-files",
+        "FROM scratch AS stage-keys",
+        "FROM symbiont-os-nvidia"
+      ],
+      "additional_external_stage_or_copy_reference": false,
+      "build_script_source": ".bluebuild-scripts_a654ee88",
+      "observation": "Generated FROM directives resolve to the previously publisher-verified base digest and local stages. The second BASE_IMAGE argument is metadata inside the final stage."
+    }
+  },
+  "remaining": [
+    "No image has been built or booted by this check.",
+    "BlueBuild pre/post-build scripts and base package prerequisites still require execution qualification; source review found a setup package-install fallback.",
+    "The eventual image builder must forbid arbitrary BASE_IMAGE build-argument overrides and verify the authenticated base before building.",
+    "Hyprland packaging, plugin refusal, signature/update/rollback, SBOM and provenance acceptance remain pending."
+  ]
+}

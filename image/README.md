@@ -138,3 +138,19 @@ a separate review before any image build.
 After the CLI acceptance cases pass, the same hosted unit runs the upstream
 workspace unit tests with the selected features, one test thread and no debug
 symbols. A failure is retained as a failure; no test is omitted to pass this gate.
+
+The patched CLI run
+[45673507028](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45673507028)
+passed both positive recipes, all twelve rejection cases and both Containerfile
+generations. Their only external FROM reference is the corresponding verified
+secureblue digest; scratch/local stages and extracted scripts are recorded in
+`docs/security/reports/P0-03-bluebuild/45673507028/generated-reference-review.json`.
+The full workspace test gate failed on the missing Cosign test prerequisite.
+
+`toolchain/cosign.json` now pins the same Cosign v3.1.5 artifact used to authenticate
+the base images. The hosted bootstrap downloads it under the existing cgroup,
+checks size/hash and verifies the release KMS signature using the pinned public
+publisher key and OpenSSL before running any downloaded code. The authenticated
+binary enters only this job's test PATH; small public verification records are
+retained. No release credential is provided. The full upstream tests remain
+mandatory, including the previously failing Cosign/Sigstore compatibility tests.

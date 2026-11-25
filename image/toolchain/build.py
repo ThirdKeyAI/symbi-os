@@ -7,6 +7,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+from bootstrap_cosign import bootstrap
+
 
 def main():
     if os.environ.get("GITHUB_ACTIONS") != "true" or os.environ.get("RUNNER_ENVIRONMENT") != "github-hosted":
@@ -22,6 +24,8 @@ def main():
     (evidence / "cgroup-limits.json").write_text(json.dumps(limits, indent=2) + "\n")
     assert limits == {"memory.max": "4294967296", "memory.swap.max": "0",
                       "cpu.max": "200000 100000", "pids.max": "256"}, limits
+    cosign = bootstrap(root, evidence)
+    os.environ["PATH"] = str(cosign.parent) + os.pathsep + os.environ["PATH"]
     source = root / ".cache/bluebuild-source"
 
     def output(*command):

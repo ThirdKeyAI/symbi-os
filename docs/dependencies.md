@@ -125,3 +125,14 @@ checks schema plus upstream typed/OCI parsing. Hash checks bind the patch before
 application, and actual applied source differences are retained with the tool
 result. Twelve rejected profile cases and both real rendered recipes exercise
 the compiled CLI; an offline Python schema preflight is only preliminary evidence.
+
+The BlueBuild tests require Cosign. Their hosted prerequisite reuses authenticated
+Cosign v3.1.5, source `e5a0818ca5729481095773409e9c1b60cc278e8d`, binary SHA-256
+`912502def4baf810eaf36b210a4f51e1da214f9f6d664e2a9a2154cfc67ee0d6`.
+`image/toolchain/cosign.json` binds the exact download and release KMS bundle;
+`image/toolchain/keys/cosign-release-v3.1.5.pub` is the publisher public key already
+used by the retained base-verification bootstrap. OpenSSL verifies the signature
+before execution. The initial key trust remains the pinned publisher HTTPS
+source, as documented in the earlier verification record. This adds no Cargo
+crate, no release credential and no dependency-audit exemption. Tests use only
+upstream fixture/disposable keys; retained failure logs omit private test PEMs.

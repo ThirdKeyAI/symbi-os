@@ -5,7 +5,7 @@
   "conclusion": "failure",
   "cause": "Unmodified BlueBuild compiled on Rust1.100.0, then rejected the v2 generic recipe with v1-required properties and version=1 expectation. No Containerfile generated.",
   "artifact_digest": "sha256:39630dcb42e0f3f3c225884ae962943632afdceb74feef11d0a8d267914be186",
-  "retention_format": "Public artifact text with trailing line whitespace removed; original hashes below",
+  "retention_format": "Public artifact text with trailing line whitespace and final blank lines removed; original hashes below",
   "files": {
     "cgroup-limits.json": {
       "artifact_sha256": "793978dd325346b691df2874b59d3c299548bcedf446ccf30ba3aa0783f25dd2",
@@ -13,7 +13,7 @@
     },
     "generic-validate.log": {
       "artifact_sha256": "e60e6f2da1f6674da31a9e3a71178d7f0b8d3061e83b8850e01c282afd8d8822",
-      "retained_sha256": "e60e6f2da1f6674da31a9e3a71178d7f0b8d3061e83b8850e01c282afd8d8822"
+      "retained_sha256": "4906e311e83840fc4c9345cd3a7c0e8bf846df28ad7ee730329a0f2891e39be1"
     },
     "generic.json": {
       "artifact_sha256": "d2a0392f3a0ffb3f21dafff336b29c1667a5273513255d9dbbd9d06698a51655",
