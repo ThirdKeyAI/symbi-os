@@ -134,6 +134,15 @@ class RecipePins(unittest.TestCase):
             self.module.render(self.config, "generic", self.root)
 
 
+    def test_symlinked_trust_directory_cannot_escape(self):
+        keys = self.root / "image/keys"
+        outside = self.root / "outside-keys"
+        keys.rename(outside)
+        keys.symlink_to(outside, target_is_directory=True)
+        with self.assertRaises(ValueError):
+            self.module.render(self.config, "generic", self.root)
+
+
 class PrivacyDefaults(unittest.TestCase):
     def test_telemetry_off_without_turning_off_browser_security_updates(self):
         chromium = json.loads((OVERLAY / "etc/chromium/policies/managed/symbi-privacy.json").read_text())

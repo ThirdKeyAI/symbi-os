@@ -28,6 +28,11 @@ We have not substituted it or selected an obsolete base. See OQ-07.
   or tag-only base is provided. Only the built-in `containerfile` module is used;
   no moving module image or CLI is installed in the desktop image.
 
+- `signing.py` prepares a default-reject containers/image policy with hash-bound
+  public keys, exact signed repository identities and signature-attachment lookup.
+  Base rollback is restricted to the selected digest. `release-trust.json` remains
+  empty until OQ-03 is answered; see [the trust-policy procedure](SIGNING.md).
+
 Run `bash scripts/check-image.sh` for the small offline checks. After a reviewed
 base pin is committed, `python3 image/recipe.py --variant generic` emits the
 recipe; `--variant nvidia` needs its own independently verified base pin. The
