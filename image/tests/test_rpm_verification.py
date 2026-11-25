@@ -7,7 +7,7 @@ SPEC = importlib.util.spec_from_file_location("rpm_inputs", Path(__file__).paren
 rpm_inputs = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(rpm_inputs)
 FINGERPRINT = "4F50A6114CD5C6976A7F1179655A4B02F577861E"
-GOOD = "sample.rpm:\n    Header V4 RSA/SHA256 Signature, key ID f577861e: OK\n    Header SHA256 digest: OK\n    Payload SHA256 digest: OK\n"
+GOOD = "sample.rpm:\n    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK\n    Header SHA256 digest: OK\n    Payload SHA256 digest: OK\n"
 
 
 class SignatureOutput(unittest.TestCase):
@@ -18,9 +18,14 @@ class SignatureOutput(unittest.TestCase):
         with self.assertRaises(ValueError):
             rpm_inputs.require_verified_rpm(0, "sample.rpm:\n    Payload SHA256 digest: OK\n", FINGERPRINT)
 
+    def test_short_key_id_is_insufficient_for_pinned_rpm6(self):
+        legacy = "sample.rpm:\n    Header V4 RSA/SHA256 Signature, key ID f577861e: OK\n    Header SHA256 digest: OK\n    Payload SHA256 digest: OK\n"
+        with self.assertRaises(ValueError):
+            rpm_inputs.require_verified_rpm(0, legacy, FINGERPRINT)
+
     def test_failure_bad_missing_or_wrong_key_is_refused(self):
         for status, text in ((1, GOOD), (0, GOOD.replace('digest: OK', 'digest: BAD')),
-                             (0, GOOD.replace('f577861e', 'deadbeef')),
+                             (0, GOOD.replace('4f50a611', 'deadbeef')),
                              (0, GOOD.replace(': OK', ': NOTFOUND')),
                              (0, GOOD.split('    Payload')[0])):
             with self.subTest(status=status, text=text), self.assertRaises(ValueError):

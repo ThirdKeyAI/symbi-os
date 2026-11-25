@@ -28,12 +28,12 @@ def require_verified_rpm(status, output, fingerprint):
     elements = [line.strip() for line in output.splitlines() if line.startswith((' ', '\t'))]
     if not elements or any(not line.endswith(': OK') for line in elements):
         raise ValueError('RPM contains failed or unrecognized verification elements')
-    signatures = [line for line in elements if 'Signature' in line]
+    signatures = [line for line in elements if ' signature,' in line.lower()]
     if not signatures or not any(line.startswith('Payload ') and ' digest: OK' in line for line in elements):
         raise ValueError('RPM needs a verified signature and payload digest, not digest-only success')
     for line in signatures:
-        match = re.search(r'key ID ([0-9a-fA-F]{8,40}): OK$', line)
-        if not match or not fingerprint.endswith(match[1].upper()):
+        match = re.search(r'key fingerprint: ([0-9a-fA-F]{40}): OK$', line)
+        if not match or fingerprint != match[1].upper():
             raise ValueError('Unexpected RPM signing key')
 
 
