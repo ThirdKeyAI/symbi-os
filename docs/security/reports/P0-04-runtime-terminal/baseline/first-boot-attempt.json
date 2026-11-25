@@ -1,0 +1,18 @@
+{
+  "ActiveState": "failed",
+  "InvocationID": "dc90779f0e59462298aae631725a59e4",
+  "MainPID": "0",
+  "Result": "signal",
+  "ExecMainStartTimestamp": "Wed 2026-11-25 03:32:36 PST",
+  "ExecMainExitTimestamp": "Wed 2026-11-25 03:33:07 PST",
+  "ExecMainCode": "2",
+  "ExecMainStatus": "6",
+  "MemoryPeak": "387502080",
+  "CPUUsageNSec": "7369969000",
+  "CPUQuotaPerSecUSec": "250ms",
+  "MemoryMax": "1073741824",
+  "MemorySwapMax": "0",
+  "TasksMax": "32",
+  "CPUAffinity": "23",
+  "failure": "qemu_thread_create: Resource temporarily unavailable; default I/O thread pool exceeded TasksMax=32"
+}

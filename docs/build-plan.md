@@ -521,7 +521,7 @@ Open questions raised: <links, or none>
 | P0-01 | Repo scaffold, CI, cargo-deny/vet, Cedar schema skeleton | none | INV-12 | Codex | Done |
 | P0-02 | TLA+ models: GrantLifecycle, TrustedInput, Freeze, JournalBeforeEffect, SessionClass | none | INV-2, 3, 4, 5, 8, 10 | Codex | Done |
 | P0-03 | Base image: BlueBuild recipe on secureblue, cosign signing, SBOM, ported Ombuntu defaults | P0-01 | INV-12 | Codex | In review; verified inputs ready, image qualification pending |
-| P0-04 | Qualify Symbiont 3.0's Landlock route on the Fedora Atomic image (platform diagnostic and release driver); retain the report | P0-03 | INV-1, 7 |  | Not started |
+| P0-04 | Qualify Symbiont 3.0's Landlock route on the Fedora Atomic image (platform diagnostic and release driver); retain the report | P0-03 | INV-1, 7 | Codex | Blocked (image/build prerequisites); driver prepared |
 | P0-05 | Container tier on Fedora Atomic: moby-engine or Podman for Symbiont's Docker and gVisor routes; qualify the choice | P0-03 | INV-1 |  | Not started |
 | P1-01 | symbi-common: principal IDs, D-Bus types, Symbiont API and journal clients | P0-01 | INV-5 |  | Not started |
 | P1-02 | symbi-run: desktop launcher over Symbiont's managed CLI route (governed mode) | P1-01, P0-04 | INV-7, 13 |  | Not started |

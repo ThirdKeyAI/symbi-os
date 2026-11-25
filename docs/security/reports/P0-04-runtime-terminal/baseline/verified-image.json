@@ -1,0 +1,10 @@
+{
+  "filename": "noble-server-cloudimg-amd64.img",
+  "sha256": "04e8f2461a16a44e78a370284471f29616cdd9baf1893df25807b71f985b6c94",
+  "signer_fingerprint": "D2EB44626FDDC30B513D5BB71A5D6C4C7DB87C81",
+  "signature_verified": true,
+  "source_url": "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img",
+  "fingerprint_source": "https://ubuntu.com/docs/public-images/public-images-how-to/verify-image-checksum/",
+  "image_verified": true,
+  "size_bytes": 621284352
+}

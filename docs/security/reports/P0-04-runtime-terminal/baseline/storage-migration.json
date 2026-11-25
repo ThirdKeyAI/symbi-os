@@ -1,0 +1,17 @@
+{
+  "changed_at_utc": "2026-11-25T12:21:06.748354+00:00",
+  "reason": "Guest swap on rotating /dev/sdb1 caused approximately 98 percent I/O stalls during sqlparser compilation",
+  "source_disk": "/vmstore/repos2/symbi-os/.cache/runtime-builder-20261125/vm/disk.qcow2",
+  "destination_disk": "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/.cache/runtime-builder-ssd-20261125/disk.qcow2",
+  "byte_identical_before_restart_sha256": "33b544694d40c41cbf7c2b0796fdaad84baec4c33b8e6309988f1d1f57ed1ebe",
+  "qemu_img_check_passed": true,
+  "backing_image_unchanged": "/vmstore/repos2/symbi-os/.cache/runtime-builder-20261125/noble-server-cloudimg-amd64.img",
+  "destination_filesystem": "/dev/nvme0n1p6 ext4",
+  "destination_rotational": false,
+  "source_cache_preserved": true,
+  "original_disk_preserved": true,
+  "host_ram_cpu_and_swap_ceilings_unchanged": true,
+  "guest_build_stopped_deliberately": true,
+  "build_completed": false,
+  "qualified": false
+}

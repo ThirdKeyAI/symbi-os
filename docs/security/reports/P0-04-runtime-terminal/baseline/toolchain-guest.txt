@@ -1,0 +1,12 @@
+bff349e72704ff70bc08a234a3847338e797065bbedde5e556808bc87b7bf7c6  /home/builder/toolchain/bin/rustc
+841072d1d92f9e841d9ba5b0814182a0adf064acf4527cd120967b7bc49dcb66  /home/builder/toolchain/bin/cargo
+81bd985ee50d78e9d8c5810f6ca836614d1bf95e0e8142f1ec5f42eb250ed729  /home/builder/toolchain/bin/clippy-driver
+56b31ad3ec8fe0277a2884a189e243b8f04e9b48e5fd22e547c1516c5f8fd34c  /home/builder/toolchain/bin/rustfmt
+rustc 1.95.0 (59807616e 2026-04-14)
+binary: rustc
+commit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860
+commit-date: 2026-04-14
+host: x86_64-unknown-linux-gnu
+release: 1.95.0
+LLVM version: 22.1.2
+cargo 1.95.0 (f2d3ce0bd 2026-03-21)

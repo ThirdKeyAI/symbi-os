@@ -1,0 +1,101 @@
+image/vendor/omarchy/LICENSE: OK
+image/vendor/omarchy/config/hypr/input.conf: OK
+image/vendor/omarchy/config/walker/config.toml: OK
+image/vendor/omarchy/config/waybar/config.jsonc: OK
+image/vendor/ombuntu/LICENSE: OK
+image/vendor/ombuntu/privacy/chromium-policies.json: OK
+image/vendor/ombuntu/privacy/firefox-policies.json: OK
+test_existing_file_symlink_is_preserved (test_image.Defaults.test_existing_file_symlink_is_preserved) ... ok
+test_existing_symlink_is_neither_replaced_nor_followed (test_image.Defaults.test_existing_symlink_is_neither_replaced_nor_followed) ... ok
+test_first_login_and_repeat_preserve_user_edits (test_image.Defaults.test_first_login_and_repeat_preserve_user_edits) ... ok
+test_root_symlink_is_rejected (test_image.Defaults.test_root_symlink_is_rejected) ... ok
+test_source_symlinks_are_rejected (test_image.Defaults.test_source_symlinks_are_rejected) ... ok
+test_portal_and_connectivity_defaults (test_image.PrivacyDefaults.test_portal_and_connectivity_defaults) ... ok
+test_shipped_config_does_not_invoke_omarchy_installers_or_plugins (test_image.PrivacyDefaults.test_shipped_config_does_not_invoke_omarchy_installers_or_plugins) ... ok
+test_telemetry_off_without_turning_off_browser_security_updates (test_image.PrivacyDefaults.test_telemetry_off_without_turning_off_browser_security_updates) ... ok
+test_changed_or_outside_trust_key_is_rejected (test_image.RecipePins.test_changed_or_outside_trust_key_is_rejected) ... ok
+test_committed_configuration_has_no_fabricated_base (test_image.RecipePins.test_committed_configuration_has_no_fabricated_base) ... ok
+test_mutable_or_malformed_base_is_rejected (test_image.RecipePins.test_mutable_or_malformed_base_is_rejected) ... ok
+test_recipe_uses_digest_and_local_public_key (test_image.RecipePins.test_recipe_uses_digest_and_local_public_key) ... ok
+test_symlinked_trust_directory_cannot_escape (test_image.RecipePins.test_symlinked_trust_directory_cannot_escape) ... ok
+test_bad_repository_scopes_are_refused (test_signing.SigningPolicy.test_bad_repository_scopes_are_refused) ... ok
+test_changed_key_or_key_outside_trust_directory_is_refused (test_signing.SigningPolicy.test_changed_key_or_key_outside_trust_directory_is_refused) ... ok
+test_default_reject_and_explicit_key_repository_bindings (test_signing.SigningPolicy.test_default_reject_and_explicit_key_repository_bindings) ... ok
+test_missing_variant_and_base_release_collision_fail (test_signing.SigningPolicy.test_missing_variant_and_base_release_collision_fail) ... ok
+test_only_approved_digest_rebases_are_emitted (test_signing.SigningPolicy.test_only_approved_digest_rebases_are_emitted) ... ok
+test_policy_bundle_cannot_overwrite_existing_output (test_signing.SigningPolicy.test_policy_bundle_cannot_overwrite_existing_output) ... ok
+test_private_key_material_is_never_embedded (test_signing.SigningPolicy.test_private_key_material_is_never_embedded) ... ok
+test_symlinked_trust_directory_cannot_escape (test_signing.SigningPolicy.test_symlinked_trust_directory_cannot_escape) ... ok
+test_unconfigured_release_trust_fails (test_signing.SigningPolicy.test_unconfigured_release_trust_fails) ... ok
+
+----------------------------------------------------------------------
+Ran 22 tests in 0.976s
+
+OK
+test_binary_source_and_cleanup_must_match (test_landlock.Qualification.test_binary_source_and_cleanup_must_match) ... ok
+test_complete_synthetic_reports_validate (test_landlock.Qualification.test_complete_synthetic_reports_validate) ... ok
+test_evidence_only_is_not_full_release_qualification (test_landlock.Qualification.test_evidence_only_is_not_full_release_qualification) ... ok
+test_failed_independent_verifier_is_not_hidden_by_pass (test_landlock.Qualification.test_failed_independent_verifier_is_not_hidden_by_pass) ... ok
+test_missing_and_duplicate_suites_fail (test_landlock.Qualification.test_missing_and_duplicate_suites_fail) ... ok
+test_private_action_files_are_never_selected_for_publication (test_landlock.Qualification.test_private_action_files_are_never_selected_for_publication) ... ok
+test_successful_namespace_refusal_is_not_qualification (test_landlock.Qualification.test_successful_namespace_refusal_is_not_qualification) ... ok
+test_top_level_pass_does_not_hide_failed_case (test_landlock.Qualification.test_top_level_pass_does_not_hide_failed_case) ... ok
+test_unsigned_wrong_or_mutable_deployment_fails (test_landlock.Qualification.test_unsigned_wrong_or_mutable_deployment_fails) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.090s
+
+OK
+    Finished `dev` profile [unoptimized] target(s) in 0.22s
+    Finished `test` profile [unoptimized] target(s) in 0.23s
+     Running unittests src/lib.rs (target/debug/deps/symbi_common-a4e39341df864557)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/policy.rs (target/debug/deps/policy-aa442b414118508b)
+
+running 6 tests
+test base_policy_denies_every_session_class_and_model_location ... ok
+test base_policy_validates_without_warnings ... ok
+test schema_accepts_documented_model_attributes_and_session_context ... ok
+test schema_rejects_mistyped_session_context ... ok
+test schema_rejects_undeclared_actions ... ok
+test test_only_permit_proves_authorizer_is_not_always_denying ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.61s
+
+   Doc-tests symbi_common
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+    Finished `dev` profile [unoptimized] target(s) in 0.23s
+   Generated /vmstore/repos2/symbi-os/target/doc/symbi_common/index.html
+advisories ok, bans ok, licenses ok, sources ok
+Vetting Succeeded (because you have no third-party dependencies)
+	Command being timed: "/usr/bin/bash scripts/check.sh"
+	User time (seconds): 0.34
+	System time (seconds): 0.32
+	Percent of CPU this job got: 8%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:07.84
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 70604
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 3072
+	Minor (reclaiming a frame) page faults: 107668
+	Voluntary context switches: 4959
+	Involuntary context switches: 792
+	Swaps: 0
+	File system inputs: 349656
+	File system outputs: 1080
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

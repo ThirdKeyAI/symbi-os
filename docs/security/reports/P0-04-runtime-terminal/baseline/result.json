@@ -1,0 +1,95 @@
+{
+  "collected_at_utc": "2026-11-25T18:51:56.338005+00:00",
+  "qualified": false,
+  "scope": "Clean pinned-source debug workspace checks in Ubuntu; no Fedora, containment or release qualification",
+  "source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+  "host": {
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "SubState": "running",
+    "InvocationID": "f38032eccc3847fbb504c66de095c360",
+    "RuntimeMaxUSec": "12h",
+    "MainPID": "2188835",
+    "Result": "success",
+    "MemoryCurrent": "717594624",
+    "MemoryPeak": "779354112",
+    "CPUUsageNSec": "5735312306000",
+    "TasksCurrent": "6",
+    "CPUQuotaPerSecUSec": "250ms",
+    "MemoryMax": "1073741824",
+    "MemorySwapMax": "0",
+    "TasksMax": "32"
+  },
+  "guest": {
+    "unit": {
+      "RuntimeMaxUSec": "8h",
+      "MainPID": "0",
+      "Result": "exit-code",
+      "ExecMainCode": "1",
+      "ExecMainStatus": "101",
+      "CPUUsageNSec": "7243276558000",
+      "LoadState": "loaded",
+      "ActiveState": "failed",
+      "SubState": "failed"
+    },
+    "source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+    "source_clean": true,
+    "full_workspace_checks_passed": false,
+    "artifact": {
+      "path": "/home/builder/work/target/debug/symbi",
+      "bytes": 413497664,
+      "sha256": "9ebced46221dcbb48944e64694143e8e96cb14f433cf42ae00a7d3a5da81af83"
+    }
+  },
+  "files": {
+    "workspace-checks.log": {
+      "bytes": 192523,
+      "sha256": "e73e924a9125fd505ccf611b468aa0290d526337a3eb723dff6b5125ef5a803f"
+    },
+    "workspace-checks-hdd.log": {
+      "bytes": 33631,
+      "sha256": "8c1eb0c696ba0a36d4e29d5683f8fe890662a22191c8353e5d89e77b51f657b0"
+    },
+    "hdd-unit-after-stop.txt": {
+      "bytes": 63,
+      "sha256": "a845e2b901292911d656ed0ef03bded115828f1b2d13677a99348b031f274a5b"
+    },
+    "symbi-debug.sha256": {
+      "bytes": 104,
+      "sha256": "97b01ee35d1a4f4817c2cfe8c2caa03b60ee9916d939b6ce0777020c740f660d"
+    },
+    "verified-image.json": {
+      "bytes": 489,
+      "sha256": "445c8b0161ba709ad9aba301997a3aaecb18a37e0b066711be09366d1158716f"
+    },
+    "builder-configuration.json": {
+      "bytes": 1207,
+      "sha256": "096db7b966ef8f2cf81cc23bdd547ff93c0f1110ad49dcd6c968d44f19c864f8"
+    },
+    "verified-host-limits.json": {
+      "bytes": 108,
+      "sha256": "277f969478108b05d221cc72ceaae438eda6b91eebf5aa938919dadac4d09687"
+    },
+    "first-boot-attempt.json": {
+      "bytes": 594,
+      "sha256": "ce182cc93918682d93b8fe6a44677548b852c73e09dd1663dff8f842c4e262fa"
+    },
+    "storage-migration.json": {
+      "bytes": 983,
+      "sha256": "eb95cd12ae7d1880ecf67149444eedc9b92c4215c7f1872f8961fd5978085521"
+    },
+    "toolchain-guest.txt": {
+      "bytes": 642,
+      "sha256": "6855c7fd6e5898bd28e94460846cd6c6601258399de3f88c42290151aea39613"
+    },
+    "runtime-duration-extension.json": {
+      "bytes": 4940,
+      "sha256": "03c869cbaeb62780ccb5e8ed7bcb924ecc05c180c472ed9f0ebab8cd4d8042e2"
+    }
+  },
+  "excluded": [
+    "SSH private keys",
+    "cloud-init user-data and seed image",
+    "virtual machine disk"
+  ]
+}
