@@ -1,0 +1,19 @@
+# Model  Fault  Required invariant
+GrantLifecycle nonhuman-create HumanAuthority
+GrantLifecycle nonhuman-widen HumanAuthority
+GrantLifecycle nonhuman-extend HumanAuthority
+GrantLifecycle early-revoke-ack NoCompletionAfterRevoke
+GrantLifecycle stale-grant-cache NoCompletionAfterRevoke
+TrustedInput accept-synthetic PhysicalReceipts
+TrustedInput trust-ui-surface TrustedSurfaceOnly
+TrustedInput accept-stale-card BoundReceiptUses
+TrustedInput replay-receipt SingleUse
+Freeze early-freeze-ack NoCompletionWhileFrozen
+Freeze dispatch-while-frozen NoDispatchWhileFrozen
+JournalBeforeEffect release-before-sync DurableBeforeEffect
+JournalBeforeEffect skip-signature SignedBeforeEffect
+JournalBeforeEffect broken-hash-chain HashChainBeforeEffect
+SessionClass allow-remote-confidential NoRemoteConfidential
+SessionClass trust-caller-location NoRemoteConfidential
+SessionClass stale-class-decision NoRemoteConfidential
+SessionClass declassify-confidential NoDowngrade

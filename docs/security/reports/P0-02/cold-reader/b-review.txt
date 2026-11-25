@@ -1,0 +1,53 @@
+Cold-reader review B — IN SYNC after justified record refresh
+
+Reviewed scratch baseline 83c7a83b427e6f9058f57deb49d6791cf11ec9ff and its
+uncommitted formal/GrantLifecycle.tla change. It is exactly the baseline with
+all 14 occurrences of atAck renamed to completedAtRevokeAck. The old name is
+absent. Initial state, actions, UNCHANGED sets, type rule and revocation rule
+all use the replacement consistently. No behavior, property or bound changed.
+
+All five ordinary checks exit 0 and exhaust their queues:
+GrantLifecycle: 478 generated / 229 distinct states, depth 12.
+TrustedInput: 171 generated / 48 distinct states, depth 8.
+Freeze: 297 generated / 181 distinct states, depth 13.
+JournalBeforeEffect: 1730 generated / 686 distinct states, depth 15.
+SessionClass: 14645 generated / 6171 distinct states, depth 8.
+No unexpected warnings occur. All non-fault Next actions execute; only the
+documented fault-only SessionClass.LowerClass has 0:0 coverage. Terminal
+actions and DenyAtDispatch have nonzero executions even when new states are 0.
+
+All 18 fault operations exit 0 and report their named invariant broken,
+including the five GrantLifecycle faults. This demonstrates that the renamed
+model still rejects nonhuman authority and both revocation faults. Fault
+checks use a scratch config with only the target rule; normal configs retain
+Faults = {}. No behavior or property was edited to obtain a pass.
+
+Initial drift.sh exits 1 for formal/GrantLifecycle.tla (whole file,
+uncommitted). Following VERIFY.md's rename-only exception and sync procedure,
+the reviewed record was refreshed only after the checks passed. Its only diff
+is the GrantLifecycle covered hash: 3eb20542d5d1 -> d4c37a5a9d6c. The sync
+output's regions match the intended coverage: docs/build-plan.md lines 45–94
+and the listed whole files. The post-sync drift check reports in sync.
+No commit was created, and the original source repository was not changed.
+
+Toolchain: formal-proofs 0.5.3 at
+bb984f2e4427d3f5515cc56d5a54c6ce8ce26d1e. TLC jar SHA-256:
+936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88.
+The existing checksum-pinned cache jar was copied to this scratch .tools and
+validated by bootstrap-formal.sh after the sandbox DNS problem discovered in
+copy A. TLC ran with approved local-socket permission. All checker processes
+ran sequentially with JAVA=$PWD/scripts/formal-java.sh and the scratch
+TLA2TOOLS path, retaining one visible CPU, a 256 MiB heap and 180 seconds per
+invocation. No unrelated build was run.
+
+Evidence: *.normal.log retain complete coverage; normal-status.tsv and
+fault-status.tsv retain every exit status; *.fault.log retain named results;
+drift-before.log, drift-sync.log and drift-after.log retain drift evidence.
+handoff/ contains the final follow-the-record rerun after the hash refresh.
+That rerun again passes all five normal checks and all 18 fault checks, then
+reports the record in sync. summary.json retains the final structured result.
+
+Limits remain those in VERIFY.md: bounded design safety only, no runtime or
+Fedora qualification, no trace conformance, no composition proof, and no
+timing/liveness guarantee. Pending revoke/freeze can last indefinitely if
+external work never drains. The rename adds no implementation evidence.

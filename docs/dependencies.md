@@ -38,6 +38,21 @@ The documentation advertises cargo-vet 0.10.4, but the registry lookup in this
 session returned 0.10.3 as the available release. The bootstrap uses the version
 actually fetched and executed. Reassess new releases through a reviewed pin bump.
 
+## P0-02 model-checking tools
+
+P0-02 adds no Cargo dependencies. Its design checker uses Java 11+ (the local
+run used OpenJDK 25.0.5.1), the `jaschadub/skill-formal-proofs` action at full
+commit `bb984f2e4427d3f5515cc56d5a54c6ce8ce26d1e` (0.5.3, MIT), and TLC 1.7.4
+(MIT) at SHA-256
+`936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88`.
+The action's checker/fault/drift scripts were inspected; bootstrap verifies
+the jar on download and reuse. The scripts invoke Java and use temporary
+state directories, without repository or release credentials. The existing
+upstream action supplies CI orchestration; none of its code is vendored into
+the product. The commit is not publisher-signature evidence, and these tools
+remain outside the runtime cargo-vet graph. Java is host/runner-provided,
+not part of a reproducible image toolchain claim. See `formal/VERIFY.md`.
+
 ## Adding a dependency
 
 Pin a registry dependency to an exact version and commit Cargo.lock. For Git

@@ -1,0 +1,13 @@
+diff --git a/formal/GrantLifecycle.tla b/formal/GrantLifecycle.tla
+index 3eb2054..9c5470b 100644
+--- a/formal/GrantLifecycle.tla
++++ b/formal/GrantLifecycle.tla
+@@ -60,7 +60,7 @@ Cancel(c) ==
+ \* Cancellation means the external effect cannot subsequently complete.
+ AckRevoke ==
+   /\ phase = "revoking"
+-  /\ (\A c \in Calls : call[c] # "running") \/ "early-revoke-ack" \in Faults
++  /\ TRUE
+   /\ phase' = "revoked" /\ atAck' = completed
+   /\ UNCHANGED <<scope, expiry, authorityActors, call, completed>>
+ 

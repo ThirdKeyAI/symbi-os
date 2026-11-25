@@ -1,0 +1,97 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 80 and seed -6106810515606712887 with 1 worker on 1 cores with 228MB heap and 64MB offheap memory [pid: 1965358] (Linux 7.0.0-43-generic amd64, Ubuntu 25.0.5.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file /tmp/symbi-p0-02-stage/formal/TrustedInput.tla
+Parsing file /tmp/tmp.aIq11P7oU9/Naturals.tla
+Semantic processing of module Naturals
+Semantic processing of module TrustedInput
+Starting... (2026-11-25 00:52:09)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-25 00:52:09.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 3.2E-16
+The coverage statistics at 2026-11-25 00:52:09
+<Init line 13, col 1 to line 13, col 4 of module TrustedInput>: 1:1
+  line 13, col 9 to line 15, col 78 of module TrustedInput: 1
+<Open line 17, col 1 to line 17, col 7 of module TrustedInput>: 14:32
+  line 17, col 15 to line 17, col 30 of module TrustedInput: 128
+  |line 17, col 15 to line 17, col 21 of module TrustedInput: 96
+  line 17, col 35 to line 17, col 46 of module TrustedInput: 32
+  line 18, col 15 to line 19, col 48 of module TrustedInput: 32
+<ReplaceCard line 21, col 1 to line 21, col 11 of module TrustedInput>: 6:18
+  line 22, col 6 to line 22, col 13 of module TrustedInput: 66
+  |line 22, col 6 to line 22, col 9 of module TrustedInput: 48
+  line 22, col 18 to line 22, col 26 of module TrustedInput: 18
+  line 23, col 6 to line 24, col 39 of module TrustedInput: 18
+<Confirm line 30, col 1 to line 30, col 15 of module TrustedInput>: 2:4
+  line 31, col 6 to line 31, col 21 of module TrustedInput: 244
+  |line 31, col 6 to line 31, col 12 of module TrustedInput: 240
+  line 31, col 26 to line 31, col 36 of module TrustedInput: 164
+  |line 31, col 26 to line 31, col 32 of module TrustedInput: 160
+  line 27, col 6 to line 27, col 24 of module TrustedInput: 44
+  |line 27, col 6 to line 27, col 11 of module TrustedInput: 40
+  line 27, col 29 to line 27, col 57 of module TrustedInput: 40
+  line 28, col 6 to line 28, col 24 of module TrustedInput: 12
+  |line 28, col 6 to line 28, col 12 of module TrustedInput: 8
+  line 28, col 29 to line 28, col 57 of module TrustedInput: 8
+  line 31, col 49 to line 31, col 54 of module TrustedInput: 40
+  line 32, col 6 to line 32, col 76 of module TrustedInput: 4
+  line 33, col 6 to line 33, col 60 of module TrustedInput: 4
+<Reject line 35, col 1 to line 35, col 14 of module TrustedInput>: 7:72
+  line 36, col 6 to line 36, col 21 of module TrustedInput: 312
+  |line 36, col 6 to line 36, col 12 of module TrustedInput: 240
+  line 36, col 26 to line 36, col 41 of module TrustedInput: 232
+  |line 36, col 27 to line 36, col 41 of module TrustedInput: 160
+  ||line 27, col 3 to line 28, col 57 of module TrustedInput: 160
+  |||line 27, col 6 to line 27, col 57 of module TrustedInput: 160
+  ||||line 27, col 6 to line 27, col 24 of module TrustedInput: 160
+  ||||line 27, col 29 to line 27, col 57 of module TrustedInput: 128
+  |||line 28, col 6 to line 28, col 57 of module TrustedInput: 32
+  ||||line 28, col 6 to line 28, col 24 of module TrustedInput: 32
+  ||||line 28, col 29 to line 28, col 57 of module TrustedInput: 16
+  ||line 36, col 35 to line 36, col 40 of module TrustedInput: 160
+  line 36, col 46 to line 36, col 54 of module TrustedInput: 216
+  |line 36, col 47 to line 36, col 54 of module TrustedInput: 144
+  line 37, col 6 to line 37, col 21 of module TrustedInput: 72
+  line 38, col 6 to line 39, col 29 of module TrustedInput: 72
+<Consume line 43, col 1 to line 43, col 7 of module TrustedInput>: 4:12
+  line 44, col 6 to line 44, col 16 of module TrustedInput: 60
+  |line 44, col 6 to line 44, col 12 of module TrustedInput: 48
+  line 45, col 6 to line 45, col 19 of module TrustedInput: 48
+  |line 45, col 6 to line 45, col 12 of module TrustedInput: 36
+  |line 45, col 16 to line 45, col 19 of module TrustedInput: 36
+  line 45, col 24 to line 45, col 53 of module TrustedInput: 36
+  line 46, col 6 to line 46, col 22 of module TrustedInput: 36
+  |line 46, col 6 to line 46, col 18 of module TrustedInput: 24
+  line 46, col 28 to line 46, col 75 of module TrustedInput: 24
+  line 47, col 6 to line 47, col 45 of module TrustedInput: 12
+  line 48, col 6 to line 48, col 49 of module TrustedInput: 12
+  line 49, col 6 to line 49, col 82 of module TrustedInput: 12
+<Close line 51, col 1 to line 51, col 5 of module TrustedInput>: 14:32
+  line 52, col 6 to line 52, col 21 of module TrustedInput: 80
+  |line 52, col 6 to line 52, col 12 of module TrustedInput: 48
+  line 52, col 26 to line 52, col 42 of module TrustedInput: 32
+  line 53, col 6 to line 54, col 27 of module TrustedInput: 32
+<TypeOK line 61, col 1 to line 61, col 6 of module TrustedInput>
+  line 62, col 3 to line 64, col 78 of module TrustedInput: 48
+<PhysicalReceipts line 65, col 1 to line 65, col 16 of module TrustedInput>
+  line 65, col 21 to line 65, col 61 of module TrustedInput: 48
+  |line 65, col 21 to line 65, col 31 of module TrustedInput: 48
+  |line 65, col 36 to line 65, col 61 of module TrustedInput: 36
+<TrustedSurfaceOnly line 66, col 1 to line 66, col 18 of module TrustedInput>
+  line 66, col 23 to line 66, col 63 of module TrustedInput: 48
+  |line 66, col 23 to line 66, col 33 of module TrustedInput: 48
+  |line 66, col 38 to line 66, col 63 of module TrustedInput: 36
+<BoundReceiptUses line 67, col 1 to line 67, col 16 of module TrustedInput>
+  line 67, col 21 to line 67, col 31 of module TrustedInput: 48
+<SingleUse line 68, col 1 to line 68, col 9 of module TrustedInput>
+  line 68, col 14 to line 68, col 41 of module TrustedInput: 48
+  |line 68, col 30 to line 68, col 41 of module TrustedInput: 96
+  |line 68, col 23 to line 68, col 26 of module TrustedInput: 48
+End of statistics.
+171 states generated, 48 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 8.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 4 and the 95th percentile is 3).
+Finished in 00s at (2026-11-25 00:52:09)
+elapsed_seconds=0.59 max_rss_kib=87012

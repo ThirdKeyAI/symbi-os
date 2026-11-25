@@ -1,0 +1,66 @@
+{
+  "copy": "a",
+  "normal": {
+    "GrantLifecycle": {
+      "exit": 12,
+      "states": [
+        "222",
+        "135",
+        "55"
+      ],
+      "warnings": [],
+      "missing_actions": [],
+      "zero_executions": []
+    },
+    "TrustedInput": {
+      "exit": 0,
+      "states": [
+        "171",
+        "48",
+        "0"
+      ],
+      "warnings": [],
+      "missing_actions": [],
+      "zero_executions": []
+    },
+    "Freeze": {
+      "exit": 0,
+      "states": [
+        "297",
+        "181",
+        "0"
+      ],
+      "warnings": [],
+      "missing_actions": [],
+      "zero_executions": []
+    },
+    "JournalBeforeEffect": {
+      "exit": 0,
+      "states": [
+        "1730",
+        "686",
+        "0"
+      ],
+      "warnings": [],
+      "missing_actions": [],
+      "zero_executions": []
+    },
+    "SessionClass": {
+      "exit": 0,
+      "states": [
+        "14645",
+        "6171",
+        "0"
+      ],
+      "warnings": [],
+      "missing_actions": [],
+      "zero_executions": [
+        "LowerClass"
+      ]
+    }
+  },
+  "fault_rows": 18,
+  "fault_failures": [],
+  "final_drift_exit": 1,
+  "final_drift_output": "formal/VERIFY.md: formal/GrantLifecycle.tla: changed (whole file)\n    uncommitted changes"
+}

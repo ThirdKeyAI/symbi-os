@@ -1,0 +1,93 @@
+diff --git a/formal/GrantLifecycle.tla b/formal/GrantLifecycle.tla
+index 3eb2054..d4c37a5 100644
+--- a/formal/GrantLifecycle.tla
++++ b/formal/GrantLifecycle.tla
+@@ -2,66 +2,66 @@
+ EXTENDS Naturals, FiniteSets
+ CONSTANTS Calls, Faults
+ Actors == {"physical", "agent", "app", "voice"}
+-VARIABLES phase, scope, expiry, authorityActors, call, completed, atAck
+-vars == <<phase, scope, expiry, authorityActors, call, completed, atAck>>
++VARIABLES phase, scope, expiry, authorityActors, call, completed, completedAtRevokeAck
++vars == <<phase, scope, expiry, authorityActors, call, completed, completedAtRevokeAck>>
+ 
+ \* Design contract for INV-2/3. TrustedInput supplies the physical provenance.
+ \* One grant identity is never reused; a later grant needs a different identity.
+ Init == /\ phase = "absent" /\ scope = {"read"} /\ expiry = 1
+         /\ authorityActors = {} /\ call = [c \in Calls |-> "idle"]
+-        /\ completed = {} /\ atAck = {}
++        /\ completed = {} /\ completedAtRevokeAck = {}
+ 
+ Create(a) ==
+   /\ phase = "absent"
+   /\ a = "physical" \/ "nonhuman-create" \in Faults
+   /\ phase' = "active" /\ authorityActors' = authorityActors \cup {a}
+-  /\ UNCHANGED <<scope, expiry, call, completed, atAck>>
++  /\ UNCHANGED <<scope, expiry, call, completed, completedAtRevokeAck>>
+ 
+ Widen(a) ==
+   /\ phase = "active" /\ scope = {"read"}
+   /\ a = "physical" \/ "nonhuman-widen" \in Faults
+   /\ scope' = {"read", "write"}
+   /\ authorityActors' = authorityActors \cup {a}
+-  /\ UNCHANGED <<phase, expiry, call, completed, atAck>>
++  /\ UNCHANGED <<phase, expiry, call, completed, completedAtRevokeAck>>
+ 
+ Extend(a) ==
+   /\ phase = "active" /\ expiry = 1
+   /\ a = "physical" \/ "nonhuman-extend" \in Faults
+   /\ expiry' = 2 /\ authorityActors' = authorityActors \cup {a}
+-  /\ UNCHANGED <<phase, scope, call, completed, atAck>>
++  /\ UNCHANGED <<phase, scope, call, completed, completedAtRevokeAck>>
+ 
+ \* Checking and starting an effect are different steps: a revoke can intervene.
+ Check(c) ==
+   /\ phase = "active" /\ call[c] = "idle"
+   /\ call' = [call EXCEPT ![c] = "checked"]
+-  /\ UNCHANGED <<phase, scope, expiry, authorityActors, completed, atAck>>
++  /\ UNCHANGED <<phase, scope, expiry, authorityActors, completed, completedAtRevokeAck>>
+ 
+ Dispatch(c) ==
+   /\ call[c] = "checked"
+   /\ phase = "active" \/ "stale-grant-cache" \in Faults
+   /\ call' = [call EXCEPT ![c] = "running"]
+-  /\ UNCHANGED <<phase, scope, expiry, authorityActors, completed, atAck>>
++  /\ UNCHANGED <<phase, scope, expiry, authorityActors, completed, completedAtRevokeAck>>
+ 
+ Complete(c) ==
+   /\ call[c] = "running"
+   /\ call' = [call EXCEPT ![c] = "completed"]
+   /\ completed' = completed \cup {c}
+-  /\ UNCHANGED <<phase, scope, expiry, authorityActors, atAck>>
++  /\ UNCHANGED <<phase, scope, expiry, authorityActors, completedAtRevokeAck>>
+ 
+ RequestRevoke ==
+   /\ phase = "active" /\ phase' = "revoking"
+-  /\ UNCHANGED <<scope, expiry, authorityActors, call, completed, atAck>>
++  /\ UNCHANGED <<scope, expiry, authorityActors, call, completed, completedAtRevokeAck>>
+ 
+ Cancel(c) ==
+   /\ phase \in {"revoking", "revoked"} /\ call[c] \in {"checked", "running"}
+   /\ call' = [call EXCEPT ![c] = "cancelled"]
+-  /\ UNCHANGED <<phase, scope, expiry, authorityActors, completed, atAck>>
++  /\ UNCHANGED <<phase, scope, expiry, authorityActors, completed, completedAtRevokeAck>>
+ 
+ \* Cancellation means the external effect cannot subsequently complete.
+ AckRevoke ==
+   /\ phase = "revoking"
+   /\ (\A c \in Calls : call[c] # "running") \/ "early-revoke-ack" \in Faults
+-  /\ phase' = "revoked" /\ atAck' = completed
++  /\ phase' = "revoked" /\ completedAtRevokeAck' = completed
+   /\ UNCHANGED <<scope, expiry, authorityActors, call, completed>>
+ 
+ Terminal ==
+@@ -77,7 +77,7 @@ TypeOK ==
+   /\ scope \in {{"read"}, {"read", "write"}} /\ expiry \in 1..2
+   /\ authorityActors \subseteq Actors
+   /\ call \in [Calls -> {"idle", "checked", "running", "completed", "cancelled"}]
+-  /\ completed \subseteq Calls /\ atAck \subseteq Calls
++  /\ completed \subseteq Calls /\ completedAtRevokeAck \subseteq Calls
+ HumanAuthority == authorityActors \subseteq {"physical"}
+-NoCompletionAfterRevoke == phase = "revoked" => completed = atAck
++NoCompletionAfterRevoke == phase = "revoked" => completed = completedAtRevokeAck
+ =============================================================================

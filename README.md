@@ -8,15 +8,17 @@ A desktop Linux system where AI agents are visible, least-privileged principals
 and the human is the only source of authority. The target platform is a signed
 Fedora Atomic image with Hyprland and the upstream Symbiont runtime.
 
-**Current state: P0-01 scaffold.** This repository is not a bootable image and
-does not launch agents. It contains the Rust workspace, a Cedar schema skeleton,
-policy fixture tests, dependency checks, and Gitea-compatible CI. There are no
-production permits, daemons, or runtime dependencies yet.
+**Current state: P0-01 scaffold and P0-02 design models.** This repository is
+not a bootable image and does not launch agents. It contains the Rust workspace, a Cedar schema skeleton,
+policy fixture tests, dependency checks, five TLA+ design models, and
+Gitea-compatible CI. There are no production permits, daemons, or runtime
+dependencies yet.
 
 ## Start here
 
 - [Build plan and task cards](docs/build-plan.md)
 - [P0-01 implementation and handoff](docs/cards/P0-01.md)
+- [P0-02 design models and verification](formal/VERIFY.md)
 - [Security invariants and evidence status](docs/security/invariants.md)
 - [Open implementation questions](docs/open-questions.md)
 - [Pinned dependencies and tools](docs/dependencies.md)
@@ -67,10 +69,14 @@ upstream source revision; the runtime remains a separate project.
 `.github/workflows/ci.yml` runs the same checks on GitHub-hosted `ubuntu-latest`
 runners. The job has read-only contents permission and no signing credentials.
 The equivalent `.gitea/workflows/ci.yml` remains available for a configured Gitea
-runner with Rustup, Node, Git and a C toolchain. Hosted results are recorded in
-the card report; configuring a workflow alone is not a passing check.
+runner with Rustup, Node, Git, Java 11 or later, and a C toolchain. Hosted results
+are recorded in the card report; configuring a workflow alone is not a passing
+check. Both workflows run the five design models and eighteen deliberate fault
+checks after the workspace checks.
 P0-03 adds the signed image build; P0-04 qualifies the runtime on that image.
-Host checks do not substitute for either card.
+Host checks do not substitute for either card. The formal checks run serially
+after the workspace checks using the pinned formal-proofs action; see
+[VERIFY.md](formal/VERIFY.md) to reproduce them with the same resource limits.
 
 ## Licence
 

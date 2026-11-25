@@ -1,0 +1,59 @@
+Cold-reader review A — BUG; record deliberately not synced
+
+Reviewed scratch baseline 83c7a83b427e6f9058f57deb49d6791cf11ec9ff and its
+uncommitted formal/GrantLifecycle.tla change. The change replaces the
+AckRevoke drain guard with TRUE. The verification describes this current
+executable design; this is a design regression, not a stale-model failure.
+
+The normal GrantLifecycle check exits 12: NoCompletionAfterRevoke is violated.
+It generates 222 states, finds 135 distinct states, and stops with 55 queued
+states. The shortest reported counterexample has seven states:
+1. A human creates the grant.
+2. Call c1 passes its grant check.
+3. The effect starts running.
+4. Revocation is requested.
+5. Revocation is acknowledged while c1 is still running; atAck remains empty.
+6. c1 completes; completed is now {c1}, although the grant is revoked.
+Harm: an external effect can finish after the user is told revocation is final.
+Every transition is admitted by the changed design model. There is no covered
+runtime implementation against which to replay it. The introducing change is
+uncommitted; no product fix or property weakening was made.
+
+Other normal checks pass and exhaust their queues: TrustedInput 48 distinct
+states; Freeze 181; JournalBeforeEffect 686; SessionClass 6171. No unexpected
+warnings or uncovered normal Next actions appeared. SessionClass.LowerClass
+alone has zero executions, as explicitly documented. GrantLifecycle's own
+normal actions also execute, but its failed search is not a successful check.
+
+All 18 fault operations report the named invariant broken and exit 0. Because
+the ordinary revocation rule already fails here, its fault-on successes do
+not establish that the fault switches caused that failure or rescue this copy.
+drift.sh exits 1 and identifies only formal/GrantLifecycle.tla (whole file,
+uncommitted). formal/VERIFY.md was left unchanged as its procedure requires.
+
+Toolchain: formal-proofs 0.5.3 at
+bb984f2e4427d3f5515cc56d5a54c6ce8ce26d1e. TLC jar SHA-256:
+936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88.
+Commands were the named skills' check.sh, fault.sh and drift.sh operations.
+check.sh received the neighboring .cfg and -coverage 1. All checker processes
+ran sequentially with JAVA=$PWD/scripts/formal-java.sh and
+TLA2TOOLS=$PWD/.tools/tla2tools-1.7.4.jar. The one-CPU, 256 MiB heap and
+180-second wrapper limits were retained. No unrelated build was run.
+
+Environment recovery: initial bootstrap failed with curl exit 6 because GitHub
+DNS was unavailable in the sandbox. The existing ~/.cache/tla-check jar was
+copied into this scratch .tools and passed bootstrap's exact checksum check.
+The first TLC attempt exited 255 because its local management socket was
+blocked (SocketException: Operation not permitted). It was rerun with approved
+local-socket permission; the wrapper limits were unchanged. These were
+environment failures, not successful checks or changes to the procedure.
+
+Evidence: GrantLifecycle.normal.log contains the counterexample; *.normal.log
+contain coverage; normal-status.tsv and fault-status.tsv retain every exit
+status; *.fault.log retain the named fault results; drift-before.log records
+the unsynced region; GrantLifecycle.sandbox-error.log retains the socket error.
+
+Limits: finite design-only safety checks, no runtime or Fedora qualification,
+no trace conformance, no composition proof, and no timing/liveness guarantee.
+The model permits revoke/freeze to remain pending when work never drains;
+acknowledging early is not a valid remedy for that availability limitation.

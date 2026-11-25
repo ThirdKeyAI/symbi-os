@@ -1,0 +1,31 @@
+    Finished `dev` profile [unoptimized] target(s) in 0.38s
+    Finished `test` profile [unoptimized] target(s) in 0.11s
+     Running unittests src/lib.rs (target/debug/deps/symbi_common-a4e39341df864557)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/policy.rs (target/debug/deps/policy-aa442b414118508b)
+
+running 6 tests
+test base_policy_denies_every_session_class_and_model_location ... ok
+test base_policy_validates_without_warnings ... ok
+test schema_accepts_documented_model_attributes_and_session_context ... ok
+test schema_rejects_mistyped_session_context ... ok
+test schema_rejects_undeclared_actions ... ok
+test test_only_permit_proves_authorizer_is_not_always_denying ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+   Doc-tests symbi_common
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+    Finished `dev` profile [unoptimized] target(s) in 0.02s
+   Generated /vmstore/repos2/symbi-os/target/doc/symbi_common/index.html
+advisories ok, bans ok, licenses ok, sources ok
+Vetting Succeeded (because you have no third-party dependencies)
+elapsed_seconds=2.22 max_rss_kib=70948
