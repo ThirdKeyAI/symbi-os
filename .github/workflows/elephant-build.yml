@@ -1,0 +1,59 @@
+name: Source-built Elephant provider acceptance
+
+on:
+  pull_request:
+    paths:
+      - image/launcher/**
+      - image/hyprland/build_inputs.py
+      - image/hyprland/guest_inventory.py
+      - image/hyprland/resolve_packages.py
+      - image/hyprland/keys/**
+      - image/base-images.json
+      - image/toolchain/**
+      - scripts/check-elephant-build.sh
+      - .github/workflows/elephant-build.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: elephant-build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  launcher:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Check out the proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Download exact signed Fedora compiler bundle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache
+          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15071937423/zip > .cache/elephant-build-rpms.zip
+          echo 'be90e64fa5d9305f0509d743d498a25116fa9327d24ac2886305e2cd4f72ca0a  .cache/elephant-build-rpms.zip' | sha256sum --check --strict
+      - name: Build actual executables and probe native-provider refusal
+        run: bash scripts/check-elephant-build.sh
+      - name: Retain public source-build and acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: elephant-build-evidence
+          path: .cache/elephant-build-evidence/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Retain unqualified compiled inputs before any later reuse
+        if: ${{ always() && hashFiles('.cache/elephant-build-payload/manifest.json') != '' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: elephant-development-binaries
+          path: .cache/elephant-build-payload/
+          retention-days: 14
+          compression-level: 0
+          if-no-files-found: error

@@ -38,3 +38,11 @@ The first reuse run, 45722401293, failed at link validation before package
 installation. Its retained report did not identify the particular link; the
 source-backed alias conversion still requires confirmation on the actual
 locked archive. No acceptance claim follows from synthetic archive tests.
+
+[Hosted reuse45723916710](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45723916710)
+now passes on the real locked artifact. It observed and relocated exactly the
+source-backed executable alias, installed only the three reviewed libraries,
+preserved every base package, resolved both binaries and passed the shipped,
+invalid and repeated-good Lua configuration controls as UID10001. Evidence is
+retained under `docs/security/reports/P0-03-fedora-runtime/45723916710/`.
+The parser's socket warning remains visible; this mode is not a live desktop.
