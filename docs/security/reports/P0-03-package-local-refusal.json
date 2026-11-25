@@ -1,0 +1,21 @@
+{
+  "scope": "Local invocation refusal only; no hosted crypto check",
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "p003-rpm-resolution-stage/image/hyprland/package_inventory.py"
+      ],
+      "exit_code": 1,
+      "stderr": "Package discovery requires the disposable hosted resource unit\n"
+    },
+    {
+      "command": [
+        "bash",
+        "p003-rpm-resolution-stage/scripts/check-fedora-packages.sh"
+      ],
+      "exit_code": 1,
+      "stderr": "Package discovery requires GitHub-hosted CI.\n"
+    }
+  ]
+}

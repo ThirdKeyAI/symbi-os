@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "authenticated_inventory_run": 45689433608,
+  "original_repository_files": {
+    "/usr/share/dnf5/repos.d/fedora.repo": "8349657cfab40b2d491cf82c170c8e0d3343acb8ae7b50543f059f2eb358ad50",
+    "/usr/share/dnf5/repos.d/fedora-updates.repo": "1409f41437101aaafc5f7182f590583e0e453a903a4a99d5625622ccca01e715"
+  },
+  "selected_repositories": [
+    "fedora",
+    "updates"
+  ],
+  "selected_configuration_sha256": "535aaceeafda783decd20f72553aa4cf93f281b02555b43d93712710d7048757",
+  "changes": [
+    "Use only enabled binary release/update sections",
+    "Bind release 45 and x86_64",
+    "Use the committed pinned key file",
+    "Disable countme telemetry",
+    "Require TLS verification"
+  ],
+  "metadata_signature_scope": "Preserve Fedora repo_gpgcheck=0; use HTTPS metalinks and independently require each RPM signature and payload digest before accepting candidates.",
+  "packages_pinned": false
+}

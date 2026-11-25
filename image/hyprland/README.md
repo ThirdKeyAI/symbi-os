@@ -51,3 +51,21 @@ browser/keyring behavior, update signatures and rollback remain P0-03 gates.
 Invariants touched: INV-12 (reviewed image inputs); no new authorization gate,
 journal event or Cargo dependency. The compositor patch remains in the draft
 review until compilation, acceptance evidence and required review are complete.
+
+## Resolve Fedora build inputs
+
+`Fedora package input discovery` uses the verified base and the committed Fedora
+45 package key. `package-repository-inputs.json` binds the observed repository
+bytes and records the narrow configuration changes; only the release and update
+binary repositories are selected. `build-requirements.json` lists providers from
+the pinned upstream CMake requirements. These names are candidates, not a lock.
+
+The hosted job downloads without installing, verifies signatures and payload
+digests in an isolated one-key RPM keyring, exercises missing-key and tampered-RPM
+controls, and retains a manifest plus RPM artifacts. It also verifies installed
+RPMs did not change. The source base, input hashes and resource counters are kept
+with the evidence. Use a reviewed exact manifest for the later offline build;
+never rerun floating package resolution implicitly during a release build.
+
+No package or compositor is qualified by the offline parser tests. The discovery
+job has no release secrets or registry writes, and never executes locally.
