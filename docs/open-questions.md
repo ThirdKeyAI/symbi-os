@@ -1,11 +1,12 @@
 # Implementation questions raised while starting the plan
 
-The original product questions remain in `build-plan.md`. These entries record
-additional decisions or prerequisites; none grants authority or weakens a rule.
+The original product questions and their resolution status are in
+`build-plan.md`. These entries record additional decisions or prerequisites;
+none grants authority or weakens a rule.
 
 | ID | Question or prerequisite | Affected cards | Current treatment |
 | --- | --- | --- | --- |
-| OQ-01 | What product licence will be chosen? | P0-01, release | No assumed licence; all crates are non-publishable |
+| OQ-01 (resolved) | What product licence will be chosen? | P0-01, release | Owner selected Apache-2.0 on 25 Nov 2026, with Copyright 2024-2026 Jascha Wanger / ThirdKey AI; see [LICENSE](../LICENSE) |
 | OQ-02 | Which isolated Gitea-compatible runner is available, and how is the empty repository's first review target established? | P0-01 | Workflow provided; hosted execution and PR pending |
 | OQ-03 | Which verified secureblue digest and signing identity/key custody should the first image use? | P0-03 | No placeholder image digest, tag-only base, or unsigned release path |
 | OQ-04 | What are model cost units, provider/jurisdiction identifiers, and the trusted source of session-class values? | P1-04, P1-05 | Schema captures documented attribute shapes only; no routing/grant semantics |

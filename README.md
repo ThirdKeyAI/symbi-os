@@ -68,6 +68,6 @@ Host checks do not substitute for either card.
 
 ## Licence
 
-The build plan leaves the product licence open. All workspace crates currently
-have `publish = false`; no licence grant is inferred from the upstream
-runtime's Apache-2.0 licence. Resolve this before publishing a release.
+Licensed under the [Apache License, Version 2.0](LICENSE).
+
+Copyright 2024-2026 Jascha Wanger / ThirdKey AI

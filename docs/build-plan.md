@@ -578,7 +578,7 @@ The biggest risk is the Hyprland patch for the trusted path; everything else has
 
 **Open questions**
 
-- [ ] Licence for `symbiont-os` (Apache-2.0, or Slop0BSD for AI-generated parts?).
+- [x] Licence for `symbiont-os`: Apache-2.0, selected by the owner on 25 Nov 2026, with Symbiont's copyright notice: Copyright 2024-2026 Jascha Wanger / ThirdKey AI. See [LICENSE](../LICENSE).
 - [ ] Do Anthropic's and OpenAI's terms allow subscription logins inside `symbi-run` and as the voice brain via `claude -p` / `codex exec`?
 - [ ] Can Pi use Symbiont's MCP tool bridge, so it can run in governed mode?
 - [ ] Upstream the Wayland protocols to Hyprland, or carry the patch long-term?

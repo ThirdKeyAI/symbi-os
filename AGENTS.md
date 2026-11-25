@@ -23,7 +23,8 @@ Read the architecture overview and all fourteen security invariants in
   escape-suite, signature, or runtime qualification evidence.
 - Document new events in `docs/journal-events.md`. Use the PR template with
   invariant IDs, acceptance-test links, a threat note, and open questions.
-- The licence, CI runner provisioning, signing-key custody, image pins, and the
+- The project uses Apache-2.0 with Symbiont's copyright notice in `LICENSE`.
+- CI runner provisioning, signing-key custody, image pins, and the
   runtime integration are not settled by this scaffold.
 - Keep local CPU and RAM use low: one Cargo job, one test/checker thread, no
   debug symbols or incremental compilation, and no simultaneous builds. Reuse

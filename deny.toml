@@ -8,12 +8,8 @@ ignore = []
 
 [licenses]
 confidence-threshold = 0.93
-# Add licences only alongside reviewed dependencies; no third-party crates yet.
-allow = []
-
-[licenses.private]
-# First-party crates cannot be published until the product licence is chosen.
-ignore = true
+# Product licence. Additional dependency licences require review.
+allow = ["Apache-2.0"]
 
 [bans]
 multiple-versions = "deny"

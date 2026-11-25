@@ -6,8 +6,9 @@ resolver = "2"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.89"
+license = "Apache-2.0"
+# Scaffold crates stay private until their release cards are complete.
 publish = false
-# The product licence is an open decision in docs/build-plan.md.
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
