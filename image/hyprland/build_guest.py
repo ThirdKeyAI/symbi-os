@@ -66,7 +66,8 @@ def main():
             packages.append(str(path))
         # This container has --network=none and no product output mount. DNF is
         # allowed to change its disposable build filesystem only.
-        run('offline-install', ['dnf5', '--assumeyes', '--disable-plugin=*', '--disable-repo=*',
+        assert not any((output / 'empty-repos').iterdir())
+        run('offline-install', ['dnf5', '--assumeyes', '--disable-plugin=*',
                                 '--setopt=reposdir=/output/empty-repos', '--setopt=localpkg_gpgcheck=True',
                                 '--setopt=install_weak_deps=False', '--setopt=tsflags=nodocs',
                                 'install', '--', *packages], timeout=600)
