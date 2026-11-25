@@ -56,9 +56,10 @@ release prerequisites below are satisfied.
    at build time. Review RPM repositories, their GPG key fingerprints and every
    downloaded asset; use only checksummed, signed artifacts.
 2. Provision a trusted isolated runner with a reviewed, hash-pinned BlueBuild
-   v0.9.42 build that enables recipe v2, cosign, an SBOM generator and Podman.
-   Recipe v2 is feature-gated upstream; source compatibility alone does not prove
-   the release CLI enables it. Verify the actual CLI and generated Containerfile.
+   build that enables and validates recipe v2, cosign, an SBOM generator and Podman.
+   Recipe v2 is feature-gated upstream, and both v0.9.42 and the reviewed
+   post-release source still route validation through the v1 schema/parser.
+   The hosted compatibility check below must pass for the actual CLI and generated Containerfile.
    All external `FROM`/mount images must be digest-pinned. Never bypass validation
    or signature verification to get a build through.
 3. Generate/build one architecture and one variant at a time. Use one build
@@ -93,3 +94,27 @@ configure. Signing with an invented test key, omitting VM gates or silently
 changing compositor would violate the plan.
 The Agents menu and runtime units arrive with their implementing cards; the
 current launcher exposes local applications only.
+
+## Hosted BlueBuild compatibility check
+
+`image/toolchain/bluebuild.json` pins the experimental source build to
+`a654ee8810c637aa00356999488e97259061275d`, with Rust 1.95.0, the unchanged
+upstream lockfile and the explicit `v1_0_0` feature. The separate
+`Image tool compatibility` workflow compiles it only on a GitHub-hosted runner,
+under a verified 4 GiB memory limit, no swap, two CPUs, one Cargo job and a
+45-minute deadline. These hosted tool limits do not change the workstation's
+existing VM limits or the image-container limits above.
+
+The acceptance script invokes the actual CLI with validation enabled for both
+OS recipes, then malformed/unpinned recipe cases, then Containerfile generation.
+Positive cases run first so tool/network failures cannot count as negative-test
+evidence. The strict cases describe the OS recipe profile, not every recipe
+that upstream BlueBuild may support. The first unmodified-source run is expected
+to expose the v1-only validator; its outcome must be retained before a fix.
+No validation bypass is available in this workflow.
+
+The workflow has read-only repository permission, no release environment, no
+OIDC permission and no registry write permission. It uploads public logs, pins
+and generated text as evidence, not a compiler binary or image. Even a passing
+CLI check does not establish source audit coverage, authenticate an OS build,
+or qualify generated external image references; those remain separate gates.

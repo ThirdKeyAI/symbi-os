@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "repository": "https://github.com/blue-build/cli",
+  "revision": "a654ee8810c637aa00356999488e97259061275d",
+  "rust": "1.95.0",
+  "features": ["v1_0_0"],
+  "profile": "dev",
+  "qualified": false,
+  "scope": "Hosted tool compatibility experiment; no image build, signing, or release"
+}

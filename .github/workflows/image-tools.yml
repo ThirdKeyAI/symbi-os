@@ -1,0 +1,43 @@
+name: Image tool compatibility
+
+on:
+  pull_request:
+    paths:
+      - image/**
+      - scripts/check-image-tools.sh
+      - .github/workflows/image-tools.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: image-tools-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bluebuild:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - name: Check out proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Check out exact BlueBuild source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          repository: blue-build/cli
+          ref: a654ee8810c637aa00356999488e97259061275d
+          path: .cache/bluebuild-source
+          persist-credentials: false
+      - name: Compile and exercise recipe validation under resource limits
+        run: bash scripts/check-image-tools.sh
+      - name: Retain public tool evidence, including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: image-tool-evidence
+          path: .cache/image-tool-evidence/
+          retention-days: 14
+          if-no-files-found: error
