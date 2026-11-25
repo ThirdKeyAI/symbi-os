@@ -1,0 +1,6 @@
+/target/
+/.tools/
+/.cache/
+/artifacts/
+*.swp
+*~

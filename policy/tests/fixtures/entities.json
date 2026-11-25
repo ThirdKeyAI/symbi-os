@@ -1,0 +1,27 @@
+[
+  {
+    "uid": {"type": "Symbi::Principal", "id": "fixture-agent"},
+    "attrs": {},
+    "parents": []
+  },
+  {
+    "uid": {"type": "Symbi::Model", "id": "local"},
+    "attrs": {
+      "location": "local",
+      "provider": "fixture",
+      "jurisdiction": "on-device",
+      "cost": 0
+    },
+    "parents": []
+  },
+  {
+    "uid": {"type": "Symbi::Model", "id": "remote"},
+    "attrs": {
+      "location": "remote",
+      "provider": "fixture",
+      "jurisdiction": "fixture-region",
+      "cost": 1
+    },
+    "parents": []
+  }
+]

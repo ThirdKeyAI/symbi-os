@@ -1,0 +1,24 @@
+// P0-01: schema skeleton, compatible with the pinned runtime's Cedar 4.5.2.
+// Types describe input; they do not establish identity, provenance, or authority.
+namespace Symbi {
+    entity Principal;
+
+    // Attribute names come from the build plan's model.invoke example.
+    // Units for cost and the provider/jurisdiction registries are not yet settled.
+    entity Model {
+        location: String,
+        provider: String,
+        jurisdiction: String,
+        cost: Long
+    };
+
+    type SessionContext = {
+        session_class: String
+    };
+
+    action "model.invoke" appliesTo {
+        principal: Principal,
+        resource: Model,
+        context: SessionContext
+    };
+}

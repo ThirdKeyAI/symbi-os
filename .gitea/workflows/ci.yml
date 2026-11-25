@@ -1,0 +1,23 @@
+name: Scaffold checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out the proposed revision
+        uses: https://github.com/actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Bootstrap pinned build tools
+        run: bash scripts/bootstrap-tools.sh
+      - name: Check workspace, policy fixtures, and dependency reviews
+        run: bash scripts/check.sh

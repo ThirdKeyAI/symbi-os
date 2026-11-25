@@ -1,0 +1,18 @@
+# Implementation questions raised while starting the plan
+
+The original product questions remain in `build-plan.md`. These entries record
+additional decisions or prerequisites; none grants authority or weakens a rule.
+
+| ID | Question or prerequisite | Affected cards | Current treatment |
+| --- | --- | --- | --- |
+| OQ-01 | What product licence will be chosen? | P0-01, release | No assumed licence; all crates are non-publishable |
+| OQ-02 | Which isolated Gitea-compatible runner is available, and how is the empty repository's first review target established? | P0-01 | Workflow provided; hosted execution and PR pending |
+| OQ-03 | Which verified secureblue digest and signing identity/key custody should the first image use? | P0-03 | No placeholder image digest, tag-only base, or unsigned release path |
+| OQ-04 | What are model cost units, provider/jurisdiction identifiers, and the trusted source of session-class values? | P1-04, P1-05 | Schema captures documented attribute shapes only; no routing/grant semantics |
+| OQ-05 | How will the Cedar 4.5.2 CLI's yanked transitive dependencies and the build-tool audit graph be addressed for release qualification? | P0-03, runtime pin update | Preserve upstream compatibility and lockfiles; development fixture tests only; no release claim |
+| OQ-06 | Where will the fourteen upstream control entries and Fedora qualification reports be reviewed and retained? | P0-04, TCB cards | No duplicate local controls.json pretending to register upstream controls |
+
+The supplied plan also describes subscription tokens inside workspace-mode
+sandboxes as an exception to INV-6, while the invariant itself forbids secrets
+there. This must be resolved in the relevant design review before implementing
+subscription mode; P0-01 neither enables nor normalizes that exception.

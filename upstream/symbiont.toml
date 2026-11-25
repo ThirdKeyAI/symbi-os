@@ -1,0 +1,9 @@
+# Metadata pin only: P0-01 does not fetch, build, link, or execute the runtime.
+# A commit identifies source; it is not a signature or an image qualification.
+repository = "https://github.com/thirdkeyai/symbiont"
+revision = "deddb9e997244d2289c217ad76b8fde0e9b0339b"
+version = "3.0.0"
+cedar_version = "4.5.2"
+source = "https://github.com/ThirdKeyAI/Symbiont/commit/deddb9e997244d2289c217ad76b8fde0e9b0339b"
+integration_status = "not-integrated"
+qualification_card = "P0-04"
