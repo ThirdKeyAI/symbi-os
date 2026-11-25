@@ -1,0 +1,7 @@
+{
+  "card": "P0-04",
+  "passed": false,
+  "qualified": false,
+  "scope": "this Fedora deployment and binary; synthetic providers only",
+  "error": "Fedora guest required; host results are not image qualification"
+}
