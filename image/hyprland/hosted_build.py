@@ -36,7 +36,7 @@ def main():
     (evidence / 'cgroup-limits.json').write_text(json.dumps(limits, indent=2) + '\n')
     output = root / '.cache/hyprland-build-output'
     record = {'passed': False, 'os_qualified': False, 'commands': [], 'source_commit': os.environ['GITHUB_SHA'],
-              'scope': 'Offline compilation and headless native-loading probe in a disposable Fedora build stage'}
+              'scope': 'Offline compilation, shipped Lua parsing and native-loading probes in the development stage and unchanged base'}
 
     def save():
         (evidence / 'result.json').write_text(json.dumps(record, indent=2) + '\n')
@@ -74,11 +74,13 @@ def main():
             'native-loading.patch': 'patches/0001-disable-native-loading.patch',
             'fedora-45-primary.asc': 'keys/fedora-45-primary.asc',
             'tests/qualify_native_loading.py': 'tests/qualify_native_loading.py',
+            'tests/qualify_session_defaults.py': 'tests/qualify_session_defaults.py',
             'tests/native_probe.c': 'tests/native_probe.c'}
         for destination, source in files.items():
             target = inputs / destination
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(root / 'image/hyprland' / source, target)
+        shutil.copytree(root / 'image/overlay/usr/share/symbiont/defaults/hypr', inputs / 'session-defaults')
         source_pins = json.loads((root / 'image/hyprland/candidate-inputs.json').read_text())
         sources = [{'name': 'Hyprland', 'url': 'https://github.com/hyprwm/Hyprland.git',
                     'rev': source_pins['hyprland_revision']}]
@@ -122,29 +124,107 @@ def main():
         assert match, 'Podman must return an immutable image identifier'
         image_id = 'sha256:' + match[1]
         record['development_image_id'] = image_id
-        probe = podman + ['run', '--rm', '--read-only', '--user=10001:10001', '--cap-drop=ALL',
-                          '--memory=2g', '--memory-swap=2g', '--cpus=1', '--pids-limit=64', *common,
-                          '--entrypoint=/usr/bin/python3', image_id, '/inputs/tests/qualify_native_loading.py',
-                          '--hyprland', '/usr/lib/symbi/hyprland/bin/Hyprland',
-                          '--hyprctl', '/usr/lib/symbi/hyprland/bin/hyprctl',
-                          '--work-dir', '/output/native-work', '--report', '/output/native-result.json']
-        run('native-loading-probe', probe, 180)
-        native = json.loads((output / 'native-result.json').read_text())
-        assert native['passed'] is True and native['os_qualified'] is False
         payload = root / '.cache/hyprland-build-payload'
         payload.mkdir()
         run('copy-prefix', podman + ['cp', 'symbi-hyprland-build:/usr/lib/symbi/hyprland', str(payload)], 60)
         run('archive-prefix', ['tar', '-C', str(payload), '-czf', str(payload / 'hyprland-prefix.tar.gz'), 'hyprland'], 180)
         record['payload_sha256'] = digest(payload / 'hyprland-prefix.tar.gz')
+        compiled = json.loads((output / 'evidence/compile.json').read_text())
+        assert compiled['passed'] is True and compiled['os_qualified'] is False
+        # Retain reusable build output even if a later acceptance gate fails.
+        # This manifest never authorizes installation or publication of an OS.
+        manifest = {'schema': 1, 'compiled': True, 'os_qualified': False,
+                    'native_loading_qualified': False, 'selected_base_qualified': False,
+                    'scope': 'Unqualified development prefix; requires separately retained acceptance results',
+                    'source_commit': record['source_commit'], 'base': base['image'],
+                    'source_revisions': sources, 'payload_sha256': record['payload_sha256'],
+                    'compile_report_sha256': digest(output / 'evidence/compile.json'),
+                    'rpm_lock_sha256': digest(root / 'image/hyprland/build-rpms.lock.json'),
+                    'native_patch_sha256': digest(inputs / 'native-loading.patch'),
+                    'binaries': {name: digest(payload / 'hyprland/bin' / name) for name in ('Hyprland', 'hyprctl')}}
+        (payload / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+        shutil.copyfile(payload / 'manifest.json', evidence / 'development-prefix.json')
+        record['compiled_prefix_retained'] = True
+        save()
+        session_probe = podman + ['run', '--rm', '--read-only', '--user=10001:10001', '--cap-drop=ALL',
+                                  '--memory=2g', '--memory-swap=2g', '--cpus=1', '--pids-limit=64', *common,
+                                  '--entrypoint=/usr/bin/python3', image_id, '/inputs/tests/qualify_session_defaults.py',
+                                  '--hyprland', '/usr/lib/symbi/hyprland/bin/Hyprland',
+                                  '--defaults', '/inputs/session-defaults', '--work-dir', '/output/s',
+                                  '--report', '/output/session-result.json']
+        run('session-defaults-probe', session_probe, 120)
+        session = json.loads((output / 'session-result.json').read_text())
+        assert session['passed'] is True and session['os_qualified'] is False
+        # The RPM transaction belongs only to the throwaway compiler image.
+        # Repeat the real probes against the authenticated, unchanged base,
+        # mounting just our private prefix read-only. No Mesa or other system
+        # library from the compiler container is copied into this container.
+        base_probe = podman + ['run', '--rm', '--read-only', '--user=10001:10001', '--cap-drop=ALL',
+                               '--memory=2g', '--memory-swap=2g', '--cpus=1', '--pids-limit=64', *common,
+                               '--mount', f'type=bind,src={payload / "hyprland"},dst=/usr/lib/symbi/hyprland,ro']
+        run('base-runtime-packages', base_probe + ['--entrypoint=/usr/bin/rpm', base['image'], '-qa',
+                                                  '--qf', '%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n'], 30)
+        for name in ('Hyprland', 'hyprctl'):
+            log_name = 'base-' + name + '-needed-libraries'
+            run(log_name, base_probe + ['--entrypoint=/usr/bin/ldd', base['image'],
+                                        '/usr/lib/symbi/hyprland/bin/' + name], 30)
+            assert 'not found' not in (evidence / (log_name + '.log')).read_text()
+        run('base-session-defaults-probe', base_probe + [
+            '--entrypoint=/usr/bin/python3', base['image'], '/inputs/tests/qualify_session_defaults.py',
+            '--hyprland', '/usr/lib/symbi/hyprland/bin/Hyprland', '--defaults', '/inputs/session-defaults',
+            '--work-dir', '/output/bs', '--report', '/output/base-session-result.json'], 120)
+        base_session = json.loads((output / 'base-session-result.json').read_text())
+        assert base_session['passed'] is True and base_session['os_qualified'] is False
+        assert base_session['hyprland_sha256'] == session['hyprland_sha256']
+        assert base_session['defaults_sha256'] == session['defaults_sha256']
+        probe = podman + ['run', '--rm', '--read-only', '--user=10001:10001', '--cap-drop=ALL',
+                          '--memory=2g', '--memory-swap=2g', '--cpus=1', '--pids-limit=64', *common,
+                          '--entrypoint=/usr/bin/python3', image_id, '/inputs/tests/qualify_native_loading.py',
+                          '--hyprland', '/usr/lib/symbi/hyprland/bin/Hyprland',
+                          '--hyprctl', '/usr/lib/symbi/hyprland/bin/hyprctl',
+                          '--work-dir', '/output/n', '--report', '/output/native-result.json']
+        run('native-loading-probe', probe, 180)
+        native = json.loads((output / 'native-result.json').read_text())
+        assert native['passed'] is True and native['os_qualified'] is False
+        run('base-native-loading-probe', base_probe + [
+            '--entrypoint=/usr/bin/python3', base['image'], '/inputs/tests/qualify_native_loading.py',
+            '--hyprland', '/usr/lib/symbi/hyprland/bin/Hyprland',
+            '--hyprctl', '/usr/lib/symbi/hyprland/bin/hyprctl',
+            '--work-dir', '/output/bn', '--report', '/output/base-native-result.json'], 180)
+        base_native = json.loads((output / 'base-native-result.json').read_text())
+        assert base_native['passed'] is True and base_native['os_qualified'] is False
+        for name in ('hyprland_sha256', 'hyprctl_sha256'):
+            assert base_native[name] == native[name]
+        record['selected_base_compatibility_passed'] = True
+        record['base_package_inventory_sha256'] = digest(evidence / 'base-runtime-packages.log')
         record['passed'] = True
+    except Exception as error:
+        record['failure'] = type(error).__name__ + ': ' + str(error)
+        raise
     finally:
         save()
         if (output / 'evidence').is_dir():
             shutil.copytree(output / 'evidence', evidence / 'guest')
-        for source, target in [('native-result.json', 'native-result.json'), ('native-work/compositor.log', 'compositor.log')]:
+        for source, target in [('native-result.json', 'native-result.json'), ('n/compositor.log', 'compositor.log'),
+                               ('session-result.json', 'session-result.json'),
+                               ('base-session-result.json', 'base-session-result.json'),
+                               ('base-native-result.json', 'base-native-result.json'),
+                               ('bn/compositor.log', 'base-compositor.log')]:
             path = output / source
             if path.is_file() and not path.is_symlink():
                 shutil.copyfile(path, evidence / target)
+        # Keep the compositor's separate internal log if startup fails before
+        # stdout logging takes effect. Only generated private probe trees qualify.
+        for name in ('n', 'bn'):
+            for path in (output / name / 'runtime/hypr').glob('*/hyprland.log'):
+                if not path.is_file() or path.is_symlink() or path.resolve() != path.absolute():
+                    continue
+                size = path.stat().st_size
+                if size > 4 * 1024**2:
+                    record.setdefault('omitted_logs', []).append({'path': str(path.relative_to(output)), 'bytes': size})
+                    continue
+                shutil.copyfile(path, evidence / (name + '-internal-compositor.log'))
+        save()
         final = {name: (group / name).read_text().strip() for name in (*names, 'memory.peak', 'memory.events', 'cpu.stat')}
         (evidence / 'cgroup-final.json').write_text(json.dumps(final, indent=2) + '\n')
         assert all(final[name] == value for name, value in limits.items())

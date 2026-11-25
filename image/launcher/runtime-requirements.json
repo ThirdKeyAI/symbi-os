@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "scope": "Candidate Fedora library provider for the pinned launcher; resolve and verify before any installation",
+  "source_inputs": "image/launcher/candidates.json",
+  "packages": [
+    "libgtk4-layer-shell.so.0()(64bit)"
+  ],
+  "notes": [
+    "Static ELF inspection of the checksum-matched Walker archive requires this SONAME, absent from the observed base package inventory",
+    "This profile is separate from the compositor build requirements and must not replace that RPM lock",
+    "No package installation, launcher execution, source-to-binary verification or release qualification is implied"
+  ]
+}

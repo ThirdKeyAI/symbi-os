@@ -1,0 +1,66 @@
+test_profiles_select_separate_fixed_inputs (test_package_profile.PackageProfiles.test_profiles_select_separate_fixed_inputs) ... ERROR
+test_selected_input_cannot_follow_a_symlink (test_package_profile.PackageProfiles.test_selected_input_cannot_follow_a_symlink) ... ERROR
+test_unknown_or_path_profile_is_refused (test_package_profile.PackageProfiles.test_unknown_or_path_profile_is_refused) ...
+  test_unknown_or_path_profile_is_refused (test_package_profile.PackageProfiles.test_unknown_or_path_profile_is_refused) (profile='') ... ERROR
+  test_unknown_or_path_profile_is_refused (test_package_profile.PackageProfiles.test_unknown_or_path_profile_is_refused) (profile='../hyprland') ... ERROR
+  test_unknown_or_path_profile_is_refused (test_package_profile.PackageProfiles.test_unknown_or_path_profile_is_refused) (profile='/etc/shadow') ... ERROR
+  test_unknown_or_path_profile_is_refused (test_package_profile.PackageProfiles.test_unknown_or_path_profile_is_refused) (profile='unreviewed') ... ERROR
+
+======================================================================
+ERROR: test_profiles_select_separate_fixed_inputs (test_package_profile.PackageProfiles.test_profiles_select_separate_fixed_inputs)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-launcher-input-stage/image/tests/test_package_profile.py", line 21, in test_profiles_select_separate_fixed_inputs
+    self.assertEqual(inventory.requirements_input(root, profile), relative)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'package_inventory' has no attribute 'requirements_input'
+
+======================================================================
+ERROR: test_selected_input_cannot_follow_a_symlink (test_package_profile.PackageProfiles.test_selected_input_cannot_follow_a_symlink)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-launcher-input-stage/image/tests/test_package_profile.py", line 38, in test_selected_input_cannot_follow_a_symlink
+    inventory.requirements_input(root, 'launcher')
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'package_inventory' has no attribute 'requirements_input'
+
+======================================================================
+ERROR: test_unknown_or_path_profile_is_refused (test_package_profile.PackageProfiles.test_unknown_or_path_profile_is_refused) (profile='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-launcher-input-stage/image/tests/test_package_profile.py", line 27, in test_unknown_or_path_profile_is_refused
+    inventory.requirements_input(Path(directory), profile)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'package_inventory' has no attribute 'requirements_input'
+
+======================================================================
+ERROR: test_unknown_or_path_profile_is_refused (test_package_profile.PackageProfiles.test_unknown_or_path_profile_is_refused) (profile='../hyprland')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-launcher-input-stage/image/tests/test_package_profile.py", line 27, in test_unknown_or_path_profile_is_refused
+    inventory.requirements_input(Path(directory), profile)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'package_inventory' has no attribute 'requirements_input'
+
+======================================================================
+ERROR: test_unknown_or_path_profile_is_refused (test_package_profile.PackageProfiles.test_unknown_or_path_profile_is_refused) (profile='/etc/shadow')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-launcher-input-stage/image/tests/test_package_profile.py", line 27, in test_unknown_or_path_profile_is_refused
+    inventory.requirements_input(Path(directory), profile)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'package_inventory' has no attribute 'requirements_input'
+
+======================================================================
+ERROR: test_unknown_or_path_profile_is_refused (test_package_profile.PackageProfiles.test_unknown_or_path_profile_is_refused) (profile='unreviewed')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-launcher-input-stage/image/tests/test_package_profile.py", line 27, in test_unknown_or_path_profile_is_refused
+    inventory.requirements_input(Path(directory), profile)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'package_inventory' has no attribute 'requirements_input'
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.001s
+
+FAILED (errors=6)

@@ -1,0 +1,12 @@
+hl.config({
+    general = {
+        gaps_in = 4,
+        gaps_out = 8,
+        border_size = 2,
+    },
+    decoration = {
+        rounding = 4,
+        blur = { enabled = false },
+    },
+    animations = { enabled = false },
+})

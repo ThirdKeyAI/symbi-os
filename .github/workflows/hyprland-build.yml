@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - image/hyprland/**
+      - image/overlay/usr/share/symbiont/defaults/hypr/**
       - image/base-images.json
       - image/toolchain/bootstrap_cosign.py
       - image/toolchain/cosign.json
@@ -18,7 +19,8 @@ permissions:
 
 concurrency:
   group: hyprland-build-${{ github.ref }}
-  cancel-in-progress: true
+  # Finish the bounded build already running; keep only the latest pending revision.
+  cancel-in-progress: false
 
 jobs:
   compositor:
@@ -60,11 +62,14 @@ jobs:
           path: .cache/hyprland-build-evidence/
           retention-days: 14
           if-no-files-found: error
-      - name: Retain development prefix for separate base-compatibility checks
+      - name: Retain unqualified compiled prefix even when later probes fail
+        if: ${{ always() && hashFiles('.cache/hyprland-build-payload/manifest.json') != '' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: hyprland-development-prefix
-          path: .cache/hyprland-build-payload/hyprland-prefix.tar.gz
+          path: |
+            .cache/hyprland-build-payload/hyprland-prefix.tar.gz
+            .cache/hyprland-build-payload/manifest.json
           retention-days: 14
           compression-level: 0
           if-no-files-found: error

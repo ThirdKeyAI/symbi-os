@@ -1,0 +1,18 @@
+test_admin_executable_is_found_outside_bin_and_environment_path (test_base_controls.BaseControlDiscovery.test_admin_executable_is_found_outside_bin_and_environment_path) ... ok
+test_linked_configuration_directory_is_not_read (test_base_controls.BaseControlDiscovery.test_linked_configuration_directory_is_not_read) ... ERROR
+test_oversized_control_refuses_without_unbounded_read (test_base_controls.BaseControlDiscovery.test_oversized_control_refuses_without_unbounded_read) ... ok
+test_public_control_selection_records_links_without_reading_targets (test_base_controls.BaseControlDiscovery.test_public_control_selection_records_links_without_reading_targets) ... ok
+
+======================================================================
+ERROR: test_linked_configuration_directory_is_not_read (test_base_controls.BaseControlDiscovery.test_linked_configuration_directory_is_not_read)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-base-controls-stage/image/tests/test_base_controls.py", line 68, in test_linked_configuration_directory_is_not_read
+    self.assertEqual(result["links"][str(root / "polkit-1")], str(target))
+                     ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: '/tmp/tmprk3vd6t4/root/polkit-1'
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.090s
+
+FAILED (errors=1)

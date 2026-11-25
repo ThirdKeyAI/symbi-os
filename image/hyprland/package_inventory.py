@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Resolve candidate RPMs in the authenticated base on a hosted runner only."""
+import argparse
 import hashlib
 import json
 import os
@@ -14,10 +15,26 @@ def digest(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
+def requirements_input(root, profile):
+    profiles = {'hyprland': 'image/hyprland/build-requirements.json',
+                'launcher': 'image/launcher/runtime-requirements.json'}
+    if profile not in profiles:
+        raise ValueError('Unknown package discovery profile')
+    relative = profiles[profile]
+    path = root / relative
+    if not path.is_file() or path.is_symlink() or path.resolve() != path:
+        raise ValueError('Package requirements must be a regular reviewed file without linked parents')
+    return relative
+
+
 def main():
     if os.environ.get('GITHUB_ACTIONS') != 'true' or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted' or os.geteuid() != 0:
         raise SystemExit('Package discovery requires the disposable hosted resource unit')
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--profile', choices=('hyprland', 'launcher'), default='hyprland')
+    args = parser.parse_args()
     root = Path.cwd()
+    selected_requirements = requirements_input(root, args.profile)
     sys.path.insert(0, str(root / 'image/toolchain'))
     from bootstrap_cosign import bootstrap
     sys.path.insert(0, str(root / 'image'))
@@ -51,7 +68,7 @@ def main():
         paths = {
             'resolve_packages.py': 'image/hyprland/resolve_packages.py',
             'guest_inventory.py': 'image/hyprland/guest_inventory.py',
-            'build-requirements.json': 'image/hyprland/build-requirements.json',
+            'build-requirements.json': selected_requirements,
             'fedora-package-trust.json': 'image/hyprland/fedora-package-trust.json',
             'fedora-45-primary.asc': trust['key']['path'],
             'dnf.conf': 'image/hyprland/package-dnf.conf',
@@ -60,7 +77,8 @@ def main():
         bindings = {}
         for name, path in paths.items():
             source = (root / path).resolve(strict=True)
-            assert source.is_relative_to(root / 'image/hyprland')
+            allowed_root = root / 'image/launcher' if name == 'build-requirements.json' and args.profile == 'launcher' else root / 'image/hyprland'
+            assert source.is_relative_to(allowed_root)
             target = inputs / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source, target)
@@ -68,7 +86,8 @@ def main():
         assert bindings['fedora-45-primary.asc'] == trust['key']['sha256']
         repo_pin = json.loads((root / 'image/hyprland/package-repository-inputs.json').read_text())
         assert bindings['repos/fedora-build.repo'] == repo_pin['selected_configuration_sha256']
-        (evidence / 'input-bindings.json').write_text(json.dumps({'source_commit': os.environ['GITHUB_SHA'], 'files': bindings}, indent=2) + '\n')
+        (evidence / 'input-bindings.json').write_text(json.dumps({'source_commit': os.environ['GITHUB_SHA'], 'profile': args.profile,
+                                                                'requirements_source': selected_requirements, 'files': bindings}, indent=2) + '\n')
         output.mkdir()
         storage = root / '.cache/fedora-package-storage'
         storage.mkdir()
@@ -94,6 +113,7 @@ def main():
             package = output / 'rpms' / name
             assert not package.is_symlink() and digest(package) == row['sha256']
         (evidence / 'result.json').write_text(json.dumps({'passed': True, 'base': pin['image'], 'source_commit': os.environ['GITHUB_SHA'],
+                                                        'profile': args.profile,
                                                         'packages': len(result['packages']), 'rpm_manifest_sha256': digest(output / 'evidence/result.json'),
                                                         'os_qualified': False, 'scope': 'Candidate signed build inputs, not installed or compiled'}, indent=2) + '\n')
     finally:

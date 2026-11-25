@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Exercise real native-loading entry points in a disposable, capped Fedora guest.
 
-This starts a private headless compositor. It never connects to an existing
+This starts a private compositor with an available DRM graphics device. It never connects to an existing
 desktop, and a passing report covers native-loading refusal only.
 """
 import argparse
@@ -10,13 +10,54 @@ import json
 import os
 from pathlib import Path
 import platform
-import signal
+import stat
 import subprocess
 import sys
 import time
 
 
 REFUSAL = "Native plugins are disabled in this Symbi OS build"
+
+
+def require_socket_root(runtime):
+    # Pinned Compositor.cpp uses commit(40)_time(10)_random INT32_MAX(10).
+    # Socket2's longer pathname must fit Linux sockaddr_un.sun_path including NUL.
+    longest = runtime / 'hypr' / ('x' * 62) / '.socket2.sock'
+    if len(os.fsencode(longest)) > 107:
+        raise ValueError('Private compositor socket path exceeds the 107-byte limit')
+
+
+def select_instance(output, pid):
+    instances = json.loads(output)
+    if not isinstance(instances, list) or any(not isinstance(item, dict) for item in instances):
+        raise ValueError('Invalid instance query result')
+    owned = [item for item in instances if item.get('pid') == pid]
+    if len(owned) > 1:
+        raise ValueError('Multiple instances claim the compositor child')
+    if not owned:
+        return None
+    name = owned[0].get('instance')
+    if not isinstance(name, str) or not name or '/' in name or name in ('.', '..'):
+        raise ValueError('Invalid compositor instance name')
+    return name
+
+
+def stop_child(child):
+    result = {'passed': False, 'errors': []}
+    # Signal the exact child; this probe does not start external applications.
+    # The enclosing container/cgroup owns descendant teardown. A denial remains
+    # a failed cleanup, and must not hide the original startup/acceptance error.
+    for action, timeout in ((child.terminate, 10), (child.kill, 5)):
+        if child.poll() is not None:
+            result.update(passed=True, returncode=child.returncode)
+            return result
+        try:
+            action()
+            child.wait(timeout=timeout)
+        except (OSError, subprocess.TimeoutExpired) as error:
+            result['errors'].append(type(error).__name__ + ': ' + str(error))
+    result.update(passed=child.poll() is not None, returncode=child.returncode)
+    return result
 
 
 def sha256(path):
@@ -50,17 +91,18 @@ def main():
     work.mkdir(mode=0o700)
     for name in ("home", "runtime", "config"):
         (work / name).mkdir(mode=0o700)
+    require_socket_root(work / 'runtime')
     report = args.report.absolute()
     if report.exists() or report.is_symlink():
         raise SystemExit("Report must not overwrite existing evidence")
     marker, ready = work / "native-loaded", work / "config-completed"
     env = {"PATH": "/usr/bin:/bin", "HOME": str(work / "home"), "XDG_RUNTIME_DIR": str(work / "runtime"),
-           "XDG_CONFIG_HOME": str(work / "config"), "LANG": "C.UTF-8", "HYPRLAND_HEADLESS_ONLY": "1",
+           "XDG_CONFIG_HOME": str(work / "config"), "LANG": "C.UTF-8",
            "LIBGL_ALWAYS_SOFTWARE": "1", "LP_NUM_THREADS": "1", "OMP_NUM_THREADS": "1",
            "SYMBI_NATIVE_LOAD_MARKER": str(marker)}
     result = {"schema": 1, "hyprland_sha256": sha256(binary), "hyprctl_sha256": sha256(hyprctl),
               "limits": limits, "fedora_atomic_boot": Path("/run/ostree-booted").exists(),
-              "scope": "Native-loading refusal in a private headless compositor", "checks": [],
+              "scope": "Native-loading refusal in a private compositor; requires DRM allocation", "checks": [],
               "passed": False, "os_qualified": False}
 
     def save():
@@ -75,6 +117,10 @@ def main():
         if not passed:
             raise RuntimeError(name + " failed")
 
+    devices = [str(path) for path in Path('/dev/dri').glob('*')
+               if not path.is_symlink() and stat.S_ISCHR(path.stat().st_mode)]
+    checked('graphics-device-available', bool(devices), devices=devices,
+            requirement='Pinned Aquamarine requires a DRM allocator; software rendering alone does not supply one')
     probe = work / "symbi_probe.so"
     fixture = Path(__file__).with_name("native_probe.c").resolve(strict=True)
     compiled = run(["cc", "-shared", "-fPIC", "-O0", "-g0", str(fixture), "-o", str(probe)], timeout=30)
@@ -89,7 +135,8 @@ def main():
     def write_config(generation):
         # JSON strings are also valid Lua strings for these generated ASCII paths.
         q = json.dumps
-        config.write_text(f'''package.path = {q(str(work / '?.lua'))}
+        config.write_text(f'''hl.config({{debug = {{enable_stdout_logs = true}}}})
+package.path = {q(str(work / '?.lua'))}
 assert(require("symbi_lua_probe") == "pure Lua module loaded")
 local direct_ok = pcall(function()
     local loader = assert(package.loadlib({q(str(probe))}, "luaopen_symbi_probe"))
@@ -122,12 +169,35 @@ evidence:close()
         try:
             wait_for(lambda: ready.is_file() and ready.read_text() == "1", child)
             checked("config-lua-native-refused", not marker.exists(), generation=1)
-            listing = run([str(hyprctl), "-j", "instances"])
-            checked("private-instance-query", listing.returncode == 0, stderr=listing.stderr)
-            instances = json.loads(listing.stdout)
-            owned = [item for item in instances if item["pid"] == child.pid]
-            checked("exact-child-instance", len(owned) == 1)
-            instance = owned[0]["instance"]
+            instance = None
+
+            def ipc_ready():
+                nonlocal instance
+                listing = run([str(hyprctl), '-j', 'instances'])
+                result['last_instance_query'] = {'exit_code': listing.returncode,
+                                                 'stdout': listing.stdout[:16384], 'stderr': listing.stderr[:16384]}
+                save()
+                if listing.returncode != 0:
+                    return False
+                try:
+                    instance = select_instance(listing.stdout, child.pid)
+                except ValueError as error:
+                    result['last_instance_query']['parse_error'] = str(error)
+                    save()
+                    return False
+                if instance is None or not (work / 'runtime/hypr' / instance / '.socket.sock').is_socket():
+                    return False
+                version = run([str(hyprctl), '-i', instance, '-j', 'version'])
+                result['last_version_query'] = {'exit_code': version.returncode,
+                                                'stdout': version.stdout[:16384], 'stderr': version.stderr[:16384]}
+                save()
+                try:
+                    return version.returncode == 0 and isinstance(json.loads(version.stdout), dict)
+                except ValueError:
+                    return False
+
+            wait_for(ipc_ready, child)
+            checked('exact-child-ipc-ready', instance is not None, instance=instance)
             for generation in (1, 2):
                 if generation == 2:
                     write_config(generation)
@@ -144,14 +214,15 @@ evidence:close()
                         generation=generation)
             result["passed"] = True
             save()
+        except Exception as error:
+            result['failure'] = type(error).__name__ + ': ' + str(error)
+            raise
         finally:
-            if child.poll() is None:
-                os.killpg(child.pid, signal.SIGTERM)
-                try:
-                    child.wait(timeout=10)
-                except subprocess.TimeoutExpired:
-                    os.killpg(child.pid, signal.SIGKILL)
-                    child.wait(timeout=5)
+            result['cleanup'] = stop_child(child)
+            result['passed'] = result['passed'] and result['cleanup']['passed']
+            save()
+        if not result['cleanup']['passed']:
+            raise RuntimeError('Compositor cleanup failed; inspect retained cleanup diagnostics')
 
 
 if __name__ == "__main__":

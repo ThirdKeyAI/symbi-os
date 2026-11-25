@@ -1,0 +1,23 @@
+{
+  "date_utc": "2026-11-25T21:52:23.380194+00:00",
+  "scope": "Offline inventory reader and image preparation only; no Fedora execution or OS qualification",
+  "base_inventory_run": 45689433608,
+  "source_head": "997ffa95edee4fd0b887c0691486bff8e1f3d0b9",
+  "observation": "Old tool discovery checked only /usr/bin and file existence; it could miss admin executables in /usr/sbin or accept nonexecutables. RPM inventory has no sudo/sudo-rs package, but executable discovery is being corrected before hardening changes.",
+  "changes": [
+    "Explicit /usr/bin:/usr/sbin executable search with resolved locations retained",
+    "Bounded discovery of fixed public login, sudo, sysctl and polkit configuration; record symlinks without reading their targets"
+  ],
+  "focused_tests": 4,
+  "full_offline_image_tests": 60,
+  "local_peak_rss_kib": 27464,
+  "local_cpu_seconds": 0.2,
+  "hosted_controls_discovery_executed": false,
+  "os_qualified": false,
+  "evidence": {
+    "p003-session-inventory-offline.log": "4d087acd451cc5747fe379df8f7206f77c95bea6cfc6874dbe62eec66efcda44",
+    "base-controls-red.log": "78de28c89add830fb917b9944268aa8a49bea0641c7d89089ea165680fee337e",
+    "base-controls-parent-red.log": "8641f99212d1f8f425a257b3bd202b7aba06b4520fc615b054dfe17e46815384",
+    "base-controls-green-2.log": "9af1903d446b4e39a7696118ba14e3634a9a6390c44bad3d023be0af5feb8196"
+  }
+}

@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
+[[ $# -le 1 ]] || { echo 'Expected at most one package profile.' >&2; exit 2; }
+profile=${1:-hyprland}
+case "$profile" in
+  hyprland|launcher) ;;
+  *) echo 'Unknown package discovery profile.' >&2; exit 2 ;;
+esac
 [[ "${GITHUB_ACTIONS:-}" == true && "${RUNNER_ENVIRONMENT:-}" == github-hosted ]] || {
   echo 'Package discovery requires GitHub-hosted CI.' >&2
   exit 1
@@ -15,7 +21,7 @@ sudo systemd-run --unit="$unit" --wait --pipe --working-directory="$root" \
   --property=Delegate=yes --property=DelegateSubgroup=supervisor --property=KillMode=control-group \
   /usr/bin/env -i PATH=/usr/local/bin:/usr/bin:/bin HOME=/root \
   GITHUB_ACTIONS=true RUNNER_ENVIRONMENT=github-hosted "GITHUB_SHA=$GITHUB_SHA" \
-  PYTHONDONTWRITEBYTECODE=1 python3 image/hyprland/package_inventory.py \
+  PYTHONDONTWRITEBYTECODE=1 python3 image/hyprland/package_inventory.py --profile "$profile" \
   2>&1 | tee "$evidence/hosted-discovery.log"
 status=${PIPESTATUS[0]}
 set -e
