@@ -1,0 +1,93 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 24 and seed -2122084085652330068 with 1 worker on 1 cores with 228MB heap and 64MB offheap memory [pid: 1965457] (Linux 7.0.0-43-generic amd64, Ubuntu 25.0.5.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file /tmp/symbi-p0-02-stage/formal/Freeze.tla
+Parsing file /tmp/tmp.NwIg1gQxtp/Naturals.tla
+Semantic processing of module Naturals
+Semantic processing of module Freeze
+Starting... (2026-11-25 00:52:09)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-25 00:52:10.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 1.1E-15
+The coverage statistics at 2026-11-25 00:52:10
+<Init line 9, col 1 to line 9, col 4 of module Freeze>: 1:1
+  line 9, col 9 to line 11, col 40 of module Freeze: 1
+<Check line 13, col 1 to line 13, col 8 of module Freeze>: 5:32
+  line 14, col 6 to line 14, col 22 of module Freeze: 394
+  |line 14, col 6 to line 14, col 10 of module Freeze: 362
+  line 14, col 27 to line 14, col 42 of module Freeze: 208
+  |line 14, col 27 to line 14, col 33 of module Freeze: 176
+  line 15, col 6 to line 15, col 43 of module Freeze: 32
+  line 16, col 6 to line 16, col 72 of module Freeze: 32
+<Dispatch line 18, col 1 to line 18, col 11 of module Freeze>: 25:32
+  line 19, col 6 to line 19, col 24 of module Freeze: 394
+  |line 19, col 6 to line 19, col 12 of module Freeze: 362
+  line 20, col 6 to line 20, col 22 of module Freeze: 102
+  |line 20, col 6 to line 20, col 10 of module Freeze: 70
+  line 20, col 27 to line 20, col 60 of module Freeze: 70
+  line 21, col 6 to line 21, col 45 of module Freeze: 32
+  line 22, col 6 to line 22, col 73 of module Freeze: 32
+  line 23, col 6 to line 23, col 49 of module Freeze: 32
+<Complete line 25, col 1 to line 25, col 11 of module Freeze>: 25:54
+  line 26, col 6 to line 26, col 26 of module Freeze: 416
+  |line 26, col 6 to line 26, col 12 of module Freeze: 362
+  line 27, col 6 to line 27, col 45 of module Freeze: 54
+  line 28, col 6 to line 28, col 36 of module Freeze: 54
+  line 29, col 6 to line 29, col 61 of module Freeze: 54
+<RequestFreeze line 31, col 1 to line 31, col 13 of module Freeze>: 52:52
+  line 32, col 6 to line 32, col 22 of module Freeze: 233
+  |line 32, col 6 to line 32, col 10 of module Freeze: 181
+  line 32, col 27 to line 32, col 44 of module Freeze: 52
+  |line 32, col 27 to line 32, col 31 of module Freeze: 88
+  |line 32, col 35 to line 32, col 44 of module Freeze: 88
+  line 33, col 6 to line 33, col 46 of module Freeze: 52
+  line 34, col 6 to line 34, col 64 of module Freeze: 52
+<Cancel line 36, col 1 to line 36, col 9 of module Freeze>: 9:44
+  line 37, col 6 to line 37, col 23 of module Freeze: 406
+  |line 37, col 6 to line 37, col 10 of module Freeze: 362
+  line 37, col 28 to line 37, col 63 of module Freeze: 166
+  |line 37, col 28 to line 37, col 34 of module Freeze: 122
+  |line 37, col 40 to line 37, col 63 of module Freeze: 122
+  line 38, col 6 to line 38, col 45 of module Freeze: 44
+  line 39, col 6 to line 39, col 72 of module Freeze: 44
+<AckFreeze line 41, col 1 to line 41, col 9 of module Freeze>: 32:41
+  line 42, col 6 to line 42, col 23 of module Freeze: 222
+  |line 42, col 6 to line 42, col 10 of module Freeze: 181
+  line 43, col 24 to line 43, col 44 of module Freeze: 193
+  |line 43, col 24 to line 43, col 30 of module Freeze: 111
+  line 43, col 16 to line 43, col 20 of module Freeze: 61
+  line 43, col 50 to line 43, col 78 of module Freeze: 61
+  line 44, col 6 to line 44, col 44 of module Freeze: 41
+  line 45, col 6 to line 45, col 64 of module Freeze: 41
+<Resume line 47, col 1 to line 47, col 6 of module Freeze>: 32:32
+  line 48, col 6 to line 48, col 21 of module Freeze: 213
+  |line 48, col 6 to line 48, col 10 of module Freeze: 181
+  line 48, col 26 to line 48, col 43 of module Freeze: 32
+  line 49, col 6 to line 49, col 71 of module Freeze: 32
+<Terminal line 51, col 1 to line 51, col 8 of module Freeze>: 0:9
+  line 52, col 6 to line 52, col 22 of module Freeze: 190
+  |line 52, col 6 to line 52, col 10 of module Freeze: 181
+  line 52, col 27 to line 52, col 44 of module Freeze: 97
+  |line 52, col 27 to line 52, col 31 of module Freeze: 88
+  |line 52, col 35 to line 52, col 44 of module Freeze: 88
+  line 53, col 23 to line 53, col 60 of module Freeze: 72
+  |line 53, col 23 to line 53, col 29 of module Freeze: 54
+  |line 53, col 35 to line 53, col 60 of module Freeze: 54
+  line 53, col 15 to line 53, col 19 of module Freeze: 36
+  line 54, col 6 to line 54, col 19 of module Freeze: 9
+<TypeOK line 58, col 1 to line 58, col 6 of module Freeze>
+  line 59, col 3 to line 62, col 38 of module Freeze: 181
+<NoCompletionWhileFrozen line 63, col 1 to line 63, col 23 of module Freeze>
+  line 63, col 28 to line 63, col 64 of module Freeze: 181
+  |line 63, col 28 to line 63, col 43 of module Freeze: 181
+  |line 63, col 48 to line 63, col 64 of module Freeze: 32
+<NoDispatchWhileFrozen line 64, col 1 to line 64, col 21 of module Freeze>
+  line 64, col 26 to line 64, col 47 of module Freeze: 181
+End of statistics.
+297 states generated, 181 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 13.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 3 and the 95th percentile is 2).
+Finished in 00s at (2026-11-25 00:52:10)
+elapsed_seconds=0.58 max_rss_kib=89480

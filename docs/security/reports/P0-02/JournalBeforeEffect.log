@@ -1,0 +1,192 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 105 and seed -6268966025844127431 with 1 worker on 1 cores with 228MB heap and 64MB offheap memory [pid: 1961730] (Linux 7.0.0-43-generic amd64, Ubuntu 25.0.5.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file /tmp/symbi-p0-02-stage/formal/JournalBeforeEffect.tla
+Parsing file /tmp/tmp.qJbxahkDvl/Naturals.tla
+Parsing file /tmp/tmp.qJbxahkDvl/Sequences.tla
+Parsing file /tmp/tmp.qJbxahkDvl/FiniteSets.tla
+Semantic processing of module Naturals
+Semantic processing of module Sequences
+Semantic processing of module FiniteSets
+Semantic processing of module JournalBeforeEffect
+Starting... (2026-11-25 00:49:12)
+Computing initial states...
+Finished computing initial states: 1 distinct state generated at 2026-11-25 00:49:12.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 3.9E-14
+The coverage statistics at 2026-11-25 00:49:12
+<Init line 12, col 1 to line 12, col 4 of module JournalBeforeEffect>: 1:1
+  line 12, col 9 to line 15, col 74 of module JournalBeforeEffect: 1
+<Reserve line 17, col 1 to line 17, col 10 of module JournalBeforeEffect>: 25:42
+  line 18, col 6 to line 18, col 7 of module JournalBeforeEffect: 42
+  line 18, col 12 to line 18, col 18 of module JournalBeforeEffect: 1378
+  |line 18, col 13 to line 18, col 18 of module JournalBeforeEffect: 1336
+  line 18, col 23 to line 18, col 31 of module JournalBeforeEffect: 946
+  |line 18, col 23 to line 18, col 27 of module JournalBeforeEffect: 904
+  line 18, col 36 to line 18, col 52 of module JournalBeforeEffect: 694
+  |line 18, col 36 to line 18, col 43 of module JournalBeforeEffect: 652
+  line 19, col 6 to line 19, col 60 of module JournalBeforeEffect: 42
+  line 20, col 6 to line 21, col 70 of module JournalBeforeEffect: 42
+  |line 20, col 17 to line 21, col 70 of module JournalBeforeEffect: 42
+  ||line 20, col 18 to line 20, col 24 of module JournalBeforeEffect: 42
+  ||line 20, col 33 to line 21, col 69 of module JournalBeforeEffect: 42
+  ||line 20, col 40 to line 21, col 69 of module JournalBeforeEffect: 42
+  |||line 20, col 43 to line 20, col 59 of module JournalBeforeEffect: 42
+  |||line 21, col 44 to line 21, col 69 of module JournalBeforeEffect: 26
+  line 22, col 6 to line 22, col 87 of module JournalBeforeEffect: 42
+<Hash line 24, col 1 to line 24, col 7 of module JournalBeforeEffect>: 25:42
+  line 25, col 6 to line 25, col 7 of module JournalBeforeEffect: 42
+  line 25, col 12 to line 25, col 18 of module JournalBeforeEffect: 1378
+  |line 25, col 13 to line 25, col 18 of module JournalBeforeEffect: 1336
+  line 25, col 23 to line 25, col 31 of module JournalBeforeEffect: 946
+  |line 25, col 23 to line 25, col 27 of module JournalBeforeEffect: 904
+  |line 25, col 31 to line 25, col 31 of module JournalBeforeEffect: 904
+  line 25, col 36 to line 25, col 56 of module JournalBeforeEffect: 168
+  |line 25, col 36 to line 25, col 43 of module JournalBeforeEffect: 126
+  line 26, col 6 to line 26, col 73 of module JournalBeforeEffect: 42
+  line 27, col 6 to line 28, col 60 of module JournalBeforeEffect: 42
+  line 29, col 6 to line 29, col 86 of module JournalBeforeEffect: 42
+<Sign line 31, col 1 to line 31, col 7 of module JournalBeforeEffect>: 25:42
+  line 32, col 6 to line 32, col 7 of module JournalBeforeEffect: 42
+  line 32, col 12 to line 32, col 18 of module JournalBeforeEffect: 1378
+  |line 32, col 13 to line 32, col 18 of module JournalBeforeEffect: 1336
+  line 32, col 23 to line 32, col 31 of module JournalBeforeEffect: 946
+  |line 32, col 23 to line 32, col 27 of module JournalBeforeEffect: 904
+  |line 32, col 31 to line 32, col 31 of module JournalBeforeEffect: 904
+  line 32, col 36 to line 32, col 54 of module JournalBeforeEffect: 168
+  |line 32, col 36 to line 32, col 43 of module JournalBeforeEffect: 126
+  line 33, col 6 to line 34, col 44 of module JournalBeforeEffect: 42
+  line 35, col 6 to line 35, col 44 of module JournalBeforeEffect: 42
+  line 36, col 6 to line 36, col 91 of module JournalBeforeEffect: 42
+<AppendRecord line 38, col 1 to line 38, col 15 of module JournalBeforeEffect>: 35:42
+  line 39, col 6 to line 39, col 7 of module JournalBeforeEffect: 42
+  line 39, col 12 to line 39, col 18 of module JournalBeforeEffect: 1378
+  |line 39, col 13 to line 39, col 18 of module JournalBeforeEffect: 1336
+  line 39, col 23 to line 39, col 31 of module JournalBeforeEffect: 946
+  |line 39, col 23 to line 39, col 27 of module JournalBeforeEffect: 904
+  |line 39, col 31 to line 39, col 31 of module JournalBeforeEffect: 904
+  line 39, col 36 to line 39, col 54 of module JournalBeforeEffect: 168
+  |line 39, col 36 to line 39, col 43 of module JournalBeforeEffect: 126
+  line 40, col 6 to line 41, col 88 of module JournalBeforeEffect: 42
+  line 42, col 6 to line 42, col 60 of module JournalBeforeEffect: 42
+  line 43, col 6 to line 43, col 86 of module JournalBeforeEffect: 42
+<Sync line 45, col 1 to line 45, col 4 of module JournalBeforeEffect>: 108:132
+  line 45, col 12 to line 45, col 13 of module JournalBeforeEffect: 132
+  line 45, col 18 to line 45, col 24 of module JournalBeforeEffect: 800
+  |line 45, col 19 to line 45, col 24 of module JournalBeforeEffect: 668
+  line 45, col 29 to line 45, col 46 of module JournalBeforeEffect: 584
+  |line 45, col 29 to line 45, col 36 of module JournalBeforeEffect: 452
+  |line 45, col 40 to line 45, col 46 of module JournalBeforeEffect: 452
+  line 45, col 51 to line 45, col 69 of module JournalBeforeEffect: 132
+  line 46, col 12 to line 47, col 54 of module JournalBeforeEffect: 132
+<Release line 49, col 1 to line 49, col 10 of module JournalBeforeEffect>: 70:116
+  line 50, col 6 to line 50, col 7 of module JournalBeforeEffect: 116
+  line 50, col 12 to line 50, col 18 of module JournalBeforeEffect: 1452
+  |line 50, col 13 to line 50, col 18 of module JournalBeforeEffect: 1336
+  line 50, col 23 to line 50, col 43 of module JournalBeforeEffect: 1020
+  |line 50, col 23 to line 50, col 30 of module JournalBeforeEffect: 904
+  line 51, col 6 to line 51, col 23 of module JournalBeforeEffect: 306
+  |line 51, col 6 to line 51, col 6 of module JournalBeforeEffect: 190
+  |line 51, col 12 to line 51, col 23 of module JournalBeforeEffect: 190
+  ||line 8, col 13 to line 8, col 43 of module JournalBeforeEffect: 190
+  |||line 8, col 14 to line 8, col 22 of module JournalBeforeEffect: 182
+  |||line 8, col 32 to line 8, col 42 of module JournalBeforeEffect: 190
+  ||line 51, col 16 to line 51, col 22 of module JournalBeforeEffect: 190
+  line 51, col 28 to line 51, col 59 of module JournalBeforeEffect: 190
+  line 52, col 6 to line 52, col 75 of module JournalBeforeEffect: 116
+  line 53, col 6 to line 53, col 93 of module JournalBeforeEffect: 116
+<Crash line 57, col 1 to line 57, col 5 of module JournalBeforeEffect>: 18:271
+  line 58, col 6 to line 58, col 7 of module JournalBeforeEffect: 271
+  line 58, col 12 to line 58, col 19 of module JournalBeforeEffect: 939
+  |line 58, col 13 to line 58, col 19 of module JournalBeforeEffect: 668
+  line 58, col 24 to line 58, col 34 of module JournalBeforeEffect: 271
+  line 58, col 39 to line 58, col 53 of module JournalBeforeEffect: 271
+  line 59, col 6 to line 59, col 38 of module JournalBeforeEffect: 271
+  line 60, col 6 to line 61, col 71 of module JournalBeforeEffect: 271
+  line 62, col 6 to line 62, col 73 of module JournalBeforeEffect: 271
+  line 63, col 6 to line 63, col 44 of module JournalBeforeEffect: 271
+<Recover line 65, col 1 to line 65, col 7 of module JournalBeforeEffect>: 13:18
+  line 65, col 15 to line 65, col 17 of module JournalBeforeEffect: 704
+  |line 65, col 16 to line 65, col 17 of module JournalBeforeEffect: 686
+  line 65, col 22 to line 65, col 31 of module JournalBeforeEffect: 18
+  line 65, col 36 to line 65, col 50 of module JournalBeforeEffect: 18
+  line 66, col 15 to line 67, col 53 of module JournalBeforeEffect: 18
+<WriteFailure line 69, col 1 to line 69, col 12 of module JournalBeforeEffect>: 108:126
+  line 70, col 6 to line 70, col 7 of module JournalBeforeEffect: 126
+  line 70, col 12 to line 70, col 18 of module JournalBeforeEffect: 794
+  |line 70, col 13 to line 70, col 18 of module JournalBeforeEffect: 668
+  line 70, col 23 to line 70, col 31 of module JournalBeforeEffect: 578
+  |line 70, col 23 to line 70, col 27 of module JournalBeforeEffect: 452
+  line 71, col 6 to line 71, col 81 of module JournalBeforeEffect: 126
+  line 72, col 6 to line 72, col 88 of module JournalBeforeEffect: 126
+<SyncFailure line 74, col 1 to line 74, col 11 of module JournalBeforeEffect>: 108:132
+  line 75, col 6 to line 75, col 7 of module JournalBeforeEffect: 132
+  line 75, col 12 to line 75, col 18 of module JournalBeforeEffect: 800
+  |line 75, col 13 to line 75, col 18 of module JournalBeforeEffect: 668
+  line 75, col 23 to line 75, col 40 of module JournalBeforeEffect: 584
+  |line 75, col 23 to line 75, col 30 of module JournalBeforeEffect: 452
+  |line 75, col 34 to line 75, col 40 of module JournalBeforeEffect: 452
+  line 75, col 45 to line 75, col 58 of module JournalBeforeEffect: 132
+  line 76, col 6 to line 77, col 40 of module JournalBeforeEffect: 132
+<Abort line 79, col 1 to line 79, col 8 of module JournalBeforeEffect>: 150:518
+  line 80, col 6 to line 80, col 7 of module JournalBeforeEffect: 518
+  line 80, col 12 to line 80, col 46 of module JournalBeforeEffect: 1854
+  |line 80, col 12 to line 80, col 19 of module JournalBeforeEffect: 1336
+  |line 80, col 28 to line 80, col 46 of module JournalBeforeEffect: 1336
+  line 81, col 6 to line 81, col 45 of module JournalBeforeEffect: 518
+  line 82, col 6 to line 82, col 44 of module JournalBeforeEffect: 518
+  |line 82, col 15 to line 82, col 44 of module JournalBeforeEffect: 518
+  ||line 82, col 18 to line 82, col 26 of module JournalBeforeEffect: 518
+  ||line 82, col 40 to line 82, col 44 of module JournalBeforeEffect: 368
+  line 83, col 6 to line 83, col 96 of module JournalBeforeEffect: 518
+<Terminal line 85, col 1 to line 85, col 8 of module JournalBeforeEffect>: 0:248
+  line 85, col 16 to line 85, col 17 of module JournalBeforeEffect: 248
+  line 85, col 41 to line 85, col 72 of module JournalBeforeEffect: 1573
+  |line 85, col 41 to line 85, col 48 of module JournalBeforeEffect: 1077
+  |line 85, col 54 to line 85, col 72 of module JournalBeforeEffect: 1077
+  line 85, col 31 to line 85, col 37 of module JournalBeforeEffect: 668
+  line 86, col 16 to line 86, col 29 of module JournalBeforeEffect: 248
+<TypeOK line 92, col 1 to line 92, col 6 of module JournalBeforeEffect>
+  line 93, col 3 to line 98, col 64 of module JournalBeforeEffect: 686
+<DurableBeforeEffect line 99, col 1 to line 99, col 19 of module JournalBeforeEffect>
+  line 99, col 24 to line 99, col 54 of module JournalBeforeEffect: 686
+  |line 99, col 24 to line 99, col 31 of module JournalBeforeEffect: 686
+  |line 99, col 43 to line 99, col 54 of module JournalBeforeEffect: 686
+  ||line 8, col 13 to line 8, col 43 of module JournalBeforeEffect: 686
+  |||line 8, col 14 to line 8, col 22 of module JournalBeforeEffect: 462
+  |||line 8, col 32 to line 8, col 42 of module JournalBeforeEffect: 686
+  ||line 99, col 47 to line 99, col 53 of module JournalBeforeEffect: 686
+<SignedBeforeEffect line 100, col 1 to line 100, col 18 of module JournalBeforeEffect>
+  line 101, col 3 to line 101, col 87 of module JournalBeforeEffect: 686
+  |line 101, col 23 to line 101, col 87 of module JournalBeforeEffect: 158
+  ||line 101, col 50 to line 101, col 87 of module JournalBeforeEffect: 186
+  |||line 101, col 50 to line 101, col 66 of module JournalBeforeEffect: 186
+  |||line 101, col 71 to line 101, col 87 of module JournalBeforeEffect: 158
+  ||line 101, col 32 to line 101, col 46 of module JournalBeforeEffect: 158
+  |line 101, col 12 to line 101, col 19 of module JournalBeforeEffect: 686
+<HashChainBeforeEffect line 104, col 1 to line 104, col 21 of module JournalBeforeEffect>
+  line 105, col 3 to line 106, col 56 of module JournalBeforeEffect: 686
+  |line 105, col 23 to line 106, col 56 of module JournalBeforeEffect: 158
+  ||line 106, col 5 to line 106, col 56 of module JournalBeforeEffect: 186
+  |||line 106, col 8 to line 106, col 56 of module JournalBeforeEffect: 186
+  ||||line 106, col 8 to line 106, col 24 of module JournalBeforeEffect: 186
+  ||||line 106, col 29 to line 106, col 56 of module JournalBeforeEffect: 158
+  |||||line 106, col 45 to line 106, col 56 of module JournalBeforeEffect: 186
+  ||||||line 102, col 17 to line 103, col 75 of module JournalBeforeEffect: 186
+  |||||||line 102, col 20 to line 102, col 36 of module JournalBeforeEffect: 186
+  |||||||line 103, col 20 to line 103, col 75 of module JournalBeforeEffect: 186
+  ||||||||line 103, col 20 to line 103, col 34 of module JournalBeforeEffect: 186
+  ||||||||line 103, col 38 to line 103, col 75 of module JournalBeforeEffect: 186
+  |||||||||line 103, col 41 to line 103, col 45 of module JournalBeforeEffect: 186
+  |||||||||line 103, col 59 to line 103, col 75 of module JournalBeforeEffect: 28
+  ||||||line 106, col 55 to line 106, col 55 of module JournalBeforeEffect: 186
+  |||||line 106, col 38 to line 106, col 41 of module JournalBeforeEffect: 158
+  ||line 105, col 32 to line 105, col 46 of module JournalBeforeEffect: 158
+  |line 105, col 12 to line 105, col 19 of module JournalBeforeEffect: 686
+End of statistics.
+1730 states generated, 686 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 15.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 6 and the 95th percentile is 4).
+Finished in 00s at (2026-11-25 00:49:12)
+elapsed_seconds=0.65 max_rss_kib=106180

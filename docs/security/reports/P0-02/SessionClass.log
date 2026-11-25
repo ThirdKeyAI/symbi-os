@@ -1,0 +1,119 @@
+TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+Running breadth-first search Model-Checking with fp 89 and seed -7462647838853319755 with 1 worker on 1 cores with 228MB heap and 64MB offheap memory [pid: 1962288] (Linux 7.0.0-43-generic amd64, Ubuntu 25.0.5.1 x86_64, MSBDiskFPSet, DiskStateQueue).
+Parsing file /tmp/symbi-p0-02-stage/formal/SessionClass.tla
+Parsing file /tmp/tmp.A0qWw2BI6Z/Naturals.tla
+Semantic processing of module Naturals
+Semantic processing of module SessionClass
+Starting... (2026-11-25 00:49:31)
+Computing initial states...
+Computed 2 initial states...
+Finished computing initial states: 3 distinct states generated at 2026-11-25 00:49:31.
+Model checking completed. No error has been found.
+  Estimates of the probability that TLC did not check all reachable states
+  because two distinct states had the same fingerprint:
+  calculated (optimistic):  val = 2.8E-12
+The coverage statistics at 2026-11-25 00:49:32
+<Init line 12, col 1 to line 12, col 4 of module SessionClass>: 3:3
+  line 12, col 12 to line 12, col 28 of module SessionClass: 1
+  line 12, col 33 to line 12, col 82 of module SessionClass: 3
+  line 13, col 12 to line 13, col 42 of module SessionClass: 3
+  line 14, col 12 to line 14, col 44 of module SessionClass: 3
+  line 15, col 12 to line 15, col 45 of module SessionClass: 3
+  line 16, col 12 to line 16, col 59 of module SessionClass: 3
+<Select line 18, col 1 to line 18, col 18 of module SessionClass>: 504:3240
+  line 19, col 6 to line 19, col 21 of module SessionClass: 151344
+  |line 19, col 6 to line 19, col 12 of module SessionClass: 148104
+  line 19, col 26 to line 19, col 63 of module SessionClass: 3240
+  line 20, col 6 to line 20, col 75 of module SessionClass: 3240
+  line 21, col 6 to line 21, col 41 of module SessionClass: 3240
+  line 22, col 6 to line 22, col 48 of module SessionClass: 3240
+<Gate line 29, col 1 to line 29, col 7 of module SessionClass>: 2088:3240
+  line 30, col 6 to line 30, col 24 of module SessionClass: 15582
+  |line 30, col 6 to line 30, col 12 of module SessionClass: 12342
+  line 31, col 6 to line 31, col 76 of module SessionClass: 3240
+  |line 31, col 14 to line 31, col 76 of module SessionClass: 3240
+  ||line 31, col 15 to line 31, col 18 of module SessionClass: 3240
+  ||line 31, col 27 to line 31, col 75 of module SessionClass: 3240
+  ||line 31, col 34 to line 31, col 75 of module SessionClass: 3240
+  |||line 31, col 37 to line 31, col 46 of module SessionClass: 3240
+  ||||line 25, col 3 to line 27, col 43 of module SessionClass: 3240
+  |||||line 25, col 6 to line 25, col 34 of module SessionClass: 3240
+  |||||line 26, col 6 to line 26, col 85 of module SessionClass: 1464
+  |||||line 27, col 6 to line 27, col 43 of module SessionClass: 732
+  ||||line 31, col 45 to line 31, col 45 of module SessionClass: 1464
+  line 32, col 6 to line 32, col 72 of module SessionClass: 3240
+<DispatchLocal line 41, col 1 to line 41, col 16 of module SessionClass>: 1224:2508
+  line 41, col 21 to line 41, col 39 of module SessionClass: 13962
+  |line 41, col 21 to line 41, col 29 of module SessionClass: 12342
+  line 35, col 6 to line 35, col 24 of module SessionClass: 7926
+  |line 35, col 6 to line 35, col 12 of module SessionClass: 6306
+  line 25, col 6 to line 25, col 34 of module SessionClass: 2508
+  |line 25, col 6 to line 25, col 10 of module SessionClass: 1620
+  line 26, col 6 to line 26, col 85 of module SessionClass: 3240
+  |line 26, col 7 to line 26, col 74 of module SessionClass: 1620
+  line 27, col 6 to line 27, col 43 of module SessionClass: 1620
+  line 36, col 20 to line 36, col 52 of module SessionClass: 1620
+  line 37, col 6 to line 37, col 40 of module SessionClass: 2508
+  line 38, col 6 to line 38, col 94 of module SessionClass: 2508
+  line 39, col 6 to line 39, col 66 of module SessionClass: 2508
+  line 41, col 53 to line 41, col 53 of module SessionClass: 6306
+<DispatchRemote line 42, col 1 to line 42, col 17 of module SessionClass>: 600:888
+  line 42, col 22 to line 42, col 41 of module SessionClass: 13230
+  |line 42, col 22 to line 42, col 30 of module SessionClass: 12342
+  line 35, col 6 to line 35, col 24 of module SessionClass: 6924
+  |line 35, col 6 to line 35, col 12 of module SessionClass: 6036
+  line 25, col 6 to line 25, col 34 of module SessionClass: 2508
+  |line 25, col 6 to line 25, col 10 of module SessionClass: 1620
+  line 26, col 6 to line 26, col 85 of module SessionClass: 1620
+  line 27, col 6 to line 27, col 43 of module SessionClass: 1620
+  line 36, col 20 to line 36, col 52 of module SessionClass: 1620
+  line 37, col 6 to line 37, col 40 of module SessionClass: 888
+  line 38, col 6 to line 38, col 94 of module SessionClass: 888
+  line 39, col 6 to line 39, col 66 of module SessionClass: 888
+  line 42, col 55 to line 42, col 55 of module SessionClass: 6036
+<DenyAtDispatch line 44, col 1 to line 44, col 17 of module SessionClass>: 0:732
+  line 45, col 6 to line 45, col 24 of module SessionClass: 13074
+  |line 45, col 6 to line 45, col 12 of module SessionClass: 12342
+  line 45, col 29 to line 45, col 39 of module SessionClass: 3972
+  |line 45, col 30 to line 45, col 39 of module SessionClass: 3240
+  ||line 25, col 3 to line 27, col 43 of module SessionClass: 3240
+  |||line 25, col 6 to line 25, col 34 of module SessionClass: 3240
+  |||line 26, col 6 to line 26, col 85 of module SessionClass: 1464
+  |||line 27, col 6 to line 27, col 43 of module SessionClass: 732
+  ||line 45, col 38 to line 45, col 38 of module SessionClass: 1464
+  line 46, col 6 to line 46, col 42 of module SessionClass: 732
+  line 47, col 6 to line 47, col 72 of module SessionClass: 732
+<Tighten line 49, col 1 to line 49, col 7 of module SessionClass>: 1752:2738
+  line 50, col 6 to line 50, col 34 of module SessionClass: 8909
+  |line 50, col 6 to line 50, col 10 of module SessionClass: 6171
+  line 50, col 39 to line 50, col 68 of module SessionClass: 2738
+  line 51, col 6 to line 51, col 29 of module SessionClass: 2738
+  line 51, col 34 to line 51, col 81 of module SessionClass: 2738
+<LowerClass line 53, col 1 to line 53, col 10 of module SessionClass>: 0:0
+  line 54, col 6 to line 54, col 74 of module SessionClass: 6171
+  line 55, col 6 to line 55, col 22 of module SessionClass: 0
+  line 55, col 27 to line 55, col 92 of module SessionClass: 0
+<Terminal line 57, col 1 to line 57, col 8 of module SessionClass>: 0:1296
+  line 57, col 33 to line 57, col 62 of module SessionClass: 11559
+  |line 57, col 33 to line 57, col 39 of module SessionClass: 8967
+  |line 57, col 45 to line 57, col 62 of module SessionClass: 8967
+  line 57, col 25 to line 57, col 29 of module SessionClass: 6171
+  line 58, col 16 to line 58, col 29 of module SessionClass: 1296
+<TypeOK line 63, col 1 to line 63, col 6 of module SessionClass>
+  line 64, col 3 to line 67, col 85 of module SessionClass: 6171
+<NoRemoteConfidential line 68, col 1 to line 68, col 20 of module SessionClass>
+  line 68, col 25 to line 69, col 65 of module SessionClass: 6171
+  |line 69, col 3 to line 69, col 65 of module SessionClass: 4860
+  ||line 69, col 3 to line 69, col 37 of module SessionClass: 4860
+  ||line 69, col 42 to line 69, col 65 of module SessionClass: 732
+  |line 68, col 38 to line 68, col 41 of module SessionClass: 6171
+<NoDowngrade line 70, col 1 to line 70, col 11 of module SessionClass>
+  line 70, col 16 to line 70, col 64 of module SessionClass: 6171
+  |line 70, col 16 to line 70, col 31 of module SessionClass: 6171
+  |line 70, col 36 to line 70, col 64 of module SessionClass: 3433
+End of statistics.
+14645 states generated, 6171 distinct states found, 0 states left on queue.
+The depth of the complete state graph search is 8.
+The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 24 and the 95th percentile is 2).
+Finished in 00s at (2026-11-25 00:49:32)
+elapsed_seconds=0.79 max_rss_kib=129236
