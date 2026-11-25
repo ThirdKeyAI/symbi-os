@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "qualified": false,
+  "build_completed": false,
+  "evidence_kind": "local bounded diagnostic build; not release provenance",
+  "source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+  "source_clean_before_and_after": true,
+  "cargo_lock_sha256": "d189b27d99bfc7fafeb8b6a37c0cfe36c1beb3472a6d5ae6f41dca8883fbb59d",
+  "cargo_toml_sha256": "4537b48bdf28aa3608aecff5dce7b775ef224e7bdebfc8dce4e308d58ca6f2e0",
+  "command": [
+    "cargo",
+    "+1.95.0",
+    "build",
+    "--offline",
+    "--locked",
+    "--release",
+    "--package",
+    "symbi",
+    "--bin",
+    "symbi",
+    "--features",
+    "vendored-openssl"
+  ],
+  "profile_overrides": {
+    "opt-level": 0,
+    "lto": false,
+    "codegen-units": 1,
+    "debug": 0,
+    "incremental": false,
+    "strip": "symbols"
+  },
+  "parallelism": {
+    "cargo_jobs": 1,
+    "test_threads": 1,
+    "rayon_threads": 1,
+    "cmake_build_parallel_level": 1,
+    "make_jobs": 1
+  },
+  "resource_accounting": {
+    "ActiveState": "failed",
+    "SubState": "failed",
+    "InvocationID": "799130ba7d054a56b61ac02d86a53435",
+    "RuntimeMaxUSec": "15min",
+    "Result": "timeout",
+    "ExecMainStartTimestamp": "Wed 2026-11-25 01:53:46 PST",
+    "ExecMainExitTimestamp": "Wed 2026-11-25 02:08:46 PST",
+    "ExecMainCode": "2",
+    "ExecMainStatus": "15",
+    "MemoryPeak": "807309312",
+    "CPUUsageNSec": "156519730000",
+    "CPUQuotaPerSecUSec": "250ms",
+    "MemoryHigh": "805306368",
+    "MemoryMax": "1073741824",
+    "MemorySwapMax": "0",
+    "TasksMax": "64",
+    "Nice": "10",
+    "CPUAffinity": "23"
+  },
+  "build_log": "P0-04-runtime-build-attempt.log",
+  "build_log_sha256": "c790b9dadc5b878fbab4aa27924813eb77778b2c5d975cc62f428ae7323644d4",
+  "last_compiling_crate": "sqlparser v0.59.0",
+  "artifact": null,
+  "limitations": [
+    "Ubuntu host, not a Fedora guest",
+    "No runtime or containment test executed",
+    "No signature or authenticated builder provenance",
+    "Optimization settings differ from upstream release builds",
+    "Timeout does not establish a compiler failure or OOM"
+  ]
+}
