@@ -59,7 +59,11 @@ Use the **tla-check** and **maintain-formal-verification** skills from
 version **0.5.3**, commit `bb984f2e4427d3f5515cc56d5a54c6ce8ce26d1e`.
 Their current instructions define checker, fault and drift commands; do not
 substitute a different version silently. The repository CI invokes that pinned
-action. A checksum-pinned TLC 1.7.4 jar (internal banner 2.19) is used.
+action in both GitHub and Gitea workflows. GitHub run
+[45664230005](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45664230005)
+passed all five models (7,315 distinct states) and all eighteen faults at
+`789efb6e49da7ce3dc3b17ad20e2b9fe6d003df0`; its invocation is now covered by
+this drift record. A checksum-pinned TLC 1.7.4 jar (internal banner 2.19) is used.
 
 From the repository root, prepare this repository's resource limits and jar:
 
@@ -166,3 +170,4 @@ covered:
   - scripts/formal-java.sh f3d1483501e0
   - scripts/bootstrap-formal.sh 44016df21782
   - .gitea/workflows/ci.yml c9bf9c618d8d
+  - .github/workflows/ci.yml a34e0b2476e5
