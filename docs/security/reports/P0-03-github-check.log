@@ -1,0 +1,259 @@
+2026-11-25T17:31:49.8068819Z ##[group]Run bash scripts/check.sh
+2026-11-25T17:31:49.8069087Z [36;1mbash scripts/check.sh[0m
+2026-11-25T17:31:49.8102893Z shell: /usr/bin/bash -e {0}
+2026-11-25T17:31:49.8103119Z ##[endgroup]
+2026-11-25T17:31:49.9058451Z image/vendor/omarchy/LICENSE: OK
+2026-11-25T17:31:49.9059667Z image/vendor/omarchy/config/hypr/input.conf: OK
+2026-11-25T17:31:49.9060429Z image/vendor/omarchy/config/walker/config.toml: OK
+2026-11-25T17:31:49.9060867Z image/vendor/omarchy/config/waybar/config.jsonc: OK
+2026-11-25T17:31:49.9061247Z image/vendor/ombuntu/LICENSE: OK
+2026-11-25T17:31:49.9061666Z image/vendor/ombuntu/privacy/chromium-policies.json: OK
+2026-11-25T17:31:49.9062186Z image/vendor/ombuntu/privacy/firefox-policies.json: OK
+2026-11-25T17:31:49.9685542Z test_existing_file_symlink_is_preserved (test_image.Defaults.test_existing_file_symlink_is_preserved) ... ok
+2026-11-25T17:31:49.9764641Z test_existing_symlink_is_neither_replaced_nor_followed (test_image.Defaults.test_existing_symlink_is_neither_replaced_nor_followed) ... ok
+2026-11-25T17:31:50.0170137Z test_first_login_and_repeat_preserve_user_edits (test_image.Defaults.test_first_login_and_repeat_preserve_user_edits) ... ok
+2026-11-25T17:31:50.0194160Z test_root_symlink_is_rejected (test_image.Defaults.test_root_symlink_is_rejected) ... ok
+2026-11-25T17:31:50.0229003Z test_source_symlinks_are_rejected (test_image.Defaults.test_source_symlinks_are_rejected) ... ok
+2026-11-25T17:31:50.0229903Z test_portal_and_connectivity_defaults (test_image.PrivacyDefaults.test_portal_and_connectivity_defaults) ... ok
+2026-11-25T17:31:50.0234018Z test_shipped_config_does_not_invoke_omarchy_installers_or_plugins (test_image.PrivacyDefaults.test_shipped_config_does_not_invoke_omarchy_installers_or_plugins) ... ok
+2026-11-25T17:31:50.0235334Z test_telemetry_off_without_turning_off_browser_security_updates (test_image.PrivacyDefaults.test_telemetry_off_without_turning_off_browser_security_updates) ... ok
+2026-11-25T17:31:50.0252154Z test_changed_or_outside_trust_key_is_rejected (test_image.RecipePins.test_changed_or_outside_trust_key_is_rejected) ... ok
+2026-11-25T17:31:50.0263755Z test_committed_configuration_has_no_fabricated_base (test_image.RecipePins.test_committed_configuration_has_no_fabricated_base) ... ok
+2026-11-25T17:31:50.0273614Z test_mutable_or_malformed_base_is_rejected (test_image.RecipePins.test_mutable_or_malformed_base_is_rejected) ... ok
+2026-11-25T17:31:50.0283592Z test_recipe_uses_digest_and_local_public_key (test_image.RecipePins.test_recipe_uses_digest_and_local_public_key) ... ok
+2026-11-25T17:31:50.0294088Z test_symlinked_trust_directory_cannot_escape (test_image.RecipePins.test_symlinked_trust_directory_cannot_escape) ... ok
+2026-11-25T17:31:50.0317013Z test_bad_repository_scopes_are_refused (test_signing.SigningPolicy.test_bad_repository_scopes_are_refused) ... ok
+2026-11-25T17:31:50.0330770Z test_changed_key_or_key_outside_trust_directory_is_refused (test_signing.SigningPolicy.test_changed_key_or_key_outside_trust_directory_is_refused) ... ok
+2026-11-25T17:31:50.0347325Z test_committed_trust_refuses_partial_configuration (test_signing.SigningPolicy.test_committed_trust_refuses_partial_configuration) ... ok
+2026-11-25T17:31:50.0361693Z test_default_reject_and_explicit_key_repository_bindings (test_signing.SigningPolicy.test_default_reject_and_explicit_key_repository_bindings) ... ok
+2026-11-25T17:31:50.0375030Z test_missing_variant_and_base_release_collision_fail (test_signing.SigningPolicy.test_missing_variant_and_base_release_collision_fail) ... ok
+2026-11-25T17:31:50.0393951Z test_only_approved_digest_rebases_are_emitted (test_signing.SigningPolicy.test_only_approved_digest_rebases_are_emitted) ... ok
+2026-11-25T17:31:50.0413236Z test_policy_bundle_cannot_overwrite_existing_output (test_signing.SigningPolicy.test_policy_bundle_cannot_overwrite_existing_output) ... ok
+2026-11-25T17:31:50.0429721Z test_private_key_material_is_never_embedded (test_signing.SigningPolicy.test_private_key_material_is_never_embedded) ... ok
+2026-11-25T17:31:50.0443634Z test_symlinked_trust_directory_cannot_escape (test_signing.SigningPolicy.test_symlinked_trust_directory_cannot_escape) ... ok
+2026-11-25T17:31:50.0444220Z
+2026-11-25T17:31:50.0444410Z ----------------------------------------------------------------------
+2026-11-25T17:31:50.0444804Z Ran 22 tests in 0.085s
+2026-11-25T17:31:50.0444927Z
+2026-11-25T17:31:50.0445030Z OK
+2026-11-25T17:31:50.1554791Z     Checking symbi-common v0.1.0 (/home/runner/work/symbi-os/symbi-os/crates/symbi-common)
+2026-11-25T17:31:50.2358541Z     Finished `dev` profile [unoptimized] target(s) in 0.11s
+2026-11-25T17:31:50.2779110Z    Compiling symbi-common v0.1.0 (/home/runner/work/symbi-os/symbi-os/crates/symbi-common)
+2026-11-25T17:31:50.6813811Z     Finished `test` profile [unoptimized] target(s) in 0.43s
+2026-11-25T17:31:50.6818452Z      Running unittests src/lib.rs (target/debug/deps/symbi_common-a4e39341df864557)
+2026-11-25T17:31:50.6829032Z
+2026-11-25T17:31:50.6829308Z running 0 tests
+2026-11-25T17:31:50.6829483Z
+2026-11-25T17:31:50.6829854Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-25T17:31:50.6830254Z
+2026-11-25T17:31:50.6830836Z      Running tests/policy.rs (target/debug/deps/policy-aa442b414118508b)
+2026-11-25T17:31:50.6839460Z
+2026-11-25T17:31:50.6839783Z running 6 tests
+2026-11-25T17:31:50.7797195Z test base_policy_denies_every_session_class_and_model_location ... ok
+2026-11-25T17:31:50.7931917Z test base_policy_validates_without_warnings ... ok
+2026-11-25T17:31:50.8080414Z test schema_accepts_documented_model_attributes_and_session_context ... ok
+2026-11-25T17:31:50.8228858Z test schema_rejects_mistyped_session_context ... ok
+2026-11-25T17:31:50.8378056Z test schema_rejects_undeclared_actions ... ok
+2026-11-25T17:31:50.8553629Z test test_only_permit_proves_authorizer_is_not_always_denying ... ok
+2026-11-25T17:31:50.8554007Z
+2026-11-25T17:31:50.8554211Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+2026-11-25T17:31:50.8554636Z
+2026-11-25T17:31:50.8555230Z    Doc-tests symbi_common
+2026-11-25T17:31:50.8684101Z
+2026-11-25T17:31:50.8684615Z running 0 tests
+2026-11-25T17:31:50.8684815Z
+2026-11-25T17:31:50.8685158Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-11-25T17:31:50.8685438Z
+2026-11-25T17:31:50.8867218Z  Documenting symbi-common v0.1.0 (/home/runner/work/symbi-os/symbi-os/crates/symbi-common)
+2026-11-25T17:31:51.1047076Z     Finished `dev` profile [unoptimized] target(s) in 0.22s
+2026-11-25T17:31:51.1061523Z    Generated /home/runner/work/symbi-os/symbi-os/target/doc/symbi_common/index.html
+2026-11-25T17:31:52.8550155Z advisories ok, bans ok, licenses ok, sources ok
+2026-11-25T17:31:52.8879857Z Vetting Succeeded (because you have no third-party dependencies)
+2026-11-25T17:31:52.8932533Z ##[group]Run bash -n scripts/bootstrap-formal.sh scripts/formal-java.sh
+2026-11-25T17:31:52.8932989Z [36;1mbash -n scripts/bootstrap-formal.sh scripts/formal-java.sh[0m
+2026-11-25T17:31:52.8933534Z [36;1mbash scripts/bootstrap-formal.sh[0m
+2026-11-25T17:31:52.8933978Z [36;1mprintf 'faults=%s\n' "$(awk 'NF && $1 !~ /^#/ { printf "formal/%s.tla:%s=%s ", $1, $2, $3 }' formal/faults.tsv)" >> "$GITHUB_OUTPUT"[0m
+2026-11-25T17:31:52.8964058Z shell: /usr/bin/bash -e {0}
+2026-11-25T17:31:52.8964290Z ##[endgroup]
+2026-11-25T17:31:52.9277743Z   % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+2026-11-25T17:31:52.9278337Z                                  Dload  Upload  Total   Spent   Left   Speed
+2026-11-25T17:31:52.9278705Z
+2026-11-25T17:31:53.1052540Z   0      0   0      0   0      0      0      0                              0
+2026-11-25T17:31:53.1053081Z   0      0   0      0   0      0      0      0                              0
+2026-11-25T17:31:53.1053730Z   0      0   0      0   0      0      0      0                              0
+2026-11-25T17:31:53.1053995Z
+2026-11-25T17:31:53.1839203Z   0      0   0      0   0      0      0      0                              0
+2026-11-25T17:31:53.1839810Z 100  2.16M 100  2.16M   0      0  8.44M      0                              0
+2026-11-25T17:31:53.1840316Z 100  2.16M 100  2.16M   0      0  8.44M      0                              0
+2026-11-25T17:31:53.1840784Z 100  2.16M 100  2.16M   0      0  8.44M      0                              0
+2026-11-25T17:31:53.1981703Z Verified TLC 1.7.4: /home/runner/work/symbi-os/symbi-os/.tools/tla2tools-1.7.4.jar
+2026-11-25T17:31:53.2122786Z ##[group]Run jaschadub/skill-formal-proofs@bb984f2e4427d3f5515cc56d5a54c6ce8ce26d1e
+2026-11-25T17:31:53.2123137Z with:
+2026-11-25T17:31:53.2123904Z   specs: formal/GrantLifecycle.tla formal/TrustedInput.tla formal/Freeze.tla formal/JournalBeforeEffect.tla formal/SessionClass.tla
+2026-11-25T17:31:53.2127477Z   faults: formal/GrantLifecycle.tla:nonhuman-create=HumanAuthority formal/GrantLifecycle.tla:nonhuman-widen=HumanAuthority formal/GrantLifecycle.tla:nonhuman-extend=HumanAuthority formal/GrantLifecycle.tla:early-revoke-ack=NoCompletionAfterRevoke formal/GrantLifecycle.tla:stale-grant-cache=NoCompletionAfterRevoke formal/TrustedInput.tla:accept-synthetic=PhysicalReceipts formal/TrustedInput.tla:trust-ui-surface=TrustedSurfaceOnly formal/TrustedInput.tla:accept-stale-card=BoundReceiptUses formal/TrustedInput.tla:replay-receipt=SingleUse formal/Freeze.tla:early-freeze-ack=NoCompletionWhileFrozen formal/Freeze.tla:dispatch-while-frozen=NoDispatchWhileFrozen formal/JournalBeforeEffect.tla:release-before-sync=DurableBeforeEffect formal/JournalBeforeEffect.tla:skip-signature=SignedBeforeEffect formal/JournalBeforeEffect.tla:broken-hash-chain=HashChainBeforeEffect formal/SessionClass.tla:allow-remote-confidential=NoRemoteConfidential formal/SessionClass.tla:trust-caller-location=NoRemoteConfidential formal/SessionClass.tla:stale-class-decision=NoRemoteConfidential formal/SessionClass.tla:declassify-confidential=NoDowngrade
+2026-11-25T17:31:53.2130846Z env:
+2026-11-25T17:31:53.2131081Z   JAVA: /home/runner/work/symbi-os/symbi-os/scripts/formal-java.sh
+2026-11-25T17:31:53.2131460Z   TLA2TOOLS: /home/runner/work/symbi-os/symbi-os/.tools/tla2tools-1.7.4.jar
+2026-11-25T17:31:53.2131775Z ##[endgroup]
+2026-11-25T17:31:53.2176204Z ##[start-action display=Verified code matches its records;id=__jaschadub_skill-formal-proofs.__run]
+2026-11-25T17:31:53.2197703Z ##[group]Run sh "$GITHUB_ACTION_PATH/skills/maintain-formal-verification/drift.sh"
+2026-11-25T17:31:53.2198169Z [36;1msh "$GITHUB_ACTION_PATH/skills/maintain-formal-verification/drift.sh"[0m
+2026-11-25T17:31:53.2239740Z shell: /usr/bin/sh -e {0}
+2026-11-25T17:31:53.2239955Z env:
+2026-11-25T17:31:53.2240196Z   JAVA: /home/runner/work/symbi-os/symbi-os/scripts/formal-java.sh
+2026-11-25T17:31:53.2240734Z   TLA2TOOLS: /home/runner/work/symbi-os/symbi-os/.tools/tla2tools-1.7.4.jar
+2026-11-25T17:31:53.2241033Z ##[endgroup]
+2026-11-25T17:31:53.3880721Z formal/VERIFY.md: in sync
+2026-11-25T17:31:53.3908889Z ##[end-action id=__jaschadub_skill-formal-proofs.__run;outcome=success;conclusion=success;duration_ms=173]
+2026-11-25T17:31:53.3912702Z ##[start-action display=Models hold;id=__jaschadub_skill-formal-proofs.__run_2]
+2026-11-25T17:31:53.3941554Z ##[group]Run for spec in $SPECS; do sh "$GITHUB_ACTION_PATH/skills/tla-check/check.sh" "$spec"; done
+2026-11-25T17:31:53.3942047Z [36;1mfor spec in $SPECS; do sh "$GITHUB_ACTION_PATH/skills/tla-check/check.sh" "$spec"; done[0m
+2026-11-25T17:31:53.3982848Z shell: /usr/bin/sh -e {0}
+2026-11-25T17:31:53.3983079Z env:
+2026-11-25T17:31:53.3983430Z   JAVA: /home/runner/work/symbi-os/symbi-os/scripts/formal-java.sh
+2026-11-25T17:31:53.3983806Z   TLA2TOOLS: /home/runner/work/symbi-os/symbi-os/.tools/tla2tools-1.7.4.jar
+2026-11-25T17:31:53.3984378Z   SPECS: formal/GrantLifecycle.tla formal/TrustedInput.tla formal/Freeze.tla formal/JournalBeforeEffect.tla formal/SessionClass.tla
+2026-11-25T17:31:53.3984839Z ##[endgroup]
+2026-11-25T17:31:53.9864259Z TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+2026-11-25T17:31:54.5207781Z Running breadth-first search Model-Checking with fp 130 and seed -2255567846481643988 with 1 worker on 1 cores with 228MB heap and 64MB offheap memory [pid: 10586] (Linux 7.0.0-1020-azure amd64, Eclipse Adoptium 25.0.5 x86_64, MSBDiskFPSet, DiskStateQueue).
+2026-11-25T17:31:54.7130117Z Parsing file /home/runner/work/symbi-os/symbi-os/formal/GrantLifecycle.tla
+2026-11-25T17:31:54.7308435Z Parsing file /tmp/tmp.luCCNLuPIY/Naturals.tla
+2026-11-25T17:31:54.7332584Z Parsing file /tmp/tmp.luCCNLuPIY/FiniteSets.tla
+2026-11-25T17:31:54.7352476Z Parsing file /tmp/tmp.luCCNLuPIY/Sequences.tla
+2026-11-25T17:31:54.7380716Z Semantic processing of module Naturals
+2026-11-25T17:31:54.7479238Z Semantic processing of module Sequences
+2026-11-25T17:31:54.7527684Z Semantic processing of module FiniteSets
+2026-11-25T17:31:54.7542371Z Semantic processing of module GrantLifecycle
+2026-11-25T17:31:54.7591400Z Starting... (2026-11-25 17:31:54)
+2026-11-25T17:31:55.1070553Z Computing initial states...
+2026-11-25T17:31:55.1135585Z Finished computing initial states: 1 distinct state generated at 2026-11-25 17:31:55.
+2026-11-25T17:31:55.1565449Z Model checking completed. No error has been found.
+2026-11-25T17:31:55.1565866Z   Estimates of the probability that TLC did not check all reachable states
+2026-11-25T17:31:55.1566233Z   because two distinct states had the same fingerprint:
+2026-11-25T17:31:55.1566516Z   calculated (optimistic):  val = 3.1E-15
+2026-11-25T17:31:55.1584459Z 478 states generated, 229 distinct states found, 0 states left on queue.
+2026-11-25T17:31:55.1585023Z The depth of the complete state graph search is 12.
+2026-11-25T17:31:55.1585693Z The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 5 and the 95th percentile is 3).
+2026-11-25T17:31:55.1596079Z Finished in 01s at (2026-11-25 17:31:55)
+2026-11-25T17:31:55.6011265Z TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+2026-11-25T17:31:55.7259620Z Running breadth-first search Model-Checking with fp 19 and seed 7661026552152613077 with 1 worker on 1 cores with 228MB heap and 64MB offheap memory [pid: 10630] (Linux 7.0.0-1020-azure amd64, Eclipse Adoptium 25.0.5 x86_64, MSBDiskFPSet, DiskStateQueue).
+2026-11-25T17:31:55.7604688Z Parsing file /home/runner/work/symbi-os/symbi-os/formal/TrustedInput.tla
+2026-11-25T17:31:55.7759439Z Parsing file /tmp/tmp.fjNtQECPgQ/Naturals.tla
+2026-11-25T17:31:55.7783214Z Semantic processing of module Naturals
+2026-11-25T17:31:55.7879292Z Semantic processing of module TrustedInput
+2026-11-25T17:31:55.7936701Z Starting... (2026-11-25 17:31:55)
+2026-11-25T17:31:55.9408268Z Computing initial states...
+2026-11-25T17:31:55.9468148Z Finished computing initial states: 1 distinct state generated at 2026-11-25 17:31:55.
+2026-11-25T17:31:55.9635944Z Model checking completed. No error has been found.
+2026-11-25T17:31:55.9636609Z   Estimates of the probability that TLC did not check all reachable states
+2026-11-25T17:31:55.9664264Z   because two distinct states had the same fingerprint:
+2026-11-25T17:31:55.9680077Z   calculated (optimistic):  val = 3.2E-16
+2026-11-25T17:31:55.9680456Z 171 states generated, 48 distinct states found, 0 states left on queue.
+2026-11-25T17:31:55.9680790Z The depth of the complete state graph search is 8.
+2026-11-25T17:31:55.9681213Z The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 4 and the 95th percentile is 3).
+2026-11-25T17:31:55.9681596Z Finished in 00s at (2026-11-25 17:31:55)
+2026-11-25T17:31:56.4046123Z TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+2026-11-25T17:31:56.5307691Z Running breadth-first search Model-Checking with fp 0 and seed -3858383013023026792 with 1 worker on 1 cores with 228MB heap and 64MB offheap memory [pid: 10673] (Linux 7.0.0-1020-azure amd64, Eclipse Adoptium 25.0.5 x86_64, MSBDiskFPSet, DiskStateQueue).
+2026-11-25T17:31:56.5626977Z Parsing file /home/runner/work/symbi-os/symbi-os/formal/Freeze.tla
+2026-11-25T17:31:56.5775906Z Parsing file /tmp/tmp.QBcgkNsXa8/Naturals.tla
+2026-11-25T17:31:56.5814364Z Semantic processing of module Naturals
+2026-11-25T17:31:56.5869876Z Semantic processing of module Freeze
+2026-11-25T17:31:56.5908697Z Starting... (2026-11-25 17:31:56)
+2026-11-25T17:31:56.7090452Z Computing initial states...
+2026-11-25T17:31:56.7154388Z Finished computing initial states: 1 distinct state generated at 2026-11-25 17:31:56.
+2026-11-25T17:31:56.7401055Z Model checking completed. No error has been found.
+2026-11-25T17:31:56.7401624Z   Estimates of the probability that TLC did not check all reachable states
+2026-11-25T17:31:56.7402395Z   because two distinct states had the same fingerprint:
+2026-11-25T17:31:56.7402681Z   calculated (optimistic):  val = 1.1E-15
+2026-11-25T17:31:56.7402996Z 297 states generated, 181 distinct states found, 0 states left on queue.
+2026-11-25T17:31:56.7414312Z The depth of the complete state graph search is 13.
+2026-11-25T17:31:56.7415197Z The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 3 and the 95th percentile is 2).
+2026-11-25T17:31:56.7425032Z Finished in 00s at (2026-11-25 17:31:56)
+2026-11-25T17:31:57.1743056Z TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+2026-11-25T17:31:57.3020377Z Running breadth-first search Model-Checking with fp 68 and seed -7842849270000095782 with 1 worker on 1 cores with 228MB heap and 64MB offheap memory [pid: 10716] (Linux 7.0.0-1020-azure amd64, Eclipse Adoptium 25.0.5 x86_64, MSBDiskFPSet, DiskStateQueue).
+2026-11-25T17:31:57.3403155Z Parsing file /home/runner/work/symbi-os/symbi-os/formal/JournalBeforeEffect.tla
+2026-11-25T17:31:57.3636377Z Parsing file /tmp/tmp.SX8u3ef28v/Naturals.tla
+2026-11-25T17:31:57.3662897Z Parsing file /tmp/tmp.SX8u3ef28v/Sequences.tla
+2026-11-25T17:31:57.3696906Z Parsing file /tmp/tmp.SX8u3ef28v/FiniteSets.tla
+2026-11-25T17:31:57.3712525Z Semantic processing of module Naturals
+2026-11-25T17:31:57.3810432Z Semantic processing of module Sequences
+2026-11-25T17:31:57.3857609Z Semantic processing of module FiniteSets
+2026-11-25T17:31:57.3872555Z Semantic processing of module JournalBeforeEffect
+2026-11-25T17:31:57.3962307Z Starting... (2026-11-25 17:31:57)
+2026-11-25T17:31:57.5495235Z Computing initial states...
+2026-11-25T17:31:57.5578044Z Finished computing initial states: 1 distinct state generated at 2026-11-25 17:31:57.
+2026-11-25T17:31:57.6636256Z Model checking completed. No error has been found.
+2026-11-25T17:31:57.6637741Z   Estimates of the probability that TLC did not check all reachable states
+2026-11-25T17:31:57.6638709Z   because two distinct states had the same fingerprint:
+2026-11-25T17:31:57.6639405Z   calculated (optimistic):  val = 3.9E-14
+2026-11-25T17:31:57.6640132Z 1730 states generated, 686 distinct states found, 0 states left on queue.
+2026-11-25T17:31:57.6640855Z The depth of the complete state graph search is 15.
+2026-11-25T17:31:57.6643808Z The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 6 and the 95th percentile is 4).
+2026-11-25T17:31:57.6661626Z Finished in 00s at (2026-11-25 17:31:57)
+2026-11-25T17:31:58.1095258Z TLC2 Version 2.19 of 08 August 2024 (rev: 5a47802)
+2026-11-25T17:31:58.2282797Z Running breadth-first search Model-Checking with fp 33 and seed -4465458692221974313 with 1 worker on 1 cores with 228MB heap and 64MB offheap memory [pid: 10759] (Linux 7.0.0-1020-azure amd64, Eclipse Adoptium 25.0.5 x86_64, MSBDiskFPSet, DiskStateQueue).
+2026-11-25T17:31:58.2670521Z Parsing file /home/runner/work/symbi-os/symbi-os/formal/SessionClass.tla
+2026-11-25T17:31:58.2831215Z Parsing file /tmp/tmp.hNxTnaUs7q/Naturals.tla
+2026-11-25T17:31:58.2846146Z Semantic processing of module Naturals
+2026-11-25T17:31:58.2919357Z Semantic processing of module SessionClass
+2026-11-25T17:31:58.2972918Z Starting... (2026-11-25 17:31:58)
+2026-11-25T17:31:58.4394908Z Computing initial states...
+2026-11-25T17:31:58.4429638Z Computed 2 initial states...
+2026-11-25T17:31:58.4450523Z Finished computing initial states: 3 distinct states generated at 2026-11-25 17:31:58.
+2026-11-25T17:31:58.7265629Z Model checking completed. No error has been found.
+2026-11-25T17:31:58.7266524Z   Estimates of the probability that TLC did not check all reachable states
+2026-11-25T17:31:58.7267258Z   because two distinct states had the same fingerprint:
+2026-11-25T17:31:58.7267861Z   calculated (optimistic):  val = 2.8E-12
+2026-11-25T17:31:58.7268614Z 14645 states generated, 6171 distinct states found, 0 states left on queue.
+2026-11-25T17:31:58.7269304Z The depth of the complete state graph search is 8.
+2026-11-25T17:31:58.7274662Z The average outdegree of the complete state graph is 1 (minimum is 0, the maximum 24 and the 95th percentile is 2).
+2026-11-25T17:31:58.7291804Z Finished in 00s at (2026-11-25 17:31:58)
+2026-11-25T17:31:59.0479628Z ##[end-action id=__jaschadub_skill-formal-proofs.__run_2;outcome=success;conclusion=success;duration_ms=5656]
+2026-11-25T17:31:59.0484205Z ##[start-action display=Each fault still breaks its rule;id=__jaschadub_skill-formal-proofs.__run_3]
+2026-11-25T17:31:59.0508755Z ##[group]Run for item in $FAULTS; do
+2026-11-25T17:31:59.0509014Z [36;1mfor item in $FAULTS; do[0m
+2026-11-25T17:31:59.0509224Z [36;1m  rest=${item#*:}[0m
+2026-11-25T17:31:59.0509587Z [36;1m  sh "$GITHUB_ACTION_PATH/skills/tla-check/fault.sh" "${item%%:*}" "${rest%%=*}" "${rest#*=}"[0m
+2026-11-25T17:31:59.0509950Z [36;1mdone[0m
+2026-11-25T17:31:59.0551647Z shell: /usr/bin/sh -e {0}
+2026-11-25T17:31:59.0551857Z env:
+2026-11-25T17:31:59.0552105Z   JAVA: /home/runner/work/symbi-os/symbi-os/scripts/formal-java.sh
+2026-11-25T17:31:59.0552494Z   TLA2TOOLS: /home/runner/work/symbi-os/symbi-os/.tools/tla2tools-1.7.4.jar
+2026-11-25T17:31:59.0556047Z   FAULTS: formal/GrantLifecycle.tla:nonhuman-create=HumanAuthority formal/GrantLifecycle.tla:nonhuman-widen=HumanAuthority formal/GrantLifecycle.tla:nonhuman-extend=HumanAuthority formal/GrantLifecycle.tla:early-revoke-ack=NoCompletionAfterRevoke formal/GrantLifecycle.tla:stale-grant-cache=NoCompletionAfterRevoke formal/TrustedInput.tla:accept-synthetic=PhysicalReceipts formal/TrustedInput.tla:trust-ui-surface=TrustedSurfaceOnly formal/TrustedInput.tla:accept-stale-card=BoundReceiptUses formal/TrustedInput.tla:replay-receipt=SingleUse formal/Freeze.tla:early-freeze-ack=NoCompletionWhileFrozen formal/Freeze.tla:dispatch-while-frozen=NoDispatchWhileFrozen formal/JournalBeforeEffect.tla:release-before-sync=DurableBeforeEffect formal/JournalBeforeEffect.tla:skip-signature=SignedBeforeEffect formal/JournalBeforeEffect.tla:broken-hash-chain=HashChainBeforeEffect formal/SessionClass.tla:allow-remote-confidential=NoRemoteConfidential formal/SessionClass.tla:trust-caller-location=NoRemoteConfidential formal/SessionClass.tla:stale-class-decision=NoRemoteConfidential formal/SessionClass.tla:declassify-confidential=NoDowngrade
+2026-11-25T17:31:59.0559387Z ##[endgroup]
+2026-11-25T17:31:59.9187849Z ok: fault nonhuman-create breaks HumanAuthority
+2026-11-25T17:32:00.7325790Z ok: fault nonhuman-widen breaks HumanAuthority
+2026-11-25T17:32:01.5291238Z ok: fault nonhuman-extend breaks HumanAuthority
+2026-11-25T17:32:02.3300702Z ok: fault early-revoke-ack breaks NoCompletionAfterRevoke
+2026-11-25T17:32:03.1967398Z ok: fault stale-grant-cache breaks NoCompletionAfterRevoke
+2026-11-25T17:32:04.1286632Z ok: fault accept-synthetic breaks PhysicalReceipts
+2026-11-25T17:32:04.9448563Z ok: fault trust-ui-surface breaks TrustedSurfaceOnly
+2026-11-25T17:32:05.8439834Z ok: fault accept-stale-card breaks BoundReceiptUses
+2026-11-25T17:32:06.6557484Z ok: fault replay-receipt breaks SingleUse
+2026-11-25T17:32:07.4978942Z ok: fault early-freeze-ack breaks NoCompletionWhileFrozen
+2026-11-25T17:32:08.4024254Z ok: fault dispatch-while-frozen breaks NoDispatchWhileFrozen
+2026-11-25T17:32:09.2553695Z ok: fault release-before-sync breaks DurableBeforeEffect
+2026-11-25T17:32:10.0954636Z ok: fault skip-signature breaks SignedBeforeEffect
+2026-11-25T17:32:10.9188444Z ok: fault broken-hash-chain breaks HashChainBeforeEffect
+2026-11-25T17:32:11.7487014Z ok: fault allow-remote-confidential breaks NoRemoteConfidential
+2026-11-25T17:32:12.6418678Z ok: fault trust-caller-location breaks NoRemoteConfidential
+2026-11-25T17:32:13.5057741Z ok: fault stale-class-decision breaks NoRemoteConfidential
+2026-11-25T17:32:14.3061053Z ok: fault declassify-confidential breaks NoDowngrade
+2026-11-25T17:32:14.3081222Z ##[end-action id=__jaschadub_skill-formal-proofs.__run_3;outcome=success;conclusion=success;duration_ms=15259]
+2026-11-25T17:32:14.3086697Z ##[start-action display=Models follow the logs of real runs;id=__jaschadub_skill-formal-proofs.__run_4]
+2026-11-25T17:32:14.3094048Z ##[end-action id=__jaschadub_skill-formal-proofs.__run_4;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-11-25T17:32:14.3190975Z Post job cleanup.
+2026-11-25T17:32:14.3897912Z [command]/usr/bin/git version
+2026-11-25T17:32:14.3940738Z git version 2.56.1
+2026-11-25T17:32:14.3975750Z Temporarily overriding HOME='/home/runner/work/_temp/400026ae-87fd-4059-9bf0-c039e2ca464d' before making global git config changes
+2026-11-25T17:32:14.3976709Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-25T17:32:14.3980483Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/symbi-os/symbi-os
+2026-11-25T17:32:14.4021912Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-25T17:32:14.4070100Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-25T17:32:14.4337252Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-25T17:32:14.4371721Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-25T17:32:14.4646615Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-25T17:32:14.4710517Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-25T17:32:14.5109854Z Cleaning up orphan processes
+2026-11-25T17:32:14.5417974Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+

@@ -1,0 +1,52 @@
+{
+  "observed_at_utc": "2026-11-25T17:34:02.137354+00:00",
+  "qualified": false,
+  "scope": "Interim Ubuntu builder observation; not final tests or Fedora qualification",
+  "host": {
+    "ActiveState": "active",
+    "SubState": "running",
+    "RuntimeMaxUSec": "12h",
+    "MainPID": "2188835",
+    "Result": "success",
+    "MemoryCurrent": "726990848",
+    "MemoryPeak": "779354112",
+    "CPUQuotaPerSecUSec": "250ms",
+    "MemoryMax": "1073741824",
+    "MemorySwapMax": "0",
+    "TasksMax": "32"
+  },
+  "guest": {
+    "state": {
+      "RuntimeMaxUSec": "8h",
+      "MainPID": "963",
+      "Result": "success",
+      "ExecMainStatus": "0",
+      "CPUUsageNSec": "6089949135000",
+      "ActiveState": "active",
+      "SubState": "running"
+    },
+    "source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+    "source_clean": true,
+    "completion_lines": [
+      "    Finished `dev` profile [unoptimized] target(s) in 105m 16s"
+    ],
+    "tail": [
+      "   Compiling symbi-approval-relay v0.1.1 (/home/builder/work/source/crates/approval-relay)",
+      "   Compiling symbi-shell v3.0.0 (/home/builder/work/source/crates/symbi-shell)",
+      "   Compiling repl-cli v3.0.0 (/home/builder/work/source/crates/repl-cli)",
+      "   Compiling repl-lsp v3.0.0 (/home/builder/work/source/crates/repl-lsp)",
+      "   Compiling symbi-session v2.0.1 (/home/builder/work/source/crates/symbi-session)",
+      "   Compiling symbi v3.0.0 (/home/builder/work/source)"
+    ],
+    "all_workspace_checks_marker": false,
+    "largest_processes": [
+      "    PID    PPID COMMAND           RSS     ELAPSED",
+      "  14497   10400 rustc           394752      25:35",
+      "    357       1 multipathd      27300    05:11:54",
+      "  14671   14670 python3         12660       00:01",
+      "  14573     838 sshd            10216       00:04",
+      "      1       0 systemd          8380    05:12:03"
+    ]
+  },
+  "mutated_builder": false
+}
