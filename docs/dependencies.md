@@ -136,3 +136,21 @@ before execution. The initial key trust remains the pinned publisher HTTPS
 source, as documented in the earlier verification record. This adds no Cargo
 crate, no release credential and no dependency-audit exemption. Tests use only
 upstream fixture/disposable keys; retained failure logs omit private test PEMs.
+
+## P0-05 hosted fixture inputs
+
+`image/container/hosted/inputs.lock.json` binds the passing runtime development
+artifact, executable hashes and exact fixture-only upstream commit. The runtime
+and Cargo.lock are unchanged. gVisor 20261123.0 uses its authenticated Debian
+package (SHA-256 `3b78fe64d212d0d1a753660b0a9e95488e5e264d36dce04c36e7245b81151e18`),
+including all sidecar executables. Retained signed repository metadata and the
+pinned full publisher key authenticate the package before execution. Ubuntu Base
+24.04.5's signed checksum authenticates the Python/Git fixture root filesystem.
+Public provenance records include original key sources and verification scope.
+
+These dependencies are disposable Ubuntu test inputs, not Fedora product
+packages or audited release binaries. The hosted Docker engine is runner-provided
+and its exact version is retained; source auditing and release qualification are
+not implied. No Cargo dependency or fabricated audit is added. The complete
+fixtures and runtime resource-membership probes must actually pass before any
+container-route execution claim is made.

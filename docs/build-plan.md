@@ -522,7 +522,7 @@ Open questions raised: <links, or none>
 | P0-02 | TLA+ models: GrantLifecycle, TrustedInput, Freeze, JournalBeforeEffect, SessionClass | none | INV-2, 3, 4, 5, 8, 10 | Codex | Done |
 | P0-03 | Base image: BlueBuild recipe on secureblue, cosign signing, SBOM, ported Ombuntu defaults | P0-01 | INV-12 | Codex | In review; verified inputs ready, image qualification pending |
 | P0-04 | Qualify Symbiont 3.0's Landlock route on the Fedora Atomic image (platform diagnostic and release driver); retain the report | P0-03 | INV-1, 7 | Codex | Blocked (image/build prerequisites); driver prepared |
-| P0-05 | Container tier on Fedora Atomic: moby-engine or Podman for Symbiont's Docker and gVisor routes; qualify the choice | P0-03 | INV-1 |  | Not started |
+| P0-05 | Container tier on Fedora Atomic: moby-engine or Podman for Symbiont's Docker and gVisor routes; qualify the choice | P0-03 | INV-1 | Codex | Blocked (image/build prerequisites); Moby chosen, probes prepared |
 | P1-01 | symbi-common: principal IDs, D-Bus types, Symbiont API and journal clients | P0-01 | INV-5 |  | Not started |
 | P1-02 | symbi-run: desktop launcher over Symbiont's managed CLI route (governed mode) | P1-01, P0-04 | INV-7, 13 |  | Not started |
 | P1-03 | symbi-egressd: Symbiont outbound capabilities for APIs; allowlisted CONNECT proxy for workspace mode | P1-01 | INV-1, 5, 6, 7 |  | Not started |
@@ -589,7 +589,7 @@ The biggest risk is the Hyprland patch for the trusted path; everything else has
 - [ ] Default wake phrase, and licensed training data for it.
 - [ ] Cedar decision caching strategy in egressd at high connection rates.
 - [ ] Product name and signing-key custody (ThirdKey hardware keys?).
-- [ ] Symbiont's Docker and gVisor routes need a Docker daemon: layer moby-engine into the image, or qualify Podman's Docker-compatible socket?
+- [x] Container engine strategy: use Fedora moby-engine and Docker CLI to match upstream. Package pins and both-tier qualification are still pending P0-05; see [the container record](../image/container/README.md).
 
 ## Sources
 

@@ -1,0 +1,6 @@
+{
+  "memory.max": "8589934592",
+  "memory.swap.max": "0",
+  "cpu.max": "200000 100000",
+  "pids.max": "256"
+}

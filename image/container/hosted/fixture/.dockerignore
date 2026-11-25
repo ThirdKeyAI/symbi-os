@@ -1,0 +1,4 @@
+*
+!Dockerfile
+!.dockerignore
+!ubuntu-base-24.04.5-base-amd64.tar.gz

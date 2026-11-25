@@ -1,0 +1,91 @@
+{
+  "recorded_at_utc": "2026-11-25T21:55:00.027204+00:00",
+  "run_id": 45702056794,
+  "head_sha": "19e77c1b3c3001a135e8f86355adc70670b7fedf",
+  "checked_merge_sha": "f01100ce68df6ed31dfa0983a2ba1b59be230b6c",
+  "evidence_artifact": {
+    "id": 15065253682,
+    "bytes": 110009,
+    "sha256": "d7a5bad455bb7a265690ea2ebc98ab31a878416c87bccc5a5feaf72fa94927cf"
+  },
+  "binary_artifact": {
+    "id": 15066141540,
+    "bytes": 529348296,
+    "sha256": "bed79f624444c6dc0c3a5105facdcd9ad637a26f4fcd6cacb6e10544c36a0724"
+  },
+  "upstream_fixture_commit": "c1fac8aab6c5d399abb39036ba35b9636212e17f",
+  "patch_sha256": "a4545649b1c83f0a3402781f815ebc66ea2b507128d17f61e76c4febb5017bda",
+  "all_workspace_checks_passed": true,
+  "focused_python_tests": 17,
+  "oom_events": 0,
+  "oom_kills": 0,
+  "memory_limit_events": 8038,
+  "os_qualified": false,
+  "retention": "JSON retained verbatim; text/log line endings and trailing whitespace normalized. Original and retained hashes recorded.",
+  "files": {
+    "fixture-build.log": {
+      "original_sha256": "56696b7d82df43d0e5bedd991cb0598afd90e8e894ff4248eb6c07e846632c8c",
+      "retained_sha256": "56696b7d82df43d0e5bedd991cb0598afd90e8e894ff4248eb6c07e846632c8c"
+    },
+    "fixture-fmt.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "baseline-test.log": {
+      "original_sha256": "16fb78486767fc4cf821d118e54fc028ace3121aafec3fdb294432992465dde8",
+      "retained_sha256": "64be948d31b1658532aab045ad48db11eb9bac4e9c2da55d03e2762619c70adc"
+    },
+    "host-disk.txt": {
+      "original_sha256": "b06c9af546e689ba6f7d0758830dc7e90ad8864b9bc7b903e28ca28fdcf2def0",
+      "retained_sha256": "b06c9af546e689ba6f7d0758830dc7e90ad8864b9bc7b903e28ca28fdcf2def0"
+    },
+    "cgroup-limits.json": {
+      "original_sha256": "56c5eb8cc68a3a4706310eba89ecfa9f3f64a75081207f23fdea66c1f9ae5bc5",
+      "retained_sha256": "56c5eb8cc68a3a4706310eba89ecfa9f3f64a75081207f23fdea66c1f9ae5bc5"
+    },
+    "systemd-result.txt": {
+      "original_sha256": "d784ec47aea61758a23b88a530af2cd9f581e9ff640691f374c4dd5aa40d48f8",
+      "retained_sha256": "d784ec47aea61758a23b88a530af2cd9f581e9ff640691f374c4dd5aa40d48f8"
+    },
+    "host-build-packages.txt": {
+      "original_sha256": "8516af44574c9b583c90096c9939aee6ea44cc4caa5a24571047a5c721139fea",
+      "retained_sha256": "8516af44574c9b583c90096c9939aee6ea44cc4caa5a24571047a5c721139fea"
+    },
+    "fixture-python.log": {
+      "original_sha256": "e28797dc9e66d0fe3d51578a14cd4ddbc02c5bab4c1cc4aa5d68875eeba4e8d3",
+      "retained_sha256": "e28797dc9e66d0fe3d51578a14cd4ddbc02c5bab4c1cc4aa5d68875eeba4e8d3"
+    },
+    "result.json": {
+      "original_sha256": "d109e0cd5cda4b713000497d60082c96fb3c856618bd31c16f1fadd099874fd4",
+      "retained_sha256": "d109e0cd5cda4b713000497d60082c96fb3c856618bd31c16f1fadd099874fd4"
+    },
+    "baseline-fmt.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "fixture-test.log": {
+      "original_sha256": "42fc5b2c0c7944931ef26e88b4dc4d9889c2413e07729127f30db4e2991a8ea4",
+      "retained_sha256": "9454930791bece305e66f7c785d098d51f5b06a28744dcb3aa1005c3ca8c12e8"
+    },
+    "cgroup-final.json": {
+      "original_sha256": "c1b8e66a4b43b290894fcba77ad05558245b2edfe6b1e11c59a569c88f98fc30",
+      "retained_sha256": "c1b8e66a4b43b290894fcba77ad05558245b2edfe6b1e11c59a569c88f98fc30"
+    },
+    "hosted-checks.log": {
+      "original_sha256": "a0287d0fc28c64256f689f60e82b33e60869438b9bc6d63c9250291f40985758",
+      "retained_sha256": "a0287d0fc28c64256f689f60e82b33e60869438b9bc6d63c9250291f40985758"
+    },
+    "baseline-build.log": {
+      "original_sha256": "80a5a7a40bd540f76b9b6f21c5b52481d76e37b33ed25bf20d5527de842d1bf8",
+      "retained_sha256": "80a5a7a40bd540f76b9b6f21c5b52481d76e37b33ed25bf20d5527de842d1bf8"
+    },
+    "baseline-clippy.log": {
+      "original_sha256": "190db7da09c3c203af579ca4b614d117087444671b6087fb5fcb37a549be785e",
+      "retained_sha256": "190db7da09c3c203af579ca4b614d117087444671b6087fb5fcb37a549be785e"
+    },
+    "fixture-clippy.log": {
+      "original_sha256": "81e3910feddfaad7301f8219e8c7a759ee3db0e880d157d4c473c907345ac132",
+      "retained_sha256": "81e3910feddfaad7301f8219e8c7a759ee3db0e880d157d4c473c907345ac132"
+    }
+  }
+}

@@ -1,0 +1,715 @@
+diff --git a/docs/gvisor-fixture-qualification.md b/docs/gvisor-fixture-qualification.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..20b2c08f62be27a1d2f53860952e60ae7afa64e6
+--- /dev/null
++++ b/docs/gvisor-fixture-qualification.md
+@@ -0,0 +1,70 @@
++# Container fixture selection
++
++The filesystem-grant, source-broker and Git-source shipping fixture drivers accept
++`--gvisor` to select the actual gVisor wrapper. The default remains the Docker
++profile. `--gvisor`, `--landlock` and `--firecracker-binary` are mutually exclusive;
++VM kernel/rootfs arguments must accompany the complete Firecracker selection.
++
++Stage an independently authenticated runtime binary, runsc binary and cached
++fixture image first. The image needs Python and Git. The scripts do not pull an
++image or configure the daemon. Keep the Docker socket with the trusted test
++operator; it conveys host-level authority and never belongs in a worker.
++
++Authenticate the complete installed gVisor distribution. Current releases also
++execute sidecar files from the adjacent `gvisor-bin/` directory; see the
++[upstream installation guide](https://gvisor.dev/docs/user_guide/install/).
++The fixture accepts regular files and directories in that tree, and refuses
++links and special files. A legacy single-binary layout is recorded explicitly
++when no sidecar directory is present; this does not select or approve a version.
++
++The gVisor path writes `[sandbox.gvisor]` with an explicit `runsc` runtime name
++and canonical binary path, and puts all container settings under
++`[sandbox.gvisor.docker]`. It does not inherit the Docker profile's mounts.
++The local daemon must register that same absolute runsc binary path. Its
++configuration and observed workers must agree; changing only Docker's default
++runtime is not equivalent to selecting Symbiont's gVisor wrapper.
++
++In a disposable qualification guest, run each complete driver with a new report:
++
++```sh
++python3 scripts/test-filesystem-grants.py --gvisor \
++  --runsc-binary "$VERIFIED_RUNSC_BINARY" --binary "$VERIFIED_SYMBI_BINARY" \
++  --image "$VERIFIED_FIXTURE_REFERENCE_WITH_DIGEST" --report "$NEW_FILE_REPORT"
++python3 scripts/test-source-broker.py --gvisor \
++  --runsc-binary "$VERIFIED_RUNSC_BINARY" --binary "$VERIFIED_SYMBI_BINARY" \
++  --image "$VERIFIED_FIXTURE_REFERENCE_WITH_DIGEST" --report "$NEW_SOURCE_REPORT"
++python3 scripts/test-git-source.py --gvisor \
++  --runsc-binary "$VERIFIED_RUNSC_BINARY" --binary "$VERIFIED_SYMBI_BINARY" \
++  --image "$VERIFIED_FIXTURE_REFERENCE_WITH_DIGEST" --report "$NEW_GIT_REPORT"
++```
++
++Retained reports identify the selected backend and helper hash. gVisor reports
++also bind the selected runsc file hash and registered path. Actual container
++observations record their runtime and reject a gVisor worker using any runtime
++other than `runsc`. The artifact record also includes file permissions and the
++complete sidecar inventory with relative paths and file hashes. Checkpoints
++between cases and before a passing result reject changed, added or removed
++sidecars, changed permissions, and changed registered paths. These snapshots
++detect changes at the checkpoints; they do not authenticate the installation
++or establish security against a compromised host operator.
++The filesystem driver verifies artifacts in each case's cleanup checkpoint,
++before marking that case passed. Its regression changes artifacts at this
++checkpoint and restores them before completion, so completion-only verification
++cannot satisfy the test.
++The completion checkpoint rereads Docker's current runsc registration as well as
++the selected files, so a removed or changed registration cannot retain a passing
++result merely because the previously selected executable is still on disk.
++Existing checks for file grants, protected observations, journal verification,
++worker origins and cleanup still apply. A shortened `--case` run is diagnostic
++only and cannot replace a complete qualification run.
++
++`python3 scripts/test_container_fixture_profile.py -v` checks configuration,
++selector conflicts, runtime bundle changes and rejection of a mismatched observed
++runtime using temporary fixtures. It does not execute or qualify Docker/runsc.
++
++These drivers cover CLI tool-worker filesystem, source and Git routes. They do
++not establish managed-CLI tool/inference socket compatibility, a complete escape
++suite, Fedora deployment qualification or resistance after daemon/host compromise.
++Those gates require execution and retained evidence on the actual platform.
++Do not publish a whole fixture directory: it contains synthetic private signing
++keys. Retain only the reviewed public reports and the necessary sanitized logs.
+diff --git a/scripts/container_fixture_profile.py b/scripts/container_fixture_profile.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..f41f728b7d0c073241d0a9a4e71ffa5e2faad6b6
+--- /dev/null
++++ b/scripts/container_fixture_profile.py
+@@ -0,0 +1,126 @@
++"""Select and observe explicit container backends in shipping fixture drivers.
++
++This is test infrastructure. Configuration and binary hashes do not themselves
++qualify the selected runtime or authenticate the Docker daemon.
++"""
++import hashlib
++import json
++import os
++from pathlib import Path
++import re
++import stat
++
++
++def require(condition, message):
++    if not condition:
++        raise ValueError(message)
++
++
++def digest(path):
++    with Path(path).open('rb') as stream:
++        return hashlib.file_digest(stream, 'sha256').hexdigest()
++
++
++def runsc_artifact(runsc, registered):
++    runsc = Path(runsc)
++    require(not runsc.is_symlink() and runsc.is_file() and os.access(runsc, os.X_OK),
++            'the canonical runsc path must remain an executable regular file')
++    require(Path(registered).resolve(strict=True) == runsc,
++            'registered runsc path changed')
++    folder = runsc.parent / 'gvisor-bin'
++    require(not folder.is_symlink(), 'gVisor sidecar directory links are unsupported')
++    bundle = None
++    if folder.exists():
++        require(folder.is_dir(), 'gvisor-bin must be a directory')
++        entries = {}
++        for entry in sorted(folder.rglob('*')):
++            metadata = entry.lstat()
++            mode = stat.S_IMODE(metadata.st_mode)
++            if stat.S_ISREG(metadata.st_mode):
++                value = {'kind': 'file', 'mode': mode, 'sha256': digest(entry)}
++            elif stat.S_ISDIR(metadata.st_mode):
++                value = {'kind': 'directory', 'mode': mode}
++            else:
++                raise ValueError('gVisor sidecars must be regular files or directories')
++            entries[str(entry.relative_to(folder))] = value
++        require(any(value['kind'] == 'file' for value in entries.values()),
++                'gVisor sidecar directory is empty')
++        bundle = {'path': str(folder), 'mode': stat.S_IMODE(folder.stat().st_mode), 'entries': entries}
++    return {'path': str(runsc), 'registered_path': registered, 'sha256': digest(runsc),
++            'mode': stat.S_IMODE(runsc.stat().st_mode), 'bundle': bundle}
++
++
++def arguments(parser):
++    selected = parser.add_mutually_exclusive_group()
++    selected.add_argument('--landlock', action='store_true')
++    selected.add_argument('--gvisor', action='store_true')
++    selected.add_argument('--firecracker-binary', type=Path)
++    parser.add_argument('--kernel', type=Path)
++    parser.add_argument('--rootfs', type=Path)
++    parser.add_argument('--runsc-binary', type=Path, default=Path('/usr/bin/runsc'))
++
++
++def selected_backend(args):
++    native = bool(getattr(args, 'landlock', False))
++    gvisor = bool(getattr(args, 'gvisor', False))
++    vm = getattr(args, 'firecracker_binary', None) is not None
++    require(sum((native, gvisor, vm)) <= 1, 'select only one sandbox backend')
++    require(vm == (getattr(args, 'kernel', None) is not None) ==
++            (getattr(args, 'rootfs', None) is not None),
++            'provide all three VM artifacts only with the Firecracker backend')
++    return 'landlock' if native else 'gvisor' if gvisor else 'firecracker' if vm else 'docker'
++
++
++def registered_runsc(docker):
++    runtimes = json.loads(docker('info', '--format', '{{json .Runtimes}}'))
++    require(isinstance(runtimes, dict) and isinstance(runtimes.get('runsc'), dict),
++            'Docker must register the runsc runtime')
++    registered = runtimes['runsc'].get('path')
++    require(isinstance(registered, str) and Path(registered).is_absolute(),
++            'Docker must register runsc at an explicit absolute binary path')
++    return registered
++
++
++def container_config(args, image, workdir, volumes, flags, report, docker, *, docker_binary=None):
++    backend = selected_backend(args)
++    require(backend in ('docker', 'gvisor'), 'a container backend is required')
++    require(re.fullmatch(r'sha256:[a-f0-9]{64}', image) and image != 'sha256:' + '0' * 64,
++            'use the inspected immutable container image ID')
++    require(report.get('backend', backend) == backend, 'selected backend changed between cases')
++    report['backend'] = backend
++    report['container_profile_sha256'] = digest(__file__)
++    config = '[sandbox]\ntier=' + json.dumps(backend) + '\n'
++    if backend == 'gvisor':
++        runsc = args.runsc_binary.resolve(strict=True)
++        require(runsc.is_file() and os.access(runsc, os.X_OK), 'runsc must be an executable regular file')
++        registered = registered_runsc(docker)
++        require(Path(registered).resolve(strict=True) == runsc,
++                'registered runsc does not match the selected binary')
++        artifact = runsc_artifact(runsc, registered)
++        require(report.get('runsc', artifact) == artifact, 'gVisor artifacts changed between fixture cases')
++        report['runsc'] = artifact
++        config += '[sandbox.gvisor]\nruntime_name="runsc"\nrunsc_binary=' + json.dumps(str(runsc)) + '\n'
++        config += '[sandbox.gvisor.docker]\n'
++    else:
++        config += '[sandbox.docker]\n'
++    values = {'working_dir': workdir, 'image': image, 'volumes': volumes, 'extra_flags': flags}
++    if docker_binary is not None:
++        values['docker_binary'] = str(docker_binary)
++    return config + ''.join(key + '=' + json.dumps(value) + '\n' for key, value in values.items())
++
++
++def observe_runtime(args, actual):
++    backend = selected_backend(args)
++    require(backend in ('docker', 'gvisor'), 'unexpected container worker for the selected backend')
++    require(isinstance(actual, str) and bool(actual), 'Docker inspection did not identify a runtime')
++    if backend == 'gvisor':
++        require(actual == 'runsc', 'gVisor fixture worker did not use runsc')
++    return actual
++
++
++def verify_artifacts(report, docker):
++    if report.get('backend') == 'gvisor':
++        artifact = report.get('runsc')
++        require(isinstance(artifact, dict), 'missing runsc artifact binding')
++        require(runsc_artifact(artifact['path'], registered_runsc(docker)) == artifact,
++                'gVisor artifacts changed during the fixture')
+diff --git a/scripts/file_grant_backend.py b/scripts/file_grant_backend.py
+index 26cd108fee0f0fb334c00b2dc1c2aaec830fd273..b7fd7f6446d721432d32e7644d787811f31b40e7 100644
+--- a/scripts/file_grant_backend.py
++++ b/scripts/file_grant_backend.py
+@@ -5,6 +5,8 @@ import os
+ from delegated_service_fixture import AutomaticDelegatedService, eventually
+ from pathlib import Path
+ from worker_origin_observer import verify_origin
++from container_fixture_profile import (arguments, container_config, observe_runtime,
++                                       selected_backend, verify_artifacts)
+ 
+ 
+ def digest(path):
+@@ -12,16 +14,11 @@ def digest(path):
+         return hashlib.file_digest(source, 'sha256').hexdigest()
+ 
+ 
+-def arguments(parser):
+-    parser.add_argument('--landlock', action='store_true')
+-    parser.add_argument('--firecracker-binary', type=Path)
+-    parser.add_argument('--kernel', type=Path)
+-    parser.add_argument('--rootfs', type=Path)
+-
+-
+ class Backend:
+     def __init__(self, args, root, data, label, docker, report, vmm_launcher=None):
+         self.args, self.root, self.label, self.docker = args, root, label, docker
++        self.report = report
++        selected_backend(args)
+         self.landlock = args.landlock
+         self.service = None
+         self.vm = args.firecracker_binary is not None
+@@ -56,9 +53,9 @@ class Backend:
+         else:
+             image = docker('image', 'inspect', args.image, '--format', '{{.Id}}')
+             report['image'] = image
+-            config = '[sandbox]\ntier="docker"\n[sandbox.docker]\nimage=' + json.dumps(image)
+-            config += '\nvolumes=' + json.dumps([str(data) + ':/workspace:rw'])
+-            config += '\nextra_flags=' + json.dumps(['--label=' + label]) + '\n'
++            config = container_config(args, image, self.workdir,
++                                      [str(data) + ':/workspace:rw'],
++                                      ['--label=' + label], report, docker)
+         (root / 'symbiont.toml').write_text(config)
+         report['config_sha256'] = digest(root / 'symbiont.toml')
+ 
+@@ -128,7 +125,8 @@ class Backend:
+                     lease = row['Config']['Labels']['ai.symbiont.lease']
+                     record = json.loads((self.root / 'state' / (lease + '.json')).read_text())
+                     assert record['state']['container_id'] == identity
+-                    found.append({'id': identity, 'lease': lease, 'origin': record['origin'], 'mounts': row['Mounts'], 'ulimits': row['HostConfig']['Ulimits']})
++                    found.append({'id': identity, 'lease': lease, 'origin': record['origin'], 'mounts': row['Mounts'], 'ulimits': row['HostConfig']['Ulimits'],
++                                  'runtime': observe_runtime(self.args, row['HostConfig'].get('Runtime'))})
+         self.seen.extend(found)
+         return found
+ 
+@@ -165,6 +163,7 @@ class Backend:
+                     assert int(stat.rsplit(')', 1)[1].split()[19]) != worker['start_ticks'], 'VMM survived cleanup'
+                 except FileNotFoundError:
+                     pass
++        verify_artifacts(self.report, self.docker)
+ 
+     def publication(self, entries, data, expected):
+         effects = [e['event']['ToolEffect']['effect'] for e in entries if 'ToolEffect' in e['event']]
+@@ -187,3 +186,4 @@ class Backend:
+             if self.service is not None:
+                 self.service.stop()
+         assert all(digest(path) == expected for path, expected in self.artifacts.items()), 'VM artifact changed'
++        verify_artifacts(report, self.docker)
+diff --git a/scripts/test-git-source.py b/scripts/test-git-source.py
+index 08ffb7333cae92c28966e20219871bcde1270386..50975ca295d077f64e2483ce545ddf456a49046f 100644
+--- a/scripts/test-git-source.py
++++ b/scripts/test-git-source.py
+@@ -15,6 +15,7 @@ import shutil
+ import shlex
+ from file_grant_backend import Backend, arguments as backend_arguments
+ from worker_origin_observer import verify_origin
++from container_fixture_profile import container_config, observe_runtime, selected_backend, verify_artifacts
+ import signal
+ import subprocess
+ import tempfile
+@@ -38,6 +39,7 @@ def main():
+     backend_arguments(parser)
+     parser.add_argument('--case', action='append', help='Run only selected case names')
+     args = parser.parse_args()
++    selected_backend(args)
+     vm = args.firecracker_binary is not None
+     native = args.landlock
+     backend = None
+@@ -117,7 +119,7 @@ if sys.argv[1]=='create':
+                 elif path.is_file():data=path.read_bytes()
+                 else:continue
+                 snapshots[prefix+'/'+str(path.relative_to(mount['Source']))]=hashlib.sha256(data).hexdigest()
+-        (root/('worker-'+identity+'.json')).write_text(json.dumps(dict(id=identity,lease=lease,origin=record['origin'],mounts=value['Mounts'],network=value['HostConfig']['NetworkMode'],user=value['Config']['User'],snapshots=snapshots)))
++        (root/('worker-'+identity+'.json')).write_text(json.dumps(dict(id=identity,lease=lease,origin=record['origin'],runtime=value['HostConfig'].get('Runtime'),mounts=value['Mounts'],network=value['HostConfig']['NetworkMode'],user=value['Config']['User'],snapshots=snapshots)))
+         if (root/'pause-create').exists():
+             end=time.monotonic()+15
+             (root/'created').touch()
+@@ -170,8 +172,10 @@ os.execv(%r,[%r,*sys.argv[1:]])
+             config.write_text('\n'.join('output_roots=[]' if line.startswith('output_roots=') else line for line in config.read_text().splitlines())+'\n')
+             report['config_sha256']=digest(config)
+         else:
+-            (root / 'symbiont.toml').write_text('[sandbox]\ntier="docker"\n[sandbox.docker]\nworking_dir="/source"\nimage=' + json.dumps(image) +
+-                '\ndocker_binary=' + json.dumps(str(wrapper)) + '\nvolumes=' + json.dumps([str(source) + ':/source:ro']) + '\nextra_flags=' + json.dumps(['--label=' + label]) + '\n')
++            (root / 'symbiont.toml').write_text(container_config(
++                args, image, '/source', [str(source) + ':/source:ro'],
++                ['--label=' + label], report, docker, docker_binary=wrapper))
++            report['config_sha256'] = digest(root / 'symbiont.toml')
+         seed = os.urandom(32)
+         key = root / '.symbiont/governed/audit-signing.key'
+         key.write_bytes(seed)
+@@ -324,6 +328,9 @@ os.execv(%r,[%r,*sys.argv[1:]])
+             process = None
+             row['workers'] = [json.loads(p.read_text()) for p in observer.glob('worker-*.json')]
+             if vm or native: row['actual_workers']=actual_workers
++            else:
++                for worker in row['workers']:
++                    observe_runtime(args, worker.get('runtime'))
+             assert not report['provider_errors'] and 'PRIVATE OBSERVER CANARY' not in json.dumps(requests), row
+             journals = set((root / '.symbiont/governed').glob('*.jsonl')) - before - sibling_journals
+             assert len(journals) == 1
+@@ -417,6 +424,7 @@ os.execv(%r,[%r,*sys.argv[1:]])
+             row['passed'] = True
+             print(json.dumps({'case': name, 'passed': True}), flush=True)
+         assert digest(binary) == report['binary_sha256']
++        verify_artifacts(report, docker)
+         report['passed'] = True
+     except Exception as error:
+         report.update(error=f'{type(error).__name__}: {error}', traceback=traceback.format_exc())
+diff --git a/scripts/test-source-broker.py b/scripts/test-source-broker.py
+index 642f0c21bb8eb01ad06e7eed1b36237f8d896f67..6155b1f983ce29edd0bc3ff28def9b3cbd6f398c 100644
+--- a/scripts/test-source-broker.py
++++ b/scripts/test-source-broker.py
+@@ -18,7 +18,8 @@ import threading
+ import time
+ import traceback
+ import uuid
+-from file_grant_backend import Backend
++from file_grant_backend import Backend, arguments as backend_arguments
++from container_fixture_profile import container_config, observe_runtime, selected_backend, verify_artifacts
+ 
+ 
+ def digest(path):
+@@ -31,12 +32,10 @@ def main():
+     parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument('--binary', type=Path, required=True)
+     parser.add_argument('--report', type=Path, required=True)
+-    parser.add_argument('--landlock', action='store_true')
+     parser.add_argument('--image', default='python:3.12-slim')
+-    parser.add_argument('--firecracker-binary', type=Path)
+-    parser.add_argument('--kernel', type=Path)
+-    parser.add_argument('--rootfs', type=Path)
++    backend_arguments(parser)
+     args = parser.parse_args()
++    selected_backend(args)
+     vm = args.firecracker_binary is not None
+     native = args.landlock
+     assert not (vm and native)
+@@ -150,8 +149,8 @@ def main():
+             requests.clear()
+             volumes = [] if name == 'no_ceiling' else [str(root / 'source') + ':/source:ro']
+             if not vm and not native:
+-                (root / 'symbiont.toml').write_text('[sandbox]\ntier="docker"\n[sandbox.docker]\nworking_dir="/source"\nimage=' + json.dumps(image) +
+-                    '\nvolumes=' + json.dumps(volumes) + '\nextra_flags=' + json.dumps(['--label=' + label]) + '\n')
++                (root / 'symbiont.toml').write_text(container_config(
++                    args, image, '/source', volumes, ['--label=' + label], report, docker))
+             if native:
+                 roots = [] if name == "no_ceiling" else [str(root/"source") + ":/workspace:ro"]
+                 (root/"symbiont.toml").write_text('[sandbox]\ntier="landlock"\n[sandbox.roots]\nsource_roots=' + json.dumps(roots) + "\n")
+@@ -175,7 +174,8 @@ def main():
+                 for identity in ([] if vm or native else docker('ps', '-q', '--filter', 'label=' + label).split()):
+                     if identity not in [w['id'] for w in row['workers']]:
+                         inspected = json.loads(docker('inspect', identity))[0]
+-                        row['workers'].append({'id': identity, 'mounts': inspected['Mounts']})
++                        row['workers'].append({'id': identity, 'mounts': inspected['Mounts'],
++                                               'runtime': observe_runtime(args, inspected['HostConfig'].get('Runtime'))})
+                 if native:
+                     row["workers"].extend(backend.observe())
+                 elif vm:
+@@ -262,6 +262,7 @@ def main():
+         assert len(report['cases']) == len(cases) and digest(binary) == report['binary_sha256']
+         if vm:
+             assert all(digest(Path(p)) == value for p, value in report['vm_artifacts'].items())
++        verify_artifacts(report, docker)
+         report['passed'] = True
+     except Exception as error:
+         report.update(error=f'{type(error).__name__}: {error}', traceback=traceback.format_exc())
+diff --git a/scripts/test_container_fixture_profile.py b/scripts/test_container_fixture_profile.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..4b955e20309a4f96a199ef9cc5068d178aac1d20
+--- /dev/null
++++ b/scripts/test_container_fixture_profile.py
+@@ -0,0 +1,315 @@
++"""Configuration and observation checks; these do not execute or qualify runsc."""
++import argparse
++from contextlib import redirect_stderr
++import hashlib
++import io
++import json
++import os
++from pathlib import Path
++import tempfile
++import tomllib
++import unittest
++
++from container_fixture_profile import (
++    arguments, container_config, observe_runtime, selected_backend, verify_artifacts,
++)
++
++
++class ContainerFixtureProfile(unittest.TestCase):
++    def setUp(self):
++        self.temp = tempfile.TemporaryDirectory()
++        self.addCleanup(self.temp.cleanup)
++        self.root = Path(self.temp.name)
++        self.runsc = self.root / 'runsc'
++        self.runsc.write_text('#!/bin/sh\nexit 0\n')
++        self.runsc.chmod(0o700)
++        self.image = 'sha256:' + 'a' * 64
++
++    def args(self, *values):
++        parser = argparse.ArgumentParser()
++        arguments(parser)
++        return parser.parse_args(values)
++
++    def docker(self, *values):
++        self.assertEqual(values, ('info', '--format', '{{json .Runtimes}}'))
++        return json.dumps({'runc': {'path': 'runc'}, 'runsc': {'path': str(self.runsc)}})
++
++    def configuration(self, args, report=None, docker=None):
++        return tomllib.loads(container_config(
++            args, self.image, '/source', ['/synthetic:/source:ro'],
++            ['--label=fixture'], report if report is not None else {},
++            docker or self.docker, docker_binary='/synthetic/client'))
++
++    def test_default_keeps_the_docker_profile(self):
++        report = {}
++        config = self.configuration(self.args(), report)
++        self.assertEqual(config['sandbox']['tier'], 'docker')
++        self.assertNotIn('gvisor', config['sandbox'])
++        self.assertEqual(config['sandbox']['docker']['volumes'], ['/synthetic:/source:ro'])
++        self.assertEqual(config['sandbox']['docker']['image'], self.image)
++        self.assertEqual(report['backend'], 'docker')
++        self.assertNotIn('runsc', report)
++
++    def test_gvisor_uses_its_own_profile_and_explicit_runtime(self):
++        args = self.args('--gvisor', '--runsc-binary', str(self.runsc))
++        report = {}
++        config = self.configuration(args, report)
++        self.assertEqual(config['sandbox']['tier'], 'gvisor')
++        self.assertNotIn('docker', config['sandbox'])
++        gvisor = config['sandbox']['gvisor']
++        self.assertEqual(gvisor['runtime_name'], 'runsc')
++        self.assertEqual(gvisor['runsc_binary'], str(self.runsc.resolve()))
++        self.assertEqual(gvisor['docker']['volumes'], ['/synthetic:/source:ro'])
++        self.assertEqual(gvisor['docker']['docker_binary'], '/synthetic/client')
++        self.assertEqual(report['backend'], 'gvisor')
++        verify_artifacts(report, self.docker)
++
++    def test_backend_selectors_are_mutually_exclusive(self):
++        for values in [('--gvisor', '--landlock'), ('--gvisor', '--firecracker-binary', '/vm')]:
++            with self.subTest(values=values), redirect_stderr(io.StringIO()):
++                with self.assertRaises(SystemExit):
++                    self.args(*values)
++
++    def test_incomplete_or_cross_backend_vm_artifacts_are_rejected(self):
++        for values in [('--gvisor', '--kernel', '/kernel'),
++                       ('--firecracker-binary', '/vm', '--kernel', '/kernel'),
++                       ('--rootfs', '/rootfs')]:
++            with self.subTest(values=values), self.assertRaises(ValueError):
++                selected_backend(self.args(*values))
++
++    def test_runsc_must_exist_and_be_executable(self):
++        self.runsc.chmod(0o600)
++        with self.assertRaises(ValueError):
++            self.configuration(self.args('--gvisor', '--runsc-binary', str(self.runsc)))
++        self.runsc.unlink()
++        with self.assertRaises(OSError):
++            self.configuration(self.args('--gvisor', '--runsc-binary', str(self.runsc)))
++
++    def test_registered_runsc_must_match_the_selected_binary(self):
++        args = self.args('--gvisor', '--runsc-binary', str(self.runsc))
++        other = self.root / 'other-runsc'
++        other.write_bytes(self.runsc.read_bytes())
++        other.chmod(0o700)
++        for value in [{}, {'runsc': {'path': 'runsc'}}, {'runsc': {'path': str(other)}}]:
++            with self.subTest(value=value), self.assertRaises(ValueError):
++                self.configuration(args, docker=lambda *_: json.dumps(value))
++
++    def test_actual_worker_runtime_cannot_fall_back_to_runc(self):
++        args = self.args('--gvisor')
++        self.assertEqual(observe_runtime(args, 'runsc'), 'runsc')
++        for runtime in ['runc', '', None]:
++            with self.subTest(runtime=runtime), self.assertRaises(ValueError):
++                observe_runtime(args, runtime)
++
++    def test_changed_runsc_is_rejected_at_completion_and_between_cases(self):
++        args = self.args('--gvisor', '--runsc-binary', str(self.runsc))
++        report = {}
++        self.configuration(args, report)
++        self.runsc.write_text('#!/bin/sh\nexit 1\n')
++        with self.assertRaises(ValueError):
++            verify_artifacts(report, self.docker)
++        with self.assertRaises(ValueError):
++            self.configuration(args, report)
++
++    def bundle(self):
++        folder = self.root / 'gvisor-bin'
++        folder.mkdir()
++        sentry = folder / 'sentry'
++        sentry.write_text('synthetic sentry bytes\n')
++        sentry.chmod(0o755)
++        return folder, sentry
++
++    def test_sidecar_bytes_are_bound_and_changes_cannot_pass(self):
++        _, sentry = self.bundle()
++        args = self.args('--gvisor', '--runsc-binary', str(self.runsc))
++        report = {}
++        self.configuration(args, report)
++        observed = report['runsc']['bundle']['entries']['sentry']
++        self.assertEqual(observed['sha256'], hashlib.sha256(sentry.read_bytes()).hexdigest())
++        verify_artifacts(report, self.docker)
++        sentry.write_text('different synthetic sentry bytes\n')
++        with self.assertRaises(ValueError):
++            verify_artifacts(report, self.docker)
++        with self.assertRaises(ValueError):
++            self.configuration(args, report)
++
++    def test_added_or_removed_sidecars_are_rejected(self):
++        folder, sentry = self.bundle()
++        args = self.args('--gvisor', '--runsc-binary', str(self.runsc))
++        report = {}
++        self.configuration(args, report)
++        extra = folder / 'new-sidecar'
++        extra.write_text('synthetic addition\n')
++        with self.assertRaises(ValueError):
++            verify_artifacts(report, self.docker)
++        extra.unlink()
++        sentry.unlink()
++        with self.assertRaises(ValueError):
++            verify_artifacts(report, self.docker)
++        folder.rmdir()
++        with self.assertRaises(ValueError):
++            verify_artifacts(report, self.docker)
++
++    def test_bundle_appearing_after_single_binary_selection_is_rejected(self):
++        args = self.args('--gvisor', '--runsc-binary', str(self.runsc))
++        report = {}
++        self.configuration(args, report)
++        self.bundle()
++        with self.assertRaises(ValueError):
++            verify_artifacts(report, self.docker)
++
++    def test_sidecar_permissions_are_bound(self):
++        _, sentry = self.bundle()
++        args = self.args('--gvisor', '--runsc-binary', str(self.runsc))
++        report = {}
++        self.configuration(args, report)
++        sentry.chmod(0o700)
++        with self.assertRaises(ValueError):
++            verify_artifacts(report, self.docker)
++
++    def test_sidecar_links_and_special_files_are_rejected(self):
++        folder, sentry = self.bundle()
++        args = self.args('--gvisor', '--runsc-binary', str(self.runsc))
++        link = folder / 'link'
++        link.symlink_to(sentry)
++        with self.assertRaises(ValueError):
++            self.configuration(args)
++        link.unlink()
++        os.mkfifo(folder / 'pipe')
++        with self.assertRaises(ValueError):
++            self.configuration(args)
++
++    def test_bundle_directory_link_is_rejected(self):
++        original = self.root / 'elsewhere'
++        original.mkdir()
++        (original / 'sentry').write_text('synthetic bytes\n')
++        (self.root / 'gvisor-bin').symlink_to(original, target_is_directory=True)
++        with self.assertRaises(ValueError):
++            self.configuration(self.args('--gvisor', '--runsc-binary', str(self.runsc)))
++
++    def test_existing_fixture_backend_selects_and_checks_gvisor(self):
++        from file_grant_backend import Backend
++        root = self.root / 'fixture'
++        (root / 'state').mkdir(parents=True)
++        (root / 'source').mkdir()
++        args = self.args('--gvisor', '--runsc-binary', str(self.runsc))
++        args.report = root / 'report.json'
++        args.image = 'fixture@sha256:' + 'a' * 64
++        identity, lease = 'b' * 64, 'fixture-lease'
++        (root / 'state' / (lease + '.json')).write_text(json.dumps({
++            'state': {'container_id': identity}, 'origin': {}}))
++
++        def docker(*values):
++            if values[0] == 'image':
++                return self.image
++            if values[0] == 'info':
++                return self.docker(*values)
++            if values[0] == 'ps':
++                return identity
++            if values == ('inspect', identity):
++                return json.dumps([{'Config': {'Labels': {'ai.symbiont.lease': lease}},
++                    'HostConfig': {'Runtime': 'runc', 'Ulimits': []}, 'Mounts': []}])
++            self.fail('unexpected Docker call: ' + repr(values))
++
++        backend = Backend(args, root, root / 'source', 'fixture', docker, {})
++        config = tomllib.loads((root / 'symbiont.toml').read_text())
++        self.assertEqual(config['sandbox']['tier'], 'gvisor')
++        with self.assertRaisesRegex(ValueError, 'did not use runsc'):
++            backend.observe()
++
++    def test_filesystem_checkpoint_rejects_changes_even_when_restored_before_completion(self):
++        from file_grant_backend import Backend
++        for change in ('runsc', 'sidecar', 'permissions', 'added', 'removed', 'registration'):
++            with self.subTest(change=change), tempfile.TemporaryDirectory(dir=self.root) as temporary:
++                root = Path(temporary)
++                (root / 'state').mkdir()
++                (root / 'source').mkdir()
++                runsc = root / 'runsc'
++                runsc.write_text('#!/bin/sh\nexit 0\n')
++                runsc.chmod(0o700)
++                sidecars = root / 'gvisor-bin'
++                sidecars.mkdir()
++                sentry = sidecars / 'sentry'
++                sentry.write_text('synthetic sentry bytes\n')
++                sentry.chmod(0o755)
++                args = self.args('--gvisor', '--runsc-binary', str(runsc))
++                args.report, args.image = root / 'report.json', self.image
++                registration = {'runsc': {'path': str(runsc)}}
++
++                def docker(*values):
++                    if values[0] == 'image':
++                        return self.image
++                    if values[0] == 'info':
++                        return json.dumps(registration)
++                    if values[0] == 'ps':
++                        return ''
++                    self.fail('unexpected Docker call: ' + repr(values))
++
++                report = {}
++                backend = Backend(args, root, root / 'source', 'fixture', docker, report)
++                backend.cleaned()  # The unchanged between-case control passes.
++                if change == 'runsc':
++                    runsc.write_text('#!/bin/sh\nexit 1\n')
++                elif change == 'sidecar':
++                    sentry.write_text('changed sentry bytes\n')
++                elif change == 'permissions':
++                    sentry.chmod(0o700)
++                elif change == 'added':
++                    (sidecars / 'extra').write_text('unexpected sidecar\n')
++                elif change == 'removed':
++                    sentry.unlink()
++                else:
++                    alias = root / 'runsc-alias'
++                    alias.symlink_to(runsc)
++                    registration['runsc']['path'] = str(alias)
++                try:
++                    # This is the shipping driver's checkpoint before marking
++                    # each filesystem case passed, not a direct helper call.
++                    error = 'gVisor sidecar directory is empty' if change == 'removed' else 'gVisor artifacts changed'
++                    with self.assertRaisesRegex(ValueError, error):
++                        backend.cleaned()
++                finally:
++                    runsc.write_text('#!/bin/sh\nexit 0\n')
++                    sentry.write_text('synthetic sentry bytes\n')
++                    sentry.chmod(0o755)
++                    (sidecars / 'extra').unlink(missing_ok=True)
++                    registration['runsc']['path'] = str(runsc)
++                # Restoration makes a completion-only check insufficient.
++                backend.finish(report)
++
++    def test_completion_rechecks_the_daemon_runtime_registration(self):
++        from file_grant_backend import Backend
++        root = self.root / 'fixture'
++        (root / 'state').mkdir(parents=True)
++        (root / 'source').mkdir()
++        args = self.args('--gvisor', '--runsc-binary', str(self.runsc))
++        args.report = root / 'report.json'
++        args.image = 'fixture@sha256:' + 'a' * 64
++        registration = {'runsc': {'path': str(self.runsc)}}
++
++        def docker(*values):
++            if values[0] == 'image':
++                return self.image
++            if values[0] == 'info':
++                return json.dumps(registration)
++            if values[0] == 'ps':
++                return ''
++            self.fail('unexpected Docker call: ' + repr(values))
++
++        report = {}
++        backend = Backend(args, root, root / 'source', 'fixture', docker, report)
++        backend.finish(report)
++        other = self.root / 'other-runsc'
++        other.write_bytes(self.runsc.read_bytes())
++        other.chmod(0o700)
++        alias = self.root / 'runsc-alias'
++        alias.symlink_to(self.runsc)
++        for value in ({}, {'runsc': {'path': str(other)}}, {'runsc': {'path': str(alias)}}):
++            registration.clear()
++            registration.update(value)
++            with self.subTest(registration=value), self.assertRaises(ValueError):
++                backend.finish(report)
++
++
++if __name__ == '__main__':
++    unittest.main()

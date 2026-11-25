@@ -1,0 +1,13 @@
+{
+  "default-runtime": "runc",
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "selinux-enabled": true,
+  "no-new-privileges": true,
+  "live-restore": false,
+  "icc": false,
+  "userland-proxy": false,
+  "log-driver": "none",
+  "runtimes": {
+    "runsc": {"path": "/usr/bin/runsc"}
+  }
+}

@@ -1,0 +1,15 @@
+Package: runsc
+Architecture: amd64
+Version: 20261123.0
+Priority: optional
+Section: contrib/devel
+Maintainer: The gVisor Authors <gvisor-dev@googlegroups.com>
+Filename: pool/20261123.0/binary-amd64/runsc.deb
+Size: 87651624
+MD5sum: 6e0309e2498df76da77211d8fbb48370
+SHA1: 8d8d3f87c45403ca97c86a041a1ca6c234a211f3
+SHA256: 3b78fe64d212d0d1a753660b0a9e95488e5e264d36dce04c36e7245b81151e18
+SHA512: 28d6afe7d6c90d5bbd35c786ebab7218a3633fbfd47e293e0824be4975ac643f03e2dd4cb51294466d97cdda48235632691bbe140b34ae9c43a1ed99b4745dc6
+Homepage: https://gvisor.dev/
+Description: gVisor container sandbox runtime
+

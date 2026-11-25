@@ -1,0 +1,15 @@
+{"case": "log", "passed": true}
+{"case": "staged", "passed": true}
+{"case": "diff", "passed": true}
+{"case": "status", "passed": true}
+{"case": "sha256", "passed": true}
+{"case": "snapshot", "passed": true}
+{"case": "denied", "passed": true}
+{"case": "alternates", "passed": true}
+{"case": "pointer", "passed": true}
+{"case": "oversize", "passed": true}
+{"case": "extension", "passed": true}
+{"case": "capacity", "passed": true}
+{"case": "prepare_crash", "passed": true}
+{"case": "crash", "passed": true}
+{"passed": true, "report": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/public/fixtures/docker-test-git-source.json", "error": null}

@@ -1,0 +1,98 @@
+{
+  "run_url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45688918098",
+  "head": "398ac72987c131259c3abb935685b6e6048b1026",
+  "job_id": 139468849141,
+  "conclusion": "success",
+  "artifact_id": 15058679389,
+  "artifact_digest_from_github": "sha256:076c0a3900ed0640d2944339db933061f0029c39f5a9cbb91f2a438605c683b9",
+  "binary_artifact": {
+    "id": 15058829233,
+    "bytes": 529348360,
+    "digest_from_github": "sha256:eb91ceeadaed2d3cb0972240be61c41f51bcf321f75da88046febc09d194b971",
+    "downloaded_locally": false,
+    "executables": {
+      "symbi": {
+        "bytes": 520712424,
+        "sha256": "69a22494f74451e73806eaeb71ace5dc3a95098c7961f7200716b05ad666a98c"
+      },
+      "symbi-sandbox-supervisor": {
+        "bytes": 8635672,
+        "sha256": "57af2b2931c891c8ee7df21ac063aea64571acc460ababdcb09b8df7ed21c269"
+      }
+    }
+  },
+  "observation": "All four baseline gates, sixteen focused Python tests and all four patched workspace gates passed at the exact source/lock/patch bindings. Both tests that failed locally passed in both hosted phases.",
+  "limits": "8 GiB, two CPUs, zero swap, one build job and test thread. The peak reached the cap and memory.events records 7861 limit hits; no OOM or OOM-kill events.",
+  "upstream_local_commit": "e17f198a8906780408058f4cc48a2715776bf36b",
+  "upstream_published": false,
+  "upstream_publication": "Automatic approval review rejected the different upstream destination; explicit owner approval is required before pushing.",
+  "qualified": false,
+  "scope": "Ubuntu hosted workspace and Python fixture checks; no Fedora, container or escape qualification",
+  "files": {
+    "baseline-build.log": {
+      "original_sha256": "3fad5fa5420ef7830410a6136b77099f3a7daa9ff5b5020c551e62262da8fc34",
+      "retained_sha256": "3fad5fa5420ef7830410a6136b77099f3a7daa9ff5b5020c551e62262da8fc34"
+    },
+    "baseline-clippy.log": {
+      "original_sha256": "3d9204e829ed0877471f44ce23db1b6a696a003bb3158a21913257d635785478",
+      "retained_sha256": "3d9204e829ed0877471f44ce23db1b6a696a003bb3158a21913257d635785478"
+    },
+    "baseline-fmt.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "baseline-test.log": {
+      "original_sha256": "4009749a406b0c59d3209a3f23b12253dd1b2552e3f3e9f47c3fe1c25a43e8cd",
+      "retained_sha256": "5bf6c0c880d0832346a38fdaafa5c0c925c59198af926d0523a7a6465ff12d96"
+    },
+    "cgroup-final.json": {
+      "original_sha256": "171209ae747c679d0a41177c829a909f5293e00768bfb9c4224521167f2524db",
+      "retained_sha256": "171209ae747c679d0a41177c829a909f5293e00768bfb9c4224521167f2524db"
+    },
+    "cgroup-limits.json": {
+      "original_sha256": "56c5eb8cc68a3a4706310eba89ecfa9f3f64a75081207f23fdea66c1f9ae5bc5",
+      "retained_sha256": "56c5eb8cc68a3a4706310eba89ecfa9f3f64a75081207f23fdea66c1f9ae5bc5"
+    },
+    "fixture-build.log": {
+      "original_sha256": "cabe02dd323bb128cd10312179f95cb7cf03a690af802489bacf09adb735dd5e",
+      "retained_sha256": "cabe02dd323bb128cd10312179f95cb7cf03a690af802489bacf09adb735dd5e"
+    },
+    "fixture-clippy.log": {
+      "original_sha256": "6304ddb4858bbf0a04f507e6e22735e4c3524ed2ab43c15ffb20b66cfa6e9519",
+      "retained_sha256": "6304ddb4858bbf0a04f507e6e22735e4c3524ed2ab43c15ffb20b66cfa6e9519"
+    },
+    "fixture-fmt.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "fixture-python.log": {
+      "original_sha256": "c942c3cf7042b197a9ee3f6f6d5441c84992f510a7ea134e239cbb18f6e984f3",
+      "retained_sha256": "c942c3cf7042b197a9ee3f6f6d5441c84992f510a7ea134e239cbb18f6e984f3"
+    },
+    "fixture-test.log": {
+      "original_sha256": "ae75f9e225b31401bcf9ee3a463687edea074e6bb21ef5c366d7ef32d64b41ab",
+      "retained_sha256": "baa9f1594206c760f6951fce9edcd8a2422542a33faf80b41869d589fe2401fc"
+    },
+    "host-build-packages.txt": {
+      "original_sha256": "8516af44574c9b583c90096c9939aee6ea44cc4caa5a24571047a5c721139fea",
+      "retained_sha256": "8516af44574c9b583c90096c9939aee6ea44cc4caa5a24571047a5c721139fea"
+    },
+    "host-disk.txt": {
+      "original_sha256": "b06c9af546e689ba6f7d0758830dc7e90ad8864b9bc7b903e28ca28fdcf2def0",
+      "retained_sha256": "b06c9af546e689ba6f7d0758830dc7e90ad8864b9bc7b903e28ca28fdcf2def0"
+    },
+    "hosted-checks.log": {
+      "original_sha256": "23f7967f8d3cd6955d7a27f01536898fb0ea67fcbac3055d829a134dcb01f3c8",
+      "retained_sha256": "23f7967f8d3cd6955d7a27f01536898fb0ea67fcbac3055d829a134dcb01f3c8"
+    },
+    "result.json": {
+      "original_sha256": "d2e021c634c59bc322804cb6921759c0bb9ba5a187b7c72d5bec92a2121ad7d2",
+      "retained_sha256": "d2e021c634c59bc322804cb6921759c0bb9ba5a187b7c72d5bec92a2121ad7d2"
+    },
+    "systemd-result.txt": {
+      "original_sha256": "d784ec47aea61758a23b88a530af2cd9f581e9ff640691f374c4dd5aa40d48f8",
+      "retained_sha256": "d784ec47aea61758a23b88a530af2cd9f581e9ff640691f374c4dd5aa40d48f8"
+    }
+  },
+  "retention_format": "Trailing whitespace removed; no private-key PEM material was present."
+}

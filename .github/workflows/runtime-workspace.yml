@@ -1,0 +1,64 @@
+name: Pinned runtime workspace
+
+on:
+  pull_request:
+    paths:
+      - image/container/upstream/**
+      - scripts/check-runtime-workspace.sh
+      - upstream/symbiont.toml
+      - .github/workflows/runtime-workspace.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: runtime-workspace-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 125
+    steps:
+      - name: Check out proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Check out exact upstream runtime
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          repository: ThirdKeyAI/Symbiont
+          ref: deddb9e997244d2289c217ad76b8fde0e9b0339b
+          path: .cache/runtime-source
+          submodules: recursive
+          persist-credentials: false
+      - name: Prepare disposable runner build prerequisites
+        run: |
+          test "$RUNNER_ENVIRONMENT" = github-hosted
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y protobuf-compiler libprotobuf-dev
+          mkdir -p .cache/runtime-workspace-evidence
+          dpkg-query -W protobuf-compiler libprotobuf-dev > .cache/runtime-workspace-evidence/host-build-packages.txt
+          df -h / > .cache/runtime-workspace-evidence/host-disk.txt
+      - name: Check unchanged baseline, then the fixture draft, within hosted limits
+        run: bash scripts/check-runtime-workspace.sh
+      - name: Retain public workspace evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: runtime-workspace-evidence
+          path: .cache/runtime-workspace-evidence/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Retain checked development binaries for later Fedora tests
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: checked-runtime-development-binaries
+          path: |
+            .cache/runtime-target/debug/symbi
+            .cache/runtime-target/debug/symbi-sandbox-supervisor
+          retention-days: 14
+          compression-level: 0
+          if-no-files-found: error

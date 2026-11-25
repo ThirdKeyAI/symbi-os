@@ -1,0 +1,90 @@
+{
+  "run_id": 45700723066,
+  "head": "3e574be7e60a0d8d31c1894ad453f5bb658eafc4",
+  "artifact": {
+    "id": 15062687654,
+    "bytes": 211953,
+    "sha256": "d5baddc08776e9c3bd62fd54614fc74a134330159ea8233389a792678ee3c239"
+  },
+  "passed": false,
+  "qualified": false,
+  "fixture_drivers_started": false,
+  "failure": "Clean service PATH omitted /usr/sbin, so runuser was not found after both runtime probes passed.",
+  "files": {
+    "hosted-fixtures.log": {
+      "original_sha256": "51b69fbe28135fdcb2cca461c5f3135eb37277572defc55c4603cd1505b2c484",
+      "retained_sha256": "51b69fbe28135fdcb2cca461c5f3135eb37277572defc55c4603cd1505b2c484",
+      "retained_file": "hosted-fixtures.log"
+    },
+    "systemd-result.txt": {
+      "original_sha256": "15c022e8918d21177ade68f14ae39c44d1a5f6f3f81bb5d0601f40768eacedb5",
+      "retained_sha256": "15c022e8918d21177ade68f14ae39c44d1a5f6f3f81bb5d0601f40768eacedb5",
+      "retained_file": "systemd-result.txt"
+    },
+    "public/result.json": {
+      "original_sha256": "30589bb7f912651b3bf8d37c1299009bfcdb0f2f6c446b9acff804ea6b873b96",
+      "retained_sha256": "30589bb7f912651b3bf8d37c1299009bfcdb0f2f6c446b9acff804ea6b873b96",
+      "retained_file": "public-result.json"
+    },
+    "public/cgroup-final.json": {
+      "original_sha256": "edbf9f86a2219484a715b52e7e2dacc06fd2bb95e42ca0a944523a2acad2a157",
+      "retained_sha256": "edbf9f86a2219484a715b52e7e2dacc06fd2bb95e42ca0a944523a2acad2a157",
+      "retained_file": "public-cgroup-final.json"
+    },
+    "public/setup.json": {
+      "original_sha256": "b8b94e0fdc89fdbfe2a48c0293f3e418b54f4ea930fdbf7db1bdc49436e622fd",
+      "retained_sha256": "b8b94e0fdc89fdbfe2a48c0293f3e418b54f4ea930fdbf7db1bdc49436e622fd",
+      "retained_file": "public-setup.json"
+    },
+    "public/daemon.json": {
+      "original_sha256": "51dc4814c487f31bc6401a9d454b4af953b7fd4022efc10561aa20cf2aa557ca",
+      "retained_sha256": "51dc4814c487f31bc6401a9d454b4af953b7fd4022efc10561aa20cf2aa557ca",
+      "retained_file": "public-daemon.json"
+    },
+    "public/docker-version.log": {
+      "original_sha256": "275f3f94580c221580b4348ea7f51d798b7486ffab6724bc278b93f2a8fe622d",
+      "retained_sha256": "275f3f94580c221580b4348ea7f51d798b7486ffab6724bc278b93f2a8fe622d",
+      "retained_file": "public-docker-version.log"
+    },
+    "public/docker-info.log": {
+      "original_sha256": "c5410ecce51a996fae54511eb28ebc3a2029b79d74680e7572a20a86fe216a0b",
+      "retained_sha256": "c5410ecce51a996fae54511eb28ebc3a2029b79d74680e7572a20a86fe216a0b",
+      "retained_file": "public-docker-info.log"
+    },
+    "public/probe-inspect-runc.log": {
+      "original_sha256": "d7c82bf33e438f3a19b9ee2c7198c6347ef139149060091058a4e5ed79782668",
+      "retained_sha256": "d7c82bf33e438f3a19b9ee2c7198c6347ef139149060091058a4e5ed79782668",
+      "retained_file": "public-probe-inspect-runc.log"
+    },
+    "public/probe-inspect-runsc.log": {
+      "original_sha256": "505437a10805b3bad3ec789d6761717491dc47c8d6ea174bd4a4b6c466a37d9c",
+      "retained_sha256": "505437a10805b3bad3ec789d6761717491dc47c8d6ea174bd4a4b6c466a37d9c",
+      "retained_file": "public-probe-inspect-runsc.log"
+    },
+    "public/probe-cgroup-runc.txt": {
+      "original_sha256": "4c4300d7a9221011f366ea91ae27991197335a79f31306be3b8ddc6fc31d941f",
+      "retained_sha256": "4c4300d7a9221011f366ea91ae27991197335a79f31306be3b8ddc6fc31d941f",
+      "retained_file": "public-probe-cgroup-runc.txt"
+    },
+    "public/probe-cgroup-runsc.txt": {
+      "original_sha256": "636ff4bacb843542066070d50f5a6d7381c2712e0a580df2792794cb8679611d",
+      "retained_sha256": "636ff4bacb843542066070d50f5a6d7381c2712e0a580df2792794cb8679611d",
+      "retained_file": "public-probe-cgroup-runsc.txt"
+    },
+    "public/fixture-image-build.log": {
+      "original_sha256": "b0ccbea23e955125aaec6a5c22091f070a59e3e0b6238207af890d3a8ae908ca",
+      "retained_sha256": "e50faaf1f5d618d7831988c29fabbbe18974d9425c123cd71b1cf267df81e28c",
+      "retained_file": "public-fixture-image-build.log"
+    },
+    "public/gvisor-signature.log": {
+      "original_sha256": "09ace6375f00e6b2ccd8f5df427f45483d81a276e576e32a90ce8449723d39a8",
+      "retained_sha256": "09ace6375f00e6b2ccd8f5df427f45483d81a276e576e32a90ce8449723d39a8",
+      "retained_file": "public-gvisor-signature.log"
+    },
+    "public/ubuntu-signature.log": {
+      "original_sha256": "d433fb717a7422eddf3ae068bbc2ef29dbb25f01e7e0bf7bd4ababa03dafd5b7",
+      "retained_sha256": "d433fb717a7422eddf3ae068bbc2ef29dbb25f01e7e0bf7bd4ababa03dafd5b7",
+      "retained_file": "public-ubuntu-signature.log"
+    }
+  }
+}
