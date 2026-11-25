@@ -1,0 +1,60 @@
+{
+  "run_id": 45716247631,
+  "head": "1aedf3d62d143f14616d1ec8130524043da5a6c3",
+  "tested_merge": "ee6f991fb1c6088989461d032b59d0fcc9cf8371",
+  "conclusion": "success",
+  "artifact": {
+    "id": 15070675614,
+    "bytes": 15093,
+    "sha256": "6e3b782df39d6ef4442f8e9115b666b44d5682a6d9e08b16bf4d6b4aeacb1d26"
+  },
+  "files": {
+    "result.json": {
+      "source_sha256": "b4e10147a170811555a22e7866880c81e4a9dcd8a714134a5f25b80a930e032d",
+      "retained_sha256": "b4e10147a170811555a22e7866880c81e4a9dcd8a714134a5f25b80a930e032d",
+      "bytes": 1587
+    },
+    "guest-result.json": {
+      "source_sha256": "3e8f55a661712c17811ae5e367bf73f3396c79e873a1d77cb39701e6acb70107",
+      "retained_sha256": "3e8f55a661712c17811ae5e367bf73f3396c79e873a1d77cb39701e6acb70107",
+      "bytes": 2057
+    },
+    "guest-without-gl.log": {
+      "source_sha256": "0794894d560bbc34ddfdd27bd52a652cfa54e3ac0781437018e28e1ac5daf730",
+      "retained_sha256": "0794894d560bbc34ddfdd27bd52a652cfa54e3ac0781437018e28e1ac5daf730",
+      "bytes": 218
+    },
+    "guest-qemu.log": {
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "probe.log": {
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "hosted-graphics.log": {
+      "source_sha256": "75a14feb09c1f55856efcfd95a8e3285b0f09be31ba7c4bd20143b3cc43e07ce",
+      "retained_sha256": "75a14feb09c1f55856efcfd95a8e3285b0f09be31ba7c4bd20143b3cc43e07ce",
+      "bytes": 612
+    },
+    "base-signature.json": {
+      "source_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "bytes": 1281
+    },
+    "selected-base.json": {
+      "source_sha256": "889f2bc07c571e7153068644c63d0d919a1cfca0ac9d18e9adfeab45b391eedf",
+      "retained_sha256": "889f2bc07c571e7153068644c63d0d919a1cfca0ac9d18e9adfeab45b391eedf",
+      "bytes": 271
+    },
+    "xvfb.log": {
+      "source_sha256": "b987a262609a3720f450ab6815ed90b2069dd47b7b012959ca19c325aebf5d55",
+      "retained_sha256": "b987a262609a3720f450ab6815ed90b2069dd47b7b012959ca19c325aebf5d55",
+      "bytes": 2348
+    }
+  },
+  "scope": "QEMU software GL device initialization only; no guest boot or compositor/Atomic qualification",
+  "local_large_download": false
+}
