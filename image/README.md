@@ -56,9 +56,10 @@ release prerequisites below are satisfied.
    at build time. Review RPM repositories, their GPG key fingerprints and every
    downloaded asset; use only checksummed, signed artifacts.
 2. Provision a trusted isolated runner with a reviewed, hash-pinned BlueBuild
-   v0.9.42 build that enables recipe v2, cosign, an SBOM generator and Podman.
-   Recipe v2 is feature-gated upstream; source compatibility alone does not prove
-   the release CLI enables it. Verify the actual CLI and generated Containerfile.
+   build that enables and validates recipe v2, cosign, an SBOM generator and Podman.
+   Recipe v2 is feature-gated upstream, and both v0.9.42 and the reviewed
+   post-release source still route validation through the v1 schema/parser.
+   The hosted compatibility check below must pass for the actual CLI and generated Containerfile.
    All external `FROM`/mount images must be digest-pinned. Never bypass validation
    or signature verification to get a build through.
 3. Generate/build one architecture and one variant at a time. Use one build
@@ -93,3 +94,73 @@ configure. Signing with an invented test key, omitting VM gates or silently
 changing compositor would violate the plan.
 The Agents menu and runtime units arrive with their implementing cards; the
 current launcher exposes local applications only.
+
+## Hosted BlueBuild compatibility check
+
+`image/toolchain/bluebuild.json` pins the experimental source build to
+`a654ee8810c637aa00356999488e97259061275d`, with Rust 1.100.0, the unchanged
+upstream lockfile and the explicit `v1_0_0` feature. The separate
+`Image tool compatibility` workflow compiles it only on a GitHub-hosted runner,
+under a verified 4 GiB memory limit, no swap, two CPUs, one Cargo job and a
+45-minute deadline. These hosted tool limits do not change the workstation's
+existing VM limits or the image-container limits above.
+
+The acceptance script invokes the actual CLI with validation enabled for both
+OS recipes, then malformed/unpinned recipe cases, then Containerfile generation.
+Positive cases run first so tool/network failures cannot count as negative-test
+evidence. The strict cases describe the OS recipe profile, not every recipe
+that upstream BlueBuild may support. The unmodified-source run on Rust 1.100.0
+[compiled successfully and rejected the v2 recipe](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45671852999)
+through its v1 validator. That result is retained before the downstream fix.
+No validation bypass is available in this workflow.
+
+The workflow has read-only repository permission, no release environment, no
+OIDC permission and no registry write permission. It uploads public logs, pins
+and generated text as evidence, not a compiler binary or image. Even a passing
+CLI check does not establish source audit coverage, authenticate an OS build,
+or qualify generated external image references; those remain separate gates.
+
+The downstream patch in `toolchain/patches/` adds a closed, embedded schema for
+this OS's v2 recipe profile, then requires successful upstream typed parsing and
+OCI-reference parsing. It supports only the two OS image names, amd64, local
+key paths, nonzero SHA-256 base digests and built-in Containerfile snippets.
+Remote schemas/includes, additional stages, other modules and moving tool images
+are outside this profile and rejected. The legacy v1 validation code remains
+in place; this is not general BlueBuild v2 support. The patch is hash-checked
+before application to the exact source revision and recorded in build evidence.
+
+Containerfile generation is denied access to a container daemon. If registry
+metadata lacks the OS version and BlueBuild tries to run an image as a fallback,
+this check fails instead of pulling/executing that image. Public registry
+metadata inspection remains allowed; generated external references still need
+a separate review before any image build.
+
+After the CLI acceptance cases pass, the same hosted unit runs the upstream
+workspace unit tests with the selected features, one test thread and no debug
+symbols. A failure is retained as a failure; no test is omitted to pass this gate.
+
+The patched CLI run
+[45673507028](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45673507028)
+passed both positive recipes, all twelve rejection cases and both Containerfile
+generations. Their only external FROM reference is the corresponding verified
+secureblue digest; scratch/local stages and extracted scripts are recorded in
+`docs/security/reports/P0-03-bluebuild/45673507028/generated-reference-review.json`.
+The full workspace test gate failed on the missing Cosign test prerequisite.
+
+`toolchain/cosign.json` now pins the same Cosign v3.1.5 artifact used to authenticate
+the base images. The hosted bootstrap downloads it under the existing cgroup,
+checks size/hash and verifies the release KMS signature using the pinned public
+publisher key and OpenSSL before running any downloaded code. The authenticated
+binary enters only this job's test PATH; small public verification records are
+retained. No release credential is provided. The full upstream tests remain
+mandatory, including the previously failing Cosign/Sigstore compatibility tests.
+
+The complete rerun [45676688773](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45676688773)
+passed the actual CLI checks and all 151 upstream workspace tests with authenticated
+Cosign available. Its source, compiler, lockfile, patch, binary and generated-file
+hashes are retained in the P0-03 report. Tool compatibility is now evidenced for
+these exact inputs; it does not qualify a built OS image or complete dependency
+audits. The initial and final cgroup counters are collected inside the unit;
+a post-exit systemd query labels a garbage-collected unit instead of showing
+default limits as measured values. The first success predates the final-counter
+fix and records that evidence limitation explicitly.

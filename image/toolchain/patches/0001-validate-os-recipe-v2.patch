@@ -1,0 +1,247 @@
+diff --git a/src/commands/validate.rs b/src/commands/validate.rs
+--- a/src/commands/validate.rs
++++ b/src/commands/validate.rs
+@@ -28,6 +28,9 @@
+ mod schema_validator;
+ mod yaml_span;
+ 
++#[cfg(feature = "recipe-v2")]
++mod symbi_recipe_v2;
++
+ #[derive(Debug, Args, Builder)]
+ pub struct ValidateCommand {
+     /// The path to the recipe.
+@@ -62,6 +65,12 @@
+ 
+         if !self.recipe.is_file() {
+             bail!("File {recipe_path_display} must exist");
++        }
++
++        #[cfg(feature = "recipe-v2")]
++        if symbi_recipe_v2::validate_if_v2(&self.recipe, &read_file(&self.recipe)?)? {
++            info!("Recipe {recipe_path_display} is valid (Symbi OS v2 profile)");
++            return Ok(());
+         }
+ 
+         ASYNC_RUNTIME
+diff --git a/src/commands/validate/symbi_recipe_v2.rs b/src/commands/validate/symbi_recipe_v2.rs
+new file mode 100644
+--- /dev/null
++++ b/src/commands/validate/symbi_recipe_v2.rs
+@@ -0,0 +1,56 @@
++//! Downstream Symbi OS recipe profile, not general-purpose recipe-v2 support.
++//!
++//! Every accepted field is validated against an embedded, closed schema before
++//! the upstream typed parser sees it. Imports, stages and external modules are
++//! deliberately unsupported. This path never retrieves a mutable schema.
++use std::path::Path;
++
++use blue_build_recipe::{Recipe, RecipeGetters};
++use miette::{Context, IntoDiagnostic, Result, bail, miette};
++use serde_json::Value;
++
++pub(super) fn validate_if_v2(path: &Path, text: &str) -> Result<bool> {
++    let instance: Value = serde_yaml::from_str(text)
++        .into_diagnostic()
++        .wrap_err_with(|| format!("Recipe {} failed to validate", path.display()))?;
++    // Preserve the existing v1 route. An absent version on a v2-shaped input
++    // must fail this profile instead of being mistaken for a legacy recipe.
++    let has_v2_fields = ["base", "metadata", "spec"]
++        .iter()
++        .any(|field| instance.get(field).is_some());
++    if !has_v2_fields
++        && matches!(
++            instance.get("version").and_then(Value::as_u64),
++            None | Some(1)
++        )
++    {
++        return Ok(false);
++    }
++
++    let validate = || -> Result<()> {
++        let schema: Value = serde_json::from_str(include_str!("symbi_recipe_v2.json"))
++            .into_diagnostic()
++            .wrap_err("Invalid embedded Symbi OS recipe schema")?;
++        let validator = jsonschema::options()
++            .build(&schema)
++            .map_err(|error| miette!("Cannot compile embedded recipe schema: {error}"))?;
++        let errors: Vec<String> = validator
++            .iter_errors(&instance)
++            .take(16)
++            .map(|error| format!("{}: {error}", error.instance_path))
++            .collect();
++        if !errors.is_empty() {
++            bail!("Symbi OS recipe v2 profile: {}", errors.join("\n"));
++        }
++        // Check actual upstream deserialization and OCI-reference semantics as
++        // well as the schema; a schema-only success cannot hide an incompatibility.
++        let recipe: Recipe = serde_yaml::from_str(text).into_diagnostic()?;
++        if !matches!(&recipe, Recipe::V2(_)) {
++            bail!("Expected the upstream v2 parser");
++        }
++        recipe.base_image_ref()?;
++        Ok(())
++    };
++    validate().wrap_err_with(|| format!("Recipe {} failed to validate", path.display()))?;
++    Ok(true)
++}
+diff --git a/src/commands/validate/symbi_recipe_v2.json b/src/commands/validate/symbi_recipe_v2.json
+new file mode 100644
+--- /dev/null
++++ b/src/commands/validate/symbi_recipe_v2.json
+@@ -0,0 +1,155 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "title": "Symbi OS closed BlueBuild recipe-v2 profile",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "version",
++    "base",
++    "metadata",
++    "spec",
++    "modules"
++  ],
++  "properties": {
++    "version": {
++      "const": 2
++    },
++    "base": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "image",
++        "public-key"
++      ],
++      "properties": {
++        "image": {
++          "type": "object",
++          "additionalProperties": false,
++          "required": [
++            "registry",
++            "repository",
++            "digest"
++          ],
++          "properties": {
++            "registry": {
++              "type": "string",
++              "minLength": 1,
++              "maxLength": 253,
++              "pattern": "^[a-z0-9.-]+(:[0-9]+)?$"
++            },
++            "repository": {
++              "type": "string",
++              "minLength": 1,
++              "maxLength": 255,
++              "pattern": "^[a-z0-9_./-]+$"
++            },
++            "digest": {
++              "type": "string",
++              "minLength": 1,
++              "maxLength": 71,
++              "pattern": "^sha256:[a-f0-9]{64}$",
++              "not": {
++                "const": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
++              }
++            }
++          }
++        },
++        "public-key": {
++          "type": "string",
++          "minLength": 1,
++          "maxLength": 255,
++          "pattern": "^image/keys/[A-Za-z0-9_-][A-Za-z0-9_.-]*[.]pub$"
++        }
++      }
++    },
++    "metadata": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "name",
++        "description",
++        "labels"
++      ],
++      "properties": {
++        "name": {
++          "enum": [
++            "symbiont-os",
++            "symbiont-os-nvidia"
++          ]
++        },
++        "description": {
++          "type": "string",
++          "minLength": 1,
++          "maxLength": 512
++        },
++        "labels": {
++          "type": "object",
++          "additionalProperties": false,
++          "required": [
++            "org.opencontainers.image.licenses"
++          ],
++          "properties": {
++            "org.opencontainers.image.licenses": {
++              "const": "Apache-2.0"
++            }
++          }
++        }
++      }
++    },
++    "spec": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "platforms",
++        "tool-versions"
++      ],
++      "properties": {
++        "platforms": {
++          "const": [
++            "linux/amd64"
++          ]
++        },
++        "tool-versions": {
++          "type": "object",
++          "additionalProperties": false,
++          "required": [
++            "bluebuild"
++          ],
++          "properties": {
++            "bluebuild": {
++              "const": "none"
++            }
++          }
++        }
++      }
++    },
++    "modules": {
++      "type": "array",
++      "minItems": 1,
++      "maxItems": 8,
++      "items": {
++        "type": "object",
++        "additionalProperties": false,
++        "required": [
++          "type",
++          "snippets"
++        ],
++        "properties": {
++          "type": {
++            "const": "containerfile"
++          },
++          "snippets": {
++            "type": "array",
++            "minItems": 1,
++            "maxItems": 128,
++            "items": {
++              "type": "string",
++              "minLength": 1,
++              "maxLength": 16384
++            }
++          }
++        }
++      }
++    }
++  }
++}

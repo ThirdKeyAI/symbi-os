@@ -83,3 +83,56 @@ coverage to `supply-chain/` (or explicitly reviewed, scoped exceptions with an
 owner and removal condition); do not fabricate certifications. Run both gates.
 Tooling installs have their own published lockfiles and are outside this
 workspace graph; release-tool supply-chain coverage remains work for P0-03.
+
+## P0-03 experimental image-tool source build
+
+The BlueBuild compatibility workflow checks out
+[`a654ee8810c637aa00356999488e97259061275d`](https://github.com/blue-build/cli/commit/a654ee8810c637aa00356999488e97259061275d),
+Apache-2.0, using the existing pinned checkout action. This is six commits after
+v0.9.42 (`cdca92e8d65d9fd4f6bedac0e88a8f9479d70da6`). The reviewed comparison
+contains dependency/advisory updates and removal of optional git2, build
+provenance changes, chunkah logging, a digest-print fix, lint fixes and a README
+typo. It does not add v2 validation: `ValidateCommand` still requests the v1
+schema and deserializes `RecipeV1`. GitHub reports the selected commit signature
+verified; that is not a full source/dependency audit.
+
+The BlueBuild build uses Rust 1.100.0, `--locked --no-default-features --features v1_0_0`,
+one Cargo job, no debug symbols or incremental output, and a hosted cgroup
+with 4 GiB memory, zero swap and at most two CPUs. It records the source SHA,
+lockfile SHA-256, compiler version, binary SHA-256 and actual CLI results.
+It is an unqualified build-tool experiment, outside the OS/runtime payload
+and workspace Cargo graph. No cargo-vet audit or release-tool approval is
+claimed; no blanket exemptions are introduced.
+
+Public evidence upload uses
+[`actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02`](https://github.com/actions/upload-artifact/commit/ea165f8d65b6e75b540449e92b4886f43607fa02)
+(v4.6.2, MIT), the pin used by Symbiont. GitHub reports its merge signature
+verified. Only `.cache/image-tool-evidence/` is uploaded for fourteen days;
+no signing environment, private material or compiler target directory is attached.
+
+The first hosted attempt on Rust 1.95.0 failed with E0658 at three upstream
+`Option::map_or_default` calls; recipe tests did not run. The dedicated BlueBuild
+compiler is now pinned to [Rust 1.100.0](https://github.com/rust-lang/rust/releases/tag/1.100.0),
+where [that API is stable](https://doc.rust-lang.org/1.100.0/std/option/enum.Option.html#method.map_or_default).
+The workspace MSRV and existing checker toolchain pins are unchanged. This uses
+a stable supported API rather than enabling unstable compiler features.
+
+The downstream `0001-validate-os-recipe-v2.patch` adds a standalone schema and
+a validation route for the closed OS profile. It reuses BlueBuild's already
+locked `jsonschema` and recipe crates, adding no crate and changing no lockfile.
+The patch preserves the existing v1 validator, does not use skip flags, and
+checks schema plus upstream typed/OCI parsing. Hash checks bind the patch before
+application, and actual applied source differences are retained with the tool
+result. Twelve rejected profile cases and both real rendered recipes exercise
+the compiled CLI; an offline Python schema preflight is only preliminary evidence.
+
+The BlueBuild tests require Cosign. Their hosted prerequisite reuses authenticated
+Cosign v3.1.5, source `e5a0818ca5729481095773409e9c1b60cc278e8d`, binary SHA-256
+`912502def4baf810eaf36b210a4f51e1da214f9f6d664e2a9a2154cfc67ee0d6`.
+`image/toolchain/cosign.json` binds the exact download and release KMS bundle;
+`image/toolchain/keys/cosign-release-v3.1.5.pub` is the publisher public key already
+used by the retained base-verification bootstrap. OpenSSL verifies the signature
+before execution. The initial key trust remains the pinned publisher HTTPS
+source, as documented in the earlier verification record. This adds no Cargo
+crate, no release credential and no dependency-audit exemption. Tests use only
+upstream fixture/disposable keys; retained failure logs omit private test PEMs.

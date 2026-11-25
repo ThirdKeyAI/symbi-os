@@ -1,0 +1,10 @@
+{
+  "scope": "Local small schema, patch-application and formatting preflight only; actual Rust CLI and unit tests pending hosted execution",
+  "valid_recipes": 2,
+  "rejected_mutations": 7,
+  "patch_sha256": "47e8de584f0a54a00e8b2145339e0bfd00868cf577f74d71681d9c57fa9d3342",
+  "original_validator_git_blob": "152e48129ce1beaa1072dcace8545ef13e562716",
+  "patch_application_matches_all_three_source_files": true,
+  "rustfmt": "1.95.0, edition2024, skip_children=true",
+  "compiled_cli_passed": false
+}
