@@ -8,6 +8,8 @@ notices; the generated recipe installs both notices with the project's license.
 | [Ombuntu](https://github.com/Ombuntu/Ombuntu/tree/8f2085cb73520fc3558f1248dadd1fca5e69cfcc) | `8f2085cb73520fc3558f1248dadd1fca5e69cfcc` | Original browser privacy JSON and MIT license under `vendor/ombuntu`; adapted browser policies, probe/telemetry opt-outs and portal default |
 | [Omarchy v3.8.4](https://github.com/omacom/omarchy/tree/8fcc9d6048af4cb0e3af8512c78049857a3b53dd) | `8fcc9d6048af4cb0e3af8512c78049857a3b53dd` | Original Hyprland input, Waybar and Walker configs and MIT license under `vendor/omarchy`; reduced local defaults in the overlay |
 | [BlueBuild v0.9.42](https://github.com/blue-build/cli/tree/cdca92e8d65d9fd4f6bedac0e88a8f9479d70da6) | `cdca92e8d65d9fd4f6bedac0e88a8f9479d70da6` | Recipe v2 interface reference, no vendored executable |
+| [Cosign v3.1.5](https://github.com/sigstore/cosign/tree/e5a0818ca5729481095773409e9c1b60cc278e8d) | `e5a0818ca5729481095773409e9c1b60cc278e8d` | Authenticated external tool for base-signature verification and OS key generation; no executable vendored or shipped |
+| [secureblue publisher key](https://github.com/secureblue/secureblue/blob/353366bb6d031e66fc565b0b101a8a069f32fcdb/cosign.pub) | `353366bb6d031e66fc565b0b101a8a069f32fcdb` | Public verification key in `keys/secureblue-2026.pub`; exact verified image references in `base-images.json` |
 
 Omarchy's revision is the one pinned by Ombuntu's `install/lib.sh`, not the
 current moving Omarchy branch. `vendor/SHA256SUMS` binds the original copied

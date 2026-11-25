@@ -1,5 +1,9 @@
 # Symbiont OS
 
+> **Symbi OS is highly experimental.** Security boundaries, image updates, and
+> recovery paths are still being developed and qualified. Use only in disposable
+> testing environments; this is not a production-ready operating system.
+
 A desktop Linux system where AI agents are visible, least-privileged principals
 and the human is the only source of authority. The target platform is a signed
 Fedora Atomic image with Hyprland and the upstream Symbiont runtime.
@@ -62,10 +66,13 @@ top-level component directories reserve the boundaries in the build plan
 without providing mock services. `upstream/symbiont.toml` records the full
 upstream source revision; the runtime remains a separate project.
 
-`.gitea/workflows/ci.yml` runs the same checks on pushes and pull requests. It
-needs an enabled Linux runner labeled `ubuntu-latest` with Rustup, Node (for
-checkout), Git, Java 11 or later, and a C toolchain. A hosted run has not yet
-been observed.
+`.github/workflows/ci.yml` runs the same checks on GitHub-hosted `ubuntu-latest`
+runners. The job has read-only contents permission and no signing credentials.
+The equivalent `.gitea/workflows/ci.yml` remains available for a configured Gitea
+runner with Rustup, Node, Git, Java 11 or later, and a C toolchain. Hosted results
+are recorded in the card report; configuring a workflow alone is not a passing
+check. Both workflows run the five design models and eighteen deliberate fault
+checks after the workspace checks.
 P0-03 adds the signed image build; P0-04 qualifies the runtime on that image.
 Host checks do not substitute for either card. The formal checks run serially
 after the workspace checks using the pinned formal-proofs action; see

@@ -1,6 +1,9 @@
 {
   "schema": 1,
-  "repositories": {},
-  "public_key": null,
-  "public_key_sha256": null
+  "repositories": {
+    "generic": "ghcr.io/thirdkeyai/symbiont-os",
+    "nvidia": "ghcr.io/thirdkeyai/symbiont-os-nvidia"
+  },
+  "public_key": "image/keys/thirdkey-os-2026.pub",
+  "public_key_sha256": "f95a39bcd37e640d179a1f8f2cb2baeb44162e8d19f5b75e0fe1553f3ef777ac"
 }

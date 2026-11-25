@@ -1,0 +1,44 @@
+name: Workspace and formal checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: workspace-formal-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out the proposed revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Bootstrap pinned build tools
+        run: bash scripts/bootstrap-tools.sh
+      - name: Check workspace, policy fixtures, and dependency reviews
+        run: bash scripts/check.sh
+      - name: Prepare the pinned, resource-limited model checker
+        id: formal
+        run: |
+          bash -n scripts/bootstrap-formal.sh scripts/formal-java.sh
+          bash scripts/bootstrap-formal.sh
+          printf 'faults=%s\n' "$(awk 'NF && $1 !~ /^#/ { printf "formal/%s.tla:%s=%s ", $1, $2, $3 }' formal/faults.tsv)" >> "$GITHUB_OUTPUT"
+      - name: Check design drift, models, and deliberate faults
+        uses: jaschadub/skill-formal-proofs@bb984f2e4427d3f5515cc56d5a54c6ce8ce26d1e # v0.5.3
+        env:
+          JAVA: ${{ github.workspace }}/scripts/formal-java.sh
+          TLA2TOOLS: ${{ github.workspace }}/.tools/tla2tools-1.7.4.jar
+        with:
+          specs: >-
+            formal/GrantLifecycle.tla formal/TrustedInput.tla formal/Freeze.tla
+            formal/JournalBeforeEffect.tla formal/SessionClass.tla
+          faults: ${{ steps.formal.outputs.faults }}
