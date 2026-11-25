@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "scope": "Signed disposable Elephant compiler inputs; not a product layer",
+  "run_id": 45720742666,
+  "head_sha": "5822e713f5960e803f753fc353dafb36dcd7470e",
+  "checked_merge_sha": "943be8905da5dc1e3dace4b5bf5f9f5f648dd88b",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "artifact": {
+    "id": 15071937423,
+    "bytes": 42560041,
+    "sha256": "be90e64fa5d9305f0509d743d498a25116fa9327d24ac2886305e2cd4f72ca0a"
+  },
+  "manifest_sha256": "33db1759391634ccc71675aeea3ce505a8cb576d72d5e564ee136790f8c4f3ef",
+  "packages": [
+    {
+      "filename": "go-filesystem-3.8.0-3.fc45.x86_64.rpm",
+      "bytes": 8536,
+      "sha256": "d6b7be15db822c933a20166f849051743016546a8c1d9fbbb460bf135f28f852",
+      "nevra": "go-filesystem-3.8.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LicenseRef-Fedora-Public-Domain",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "golang-1.27.4-2.fc45.x86_64.rpm",
+      "bytes": 1502055,
+      "sha256": "7818d61212b5d4975e41de6470a76d62a79d0bcc3bbd960bf939df6d0f422e10",
+      "nevra": "golang-1.27.4-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause AND LicenseRef-Fedora-Public-Domain",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "golang-bin-1.27.4-2.fc45.x86_64.rpm",
+      "bytes": 24876179,
+      "sha256": "aabab6cebc01e5830af7b41abbe6aa860d1b19add676f6da0e6116f687392622",
+      "nevra": "golang-bin-1.27.4-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause AND LicenseRef-Fedora-Public-Domain",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "golang-src-1.27.4-2.fc45.noarch.rpm",
+      "bytes": 16163788,
+      "sha256": "006f379434db96daba41d8dea7e8504003433679e7e36de3047b9234c4d81363",
+      "nevra": "golang-src-1.27.4-2.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause AND LicenseRef-Fedora-Public-Domain",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    }
+  ],
+  "key": {
+    "path": "image/hyprland/keys/fedora-45-primary.asc",
+    "sha256": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425",
+    "fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E",
+    "identity": "Fedora (45) <fedora-45-primary@fedoraproject.org>"
+  },
+  "qualified": false,
+  "product_installation": false,
+  "requirements": {
+    "schema": 1,
+    "scope": "Candidate signed Fedora toolchain for source-built application-only Elephant; review and pin before installation",
+    "source_inputs": "image/launcher/candidates.json",
+    "packages": [
+      "golang >= 1.27.1",
+      "gcc",
+      "glibc-devel"
+    ],
+    "notes": [
+      "The pinned Elephant go.mod requires Go1.27.1; the selected base has no Go compiler",
+      "Go plugin and executable must be built with the same authenticated compiler and compatible flags",
+      "GCC and glibc development inputs support Go CGO/plugin builds; existing base packages remain pinned by its image digest",
+      "Discovery does not install packages or build/execute Elephant",
+      "This separate profile must not change either the compositor build lock or the launcher runtime lock"
+    ]
+  }
+}

@@ -1,0 +1,281 @@
+{
+  "schema": 1,
+  "scope": "Candidate RPM download and signature verification; no package install or build",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "key": {
+    "path": "image/hyprland/keys/fedora-45-primary.asc",
+    "sha256": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425",
+    "fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E",
+    "identity": "Fedora (45) <fedora-45-primary@fedoraproject.org>"
+  },
+  "requirements": {
+    "schema": 1,
+    "scope": "Candidate runtime dependencies missing from the authenticated original base; resolve and review before an additive offline packaging transaction",
+    "source_inputs": "image/hyprland/development-prefix.lock.json",
+    "hyprland_sha256": "0f5dc9a3bb14265516a1a7c16a90ff0ad54fda94c7caed5defb4b234ecb7f34a",
+    "packages": [
+      "libeis.so.1()(64bit)",
+      "libmuparser.so.2()(64bit)",
+      "libtomlplusplus.so.3()(64bit)"
+    ],
+    "notes": [
+      "All three SONAMEs were missing in the actual original-base ldd run45713989665",
+      "This runtime profile must not install the full compiler RPM set or downgrade the base Mesa stack",
+      "The compiled prefix is retained for exact reuse; discovery does not install or qualify it"
+    ]
+  },
+  "limits": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128"
+  },
+  "commands": [
+    {
+      "name": "installed-before",
+      "command": [
+        "rpm",
+        "-qa",
+        "--qf",
+        "%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "public-key",
+      "command": [
+        "gpg",
+        "--homedir",
+        "/output/gnupg",
+        "--batch",
+        "--no-options",
+        "--with-colons",
+        "--show-keys",
+        "/inputs/fedora-45-primary.asc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "import-key",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--import",
+        "/inputs/fedora-45-primary.asc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "keyring",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--list"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "resolve-download",
+      "command": [
+        "dnf5",
+        "--config=/inputs/dnf.conf",
+        "--releasever=45",
+        "--assumeyes",
+        "--disable-plugin=*",
+        "install",
+        "--downloadonly",
+        "--",
+        "libeis.so.1()(64bit)",
+        "libmuparser.so.2()(64bit)",
+        "libtomlplusplus.so.3()(64bit)"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-000-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/libeis-1.6.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-000-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/libeis-1.6.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-001-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/muParser-2.3.5-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-001-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/muParser-2.3.5-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-002-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/tomlplusplus-3.4.0-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-002-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/tomlplusplus-3.4.0-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "missing-key-control",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/empty-keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/muParser-2.3.5-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 1
+    },
+    {
+      "name": "tampered-package-control",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/tampered.rpm"
+      ],
+      "exit_code": 1
+    },
+    {
+      "name": "installed-after",
+      "command": [
+        "rpm",
+        "-qa",
+        "--qf",
+        "%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "packages": [
+    {
+      "filename": "libeis-1.6.0-3.fc45.x86_64.rpm",
+      "bytes": 59677,
+      "sha256": "44ccf3c6f99af7f0aa9522fe2080164754644a74615612ea67e3b82ca8ac9e97",
+      "nevra": "libeis-1.6.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "muParser-2.3.5-6.fc45.x86_64.rpm",
+      "bytes": 185483,
+      "sha256": "b86f69f9300cc8ba09662f4d196eb2a1b431c7548d21bc33c53636dfb2a5fcd2",
+      "nevra": "muParser-2.3.5-6.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-2-Clause",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "tomlplusplus-3.4.0-8.fc45.x86_64.rpm",
+      "bytes": 108860,
+      "sha256": "f3ae3af984a168fc5eb2b0c6a12b6aab057bfc9bd40f5d280a99a50324d89d17",
+      "nevra": "tomlplusplus-3.4.0-8.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    }
+  ],
+  "passed": true,
+  "os_qualified": false,
+  "installed_packages_unchanged": true,
+  "negative_controls": {
+    "missing_key_rejected": true,
+    "tampered_package_rejected": true
+  }
+}

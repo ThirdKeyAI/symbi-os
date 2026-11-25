@@ -81,3 +81,10 @@ probe uses the [Linux DRM version ioctl](https://github.com/torvalds/linux/blob/
 to read the render device's actual driver name and still requires `virtio_gpu`.
 The cloud guest kernel7.2.11 is distinct from the Atomic base kernel7.3.4;
 this infrastructure test does not qualify the product kernel or user session.
+
+The corrected [run45720742453](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45720742453)
+passed both boots. DRM_IOCTL_VERSION identified `virtio_gpu`; the no-GPU guest
+had no render device. Both retained SELinux enforcement and loopback-only
+networking and powered off normally. The QEMU container peaked at1.76 GB with
+no memory-limit or OOM events. This guest-root device observation does not prove
+unprivileged session access, rendering, Hyprland or Atomic image acceptance.
