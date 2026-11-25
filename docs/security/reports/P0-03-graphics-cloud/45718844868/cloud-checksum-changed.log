@@ -1,0 +1,6 @@
+[GNUPG:] NEWSIG
+[GNUPG:] KEY_CONSIDERED 4F50A6114CD5C6976A7F1179655A4B02F577861E 0
+[GNUPG:] BADSIG 655A4B02F577861E Fedora (45) <fedora-45-primary@fedoraproject.org>
+gpgv: Signature made Sat Oct 31 07:10:38 2026 UTC
+gpgv:                using RSA key 4F50A6114CD5C6976A7F1179655A4B02F577861E
+gpgv: BAD signature from "Fedora (45) <fedora-45-primary@fedoraproject.org>"

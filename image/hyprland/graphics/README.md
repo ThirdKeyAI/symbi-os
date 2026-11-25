@@ -69,3 +69,15 @@ Cloud-init's [NoCloud documentation](https://docs.cloud-init.io/en/latest/refere
 defines the local CIDATA seed and copy-on-write boot pattern. QEMU's
 [character-device documentation](https://www.qemu.org/docs/master/system/invocation.html#character-device-options)
 describes the output-only file channel used for the report.
+
+## First actual boot and driver-identity correction
+
+[The first hosted cloud run](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45718844868)
+booted and powered off both cases with SELinux enforcing and only loopback.
+The no-GPU control passed. The positive guest exposed and opened renderD128,
+but validation failed because the sysfs parent driver is the PCI transport.
+This failed result is retained without rewriting it as acceptance. The next
+probe uses the [Linux DRM version ioctl](https://github.com/torvalds/linux/blob/v6.12/include/uapi/drm/drm.h)
+to read the render device's actual driver name and still requires `virtio_gpu`.
+The cloud guest kernel7.2.11 is distinct from the Atomic base kernel7.3.4;
+this infrastructure test does not qualify the product kernel or user session.

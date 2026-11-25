@@ -1,0 +1,29 @@
+Traceback (most recent call last):
+  File "/inputs/cloud_boot.py", line 258, in <module>
+    main()
+    ~~~~^^
+  File "/inputs/cloud_boot.py", line 235, in main
+    validate_report(report, nonce, source_hash, case)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/inputs/cloud_boot.py", line 66, in validate_report
+    require(bool(re.fullmatch(r'/dev/dri/renderD[0-9]+', node.get('path', '')))
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            and node.get('character_device') is True and node.get('major') == 226
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            and isinstance(node.get('minor'), int) and node['minor'] >= 128
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            and node.get('driver') == 'virtio_gpu' and node.get('opened_read_write') is True,
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            'Render device is not an accessible virtio GPU')
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/inputs/cloud_boot.py", line 38, in require
+    raise ValueError(reason)
+ValueError: Render device is not an accessible virtio GPU
+Traceback (most recent call last):
+  File "/home/runner/work/symbi-os/symbi-os/image/hyprland/graphics/hosted.py", line 158, in <module>
+    main()
+  File "/home/runner/work/symbi-os/symbi-os/image/hyprland/graphics/hosted.py", line 67, in main
+    subprocess.run(command, check=True, timeout=2000 if cloud_boot else 120)
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/hyprland-cloud-storage/root', '--runroot', '/run/symbi-graphics-cloud-45718844868-1', 'run', '--rm', '--pull=never', '--read-only', '--network=none', '--user=10001:10001', '--hostname=ip-10-0-142-246', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--memory=3g', '--memory-swap=3g', '--cpus=2', '--pids-limit=64', '--cgroup-parent=/system.slice/symbi-graphics-cloud-45718844868-1.service', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/hyprland-cloud-storage/inputs,dst=/inputs,ro', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/hyprland-cloud-storage/output,dst=/output', '--mount', 'type=bind,src=/tmp/.X11-unix/X99,dst=/tmp/.X11-unix/X99', '--env=DISPLAY=:99', '--env=PYTHONDONTWRITEBYTECODE=1', '--entrypoint=/usr/bin/python3', 'ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f', '/inputs/cloud_boot.py']' returned non-zero exit status 1.

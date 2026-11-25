@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Run inside the disposable Fedora cloud guest and report over virtio serial."""
+import ctypes
+import fcntl
 import hashlib
 import json
 import os
@@ -10,6 +12,29 @@ import stat
 import subprocess
 import sys
 import time
+
+
+class DrmVersion(ctypes.Structure):
+    # Linux UAPI drm_version; this probe's signed guest is x86_64 only.
+    _fields_ = [('major', ctypes.c_int), ('minor', ctypes.c_int), ('patch', ctypes.c_int),
+                ('name_len', ctypes.c_size_t), ('name', ctypes.c_void_p),
+                ('date_len', ctypes.c_size_t), ('date', ctypes.c_void_p),
+                ('desc_len', ctypes.c_size_t), ('desc', ctypes.c_void_p)]
+
+
+def drm_driver(fd, ioctl=fcntl.ioctl):
+    if platform.machine() != 'x86_64' or ctypes.sizeof(DrmVersion) != 64:
+        raise ValueError('Unexpected DRM ioctl ABI')
+    name = ctypes.create_string_buffer(128)
+    version = DrmVersion(name_len=len(name), name=ctypes.addressof(name))
+    # _IOWR('d', 0x00, struct drm_version), from include/uapi/drm/drm.h.
+    ioctl(fd, 0xc0406400, version, True)
+    if not 0 < version.name_len < len(name):
+        raise ValueError('Missing or oversized DRM driver name')
+    value = name.raw[:version.name_len].decode('ascii')
+    if not re.fullmatch('[a-zA-Z0-9_-]+', value):
+        raise ValueError('Malformed DRM driver name')
+    return value
 
 
 def main():
@@ -49,8 +74,11 @@ def main():
                      'opened_read_write': False}
             try:
                 fd = os.open(node, os.O_RDWR | os.O_CLOEXEC | os.O_NOFOLLOW)
-                os.close(fd)
-                entry['opened_read_write'] = True
+                try:
+                    entry['opened_read_write'] = True
+                    entry['drm_driver'] = drm_driver(fd)
+                finally:
+                    os.close(fd)
             except OSError as error:
                 entry['open_error'] = str(error)
             record['render_nodes'].append(entry)

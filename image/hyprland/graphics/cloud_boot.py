@@ -66,7 +66,7 @@ def validate_report(report, nonce, source_hash, case):
         require(bool(re.fullmatch(r'/dev/dri/renderD[0-9]+', node.get('path', '')))
                 and node.get('character_device') is True and node.get('major') == 226
                 and isinstance(node.get('minor'), int) and node['minor'] >= 128
-                and node.get('driver') == 'virtio_gpu' and node.get('opened_read_write') is True,
+                and node.get('drm_driver') == 'virtio_gpu' and node.get('opened_read_write') is True,
                 'Render device is not an accessible virtio GPU')
 
 
@@ -235,6 +235,7 @@ def main():
             validate_report(report, nonce, source_hash, case)
             item['boot_id'] = report['boot_id']
             item['passed'] = True
+            record['guest_booted'] = True
         assert len({item['boot_id'] for item in record['cases']}) == 2, 'Controls must use distinct boots'
         record.update(passed=True, guest_booted=True)
     except Exception as error:

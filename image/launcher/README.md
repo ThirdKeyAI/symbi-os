@@ -23,3 +23,12 @@ launcher therefore also requires restricted normal launch paths, only the
 selected built-in provider, and actual extension-refusal tests. No optional menu
 or remote provider is selected here. Runtime testing on the final base, release
 input authentication/provenance and dependency/licence review remain open.
+
+`elephant-build-requirements.json` is a separate signed-Fedora compiler discovery
+profile for the exact Elephant source and go.mod/go.sum hashes in
+`elephant-source.json`. Go must satisfy the source's1.27.1 minimum; later builds
+must disable automatic toolchain downloads and preserve the upstream lockfile.
+GCC/glibc development inputs support the actual executable/provider CGO builds.
+Discovery itself neither installs the compiler nor executes launcher artifacts.
+The native-provider constructor acceptance driver is under preparation; no
+provider-refusal result or product qualification is claimed yet.

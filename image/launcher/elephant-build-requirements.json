@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "scope": "Candidate signed Fedora toolchain for source-built application-only Elephant; review and pin before installation",
+  "source_inputs": "image/launcher/candidates.json",
+  "packages": [
+    "golang >= 1.27.1",
+    "gcc",
+    "glibc-devel"
+  ],
+  "notes": [
+    "The pinned Elephant go.mod requires Go1.27.1; the selected base has no Go compiler",
+    "Go plugin and executable must be built with the same authenticated compiler and compatible flags",
+    "GCC and glibc development inputs support Go CGO/plugin builds; existing base packages remain pinned by its image digest",
+    "Discovery does not install packages or build/execute Elephant",
+    "This separate profile must not change either the compositor build lock or the launcher runtime lock"
+  ]
+}

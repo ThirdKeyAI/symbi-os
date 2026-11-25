@@ -3,7 +3,7 @@ set -euo pipefail
 [[ $# -le 1 ]] || { echo 'Expected at most one package profile.' >&2; exit 2; }
 profile=${1:-hyprland}
 case "$profile" in
-  hyprland|launcher) ;;
+  hyprland|hyprland-runtime|launcher|elephant-build) ;;
   *) echo 'Unknown package discovery profile.' >&2; exit 2 ;;
 esac
 [[ "${GITHUB_ACTIONS:-}" == true && "${RUNNER_ENVIRONMENT:-}" == github-hosted ]] || {
@@ -29,6 +29,7 @@ load_state=$(sudo systemctl show "$unit" --property=LoadState --value)
 if [[ "$load_state" == not-found ]]; then
   printf 'LoadState=not-found\nObservation=unit collected; use cgroup-final.json\n' > "$evidence/systemd-result.txt"
 else
-  sudo systemctl show "$unit" --property=LoadState,Result,ExecMainStatus,MemoryPeak,MemoryMax,MemorySwapMax,CPUQuotaPerSecUSec,CPUUsageNSec,RuntimeMaxUSec > "$evidence/systemd-result.txt"
+  unit_result=$(sudo systemctl show "$unit" --property=LoadState,Result,ExecMainStatus,MemoryPeak,MemoryMax,MemorySwapMax,CPUQuotaPerSecUSec,CPUUsageNSec,RuntimeMaxUSec)
+  printf '%s\n' "$unit_result" > "$evidence/systemd-result.txt"
 fi
 exit "$status"

@@ -14,7 +14,9 @@ class PackageProfiles(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for profile, relative in [('hyprland', 'image/hyprland/build-requirements.json'),
-                                      ('launcher', 'image/launcher/runtime-requirements.json')]:
+                                      ('hyprland-runtime', 'image/hyprland/runtime-requirements.json'),
+                                      ('launcher', 'image/launcher/runtime-requirements.json'),
+                                      ('elephant-build', 'image/launcher/elephant-build-requirements.json')]:
                 path = root / relative
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text('{"packages": ["' + profile + '"]}')

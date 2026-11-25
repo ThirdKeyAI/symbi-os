@@ -27,7 +27,7 @@ class CloudBoot(unittest.TestCase):
                 'modprobe': {'exit_code': 0, 'stdout': '', 'stderr': ''},
                 'selinux': 'Enforcing',
                 'render_nodes': ([{'path': '/dev/dri/renderD128', 'character_device': True,
-                                  'driver': 'virtio_gpu', 'opened_read_write': True,
+                                  'driver': 'virtio-pci', 'drm_driver': 'virtio_gpu', 'opened_read_write': True,
                                   'major': 226, 'minor': 128}] if graphics else [])}
 
     def test_real_positive_and_no_gpu_control_have_distinct_requirements(self):
@@ -53,12 +53,18 @@ class CloudBoot(unittest.TestCase):
 
     def test_filename_alone_or_inaccessible_device_is_not_gpu_evidence(self):
         for field, value in [('character_device', False), ('opened_read_write', False),
-                             ('driver', 'simpledrm'), ('major', 1), ('minor', 127),
+                             ('drm_driver', 'simpledrm'), ('major', 1), ('minor', 127),
                              ('path', '/tmp/renderD128')]:
             report = self.report()
             report['render_nodes'][0][field] = value
             with self.subTest(field=field), self.assertRaises(ValueError):
                 probe.validate_report(report, 'a'*32, 'b'*64, 'with-gpu')
+
+    def test_pci_transport_is_not_a_drm_driver_identity(self):
+        report = self.report()
+        del report['render_nodes'][0]['drm_driver']
+        with self.assertRaises(ValueError):
+            probe.validate_report(report, 'a'*32, 'b'*64, 'with-gpu')
 
     def test_streamed_payload_must_match_both_size_and_hash(self):
         data = b'candidate cloud image'

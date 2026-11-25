@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "scope": "Candidate runtime dependencies missing from the authenticated original base; resolve and review before an additive offline packaging transaction",
+  "source_inputs": "image/hyprland/development-prefix.lock.json",
+  "hyprland_sha256": "0f5dc9a3bb14265516a1a7c16a90ff0ad54fda94c7caed5defb4b234ecb7f34a",
+  "packages": [
+    "libeis.so.1()(64bit)",
+    "libmuparser.so.2()(64bit)",
+    "libtomlplusplus.so.3()(64bit)"
+  ],
+  "notes": [
+    "All three SONAMEs were missing in the actual original-base ldd run45713989665",
+    "This runtime profile must not install the full compiler RPM set or downgrade the base Mesa stack",
+    "The compiled prefix is retained for exact reuse; discovery does not install or qualify it"
+  ]
+}
