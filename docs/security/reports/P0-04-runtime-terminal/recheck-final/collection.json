@@ -1,0 +1,46 @@
+{
+  "collected_at_utc": "2026-11-25T19:33:01.947024+00:00",
+  "unit": {
+    "MainPID": "0",
+    "Result": "exit-code",
+    "ExecMainStatus": "1",
+    "CPUUsageNSec": "1093802658000",
+    "ActiveState": "failed",
+    "SubState": "failed"
+  },
+  "host_before_shutdown": {
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "RuntimeMaxUSec": "12h",
+    "MainPID": "2188835",
+    "MemoryCurrent": "717103104",
+    "MemoryPeak": "779354112",
+    "CPUUsageNSec": "6181701743000",
+    "CPUQuotaPerSecUSec": "250ms",
+    "MemoryMax": "1073741824",
+    "MemorySwapMax": "0"
+  },
+  "files": {
+    "result.json": {
+      "sha256": "890fb76b702e3d95ecffa73328ddc35cbb2ae5fcc1db89aba825210ac620742f",
+      "bytes": 1792
+    },
+    "focused-0.log": {
+      "sha256": "c92743d671ca451b9e6ae94a3acaa44af1b3cc9386cb457403f46857967add7a",
+      "bytes": 2481
+    },
+    "focused-1.log": {
+      "sha256": "0171d3e1648d55bd50204dd0d701184d8c446a066dd6fb1a365a4e6b2a95bf17",
+      "bytes": 2582
+    },
+    "clippy.log": {
+      "sha256": "9c6589e30156084abe5a152e8e816c42888664eb516b16a74e59a3b84f00a3dd",
+      "bytes": 21671
+    },
+    "fmt.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  },
+  "qualified": false
+}
