@@ -1,0 +1,139 @@
+{
+  "schema": 1,
+  "qualified": false,
+  "build_completed": false,
+  "evidence_kind": "Failed local bounded diagnostic builds; not release provenance or Fedora qualification",
+  "source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+  "source_clean_after_attempts": true,
+  "cargo_lock_sha256": "d189b27d99bfc7fafeb8b6a37c0cfe36c1beb3472a6d5ae6f41dca8883fbb59d",
+  "cargo_toml_sha256": "4537b48bdf28aa3608aecff5dce7b775ef224e7bdebfc8dce4e308d58ca6f2e0",
+  "common_profile_and_command": "P0-04-runtime-build-attempt.json",
+  "attempts": [
+    {
+      "unit": "symbi-p0-runtime-build-retry.service",
+      "resource_accounting": {
+        "ActiveState": "failed",
+        "SubState": "failed",
+        "InvocationID": "9aa02c24603f4af88568b9f446fe1b45",
+        "RuntimeMaxUSec": "15min",
+        "MainPID": "0",
+        "Result": "timeout",
+        "ExecMainStartTimestamp": "Wed 2026-11-25 02:24:15 PST",
+        "ExecMainExitTimestamp": "Wed 2026-11-25 02:39:15 PST",
+        "ExecMainCode": "2",
+        "ExecMainStatus": "15",
+        "MemoryPeak": "1073741824",
+        "CPUUsageNSec": "176047703000",
+        "CPUQuotaPerSecUSec": "250ms",
+        "MemoryHigh": "1073741824",
+        "MemoryMax": "1073741824",
+        "MemorySwapMax": "0",
+        "TasksMax": "64",
+        "Nice": "10",
+        "CPUAffinity": "23"
+      },
+      "build_log": "P0-04-runtime-build-retry.log",
+      "build_log_sha256": "db64f0ed4435581cacf049bbeff44de6cfcfddf4e18f2f8e4387a9b038b64cb4",
+      "last_compiling_crate": "datafusion-functions v51.0.0",
+      "artifact": null
+    },
+    {
+      "unit": "symbi-p0-runtime-build-continued.service",
+      "resource_accounting": {
+        "ActiveState": "failed",
+        "SubState": "failed",
+        "InvocationID": "09bacb1b6307455c9ebf0576cd19caa0",
+        "RuntimeMaxUSec": "1h",
+        "MainPID": "0",
+        "Result": "oom-kill",
+        "ExecMainStartTimestamp": "Wed 2026-11-25 02:43:38 PST",
+        "ExecMainExitTimestamp": "Wed 2026-11-25 02:48:43 PST",
+        "ExecMainCode": "2",
+        "ExecMainStatus": "15",
+        "MemoryPeak": "1073741824",
+        "CPUUsageNSec": "70042767000",
+        "CPUQuotaPerSecUSec": "250ms",
+        "MemoryHigh": "1073741824",
+        "MemoryMax": "1073741824",
+        "MemorySwapMax": "0",
+        "TasksMax": "64",
+        "Nice": "10",
+        "CPUAffinity": "23"
+      },
+      "build_log": "P0-04-runtime-build-continued.log",
+      "build_log_sha256": "f4febfb80d0294649215c26779a091c9739cebb8177248db92d91be7e031b482",
+      "last_compiling_crate": "bitpacking v0.9.3",
+      "artifact": null
+    },
+    {
+      "unit": "symbi-p0-runtime-build-split-codegen.service",
+      "resource_accounting": {
+        "ActiveState": "failed",
+        "SubState": "failed",
+        "InvocationID": "2b0a2512b8f64e96a03acdcefbadd174",
+        "RuntimeMaxUSec": "1h",
+        "MainPID": "0",
+        "Result": "oom-kill",
+        "ExecMainStartTimestamp": "Wed 2026-11-25 02:53:51 PST",
+        "ExecMainExitTimestamp": "Wed 2026-11-25 02:54:18 PST",
+        "ExecMainCode": "2",
+        "ExecMainStatus": "15",
+        "MemoryPeak": "1073741824",
+        "CPUUsageNSec": "4938733000",
+        "CPUQuotaPerSecUSec": "250ms",
+        "MemoryHigh": "1073741824",
+        "MemoryMax": "1073741824",
+        "MemorySwapMax": "0",
+        "TasksMax": "64",
+        "Nice": "10",
+        "CPUAffinity": "23"
+      },
+      "build_log": "P0-04-runtime-build-split-codegen.log",
+      "build_log_sha256": "7f44f31ff380df2673c9c8d55e93ffa448579744928ad5f973cd82378841f684",
+      "last_compiling_crate": "bitpacking v0.9.3",
+      "artifact": null,
+      "additional_cargo_arguments": [
+        "--config",
+        "profile.release.package.bitpacking.codegen-units=256",
+        "--verbose"
+      ]
+    }
+  ],
+  "memory_high_adjustment": {
+    "changed_at_utc": "2026-11-25T10:30:41.229373+00:00",
+    "reason": "Reduce reclaim throttling within the unchanged 1 GiB hard RAM ceiling; no swap or CPU increase",
+    "before": {
+      "ActiveState": "active",
+      "SubState": "running",
+      "RuntimeMaxUSec": "15min",
+      "MainPID": "2074146",
+      "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/symbi-p0-runtime-build-retry.service",
+      "CPUUsageNSec": "50768029000",
+      "CPUQuotaPerSecUSec": "250ms",
+      "MemoryHigh": "805306368",
+      "MemoryMax": "1073741824",
+      "MemorySwapMax": "0"
+    },
+    "before_counters": {
+      "memory.current": "805961728\n",
+      "memory.peak": "806686720\n",
+      "memory.events": "low 0\nhigh 339351\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+      "memory.pressure": "some avg10=5.00 avg60=5.18 avg300=3.80 total=21261273\nfull avg10=5.00 avg60=5.18 avg300=3.79 total=21249145\n",
+      "cpu.stat": "usage_usec 50768307\nuser_usec 4336957\nsystem_usec 46431349\nnice_usec 3933000\ncore_sched.force_idle_usec 0\nnr_periods 3856\nnr_throttled 164\nthrottled_usec 10801332\nnr_bursts 0\nburst_usec 0\n"
+    },
+    "after": {
+      "ActiveState": "active",
+      "SubState": "running",
+      "RuntimeMaxUSec": "15min",
+      "MainPID": "2074146",
+      "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/symbi-p0-runtime-build-retry.service",
+      "CPUUsageNSec": "50770042000",
+      "CPUQuotaPerSecUSec": "250ms",
+      "MemoryHigh": "1073741824",
+      "MemoryMax": "1073741824",
+      "MemorySwapMax": "0"
+    }
+  },
+  "conclusion": "Longer runtime and package-local bitpacking codegen partitioning did not produce a binary within the fixed 1 GiB host-memory limit. The two OOM kills were inside the limited build units; no resource ceiling was raised.",
+  "next_step": "Use a disposable 704 MiB KVM build helper with guest-disk swap and the same 1 GiB host RAM / zero host swap / quarter-CPU ceilings; separately qualify any resulting artifact on the selected Fedora image."
+}

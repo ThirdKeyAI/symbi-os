@@ -13,7 +13,7 @@ none grants authority or weakens a rule.
 | OQ-05 | How will the Cedar 4.5.2 CLI's yanked transitive dependencies and the build-tool audit graph be addressed for release qualification? | P0-03, runtime pin update | Preserve upstream compatibility and lockfiles; development fixture tests only; no release claim |
 | OQ-06 | Where will the fourteen upstream control entries and Fedora qualification reports be reviewed and retained? | P0-04, TCB cards | Review scope and proposed OS IDs in [the registration plan](security/upstream-controls-plan.md); no local catalogue claims upstream registration |
 | OQ-07 | Which maintained base should replace the retired secureblue Hyprland/userns image without losing the planned trusted compositor? | P0-03, P0-04, P0-05 | See [image preparation](../image/README.md); no Sway substitution or obsolete base selected |
-| OQ-08 | Where will an authenticated build of Symbiont revision deddb9e997244d2289c217ad76b8fde0e9b0339b be produced? | P0-04, P0-05 | Published v3.0.0 names a different source revision; a [1 GiB/quarter-CPU local attempt](security/reports/P0-04-runtime-build-attempt.json) timed out without a binary; an isolated builder remains needed |
+| OQ-08 | Where will an authenticated build of Symbiont revision deddb9e997244d2289c217ad76b8fde0e9b0339b be produced? | P0-04, P0-05 | Published v3.0.0 names a different source revision; [four 1 GiB/quarter-CPU attempts](security/reports/P0-04-runtime-build-followups.json) ended in timeouts or cgroup OOM kills without a binary; a bounded disposable VM with guest-disk swap is the next build approach |
 
 The supplied plan also describes subscription tokens inside workspace-mode
 sandboxes as an exception to INV-6, while the invariant itself forbids secrets
