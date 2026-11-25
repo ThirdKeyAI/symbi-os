@@ -1,5 +1,9 @@
 # Symbiont OS
 
+> **Symbi OS is highly experimental.** Security boundaries, image updates, and
+> recovery paths are still being developed and qualified. Use only in disposable
+> testing environments; this is not a production-ready operating system.
+
 A desktop Linux system where AI agents are visible, least-privileged principals
 and the human is the only source of authority. The target platform is a signed
 Fedora Atomic image with Hyprland and the upstream Symbiont runtime.
