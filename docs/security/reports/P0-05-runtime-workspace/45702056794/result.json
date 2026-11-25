@@ -1,0 +1,171 @@
+{
+  "schema": 1,
+  "source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+  "rust_version": "1.100.0",
+  "patch_sha256": "a4545649b1c83f0a3402781f815ebc66ea2b507128d17f61e76c4febb5017bda",
+  "checks": [
+    {
+      "phase": "baseline",
+      "name": "build",
+      "command": [
+        "cargo",
+        "+1.100.0",
+        "build",
+        "--workspace",
+        "--locked"
+      ],
+      "exit_code": 0,
+      "timeout": false,
+      "elapsed_seconds": 783.394,
+      "passed": true
+    },
+    {
+      "phase": "baseline",
+      "name": "test",
+      "command": [
+        "cargo",
+        "+1.100.0",
+        "test",
+        "--workspace",
+        "--locked"
+      ],
+      "exit_code": 0,
+      "timeout": false,
+      "elapsed_seconds": 848.311,
+      "passed": true
+    },
+    {
+      "phase": "baseline",
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "+1.100.0",
+        "clippy",
+        "--workspace",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "timeout": false,
+      "elapsed_seconds": 319.16,
+      "passed": true
+    },
+    {
+      "phase": "baseline",
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "+1.100.0",
+        "fmt",
+        "--check"
+      ],
+      "exit_code": 0,
+      "timeout": false,
+      "elapsed_seconds": 1.969,
+      "passed": true
+    },
+    {
+      "phase": "fixture",
+      "name": "python",
+      "command": [
+        "/usr/bin/python3",
+        "scripts/test_container_fixture_profile.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "timeout": false,
+      "elapsed_seconds": 0.114,
+      "passed": true
+    },
+    {
+      "phase": "fixture",
+      "name": "build",
+      "command": [
+        "cargo",
+        "+1.100.0",
+        "build",
+        "--workspace",
+        "--locked"
+      ],
+      "exit_code": 0,
+      "timeout": false,
+      "elapsed_seconds": 2.068,
+      "passed": true
+    },
+    {
+      "phase": "fixture",
+      "name": "test",
+      "command": [
+        "cargo",
+        "+1.100.0",
+        "test",
+        "--workspace",
+        "--locked"
+      ],
+      "exit_code": 0,
+      "timeout": false,
+      "elapsed_seconds": 203.58,
+      "passed": true
+    },
+    {
+      "phase": "fixture",
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "+1.100.0",
+        "clippy",
+        "--workspace",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "timeout": false,
+      "elapsed_seconds": 0.917,
+      "passed": true
+    },
+    {
+      "phase": "fixture",
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "+1.100.0",
+        "fmt",
+        "--check"
+      ],
+      "exit_code": 0,
+      "timeout": false,
+      "elapsed_seconds": 1.919,
+      "passed": true
+    }
+  ],
+  "baseline_passed": true,
+  "patched_workspace_passed": true,
+  "os_qualified": false,
+  "source_commit": "f01100ce68df6ed31dfa0983a2ba1b59be230b6c",
+  "scope": "Ubuntu hosted workspace and Python fixture checks; no Fedora, container or escape qualification",
+  "source_clean_before": true,
+  "cargo_lock_sha256": "d189b27d99bfc7fafeb8b6a37c0cfe36c1beb3472a6d5ae6f41dca8883fbb59d",
+  "started_at_utc": "2026-11-25T21:13:46.232584+00:00",
+  "host_memory_bytes": {
+    "MemTotal": 16758386688,
+    "MemAvailable": 15595937792
+  },
+  "rustc": "rustc 1.100.0 (0ef1bc386 2026-11-09)\nbinary: rustc\ncommit-hash: 0ef1bc386059596dada8fb65b50425aab2ea637a\ncommit-date: 2026-11-09\nhost: x86_64-unknown-linux-gnu\nrelease: 1.100.0\nLLVM version: 23.1.5\n",
+  "protoc": "libprotoc 3.21.12",
+  "patch_applied": true,
+  "binaries": {
+    "symbi": {
+      "bytes": 520712360,
+      "sha256": "1e90af1fe424ec37ad716bbc1e069c0bc7a78f59c49871b7e79506bda69f49c7"
+    },
+    "symbi-sandbox-supervisor": {
+      "bytes": 8635672,
+      "sha256": "57af2b2931c891c8ee7df21ac063aea64571acc460ababdcb09b8df7ed21c269"
+    }
+  },
+  "finished_at_utc": "2026-11-25T21:49:59.236911+00:00"
+}

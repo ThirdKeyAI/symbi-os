@@ -1,0 +1,30 @@
+Running as unit: symbi-runtime-workspace-45702056794-1.service; invocation ID: db3784b0e9a0426787063edce9276cb0
+info: syncing channel updates for 1.100.0-x86_64-unknown-linux-gnu
+info: latest update on 2026-11-12 for version 1.100.0 (0ef1bc386 2026-11-09)
+info: downloading 5 components
+
+  1.100.0-x86_64-unknown-linux-gnu installed - rustc 1.100.0 (0ef1bc386 2026-11-09)
+
+{"phase": "baseline", "check": "build", "state": "started"}
+{"phase": "baseline", "name": "build", "command": ["cargo", "+1.100.0", "build", "--workspace", "--locked"], "exit_code": 0, "timeout": false, "elapsed_seconds": 783.394, "passed": true}
+{"phase": "baseline", "check": "test", "state": "started"}
+{"phase": "baseline", "name": "test", "command": ["cargo", "+1.100.0", "test", "--workspace", "--locked"], "exit_code": 0, "timeout": false, "elapsed_seconds": 848.311, "passed": true}
+{"phase": "baseline", "check": "clippy", "state": "started"}
+{"phase": "baseline", "name": "clippy", "command": ["cargo", "+1.100.0", "clippy", "--workspace", "--locked", "--", "-D", "warnings"], "exit_code": 0, "timeout": false, "elapsed_seconds": 319.16, "passed": true}
+{"phase": "baseline", "check": "fmt", "state": "started"}
+{"phase": "baseline", "name": "fmt", "command": ["cargo", "+1.100.0", "fmt", "--check"], "exit_code": 0, "timeout": false, "elapsed_seconds": 1.969, "passed": true}
+{"phase": "fixture", "check": "python", "state": "started"}
+{"phase": "fixture", "name": "python", "command": ["/usr/bin/python3", "scripts/test_container_fixture_profile.py", "-v"], "exit_code": 0, "timeout": false, "elapsed_seconds": 0.114, "passed": true}
+{"phase": "fixture", "check": "build", "state": "started"}
+{"phase": "fixture", "name": "build", "command": ["cargo", "+1.100.0", "build", "--workspace", "--locked"], "exit_code": 0, "timeout": false, "elapsed_seconds": 2.068, "passed": true}
+{"phase": "fixture", "check": "test", "state": "started"}
+{"phase": "fixture", "name": "test", "command": ["cargo", "+1.100.0", "test", "--workspace", "--locked"], "exit_code": 0, "timeout": false, "elapsed_seconds": 203.58, "passed": true}
+{"phase": "fixture", "check": "clippy", "state": "started"}
+{"phase": "fixture", "name": "clippy", "command": ["cargo", "+1.100.0", "clippy", "--workspace", "--locked", "--", "-D", "warnings"], "exit_code": 0, "timeout": false, "elapsed_seconds": 0.917, "passed": true}
+{"phase": "fixture", "check": "fmt", "state": "started"}
+{"phase": "fixture", "name": "fmt", "command": ["cargo", "+1.100.0", "fmt", "--check"], "exit_code": 0, "timeout": false, "elapsed_seconds": 1.919, "passed": true}
+          Finished with result: success
+Main processes terminated with: code=exited, status=0/SUCCESS
+               Service runtime: 36min 13.110s
+             CPU time consumed: 35min 57.052s
+                   Memory peak: 8G (swap: 0B)

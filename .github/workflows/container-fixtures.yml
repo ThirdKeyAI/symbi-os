@@ -30,8 +30,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p .cache
-          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15058829233/zip > .cache/checked-runtime.zip
-          echo 'eb91ceeadaed2d3cb0972240be61c41f51bcf321f75da88046febc09d194b971  .cache/checked-runtime.zip' | sha256sum --check --strict
+          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15066141540/zip > .cache/checked-runtime.zip
+          echo 'bed79f624444c6dc0c3a5105facdcd9ad637a26f4fcd6cacb6e10544c36a0724  .cache/checked-runtime.zip' | sha256sum --check --strict
       - name: Authenticate inputs and run both complete fixture profiles
         run: bash scripts/check-container-fixtures.sh
       - name: Retain only public qualification evidence

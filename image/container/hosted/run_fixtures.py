@@ -55,7 +55,7 @@ def main():
     evidence.mkdir()
     env = {'PATH': '/usr/bin:/bin', 'HOME': str(work / 'private/home'), 'LANG': 'C.UTF-8',
            'DOCKER_HOST': 'unix:///var/run/docker.sock', 'DOCKER_CONFIG': str(work / 'private/docker-client'),
-           'PYTHONDONTWRITEBYTECODE': '1', 'TMPDIR': str(work / 'private/tmp')}
+           'PYTHONDONTWRITEBYTECODE': '1', 'TMPDIR': setup['fixture_tmp']}
 
     def docker(*args):
         return subprocess.check_output(['docker', *args], env=env, text=True, timeout=30).strip()

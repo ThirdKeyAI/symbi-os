@@ -3,11 +3,11 @@
 This is Ubuntu development evidence for P0-05. It does not qualify Fedora,
 managed CLI brokers, the escape suite or a release image. The OS runtime pin is
 unchanged. The exact fixture-only upstream commit is
-`e17f198a8906780408058f4cc48a2715776bf36b`, in
+`c1fac8aab6c5d399abb39036ba35b9636212e17f`, in
 [draft PR 24](https://github.com/ThirdKeyAI/Symbiont/pull/24).
 
 The workflow reuses the immutable development-binary artifact from passing run
-45688918098. Its ZIP, both executable hashes, source, Cargo.lock and six-file
+45702056794. Its ZIP, both executable hashes, source, Cargo.lock and six-file
 patch are bound in `inputs.lock.json`. Every binary is checked before receiving
 executable permission; no local rebuild or large download is performed.
 
@@ -45,3 +45,9 @@ outside the artifact. The collector accepts only regular public reports/logs,
 refuses links and PEM private-key material, and caps the collection size. The
 daemon is stopped on completion or failure. No workstation Docker configuration
 or VM is changed.
+
+The source checkout fetches the baseline and fixture revisions explicitly and
+verifies their cumulative full-index patch, allowing multiple reviewed fixture
+commits without assuming the immediate parent is the runtime baseline. A fresh
+0700 `/tmp/sf-*` directory owned by the test account keeps supervisor Unix socket
+paths below their bound. It holds private fixture state and is never uploaded.

@@ -8,6 +8,7 @@ import re
 import shutil
 import stat
 import subprocess
+import tempfile
 import time
 
 from inputs import digest, require_signature, unpack_runtime
@@ -78,11 +79,12 @@ def main():
         source.mkdir()
         git = ['git', '-c', 'core.hooksPath=/dev/null', '-c', 'protocol.file.allow=never', '-C', str(source)]
         run('source-init', git + ['init'])
-        run('source-fetch', git + ['fetch', '--depth=2', '--no-tags', 'https://github.com/ThirdKeyAI/Symbiont.git', lock['fixture_commit']])
+        run('source-fetch-baseline', git + ['fetch', '--depth=1', '--no-tags', 'https://github.com/ThirdKeyAI/Symbiont.git', lock['source_revision']])
+        run('source-fetch', git + ['fetch', '--depth=1', '--no-tags', 'https://github.com/ThirdKeyAI/Symbiont.git', lock['fixture_commit']])
         run('source-checkout', git + ['checkout', '--detach', 'FETCH_HEAD'])
         assert subprocess.check_output(git + ['rev-parse', 'HEAD'], text=True).strip() == lock['fixture_commit']
-        assert subprocess.check_output(git + ['rev-parse', 'HEAD^'], text=True).strip() == lock['source_revision']
-        patch = subprocess.check_output(git + ['diff', 'HEAD^', 'HEAD', '--binary', '--full-index',
+        assert subprocess.check_output(git + ['rev-parse', lock['source_revision'] + '^{commit}'], text=True).strip() == lock['source_revision']
+        patch = subprocess.check_output(git + ['diff', lock['source_revision'], 'HEAD', '--binary', '--full-index',
                                                '--src-prefix=a/', '--dst-prefix=b/'])
         import hashlib
         assert hashlib.sha256(patch).hexdigest() == lock['patch_sha256']
@@ -189,11 +191,15 @@ def main():
             finally:
                 run('probe-remove-' + backend, ['docker', 'rm', '--force', identity], env=docker_env)
         private = work / 'private'
-        for path in [private, private / 'home', private / 'docker-client', private / 'tmp']:
+        for path in [private, private / 'home', private / 'docker-client']:
             path.mkdir(mode=0o700)
             os.chown(path, account.pw_uid, account.pw_gid)
         os.chown(public, account.pw_uid, account.pw_gid)
-        setup = {'image_id': image_id, 'runsc': str(runsc), 'binary_sha256': lock['binaries']['symbi']['sha256'],
+        # The fixture drivers put Unix sockets beneath TMPDIR; a checkout path
+        # can exceed the kernel's pathname bound. mkdtemp keeps this tree private.
+        fixture_tmp = Path(tempfile.mkdtemp(prefix='sf-', dir='/tmp'))
+        os.chown(fixture_tmp, account.pw_uid, account.pw_gid)
+        setup = {'fixture_tmp': str(fixture_tmp), 'image_id': image_id, 'runsc': str(runsc), 'binary_sha256': lock['binaries']['symbi']['sha256'],
                  'source_revision': lock['source_revision'], 'fixture_commit': lock['fixture_commit'],
                  'patch_sha256': lock['patch_sha256'], 'source_lock_sha256': lock['cargo_lock_sha256']}
         (public / 'setup.json').write_text(json.dumps(setup, indent=2) + '\n')
