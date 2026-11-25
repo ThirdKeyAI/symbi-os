@@ -26,7 +26,11 @@ def main():
     storage = root / '.cache/hyprland-graphics-storage'
     inputs = storage / 'inputs'
     output = storage / 'output'
-    podman = ['podman', '--cgroup-manager=cgroupfs', '--root', str(storage / 'root'), '--runroot', str(storage / 'run')]
+    # Ubuntu 24.04's Podman limits runroot to 50 characters. Keep image layers
+    # in the workspace, but use a fresh root-owned per-unit runtime directory.
+    runroot = Path('/run') / group.name.removesuffix('.service')
+    assert len(os.fsencode(runroot)) <= 50
+    podman = ['podman', '--cgroup-manager=cgroupfs', '--root', str(storage / 'root'), '--runroot', str(runroot)]
 
     if sys.argv[1:] == ['--inside-xvfb']:
         # xvfb-run created a fresh cookie; it is never part of retained evidence.
@@ -85,6 +89,7 @@ def main():
         (evidence / 'selected-base.json').write_text(json.dumps(base, indent=2) + '\n')
         record['base'] = base['image']
         storage.mkdir(mode=0o700)
+        runroot.mkdir(mode=0o700)
         for path in (inputs, output):
             path.mkdir(mode=0o700)
             os.chown(path, 10001, 10001)

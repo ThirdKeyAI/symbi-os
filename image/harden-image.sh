@@ -15,16 +15,25 @@ source /etc/os-release
 for executable in Hyprland waybar walker foot bootc; do
   command -v "$executable" >/dev/null
 done
-command -v visudo >/dev/null
-visudo -c
-sudo_paths=(/etc/sudoers)
-[[ ! -d /etc/sudoers.d ]] || sudo_paths+=(/etc/sudoers.d)
-if sudo_matches=$(grep -rE '^[^#]*NOPASSWD[[:space:]]*:' "${sudo_paths[@]}"); then
-  printf 'Passwordless sudo remains in base configuration:\n%s\n' "$sudo_matches" >&2
-  exit 1
-else
-  result=$?
-  [[ $result == 1 ]] || exit "$result"
+# The selected base uses run0 and contains neither sudo nor visudo. Do not add
+# sudo merely to validate an absent service. When sudo exists, require its real
+# syntax checker; inspect any residual policy even when the executable is absent.
+if command -v sudo >/dev/null; then
+  command -v visudo >/dev/null
+  visudo -c
+fi
+sudo_paths=()
+for sudo_path in /etc/sudoers /etc/sudoers.d; do
+  [[ ! -e "$sudo_path" && ! -L "$sudo_path" ]] || sudo_paths+=("$sudo_path")
+done
+if (( ${#sudo_paths[@]} )); then
+  if sudo_matches=$(grep -rE '^[^#]*NOPASSWD[[:space:]]*:' "${sudo_paths[@]}"); then
+    printf 'Passwordless sudo remains in base configuration:\n%s\n' "$sudo_matches" >&2
+    exit 1
+  else
+    result=$?
+    [[ $result == 1 ]] || exit "$result"
+  fi
 fi
 # Removing the manager alone does not disable the compositor plugin API.
 # A compositor build with loading disabled and a negative VM test remain gates.
