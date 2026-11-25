@@ -71,8 +71,8 @@ runners. The job has read-only contents permission and no signing credentials.
 The equivalent `.gitea/workflows/ci.yml` remains available for a configured Gitea
 runner with Rustup, Node, Git, Java 11 or later, and a C toolchain. Hosted results
 are recorded in the card report; configuring a workflow alone is not a passing
-check. The inherited GitHub workflow currently runs the scaffold checks; its
-formal stage is the next CI integration step for P0-02.
+check. Both workflows run the five design models and eighteen deliberate fault
+checks after the workspace checks.
 P0-03 adds the signed image build; P0-04 qualifies the runtime on that image.
 Host checks do not substitute for either card. The formal checks run serially
 after the workspace checks using the pinned formal-proofs action; see
