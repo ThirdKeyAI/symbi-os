@@ -20,7 +20,8 @@ class PackageBundle(unittest.TestCase):
         rows = [{'filename': 'fixture.rpm', 'bytes': len(package),
                  'sha256': hashlib.sha256(package).hexdigest(), 'signature_verified': True,
                  'key_fingerprint': 'A' * 40}]
-        manifest = {'passed': True, 'installed_packages_unchanged': True, 'packages': rows,
+        requirements = {'packages': ['compiler', 'pkgconfig(example)']}
+        manifest = {'requirements': requirements, 'passed': True, 'installed_packages_unchanged': True, 'packages': rows,
                     'base': 'example@sha256:' + 'b' * 64,
                     'negative_controls': {'missing_key_rejected': True, 'tampered_package_rejected': True}}
         encoded = json.dumps(manifest).encode()
@@ -33,7 +34,7 @@ class PackageBundle(unittest.TestCase):
                 with warnings.catch_warnings():
                     warnings.filterwarnings('ignore', 'Duplicate name:', UserWarning)
                     stream.writestr(name, value)
-        lock = {'schema': 1, 'artifact': {'bytes': archive.stat().st_size, 'sha256': inputs.digest(archive)},
+        lock = {'schema': 1, 'requirements': requirements, 'artifact': {'bytes': archive.stat().st_size, 'sha256': inputs.digest(archive)},
                 'manifest_sha256': hashlib.sha256(encoded).hexdigest(), 'packages': rows,
                 'base': manifest['base'], 'key': {'fingerprint': 'A' * 40}}
         return archive, lock
@@ -110,6 +111,35 @@ class PackageBundle(unittest.TestCase):
             lock['artifact'] = {'bytes': archive.stat().st_size, 'sha256': inputs.digest(archive)}
             lock['manifest_sha256'] = hashlib.sha256(encoded).hexdigest()
             with self.assertRaises(ValueError):
+                inputs.unpack_rpms(archive, lock, directory / 'out')
+            self.assertFalse((directory / 'out').exists())
+
+
+    def test_changed_requirements_refuse_stale_package_resolution(self):
+        with tempfile.TemporaryDirectory() as temp:
+            directory = Path(temp)
+            _, lock = self.bundle(directory)
+            inputs.require_current_requirements(lock, {'packages': ['compiler', 'pkgconfig(example)']})
+            with self.assertRaisesRegex(ValueError, 'requirements'):
+                inputs.require_current_requirements(lock, {'packages': ['compiler', 'pkgconfig(example)', 'pkgconfig(readline)']})
+            with self.assertRaises(ValueError):
+                inputs.require_current_requirements({}, None)
+
+    def test_manifest_must_resolve_the_locked_requirements(self):
+        with tempfile.TemporaryDirectory() as temp:
+            directory = Path(temp)
+            archive, lock = self.bundle(directory)
+            with zipfile.ZipFile(archive) as stream:
+                package = stream.read('rpms/fixture.rpm')
+                manifest = json.loads(stream.read('evidence/result.json'))
+            manifest['requirements']['packages'].append('pkgconfig(other)')
+            encoded = json.dumps(manifest).encode()
+            with zipfile.ZipFile(archive, 'w') as stream:
+                stream.writestr('rpms/fixture.rpm', package)
+                stream.writestr('evidence/result.json', encoded)
+            lock['artifact'] = {'bytes': archive.stat().st_size, 'sha256': inputs.digest(archive)}
+            lock['manifest_sha256'] = hashlib.sha256(encoded).hexdigest()
+            with self.assertRaisesRegex(ValueError, 'requirements'):
                 inputs.unpack_rpms(archive, lock, directory / 'out')
             self.assertFalse((directory / 'out').exists())
 

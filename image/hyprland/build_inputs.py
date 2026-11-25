@@ -12,6 +12,11 @@ def digest(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
+def require_current_requirements(lock, requirements):
+    if not isinstance(requirements, dict) or lock.get('requirements') != requirements:
+        raise ValueError('RPM resolution does not match the current build requirements')
+
+
 def unpack_rpms(archive, lock, destination):
     if archive.is_symlink() or not archive.is_file():
         raise ValueError('Expected a regular RPM bundle')
@@ -52,6 +57,7 @@ def unpack_rpms(archive, lock, destination):
         if hashlib.sha256(raw).hexdigest() != lock['manifest_sha256']:
             raise ValueError('RPM manifest changed')
         result = json.loads(raw)
+        require_current_requirements(lock, result.get('requirements'))
         if result['passed'] is not True or result['installed_packages_unchanged'] is not True:
             raise ValueError('Unsuccessful RPM discovery')
         if result['base'] != lock['base'] or result['packages'] != packages:

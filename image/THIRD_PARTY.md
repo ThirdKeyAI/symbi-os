@@ -27,3 +27,9 @@ Chromium uses `/etc/chromium/policies/managed`; the selected base's actual brows
 and Flatpak policy integration must be qualified separately. Privacy defaults do
 not turn off browser security updates. The portal setting changes the default
 choice; it does not prove that explicit restore-token requests are refused.
+
+The candidate private Hyprland prefix also builds hyprwire at the exact revision
+`a546e42d45e161682f729ebf52375bd4800d7041` selected by Hyprland's lockfile
+(version file 0.3.1). It is BSD-3-Clause, copyright 2025 Hypr Development; the
+original notice is retained at `hyprland/licenses/hyprwire.LICENSE`. This is a
+candidate build input and is not yet approved for a product image.

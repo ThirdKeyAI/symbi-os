@@ -29,6 +29,20 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
+      - name: Require resolved RPM inputs for the current requirements
+        run: |
+          mkdir -p .cache/hyprland-build-evidence
+          python3 - <<'PY' > .cache/hyprland-build-evidence/requirements-check.log 2>&1
+          import json
+          from pathlib import Path
+          import sys
+          sys.path.insert(0, 'image/hyprland')
+          from build_inputs import require_current_requirements
+          root = Path('image/hyprland')
+          require_current_requirements(json.loads((root / 'build-rpms.lock.json').read_text()),
+                                       json.loads((root / 'build-requirements.json').read_text()))
+          print('RPM lock resolves the current build requirements')
+          PY
       - name: Download exact previously verified RPM artifact
         env:
           GH_TOKEN: ${{ github.token }}

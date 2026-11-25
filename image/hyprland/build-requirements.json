@@ -53,7 +53,9 @@
     "pkgconfig(xcb-composite)",
     "pkgconfig(xcb-res)",
     "pkgconfig(xcb-errors)",
-    "pkgconfig(gtest)"
+    "pkgconfig(gtest)",
+    "pkgconfig(readline)",
+    "pkgconfig(libffi)"
   ],
   "notes": [
     "Hyprland libraries, scanner, protocols and Glaze come from separately pinned sources",

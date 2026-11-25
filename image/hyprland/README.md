@@ -98,8 +98,19 @@ regressions cover changed packages, traversal/extra/missing/duplicate entries,
 symlinks, signature requirements and real negative-control evidence. Local
 compilation and large artifact downloads remain disabled.
 
-Compilation and the constructor probe are not yet executed. Even a passing
+Dependency compilation has run, but the compositor configure step failed and
+the constructor probe has not run. Even a passing
 result covers this disposable development stage only; compatibility against the
 selected secureblue runtime libraries, packaged Fedora boot, signing, rollback
 and dependency review remain required. The development artifact must not be
 copied into a release image without those checks.
+
+The second hosted attempt (45698096912) installed the previously verified RPMs
+offline and compiled all eight prerequisite projects. Hyprland then stopped at
+hyprctl configuration because hyprwire and readline were absent. The source set
+now adds the exact hyprwire revision from Hyprland's own lockfile and builds it
+after hyprutils; its libffi dependency and hyprctl's readline provider are in the
+RPM requirements. Source and license evidence are retained. The old RPM artifact
+is deliberately not relabeled as satisfying these additions. Compilation now
+refuses stale requirements before downloading that large bundle; the package
+discovery workflow must produce a reviewed replacement lock first.

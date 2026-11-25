@@ -153,3 +153,13 @@ Network-free compilation uses a private prefix and RPATH; it cannot fetch a
 replacement for a missing dependency. Exact Git object checks establish source
 selection, not publisher-signature evidence or a full source audit. This is a
 development build, with no release publication or new Cargo dependencies.
+
+P0-03's offline build exposed missing hyprctl inputs. Its own CMake file requires
+hyprwire and readline. The candidate source set now includes hyprwire at
+`a546e42d45e161682f729ebf52375bd4800d7041`, from the selected Hyprland flake lock
+(version file 0.3.1; BSD-3-Clause, original notice retained). It requires already
+selected hyprutils/pugixml plus `pkgconfig(libffi)`; the RPM request now explicitly
+includes libffi and readline. Signed Fedora resolution must finish and its exact
+artifact be reviewed before updating the build lock. Existing verified RPMs
+remain immutable; the guard refuses compilation with stale requirements. This
+is candidate input discovery, not a completed dependency/security audit.

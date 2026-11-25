@@ -53,7 +53,7 @@ def main():
               '-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON', '-DCMAKE_PREFIX_PATH=' + str(PREFIX),
               '-DFETCHCONTENT_FULLY_DISCONNECTED=ON', '-DFETCHCONTENT_UPDATES_DISCONNECTED=ON',
               '-DCMAKE_C_FLAGS_RELEASE=-O2 -DNDEBUG -g0', '-DCMAKE_CXX_FLAGS_RELEASE=-O2 -DNDEBUG -g0']
-    order = ['glaze', 'hyprutils', 'hyprwayland-scanner', 'hyprland-protocols',
+    order = ['glaze', 'hyprutils', 'hyprwire', 'hyprwayland-scanner', 'hyprland-protocols',
              'hyprlang', 'hyprcursor', 'hyprgraphics', 'aquamarine', 'Hyprland']
     try:
         for name in order:

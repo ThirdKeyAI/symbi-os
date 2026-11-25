@@ -8,7 +8,7 @@ import shutil
 import subprocess
 import sys
 
-from build_inputs import digest, unpack_rpms
+from build_inputs import digest, require_current_requirements, unpack_rpms
 
 
 def main():
@@ -56,6 +56,7 @@ def main():
         render(pins, 'generic', root)
         base = pins['variants']['generic']
         lock = json.loads((root / 'image/hyprland/build-rpms.lock.json').read_text())
+        require_current_requirements(lock, json.loads((root / 'image/hyprland/build-requirements.json').read_text()))
         assert lock['base'] == base['image']
         record['base'] = base['image']
         cosign = bootstrap(root, evidence)
