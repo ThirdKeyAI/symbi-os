@@ -4,3 +4,4 @@
 image/toolchain/patches/*.patch whitespace=-blank-at-eol
 docs/security/reports/P0-03-bluebuild/*/applied-source.patch whitespace=-blank-at-eol
 image/hyprland/patches/*.patch whitespace=-blank-at-eol
+image/container/upstream/*.patch whitespace=-blank-at-eol
