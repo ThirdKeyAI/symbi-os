@@ -1,0 +1,204 @@
+[
+    {
+        "Id": "ec73a891ad28da01d3beb4e11b971e0b6bbe854cd15be547322d7364fcd1665c",
+        "Created": "2026-11-25T21:04:32.643911877Z",
+        "Path": "python3",
+        "Args": [
+            "-c",
+            "import time; time.sleep(30)"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 4908,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-11-25T21:04:32.836776442Z",
+            "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "Image": "sha256:d07e856dd3e3dac32841359848af036638a969fbe631e30273a25dbefb096456",
+        "ResolvConfPath": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/docker-data/containers/ec73a891ad28da01d3beb4e11b971e0b6bbe854cd15be547322d7364fcd1665c/resolv.conf",
+        "HostnamePath": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/docker-data/containers/ec73a891ad28da01d3beb4e11b971e0b6bbe854cd15be547322d7364fcd1665c/hostname",
+        "HostsPath": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/docker-data/containers/ec73a891ad28da01d3beb4e11b971e0b6bbe854cd15be547322d7364fcd1665c/hosts",
+        "LogPath": "",
+        "Name": "/friendly_elbakyan",
+        "RestartCount": 0,
+        "Driver": "overlayfs",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "docker-default",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": null,
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "local",
+                "Config": {
+                    "max-file": "2",
+                    "max-size": "10m"
+                }
+            },
+            "NetworkMode": "none",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "no",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "CapAdd": null,
+            "CapDrop": [
+                "ALL"
+            ],
+            "CgroupnsMode": "private",
+            "Dns": null,
+            "DnsOptions": [],
+            "DnsSearch": [],
+            "ExtraHosts": null,
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": true,
+            "SecurityOpt": [
+                "no-new-privileges"
+            ],
+            "UTSMode": "",
+            "UsernsMode": "",
+            "ShmSize": 67108864,
+            "Runtime": "runsc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 268435456,
+            "NanoCpus": 1000000000,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": [],
+            "BlkioDeviceReadBps": [],
+            "BlkioDeviceWriteBps": [],
+            "BlkioDeviceReadIOps": [],
+            "BlkioDeviceWriteIOps": [],
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": [],
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": -1,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+            "PidsLimit": 64,
+            "Ulimits": [],
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/acpi",
+                "/proc/asound",
+                "/proc/interrupts",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/sys/devices/virtual/powercap",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "Storage": {
+            "RootFS": {
+                "Snapshot": {
+                    "Name": "overlayfs"
+                }
+            }
+        },
+        "Mounts": [],
+        "Config": {
+            "Hostname": "ec73a891ad28",
+            "Domainname": "",
+            "User": "1000:1000",
+            "AttachStdin": false,
+            "AttachStdout": true,
+            "AttachStderr": true,
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "PYTHONDONTWRITEBYTECODE=1",
+                "LANG=C.UTF-8"
+            ],
+            "Cmd": [
+                "python3",
+                "-c",
+                "import time; time.sleep(30)"
+            ],
+            "Image": "sha256:d07e856dd3e3dac32841359848af036638a969fbe631e30273a25dbefb096456",
+            "Volumes": null,
+            "WorkingDir": "",
+            "Entrypoint": null,
+            "Labels": {}
+        },
+        "NetworkSettings": {
+            "SandboxID": "e2ad74bbadbee10fea70fa3a58fba9b5dbc6e01d6d9ce1e4b60cd589e0605511",
+            "SandboxKey": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/docker-exec/netns/e2ad74bbadbe",
+            "Ports": {},
+            "Networks": {
+                "none": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "69cb06d7585a03c749c54264d1a1ceb961e20acbaaab654a82c05cf775e0901d",
+                    "EndpointID": "816d2b5c0da97b0b20cddea4e6de2239e0ea4efedffeb2347e1ea835efdd550a",
+                    "Gateway": "",
+                    "IPAddress": "",
+                    "MacAddress": "",
+                    "IPPrefixLen": 0,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": null
+                }
+            }
+        },
+        "ImageManifestDescriptor": {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:d07e856dd3e3dac32841359848af036638a969fbe631e30273a25dbefb096456",
+            "size": 757,
+            "platform": {
+                "architecture": "amd64",
+                "os": "linux"
+            }
+        }
+    }
+]

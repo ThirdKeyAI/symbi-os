@@ -197,7 +197,7 @@ def main():
                  'source_revision': lock['source_revision'], 'fixture_commit': lock['fixture_commit'],
                  'patch_sha256': lock['patch_sha256'], 'source_lock_sha256': lock['cargo_lock_sha256']}
         (public / 'setup.json').write_text(json.dumps(setup, indent=2) + '\n')
-        run('complete-fixtures', ['runuser', '-u', account.pw_name, '--', 'env', '-i',
+        run('complete-fixtures', ['/usr/sbin/runuser', '-u', account.pw_name, '--', 'env', '-i',
                                   'PATH=/usr/bin:/bin', 'GITHUB_ACTIONS=true', 'RUNNER_ENVIRONMENT=github-hosted',
                                   'PYTHONDONTWRITEBYTECODE=1', 'python3', str(configuration / 'run_fixtures.py'),
                                   '--work', str(work)], 5400)

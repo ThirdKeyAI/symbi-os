@@ -1,0 +1,9 @@
+{
+  "image_id": "sha256:d07e856dd3e3dac32841359848af036638a969fbe631e30273a25dbefb096456",
+  "runsc": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/runsc/usr/bin/runsc",
+  "binary_sha256": "69a22494f74451e73806eaeb71ace5dc3a95098c7961f7200716b05ad666a98c",
+  "source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+  "fixture_commit": "e17f198a8906780408058f4cc48a2715776bf36b",
+  "patch_sha256": "a7fd467722ecd498e095402466cbf56f4f3461df2c39e2e9471c1e2e1200e76c",
+  "source_lock_sha256": "d189b27d99bfc7fafeb8b6a37c0cfe36c1beb3472a6d5ae6f41dca8883fbb59d"
+}
