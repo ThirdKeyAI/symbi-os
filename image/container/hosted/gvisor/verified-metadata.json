@@ -1,0 +1,46 @@
+{
+  "retrieved_at_utc": "2026-11-25T14:28:34.390491+00:00",
+  "purpose": "Disposable Ubuntu fixture testing; not a selected Fedora release dependency",
+  "signature_verified": true,
+  "signing_fingerprint": "6F1DF85E3A71C24918E727D56FC6D554E32BD943",
+  "key_source": "https://gvisor.dev/archive.key",
+  "key_bootstrap": "Official gVisor HTTPS key endpoint identified by its installation guide",
+  "documentation": "https://gvisor.dev/docs/user_guide/install/",
+  "release_date": "2026-11-24T21:28:53+00:00",
+  "release_valid_until": null,
+  "package_index_sha256": "7f0fcea176b7c5f0294f9acf4b09cfe5892a31b9c2c7c31918e1f2afb6ae0c85",
+  "package": {
+    "Package": "runsc",
+    "Version": "20261123.0",
+    "Architecture": "amd64",
+    "Filename": "pool/20261123.0/binary-amd64/runsc.deb",
+    "Size": "87651624",
+    "SHA256": "3b78fe64d212d0d1a753660b0a9e95488e5e264d36dce04c36e7245b81151e18"
+  },
+  "package_downloaded": true,
+  "installed": false,
+  "files": {
+    "archive.key": "757d2ebdf00cdc5661f88443e2bea848d3e2ded0780cbcd2d811be05e0c1d5dd",
+    "archive.gpg": "6980344d5d10b0fe4dea6b0a8a3f12a50ff1b2f3f81c40fed43dd942eace0184",
+    "Release": "c0a763c56538eaeb83f92bbb2225d54389d570efa2393a6427c545832bdb749a",
+    "Release.gpg": "bd3d6891115b496825e29316c32468b9254bf04775223b2d505b36b18f1f6773",
+    "Packages": "7f0fcea176b7c5f0294f9acf4b09cfe5892a31b9c2c7c31918e1f2afb6ae0c85",
+    "signature-status.log": "2732fc052f0b9edd1f554fd7d0dfbf49eb9d2fe0261a99031e2db8a7be2c827d",
+    "signature-verification.log": "3a8443f6249d9309c99f186be4ae98517d2498c607205f1def3d08aa414bd2a2"
+  },
+  "package_sha256_verified": true,
+  "package_verified_at_utc": "2026-11-25T14:29:53.655941+00:00",
+  "package_url": "https://storage.googleapis.com/gvisor/releases/pool/20261123.0/binary-amd64/runsc.deb",
+  "archive_inspection": {
+    "inventory_sha256": "5d66d2f79f9d4780956b51ed42a6380e0b01a8a8974af0fa1aa23251edbb526b",
+    "entries": 15,
+    "sidecar_files": 7,
+    "extracted": false,
+    "executed": false,
+    "limit_memory_bytes": 134217728,
+    "limit_cpu_fraction": 0.1,
+    "runtime_seconds": 8.752,
+    "cpu_seconds": 0.852,
+    "reported_peak_memory": "12.1M"
+  }
+}

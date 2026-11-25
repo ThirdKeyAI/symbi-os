@@ -45,3 +45,12 @@ zero swap, source/lock/compiler/profile pins and all four gates stay unchanged.
 This is hosted build capacity, not a worker security-policy change. The local
 helper VM remains off. Started checks are now saved before execution so an
 abrupt termination cannot erase which gate was active.
+
+## Validated and published draft
+
+Run 45688918098 passed all baseline and patched workspace gates and the sixteen
+focused Python tests. Its source/lock/patch/binary bindings and resource counters
+are retained in the P0-05 report. The exact patch is now upstream draft PR 24;
+the OS runtime pin remains unchanged. Actual container execution is prepared in
+`../hosted/README.md`, reusing the checked binaries on a hosted runner. The local
+VM is off. Passing workspace checks do not qualify Fedora or live containment.

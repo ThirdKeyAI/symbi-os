@@ -1,0 +1,18 @@
+{
+  "verified_at_utc": "2026-11-25T14:38:39.872717+00:00",
+  "purpose": "Authenticated root filesystem input for a Python/Git container fixture in the disposable Ubuntu test guest; not a Fedora OS base selection",
+  "archive": "ubuntu-base-24.04.5-base-amd64.tar.gz",
+  "url": "https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.5-base-amd64.tar.gz",
+  "bytes": 30028293,
+  "sha256": "e77b6f10c2590cef872b33ee9f635a0e3fd1f57fb074c0e52b5c7f56147a0c86",
+  "signature_verified": true,
+  "archive_verified": true,
+  "signing_fingerprint": "843938DF228D22F7B3742BC0D94AA3F0EFE21092",
+  "keyring": "/usr/share/keyrings/ubuntu-archive-keyring.gpg",
+  "keyring_sha256": "80a36b0a6de2f69f49d2df75ef473ccde121e9e190b9ea01d20a4f63778d5c31",
+  "verification_reference": "https://documentation.ubuntu.com/security/software-integrity/image-verification/",
+  "checksum_file_sha256": "30f23cec3a46679bcf21dbe0c0a0ab51440e9b2f5ac69b3ae1d4a7a71c0ffc69",
+  "signature_file_sha256": "5164e25bab9ff0467fc83415c8f759bb79cbd4e0264b9a11f49ff1e6a10a4c1f",
+  "extracted": false,
+  "container_built": false
+}

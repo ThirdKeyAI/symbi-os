@@ -1,0 +1,123 @@
+{
+  "package_version": "20261123.0",
+  "package_sha256": "3b78fe64d212d0d1a753660b0a9e95488e5e264d36dce04c36e7245b81151e18",
+  "extracted": false,
+  "executed": false,
+  "entries": [
+    {
+      "path": "usr",
+      "mode": 493,
+      "bytes": 0,
+      "type": "5",
+      "link_target": null
+    },
+    {
+      "path": "usr/bin",
+      "mode": 493,
+      "bytes": 0,
+      "type": "5",
+      "link_target": null
+    },
+    {
+      "path": "usr/bin/containerd-shim-runsc-v1",
+      "mode": 493,
+      "bytes": 24415382,
+      "type": "0",
+      "link_target": null,
+      "sha256": "d76cf2c9bef1dc6d37314219fb1ca3b0430286e84ebed77bf29c25025d045b03"
+    },
+    {
+      "path": "usr/bin/runsc",
+      "mode": 493,
+      "bytes": 19561579,
+      "type": "0",
+      "link_target": null,
+      "sha256": "fcf27497492d44de3d1406d64bd72e038822bed74dea429efb338edf0b2ceeb8"
+    },
+    {
+      "path": "usr/bin/gvisor-bin",
+      "mode": 493,
+      "bytes": 0,
+      "type": "5",
+      "link_target": null
+    },
+    {
+      "path": "usr/bin/gvisor-bin/checkpointgofer",
+      "mode": 493,
+      "bytes": 48801218,
+      "type": "0",
+      "link_target": null,
+      "sha256": "28d25c1b7e1b3c4e99364c4c06898185ddf653a81409d25502db475166e49c23"
+    },
+    {
+      "path": "usr/bin/gvisor-bin/gvisor-proc-umounter",
+      "mode": 493,
+      "bytes": 1280,
+      "type": "0",
+      "link_target": null,
+      "sha256": "b3bbbaef5ddc62084e5febd19d3acca14f3d42b2a25d8552fb40def699467019"
+    },
+    {
+      "path": "usr/bin/gvisor-bin/gvisor-sentry-prewarmer",
+      "mode": 493,
+      "bytes": 1752,
+      "type": "0",
+      "link_target": null,
+      "sha256": "046e3ec1de3aa7b7ec7ce53b4f0d1e08db15987847606a8e361133d5c5bd3d73"
+    },
+    {
+      "path": "usr/bin/gvisor-bin/gvisor_sentry",
+      "mode": 493,
+      "bytes": 55598976,
+      "type": "0",
+      "link_target": null,
+      "sha256": "fdc9c6bcfb59af3a2ebb499f0b63d548b8ffb11c44f0861a794e10de823da62c"
+    },
+    {
+      "path": "usr/bin/gvisor-bin/runsc-fd-parking",
+      "mode": 493,
+      "bytes": 1320,
+      "type": "0",
+      "link_target": null,
+      "sha256": "03af90d07ea466c10ecc3e3ba839b2a59540959dd3286aea3886917cba850c11"
+    },
+    {
+      "path": "usr/bin/gvisor-bin/runsc-metric-server",
+      "mode": 493,
+      "bytes": 21700770,
+      "type": "0",
+      "link_target": null,
+      "sha256": "76bf2c18c5a2122145fdc38cb84bab20216703620fbe4dd1a4a23a579d30615a"
+    },
+    {
+      "path": "usr/bin/gvisor-bin/runsc-netgofer",
+      "mode": 493,
+      "bytes": 18679210,
+      "type": "0",
+      "link_target": null,
+      "sha256": "31b983f86020fa0caa0301e5dda1b9bd1ecfe6178819e2ba93dbefbea344719d"
+    },
+    {
+      "path": "etc",
+      "mode": 493,
+      "bytes": 0,
+      "type": "5",
+      "link_target": null
+    },
+    {
+      "path": "etc/containerd",
+      "mode": 493,
+      "bytes": 0,
+      "type": "5",
+      "link_target": null
+    },
+    {
+      "path": "etc/containerd/runsc.toml",
+      "mode": 420,
+      "bytes": 302,
+      "type": "0",
+      "link_target": null,
+      "sha256": "ea5ada6422655b972fd3af73f7a23b88cc3385c98767cca2f360b2aa749d114c"
+    }
+  ]
+}
