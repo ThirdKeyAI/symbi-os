@@ -10,7 +10,7 @@ upstream reviewed commit after the required checks pass.
 `Pinned runtime workspace` runs on a disposable GitHub-hosted Ubuntu runner.
 It checks the clean full source revision and unchanged Cargo.lock, uses Rust
 1.100.0, then runs all four required workspace gates. Only a passing baseline
-allows the hash-bound patch to be applied. The same unit then runs the sixteen
+allows the hash-bound patch to be applied. The same unit then runs the seventeen
 focused Python tests and all four workspace gates on the patched source.
 No feature, test or timeout is altered to pass validation. Upstream's ordinary
 ignored integration tests are not claimed as executed by `cargo test`.
@@ -54,3 +54,15 @@ are retained in the P0-05 report. The exact patch is now upstream draft PR 24;
 the OS runtime pin remains unchanged. Actual container execution is prepared in
 `../hosted/README.md`, reusing the checked binaries on a hosted runner. The local
 VM is off. Passing workspace checks do not qualify Fedora or live containment.
+
+The PR 24 review reproduced a missing filesystem between-case checkpoint in the
+published patch. The revised cumulative patch is
+`a4545649b1c83f0a3402781f815ebc66ea2b507128d17f61e76c4febb5017bda`.
+It retains the selected artifact report in `Backend` and verifies it in
+`cleaned()` before the driver marks each case passed. A regression exercises
+that actual caller with changed executable/sidecar bytes, sidecar permissions,
+added/removed sidecars and a changed registered path, then restores the originals
+before completion. All six mutations were missed before the fix; all seventeen
+focused tests pass after it. Full hosted workspace validation of this revision
+is pending before its upstream follow-up commit. The prior passing workspace
+and published upstream commit remain evidence for the previous patch only.

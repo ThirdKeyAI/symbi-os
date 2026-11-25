@@ -1,9 +1,9 @@
 diff --git a/docs/gvisor-fixture-qualification.md b/docs/gvisor-fixture-qualification.md
 new file mode 100644
-index 0000000000000000000000000000000000000000..239f990172616802c5fc55541b554390db1958fd
+index 0000000000000000000000000000000000000000..20b2c08f62be27a1d2f53860952e60ae7afa64e6
 --- /dev/null
 +++ b/docs/gvisor-fixture-qualification.md
-@@ -0,0 +1,66 @@
+@@ -0,0 +1,70 @@
 +# Container fixture selection
 +
 +The filesystem-grant, source-broker and Git-source shipping fixture drivers accept
@@ -53,6 +53,10 @@ index 0000000000000000000000000000000000000000..239f990172616802c5fc55541b554390
 +sidecars, changed permissions, and changed registered paths. These snapshots
 +detect changes at the checkpoints; they do not authenticate the installation
 +or establish security against a compromised host operator.
++The filesystem driver verifies artifacts in each case's cleanup checkpoint,
++before marking that case passed. Its regression changes artifacts at this
++checkpoint and restores them before completion, so completion-only verification
++cannot satisfy the test.
 +The completion checkpoint rereads Docker's current runsc registration as well as
 +the selected files, so a removed or changed registration cannot retain a passing
 +result merely because the previously selected executable is still on disk.
@@ -203,7 +207,7 @@ index 0000000000000000000000000000000000000000..f41f728b7d0c073241d0a9a4e71ffa5e
 +        require(runsc_artifact(artifact['path'], registered_runsc(docker)) == artifact,
 +                'gVisor artifacts changed during the fixture')
 diff --git a/scripts/file_grant_backend.py b/scripts/file_grant_backend.py
-index 26cd108fee0f0fb334c00b2dc1c2aaec830fd273..97e3e9d9ae2a2ea23bd0ce8420278220e6ce5563 100644
+index 26cd108fee0f0fb334c00b2dc1c2aaec830fd273..b7fd7f6446d721432d32e7644d787811f31b40e7 100644
 --- a/scripts/file_grant_backend.py
 +++ b/scripts/file_grant_backend.py
 @@ -5,6 +5,8 @@ import os
@@ -215,7 +219,7 @@ index 26cd108fee0f0fb334c00b2dc1c2aaec830fd273..97e3e9d9ae2a2ea23bd0ce8420278220
  
  
  def digest(path):
-@@ -12,16 +14,10 @@ def digest(path):
+@@ -12,16 +14,11 @@ def digest(path):
          return hashlib.file_digest(source, 'sha256').hexdigest()
  
  
@@ -229,11 +233,12 @@ index 26cd108fee0f0fb334c00b2dc1c2aaec830fd273..97e3e9d9ae2a2ea23bd0ce8420278220
  class Backend:
      def __init__(self, args, root, data, label, docker, report, vmm_launcher=None):
          self.args, self.root, self.label, self.docker = args, root, label, docker
++        self.report = report
 +        selected_backend(args)
          self.landlock = args.landlock
          self.service = None
          self.vm = args.firecracker_binary is not None
-@@ -56,9 +52,9 @@ class Backend:
+@@ -56,9 +53,9 @@ class Backend:
          else:
              image = docker('image', 'inspect', args.image, '--format', '{{.Id}}')
              report['image'] = image
@@ -246,7 +251,7 @@ index 26cd108fee0f0fb334c00b2dc1c2aaec830fd273..97e3e9d9ae2a2ea23bd0ce8420278220
          (root / 'symbiont.toml').write_text(config)
          report['config_sha256'] = digest(root / 'symbiont.toml')
  
-@@ -128,7 +124,8 @@ class Backend:
+@@ -128,7 +125,8 @@ class Backend:
                      lease = row['Config']['Labels']['ai.symbiont.lease']
                      record = json.loads((self.root / 'state' / (lease + '.json')).read_text())
                      assert record['state']['container_id'] == identity
@@ -256,7 +261,15 @@ index 26cd108fee0f0fb334c00b2dc1c2aaec830fd273..97e3e9d9ae2a2ea23bd0ce8420278220
          self.seen.extend(found)
          return found
  
-@@ -187,3 +184,4 @@ class Backend:
+@@ -165,6 +163,7 @@ class Backend:
+                     assert int(stat.rsplit(')', 1)[1].split()[19]) != worker['start_ticks'], 'VMM survived cleanup'
+                 except FileNotFoundError:
+                     pass
++        verify_artifacts(self.report, self.docker)
+ 
+     def publication(self, entries, data, expected):
+         effects = [e['event']['ToolEffect']['effect'] for e in entries if 'ToolEffect' in e['event']]
+@@ -187,3 +186,4 @@ class Backend:
              if self.service is not None:
                  self.service.stop()
          assert all(digest(path) == expected for path, expected in self.artifacts.items()), 'VM artifact changed'
@@ -381,10 +394,10 @@ index 642f0c21bb8eb01ad06e7eed1b36237f8d896f67..6155b1f983ce29edd0bc3ff28def9b3c
          report.update(error=f'{type(error).__name__}: {error}', traceback=traceback.format_exc())
 diff --git a/scripts/test_container_fixture_profile.py b/scripts/test_container_fixture_profile.py
 new file mode 100644
-index 0000000000000000000000000000000000000000..5cb1a0c634e1d4d49118d60cbefd79fc6ce116cd
+index 0000000000000000000000000000000000000000..4b955e20309a4f96a199ef9cc5068d178aac1d20
 --- /dev/null
 +++ b/scripts/test_container_fixture_profile.py
-@@ -0,0 +1,255 @@
+@@ -0,0 +1,315 @@
 +"""Configuration and observation checks; these do not execute or qualify runsc."""
 +import argparse
 +from contextlib import redirect_stderr
@@ -603,6 +616,66 @@ index 0000000000000000000000000000000000000000..5cb1a0c634e1d4d49118d60cbefd79fc
 +        self.assertEqual(config['sandbox']['tier'], 'gvisor')
 +        with self.assertRaisesRegex(ValueError, 'did not use runsc'):
 +            backend.observe()
++
++    def test_filesystem_checkpoint_rejects_changes_even_when_restored_before_completion(self):
++        from file_grant_backend import Backend
++        for change in ('runsc', 'sidecar', 'permissions', 'added', 'removed', 'registration'):
++            with self.subTest(change=change), tempfile.TemporaryDirectory(dir=self.root) as temporary:
++                root = Path(temporary)
++                (root / 'state').mkdir()
++                (root / 'source').mkdir()
++                runsc = root / 'runsc'
++                runsc.write_text('#!/bin/sh\nexit 0\n')
++                runsc.chmod(0o700)
++                sidecars = root / 'gvisor-bin'
++                sidecars.mkdir()
++                sentry = sidecars / 'sentry'
++                sentry.write_text('synthetic sentry bytes\n')
++                sentry.chmod(0o755)
++                args = self.args('--gvisor', '--runsc-binary', str(runsc))
++                args.report, args.image = root / 'report.json', self.image
++                registration = {'runsc': {'path': str(runsc)}}
++
++                def docker(*values):
++                    if values[0] == 'image':
++                        return self.image
++                    if values[0] == 'info':
++                        return json.dumps(registration)
++                    if values[0] == 'ps':
++                        return ''
++                    self.fail('unexpected Docker call: ' + repr(values))
++
++                report = {}
++                backend = Backend(args, root, root / 'source', 'fixture', docker, report)
++                backend.cleaned()  # The unchanged between-case control passes.
++                if change == 'runsc':
++                    runsc.write_text('#!/bin/sh\nexit 1\n')
++                elif change == 'sidecar':
++                    sentry.write_text('changed sentry bytes\n')
++                elif change == 'permissions':
++                    sentry.chmod(0o700)
++                elif change == 'added':
++                    (sidecars / 'extra').write_text('unexpected sidecar\n')
++                elif change == 'removed':
++                    sentry.unlink()
++                else:
++                    alias = root / 'runsc-alias'
++                    alias.symlink_to(runsc)
++                    registration['runsc']['path'] = str(alias)
++                try:
++                    # This is the shipping driver's checkpoint before marking
++                    # each filesystem case passed, not a direct helper call.
++                    error = 'gVisor sidecar directory is empty' if change == 'removed' else 'gVisor artifacts changed'
++                    with self.assertRaisesRegex(ValueError, error):
++                        backend.cleaned()
++                finally:
++                    runsc.write_text('#!/bin/sh\nexit 0\n')
++                    sentry.write_text('synthetic sentry bytes\n')
++                    sentry.chmod(0o755)
++                    (sidecars / 'extra').unlink(missing_ok=True)
++                    registration['runsc']['path'] = str(runsc)
++                # Restoration makes a completion-only check insufficient.
++                backend.finish(report)
 +
 +    def test_completion_rechecks_the_daemon_runtime_registration(self):
 +        from file_grant_backend import Backend

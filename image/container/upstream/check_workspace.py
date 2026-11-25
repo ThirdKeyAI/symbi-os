@@ -14,7 +14,7 @@ import tomllib
 
 RUST = "1.100.0"
 PIN = "deddb9e997244d2289c217ad76b8fde0e9b0339b"
-PATCH = "a7fd467722ecd498e095402466cbf56f4f3461df2c39e2e9471c1e2e1200e76c"
+PATCH = "a4545649b1c83f0a3402781f815ebc66ea2b507128d17f61e76c4febb5017bda"
 FILES = {"docs/gvisor-fixture-qualification.md", "scripts/container_fixture_profile.py",
          "scripts/file_grant_backend.py", "scripts/test-git-source.py",
          "scripts/test-source-broker.py", "scripts/test_container_fixture_profile.py"}

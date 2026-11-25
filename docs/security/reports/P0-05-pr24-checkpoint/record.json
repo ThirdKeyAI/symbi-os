@@ -1,0 +1,29 @@
+{
+  "before-fix.log": {
+    "original_sha256": "4d01e33f1f10acb95ca56d054d6020de3d6bf088eab09e60d9a86eb66d2b06e0",
+    "retained_sha256": "33ac8bdb9ad0db96f8334aa740b7c6af3530a48db105a63987bfa400720bae03"
+  },
+  "first-fix-assertion.log": {
+    "original_sha256": "653207321fae2b3463d20d073b1e64b4721f83505b2e341f477b8d2620a1bd4b",
+    "retained_sha256": "c36fd830659e3d901928a75daec54bbed920b92fbf0275b04e39949ff01efd85"
+  },
+  "after-fix.log": {
+    "original_sha256": "a68276b66025809b8799aa9a08b747d714251e612cc4f3a024b263aa1c86154b",
+    "retained_sha256": "a68276b66025809b8799aa9a08b747d714251e612cc4f3a024b263aa1c86154b"
+  },
+  "patch": {
+    "sha256": "a4545649b1c83f0a3402781f815ebc66ea2b507128d17f61e76c4febb5017bda",
+    "bytes": 36585,
+    "base": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+    "previous_head": "e17f198a8906780408058f4cc48a2715776bf36b",
+    "focused_tests_passed": 17,
+    "between_case_mutations": 6,
+    "qualified": false,
+    "upstream_followup_committed": false
+  },
+  "revised_files": {
+    "scripts/file_grant_backend.py": "ada28a514859b87960fd1b0d49094d720a19ebbdbccf762f7829885f7f3f3625",
+    "scripts/test_container_fixture_profile.py": "8d6fa769ded0b6a389250def5134af9ef32c1cc7c9278eb63bba20c63fc22e1a",
+    "docs/gvisor-fixture-qualification.md": "1db09d418bcf4113a1e91dabba6bdf59f811d8b56c847e03e12b3ca1195ee033"
+  }
+}
