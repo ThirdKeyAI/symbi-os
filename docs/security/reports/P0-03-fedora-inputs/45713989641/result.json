@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "base": {
+    "image": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+    "public_key": "image/keys/secureblue-2026.pub",
+    "public_key_sha256": "9cbd48de48d467f86e0f31f9454c6e0bb663f3d033ecd92143f62577eb1cb5eb"
+  },
+  "signature_verified_before_pull": true,
+  "inventory_completed": true,
+  "guest_script_sha256": "c214e843b92b0bb2c7ecdef047e35162165fa30a8381e88f22fcc17aefbbd9d8",
+  "network_inside_inventory": "none",
+  "source_commit": "0240c3e0d2764ff0a1f5a1af670ebd7f4bfb6100",
+  "os_qualified": false,
+  "scope": "Input discovery only; no new packages, compositor build, signing or publication",
+  "podman_version": "podman version 5.7.0"
+}
