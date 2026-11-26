@@ -1,14 +1,63 @@
 name: Hyprland runtime compatibility
 
 on:
+  push:
+    branches: ["**"]
+    paths:
+      - "image/hyprland/hosted_runtime.py"
+      - "image/hyprland/runtime_guest.py"
+      - "image/hyprland/prefix_input.py"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/runtime-requirements.json"
+      - "image/hyprland/runtime-rpms.lock.json"
+      - "image/hyprland/development-prefix.lock.json"
+      - "image/hyprland/build-rpms.lock.json"
+      - "image/hyprland/candidate-inputs.json"
+      - "image/hyprland/patches/0001-disable-native-loading.patch"
+      - "image/hyprland/keys/**"
+      - "image/hyprland/tests/qualify_session_defaults.py"
+      - "image/overlay/usr/share/symbiont/defaults/hypr/**"
+      - "scripts/check-hyprland-runtime.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/hyprland-runtime.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
   pull_request:
     paths:
-      - image/hyprland/**
-      - image/overlay/usr/share/symbiont/defaults/hypr/**
-      - image/base-images.json
-      - image/toolchain/**
-      - scripts/check-hyprland-runtime.sh
-      - .github/workflows/hyprland-runtime.yml
+      - "image/hyprland/hosted_runtime.py"
+      - "image/hyprland/runtime_guest.py"
+      - "image/hyprland/prefix_input.py"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/runtime-requirements.json"
+      - "image/hyprland/runtime-rpms.lock.json"
+      - "image/hyprland/development-prefix.lock.json"
+      - "image/hyprland/build-rpms.lock.json"
+      - "image/hyprland/candidate-inputs.json"
+      - "image/hyprland/patches/0001-disable-native-loading.patch"
+      - "image/hyprland/keys/**"
+      - "image/hyprland/tests/qualify_session_defaults.py"
+      - "image/overlay/usr/share/symbiont/defaults/hypr/**"
+      - "scripts/check-hyprland-runtime.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/hyprland-runtime.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
   workflow_dispatch:
 
 permissions:
@@ -17,10 +66,12 @@ permissions:
 
 concurrency:
   group: hyprland-runtime-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   runtime:
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:

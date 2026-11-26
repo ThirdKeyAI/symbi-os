@@ -1,23 +1,55 @@
 name: Elephant signed Go toolchain discovery
 
 on:
+  push:
+    branches: ["**"]
+    paths:
+      - "image/launcher/elephant-build-requirements.json"
+      - "image/launcher/elephant-source.json"
+      - "image/launcher/candidates.json"
+      - "image/hyprland/package_inventory.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/fedora-package-trust.json"
+      - "image/hyprland/fedora-build.repo"
+      - "image/hyprland/package-dnf.conf"
+      - "image/hyprland/package-repository-inputs.json"
+      - "image/hyprland/keys/**"
+      - "scripts/check-fedora-packages.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/elephant-packages.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
   pull_request:
     paths:
-      - image/launcher/**
-      - image/hyprland/package_inventory.py
-      - image/hyprland/resolve_packages.py
-      - image/hyprland/guest_inventory.py
-      - image/hyprland/fedora-package-trust.json
-      - image/hyprland/fedora-build.repo
-      - image/hyprland/package-dnf.conf
-      - image/hyprland/package-repository-inputs.json
-      - image/hyprland/keys/**
-      - image/base-images.json
-      - image/toolchain/bootstrap_cosign.py
-      - image/toolchain/cosign.json
-      - image/toolchain/keys/**
-      - scripts/check-fedora-packages.sh
-      - .github/workflows/elephant-packages.yml
+      - "image/launcher/elephant-build-requirements.json"
+      - "image/launcher/elephant-source.json"
+      - "image/launcher/candidates.json"
+      - "image/hyprland/package_inventory.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/fedora-package-trust.json"
+      - "image/hyprland/fedora-build.repo"
+      - "image/hyprland/package-dnf.conf"
+      - "image/hyprland/package-repository-inputs.json"
+      - "image/hyprland/keys/**"
+      - "scripts/check-fedora-packages.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/elephant-packages.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
   workflow_dispatch:
 
 permissions:
@@ -29,6 +61,8 @@ concurrency:
 
 jobs:
   packages:
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 50
     steps:

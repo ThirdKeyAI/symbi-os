@@ -1,12 +1,35 @@
 name: Hosted virtual graphics preflight
 
 on:
+  push:
+    branches: ["**"]
+    paths:
+      - "image/hyprland/graphics/**"
+      - "scripts/check-hosted-graphics.sh"
+      - "image/hyprland/inventory.py"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/graphics-preflight.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
   pull_request:
     paths:
-      - image/hyprland/graphics/**
-      - image/base-images.json
-      - scripts/check-hosted-graphics.sh
-      - .github/workflows/graphics-preflight.yml
+      - "image/hyprland/graphics/**"
+      - "scripts/check-hosted-graphics.sh"
+      - "image/hyprland/inventory.py"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/graphics-preflight.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
   workflow_dispatch:
 
 permissions:
@@ -18,6 +41,8 @@ concurrency:
 
 jobs:
   graphics:
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:

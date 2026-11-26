@@ -48,6 +48,23 @@ uses its separately verified base pin. The
 renderer is not a signature verifier. Do not build until the signature and all
 release prerequisites below are satisfied.
 
+## Hosted validation scheduling
+
+Workspace, policy and formal checks still run on every pull-request update.
+The twelve heavier input/build/VM workflows use component-specific push paths
+for branches in this repository. GitHub compares each push's old and new heads,
+so an unrelated launcher or documentation edit does not rebuild the compositor.
+Their same-repository pull-request jobs are skipped before runner allocation;
+fork contributions retain pull-request validation, and manual dispatch remains
+available. A newer relevant run supersedes the same workflow/ref's older run.
+
+The workflow bodies, pinned actions, resource ceilings, permissions and acceptance
+checks are unchanged. Skipped or cancelled jobs are not passing qualification
+evidence. Retained results remain bound to their source/input hashes; changed
+inputs require their actual tests before adoption or release. Hyprland default
+changes run the retained-binary runtime checks without repeating compilation.
+See [GitHub's path comparison rules](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow).
+
 ## Required build and release sequence
 
 1. Implement the selected secureblue plus maintained Hyprland strategy,

@@ -1,16 +1,63 @@
 name: Offline Hyprland build
 
 on:
+  push:
+    branches: ["**"]
+    paths:
+      - ".github/workflows/hyprland-build.yml"
+      - "scripts/check-hyprland-build.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - "image/recipe.py"
+      - "image/hyprland/hosted_build.py"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/candidate-inputs.json"
+      - "image/hyprland/build-requirements.json"
+      - "image/hyprland/build-rpms.lock.json"
+      - "image/hyprland/build_guest.py"
+      - "image/hyprland/compile.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/patch-inputs.json"
+      - "image/hyprland/patches/0001-disable-native-loading.patch"
+      - "image/hyprland/keys/fedora-45-primary.asc"
+      - "image/hyprland/tests/qualify_native_loading.py"
+      - "image/hyprland/tests/qualify_session_defaults.py"
+      - "image/hyprland/tests/native_probe.c"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
   pull_request:
     paths:
-      - image/hyprland/**
-      - image/overlay/usr/share/symbiont/defaults/hypr/**
-      - image/base-images.json
-      - image/toolchain/bootstrap_cosign.py
-      - image/toolchain/cosign.json
-      - image/toolchain/keys/**
-      - scripts/check-hyprland-build.sh
-      - .github/workflows/hyprland-build.yml
+      - ".github/workflows/hyprland-build.yml"
+      - "scripts/check-hyprland-build.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - "image/recipe.py"
+      - "image/hyprland/hosted_build.py"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/candidate-inputs.json"
+      - "image/hyprland/build-requirements.json"
+      - "image/hyprland/build-rpms.lock.json"
+      - "image/hyprland/build_guest.py"
+      - "image/hyprland/compile.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/patch-inputs.json"
+      - "image/hyprland/patches/0001-disable-native-loading.patch"
+      - "image/hyprland/keys/fedora-45-primary.asc"
+      - "image/hyprland/tests/qualify_native_loading.py"
+      - "image/hyprland/tests/qualify_session_defaults.py"
+      - "image/hyprland/tests/native_probe.c"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
   workflow_dispatch:
 
 permissions:
@@ -19,11 +66,12 @@ permissions:
 
 concurrency:
   group: hyprland-build-${{ github.ref }}
-  # Finish the bounded build already running; keep only the latest pending revision.
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   compositor:
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 140
     steps:

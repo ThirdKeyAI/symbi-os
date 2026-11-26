@@ -1,11 +1,27 @@
 name: Image tool compatibility
 
 on:
+  push:
+    branches: ["**"]
+    paths:
+      - "image/toolchain/**"
+      - "image/recipe.py"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "scripts/check-image-tools.sh"
+      - ".github/workflows/image-tools.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
   pull_request:
     paths:
-      - image/**
-      - scripts/check-image-tools.sh
-      - .github/workflows/image-tools.yml
+      - "image/toolchain/**"
+      - "image/recipe.py"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "scripts/check-image-tools.sh"
+      - ".github/workflows/image-tools.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
   workflow_dispatch:
 
 permissions:
@@ -17,6 +33,8 @@ concurrency:
 
 jobs:
   bluebuild:
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
