@@ -10,6 +10,7 @@
     "sha256": "67acb8beb9d0bf76c0ba90a8d1d312679ed5c70708e65a9d515d6d0471dffe8d"
   },
   "manifest_sha256": "ddf3e7f8b7a85992eb7c3612a3b6ebc3593b3e089e0e5187c8b04ae05d17868d",
+  "marker_source_sha256": "212af59b974dc27ce79d338860aeff7b84aa302c28118329448f47dd2bc6864c",
   "manifest": {
     "schema": 1,
     "compiled": true,

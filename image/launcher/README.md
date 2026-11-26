@@ -30,7 +30,7 @@ profile for the exact Elephant source and go.mod/go.sum hashes in
 must disable automatic toolchain downloads and preserve the upstream lockfile.
 GCC/glibc development inputs support the actual executable/provider CGO builds.
 Discovery itself neither installs the compiler nor executes launcher artifacts.
-The native-provider constructor acceptance driver is under preparation; no
+The native-provider constructor acceptance driver is prepared; no
 provider-refusal result or product qualification is claimed yet.
 
 
@@ -67,11 +67,11 @@ the real application provider where appropriate. Each invocation has a fresh
 read-only fixture, nonce-bound marker and isolated256 MiB/one-CPU/no-network
 container running as UID10001. Output is capped while streaming, timeout kills
 the client, and explicit container removal plus absence checks precede success.
-Only this authenticated hosted workflow may invoke the driver.
+Only authenticated hosted build or retained-binary workflows may invoke the driver.
 
 The parent is capped at4 GiB/two CPUs/no swap; compiler stages at3 GiB/two CPUs,
-with one Go job. This is development work: compilation, provider controls and
-actual launcher/session integration have not yet passed. Product installation,
+with one Go job. Source compilation has passed; the full upstream suite, provider
+controls and actual launcher/session integration remain incomplete. Product installation,
 Walker validation, browser/portal controls and OS qualification remain open.
 
 ## Walker source-build inputs
@@ -106,3 +106,23 @@ acceptance without recompilation. This does not turn the failed suite into a
 pass: native-provider controls have not run and upstream-test qualification
 remains incomplete. The source's OCR helper invokes `tesseract` and suppresses
 execution errors; the next test step must establish the actual tool failure.
+
+## Independent provider acceptance without recompilation
+
+`elephant-runtime.yml` downloads the exact retained binary artifact only on a
+hosted runner. Before execution, the archive byte count/hash, manifest bytes and
+all four binary hashes must match the reviewed lock. The loader refuses duplicate,
+unexpected, linked, special, encrypted and oversized members and requires a fresh
+destination. Current base, source/module locks, compiler RPM lock, patch and marker
+source must still match the retained build. The marker source was checked unchanged
+from build head 525e390 before its hash was added to the reuse lock.
+
+The same 17 actual provider cases run against the original publisher-authenticated
+base, without installing compiler packages. A separate UID 10001 diagnostic records
+the real `convert`/`tesseract` paths, outputs and errors for the pinned OCR example.
+Both probes use read-only, no-network containers with all capabilities dropped,
+256 MiB/one CPU/no swap and explicit removal/absence checks. The hosted parent is
+limited to 4 GiB/two CPUs/no swap and 25 minutes. No local executable or large
+artifact download is used. A provider pass cannot clear the failed upstream suite:
+the reuse report explicitly retains `upstream_tests_passed: false` and
+`os_qualified: false`. Actual results remain pending until the hosted run finishes.

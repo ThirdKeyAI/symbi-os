@@ -1,0 +1,82 @@
+name: Retained Elephant provider acceptance
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "image/launcher/hosted_runtime.py"
+      - "image/launcher/binary_inputs.py"
+      - "image/launcher/ocr_diagnostic.py"
+      - "image/launcher/development-binaries.lock.json"
+      - "image/launcher/elephant-source.json"
+      - "image/launcher/build-rpms.lock.json"
+      - "image/launcher/provider-patch.json"
+      - "image/launcher/patches/**"
+      - "image/launcher/probes/**"
+      - "image/hyprland/inventory.py"
+      - "scripts/check-elephant-runtime.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/elephant-runtime.yml"
+  pull_request:
+    paths:
+      - "image/launcher/hosted_runtime.py"
+      - "image/launcher/binary_inputs.py"
+      - "image/launcher/ocr_diagnostic.py"
+      - "image/launcher/development-binaries.lock.json"
+      - "image/launcher/elephant-source.json"
+      - "image/launcher/build-rpms.lock.json"
+      - "image/launcher/provider-patch.json"
+      - "image/launcher/patches/**"
+      - "image/launcher/probes/**"
+      - "image/hyprland/inventory.py"
+      - "scripts/check-elephant-runtime.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/elephant-runtime.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: elephant-runtime-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  runtime:
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Fetch exact retained development binaries
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache
+          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15076092608/zip > .cache/elephant-development-binaries.zip
+          echo '67acb8beb9d0bf76c0ba90a8d1d312679ed5c70708e65a9d515d6d0471dffe8d  .cache/elephant-development-binaries.zip' | sha256sum --check --strict
+      - name: Run actual provider controls and diagnose the failed OCR prerequisite
+        run: bash scripts/check-elephant-runtime.sh
+      - name: Retain public runtime evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: elephant-runtime-evidence
+          path: .cache/elephant-runtime-evidence/
+          retention-days: 14
+          if-no-files-found: error
