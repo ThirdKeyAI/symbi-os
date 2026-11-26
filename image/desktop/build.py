@@ -100,7 +100,7 @@ def main():
         run('pull-base',podman+['pull','--authfile',str(auth),base['image']],1200)
         run('podman-version',podman+['version','--format=json'])
         preflight_name='symbi-desktop-base-check'
-        preflight='set -eu; for x in bash jq curl grep ls bootc python3 dnf5 rpm; do command -v "$x"; done; for x in /usr/bin/Hyprland /usr/bin/hyprctl /usr/bin/elephant /usr/bin/walker /usr/bin/symbi /usr/bin/symbi-sandbox-supervisor /usr/lib/symbi /usr/lib/systemd/user/xdg-desktop-portal-hyprland.service /usr/share/dbus-1/services/org.freedesktop.impl.portal.desktop.hyprland.service /usr/share/xdg-desktop-portal/portals/hyprland.portal /usr/share/xdg-desktop-portal/hyprland-portals.conf; do test ! -e "$x"; test ! -L "$x"; done'
+        preflight='set -eu; for x in bash jq curl grep ls bootc python3 dnf5 rpm fc-scan fc-match; do command -v "$x"; done; for x in /usr/bin/Hyprland /usr/bin/hyprctl /usr/bin/elephant /usr/bin/walker /usr/bin/symbi /usr/bin/symbi-sandbox-supervisor /usr/lib/symbi /usr/lib/systemd/user/xdg-desktop-portal-hyprland.service /usr/share/dbus-1/services/org.freedesktop.impl.portal.desktop.hyprland.service /usr/share/xdg-desktop-portal/portals/hyprland.portal /usr/share/xdg-desktop-portal/hyprland-portals.conf; do test ! -e "$x"; test ! -L "$x"; done'
         try:
             run('base-prerequisites',podman+['run','--rm','--name='+preflight_name,'--pull=never','--read-only','--network=none',
                 '--user=10001:10001','--cap-drop=ALL','--security-opt=no-new-privileges','--memory=128m','--memory-swap=128m',
@@ -155,6 +155,7 @@ def main():
         for source, name in [(evidence/'preparation.json','preparation.json'),
                              (install_output/'installed-after-stdout.log','installed-after-stdout.log'),
                              (root/'image/desktop/verify.py','verify.py'),
+                             (root/'image/fonts/verify.py','font_verify.py'),
                              (root/'image/desktop/portal.py','portal.py'),
                              (root/'image/hyprland/guest_inventory.py','guest_inventory.py'),
                              (root/'image/hyprland/tests/qualify_session_defaults.py','qualify_session_defaults.py')]:

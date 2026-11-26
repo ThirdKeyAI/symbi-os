@@ -12,6 +12,7 @@ from image.desktop.inputs import select_prefix_files
 from image.desktop.portal import select_consent_files
 from image.desktop.recipe import render_desktop, review_containerfile
 from image.desktop.trust import prepare_trust
+from image.fonts.install import prepare_font_payload
 from image.hyprland.build_inputs import require_current_requirements, unpack_rpms
 from image.hyprland.prefix_input import unpack_prefix
 from image.launcher.binary_inputs import require_bindings, unpack_binaries
@@ -157,6 +158,17 @@ def main():
         checkpoint('copy-symbiont')
         for name in ('symbi', 'symbi-sandbox-supervisor'):
             copy_regular(storage/'runtime'/name, payload/'usr/bin'/name, True)
+        checkpoint('prepare-nerd-fonts')
+        intake = unique_json((root/'.cache/font-intake-evidence/result.json').read_bytes())
+        if (intake.get('passed') is not True or intake.get('source_commit') != record['source_commit']
+                or intake.get('private_downloads_removed') is not True
+                or intake.get('archive_extracted') is not False or intake.get('font_parser_executed') is not False):
+            raise ValueError('Current hosted font intake has not passed')
+        record['fonts'] = prepare_font_payload(root/'.cache/font-candidate', root/'image/fonts/inputs.json',
+                                               root, payload, os.environ['GITHUB_SHA'])
+        if intake.get('inventories') != record['fonts']['archives']:
+            raise ValueError('Hosted font intake inventory changed')
+        shutil.copytree(root/'.cache/font-intake-evidence', evidence/'font-intake')
         checkpoint('prepare-signed-rpms-and-licenses')
         install = context/'install-inputs'
         install.mkdir()

@@ -207,3 +207,32 @@ package integration, menu implementations, application tests and complete
 190-binding session inventory remain acceptance gates. Local fail-first and
 passing evidence is retained under
 `security/reports/P0-03-desktop-profile/local-defaults-2026-11-26/`.
+
+## Development font integration
+
+The desktop preparation path now turns a successful current-job Nerd Fonts
+intake into the exact development-image payload. It installs all 96 pinned
+JetBrains Mono Nerd Font faces, both Symbols Nerd Font faces, the reviewed
+Symbols aliases and five notices. The system aliases reproduce the inspected
+Ombuntu defaults: Liberation Sans, Liberation Serif, JetBrainsMono Nerd Font,
+Symbols Nerd Font and Noto Color Emoji. Kitty's staged 9-point profile therefore
+names the same monospace family as the local reference.
+
+The installer binds the input pins, source commit, intake manifest, archive
+sizes and hashes and complete member inventories. It rejects links, traversal,
+special files, unsafe fontconfig XML, existing or linked output paths and any
+copy failure without leaving a partial payload. It rechecks all input hashes
+after extraction. The installed-image probe uses native `fc-scan` for every
+expected path and `fc-match monospace` for the default family.
+
+The exact v3.5.1 assets passed a local extraction and native fontconfig check:
+98 unique faces, 248,325,788 font bytes and 398 Symbols aliases, in 1.62 seconds
+at 97,832 KiB peak RSS with zero swap. All 277 image tests then passed in 2.08
+seconds at 54,540 KiB peak RSS with zero swap. This result establishes bounded
+payload construction against local parser libraries. The complete serial
+repository gate passed in 4.17 seconds at 68,280 KiB peak RSS with one Cargo
+job and zero swap. A hosted intake and real generic/NVIDIA image runs must still
+prove the selected secureblue bases contain
+the required tools and accept the exact payload. Booted Kitty, Walker, Waybar
+and glyph rendering remain open. The record therefore says development-included
+and leaves release, security and OS qualification false.

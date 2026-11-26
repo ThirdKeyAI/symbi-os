@@ -216,3 +216,20 @@ three inspected files. This is neither whole-program unreachability nor a
 confirmed OS exploit; exact installed-build provenance and broader caller review
 remain pending. The advisory stays open with no dependency pin or exception
 change. See `P0-03-cve-bz/2026-11-26/native/iniparser-followup/`.
+
+## Font payload in the next image builds
+
+Preparation now requires the current job's passive Nerd Fonts intake before it
+extracts the exact pinned v3.5.1 payload. It adds 98 font files, the reviewed
+Symbols fontconfig aliases, the system font choices matching the inspected
+Ombuntu desktop and five license/readme notices. The payload record keeps
+development inclusion separate from release, security and OS qualification.
+
+Installed-image inspection copies a small verifier into the read-only probe and
+uses the base's own `fc-scan` and `fc-match` executables. It requires every
+expected path exactly once and JetBrainsMono Nerd Font as the monospace choice.
+The initial base preflight now fails before assembly when either executable is
+absent. Local exact-byte integration, all 277 image fixtures and the serial
+repository gate pass with one Cargo job and zero swap. The hosted
+generic and NVIDIA image jobs have not yet exercised this change. Booted
+font rendering and desktop interaction remain later acceptance gates.

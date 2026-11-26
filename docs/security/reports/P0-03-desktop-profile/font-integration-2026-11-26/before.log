@@ -1,0 +1,57 @@
+test_desktop_job_prepares_fonts_before_the_image_context (image.tests.test_font_install.FontDefaults.test_desktop_job_prepares_fonts_before_the_image_context) ... ERROR
+test_native_font_scan_requires_every_file_and_the_default_family (image.tests.test_font_install.FontDefaults.test_native_font_scan_requires_every_file_and_the_default_family) ... ERROR
+test_system_defaults_match_the_observed_ombuntu_font_profile (image.tests.test_font_install.FontDefaults.test_system_defaults_match_the_observed_ombuntu_font_profile) ... ERROR
+test_extracts_only_fonts_config_and_reviewed_notices (image.tests.test_font_install.FontPayload.test_extracts_only_fonts_config_and_reviewed_notices) ... ERROR
+test_rejects_changed_inputs_wrong_commit_unsafe_config_and_linked_target_without_partial_files (image.tests.test_font_install.FontPayload.test_rejects_changed_inputs_wrong_commit_unsafe_config_and_linked_target_without_partial_files) ... ERROR
+
+======================================================================
+ERROR: test_desktop_job_prepares_fonts_before_the_image_context (image.tests.test_font_install.FontDefaults.test_desktop_job_prepares_fonts_before_the_image_context)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/vmstore/repos2/symbi-os/.cache/p0-image-followup/image/tests/test_font_install.py", line 173, in test_desktop_job_prepares_fonts_before_the_image_context
+    intake = workflow.index("bash scripts/check-font-intake.sh")
+ValueError: substring not found
+
+======================================================================
+ERROR: test_native_font_scan_requires_every_file_and_the_default_family (image.tests.test_font_install.FontDefaults.test_native_font_scan_requires_every_file_and_the_default_family)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/vmstore/repos2/symbi-os/.cache/p0-image-followup/image/tests/test_font_install.py", line 152, in test_native_font_scan_requires_every_file_and_the_default_family
+    from image.fonts.verify import validate_native_output
+ModuleNotFoundError: No module named 'image.fonts.verify'
+
+======================================================================
+ERROR: test_system_defaults_match_the_observed_ombuntu_font_profile (image.tests.test_font_install.FontDefaults.test_system_defaults_match_the_observed_ombuntu_font_profile)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/vmstore/repos2/symbi-os/.cache/p0-image-followup/image/tests/test_font_install.py", line 140, in test_system_defaults_match_the_observed_ombuntu_font_profile
+    root = ET.fromstring(path.read_bytes())
+                         ~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.14/pathlib/__init__.py", line 778, in read_bytes
+    with self.open(mode='rb', buffering=0) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/pathlib/__init__.py", line 772, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/vmstore/repos2/symbi-os/.cache/p0-image-followup/image/overlay/etc/fonts/conf.d/49-symbi-fonts.conf'
+
+======================================================================
+ERROR: test_extracts_only_fonts_config_and_reviewed_notices (image.tests.test_font_install.FontPayload.test_extracts_only_fonts_config_and_reviewed_notices)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/vmstore/repos2/symbi-os/.cache/p0-image-followup/image/tests/test_font_install.py", line 84, in test_extracts_only_fonts_config_and_reviewed_notices
+    from image.fonts.install import prepare_font_payload
+ModuleNotFoundError: No module named 'image.fonts.install'
+
+======================================================================
+ERROR: test_rejects_changed_inputs_wrong_commit_unsafe_config_and_linked_target_without_partial_files (image.tests.test_font_install.FontPayload.test_rejects_changed_inputs_wrong_commit_unsafe_config_and_linked_target_without_partial_files)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/vmstore/repos2/symbi-os/.cache/p0-image-followup/image/tests/test_font_install.py", line 111, in test_rejects_changed_inputs_wrong_commit_unsafe_config_and_linked_target_without_partial_files
+    from image.fonts.install import prepare_font_payload
+ModuleNotFoundError: No module named 'image.fonts.install'
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.001s
+
+FAILED (errors=5)

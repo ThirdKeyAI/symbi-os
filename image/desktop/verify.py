@@ -5,6 +5,8 @@ import os
 from pathlib import Path
 import subprocess
 
+from font_verify import verify_installed_fonts
+
 
 def main():
     if os.geteuid() != 10001 or not Path('/run/.containerenv').exists():
@@ -45,9 +47,11 @@ def main():
     expected = Path('/qualification/installed-after-stdout.log').read_text().splitlines()
     if len(set(inventory)) != len(inventory) or set(inventory) != set(expected):
         raise ValueError('Final image package inventory changed after installation')
+    fonts = verify_installed_fonts(source['fonts'])
     print(json.dumps({'passed':True, 'os_qualified':False, 'installed_files_checked':count,
                       'installed_package_count':len(inventory), 'all_package_identities_preserved_after_build':True,
-                      'uid':os.geteuid(), 'limits':limits, 'scope':'Installed bytes and packaging only; no boot or containment qualification'}))
+                      'fonts':fonts, 'uid':os.geteuid(), 'limits':limits,
+                      'scope':'Installed bytes and native font parsing only; no boot or containment qualification'}))
 
 
 if __name__ == '__main__': main()

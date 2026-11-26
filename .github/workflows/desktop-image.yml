@@ -5,6 +5,7 @@ on:
     branches: ["**"]
     paths:
       - "image/desktop/**"
+      - "image/fonts/**"
       - "image/portal/**"
       - "LICENSE"
       - "image/base-images.json"
@@ -55,12 +56,14 @@ on:
       - "image/runtime_packages/requirements.json"
       - "upstream/symbiont.toml"
       - "scripts/check-desktop-image.sh"
+      - "scripts/check-font-intake.sh"
       - ".github/workflows/desktop-image.yml"
       - "!image/desktop/README.md"
       - "!image/portal/README.md"
   pull_request:
     paths:
       - "image/desktop/**"
+      - "image/fonts/**"
       - "image/portal/**"
       - "LICENSE"
       - "image/base-images.json"
@@ -111,6 +114,7 @@ on:
       - "image/runtime_packages/requirements.json"
       - "upstream/symbiont.toml"
       - "scripts/check-desktop-image.sh"
+      - "scripts/check-font-intake.sh"
       - ".github/workflows/desktop-image.yml"
       - "!image/desktop/README.md"
       - "!image/portal/README.md"
@@ -168,6 +172,8 @@ jobs:
           echo 'd96d07ce422a3de7f12bb75f32a77f7df3f40e6386ee4ada644b7a5d7f92aa40  .cache/portal-consent-prefix.zip' | sha256sum --check --strict
           timeout 300 gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15092560593/zip > .cache/portal-build-rpms.zip
           echo 'ce26dda0cab7e61de9c888503d2e5d3ff87e23f74e859fbfd270dd9de74c2565  .cache/portal-build-rpms.zip' | sha256sum --check --strict
+      - name: Authenticate and passively inventory exact font inputs
+        run: bash scripts/check-font-intake.sh
       - name: Prepare and validate the real desktop build context
         run: bash scripts/check-desktop-image.sh prepare
       - name: Assemble and inspect the installed desktop image
