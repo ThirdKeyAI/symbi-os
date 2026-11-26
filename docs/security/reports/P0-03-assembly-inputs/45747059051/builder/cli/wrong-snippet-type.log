@@ -1,0 +1,6 @@
+ERROR => Failed:
+  × Recipe /home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/wrong-snippet-type.json failed to validate
+  ╰─▶ Symbi OS recipe v2 profile: /modules/0/snippets: "RUN unexpected" is not of type "array"
+
+  Try running with `-vv` for trace logging.
+  You can also open an issue at https://github.com/blue-build/cli/issues

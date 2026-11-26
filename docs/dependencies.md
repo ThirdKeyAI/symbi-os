@@ -183,3 +183,16 @@ and the original GPL-3.0 license file are bound in
 compatibility evidence, not an audit of the 283 registry dependencies. No Cargo
 vet audits/exemptions are added; final source/dependency/license/SBOM review and
 actual desktop/image acceptance remain open.
+
+## Symbiont runtime compatibility RPM discovery
+
+The retained default-feature development runtime at `deddb9e` needs the OpenSSL
+3 ABI. Actual loader controls on the authenticated Fedora 45 base failed because
+it provides OpenSSL 4. Fedora's maintained `openssl3-libs` compatibility package
+provides both missing SONAMEs (Apache-2.0); see the linked package source in
+`image/runtime_packages/requirements.json`. This is candidate discovery, not an
+installed dependency or a completed audit. Only signed Fedora release/updates
+inputs may be selected; exact RPM/manifest hashes and full signature/identity
+evidence must precede an offline additive installation. Existing OpenSSL 4 and
+all other base package identities must remain unchanged. No Ubuntu libraries,
+source edits, new Cargo dependency/feature, audit exemption or release claim.

@@ -1,0 +1,6 @@
+ERROR => Failed:
+  × Recipe /home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/missing-version.json failed to validate
+  ╰─▶ Symbi OS recipe v2 profile: : "version" is a required property
+
+  Try running with `-vv` for trace logging.
+  You can also open an issue at https://github.com/blue-build/cli/issues

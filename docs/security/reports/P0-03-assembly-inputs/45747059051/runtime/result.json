@@ -1,0 +1,234 @@
+{
+  "passed": false,
+  "os_qualified": false,
+  "source_commit": "df669e04415024dab2840e0cc77339644b871b74",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "base-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "pull-base",
+      "exit_code": 0
+    },
+    {
+      "name": "metadata",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-metadata",
+      "exit_code": 0
+    },
+    {
+      "name": "exists-metadata",
+      "exit_code": 1
+    },
+    {
+      "name": "openssl-packages",
+      "exit_code": 1
+    },
+    {
+      "name": "cleanup-openssl-packages",
+      "exit_code": 0
+    },
+    {
+      "name": "exists-openssl-packages",
+      "exit_code": 1
+    },
+    {
+      "name": "ldd-symbi",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-ldd-symbi",
+      "exit_code": 0
+    },
+    {
+      "name": "exists-ldd-symbi",
+      "exit_code": 1
+    },
+    {
+      "name": "ldd-symbi-sandbox-supervisor",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-ldd-symbi-sandbox-supervisor",
+      "exit_code": 0
+    },
+    {
+      "name": "exists-ldd-symbi-sandbox-supervisor",
+      "exit_code": 1
+    },
+    {
+      "name": "version",
+      "exit_code": 127
+    },
+    {
+      "name": "cleanup-version",
+      "exit_code": 0
+    },
+    {
+      "name": "exists-version",
+      "exit_code": 1
+    },
+    {
+      "name": "help",
+      "exit_code": 127
+    },
+    {
+      "name": "cleanup-help",
+      "exit_code": 0
+    },
+    {
+      "name": "exists-help",
+      "exit_code": 1
+    },
+    {
+      "name": "unknown-option",
+      "exit_code": 127
+    },
+    {
+      "name": "cleanup-unknown-option",
+      "exit_code": 0
+    },
+    {
+      "name": "exists-unknown-option",
+      "exit_code": 1
+    },
+    {
+      "name": "repeated-version",
+      "exit_code": 127
+    },
+    {
+      "name": "cleanup-repeated-version",
+      "exit_code": 0
+    },
+    {
+      "name": "exists-repeated-version",
+      "exit_code": 1
+    }
+  ],
+  "checks": [
+    {
+      "name": "ldd-symbi",
+      "exit_code": 0,
+      "passed": false
+    },
+    {
+      "name": "ldd-symbi-sandbox-supervisor",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "version",
+      "argument": "--version",
+      "exit_code": 127,
+      "passed": false
+    },
+    {
+      "name": "help",
+      "argument": "--help",
+      "exit_code": 127,
+      "passed": false
+    },
+    {
+      "name": "unknown-option",
+      "argument": "--symbi-unknown-qualification-option",
+      "exit_code": 127,
+      "passed": false
+    },
+    {
+      "name": "repeated-version",
+      "argument": "--version",
+      "exit_code": 127,
+      "passed": false
+    }
+  ],
+  "containers": {
+    "symbi-runtime-metadata": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-runtime-openssl-packages": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-runtime-ldd-symbi": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-runtime-ldd-symbi-sandbox-supervisor": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-runtime-version": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-runtime-help": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-runtime-unknown-option": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-runtime-repeated-version": {
+      "removed": true,
+      "absent": true
+    }
+  },
+  "scope": "Actual retained runtime loader and CLI compatibility only; no installation, containment or OS qualification",
+  "artifact": {
+    "id": 15066141540,
+    "bytes": 529348296,
+    "sha256": "bed79f624444c6dc0c3a5105facdcd9ad637a26f4fcd6cacb6e10544c36a0724"
+  },
+  "binaries": {
+    "symbi": {
+      "bytes": 520712360,
+      "sha256": "1e90af1fe424ec37ad716bbc1e069c0bc7a78f59c49871b7e79506bda69f49c7"
+    },
+    "symbi-sandbox-supervisor": {
+      "bytes": 8635672,
+      "sha256": "57af2b2931c891c8ee7df21ac063aea64571acc460ababdcb09b8df7ed21c269"
+    }
+  },
+  "upstream_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+  "original_build_run": 45702056794,
+  "original_build_checked_merge": "f01100ce68df6ed31dfa0983a2ba1b59be230b6c",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "signature_verified_before_pull": true,
+  "guest_metadata": {
+    "uid": 10001,
+    "kernel": "7.0.0-1014-aws",
+    "limits": {
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "64"
+    },
+    "cap_effective": "0000000000000000",
+    "no_new_privileges": "1",
+    "root_readonly": true,
+    "network_devices": [
+      "lo"
+    ]
+  },
+  "failure": "ValueError: Retained runtime is not compatible with the original base; inspect actual loader/CLI evidence",
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4318101504",
+    "memory.events": "low 0\nhigh 0\nmax 25495\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 119080410\nuser_usec 100702683\nsystem_usec 18377727\nnice_usec 99662331\ncore_sched.force_idle_usec 0\nnr_periods 871\nnr_throttled 389\nthrottled_usec 50977343\nnr_bursts 0\nburst_usec 0"
+  }
+}
