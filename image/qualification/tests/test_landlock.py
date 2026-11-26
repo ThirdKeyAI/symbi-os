@@ -34,6 +34,22 @@ class Qualification(unittest.TestCase):
     def test_complete_synthetic_reports_validate(self):
         self.validate()
 
+    def test_host_identity_requires_the_selected_secureblue_fedora_image(self):
+        selected = {"ID": "secureblue", "ID_LIKE": "fedora", "VERSION_ID": "45",
+                    "VARIANT_ID": "sericea-main-hardened", "IMAGE_ID": "sericea-main-hardened"}
+        self.module.validate_os_release(selected)
+        changes = [
+            {**selected, "ID": "fedora"},
+            {**selected, "ID": "unrelated", "ID_LIKE": "fedora"},
+            {**selected, "ID_LIKE": "ubuntu fedora"},
+            {**selected, "VERSION_ID": "46"},
+            {**selected, "VARIANT_ID": "sericea-nvidia-hardened"},
+            {**selected, "IMAGE_ID": "sericea-main-userns-hardened"},
+        ]
+        for release in changes:
+            with self.subTest(release=release), self.assertRaises(ValueError):
+                self.module.validate_os_release(release)
+
     def test_successful_namespace_refusal_is_not_qualification(self):
         self.platform.update(expected="namespace-refused", qualified=False)
         with self.assertRaises(ValueError):

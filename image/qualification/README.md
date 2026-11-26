@@ -16,8 +16,11 @@ are not a qualification of Symbiont, Fedora or any sandbox.
    Disconnect external networking after verified artifacts are staged. A localhost
    control connection may remain; the upstream providers are synthetic. Do not
    run an image build or another guest alongside it on this workstation.
-3. Boot the exact image digest with enforcing containers signature policy and
-   SELinux. Provision a separate non-root runtime/test user with a systemd user
+3. Boot the exact generic image digest with enforcing containers signature
+   policy and SELinux. The driver requires the selected secureblue Fedora 45
+   identity (`ID=secureblue`, `ID_LIKE=fedora`, and the exact generic
+   variant/image IDs); an arbitrary derivative that merely advertises Fedora
+   lineage is rejected. Provision a separate non-root runtime/test user with a systemd user
    manager and cgroup v2 delegation. Do not relax user-namespace, SELinux, seccomp
    or host security settings to make a test pass. A default-policy refusal is a
    failure to qualify this image and must be retained separately.

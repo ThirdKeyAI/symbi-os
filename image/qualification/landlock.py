@@ -20,6 +20,8 @@ ROOT = Path(__file__).resolve().parents[2]
 REQUIRED_CASES = ("onboarding", "files", "source", "git", "managed", "actions",
                   "broker", "lifecycle", "external-effects")
 DIGEST_REF = re.compile(r"[a-z0-9.-]+(?::[0-9]+)?/[a-z0-9_./-]+@sha256:[a-f0-9]{64}")
+EXPECTED_OS_RELEASE = {"ID": "secureblue", "ID_LIKE": "fedora", "VERSION_ID": "45",
+                       "VARIANT_ID": "sericea-main-hardened", "IMAGE_ID": "sericea-main-hardened"}
 
 
 def require(condition, message):
@@ -52,12 +54,19 @@ def validate_deployment(status, image_ref):
     # signature verification and unsigned-rebase rejection for this exact image.
 
 
+def validate_os_release(release):
+    """Bind qualification to the authenticated generic product base identity."""
+    require(isinstance(release, dict), "OS release metadata must be a mapping")
+    require(all(release.get(name) == value for name, value in EXPECTED_OS_RELEASE.items()),
+            "selected secureblue Fedora 45 generic image required")
+
+
 def host_details():
     require(__debug__, "Python assertions must remain enabled")
     require(platform.system() == "Linux" and platform.machine() == "x86_64", "Linux x86-64 required")
     require(os.geteuid() != 0, "qualification must run as the non-root runtime user")
     release = platform.freedesktop_os_release()
-    require(release.get("ID") == "fedora", "Fedora guest required; host results are not image qualification")
+    validate_os_release(release)
     virt = command_output(["systemd-detect-virt", "--vm"])
     require(virt in ("kvm", "qemu"), "disposable QEMU/KVM guest required")
     require(subprocess.run(["systemd-detect-virt", "--container", "--quiet"],
