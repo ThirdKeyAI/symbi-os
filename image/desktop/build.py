@@ -51,11 +51,6 @@ def main():
     podman = ['podman','--cgroup-manager=cgroupfs','--root',str(storage/'root'),'--runroot',str(runroot)]
     auth = storage/'auth.json'; auth.write_text('{"auths":{}}\n')
     build_group = group/'image-build'
-    build_group.mkdir()
-    for name, value in {'memory.max':'2147483648','memory.swap.max':'0','cpu.max':'100000 100000','pids.max':'128'}.items():
-        (build_group/name).write_text(value)
-    (build_group/'cgroup.subtree_control').write_text('+cpu +memory +pids')
-    (build_group/'supervisor').mkdir()
     record = {'passed':False, 'image_built':False, 'os_qualified':False, 'source_commit':os.environ['GITHUB_SHA'],
               'variant':variant, 'base':base['image'], 'limits':limits, 'commands':[], 'checks':[], 'containers':{},
               'scope':'Actual desktop OCI assembly and installed-input checks; boot, graphics, TLS, containment and signed-release acceptance remain open'}
@@ -71,6 +66,30 @@ def main():
         return result
 
     try:
+        # Delegation permits managing the subtree; controllers still need to be
+        # enabled in this empty parent before a child's limit files exist.
+        required = {'cpu', 'memory', 'pids'}
+        record['parent_controllers_before'] = {name:(group/name).read_text().strip()
+            for name in ('cgroup.controllers', 'cgroup.subtree_control', 'cgroup.procs')}
+        save()
+        if (record['parent_controllers_before']['cgroup.procs']
+                or not required.issubset(record['parent_controllers_before']['cgroup.controllers'].split())):
+            raise ValueError('Build parent lacks an empty, delegated CPU/memory/task controller subtree')
+        (group/'cgroup.subtree_control').write_text('+cpu +memory +pids')
+        if not required.issubset((group/'cgroup.subtree_control').read_text().split()):
+            raise ValueError('Build parent did not enable every required controller')
+        build_group.mkdir()
+        build_limits = {'memory.max':'2147483648','memory.swap.max':'0','cpu.max':'100000 100000','pids.max':'128'}
+        for name, value in build_limits.items(): (build_group/name).write_text(value)
+        actual = {name:(build_group/name).read_text().strip() for name in build_limits}
+        if actual != build_limits: raise ValueError('Build tree resource ceilings did not apply')
+        (build_group/'cgroup.subtree_control').write_text('+cpu +memory +pids')
+        if not required.issubset((build_group/'cgroup.subtree_control').read_text().split()):
+            raise ValueError('Build tree did not enable every required controller')
+        (build_group/'supervisor').mkdir()
+        record['image_build_limits_verified'] = actual
+        save()
+        print('Desktop build: delegated controllers and limits verified', flush=True)
         free=shutil.disk_usage(storage).free
         record['disk_free_before_pull']=free
         if free < 18*1024**3: raise ValueError('At least 18 GiB free disk is required for image assembly and export')

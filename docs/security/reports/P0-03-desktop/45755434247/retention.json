@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "repository": "ThirdKeyAI/symbi-os",
+  "workflow_run": 45755434247,
+  "job_id": 139692847584,
+  "source_commit": "d4fabc41f3eb5620020871b83550e34e1e638509",
+  "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45755434247",
+  "preparation_passed": true,
+  "image_built": false,
+  "os_qualified": false,
+  "failure": "Build controller could not configure image-build/memory.max before the base pull; parent subtree controllers had not been enabled.",
+  "artifact": {
+    "id": 15087586162,
+    "bytes": 13593,
+    "sha256": "c0c0a2233d800b86fe966cfc465e7584a06612964491d032507d542eb62f19a7",
+    "downloaded_and_verified": true
+  },
+  "original_files": {
+    "Containerfile": {
+      "bytes": 2519,
+      "sha256": "de5fbf1a70a78f2017897b941228afdb2f9ed85423aa486f87a4b3fe2a5fe885"
+    },
+    "generate.log": {
+      "bytes": 449,
+      "sha256": "4b2579328ca0cfa11ee5d3eda6939c44eb01e8b1217ce89d04ae881bfc3cea1b"
+    },
+    "hosted-build.log": {
+      "bytes": 1237,
+      "sha256": "b100cf8a4d755d7329fb93818a0dfe89401eb5e94fdc2c6f85c80bfe54235d7a"
+    },
+    "hosted-prepare.log": {
+      "bytes": 655,
+      "sha256": "743fec62403a299a9c78fa560cbe28b7efa35310abb53c9eb824c08ae1956d3b"
+    },
+    "preparation.json": {
+      "bytes": 57209,
+      "sha256": "7b8cd31e47b0d5eb5e0271affc89d6073de81b68b047008e73b2bf5575cae198"
+    },
+    "prepare-systemd-result.txt": {
+      "bytes": 136,
+      "sha256": "191736fbd1ce15a9936252e53bb6f69f6274360f883f1d1896bda86d58b2109c"
+    },
+    "recipe.json": {
+      "bytes": 1342,
+      "sha256": "167e0e01cd18d041518c8540f21fb52557ced1bca4d072c846383ee9e316ed33"
+    },
+    "validate.log": {
+      "bytes": 131,
+      "sha256": "c842db9330cf614ebfc189e0f7b815d36a569a4572e735d209ab72f7dd6c60de"
+    }
+  },
+  "measurements": {
+    "authoritative": "preparation.json cgroup_final and per-phase checkpoints",
+    "preparation_memory_peak_bytes": 1073741824,
+    "memory_max_events": 2139,
+    "oom_events": 0,
+    "oom_kills": 0,
+    "python_rss_last_kib": 26048,
+    "final_anon_bytes": 16027648,
+    "final_file_cache_bytes": 1051164672,
+    "systemd_summary": "Post-exit systemd summary is not used for peak measurement; LoadState=not-found has unavailable counters."
+  },
+  "acceptance_limits": "Preparation and real CLI generation only; no image built or base container started."
+}

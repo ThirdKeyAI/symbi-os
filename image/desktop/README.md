@@ -59,7 +59,19 @@ flushes/releases this run's copied-file cache in bounded chunks. Extracted files
 are synced and their clean cache released between components. No global cache
 flush, source rebuild or local resource increase is involved. If systemd has
 already unloaded the unit, default fields from `LoadState=not-found` are not
-measurement evidence. The correction still needs its hosted result.
+measurement evidence.
+
+[The corrected preparation run](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45755434247)
+passed extraction, source bindings and the actual BlueBuild validation/generation.
+Its retained cgroup counters show a 1 GiB peak and memory-limit pressure without
+OOM or kill; the final checkpoint is dominated by file cache, while Python RSS
+is about 26 MiB. Image setup then failed before the base pull: the parent had
+not enabled controllers for the nested build cgroup. The controller now enables
+CPU/memory/tasks in the empty delegated parent before creating the build child,
+reads back every limit and records setup before pulling. The existing enclosing
+4 GiB and nested 2 GiB limits remain unchanged. This follows the kernel's
+[cgroup v2 controller rules](https://docs.kernel.org/admin-guide/cgroup-v2.html#enabling-and-disabling).
+Actual image assembly remains a separate hosted gate.
 
 Build and cleanup behavior follows the primary
 [Podman build documentation](https://docs.podman.io/en/latest/markdown/podman-build.1.html)
