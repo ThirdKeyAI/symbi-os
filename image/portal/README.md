@@ -45,3 +45,37 @@ Before the portal can enter a development image:
 5. Qualify actual portal activation, physical selection, capture isolation,
    cancellation and repeated consent with no reusable restore token on a
    booted desktop. Packaging and command-line checks cannot prove these.
+
+
+## Authenticated build inputs and native workflow
+
+Discovery [45766212374](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45766212374)
+passed; the 375 original evidence files and an independent reconciliation are
+retained under `docs/security/reports/P0-03-portal-packages/45766212374/`.
+The new lock binds 173 signed Fedora RPMs to their exact hosted artifact. It
+preserves 161 earlier compositor records, reviews four development-package
+updates and adds eight packages. The old compositor lock/prefix is unchanged.
+
+`portal-build.yml` and `scripts/check-portal-build.sh` reuse that retained prefix
+read-only and compile only hyprtoolkit and the Hyprland portal. Source Git
+revisions and reviewed file bytes are checked before the offline build.
+Required sdbus-c++/protocol providers must exist before CMake; dependency
+fetches are disabled and the compiler container has no network. Signed build
+RPMs are checked again before their disposable filesystem installation. Root
+is dropped to UID 10001 before source scripts, compilation or tests run.
+
+The parent has an 8 GiB/two-CPU/no-swap cap after checking available headroom;
+the build container has 6 GiB/two CPUs/no swap, with one compiler job. Toolkit
+unit and surfaceless renderer tests use its upstream Debug test configuration.
+The separately built Release toolkit and Release portal are installed into
+`/usr/lib/symbi/portal`; the portal's picker-data test runs via CTest. Failed,
+empty, disabled or skipped XML results are refused. These tests do not prove
+physical selection or desktop isolation, and Debug toolkit tests do not
+certify the distinct Release library.
+
+Build evidence and the compiled prefix are separate artifacts. The prefix is
+retained before checking its dynamic loaders on the unchanged secureblue base,
+so a missing runtime RPM can be addressed without rebuilding the compositor.
+All qualification flags remain false. No release environment, signing secret,
+publication right or local compilation is used. Native workflow results are
+pending; this section documents the implemented procedure, not a passing build.

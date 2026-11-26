@@ -1,0 +1,135 @@
+name: Offline Hyprland portal build
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "image/portal/source-inputs.json"
+      - "image/portal/build-requirements.json"
+      - "image/portal/build-rpms.lock.json"
+      - "image/portal/inputs.py"
+      - "image/portal/build_inputs.py"
+      - "image/portal/hosted_build.py"
+      - "image/portal/build_guest.py"
+      - "image/portal/compile.py"
+      - "image/portal/reviewed/**"
+      - "image/hyprland/candidate-inputs.json"
+      - "image/hyprland/development-prefix.lock.json"
+      - "image/hyprland/build-rpms.lock.json"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/prefix_input.py"
+      - "image/hyprland/patches/**"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/fedora-package-trust.json"
+      - "image/hyprland/keys/**"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/reuse.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - "image/desktop/prepare.py"
+      - "image/launcher/probes/bounded_process.py"
+      - "scripts/check-portal-build.sh"
+      - ".github/workflows/portal-build.yml"
+  pull_request:
+    paths:
+      - "image/portal/source-inputs.json"
+      - "image/portal/build-requirements.json"
+      - "image/portal/build-rpms.lock.json"
+      - "image/portal/inputs.py"
+      - "image/portal/build_inputs.py"
+      - "image/portal/hosted_build.py"
+      - "image/portal/build_guest.py"
+      - "image/portal/compile.py"
+      - "image/portal/reviewed/**"
+      - "image/hyprland/candidate-inputs.json"
+      - "image/hyprland/development-prefix.lock.json"
+      - "image/hyprland/build-rpms.lock.json"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/prefix_input.py"
+      - "image/hyprland/patches/**"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/fedora-package-trust.json"
+      - "image/hyprland/keys/**"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/reuse.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - "image/desktop/prepare.py"
+      - "image/launcher/probes/bounded_process.py"
+      - "scripts/check-portal-build.sh"
+      - ".github/workflows/portal-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: portal-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  portal:
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-26.04
+    timeout-minutes: 95
+    steps:
+      - name: Check out proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Validate the current portal source and package profile
+        run: |
+          mkdir -p .cache/portal-build-evidence
+          python3 - <<'PY' > .cache/portal-build-evidence/requirements-check.log 2>&1
+          from pathlib import Path
+          from image.portal.inputs import load_inputs
+          from image.portal.build_inputs import require_rpm_bindings
+          from image.toolchain.reuse import unique_json
+          root = Path.cwd()
+          pins, requirements, bindings = load_inputs(root)
+          trust = unique_json((root/'image/hyprland/fedora-package-trust.json').read_bytes())
+          lock = unique_json((root/'image/portal/build-rpms.lock.json').read_bytes())
+          require_rpm_bindings(lock, requirements, trust['source']['image'], trust)
+          print('Portal source and signed-RPM profile bindings passed')
+          PY
+      - name: Download the exact signed-RPM and retained compositor artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15092560593/zip > .cache/portal-build-rpms.zip
+          echo 'ce26dda0cab7e61de9c888503d2e5d3ff87e23f74e859fbfd270dd9de74c2565  .cache/portal-build-rpms.zip' | sha256sum --check --strict
+          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15070319189/zip > .cache/hyprland-development-prefix.zip
+          echo 'b86fde7463a786a5bb5763edf3ee23cfac3829e7c5b596ad829e4d4861814743  .cache/hyprland-development-prefix.zip' | sha256sum --check --strict
+      - name: Build only the portal and toolkit offline, then run native tests
+        run: bash scripts/check-portal-build.sh
+      - name: Retain public build evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: portal-build-evidence
+          path: .cache/portal-build-evidence/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Retain the unqualified compiled prefix even if later base probes fail
+        if: ${{ always() && hashFiles('.cache/portal-build-payload/manifest.json') != '' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: portal-development-prefix
+          path: |
+            .cache/portal-build-payload/portal-prefix.tar.gz
+            .cache/portal-build-payload/manifest.json
+          retention-days: 14
+          compression-level: 0
+          if-no-files-found: error

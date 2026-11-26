@@ -387,7 +387,7 @@ broker routes alone are insufficient, and Pi bridge support is still open.
 Cursor stays remote-only workspace mode and is refused for confidential
 sessions. Profiles must preserve the user's real harness configuration.
 
-Signed `web`, `github`, `gitea` and `osv` service manifests fit Phase 4. A local
+Signed `web`, `github`, `gitea`, `cve-bz` and `osv` service manifests fit Phase 4. A local
 web engine still makes remote requests: session-class policy, origin/redirect
 and DNS/SSRF checks, credentials, byte/depth/time limits, cancellation and
 journaling apply. Crawl responses are untrusted data, never instructions or
@@ -395,6 +395,20 @@ executable dependencies. Reuse upstream outbound capabilities where applicable;
 do not give the engine an independent unrestricted network path. Registry
 CONNECT access for workspace tools belongs to P1-03; named read-only registry
 queries for a governed skill require explicit service operations instead.
+
+The owner selected [cve.bz](https://cve.bz/cve/api) as a security-information
+source. Use its public API now for dependency and advisory assessment; its
+Streamable HTTP MCP endpoint is `https://cve.bz/mcp`. The planned `cve-bz`
+service should expose bounded advisory lookup/feed operations, with stack checks
+as a distinct data-upload operation subject to session-class and egress policy.
+A lockfile or SBOM can reveal private project information; the first P0 lookup
+used only the already public pinned upstream Cargo.lock. Retain advisory IDs,
+affected/fixed ranges, source timestamps, query/input hashes and attribution,
+and cross-check relevant publisher advisories and Fedora backports. Empty
+results, missing KEV/EPSS data or a successful API request are not release
+approval. The [first retained assessment](security/reports/P0-03-cve-bz/2026-11-26/README.md)
+records open matches; no MCP client was installed and no service authority was
+created. Signed service integration remains Phase 4 work.
 
 The proposed `verify_stale` push rule is already a Phase 5 example, not an
 implemented GitHub/Gitea gate. Freshness must come from trusted verification

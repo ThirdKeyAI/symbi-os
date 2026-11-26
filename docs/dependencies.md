@@ -229,3 +229,40 @@ the upstream version requirements offline and refuse subproject fetching.
 No Cargo dependencies, audit records or exemptions are added. Actual portal
 build, license/SBOM review, consent/token behavior and desktop qualification
 remain open. See [portal preparation](../image/portal/README.md).
+
+
+## cve.bz security-information source
+
+The owner selected cve.bz for security information via its API or MCP. The
+[public API](https://cve.bz/cve/api) supplies advisory records, a filtered feed
+and lockfile/SBOM stack checks; the optional MCP endpoint is
+`https://cve.bz/mcp`. This adds an information source, not a runtime dependency
+or a source-audit exemption. No MCP client, skill, plugin or credential was
+installed. Future governed-service use requires the reviewed Phase 4 manifest.
+
+The first real query on 26 Nov 2026 checked the public Symbiont `deddb9e` lockfile:
+1,108 packages, 48 advisory matches across 27 packages, including 13 packages
+with maintenance-only warnings. All matches remain open pending applicability
+review. Six priority advisory records were fetched separately. Exact raw
+responses retain all attribution and upstream update times; request/response
+hashes and a static reverse-dependency map are in
+[the retained report](security/reports/P0-03-cve-bz/2026-11-26/README.md).
+No private source or project inventory was sent. Cargo.lock covers more than
+the shipped feature set, so match counts are not confirmed exploit counts.
+The actual runtime, image, source and tool pins are unchanged. A fix must be
+reviewed upstream first and the OS must rebuild/requalify the resulting pin.
+
+## Portal build closure review
+
+Hosted discovery 45766212374 authenticated 173 Fedora build RPMs. Compared with
+the earlier compositor closure, 161 records are identical, four development
+packages moved to newer signed Fedora versions (at-spi2-atk-devel,
+at-spi2-core-devel and atk-devel 2.62.1 to 2.62.2; libdav1d-devel 1.5.4 to
+1.5.5), and eight packages were added: their four runtime counterparts,
+iniparser/iniparser-devel 4.2.6, pipewire-devel 1.6.11 and sdbus-cpp-devel 2.3.1.
+Exact releases, bytes, licenses and signature fingerprints are in
+`image/portal/build-rpms.lock.json`. The prior compositor lock and compiled
+prefix remain unchanged. This explicitly reviewed delta is confined to the
+disposable compiler container; it does not authorize replacing product base
+libraries. Runtime ABI compatibility and additive package preservation remain
+independent acceptance gates. No audit or license approval is inferred.
