@@ -37,8 +37,8 @@ provider-refusal result or product qualification is claimed yet.
 ## Hosted source build and provider acceptance
 
 The prepared `elephant-build.yml` workflow authenticates the selected base and
-installs only the four previously signed Go compiler RPMs into a disposable
-stage. `GOTOOLCHAIN=local`, one Go job and one Go scheduler thread prevent
+installs the four unchanged signed Go compiler RPMs plus the reviewed Tesseract
+CLI into a disposable stage. `GOTOOLCHAIN=local`, one Go job and one Go scheduler thread prevent
 implicit compiler downloads or parallel builds. Module acquisition uses the
 fixed upstream go.mod/go.sum and the Go checksum service; compilation has no
 network and requires both upstream files to remain byte-identical. Source and
@@ -53,7 +53,9 @@ the RPM hashes, signatures and unchanged-base checks remain required.
 
 The source build emits unmodified and patched executables, the actual packaged
 desktopapplications provider and a Go constructor marker using the same compiler
-and flags. Compiled bytes are retained before later acceptance. The downstream
+and flags. The packaged provider and patched executable use the same patched
+source, including their shared `internal/providers` package; source variants are
+recorded in the compiled manifest. Compiled bytes are retained before later acceptance. The downstream
 patch admits only `/usr/lib/symbi/elephant/providers/desktopapplications.so`,
 requiring a regular root-owned file under root-owned, non-writable, nonsymlinked
 parents. Environment, user/system/explicit config and development provider
@@ -145,3 +147,20 @@ report is not a pass. Cleanup was verified and raw output retained. Separately,
 the source-bound compiler requirements now request the signed `tesseract` test
 prerequisite. The old four-RPM lock must fail the current-requirements check until
 new discovery is reviewed; no RPM is installed merely because it was requested.
+
+Discovery45734717251 authenticated the exact same four compiler packages plus
+`tesseract-5.5.4-1.fc45.x86_64` (51,018 bytes, Apache-2.0). All five full RPM
+signatures/payload digests, actual missing-key/tampering refusals and unchanged
+2,178-package inventory were checked before updating the lock. No candidate
+name overlaps the base. The new bundle remains hosted. The compiler install
+verifies all five package identities and records the actual OCR tool version;
+this test prerequisite is excluded from the product-runtime selection.
+
+The normal-startup diagnostic now supervises the service directly with the
+bounded Python helper. It writes ownership metadata before execution, preserves
+partial output and records intentional timeout separately from process failure.
+Three real-child tests cover reaping, early nonzero exit and output overflow;
+none marks native or OS qualification. Reused-binary reports separately expose
+the reviewed source-build suite status without pretending to rerun that suite.
+Old retained binaries remain rejected after the compiler lock changes; a new
+reviewed compiled manifest is required before runtime reuse.

@@ -77,13 +77,13 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
-      - name: Download exact signed Fedora compiler bundle
+      - name: Download exact signed Fedora compiler and OCR test bundle
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p .cache
-          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15071937423/zip > .cache/elephant-build-rpms.zip
-          echo 'be90e64fa5d9305f0509d743d498a25116fa9327d24ac2886305e2cd4f72ca0a  .cache/elephant-build-rpms.zip' | sha256sum --check --strict
+          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15078925262/zip > .cache/elephant-build-rpms.zip
+          echo '7a612d68f1cd5bde65d8f542f6da236751b5555e05d46137e14a9dbd0b2a41aa  .cache/elephant-build-rpms.zip' | sha256sum --check --strict
       - name: Build actual executables and probe native-provider refusal
         run: bash scripts/check-elephant-build.sh
       - name: Retain public source-build and acceptance evidence

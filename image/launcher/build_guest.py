@@ -79,8 +79,6 @@ def main():
             binaries.mkdir()
             flags = ['go', 'build', '-buildvcs=false', '-trimpath', '-p=1', '-mod=readonly']
             run('build-baseline', flags+['-o', str(binaries/'baseline'), './cmd/elephant'], timeout=2400)
-            run('build-desktopapplications', flags+['-buildmode=plugin', '-o', str(binaries/'desktopapplications'),
-                                                   './internal/providers/desktopapplications'], timeout=1800)
             run('build-constructor-control', flags+['-buildmode=plugin', '-o', str(binaries/'marker'),
                                                    '/inputs/probes/native_marker.go'], timeout=1200)
             patched = output/'patched'
@@ -94,7 +92,13 @@ def main():
             assert not (evidence/'provider-format.log').read_text().strip()
             locks(patched)
             run('build-patched', flags+['-o', str(binaries/'patched'), './cmd/elephant'], patched, 2400)
+            # The provider imports internal/providers too. Go requires its copy
+            # of that package to match the patched executable's exact source.
+            run('build-desktopapplications', flags+['-buildmode=plugin', '-o', str(binaries/'desktopapplications'),
+                                                   './internal/providers/desktopapplications'], patched, 1800)
             record['compiled'] = True
+            record['source_variants'] = {'baseline': 'unmodified', 'marker': 'unmodified',
+                                         'patched': 'provider-patched', 'desktopapplications': 'provider-patched'}
             record['binaries'] = {p.name: digest(p) for p in binaries.iterdir()}
             record['patch_sha256'] = patch['patch_sha256']
             save()

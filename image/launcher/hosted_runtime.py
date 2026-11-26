@@ -76,8 +76,11 @@ def main():
         (evidence/'base-signature.json').write_text(signature)
         record['base'] = base['image']
         lock = json.loads((root/'image/launcher/development-binaries.lock.json').read_text())
-        if lock.get('upstream_tests_passed') is not False or lock.get('qualified') is not False:
-            raise ValueError('Do not reinterpret the retained failed-suite evidence')
+        if type(lock.get('upstream_tests_passed')) is not bool or lock.get('qualified') is not False:
+            raise ValueError('Source-build suite status must be explicit; OS inputs remain unqualified')
+        # This job does not rerun the upstream suite. Keep its own scope limited
+        # and report only the separately reviewed source-build evidence status.
+        record['source_build_upstream_tests_passed'] = lock['upstream_tests_passed']
         source = json.loads((root/'image/launcher/elephant-source.json').read_text())
         patch = json.loads((root/'image/launcher/provider-patch.json').read_text())
         patch_hash = digest(root/'image/launcher/patches/0001-packaged-application-provider-only.patch')

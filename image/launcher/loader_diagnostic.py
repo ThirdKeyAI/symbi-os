@@ -4,7 +4,29 @@ import json
 import os
 from pathlib import Path
 import stat
+import subprocess
 from bounded_process import run_bounded
+
+
+def capture_startup(command, output, record, timeout=5):
+    """Capture a direct child, preserving the report before any execution."""
+    record.update(command=command, timeout_seconds=timeout, timed_out=False)
+    report = output/'loader-result.json'
+    report.write_text(json.dumps(record, indent=2)+'\n')
+    try:
+        try:
+            result = run_bounded(command, output/'loader-stdout.log', output/'loader-stderr.log', timeout=timeout)
+            record['exit_code'] = result.returncode
+        except subprocess.TimeoutExpired:
+            # This service normally remains alive. run_bounded kills and reaps
+            # the direct child; the hosted parent still removes the container.
+            record.update(timed_out=True, exit_code=None)
+        record['diagnostic_completed'] = True
+    except Exception as error:
+        record['execution_failure'] = type(error).__name__+': '+str(error)
+        raise
+    finally:
+        report.write_text(json.dumps(record, indent=2)+'\n')
 
 
 def main():
@@ -32,15 +54,12 @@ def main():
         for name in ('home', 'config', 'cache', 'runtime'):
             (output/'loader'/name).mkdir(mode=0o700, parents=True)
         # A fresh config has no user hooks; network and host-session access are
-        # absent. timeout sends TERM, then KILL; the parent also removes Podman.
+        # absent. env execs the service directly; no nested timeout supervisor.
         command = ['env', 'HOME=/output/loader/home', 'XDG_CONFIG_HOME=/output/loader/config',
                    'XDG_CONFIG_DIRS=/inputs/no-system-config', 'XDG_CACHE_HOME=/output/loader/cache',
                    'XDG_RUNTIME_DIR=/output/loader/runtime', 'GOMAXPROCS=1',
-                   'timeout', '--signal=TERM', '--kill-after=2s', '5s', '/inputs/binaries/patched', '--debug']
-        record['command'] = command
-        result = run_bounded(command, output/'loader-stdout.log', output/'loader-stderr.log', timeout=15)
-        record['exit_code'] = result.returncode
-        record['diagnostic_completed'] = True
+                   '/inputs/binaries/patched', '--debug']
+        capture_startup(command, output, record)
     except Exception as error:
         record['failure'] = type(error).__name__+': '+str(error)
         raise

@@ -1,0 +1,4 @@
+PASS: all 5 complete signature/payload logs and exact identities match the pinned Fedora key and successful command records.
+PASS: actual missing-key and tampered-package refusals, source/requirements/base/manifest bindings and unchanged 2,178-package inventory verified.
+PASS: original four compiler package records are byte-identical; only tesseract-5.5.4-1.fc45.x86_64 is added, with no candidate/base package-name overlap.
+The 42 MB RPM artifact remains hosted. No package was installed or executed locally; dependency audit and OS acceptance are not claimed.

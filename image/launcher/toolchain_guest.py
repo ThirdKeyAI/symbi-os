@@ -75,7 +75,9 @@ def main():
             assert len(identities) == 1 and identities[0] not in before
             expected += identities
             packages.append(str(path))
-        assert len(packages) == 4 and not any((output / 'empty-repos').iterdir())
+        assert len(packages) == 5 and not any((output / 'empty-repos').iterdir())
+        assert {row['nevra'].rsplit('-', 2)[0] for row in lock['packages']} == {
+            'go-filesystem', 'golang', 'golang-bin', 'golang-src', 'tesseract'}
         run('offline-runtime-install', ['dnf5', '--assumeyes', '--disable-plugin=*',
                                        '--setopt=reposdir=/output/empty-repos', '--setopt=localpkg_gpgcheck=True',
                                        '--setopt=install_weak_deps=False', '--setopt=tsflags=nodocs',
@@ -91,6 +93,7 @@ def main():
                                   'GOVERSION', 'GOOS', 'GOARCH', 'GOTOOLCHAIN', 'CGO_ENABLED', 'GOEXPERIMENT']).stdout)
         record['go_identity'] = identity
         require_compiler(identity)
+        record['ocr_tool_version'] = run('ocr-tool-version', ['/usr/bin/tesseract', '--version']).stdout.strip()
         record['passed'] = True
     except Exception as error:
         record['failure'] = type(error).__name__ + ': ' + str(error)

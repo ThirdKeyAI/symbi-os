@@ -37,7 +37,8 @@ def main():
     runroot.mkdir(mode=0o700)
     podman = ['podman', '--cgroup-manager=cgroupfs', '--root', str(storage/'root'), '--runroot', str(runroot)]
     record = {'passed': False, 'os_qualified': False, 'source_commit': os.environ['GITHUB_SHA'],
-              'limits': limits, 'commands': [], 'scope': 'Source-built Elephant and actual provider refusal on the selected base; no OS qualification'}
+              'limits': limits, 'commands': [], 'upstream_tests_passed': False,
+              'scope': 'Source-built Elephant and actual provider refusal on the selected base; no OS qualification'}
 
     def save():
         (evidence/'result.json').write_text(json.dumps(record, indent=2)+'\n')
@@ -140,12 +141,15 @@ def main():
         manifest = {'schema': 1, 'compiled': True, 'os_qualified': False, 'provider_loading_qualified': False,
                     'base': base['image'], 'source_commit': record['source_commit'],
                     'upstream_revision': source_pins['revision'], 'binaries': built['binaries'],
+                    'source_variants': built['source_variants'],
                     'patch_sha256': built['patch_sha256'], 'rpm_lock_sha256': digest(inputs/'build-rpms.lock.json'),
                     'go_mod_sha256': source_pins['go_mod_sha256'], 'go_sum_sha256': source_pins['go_sum_sha256']}
         (payload/'manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
         shutil.copyfile(payload/'manifest.json', evidence/'compiled-manifest.json')
         completion.check_returncode()
         assert built['passed'] and built['module_locks_unchanged']
+        record['upstream_tests_passed'] = True
+        save()
         sys.path.insert(0, str(root/'image/launcher/probes'))
         from provider_acceptance import run_checks
         run_checks(podman, base['image'], '/'+str(group.relative_to('/sys/fs/cgroup')),
