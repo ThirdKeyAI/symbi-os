@@ -150,6 +150,14 @@ Tootles supplies the human Mastodon and Bluesky TUI with Tokyo Night and mpv
 integration, but real-account use remains blocked on qualified secret storage
 and isolation of account tokens from governed sessions.
 
+The offline payload boundary now fixes all eleven intended binary, desktop,
+manual and licence destinations and rejects extra archive members, `ya`,
+updater helpers, plugins and downloaded-theme paths. It also requires exact
+source bindings and a retained build-provenance subject before staging. No such
+executable artifact or lock is retained yet, so desktop preparation remains
+deliberately disconnected and all release, security, native-desktop and
+real-account qualification flags stay false.
+
 ## Hosted BlueBuild compatibility check
 
 `image/toolchain/bluebuild.json` pins the experimental source build to

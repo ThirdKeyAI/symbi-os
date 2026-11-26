@@ -35,3 +35,30 @@ The convenience installation commands in upstream documentation are never OS
 build inputs. Exact toolchains, release signatures or provenance, dependency
 audits, native package compatibility and installed-image acceptance remain
 unresolved.
+
+## Offline image-payload boundary
+
+`payload-contract.json` fixes the only files a future hosted build may add to
+an image payload. The allowlist contains the three ELF executables, the exact
+Yazi and Tootles desktop files from their pinned source archives, Tootles's man
+page, and the upstream licence and notice files. It excludes Yazi's `ya`
+package manager and every updater, plugin and downloaded-theme path. The
+contract is hash-bound to `source-inputs.json`; source-backed files must retain
+the exact size and digest recorded for the source archive.
+
+`payload.py` supplies the offline staging and verification path. It accepts
+only an exact, bounded ZIP with a retained manifest and artifact lock, plus a
+verified GitHub build-provenance record whose subject digest is the ZIP digest.
+The manifest must bind every executable to the exact application version,
+revision and source-archive digest. Archive members, install destinations and
+modes are a closed allowlist; links, special files, overwrites and extra members
+fail before any payload file is copied. A failed copy removes files created by
+that attempt.
+
+No development-payload lock or executable artifact exists in this tree, so the
+desktop preparer does not call this path yet. Source intake is not executable
+payload authentication. The contract, security and OS qualification flags
+remain false until a separately attested build is retained, dependencies are
+reviewed, and native image tests cover launches, file operations, previews,
+desktop entries, media handoff, egress and Tootles credential storage. Real
+accounts remain disabled until that final secret-storage gate passes.
