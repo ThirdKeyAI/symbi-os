@@ -85,3 +85,14 @@ bundled versions, backports and exposure are not yet proven. The candidate
 remains unselected; this is not a clean security result. Full responses,
 coverage limits and primary references are retained under
 `docs/security/reports/P0-03-cve-bz/2026-11-26/desktop-profile/kitty-bundle-dependencies/`.
+
+The corrected hosted rerun
+[45849459625](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45849459625)
+passed the publisher signature, missing-key and altered-data controls and the
+component-wise link validator at `b25ef5c`. Its 764-member inventory is byte-for-
+byte identical to the first run. The candidate was neither extracted nor
+executed; private downloads were removed. The inspector peaked at 181,805,056
+bytes with no memory-limit, OOM or swap events. All 11 original evidence files
+and independent reconciliation are retained. This closes the archive-link
+validation rerun only; dependency, license, native desktop and selection gates
+remain open.

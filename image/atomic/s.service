@@ -12,8 +12,9 @@ StandardOutput=truncate:/run/symbi-atomic-status.json
 StandardError=journal+console
 Environment=LANG=C.UTF-8
 UMask=0077
+DynamicUser=yes
 NoNewPrivileges=yes
-CapabilityBoundingSet=CAP_SYS_ADMIN
+CapabilityBoundingSet=
 AmbientCapabilities=
 PrivateMounts=yes
 PrivateTmp=yes

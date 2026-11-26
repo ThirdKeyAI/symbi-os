@@ -347,3 +347,24 @@ the test pass is not an accepted correction. Installed image bytes and
 qualification gates remain unchanged. Workspace/formal checks passed for
 `ba700f2` (run 45831349883) and `2c70e38` (run 45833657032); those passes do not
 qualify the failed boot test or a desktop session.
+
+## Remove root from the fixed status collector
+
+The retained `ba700f2` journal identifies a read of `/proc/1/ns/mnt` as the
+failing operation. The pinned bootc 1.17.1 source performs that read only while
+preparing a root process for a writable mount namespace. For a non-root status
+query it returns before that preparation, then opens booted storage read-only.
+
+The next collector therefore uses `DynamicUser=yes` and an empty capability
+bounding set. It keeps the exact `/usr/bin/bootc status --json` command, private
+mount namespace, no-new-privileges, root-created 0600 output file and all
+existing resource limits. The observer remains separately capability-free and
+continues to reject an unsuccessful service or malformed output. This removes
+`CAP_SYS_ADMIN`; it does not add `CAP_SYS_PTRACE`, relax SELinux, edit the image,
+or weaken any deployment check.
+
+The new acceptance fixture failed against the prior root service before the
+change. All 255 offline image fixtures now pass at 36,884 KiB peak RSS, 0.80 CPU
+seconds and zero swap under the 128 MiB/10%-CPU local ceiling. Native success is
+still pending the hosted installed-image attempt; ordinary-user readability of
+the booted deployment has not been assumed from source inspection alone.
