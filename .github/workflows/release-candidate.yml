@@ -1,0 +1,42 @@
+name: Release candidate authenticity blocker
+
+on:
+  workflow_dispatch:
+    inputs:
+      purpose:
+        description: Candidate contract whose producer integration is being checked
+        required: true
+        type: choice
+        options: [release, upstream-candidate]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-candidate-blocker-${{ github.ref }}-${{ inputs.purpose }}
+  cancel-in-progress: false
+
+jobs:
+  refuse-unauthenticated-candidate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      PURPOSE: ${{ inputs.purpose }}
+    steps:
+      - name: Check out the exact contract revision without persisted credentials
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Require the release tag or upstream main identity
+        run: |
+          case "$PURPOSE:$GITHUB_REF" in
+            release:refs/tags/v*) ;;
+            upstream-candidate:refs/heads/main) ;;
+            *) echo 'Candidate purpose and source ref do not match.' >&2; exit 1 ;;
+          esac
+      - name: Exercise the structural contract
+        run: python3 -m unittest image.tests.test_release_gate
+      - name: Refuse self-asserted evidence until real producers are bound
+        run: |
+          echo 'Authenticated native/signing producers are not implemented; refusing candidate artifact creation.' >&2
+          exit 1

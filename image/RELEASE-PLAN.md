@@ -108,3 +108,28 @@ authored success flag does not replace those executions.
 Publishing remains disabled until the pins, actual image build and acceptance
 evidence are established. Creating protected secrets alone does not qualify a
 signing workflow, a built image, or an update/rollback path.
+
+## Implemented release-evidence gate
+
+`image/release/contract.py` now defines the fail-closed evidence bundle that a
+release must satisfy. It reconciles both exact registry subjects, SPDX and SLSA
+subjects, the dedicated-key Cosign verification reports and native P0-03,
+P0-04 and P0-05 results at one source commit and one image per variant. It also
+binds the artifact to the reviewed producer workflow run. These are structural
+checks: authored JSON can satisfy their schema and therefore cannot establish
+authentic execution by itself. The `release-candidate.yml` workflow has no
+upload step and fails explicitly until the real native and signing producers
+are bound by run path, source SHA/ref, conclusion, artifact ID, digest and name.
+
+The protected `release-images.yml` currently has read-only permissions and
+performs only this reconciliation; it cannot sign, attest, push or promote an
+image. It runs only on a selected `v*` tag and accepts evidence only from the
+candidate workflow at the same tag and source commit.
+
+The scheduled `upstream-check.yml` applies the same evidence gate to candidate
+base digests, preserves the existing repositories and trust roots, reruns the
+serial repository checks and opens a review PR only after independent artifact
+revalidation. The candidate workflow deliberately cannot create either expected
+artifact while actual image builds, native qualification, signing and
+publication remain outstanding. Therefore both paths fail before an upload or
+Git write today; authored success flags do not qualify a release.
