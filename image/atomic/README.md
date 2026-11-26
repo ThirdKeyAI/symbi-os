@@ -430,3 +430,14 @@ required.
 The final serial repository gate passes all 280 image tests plus Cedar, Rust,
 supply-chain and formal drift checks in 6.20 seconds at 70,188 KiB peak RSS,
 with one Cargo job and zero swap.
+
+## Reuse by the Landlock qualification workflow
+
+When the hosted controller receives the fixed `SYMBI_QUALIFICATION=landlock`
+mode, it completes this same install and basic boot acceptance first. It then
+invokes the separate P0-04 controller for a second offline snapshot boot of the
+unchanged installed disk. The second boot adds only a read-only authenticated
+source disk and firmware-supplied test services; it does not change the Atomic
+installer, local source signature policy, release policy, base image or ordinary
+boot result. Its evidence and qualification claim remain separate under
+`.cache/landlock-qualification-evidence`.

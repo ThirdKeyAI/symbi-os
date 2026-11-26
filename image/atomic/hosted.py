@@ -16,13 +16,16 @@ from image.launcher.probes.bounded_process import run_bounded
 
 
 def main():
+    qualification=os.environ.get('SYMBI_QUALIFICATION','')
     if (os.environ.get('GITHUB_ACTIONS')!='true' or os.environ.get('RUNNER_ENVIRONMENT')!='github-hosted'
-            or os.environ.get('SYMBI_IMAGE_VARIANT')!='generic' or os.geteuid()!=0):
+            or os.environ.get('SYMBI_IMAGE_VARIANT')!='generic' or qualification not in ('','landlock')
+            or os.geteuid()!=0):
         raise SystemExit('Use the disposable hosted generic Atomic install/boot unit')
     root=Path.cwd().resolve()
     process=Path('/sys/fs/cgroup')/Path(Path('/proc/self/cgroup').read_text().strip().split('::',1)[1]).relative_to('/')
     group=process.parent
-    if (process.name!='supervisor' or not group.name.startswith('symbi-atomic-disk-')
+    unit_prefix='symbi-landlock-' if qualification else 'symbi-atomic-disk-'
+    if (process.name!='supervisor' or not group.name.startswith(unit_prefix)
             or not group.name.endswith('.service') or (group/'cgroup.procs').read_text().strip()):
         raise ValueError('Unexpected delegated installer controller')
     limits={n:(group/n).read_text().strip() for n in ('memory.max','memory.swap.max','cpu.max','pids.max')}
@@ -40,7 +43,8 @@ def main():
     record={'schema':1,'passed':False,'installation_attempted':False,'guest_booted':False,
             'os_qualified':False,'release_qualified':False,'source_commit':os.environ['GITHUB_SHA'],
             'image_source_commit':selected['tested_commit'],'image_id':manifest['archive']['image_id'],
-            'limits':limits,'commands':[],'scope':'Offline development artifact authenticated with an ephemeral CI fixture key; no product/release qualification'}
+            'limits':limits,'commands':[],'qualification':qualification or None,
+            'scope':'Offline development artifact authenticated with an ephemeral CI fixture key; no product/release qualification'}
     def save(): (evidence/'result.json').write_text(json.dumps(record,indent=2)+'\n')
     def run(name,command,timeout=60,check=True):
         record['active_command']={'name':name,'command':command};save()
@@ -195,7 +199,14 @@ def main():
         if result['passed'] is not True or result['guest_booted'] is not True:
             raise ValueError('Hosted QEMU observation did not pass')
         if sha256(disk)!=record['disk_sha256']: raise ValueError('Read-only source disk changed during boot')
-        record['guest_booted']=True;record['boot_id']=report['boot_id'];record['passed']=True
+        record['guest_booted']=True;record['boot_id']=report['boot_id']
+        if qualification=='landlock':
+            from image.qualification.hosted import run_landlock
+            print('Landlock qualification: starting the second offline installed-image boot',flush=True)
+            record['landlock']=run_landlock(root,group,podman,image_id,disk,storage,containers,
+                                            run,expected,record)
+            record['landlock_qualified']=record['landlock']['qualified'] is True
+        record['passed']=True
     except Exception as error:
         record['failure']=type(error).__name__+': '+str(error)
         raise

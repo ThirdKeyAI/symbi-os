@@ -1,7 +1,8 @@
 [Unit]
 Description=Fixed bootc status service for hosted runtime qualification
 ConditionPathExists=!/etc/initrd-release
-After=local-fs.target
+Requires=p.service
+After=local-fs.target p.service
 Before=l.service
 
 [Service]

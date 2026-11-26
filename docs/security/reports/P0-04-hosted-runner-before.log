@@ -1,0 +1,20 @@
+test_landlock_hosted (unittest.loader._FailedTest.test_landlock_hosted) ... ERROR
+
+======================================================================
+ERROR: test_landlock_hosted (unittest.loader._FailedTest.test_landlock_hosted)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_landlock_hosted
+Traceback (most recent call last):
+  File "/usr/lib/python3.14/unittest/loader.py", line 137, in loadTestsFromName
+    module = __import__(module_name)
+  File "/vmstore/repos2/symbi-os/image/tests/test_landlock_hosted.py", line 12, in <module>
+    from image.qualification.boot import (firmware_arguments, qemu_command,
+                                          validate_guest_report)
+ModuleNotFoundError: No module named 'image.qualification.boot'
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)
+expected_failure_exit=1

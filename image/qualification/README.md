@@ -96,6 +96,36 @@ digests, and validates the deployment again through the second fixed socket
 response. Its `qualified` field deliberately remains false until the managed-CLI
 broker, escape suite and required reviews are complete.
 
+## Hosted Landlock execution
+
+`.github/workflows/landlock-qualification.yml` performs a fresh authenticated
+installation using the existing Atomic harness and then boots a second, private
+snapshot for the Landlock suites. The exact clean upstream checkout is placed on
+an ext4 disk with label `SYMBIQUAL`; its commit, tree, submodules, Cargo lock,
+filesystem UUID and bytes are bound before the disk becomes read-only. The guest
+mount comes from the fixed `fstab.extra` credential and is
+`ro,nosuid,nodev,noexec`.
+
+The firmware services create a disposable UID 10001 account and delegated user
+manager only in the QEMU overlay. They do not add an account to the product
+image. The runner has no capabilities or network device, and it receives only
+the fixed driver and public expectations. The status collector retains its sole
+`bootc status --json` authority. Systemd powers off the VM after either success
+or failure.
+
+Public evidence is limited to the driver's explicit allowlist. Each file is
+regular, singly linked, owned by the test user, hash-bound and at most 2 MiB; the
+expanded set is at most 12 MiB. The controller rejects private action paths,
+key-like names, malformed compression and mismatched hashes before writing the
+artifact directory. It opens every retained path component with `O_NOFOLLOW`, so
+a report cannot disguise a private path behind a parent symlink. Raw stdout and
+stderr from the outer qualification wrapper never cross the guest channel; only
+their byte counts and hashes do. Automatic execution is limited to `main`, with
+manual dispatch available for a review branch, and stale runs are canceled. The
+workflow uses an ephemeral CI fixture signature for the local install source, so
+even a passing run is native development-image qualification, not release-signature
+or OS-release approval.
+
 ## Upstream references
 
 - [Pinned platform diagnostic](https://github.com/ThirdKeyAI/Symbiont/blob/deddb9e997244d2289c217ad76b8fde0e9b0339b/scripts/test-landlock-platform.py)

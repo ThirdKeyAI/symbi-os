@@ -1,0 +1,84 @@
+name: Fedora Landlock qualification
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "image/qualification/**"
+      - "image/atomic/**"
+      - "image/assembly/runtime-development.lock.json"
+      - "image/desktop-images.lock.json"
+      - "image/base-images.json"
+      - "image/release-trust.json"
+      - "image/keys/**"
+      - "image/boot/inputs.py"
+      - "image/boot/preflight.py"
+      - "image/boot/hosted.py"
+      - "upstream/symbiont.toml"
+      - "scripts/check-atomic-image.sh"
+      - "scripts/check-landlock-qualification.sh"
+      - ".github/workflows/landlock-qualification.yml"
+      - "!image/qualification/README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: fedora-landlock-qualification-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 165
+    env:
+      SYMBI_IMAGE_VARIANT: generic
+      SYMBI_QUALIFICATION: landlock
+    steps:
+      - name: Check out the proposed qualification harness
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Check out the exact upstream runtime source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          repository: ThirdKeyAI/Symbiont
+          ref: deddb9e997244d2289c217ad76b8fde0e9b0339b
+          path: .cache/runtime-source
+          submodules: recursive
+          persist-credentials: false
+      - name: Download the exact retained development image
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache
+          artifact=$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from image.boot.inputs import require_desktop_image
+          lock=json.loads(Path('image/desktop-images.lock.json').read_text())
+          pins=json.loads(Path('image/base-images.json').read_text())
+          require_desktop_image(lock,pins,'generic')
+          print(lock['images']['generic']['artifact']['id'])
+          PY
+          )
+          timeout 30 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/$artifact" > .cache/atomic-image-artifact.json
+          timeout 900 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/$artifact/zip" > .cache/atomic-development-image.zip
+      - name: Verify metadata and stream the exact retained image
+        run: bash scripts/check-atomic-image.sh prepare
+      - name: Install, boot and qualify the pinned Landlock route offline
+        run: bash scripts/check-landlock-qualification.sh
+      - name: Retain bounded public installation and qualification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: fedora-landlock-qualification
+          path: |
+            .cache/atomic-image-evidence
+            .cache/atomic-disk-evidence
+            .cache/landlock-qualification-evidence
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 14

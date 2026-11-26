@@ -1,0 +1,1 @@
+LABEL=SYMBIQUAL /var/lib/symbi-qualification/source ext4 ro,nosuid,nodev,noexec 0 0
