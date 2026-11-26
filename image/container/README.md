@@ -47,6 +47,7 @@ anonymous image volumes or secrets. The scripts never pull an image themselves.
 ```sh
 python3 image/qualification/containers.py \
   --source "$PINNED_SOURCE_CHECKOUT" \
+  --fixture-source "$REVIEWED_MERGED_FIXTURE_CHECKOUT" \
   --binary /usr/bin/symbi \
   --expected-binary-sha256 "$VERIFIED_BINARY_SHA256" \
   --expected-runsc-sha256 "$VERIFIED_RUNSC_SHA256" \
@@ -64,16 +65,29 @@ It verifies useful scratch work and several denials, then removes only its own
 container and confirms cleanup. Proxy settings and image environment values are
 excluded from retained daemon/inspection metadata.
 
-It then runs the pinned upstream filesystem-grant, source-broker and Git-source
-Docker drivers. The same image/build bindings are rechecked afterward. Failure
-is retained; discard the VM after an uncertain creation/cleanup or timeout.
-No global Docker prune, daemon restart or host-policy change is performed.
+It then runs the reviewed upstream filesystem-grant, source-broker and Git-source
+drivers from merge `be3bef1dababb49a68450a883dc1ba97fa6322b0`, separately from
+the installed runtime's exact source checkout. Each complete driver runs once
+with runc and once with runsc. Validation requires the exact 9/9/14 supported
+case sets, the selected runtime in actual worker observations, unchanged source,
+binary, deployment, runsc and driver hashes, and empty worker, lease and
+container state after every run. Failure is retained; discard the VM after an
+uncertain creation/cleanup or timeout. No global Docker prune, daemon restart or
+host-policy change is performed.
 
-These are infrastructure probes and bounded Docker fixtures. The report keeps
-`qualified: false` even if they pass. A direct Docker runsc probe does not exercise
-Symbiont's gVisor wrapper or its managed-CLI socket transport. The pinned Python
-fixture drivers do not expose a gVisor selector; changing the daemon's default
-runtime would not prove wrapper selection and is not an accepted substitute.
+These are infrastructure probes and bounded tool-worker fixtures. The report
+keeps `qualified: false` even if all six runs pass. The reviewed drivers now have
+an explicit gVisor selector and must observe runsc; the daemon default remains
+runc. This still does not exercise the shipping managed route, its broker socket
+transport or the OS escape suite.
+
+The manual `containers` choice in the shared Fedora runtime workflow is a
+preflight skeleton. It verifies the retained signed gVisor Debian repository
+metadata with the pinned full publisher fingerprint and uses the complete
+package inventory as a development input. It does not select that package for a
+release. Until a signed Fedora runtime lock binds the engine RPMs and installed
+gVisor files, the controller exits before disk allocation and retains an
+explicitly unqualified result.
 
 ## Required remaining evidence
 

@@ -18,13 +18,14 @@ from image.launcher.probes.bounded_process import run_bounded
 def main():
     qualification=os.environ.get('SYMBI_QUALIFICATION','')
     if (os.environ.get('GITHUB_ACTIONS')!='true' or os.environ.get('RUNNER_ENVIRONMENT')!='github-hosted'
-            or os.environ.get('SYMBI_IMAGE_VARIANT')!='generic' or qualification not in ('','landlock','update')
+            or os.environ.get('SYMBI_IMAGE_VARIANT')!='generic' or qualification not in ('','landlock','update','containers')
             or os.geteuid()!=0):
         raise SystemExit('Use the disposable hosted generic Atomic install/boot unit')
     root=Path.cwd().resolve()
     process=Path('/sys/fs/cgroup')/Path(Path('/proc/self/cgroup').read_text().strip().split('::',1)[1]).relative_to('/')
     group=process.parent
-    unit_prefix='symbi-landlock-' if qualification=='landlock' else 'symbi-atomic-disk-'
+    unit_prefix={'landlock':'symbi-landlock-','containers':'symbi-container-'}.get(
+        qualification,'symbi-atomic-disk-')
     if (process.name!='supervisor' or not group.name.startswith(unit_prefix)
             or not group.name.endswith('.service') or (group/'cgroup.procs').read_text().strip()):
         raise ValueError('Unexpected delegated installer controller')
@@ -82,6 +83,13 @@ def main():
                 or prepared['expected_inputs']!=expected or prepared['variant']!='generic'
                 or prepared['lock_sha256']!=sha256(root/'image/desktop-images.lock.json')):
             raise ValueError('Current hosted image intake has not passed')
+        if qualification=='containers':
+            from image.qualification.container_hosted import run_container_preflight
+            record['container_preflight']=run_container_preflight(
+                root,record['source_commit'],record['image_source_commit'])
+            save()
+            blockers=record['container_preflight']['blockers']
+            raise ValueError('Fedora container qualification remains fail closed: '+','.join(blockers))
         archive=root/'.cache/atomic-image-inputs'/manifest['archive']['name']
         if (archive.is_symlink() or not archive.is_file() or archive.stat().st_size!=manifest['archive']['bytes']
                 or sha256(archive)!=manifest['archive']['sha256']):

@@ -81,6 +81,7 @@ user.
 ```sh
 python3 image/qualification/containers.py \
   --source "$PINNED_SOURCE_CHECKOUT" \
+  --fixture-source "$REVIEWED_FIXTURE_CHECKOUT" \
   --binary /usr/bin/symbi \
   --expected-binary-sha256 "$VERIFIED_BINARY_SHA256" \
   --expected-runsc-sha256 "$VERIFIED_RUNSC_SHA256" \
@@ -90,11 +91,34 @@ python3 image/qualification/containers.py \
   --output "$NEW_PRIVATE_EVIDENCE_DIRECTORY"
 ```
 
-The driver inspects the daemon, fixture image and each bounded runc/runsc probe,
-runs every pinned upstream Docker fixture driver, rechecks source and executable
-digests, and validates the deployment again through the second fixed socket
-response. Its `qualified` field deliberately remains false until the managed-CLI
-broker, escape suite and required reviews are complete.
+The runtime checkout remains the exact source of the installed binary. A
+separate clean fixture checkout is pinned to reviewed merge
+`be3bef1dababb49a68450a883dc1ba97fa6322b0`; its tree and all three driver
+digests are checked independently. The driver inspects the daemon, fixture image
+and each bounded runc/runsc probe, then runs all three complete fixture drivers
+once with runc and once with runsc. Each of the six reports must contain the
+exact supported cases, only the selected observed runtime, and no remaining
+workers, leases or containers. The two source trees, binary, runsc, deployment,
+fixture image and driver hashes are rechecked afterward. Its `qualified` field
+deliberately remains false until the managed route, escape suite and required
+reviews are complete.
+
+## Hosted container gate preparation
+
+The existing Fedora runtime workflow accepts a manual `containers` selection;
+normal `main` execution remains the Landlock gate. The container selection uses
+the same authenticated development-image intake and Atomic controller. It
+checks out the installed runtime source and the reviewed merged fixture source
+separately, re-verifies the retained signed gVisor Debian repository metadata
+offline, and binds the complete package inventory plus the shared P0-04 fixed
+status-service inputs.
+
+The gate currently stops before allocating the 60 GiB install disk because
+`image/container/fedora-runtime.lock.json` does not yet exist. That future lock
+must select exact signed Fedora engine RPMs and bind every installed gVisor file
+to the authenticated package inventory. The retained preflight result keeps
+`passed`, `qualified`, native-matrix, managed-route and escape-suite fields false.
+This is a bounded fail-closed controller skeleton, not Fedora execution evidence.
 
 ## Hosted Landlock execution
 

@@ -6,11 +6,13 @@ retains qualified=false until the remaining route/escape evidence is implemented
 No pull, daemon change, host build or global container cleanup is performed.
 """
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import re
 import subprocess
 import sys
+import time
 import tomllib
 import uuid
 
@@ -19,6 +21,27 @@ from landlock import (ROOT, DIGEST_REF, command_output, digest, host_details,
                       validate_source, validate_status_socket)
 
 FIXTURE_DRIVERS = ("test-filesystem-grants.py", "test-source-broker.py", "test-git-source.py")
+SUPPORTED_CASES = {
+    "test-filesystem-grants.py": (
+        "granted", "undeclared", "parser", "oversize", "existing", "symlink",
+        "nested", "descendant", "substitution",
+    ),
+    "test-source-broker.py": (
+        "read", "list", "grep", "traversal", "symlink", "hardlink", "no_ceiling",
+        "denied", "scratch",
+    ),
+    "test-git-source.py": (
+        "log", "staged", "diff", "status", "sha256", "snapshot", "denied",
+        "alternates", "pointer", "oversize", "extension", "capacity",
+        "prepare_crash", "crash",
+    ),
+}
+BACKENDS = {
+    "runc": {"reported": "docker", "runtime": "runc", "arguments": ()},
+    "runsc": {"reported": "gvisor", "runtime": "runsc",
+              "arguments": ("--gvisor", "--runsc-binary", "/usr/bin/runsc")},
+}
+MAX_FIXTURE_REPORT_BYTES = 20 * 1024 * 1024
 PAYLOAD = r'''
 import errno,json,os,socket
 assert os.getuid()==65534 and os.getgid()==65534
@@ -83,6 +106,108 @@ def docker_call(env, *arguments, timeout=30, check=True):
                           capture_output=True, timeout=timeout, check=check)
 
 
+def fixture_plan(source, binary, fixture_ref, output):
+    """Return the exact sequential matrix; callers must not select a subset."""
+    plan = []
+    for backend, details in BACKENDS.items():
+        for driver in FIXTURE_DRIVERS:
+            target = output / f"{backend}-{driver.removesuffix('.py')}.json"
+            log = output / f"{backend}-{driver}.log"
+            command = [sys.executable, "-E", "-s", "-B", str(source / "scripts" / driver),
+                       "--binary", str(binary), "--image", fixture_ref,
+                       "--report", str(target), *details["arguments"]]
+            plan.append({"backend": backend, "driver": driver, "target": target,
+                         "log": log, "command": command})
+    return plan
+
+
+def _unique_object(raw):
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            require(key not in result, "duplicate fixture report key")
+            result[key] = value
+        return result
+    result = json.loads(raw, object_pairs_hook=unique)
+    require(isinstance(result, dict), "fixture report must be a JSON object")
+    return result
+
+
+def read_fixture_result(path):
+    info = path.lstat()
+    require(path.is_file() and not path.is_symlink() and info.st_nlink == 1
+            and 0 < info.st_size <= MAX_FIXTURE_REPORT_BYTES,
+            "missing or unsafe bounded fixture report")
+    raw = path.read_bytes()
+    require(len(raw) == info.st_size, "fixture report changed while reading")
+    return raw, _unique_object(raw)
+
+
+def validate_fixture_result(result, driver, backend, binary_hash, driver_hash,
+                            image_id, runsc_hash):
+    require(driver in SUPPORTED_CASES and backend in BACKENDS, "unknown fixture matrix entry")
+    expected = BACKENDS[backend]
+    require(result.get("passed") is True, f"{backend}/{driver} did not pass")
+    require(result.get("backend") == expected["reported"], "fixture reported the wrong backend")
+    require(result.get("binary_sha256") == binary_hash, "fixture binary hash changed")
+    require(result.get("driver_sha256") == driver_hash, "fixture driver hash changed")
+    require(result.get("image") == image_id, "fixture image ID changed")
+    require(result.get("remaining_workers") == [], "fixture left workers behind")
+    require(result.get("remaining_leases") == [], "fixture left worker leases behind")
+    require(result.get("provider_errors") == [], "fixture provider recorded errors")
+    cases = result.get("cases")
+    require(isinstance(cases, list), "fixture cases must be a list")
+    names = [case.get("name") if isinstance(case, dict) else None for case in cases]
+    require(len(names) == len(SUPPORTED_CASES[driver])
+            and sorted(names) == sorted(SUPPORTED_CASES[driver]),
+            "fixture case set is incomplete, duplicated or unsupported")
+    require(all(case.get("passed") is True for case in cases), "a fixture case did not pass")
+    observed = set()
+    for case in cases:
+        workers = case.get("workers")
+        require(isinstance(workers, list), "fixture case omitted worker observations")
+        for worker in workers:
+            require(isinstance(worker, dict) and isinstance(worker.get("runtime"), str),
+                    "fixture worker runtime observation is malformed")
+            observed.add(worker["runtime"])
+    require(observed == {expected["runtime"]}, "fixture did not observe only the selected runtime")
+    runsc = result.get("runsc")
+    if backend == "runsc":
+        require(isinstance(runsc, dict), "gVisor fixture omitted runsc identity")
+        require(runsc.get("path") == "/usr/bin/runsc"
+                and runsc.get("registered_path") == "/usr/bin/runsc",
+                "gVisor fixture used a different runsc path")
+        require(runsc.get("sha256") == runsc_hash and runsc.get("mode") == 0o755,
+                "gVisor fixture runsc bytes or mode changed")
+    else:
+        require(runsc is None, "runc fixture unexpectedly reported a runsc override")
+    return sorted(observed)
+
+
+def container_ids(env):
+    rows = [row for row in docker_call(env, "ps", "-aq", "--no-trunc").stdout.splitlines() if row]
+    require(all(re.fullmatch(r"[a-f0-9]{64}", row) for row in rows),
+            "daemon returned a malformed container identity")
+    return rows
+
+
+def validate_run_record(record, report_raw, backend):
+    require(backend in BACKENDS, "unknown fixture backend")
+    require(record.get("passed") is True and record.get("cleanup_confirmed") is True,
+            "fixture run did not pass with confirmed cleanup")
+    require(record.get("remaining_containers") == [], "fixture run left containers behind")
+    require(record.get("report_sha256") == hashlib.sha256(report_raw).hexdigest(),
+            "fixture report hash changed")
+    require(record.get("observed_runtimes") == [BACKENDS[backend]["runtime"]],
+            "fixture run runtime observation changed")
+
+
+def deployment_digest(status):
+    booted = status.get("status", {}).get("booted")
+    require(isinstance(booted, dict), "bootc status omitted the booted deployment")
+    return hashlib.sha256(json.dumps(booted, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
 def probe(env, runtime, image_id, output):
     identity = None
     report = {"runtime": runtime, "passed": False, "cleanup_confirmed": False}
@@ -127,6 +252,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check-host", action="store_true")
     parser.add_argument("--source", type=Path)
+    parser.add_argument("--fixture-source", type=Path)
     parser.add_argument("--binary", type=Path)
     parser.add_argument("--expected-binary-sha256")
     parser.add_argument("--expected-runsc-sha256")
@@ -144,7 +270,7 @@ def main():
             report["host_ready"] = True
             print(json.dumps(report, indent=2))
             return 0
-        require(all((args.source, args.binary, args.expected_binary_sha256, args.expected_runsc_sha256,
+        require(all((args.source, args.fixture_source, args.binary, args.expected_binary_sha256, args.expected_runsc_sha256,
                      args.fixture_ref, args.image_ref, args.bootc_status_socket, args.output)),
                 "all qualification inputs are required")
         for value in (args.expected_binary_sha256, args.expected_runsc_sha256):
@@ -152,15 +278,38 @@ def main():
         require(DIGEST_REF.fullmatch(args.fixture_ref), "fixture must use an authenticated immutable image reference")
         with (ROOT / "upstream/symbiont.toml").open("rb") as stream:
             revision = tomllib.load(stream)["revision"]
+        fixture_lock_path = ROOT / "image/container/native-fixture.lock.json"
+        fixture_lock = _unique_object(fixture_lock_path.read_bytes())
+        require(fixture_lock.get("schema") == 1
+                and fixture_lock.get("runtime_source_revision") == revision
+                and fixture_lock.get("qualified") is False,
+                "reviewed fixture source lock differs from the runtime binding")
+        fixture_revision = fixture_lock.get("revision", "")
+        fixture_tree = fixture_lock.get("tree", "")
+        require(re.fullmatch(r"[a-f0-9]{40}", fixture_revision or "")
+                and re.fullmatch(r"[a-f0-9]{40}", fixture_tree or ""),
+                "reviewed fixture source identities are invalid")
         source, binary = args.source.resolve(strict=True), args.binary.resolve(strict=True)
+        fixture_source = args.fixture_source.resolve(strict=True)
+        require(source != fixture_source, "runtime and reviewed fixture checkouts must remain distinct")
         validate_source(source, revision)
+        validate_source(fixture_source, fixture_revision)
+        source_tree = command_output(["git", "rev-parse", "HEAD^{tree}"], source)
+        require(re.fullmatch(r"[a-f0-9]{40}", source_tree), "runtime source tree identity is invalid")
+        require(command_output(["git", "rev-parse", "HEAD^{tree}"], fixture_source) == fixture_tree,
+                "reviewed fixture source tree changed")
+        cargo_lock_sha256 = digest(source / "Cargo.lock")
+        drivers = {name: digest(fixture_source / "scripts" / name) for name in FIXTURE_DRIVERS}
+        require(drivers == fixture_lock.get("drivers"), "reviewed fixture driver hashes changed")
         require(digest(binary) == args.expected_binary_sha256, "runtime binary hash mismatch")
         require(digest("/usr/bin/runsc") == args.expected_runsc_sha256, "runsc binary hash mismatch")
         validate_status_socket(args.bootc_status_socket)
         bootc = read_bootc_status(args.bootc_status_socket)
         validate_deployment(bootc, args.image_ref)
         candidate = args.output.resolve()
-        require(not candidate.is_relative_to("/tmp") and not candidate.is_relative_to(source), "use guest disk outside /tmp and source")
+        require(not candidate.is_relative_to("/tmp") and not candidate.is_relative_to(source)
+                and not candidate.is_relative_to(fixture_source),
+                "use guest disk outside /tmp and source checkouts")
         candidate.mkdir(mode=0o700, parents=True, exist_ok=False)
         output = candidate
         (output / "docker-client").mkdir(mode=0o700)
@@ -173,28 +322,67 @@ def main():
         image_id = inspected["Id"]
         require(re.fullmatch(r"sha256:[a-f0-9]{64}", image_id), "invalid cached fixture ID")
         report.update(runtime_revision=revision, binary_sha256=args.expected_binary_sha256,
+                      source_tree=source_tree, cargo_lock_sha256=cargo_lock_sha256,
+                      fixture_source_revision=fixture_revision, fixture_source_tree=fixture_tree,
+                      fixture_source_lock_sha256=digest(fixture_lock_path),
                       runsc_sha256=args.expected_runsc_sha256, image_ref=args.image_ref,
                       fixture_ref=args.fixture_ref, fixture_id=image_id, daemon=retained_daemon_info(info),
                       runsc_version=command_output(["/usr/bin/runsc", "--version"]),
-                      drivers={name: digest(source / "scripts" / name) for name in FIXTURE_DRIVERS})
+                      drivers=drivers,
+                      runs=[])
         (output / "bootc-before.json").write_text(json.dumps(bootc, indent=2) + "\n")
+        before_deployment_sha256 = deployment_digest(bootc)
         for runtime in ("runc", "runsc"):
             probe(env, runtime, image_id, output)
-        for driver in FIXTURE_DRIVERS:
-            target = output / (driver.removesuffix(".py") + ".json")
-            run_driver([sys.executable, "-E", "-s", "-B", str(source / "scripts" / driver),
-                        "--binary", str(binary), "--image", args.fixture_ref, "--report", str(target)],
-                       output / (driver + ".log"), 900)
-            result = json.loads(target.read_text())
-            require(result.get("passed") is True and result.get("binary_sha256") == args.expected_binary_sha256,
-                    f"{driver} failed or reported a different binary")
+        require(container_ids(env) == [], "daemon has containers before fixture execution")
+        for item in fixture_plan(fixture_source, binary, args.fixture_ref, output):
+            record = {"backend": item["backend"], "driver": item["driver"],
+                      "passed": False, "cleanup_confirmed": False,
+                      "remaining_containers": None,
+                      "driver_sha256": report["drivers"][item["driver"]]}
+            report["runs"].append(record)
+            started = time.monotonic()
+            report_raw = None
+            try:
+                require(container_ids(env) == [], "daemon has containers before a fixture run")
+                run_driver(item["command"], item["log"], 900)
+                report_raw, result = read_fixture_result(item["target"])
+                observed = validate_fixture_result(
+                    result, item["driver"], item["backend"], args.expected_binary_sha256,
+                    report["drivers"][item["driver"]], image_id, args.expected_runsc_sha256,
+                )
+                record.update(passed=True, report_sha256=hashlib.sha256(report_raw).hexdigest(),
+                              observed_runtimes=observed, elapsed_seconds=time.monotonic() - started,
+                              cases=[case["name"] for case in result["cases"]])
+            finally:
+                remaining = container_ids(env)
+                record["remaining_containers"] = remaining
+                record["cleanup_confirmed"] = remaining == []
+            require(report_raw is not None, "fixture produced no validated report")
+            validate_run_record(record, report_raw, item["backend"])
         validate_source(source, revision)
+        validate_source(fixture_source, fixture_revision)
+        require(command_output(["git", "rev-parse", "HEAD^{tree}"], source) == source_tree
+                and digest(source / "Cargo.lock") == cargo_lock_sha256,
+                "qualification source identity changed")
+        require(command_output(["git", "rev-parse", "HEAD^{tree}"], fixture_source) == fixture_tree
+                and {name: digest(fixture_source / "scripts" / name) for name in FIXTURE_DRIVERS} == drivers,
+                "reviewed fixture source identity changed")
         require(digest(binary) == args.expected_binary_sha256 and digest("/usr/bin/runsc") == args.expected_runsc_sha256,
                 "qualification binary changed")
         after = read_bootc_status(args.bootc_status_socket)
         validate_deployment(after, args.image_ref)
         (output / "bootc-after.json").write_text(json.dumps(after, indent=2) + "\n")
-        report["passed"] = True
+        after_deployment_sha256 = deployment_digest(after)
+        require(after_deployment_sha256 == before_deployment_sha256,
+                "booted deployment identity changed during qualification")
+        require(len(report["runs"]) == 6
+                and {(run["backend"], run["driver"]) for run in report["runs"]}
+                == {(backend, driver) for backend in BACKENDS for driver in FIXTURE_DRIVERS},
+                "complete six-run fixture matrix was not retained")
+        report.update(passed=True, deployment_sha256=before_deployment_sha256,
+                      bootc_before_sha256=digest(output / "bootc-before.json"),
+                      bootc_after_sha256=digest(output / "bootc-after.json"))
     except (ValueError, OSError, subprocess.SubprocessError, KeyError) as error:
         report["error"] = str(error)
     finally:

@@ -157,6 +157,15 @@ not implied. No Cargo dependency or fabricated audit is added. The complete
 fixtures and runtime resource-membership probes must actually pass before any
 container-route execution claim is made.
 
+`image/container/native-fixture.lock.json` separately pins upstream PR 24's
+reviewed merge `be3bef1dababb49a68450a883dc1ba97fa6322b0`, tree
+`207616f4326f83b00c2c8717294f4689c969d093`, and all three driver hashes. This
+source supplies fixture drivers only; the installed runtime binary remains bound
+to `deddb9e997244d2289c217ad76b8fde0e9b0339b`. The Fedora preflight re-verifies
+the retained signed Debian repository metadata and complete package inventory as
+a development input. A separate selected Fedora runtime lock and native evidence
+are still required before product use.
+
 ## P0-05 Fedora container candidate inputs
 
 `image/container/gvisor-inputs.json` fixes gVisor `release-20261123.1` at commit
