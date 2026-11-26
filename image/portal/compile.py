@@ -41,13 +41,14 @@ def main():
         result.check_returncode()
         return result
 
-    def tests(name, command):
+    def tests(name, command, *, expected_cases=None):
         report = evidence/(name+'.xml')
         run(name, command, 180)
         if report.is_symlink() or report.stat().st_size > 1024**2:
             raise ValueError('Unexpected native test report file')
         raw = report.read_bytes()
-        record['test_suites'][name] = {'cases': require_test_report(raw), 'sha256': hashlib.sha256(raw).hexdigest()}
+        record['test_suites'][name] = {'cases': require_test_report(raw, expected_cases=expected_cases),
+                                     'sha256': hashlib.sha256(raw).hexdigest()}
         save()
 
     common = ['-G', 'Ninja', '-DCMAKE_INSTALL_PREFIX='+str(PREFIX), '-DCMAKE_INSTALL_LIBDIR=lib',
@@ -84,9 +85,8 @@ def main():
                                 *common, '-DCMAKE_BUILD_TYPE=Release', '-DBUILD_TESTING=ON', '-DSYSTEMD_SERVICES=ON'])
         run('portal-build', ['cmake', '--build', str(portal), '--parallel', '1'], 1800)
         tests('portal-tests', ['ctest', '--test-dir', str(portal), '--parallel', '1', '--no-tests=error',
-                              '--output-on-failure', '--output-junit', str(evidence/'portal-tests.xml')])
-        if record['test_suites']['portal-tests']['cases'] != ['hyprland-share-picker-data']:
-            raise ValueError('Unexpected portal test selection')
+                              '--output-on-failure', '--output-junit', str(evidence/'portal-tests.xml')],
+              expected_cases=['hyprland-share-picker-data.hyprland-share-picker-data'])
         run('portal-install', ['cmake', '--install', str(portal)])
         for component in pins['components']:
             target = PREFIX/'share/licenses'/component['name']/'LICENSE'

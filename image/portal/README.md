@@ -77,5 +77,9 @@ Build evidence and the compiled prefix are separate artifacts. The prefix is
 retained before checking its dynamic loaders on the unchanged secureblue base,
 so a missing runtime RPM can be addressed without rebuilding the compositor.
 All qualification flags remain false. No release environment, signing secret,
-publication right or local compilation is used. Native workflow results are
-pending; this section documents the implemented procedure, not a passing build.
+publication right or local compilation is used. The first native run compiled both components and passed 93 native test cases,
+then stopped before portal installation because the report wrapper expected a
+CTest name without its class prefix. The exact-pair correction and raw results
+are retained in [the first-build report](../../docs/security/reports/P0-03-portal-build/45770130727/README.md).
+All 172 offline checks pass. A corrected native run, installed prefix and actual
+desktop consent qualification remain pending.

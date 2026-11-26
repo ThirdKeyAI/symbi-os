@@ -53,7 +53,7 @@ def require_source_tree(root, component, revision):
             raise ValueError('Portal checkout bytes differ from reviewed source')
 
 
-def require_test_report(raw):
+def require_test_report(raw, *, expected_cases=None):
     if not isinstance(raw, bytes) or len(raw) > 1024**2 or b'\x00' in raw:
         raise ValueError('Unexpected or oversized native test report')
     try:
@@ -80,6 +80,8 @@ def require_test_report(raw):
             names.append((case.attrib.get('classname', '')+'.').lstrip('.')+case.attrib['name'])
         if len(set(names)) != len(names):
             raise ValueError('Duplicate native testcase')
+        if expected_cases is not None and names != expected_cases:
+            raise ValueError('Unexpected native test selection')
         return names
     except (ET.ParseError, KeyError, TypeError) as error:
         raise ValueError('Malformed native test report') from error
