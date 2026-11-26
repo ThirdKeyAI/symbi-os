@@ -1,0 +1,359 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "consent_qualified": false,
+  "checks": [
+    {
+      "name": "tests-scope",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        "/output/sources/xdg-desktop-portal-hyprland",
+        "apply",
+        "--numstat",
+        "--",
+        "/inputs/patches/0001-no-restore-tests.patch"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.013350169000005963
+    },
+    {
+      "name": "tests-dry-run",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        "/output/sources/xdg-desktop-portal-hyprland",
+        "apply",
+        "--check",
+        "--whitespace=nowarn",
+        "--",
+        "/inputs/patches/0001-no-restore-tests.patch"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.0035317619999943872
+    },
+    {
+      "name": "tests-apply",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        "/output/sources/xdg-desktop-portal-hyprland",
+        "apply",
+        "--whitespace=nowarn",
+        "--",
+        "/inputs/patches/0001-no-restore-tests.patch"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.0031961429999967095
+    },
+    {
+      "name": "before-test-build",
+      "command": [
+        "/usr/bin/g++",
+        "-std=c++23",
+        "-O0",
+        "-g0",
+        "-I/output/sources/xdg-desktop-portal-hyprland/hyprland-share-picker",
+        "/output/sources/xdg-desktop-portal-hyprland/hyprland-share-picker/PickerDataTest.cpp",
+        "/output/sources/xdg-desktop-portal-hyprland/hyprland-share-picker/PickerData.cpp",
+        "-o",
+        "/output/before-no-restore"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.4773851289999982
+    },
+    {
+      "name": "before-native-test",
+      "command": [
+        "/output/before-no-restore"
+      ],
+      "exit_code": 1,
+      "elapsed_seconds": 0.002262164000001121
+    },
+    {
+      "name": "implementation-scope",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        "/output/sources/xdg-desktop-portal-hyprland",
+        "apply",
+        "--numstat",
+        "--",
+        "/inputs/patches/0002-require-fresh-screen-sharing-consent.patch"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.004033398000018451
+    },
+    {
+      "name": "implementation-dry-run",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        "/output/sources/xdg-desktop-portal-hyprland",
+        "apply",
+        "--check",
+        "--whitespace=nowarn",
+        "--",
+        "/inputs/patches/0002-require-fresh-screen-sharing-consent.patch"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.004727521999996043
+    },
+    {
+      "name": "implementation-apply",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-C",
+        "/output/sources/xdg-desktop-portal-hyprland",
+        "apply",
+        "--whitespace=nowarn",
+        "--",
+        "/inputs/patches/0002-require-fresh-screen-sharing-consent.patch"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.004111510000001317
+    },
+    {
+      "name": "required-providers",
+      "command": [
+        "pkg-config",
+        "--exists",
+        "hyprtoolkit >= 0.6.0",
+        "sdbus-c++ >= 2.0.0",
+        "hyprland-protocols >= 0.8.0",
+        "libpipewire-0.3 >= 1.1.82",
+        "libspa-0.2"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.04113742100000195
+    },
+    {
+      "name": "portal-configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/output/sources/xdg-desktop-portal-hyprland",
+        "-B",
+        "/output/build/portal",
+        "-G",
+        "Ninja",
+        "-DCMAKE_INSTALL_PREFIX=/usr/lib/symbi/portal",
+        "-DCMAKE_INSTALL_LIBDIR=lib",
+        "-DCMAKE_INSTALL_LIBEXECDIR=libexec",
+        "-DCMAKE_INSTALL_DATAROOTDIR=share",
+        "-DCMAKE_INSTALL_RPATH=/usr/lib/symbi/portal/lib;/usr/lib/symbi/hyprland/lib",
+        "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON",
+        "-DCMAKE_PREFIX_PATH=/usr/lib/symbi/portal;/usr/lib/symbi/hyprland",
+        "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
+        "-DFETCHCONTENT_UPDATES_DISCONNECTED=ON",
+        "-DCMAKE_C_FLAGS_RELEASE=-O3 -DNDEBUG -g0",
+        "-DCMAKE_CXX_FLAGS_RELEASE=-O3 -DNDEBUG -g0",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DBUILD_TESTING=ON",
+        "-DSYSTEMD_SERVICES=ON"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 4.836756707000006
+    },
+    {
+      "name": "portal-build",
+      "command": [
+        "cmake",
+        "--build",
+        "/output/build/portal",
+        "--parallel",
+        "1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 103.023669138
+    },
+    {
+      "name": "portal-tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/output/build/portal",
+        "--parallel",
+        "1",
+        "--no-tests=error",
+        "--output-on-failure",
+        "--output-junit",
+        "/output/evidence/portal-tests.xml"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.013593189999994593
+    },
+    {
+      "name": "portal-install",
+      "command": [
+        "cmake",
+        "--install",
+        "/output/build/portal"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.01325354199997264
+    },
+    {
+      "name": "loader-0",
+      "command": [
+        "ldd",
+        "/usr/lib/symbi/portal/lib/libhyprtoolkit.so.0.6.0"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.016286047999983566
+    },
+    {
+      "name": "needed-0",
+      "command": [
+        "readelf",
+        "--dynamic",
+        "/usr/lib/symbi/portal/lib/libhyprtoolkit.so.0.6.0"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.007025460000022576
+    },
+    {
+      "name": "loader-1",
+      "command": [
+        "ldd",
+        "/usr/lib/symbi/portal/bin/hyprland-share-picker"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.013971486000002642
+    },
+    {
+      "name": "needed-1",
+      "command": [
+        "readelf",
+        "--dynamic",
+        "/usr/lib/symbi/portal/bin/hyprland-share-picker"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.0061430490000020654
+    },
+    {
+      "name": "loader-2",
+      "command": [
+        "ldd",
+        "/usr/lib/symbi/portal/libexec/xdg-desktop-portal-hyprland"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.008518599000012728
+    },
+    {
+      "name": "needed-2",
+      "command": [
+        "readelf",
+        "--dynamic",
+        "/usr/lib/symbi/portal/libexec/xdg-desktop-portal-hyprland"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.006449982999981785
+    },
+    {
+      "name": "picker-allow-token",
+      "command": [
+        "/usr/lib/symbi/portal/bin/hyprland-share-picker",
+        "--allow-token"
+      ],
+      "exit_code": 2,
+      "elapsed_seconds": 0.016430665000029876
+    },
+    {
+      "name": "picker-unknown-option",
+      "command": [
+        "/usr/lib/symbi/portal/bin/hyprland-share-picker",
+        "--symbi-unrecognized"
+      ],
+      "exit_code": 2,
+      "elapsed_seconds": 0.01407832199998893
+    },
+    {
+      "name": "portal-version",
+      "command": [
+        "/usr/lib/symbi/portal/libexec/xdg-desktop-portal-hyprland",
+        "--version"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.004849604000014551
+    }
+  ],
+  "test_suites": {
+    "portal-tests": {
+      "cases": [
+        "hyprland-share-picker-data.hyprland-share-picker-data"
+      ],
+      "sha256": "a02e366a7387a1575a69102913136af6214dd726754dda61e3210fd9e634cbd9"
+    }
+  },
+  "negative_controls": {
+    "original_native_test_failed": true,
+    "allow-token_rejected": true,
+    "unknown-option_rejected": true
+  },
+  "source_revision": "85450448ea40a54ec4f10bd607e68019d8f5cc41",
+  "consent_inputs_sha256": "600eb0bc6f853ffcea25be529af0e28e2283d4ec6901805ae5f558b784d44be4",
+  "compositor_recompiled": false,
+  "toolkit_recompiled": false,
+  "scope": "Actual formatter regression and CLI refusals, portal/picker build and loaders; complete D-Bus/GUI consent acceptance remains pending",
+  "unchanged_retained_files": [
+    "include/hyprtoolkit/core/Animation.hpp",
+    "include/hyprtoolkit/core/Backend.hpp",
+    "include/hyprtoolkit/core/BackendServices.hpp",
+    "include/hyprtoolkit/core/CoreMacros.hpp",
+    "include/hyprtoolkit/core/EmbeddedBackend.hpp",
+    "include/hyprtoolkit/core/Input.hpp",
+    "include/hyprtoolkit/core/LogTypes.hpp",
+    "include/hyprtoolkit/core/Output.hpp",
+    "include/hyprtoolkit/core/SessionLock.hpp",
+    "include/hyprtoolkit/core/Timer.hpp",
+    "include/hyprtoolkit/element/Button.hpp",
+    "include/hyprtoolkit/element/Checkbox.hpp",
+    "include/hyprtoolkit/element/ColumnLayout.hpp",
+    "include/hyprtoolkit/element/Combobox.hpp",
+    "include/hyprtoolkit/element/Element.hpp",
+    "include/hyprtoolkit/element/Image.hpp",
+    "include/hyprtoolkit/element/Line.hpp",
+    "include/hyprtoolkit/element/Null.hpp",
+    "include/hyprtoolkit/element/ProgressBar.hpp",
+    "include/hyprtoolkit/element/RadioGroup.hpp",
+    "include/hyprtoolkit/element/Rectangle.hpp",
+    "include/hyprtoolkit/element/RowLayout.hpp",
+    "include/hyprtoolkit/element/ScrollArea.hpp",
+    "include/hyprtoolkit/element/Slider.hpp",
+    "include/hyprtoolkit/element/Spinbox.hpp",
+    "include/hyprtoolkit/element/Text.hpp",
+    "include/hyprtoolkit/element/Textbox.hpp",
+    "include/hyprtoolkit/palette/Color.hpp",
+    "include/hyprtoolkit/palette/Gradient.hpp",
+    "include/hyprtoolkit/palette/Palette.hpp",
+    "include/hyprtoolkit/system/Icons.hpp",
+    "include/hyprtoolkit/types/FontTypes.hpp",
+    "include/hyprtoolkit/types/ImageTypes.hpp",
+    "include/hyprtoolkit/types/PointerShape.hpp",
+    "include/hyprtoolkit/types/SizeType.hpp",
+    "include/hyprtoolkit/window/EmbeddedSurface.hpp",
+    "include/hyprtoolkit/window/Window.hpp",
+    "lib/libhyprtoolkit.so",
+    "lib/libhyprtoolkit.so.0.6.0",
+    "lib/libhyprtoolkit.so.6",
+    "lib/pkgconfig/hyprtoolkit.pc",
+    "lib/systemd/user/xdg-desktop-portal-hyprland.service",
+    "share/dbus-1/services/org.freedesktop.impl.portal.desktop.hyprland.service",
+    "share/licenses/hyprtoolkit/LICENSE",
+    "share/licenses/xdg-desktop-portal-hyprland/LICENSE",
+    "share/xdg-desktop-portal/portals/hyprland.portal"
+  ]
+}

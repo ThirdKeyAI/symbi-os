@@ -1,0 +1,11 @@
+/output/tampered.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA3-256 digest: NOTFOUND
+    Payload SHA3-256 ALT digest: NOTFOUND
+    Payload SHA512 digest: NOTFOUND
+    Payload SHA512 ALT digest: NOTFOUND
+    Payload SHA256 ALT digest: BAD (Expected 8c5cd2726ffac6154140cceb606b25f2f420eac852ea988bbda778b9ad6b50ed != 7f65a002ee19d6c26f2527d50b75bf857e865df5ff9b2c789e8c0aa81cf0fece)
+    Payload SHA256 digest: BAD (Expected 576497a2cdf805e34688ff11f0d971c306c62da4d3b847a7c5033f1f291fad25 != 7f65a002ee19d6c26f2527d50b75bf857e865df5ff9b2c789e8c0aa81cf0fece)
+    Legacy OpenPGP DSA signature: NOTFOUND
+    Legacy OpenPGP RSA signature: NOTFOUND

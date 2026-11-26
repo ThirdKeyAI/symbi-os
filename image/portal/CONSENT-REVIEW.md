@@ -76,8 +76,24 @@ before runtime probing to avoid unnecessary recompilation after a later failure.
 
 The prepared implementation passes 191 small offline checks, exact source and
 patch binding checks, real Git dry runs, syntax/ShellCheck and local-execution
-refusals. Native results are pending. Local validation used 35,976 KiB peak RSS,
+refusals. Native build and runtime results now pass as recorded below. Local validation used 35,976 KiB peak RSS,
 0.69 CPU seconds and no swap under 128 MiB / 10%-CPU limits.
+
+## Native result
+
+[Hosted run 45785837716](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45785837716)
+passed at `1e93208`, after correcting a private staging-directory access failure.
+The original formatter failed the new regression, then the exact patch compiled
+and passed the full picker-data test and both CLI refusals. The separate runtime
+container passed actual signature controls and unprivileged loaders/version.
+The 49-entry prefix preserves all 46 original non-binary entries and adds only
+the exact downstream license beside the two rebuilt executables. The toolkit
+and compositor were reused. All 477 original small evidence files and independent
+reconciliation are retained in `P0-03-portal-consent/45785837716/`.
+
+The [workspace/formal companion](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45785853331)
+also passed. Its existing design models do not certify the complete consent
+interaction. The following acceptance list remains open.
 
 ## Required acceptance before qualification
 

@@ -1,0 +1,35 @@
+Retained 477 original files, 598811 expanded bytes
+result.json {"passed": true, "failure": null, "active_check": null, "active_command": null, "negative_controls": null, "test_suites": null}
+build/compile.json {"passed": true, "failure": null, "active_check": null, "active_command": null, "negative_controls": {"original_native_test_failed": true, "allow-token_rejected": true, "unknown-option_rejected": true}, "test_suites": {"portal-tests": {"cases": ["hyprland-share-picker-data.hyprland-share-picker-data"], "sha256": "a02e366a7387a1575a69102913136af6214dd726754dda61e3210fd9e634cbd9"}}}
+build/install.json {"passed": true, "failure": null, "active_check": null, "active_command": null, "negative_controls": null, "test_suites": null}
+build/before-native-test-stderr.log Symbi OS: persistent choice emitted or fresh selection changed
+Symbi OS: persistent choice emitted or fresh selection changed
+Symbi OS: persistent choice emitted or fresh selection changed
+Symbi OS: persistent choice emitted or fresh selection changed
+V3 workspace selection leaked text or emitted persistence
+workspace selection did not serialize only its id
+window selection was serialized incorrectly
+
+	Command being timed: "/usr/bin/env PYTHONDONTWRITEBYTECODE=1 python3 retain-portal-consent-evidence.py 45785837716 p003-portal-consent-result-stage"
+	User time (seconds): 0.03
+	System time (seconds): 0.02
+	Percent of CPU this job got: 10%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.57
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 19792
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 4
+	Minor (reclaiming a frame) page faults: 2860
+	Voluntary context switches: 21
+	Involuntary context switches: 11
+	Swaps: 0
+	File system inputs: 608
+	File system outputs: 3040
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

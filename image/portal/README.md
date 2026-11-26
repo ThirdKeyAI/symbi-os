@@ -145,3 +145,19 @@ parent. The compiler now mounts the validated child prefix read-only at
 Original failure logs and independent reconciliation are retained under
 `docs/security/reports/P0-03-portal-consent/45784560037/`. Native acceptance of
 this correction remains pending; 191 offline checks pass.
+
+
+## Passing native fresh-consent output
+
+Run `45785837716` at `1e93208` passed the actual before/after formatter regression,
+portal/picker compilation, complete data test, installed CLI refusals and the
+separate additive original-base runtime checks. All 46 original non-binary
+entries remain unchanged; the 49-entry output includes two rebuilt executables
+and the exact downstream license. All 477 original evidence files and independent
+reconciliation are retained under `P0-03-portal-consent/45785837716/`.
+
+`consent-prefix.lock.json` pins the new hosted archive and its exact manifest
+without changing `development-prefix.lock.json`, which remains the original
+compiled-toolkit parent. The new output needs a dedicated strict archive consumer
+before image integration; no native archive was downloaded locally. Full
+D-Bus/GUI/capture/lifecycle and product-image qualification remain pending.
