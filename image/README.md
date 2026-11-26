@@ -150,10 +150,13 @@ Tootles supplies the human Mastodon and Bluesky TUI with Tokyo Night and mpv
 integration, but real-account use remains blocked on qualified secret storage
 and isolation of account tokens from governed sessions.
 
-The offline payload boundary now fixes all eleven intended binary, desktop,
-manual and licence destinations and rejects extra archive members, `ya`,
+The offline payload boundary now fixes all fifteen intended binary, desktop,
+manual, completion and licence destinations and rejects extra archive members, `ya`,
 updater helpers, plugins and downloaded-theme paths. It also requires exact
-source bindings and a retained build-provenance subject before staging. No such
+source bindings, the exact signed Glum v0.4.1 Linux asset and a retained
+build-provenance subject before staging. The Glum asset signature verifies and
+its certificate binds the release workflow, tag and commit; the Fulcio trust
+chain and transparency-log checks remain open. No such
 executable artifact or lock is retained yet, so desktop preparation remains
 deliberately disconnected and all release, security, native-desktop and
 real-account qualification flags stay false.

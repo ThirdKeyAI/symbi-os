@@ -1,0 +1,162 @@
+{
+  "schema": 1,
+  "status": "official-release-candidate",
+  "repository": "https://github.com/jaschadub/glum",
+  "version": "v0.4.1",
+  "revision": "9cc45ced6ee0fc0bb5c6d90db65b453e6c2e650b",
+  "release": {
+    "id": 405365169,
+    "published_at": "2026-10-07T04:02:46Z",
+    "target_commitish": "main",
+    "draft": false,
+    "prerelease": false
+  },
+  "tag": {
+    "kind": "annotated",
+    "object": "0277948bf54c594fec39597fb3eca272fae75b5f",
+    "signed": false
+  },
+  "source": {
+    "url": "https://github.com/jaschadub/glum/archive/9cc45ced6ee0fc0bb5c6d90db65b453e6c2e650b.tar.gz",
+    "bytes": 4823054,
+    "sha256": "01c0d6d97c58bdb48061eb7d5220f3ba2bad220800ff1f909e11b38f55b527f0"
+  },
+  "asset": {
+    "id": 617523321,
+    "name": "glum-v0.4.1-x86_64-unknown-linux-gnu.tar.gz",
+    "url": "https://github.com/jaschadub/glum/releases/download/v0.4.1/glum-v0.4.1-x86_64-unknown-linux-gnu.tar.gz",
+    "bytes": 1986149,
+    "sha256": "640e94aa3d9aa5a5dcd8431ee4ac35119b51f976d2bbc952d2a34c2768566594",
+    "members": 18,
+    "regular_files": 9,
+    "directories": [
+      "share",
+      "share/zsh",
+      "share/zsh/site-functions",
+      "share/bash-completion",
+      "share/bash-completion/completions",
+      "share/fish",
+      "share/fish/vendor_completions.d",
+      "share/man",
+      "share/man/man1"
+    ],
+    "symlinks": 0,
+    "hardlinks": 0,
+    "expanded_bytes": 4786451,
+    "files": {
+      "CHANGELOG.md": {
+        "bytes": 16082,
+        "sha256": "35258dd8e392d184232784b8dbf5f14cee9cb3b7c74213cdcb07a6216df94d42",
+        "mode": 420,
+        "install": false,
+        "role": "release-notes"
+      },
+      "LICENSE": {
+        "bytes": 11305,
+        "sha256": "7b3c40ac89912496e3a3d10ba8a6714d4022d9f8b60f89797169606f86797258",
+        "mode": 420,
+        "install": true,
+        "role": "license"
+      },
+      "NOTICE": {
+        "bytes": 236,
+        "sha256": "04f7943c9982a2695534add74015be58fbaa501dc5ad86385a274108c2317d15",
+        "mode": 420,
+        "install": true,
+        "role": "notice"
+      },
+      "README.md": {
+        "bytes": 13259,
+        "sha256": "6ee5d9b0db7d068724b2850e97c3046e4ce2ba351265200c7f18e49a1d33d9fe",
+        "mode": 420,
+        "install": false,
+        "role": "documentation"
+      },
+      "glum": {
+        "bytes": 4727920,
+        "sha256": "381cc4d764a44bab6180f16e5d44642c4d7e6f8404c1ddb6736eef19a4d62260",
+        "mode": 493,
+        "install": true,
+        "role": "binary"
+      },
+      "share/zsh/site-functions/_glum": {
+        "bytes": 5384,
+        "sha256": "e58cf71d14da76c13d1ed2dbfef772c6bd19c15abd3d6d7eacaa00409e54ae4b",
+        "mode": 420,
+        "install": true,
+        "role": "zsh-completion"
+      },
+      "share/bash-completion/completions/glum": {
+        "bytes": 2671,
+        "sha256": "107d60fc17f322756e5a1516c0bb97258afd20708da1c8a540eb3bb627c784fa",
+        "mode": 420,
+        "install": true,
+        "role": "bash-completion"
+      },
+      "share/fish/vendor_completions.d/glum.fish": {
+        "bytes": 4202,
+        "sha256": "4e578542e7a284c08bab7c7fb83bd6a9307013c90d44865f2ad42770421307c7",
+        "mode": 420,
+        "install": true,
+        "role": "fish-completion"
+      },
+      "share/man/man1/glum.1": {
+        "bytes": 5392,
+        "sha256": "7143b6d65bcd3bfa5d8247b08929b5110814e86a4ad946ba94c232f934b56d71",
+        "mode": 420,
+        "install": true,
+        "role": "manpage"
+      }
+    }
+  },
+  "signature": {
+    "certificate_asset": {
+      "id": 617523310,
+      "name": "glum-v0.4.1-x86_64-unknown-linux-gnu.tar.gz.pem",
+      "url": "https://github.com/jaschadub/glum/releases/download/v0.4.1/glum-v0.4.1-x86_64-unknown-linux-gnu.tar.gz.pem",
+      "bytes": 3252,
+      "sha256": "a54bf5b0fc81866cc0a0ef89d1b2c02eee7e8fd9f7734b5eb249c5b3c6b1668c"
+    },
+    "signature_asset": {
+      "id": 617523312,
+      "name": "glum-v0.4.1-x86_64-unknown-linux-gnu.tar.gz.sig",
+      "url": "https://github.com/jaschadub/glum/releases/download/v0.4.1/glum-v0.4.1-x86_64-unknown-linux-gnu.tar.gz.sig",
+      "bytes": 96,
+      "sha256": "9b51cf19b471132a8513213b62bbde49b9294f6f96667c5490a151c1947bfcfb"
+    },
+    "checksums_asset": {
+      "id": 617523342,
+      "name": "checksums.txt",
+      "url": "https://github.com/jaschadub/glum/releases/download/v0.4.1/checksums.txt",
+      "bytes": 896,
+      "sha256": "7746def6d7e782b63bb2a4fe6e21da70114f53e20966af75f09c02fb156d1f0a"
+    },
+    "decoded_certificate": {
+      "bytes": 2439,
+      "sha256": "dbd7b39d181ab34f55393423679f9946b0961e2989a30b61aaa0b40100229cef",
+      "issuer": "O=sigstore.dev, CN=sigstore-intermediate",
+      "serial": "3E0669387576A98A5DD6CAD491133EC9EA332BAD",
+      "not_before": "2026-10-07T04:10:04Z",
+      "not_after": "2026-10-07T04:20:04Z",
+      "san": "https://github.com/jaschadub/glum/.github/workflows/release-binaries.yml@refs/tags/v0.4.1",
+      "oidc_issuer": "https://token.actions.githubusercontent.com",
+      "repository": "jaschadub/glum",
+      "commit": "9cc45ced6ee0fc0bb5c6d90db65b453e6c2e650b",
+      "ref": "refs/tags/v0.4.1",
+      "workflow": "Release Binaries",
+      "workflow_run_url": "https://github.com/jaschadub/glum/actions/runs/37569571310/attempts/1"
+    },
+    "decoded_signature": {
+      "bytes": 70,
+      "sha256": "985b6320ce050d93f65465d076e12aa0ddef4c6ab2902ed31479c4c74879b88b"
+    },
+    "asset_sha256": "640e94aa3d9aa5a5dcd8431ee4ac35119b51f976d2bbc952d2a34c2768566594",
+    "payload_signature_verified": true,
+    "fulcio_chain_verified": false,
+    "transparency_log_verified": false
+  },
+  "selected": false,
+  "security_qualified": false,
+  "os_qualified": false,
+  "scope": "Exact official Glum Linux release candidate metadata and payload inventory; signature bytes verify the archive, but Fulcio-chain, transparency-log and native desktop qualification remain open"
+}

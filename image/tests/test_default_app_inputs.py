@@ -20,7 +20,7 @@ class DefaultApplicationInputs(unittest.TestCase):
         self.assertEqual(set(pins["applications"]), {"yazi", "glum", "tootles"})
         expected = {
             "yazi": ("v26.9.1", "8dd895c695a5950330c2623eb43debf323b60654", "yazi"),
-            "glum": ("v0.2.2", "7608edc56e5b48c6c398e1f36a3c64c49e4261f8", "glum"),
+            "glum": ("v0.4.1", "9cc45ced6ee0fc0bb5c6d90db65b453e6c2e650b", "glum"),
             "tootles": ("v0.2.0", "40d7a63c5ec0e08cb3eb8241b50a2af6cf76c98a", "tootles"),
         }
         for name, (version, revision, binary) in expected.items():
@@ -31,6 +31,7 @@ class DefaultApplicationInputs(unittest.TestCase):
                 self.assertIn("Cargo.lock", app["source"]["required_files"])
                 self.assertFalse(app["tag"]["signed"])
         self.assertEqual(pins["applications"]["yazi"]["build"]["excluded_binaries"], ["ya"])
+        self.assertEqual(pins["applications"]["glum"]["cargo_lock"]["packages"], 264)
         self.assertFalse(pins["selected"])
         self.assertFalse(pins["security_qualified"])
         self.assertFalse(pins["os_qualified"])

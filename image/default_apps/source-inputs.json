@@ -86,34 +86,34 @@
     },
     "glum": {
       "repository": "https://github.com/jaschadub/glum",
-      "version": "v0.2.2",
-      "revision": "7608edc56e5b48c6c398e1f36a3c64c49e4261f8",
+      "version": "v0.4.1",
+      "revision": "9cc45ced6ee0fc0bb5c6d90db65b453e6c2e650b",
       "license": "Apache-2.0",
       "tag": {
         "kind": "annotated",
-        "object": "4f6a484013bcf46ff234c34c8fa86141bd38f448",
+        "object": "0277948bf54c594fec39597fb3eca272fae75b5f",
         "signed": false
       },
       "source": {
-        "url": "https://github.com/jaschadub/glum/archive/7608edc56e5b48c6c398e1f36a3c64c49e4261f8.tar.gz",
-        "bytes": 4790077,
-        "sha256": "c42be32f5abc586318cf4aabb3f84bf5402f75b8b1ca733b008a51bae28212e0",
-        "root": "glum-7608edc56e5b48c6c398e1f36a3c64c49e4261f8",
-        "members": 37,
-        "regular_files": 30,
+        "url": "https://github.com/jaschadub/glum/archive/9cc45ced6ee0fc0bb5c6d90db65b453e6c2e650b.tar.gz",
+        "bytes": 4823054,
+        "sha256": "01c0d6d97c58bdb48061eb7d5220f3ba2bad220800ff1f909e11b38f55b527f0",
+        "root": "glum-9cc45ced6ee0fc0bb5c6d90db65b453e6c2e650b",
+        "members": 36,
+        "regular_files": 29,
         "directories": 7,
         "symlinks": 0,
         "hardlinks": 0,
-        "expanded_bytes": 5045895,
+        "expanded_bytes": 5176057,
         "links": {},
         "required_files": {
           "Cargo.toml": {
-            "bytes": 4634,
-            "sha256": "0a2359f7264e97e452b8b8e73750399ebc9a59032aba6a7f9c2c31d470a1cc7c"
+            "bytes": 4789,
+            "sha256": "1beb3243eaa4bdbfac97d3f8087b792f3d5c9f85ac40e0a857c8a0fa6fd8be85"
           },
           "Cargo.lock": {
-            "bytes": 33469,
-            "sha256": "db56c4fc7e47a1bb1f548835c14d874bd987a00e850fa0cc9c23f7bae9aa6ac8"
+            "bytes": 62138,
+            "sha256": "205fe28ce3c1c12434eb5180f48a61a7c725563c0fe49927a413f72e8d7c3a01"
           },
           "LICENSE": {
             "bytes": 11305,
@@ -124,8 +124,8 @@
             "sha256": "04f7943c9982a2695534add74015be58fbaa501dc5ad86385a274108c2317d15"
           },
           "README.md": {
-            "bytes": 9143,
-            "sha256": "f961c1e6cc74429f56db97379342e920f55840229196ce8467839d8783a1dc66"
+            "bytes": 13259,
+            "sha256": "6ee5d9b0db7d068724b2850e97c3046e4ce2ba351265200c7f18e49a1d33d9fe"
           },
           "build.rs": {
             "bytes": 265,
@@ -139,7 +139,7 @@
       },
       "cargo_lock": {
         "version": 3,
-        "packages": 144,
+        "packages": 264,
         "sources": [
           "local",
           "registry+https://github.com/rust-lang/crates.io-index"

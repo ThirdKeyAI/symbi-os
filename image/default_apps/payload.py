@@ -15,12 +15,14 @@ import tempfile
 import zipfile
 
 from image.default_apps.inputs import digest, exact_hash, load_inputs
+from image.default_apps.glum_release import load_release_inputs
 from image.desktop.files import copy_regular
 
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTRACT = ROOT / "image/default_apps/payload-contract.json"
 SOURCE_INPUTS = ROOT / "image/default_apps/source-inputs.json"
+GLUM_RELEASE_INPUTS = ROOT / "image/default_apps/glum-release-inputs.json"
 MAX_ARCHIVE = 768 * 1024**2
 MAX_FILE = 256 * 1024**2
 MAX_MANIFEST = 1024**2
@@ -32,8 +34,8 @@ EXPECTED_IDENTITIES = {
     ),
     "glum": (
         "https://github.com/jaschadub/glum",
-        "v0.2.2",
-        "7608edc56e5b48c6c398e1f36a3c64c49e4261f8",
+        "v0.4.1",
+        "9cc45ced6ee0fc0bb5c6d90db65b453e6c2e650b",
     ),
     "tootles": (
         "https://github.com/tootles-dev/tootles",
@@ -43,36 +45,92 @@ EXPECTED_IDENTITIES = {
 }
 EXPECTED_FILES = {
     "yazi": [
-        ("yazi/bin/yazi", "usr/bin/yazi", 0o755, "binary", None),
+        ("yazi/bin/yazi", "usr/bin/yazi", 0o755, "binary", None, None),
         (
             "yazi/assets/yazi.desktop",
             "usr/share/applications/yazi.desktop",
             0o644,
             "desktop",
             "assets/yazi.desktop",
+            None,
         ),
-        ("yazi/licenses/LICENSE", "usr/share/licenses/yazi/LICENSE", 0o644, "license", "LICENSE"),
+        (
+            "yazi/licenses/LICENSE",
+            "usr/share/licenses/yazi/LICENSE",
+            0o644,
+            "license",
+            "LICENSE",
+            None,
+        ),
         (
             "yazi/licenses/LICENSE-ICONS",
             "usr/share/licenses/yazi/LICENSE-ICONS",
             0o644,
             "license",
             "LICENSE-ICONS",
+            None,
         ),
     ],
     "glum": [
-        ("glum/bin/glum", "usr/bin/glum", 0o755, "binary", None),
-        ("glum/licenses/LICENSE", "usr/share/licenses/glum/LICENSE", 0o644, "license", "LICENSE"),
-        ("glum/licenses/NOTICE", "usr/share/licenses/glum/NOTICE", 0o644, "notice", "NOTICE"),
+        ("glum/bin/glum", "usr/bin/glum", 0o755, "binary", None, "glum"),
+        (
+            "glum/licenses/LICENSE",
+            "usr/share/licenses/glum/LICENSE",
+            0o644,
+            "license",
+            "LICENSE",
+            "LICENSE",
+        ),
+        (
+            "glum/licenses/NOTICE",
+            "usr/share/licenses/glum/NOTICE",
+            0o644,
+            "notice",
+            "NOTICE",
+            "NOTICE",
+        ),
+        (
+            "glum/man/glum.1",
+            "usr/share/man/man1/glum.1",
+            0o644,
+            "manpage",
+            None,
+            "share/man/man1/glum.1",
+        ),
+        (
+            "glum/completions/bash/glum",
+            "usr/share/bash-completion/completions/glum",
+            0o644,
+            "bash-completion",
+            None,
+            "share/bash-completion/completions/glum",
+        ),
+        (
+            "glum/completions/fish/glum.fish",
+            "usr/share/fish/vendor_completions.d/glum.fish",
+            0o644,
+            "fish-completion",
+            None,
+            "share/fish/vendor_completions.d/glum.fish",
+        ),
+        (
+            "glum/completions/zsh/_glum",
+            "usr/share/zsh/site-functions/_glum",
+            0o644,
+            "zsh-completion",
+            None,
+            "share/zsh/site-functions/_glum",
+        ),
     ],
     "tootles": [
-        ("tootles/bin/tootles", "usr/bin/tootles", 0o755, "binary", None),
+        ("tootles/bin/tootles", "usr/bin/tootles", 0o755, "binary", None, None),
         (
             "tootles/assets/tootles.desktop",
             "usr/share/applications/tootles.desktop",
             0o644,
             "desktop",
             "packaging/tootles.desktop",
+            None,
         ),
         (
             "tootles/licenses/LICENSE",
@@ -80,6 +138,7 @@ EXPECTED_FILES = {
             0o644,
             "license",
             "LICENSE",
+            None,
         ),
         (
             "tootles/man/tootles.1",
@@ -87,6 +146,7 @@ EXPECTED_FILES = {
             0o644,
             "manpage",
             "packaging/tootles.1",
+            None,
         ),
     ],
 }
@@ -145,7 +205,7 @@ def _safe_relative(value):
 
 def _expected_rows(name):
     rows = []
-    for bundle, destination, mode, kind, source_file in EXPECTED_FILES[name]:
+    for bundle, destination, mode, kind, source_file, release_file in EXPECTED_FILES[name]:
         row = {
             "bundle": bundle,
             "destination": destination,
@@ -154,21 +214,31 @@ def _expected_rows(name):
         }
         if source_file is not None:
             row["source_file"] = source_file
+        if release_file is not None:
+            row["release_file"] = release_file
         rows.append(row)
     return rows
 
 
-def load_payload_contract(path=CONTRACT, source_inputs_path=SOURCE_INPUTS):
+def load_payload_contract(
+    path=CONTRACT,
+    source_inputs_path=SOURCE_INPUTS,
+    glum_release_inputs_path=GLUM_RELEASE_INPUTS,
+):
     """Load the immutable destination allowlist and bind it to source inputs."""
-    path, source_inputs_path = Path(path), Path(source_inputs_path)
+    path = Path(path)
+    source_inputs_path = Path(source_inputs_path)
+    glum_release_inputs_path = Path(glum_release_inputs_path)
     _regular(path, 256 * 1024)
     _regular(source_inputs_path, 2 * 1024**2)
     contract = _unique_json(path.read_bytes(), "default-application payload contract")
     sources = load_inputs(source_inputs_path)
+    glum_release = load_release_inputs(glum_release_inputs_path)
     required = {
         "schema",
         "status",
         "source_inputs_sha256",
+        "glum_release_inputs_sha256",
         "selected_for_release",
         "security_qualified",
         "os_qualified",
@@ -181,6 +251,7 @@ def load_payload_contract(path=CONTRACT, source_inputs_path=SOURCE_INPUTS):
         or contract["schema"] != 1
         or contract["status"] != "offline-payload-contract-only"
         or contract["source_inputs_sha256"] != digest(source_inputs_path)
+        or contract["glum_release_inputs_sha256"] != digest(glum_release_inputs_path)
         or contract["selected_for_release"] is not False
         or contract["security_qualified"] is not False
         or contract["os_qualified"] is not False
@@ -213,10 +284,15 @@ def load_payload_contract(path=CONTRACT, source_inputs_path=SOURCE_INPUTS):
                 raise ValueError("unsafe or duplicate application payload path")
             bundles.add(row["bundle"])
             destinations.add(row["destination"])
-            if row["kind"] != "binary":
-                source_file = row["source_file"]
+            source_file = row.get("source_file")
+            release_file = row.get("release_file")
+            if source_file is not None:
                 if source_file not in source["source"]["required_files"]:
                     raise ValueError("payload asset is not bound to the exact source archive")
+            if release_file is not None:
+                release = glum_release["asset"]["files"].get(release_file)
+                if name != "glum" or release is None or release["install"] is not True:
+                    raise ValueError("payload asset is not bound to the exact Glum release")
     if destinations.intersection(EXPECTED_FORBIDDEN):
         raise ValueError("an installed path is also forbidden")
     return contract
@@ -247,7 +323,7 @@ def _require_attestation(value, artifact):
         raise ValueError("default-application payload lacks its exact build attestation")
 
 
-def _require_manifest(manifest, contract, sources, expected_commit):
+def _require_manifest(manifest, contract, sources, glum_release, expected_commit):
     if (
         not isinstance(manifest, dict)
         or set(manifest)
@@ -257,6 +333,7 @@ def _require_manifest(manifest, contract, sources, expected_commit):
             "os_qualified",
             "source_commit",
             "source_inputs_sha256",
+            "glum_release_inputs_sha256",
             "plugins_included",
             "updaters_included",
             "applications",
@@ -267,6 +344,8 @@ def _require_manifest(manifest, contract, sources, expected_commit):
         or manifest["source_commit"] != expected_commit
         or not exact_hash(expected_commit, 40)
         or manifest["source_inputs_sha256"] != contract["source_inputs_sha256"]
+        or manifest["glum_release_inputs_sha256"]
+        != contract["glum_release_inputs_sha256"]
         or manifest["plugins_included"] is not False
         or manifest["updaters_included"] is not False
         or set(manifest["applications"]) != set(EXPECTED_IDENTITIES)
@@ -276,12 +355,19 @@ def _require_manifest(manifest, contract, sources, expected_commit):
     for name in EXPECTED_IDENTITIES:
         app = manifest["applications"][name]
         source = sources["applications"][name]
+        app_keys = {"version", "revision", "source_archive_sha256", "files"}
+        if name == "glum":
+            app_keys.add("release_asset_sha256")
         if (
             not isinstance(app, dict)
-            or set(app) != {"version", "revision", "source_archive_sha256", "files"}
+            or set(app) != app_keys
             or app["version"] != source["version"]
             or app["revision"] != source["revision"]
             or app["source_archive_sha256"] != source["source"]["sha256"]
+            or (
+                name == "glum"
+                and app["release_asset_sha256"] != glum_release["asset"]["sha256"]
+            )
             or not isinstance(app["files"], list)
             or len(app["files"]) != len(contract["applications"][name]["files"])
         ):
@@ -299,21 +385,39 @@ def _require_manifest(manifest, contract, sources, expected_commit):
             ):
                 raise ValueError("unexpected default-application payload file")
             total += actual["bytes"]
-            if actual["kind"] != "binary":
-                pinned = source["source"]["required_files"][actual["source_file"]]
+            source_file = actual.get("source_file")
+            release_file = actual.get("release_file")
+            if source_file is not None:
+                pinned = source["source"]["required_files"][source_file]
                 if (actual["bytes"], actual["sha256"]) != (
                     pinned["bytes"],
                     pinned["sha256"],
                 ):
                     raise ValueError("source-backed application asset bytes changed")
+            if release_file is not None:
+                pinned = glum_release["asset"]["files"][release_file]
+                if (actual["bytes"], actual["sha256"]) != (
+                    pinned["bytes"],
+                    pinned["sha256"],
+                ):
+                    raise ValueError("release-backed Glum asset bytes changed")
     if total > MAX_ARCHIVE:
         raise ValueError("expanded default-application payload exceeds its bound")
     return manifest
 
 
-def _require_lock(lock, contract_path, source_inputs_path, expected_commit):
-    contract = load_payload_contract(contract_path, source_inputs_path)
+def _require_lock(
+    lock,
+    contract_path,
+    source_inputs_path,
+    glum_release_inputs_path,
+    expected_commit,
+):
+    contract = load_payload_contract(
+        contract_path, source_inputs_path, glum_release_inputs_path
+    )
     sources = load_inputs(source_inputs_path)
+    glum_release = load_release_inputs(glum_release_inputs_path)
     required = {
         "schema",
         "development_included",
@@ -324,6 +428,7 @@ def _require_lock(lock, contract_path, source_inputs_path, expected_commit):
         "tested_commit",
         "run_id",
         "source_inputs_sha256",
+        "glum_release_inputs_sha256",
         "contract_sha256",
         "manifest_sha256",
         "manifest",
@@ -345,6 +450,7 @@ def _require_lock(lock, contract_path, source_inputs_path, expected_commit):
         or type(lock["run_id"]) is not int
         or lock["run_id"] <= 0
         or lock["source_inputs_sha256"] != digest(source_inputs_path)
+        or lock["glum_release_inputs_sha256"] != digest(glum_release_inputs_path)
         or lock["contract_sha256"] != digest(contract_path)
         or not exact_hash(lock["manifest_sha256"])
         or not isinstance(artifact, dict)
@@ -360,8 +466,10 @@ def _require_lock(lock, contract_path, source_inputs_path, expected_commit):
     ):
         raise ValueError("unexpected default-application payload lock")
     _require_attestation(lock["attestation"], artifact)
-    _require_manifest(lock["manifest"], contract, sources, expected_commit)
-    return contract, sources
+    _require_manifest(
+        lock["manifest"], contract, sources, glum_release, expected_commit
+    )
+    return contract, sources, glum_release
 
 
 def _validate_desktop(raw, name):
@@ -428,15 +536,21 @@ def unpack_payload(
     source_inputs_path=SOURCE_INPUTS,
     destination=None,
     expected_commit=None,
+    glum_release_inputs_path=GLUM_RELEASE_INPUTS,
 ):
     """Authenticate and copy only the fixed application payload allowlist."""
     archive = Path(archive)
     contract_path, source_inputs_path = Path(contract_path), Path(source_inputs_path)
+    glum_release_inputs_path = Path(glum_release_inputs_path)
     destination = Path(destination) if destination is not None else None
     if destination is None or expected_commit is None:
         raise ValueError("payload destination and source commit are required")
-    contract, sources = _require_lock(
-        lock, contract_path, source_inputs_path, expected_commit
+    contract, _, _ = _require_lock(
+        lock,
+        contract_path,
+        source_inputs_path,
+        glum_release_inputs_path,
+        expected_commit,
     )
     _regular(archive, MAX_ARCHIVE)
     if (
@@ -509,7 +623,11 @@ def unpack_payload(
             created_directories.update(missing)
             copy_regular(stage / row["bundle"], target, row["mode"] == 0o755)
         verify_payload_tree(
-            destination, lock["manifest"], contract_path, source_inputs_path
+            destination,
+            lock["manifest"],
+            contract_path,
+            source_inputs_path,
+            glum_release_inputs_path,
         )
         return lock["manifest"]
     except BaseException:
@@ -532,15 +650,19 @@ def verify_payload_tree(
     manifest,
     contract_path=CONTRACT,
     source_inputs_path=SOURCE_INPUTS,
+    glum_release_inputs_path=GLUM_RELEASE_INPUTS,
 ):
     """Verify exact staged bytes while preserving all native-test blockers."""
     payload = Path(payload)
-    contract = load_payload_contract(contract_path, source_inputs_path)
+    contract = load_payload_contract(
+        contract_path, source_inputs_path, glum_release_inputs_path
+    )
     sources = load_inputs(source_inputs_path)
+    glum_release = load_release_inputs(glum_release_inputs_path)
     if payload.is_symlink() or not payload.is_dir() or payload.resolve() != payload:
         raise ValueError("invalid default-application payload tree")
     commit = manifest.get("source_commit") if isinstance(manifest, dict) else None
-    _require_manifest(manifest, contract, sources, commit)
+    _require_manifest(manifest, contract, sources, glum_release, commit)
     count = 0
     total = 0
     for name in EXPECTED_IDENTITIES:
@@ -575,5 +697,6 @@ def verify_payload_tree(
         "files": count,
         "bytes": total,
         "source_inputs_sha256": contract["source_inputs_sha256"],
+        "glum_release_inputs_sha256": contract["glum_release_inputs_sha256"],
         "scope": "Offline payload bytes only; native launch, UI, file-operation, egress, secret-storage and real-account acceptance remain open",
     }

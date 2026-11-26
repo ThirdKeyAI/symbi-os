@@ -1,7 +1,8 @@
 {
   "schema": 1,
   "status": "offline-payload-contract-only",
-  "source_inputs_sha256": "5ca22dd890531c929ac79c6b83f7e73f2d7a547ab7d781022e5f5dac6fd89ce7",
+  "source_inputs_sha256": "cc91fc05ece93c561f446111ddfac5be307f1de4ad0258ecb00616297657ee21",
+  "glum_release_inputs_sha256": "bd25d00140423ffc6a0ede10a9d5296daedf37ca95164570767819875321fa07",
   "selected_for_release": false,
   "security_qualified": false,
   "os_qualified": false,
@@ -42,28 +43,59 @@
     },
     "glum": {
       "repository": "https://github.com/jaschadub/glum",
-      "version": "v0.2.2",
-      "revision": "7608edc56e5b48c6c398e1f36a3c64c49e4261f8",
+      "version": "v0.4.1",
+      "revision": "9cc45ced6ee0fc0bb5c6d90db65b453e6c2e650b",
       "files": [
         {
           "bundle": "glum/bin/glum",
           "destination": "usr/bin/glum",
           "mode": 493,
-          "kind": "binary"
+          "kind": "binary",
+          "release_file": "glum"
         },
         {
           "bundle": "glum/licenses/LICENSE",
           "destination": "usr/share/licenses/glum/LICENSE",
           "mode": 420,
           "kind": "license",
-          "source_file": "LICENSE"
+          "source_file": "LICENSE",
+          "release_file": "LICENSE"
         },
         {
           "bundle": "glum/licenses/NOTICE",
           "destination": "usr/share/licenses/glum/NOTICE",
           "mode": 420,
           "kind": "notice",
-          "source_file": "NOTICE"
+          "source_file": "NOTICE",
+          "release_file": "NOTICE"
+        },
+        {
+          "bundle": "glum/man/glum.1",
+          "destination": "usr/share/man/man1/glum.1",
+          "mode": 420,
+          "kind": "manpage",
+          "release_file": "share/man/man1/glum.1"
+        },
+        {
+          "bundle": "glum/completions/bash/glum",
+          "destination": "usr/share/bash-completion/completions/glum",
+          "mode": 420,
+          "kind": "bash-completion",
+          "release_file": "share/bash-completion/completions/glum"
+        },
+        {
+          "bundle": "glum/completions/fish/glum.fish",
+          "destination": "usr/share/fish/vendor_completions.d/glum.fish",
+          "mode": 420,
+          "kind": "fish-completion",
+          "release_file": "share/fish/vendor_completions.d/glum.fish"
+        },
+        {
+          "bundle": "glum/completions/zsh/_glum",
+          "destination": "usr/share/zsh/site-functions/_glum",
+          "mode": 420,
+          "kind": "zsh-completion",
+          "release_file": "share/zsh/site-functions/_glum"
         }
       ]
     },

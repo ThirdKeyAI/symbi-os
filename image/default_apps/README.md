@@ -3,7 +3,7 @@
 This directory binds the first reviewed candidate versions for Yazi, Glum and
 Tootles. They are selected desktop requirements, but they are not installed or
 qualified in the current images. The source records pin Yazi v26.9.1, Glum
-v0.2.2 and Tootles v0.2.0 to exact commits, archive bytes, required files,
+v0.4.1 and Tootles v0.2.0 to exact commits, archive bytes, required files,
 licences and complete Cargo dependency identities.
 
 `desktop-source-intake.yml` passively downloads and inventories these archives
@@ -16,10 +16,13 @@ no capabilities.
 The Yazi tag is lightweight. The Glum and Tootles tags are annotated but
 unsigned. Exact commit and archive hashes prevent silent input changes after
 review, but the source intake does not claim release authenticity or security
-qualification. Glum and Tootles also publish signed Linux release material; a
-later payload gate must verify the expected repository, workflow identity and
-subject digest before considering those artifacts. Yazi needs either an audited
-source build or separately authenticated release provenance.
+qualification. `glum-release-inputs.json` separately fixes Glum's official
+v0.4.1 x86_64 Linux release asset, GitHub release and asset IDs, exact archive
+inventory, detached signature bytes and certificate identity. The signature
+verifies over the asset and the certificate binds the release workflow, tag and
+source commit. The Fulcio trust chain and transparency log are not yet verified,
+so the candidate remains unselected and unqualified. Yazi and Tootles still
+need authenticated executable provenance.
 
 Yazi is the terminal file manager launched in Kitty. Only the `yazi` binary is
 in the planned payload: the `ya` package manager is explicitly excluded, and
@@ -32,7 +35,7 @@ are stored through a qualified secret boundary and cannot enter governed
 sessions.
 
 The convenience installation commands in upstream documentation are never OS
-build inputs. Exact toolchains, release signatures or provenance, dependency
+build inputs. Exact toolchains, complete release trust verification, dependency
 audits, native package compatibility and installed-image acceptance remain
 unresolved.
 
@@ -40,17 +43,20 @@ unresolved.
 
 `payload-contract.json` fixes the only files a future hosted build may add to
 an image payload. The allowlist contains the three ELF executables, the exact
-Yazi and Tootles desktop files from their pinned source archives, Tootles's man
-page, and the upstream licence and notice files. It excludes Yazi's `ya`
+Yazi and Tootles desktop files from their pinned source archives, the Glum and
+Tootles man pages, Glum's shipped Bash, Fish and Zsh completions, and the
+upstream licence and notice files. It excludes Yazi's `ya`
 package manager and every updater, plugin and downloaded-theme path. The
-contract is hash-bound to `source-inputs.json`; source-backed files must retain
-the exact size and digest recorded for the source archive.
+contract is hash-bound to `source-inputs.json` and
+`glum-release-inputs.json`. Source-backed and Glum release-backed files must
+retain the exact size and digest recorded for their authenticated input.
 
 `payload.py` supplies the offline staging and verification path. It accepts
 only an exact, bounded ZIP with a retained manifest and artifact lock, plus a
 verified GitHub build-provenance record whose subject digest is the ZIP digest.
 The manifest must bind every executable to the exact application version,
-revision and source-archive digest. Archive members, install destinations and
+revision and source-archive digest, and bind Glum to the exact signed release
+asset. Archive members, install destinations and
 modes are a closed allowlist; links, special files, overwrites and extra members
 fail before any payload file is copied. A failed copy removes files created by
 that attempt.

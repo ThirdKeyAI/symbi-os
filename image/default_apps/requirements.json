@@ -20,13 +20,13 @@
     "glum": {
       "role": "terminal-markdown-reader",
       "repository": "https://github.com/jaschadub/glum",
-      "version": "v0.2.2",
-      "revision": "7608edc56e5b48c6c398e1f36a3c64c49e4261f8",
+      "version": "v0.4.1",
+      "revision": "9cc45ced6ee0fc0bb5c6d90db65b453e6c2e650b",
       "license": "Apache-2.0",
       "network": "explicit-link-opening-only",
       "blockers": [
-        "verify exact release signature and provenance",
-        "build or consume the pinned artifact without a convenience installer",
+        "verify the retained certificate through the Fulcio trust chain and transparency log",
+        "consume only the pinned signed Linux release without a convenience installer or self-updater",
         "qualify clipboard editor link and image handoffs"
       ]
     },
@@ -45,5 +45,5 @@
       ]
     }
   },
-  "scope": "Owner-selected default application requirements; no package or trust selection yet"
+  "scope": "Owner-selected default application requirements; exact source and Glum release candidate inputs are recorded, but no package is installed or qualified"
 }

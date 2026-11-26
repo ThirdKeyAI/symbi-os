@@ -40,8 +40,12 @@ class DefaultApplicationPayload(unittest.TestCase):
             },
             "glum": {
                 "usr/bin/glum",
+                "usr/share/bash-completion/completions/glum",
+                "usr/share/fish/vendor_completions.d/glum.fish",
                 "usr/share/licenses/glum/LICENSE",
                 "usr/share/licenses/glum/NOTICE",
+                "usr/share/man/man1/glum.1",
+                "usr/share/zsh/site-functions/_glum",
             },
             "tootles": {
                 "usr/bin/tootles",
@@ -61,7 +65,11 @@ class DefaultApplicationPayload(unittest.TestCase):
 
     def fixture(self, root):
         source_path = root / "source-inputs.json"
+        release_path = root / "glum-release-inputs.json"
         sources = json.loads((ROOT / "image/default_apps/source-inputs.json").read_text())
+        release = json.loads(
+            (ROOT / "image/default_apps/glum-release-inputs.json").read_text()
+        )
         contract = json.loads((ROOT / "image/default_apps/payload-contract.json").read_text())
         contents = {}
         for name, app in contract["applications"].items():
@@ -80,14 +88,24 @@ class DefaultApplicationPayload(unittest.TestCase):
                 else:
                     raw = ("fixture:" + row["bundle"] + "\n").encode()
                 contents[row["bundle"]] = raw
-                if row["kind"] != "binary":
-                    expected = source["source"]["required_files"][row["source_file"]]
+                source_file = row.get("source_file")
+                release_file = row.get("release_file")
+                if source_file is not None:
+                    expected = source["source"]["required_files"][source_file]
+                    expected.update(bytes=len(raw), sha256=sha(raw))
+                if release_file is not None:
+                    expected = release["asset"]["files"][release_file]
                     expected.update(bytes=len(raw), sha256=sha(raw))
         source_path.write_text(json.dumps(sources, sort_keys=True) + "\n")
+        release["asset"]["expanded_bytes"] = sum(
+            row["bytes"] for row in release["asset"]["files"].values()
+        )
+        release_path.write_text(json.dumps(release, sort_keys=True) + "\n")
         contract["source_inputs_sha256"] = sha(source_path.read_bytes())
+        contract["glum_release_inputs_sha256"] = sha(release_path.read_bytes())
         contract_path = root / "payload-contract.json"
         contract_path.write_text(json.dumps(contract, sort_keys=True) + "\n")
-        loaded = load_payload_contract(contract_path, source_path)
+        loaded = load_payload_contract(contract_path, source_path, release_path)
         applications = {}
         for name, app in loaded["applications"].items():
             source = sources["applications"][name]
@@ -95,18 +113,22 @@ class DefaultApplicationPayload(unittest.TestCase):
             for row in app["files"]:
                 raw = contents[row["bundle"]]
                 files.append({**row, "bytes": len(raw), "sha256": sha(raw)})
-            applications[name] = {
+            application = {
                 "version": source["version"],
                 "revision": source["revision"],
                 "source_archive_sha256": source["source"]["sha256"],
                 "files": files,
             }
+            if name == "glum":
+                application["release_asset_sha256"] = release["asset"]["sha256"]
+            applications[name] = application
         manifest = {
             "schema": 1,
             "compiled": True,
             "os_qualified": False,
             "source_commit": "a" * 40,
             "source_inputs_sha256": sha(source_path.read_bytes()),
+            "glum_release_inputs_sha256": sha(release_path.read_bytes()),
             "plugins_included": False,
             "updaters_included": False,
             "applications": applications,
@@ -131,6 +153,7 @@ class DefaultApplicationPayload(unittest.TestCase):
             "tested_commit": "a" * 40,
             "run_id": 123,
             "source_inputs_sha256": sha(source_path.read_bytes()),
+            "glum_release_inputs_sha256": sha(release_path.read_bytes()),
             "contract_sha256": sha(contract_path.read_bytes()),
             "manifest_sha256": sha(raw_manifest),
             "manifest": manifest,
@@ -151,16 +174,16 @@ class DefaultApplicationPayload(unittest.TestCase):
             },
             "scope": "Fixture development payload; native desktop qualification remains open",
         }
-        return archive, lock, contract_path, source_path, contents
+        return archive, lock, contract_path, source_path, release_path, contents
 
     def test_exact_payload_is_staged_offline_with_modes_and_source_assets_bound(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
-            archive, lock, contract, sources, contents = self.fixture(root)
+            archive, lock, contract, sources, release, contents = self.fixture(root)
             destination = root / "payload"
             destination.mkdir()
             manifest = unpack_payload(
-                archive, lock, contract, sources, destination, "a" * 40
+                archive, lock, contract, sources, destination, "a" * 40, release
             )
             self.assertEqual(set(manifest["applications"]), {"yazi", "glum", "tootles"})
             for app in manifest["applications"].values():
@@ -168,7 +191,7 @@ class DefaultApplicationPayload(unittest.TestCase):
                     target = destination / row["destination"]
                     self.assertEqual(target.read_bytes(), contents[row["bundle"]])
                     self.assertEqual(target.stat().st_mode & 0o777, row["mode"])
-            report = verify_payload_tree(destination, manifest, contract, sources)
+            report = verify_payload_tree(destination, manifest, contract, sources, release)
             self.assertTrue(report["passed"])
             self.assertFalse(report["os_qualified"])
             self.assertFalse(report["native_desktop_qualified"])
@@ -187,7 +210,7 @@ class DefaultApplicationPayload(unittest.TestCase):
         for mutation in mutations:
             with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory).resolve()
-                archive, lock, contract, sources, _ = self.fixture(root)
+                archive, lock, contract, sources, release_inputs, _ = self.fixture(root)
                 if mutation == "archive":
                     archive.write_bytes(archive.read_bytes() + b"changed")
                 elif mutation == "manifest":
@@ -205,14 +228,22 @@ class DefaultApplicationPayload(unittest.TestCase):
                 destination = root / "payload"
                 destination.mkdir()
                 with self.assertRaises(ValueError):
-                    unpack_payload(archive, lock, contract, sources, destination, "a" * 40)
+                    unpack_payload(
+                        archive,
+                        lock,
+                        contract,
+                        sources,
+                        destination,
+                        "a" * 40,
+                        release_inputs,
+                    )
                 self.assertEqual(list(destination.iterdir()), [])
 
     def test_extra_members_source_asset_changes_and_unsafe_destinations_are_refused(self):
         for mutation in ("extra", "asset", "destination"):
             with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory).resolve()
-                archive, lock, contract_path, source_path, contents = self.fixture(root)
+                archive, lock, contract_path, source_path, release_path, contents = self.fixture(root)
                 if mutation == "extra":
                     with zipfile.ZipFile(archive, "a") as bundle:
                         bundle.writestr("yazi/ya", b"runtime package manager")
@@ -249,14 +280,20 @@ class DefaultApplicationPayload(unittest.TestCase):
                 destination.mkdir()
                 with self.assertRaises(ValueError):
                     unpack_payload(
-                        archive, lock, contract_path, source_path, destination, "a" * 40
+                        archive,
+                        lock,
+                        contract_path,
+                        source_path,
+                        destination,
+                        "a" * 40,
+                        release_path,
                     )
 
     def test_overwrite_or_linked_parent_is_refused_without_partial_install(self):
         for mutation in ("overwrite", "linked-parent"):
             with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory).resolve()
-                archive, lock, contract, sources, _ = self.fixture(root)
+                archive, lock, contract, sources, release, _ = self.fixture(root)
                 destination = root / "payload"
                 destination.mkdir()
                 if mutation == "overwrite":
@@ -268,14 +305,22 @@ class DefaultApplicationPayload(unittest.TestCase):
                     (destination / "usr").symlink_to(root / "outside", target_is_directory=True)
                 before = sorted(str(path.relative_to(destination)) for path in destination.rglob("*"))
                 with self.assertRaises(ValueError):
-                    unpack_payload(archive, lock, contract, sources, destination, "a" * 40)
+                    unpack_payload(
+                        archive,
+                        lock,
+                        contract,
+                        sources,
+                        destination,
+                        "a" * 40,
+                        release,
+                    )
                 after = sorted(str(path.relative_to(destination)) for path in destination.rglob("*"))
                 self.assertEqual(after, before)
 
     def test_failed_copy_removes_files_and_directories_from_that_attempt(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
-            archive, lock, contract, sources, _ = self.fixture(root)
+            archive, lock, contract, sources, release, _ = self.fixture(root)
             destination = root / "payload"
             destination.mkdir()
             calls = 0
@@ -292,7 +337,13 @@ class DefaultApplicationPayload(unittest.TestCase):
             with mock.patch("image.default_apps.payload.copy_regular", side_effect=fail_second):
                 with self.assertRaises(OSError):
                     unpack_payload(
-                        archive, lock, contract, sources, destination, "a" * 40
+                        archive,
+                        lock,
+                        contract,
+                        sources,
+                        destination,
+                        "a" * 40,
+                        release,
                     )
             self.assertEqual(list(destination.iterdir()), [])
 
