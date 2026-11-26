@@ -2,8 +2,12 @@
 import json
 import os
 from pathlib import Path
+import re
+import shutil
 
 from image.assembly.inputs import require_runtime, unpack_runtime
+from image.assembly.runtime_install import require_runtime_rpms
+from image.hyprland.build_inputs import unpack_rpms
 from image.hyprland.inventory import require_subject
 from image.launcher.probes.bounded_process import run_bounded
 from image.recipe import render
@@ -48,7 +52,8 @@ def main():
     podman = ['podman', '--cgroup-manager=cgroupfs', '--root', str(storage/'root'), '--runroot', str(runroot)]
     record = {'passed': False, 'os_qualified': False, 'source_commit': os.environ['GITHUB_SHA'],
               'limits': limits, 'commands': [], 'checks': [], 'containers': {},
-              'scope': 'Actual retained runtime loader and CLI compatibility only; no installation, containment or OS qualification'}
+              'scope': 'Offline additive compatibility library and actual retained runtime CLI; no product installation, containment or OS qualification'}
+    install_output = storage/'install-output'
 
     def save():
         (evidence/'result.json').write_text(json.dumps(record, indent=2)+'\n')
@@ -80,9 +85,56 @@ def main():
                                           '--output', 'json', base['image']], 180)
         require_subject(unique_json(signature.stdout), base['image'])
         record.update(base=base['image'], signature_verified_before_pull=True)
+        rpm_lock = unique_json((root/'image/assembly/runtime-rpms.lock.json').read_bytes())
+        requirements = unique_json((root/'image/runtime_packages/requirements.json').read_bytes())
+        trust = unique_json((root/'image/hyprland/fedora-package-trust.json').read_bytes())
+        require_runtime_rpms(rpm_lock, base['image'], requirements, trust)
+        install_inputs = storage/'install-inputs'
+        install_inputs.mkdir()
+        unpack_rpms(root/'.cache/symbiont-runtime-rpms.zip', rpm_lock, install_inputs/'packages')
+        files = {'runtime-rpms.lock.json': 'image/assembly/runtime-rpms.lock.json',
+                 'runtime_install.py': 'image/assembly/runtime_install.py',
+                 'requirements.json': 'image/runtime_packages/requirements.json',
+                 'fedora-package-trust.json': 'image/hyprland/fedora-package-trust.json',
+                 'fedora-45-primary.asc': trust['key']['path'],
+                 'guest_inventory.py': 'image/hyprland/guest_inventory.py',
+                 'resolve_packages.py': 'image/hyprland/resolve_packages.py',
+                 'package_identity.py': 'image/walker/inputs.py',
+                 'bounded_process.py': 'image/launcher/probes/bounded_process.py'}
+        for name, relative in files.items():shutil.copyfile(root/relative, install_inputs/name)
+        install_output.mkdir()
+        record['compatibility_rpm_artifact'] = rpm_lock['artifact']
         auth = storage/'auth.json'
         auth.write_text('{"auths": {}}\n')
         run('pull-base', podman+['pull', '--authfile', str(auth), base['image']], 1200)
+        install_container = 'symbi-runtime-offline-install'
+        install_command = podman+['run', '--name='+install_container, '--pull=never', '--network=none', '--user=0',
+                                 '--cap-drop=ALL', '--cap-add=CHOWN,DAC_OVERRIDE,FOWNER,FSETID,SETGID,SETUID,SETFCAP',
+                                 '--security-opt=no-new-privileges', '--memory=2g', '--memory-swap=2g', '--cpus=1',
+                                 '--pids-limit=128', '--cgroup-parent=/'+str(group.relative_to('/sys/fs/cgroup')),
+                                 '--mount', f'type=bind,src={install_inputs},dst=/inputs,ro',
+                                 '--mount', f'type=bind,src={install_output},dst=/output',
+                                 '--env=GITHUB_ACTIONS=true', '--env=PYTHONDONTWRITEBYTECODE=1', '--env=LANG=C.UTF-8',
+                                 '--entrypoint=/usr/bin/python3', base['image'], '/inputs/runtime_install.py']
+        try:
+            run('offline-install', install_command, 600)
+            installed = unique_json((install_output/'install-evidence/result.json').read_bytes())
+            if (installed.get('passed') is not True or installed.get('os_qualified') is not False
+                    or installed.get('all_base_packages_unchanged') is not True
+                    or installed.get('base_crypto_configuration_unchanged') is not True):
+                raise ValueError('Offline compatibility installation failed its additive checks')
+            committed = run('commit-compatibility-image', podman+['commit', install_container], 300)
+            match = re.fullmatch(r'(?:sha256:)?([a-f0-9]{64})', committed.stdout.strip())
+            if not match or match[1] == '0'*64:raise ValueError('Invalid committed compatibility image ID')
+            runtime_image = 'sha256:'+match[1]
+            record['runtime_stage_image_id'] = runtime_image
+            record['installation'] = installed
+        finally:
+            removed = run('install-cleanup', podman+['rm', '--force', '--ignore', install_container], check=False)
+            exists = run('install-exists', podman+['container', 'exists', install_container], check=False)
+            record['containers'][install_container] = {'removed': removed.returncode == 0, 'absent': exists.returncode == 1}
+            if removed.returncode != 0 or exists.returncode != 1:
+                raise RuntimeError('Offline installation container cleanup failed')
 
         def guest(name, executable, arguments):
             container = 'symbi-runtime-'+name
@@ -97,7 +149,7 @@ def main():
                              '--mount', f'type=bind,src={home},dst=/output', '--workdir=/output',
                              '--env=HOME=/output', '--env=PATH=/usr/bin:/bin', '--env=LANG=C.UTF-8',
                              '--env=PYTHONDONTWRITEBYTECODE=1', '--env=TOKIO_WORKER_THREADS=1',
-                             '--env=RAYON_NUM_THREADS=1', '--entrypoint='+executable, base['image'], *arguments]
+                             '--env=RAYON_NUM_THREADS=1', '--entrypoint='+executable, runtime_image, *arguments]
             try:
                 return run(name, command, check=False)
             finally:
@@ -117,7 +169,7 @@ def main():
                     'memory.max': '536870912', 'memory.swap.max': '0', 'cpu.max': '100000 100000', 'pids.max': '64'}):
             raise ValueError('Unexpected runtime guest isolation or limits')
         record['guest_metadata'] = metadata
-        guest('openssl-packages', '/usr/bin/rpm', ['-q', 'openssl', 'openssl-libs', 'compat-openssl3'])
+        guest('openssl-packages', '/usr/bin/rpm', ['-q', 'openssl', 'openssl-libs', 'openssl3-libs']).check_returncode()
         for name in lock['binaries']:
             result = guest('ldd-'+name, '/usr/bin/ldd', ['/inputs/'+name])
             passed = result.returncode == 0 and 'not found' not in result.stdout+result.stderr
@@ -134,12 +186,19 @@ def main():
             record['checks'].append({'name': name, 'argument': argument, 'exit_code': result.returncode, 'passed': passed})
             save()
         if not all(row['passed'] for row in record['checks']):
-            raise ValueError('Retained runtime is not compatible with the original base; inspect actual loader/CLI evidence')
+            raise ValueError('Retained runtime is not compatible with the original base plus signed compatibility library')
         record['passed'] = True
     except Exception as error:
         record['failure'] = type(error).__name__+': '+str(error)
         raise
     finally:
+        retained = install_output/'install-evidence'
+        if retained.is_dir():
+            paths = list(retained.rglob('*'))
+            if (len(paths) > 256 or any(path.is_symlink() or not (path.is_dir() or path.is_file()) for path in paths)
+                    or sum(path.stat().st_size for path in paths if path.is_file()) > 16*1024**2):
+                raise ValueError('Unexpected offline installation evidence')
+            shutil.copytree(retained, evidence/'install')
         record['cgroup_final'] = {name: (group/name).read_text().strip()
                                   for name in (*limits, 'memory.peak', 'memory.events', 'cpu.stat')}
         save()

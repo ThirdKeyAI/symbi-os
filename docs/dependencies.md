@@ -196,3 +196,12 @@ inputs may be selected; exact RPM/manifest hashes and full signature/identity
 evidence must precede an offline additive installation. Existing OpenSSL 4 and
 all other base package identities must remain unchanged. No Ubuntu libraries,
 source edits, new Cargo dependency/feature, audit exemption or release claim.
+
+Signed runtime compatibility discovery 45748551523 selected only
+`openssl3-libs-1:3.5.9-1.fc45.x86_64`, Apache-2.0, 2,890,302 bytes, SHA-256
+`60fdefdada231053ca4da86e69ecd2706fd09bab7690cf978c7f0b24d41c17fc`.
+The complete Fedora 45 signature and real missing-key/tamper refusals passed.
+`image/assembly/runtime-rpms.lock.json` binds the exact archive, manifest, base,
+key and requirements. The isolated offline acceptance must preserve original
+packages and crypto configuration; actual TLS policy compatibility and final
+release review remain open. This is not a cargo-vet audit or exemption.

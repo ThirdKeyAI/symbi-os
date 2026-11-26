@@ -5,6 +5,13 @@ on:
     branches: ["**"]
     paths:
       - "image/assembly/**"
+      - "image/runtime_packages/requirements.json"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/fedora-package-trust.json"
+      - "image/hyprland/keys/**"
+      - "image/walker/inputs.py"
       - "image/development-builder.lock.json"
       - "image/toolchain/reuse.py"
       - "image/toolchain/qualify.py"
@@ -24,6 +31,13 @@ on:
   pull_request:
     paths:
       - "image/assembly/**"
+      - "image/runtime_packages/requirements.json"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/fedora-package-trust.json"
+      - "image/hyprland/keys/**"
+      - "image/walker/inputs.py"
       - "image/development-builder.lock.json"
       - "image/toolchain/reuse.py"
       - "image/toolchain/qualify.py"
@@ -71,6 +85,8 @@ jobs:
           echo '2ab11618c7d11c5599aa23a885fe0ad74dd8b73c7adb296e0d2427373432c3fb  .cache/bluebuild-development-tool.zip' | sha256sum --check --strict
           timeout 300 gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15066141540/zip > .cache/symbiont-runtime.zip
           echo 'bed79f624444c6dc0c3a5105facdcd9ad637a26f4fcd6cacb6e10544c36a0724  .cache/symbiont-runtime.zip' | sha256sum --check --strict
+          timeout 300 gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15084582682/zip > .cache/symbiont-runtime-rpms.zip
+          echo 'bea530216afb23f6c370fe4027e76740287a588d917b1ff7c09a4c9081061fa0  .cache/symbiont-runtime-rpms.zip' | sha256sum --check --strict
       - name: Reuse retained builder on a fresh host without compiling
         run: bash scripts/check-assembly-inputs.sh builder
       - name: Check actual retained runtime on the authenticated original base
