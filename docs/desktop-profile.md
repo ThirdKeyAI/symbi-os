@@ -167,7 +167,7 @@ MPlayer spec reviewed earlier was release 0.27 and is not source proof for the
 actual 0.26 candidate; that exact source review remains required.
 
 The [exact Kitty source review](security/reports/P0-03-cve-bz/2026-11-26/desktop-profile/fedora-kitty/README.md)
-rejects the candidate for integration: three reviewed cve.bz fixes are absent
+rejects the candidate for integration: seven reviewed cve.bz fixes are absent
 from the checksum-bound source and are not backported by its three Fedora
 patches. Kitty remains absent from the built image. Select an authenticated
 maintained fixed package/source, assess the remaining advisories and run native
@@ -178,3 +178,9 @@ Both-base additive installation, remaining dependency/security/license review,
 fonts, Tokyo Night, menus, all 190 shortcuts and actual desktop acceptance are
 still pending. No production dependency or trust selection changes in this
 evidence-only follow-up; INV-12 remains a release requirement.
+
+Authenticated Kitty 0.51.0 source contains the corresponding reviewed fixes;
+[source authentication and all sixteen scoped assessments](security/reports/P0-03-cve-bz/2026-11-26/desktop-profile/kitty-source-followup/README.md)
+are retained. It remains unselected pending native build, dependency and desktop
+qualification. The requested Kitty default and all reference shortcuts remain
+requirements; the built images still have their minimal Foot profile.
