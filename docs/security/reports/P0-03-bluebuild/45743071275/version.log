@@ -1,0 +1,5 @@
+BlueBuild 0.9.42
+branch:card/P0-03-image-foundation
+commit_hash:a654ee88
+build_time:2026-11-26 02:37:38 +00:00
+build_env:rustc 1.100.0 (0ef1bc386 2026-11-09),1.100.0-x86_64-unknown-linux-gnu

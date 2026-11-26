@@ -3,7 +3,9 @@
 P0-03 uses the owner-selected strategy **retain secureblue hardening and package
 maintained Hyprland**. The GitHub release environment and dedicated signing key
 are configured. Generic and NVIDIA base signatures have been verified at the
-digests in `base-images.json`. Hyprland/RPM inputs and release execution remain incomplete.
+digests in `base-images.json`. The development desktop binaries and runtime RPM
+inputs have retained compatibility results; desktop assembly and release acceptance
+remain incomplete.
 No Symbiont OS image has been built, signed, booted or qualified.
 
 The original plan names secureblue's `wayblue-hyprland-main-userns-hardened`.
@@ -51,7 +53,7 @@ release prerequisites below are satisfied.
 ## Hosted validation scheduling
 
 Workspace, policy and formal checks still run on every pull-request update.
-The twelve heavier input/build/VM workflows use component-specific push paths
+The heavier input/build/VM workflows use component-specific push paths
 for branches in this repository. GitHub compares each push's old and new heads,
 so an unrelated launcher or documentation edit does not rebuild the compositor.
 Their same-repository pull-request jobs are skipped before runner allocation;
@@ -133,9 +135,10 @@ No validation bypass is available in this workflow.
 
 The workflow has read-only repository permission, no release environment, no
 OIDC permission and no registry write permission. Earlier passing runs retained
-public logs, pins and generated text, but not the compiled executable. The next
-hosted run also retains the exact development CLI and original upstream license
-as `bluebuild-development-tool`, so later image assembly can reuse those bytes.
+public logs, pins and generated text, but not the compiled executable.
+[Run 45743071275](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45743071275)
+now retains the exact development CLI and original upstream license as
+`bluebuild-development-tool`, pinned in `development-builder.lock.json` for reuse.
 The runner is Ubuntu 24.04, matching the planned assembly host. The binary is
 bounded to 128 MiB; its immutable manifest binds the OS commit, upstream source,
 configuration, unchanged Cargo.lock, applied patch, compiler, features, profile,
@@ -152,8 +155,14 @@ matching source/compiler/patch bindings and exact archive/manifest/file hashes.
 Only the executable, original license and manifest are accepted; duplicate,
 escaping, linked, special, encrypted, oversized or ambiguous JSON inputs fail
 before execution, and partial extracted output is removed. Seven fixture tests
-exercise this boundary with non-executable bytes. A real artifact lock is added
-only after the next hosted tool run and its retained evidence are reviewed.
+exercise this boundary with non-executable bytes. The real artifact lock
+records the successful run: all 17 CLI cases and all 151 upstream tests passed,
+and the retained executable hash matches that exercised by the CLI cases. The
+4 GiB hosted unit peaked at 4,138,663,936 bytes with zero limit/OOM events.
+Generated Containerfiles match the previous reviewed output except build UUID,
+timestamp and final newline. The 68 MB executable stays hosted; only its small
+public evidence was downloaded locally. Actual cross-job reuse and image assembly
+remain next.
 
 The downstream patch in `toolchain/patches/` adds a closed, embedded schema for
 this OS's v2 recipe profile, then requires successful upstream typed parsing and
