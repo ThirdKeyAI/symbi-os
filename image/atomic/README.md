@@ -348,23 +348,47 @@ qualification gates remain unchanged. Workspace/formal checks passed for
 `ba700f2` (run 45831349883) and `2c70e38` (run 45833657032); those passes do not
 qualify the failed boot test or a desktop session.
 
-## Remove root from the fixed status collector
+## Rejected non-root status collector
 
 The retained `ba700f2` journal identifies a read of `/proc/1/ns/mnt` as the
-failing operation. The pinned bootc 1.17.1 source performs that read only while
-preparing a root process for a writable mount namespace. For a non-root status
-query it returns before that preparation, then opens booted storage read-only.
+failing operation. The attempted correction at `79a0a06` changed the collector
+to `DynamicUser=yes` with an empty capability bounding set.
 
-The next collector therefore uses `DynamicUser=yes` and an empty capability
-bounding set. It keeps the exact `/usr/bin/bootc status --json` command, private
-mount namespace, no-new-privileges, root-created 0600 output file and all
-existing resource limits. The observer remains separately capability-free and
-continues to reject an unsuccessful service or malformed output. This removes
-`CAP_SYS_ADMIN`; it does not add `CAP_SYS_PTRACE`, relax SELinux, edit the image,
-or weaken any deployment check.
+[Run 45850389621](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45850389621)
+proved that premise wrong. Bootc 1.17.1 rejected the collector with
+`Querying root privilege: This command must be executed as the root user`.
+The corrected pinned source review now records the actual order: the OSTree
+status path calls `prepare_for_write()`, which calls `require_root(false)` before
+the mount-namespace check. The failed run remains unqualified.
 
-The new acceptance fixture failed against the prior root service before the
-change. All 255 offline image fixtures now pass at 36,884 KiB peak RSS, 0.80 CPU
-seconds and zero swap under the 128 MiB/10%-CPU local ceiling. Native success is
-still pending the hosted installed-image attempt; ordinary-user readability of
-the booted deployment has not been assumed from source inspection alone.
+All 87 original files and independent byte/hash reconciliation are retained.
+Installation and the native source-signature positive/four rejection controls
+passed. The nonce/hash-bound partial report records kernel 7.3.4, enforcing
+SELinux, read-only `/usr` and `/sysroot`, Btrfs, loopback only and a separately
+zero-capability observer. Payload, inventory, trust and deployment acceptance
+were not reached. Private keys, three containers, loop devices, image and
+private storage/runroot were removed. QEMU peaked at 3,168,980,992 bytes with
+no memory-ceiling or OOM events; the parent recorded ceiling pressure but no
+OOM/kill, and host swap was prohibited.
+
+## Isolate the fixed collector as PID 1
+
+The replacement keeps the exact `/usr/bin/bootc status --json` command as UID 0
+with only `CAP_SYS_ADMIN`, which the pinned bootc path requires. It adds
+`PrivatePIDs=yes`. Systemd 262.1 documents that this gives a service a private
+PID namespace, makes its executed process PID 1 and mounts a private `/proc`
+showing only that namespace. Bootc therefore compares its private `/proc/1` to
+itself and takes its existing PID-1 branch. The collector does not receive
+`CAP_SYS_PTRACE`, does not see host processes and cannot export authority to the
+separate zero-capability observer.
+
+The unit retains a private mount namespace, no-new-privileges, empty ambient
+capabilities, root-created 0600 output, fixed command and existing memory, CPU,
+task and zero-swap ceilings. It is disposable hosted test infrastructure, not a
+product service or agent permission. If PID namespacing or native behavior
+differs, the command or existing service-result check fails closed.
+
+The new regression failed before implementation. All 256 offline image fixtures
+and staged Python/JSON syntax pass at 36,956 KiB peak RSS in 2.03 seconds with
+zero swap. Native installed-image success remains a hosted gate; no OS, desktop,
+containment or release qualification is claimed.

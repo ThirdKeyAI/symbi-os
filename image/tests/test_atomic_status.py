@@ -1,5 +1,6 @@
 """Acceptance boundaries for the fixed bootc status collector in the test VM."""
 import importlib.util
+import json
 import os
 from pathlib import Path
 import tempfile
@@ -68,11 +69,13 @@ class AtomicStatus(unittest.TestCase):
                         if '=' in line and not line.startswith('#'))
         collector = settings('s.service'); observer = settings('o.service')
         self.assertEqual(collector['ExecStart'], '/usr/bin/bootc status --json')
-        self.assertEqual(collector['DynamicUser'], 'yes')
+        self.assertNotIn('DynamicUser', collector)
         self.assertNotIn('User', collector)
-        self.assertEqual(collector['CapabilityBoundingSet'], '')
+        self.assertEqual(collector['CapabilityBoundingSet'], 'CAP_SYS_ADMIN')
+        self.assertNotIn('CAP_SYS_PTRACE', collector['CapabilityBoundingSet'].split())
         self.assertEqual(collector['AmbientCapabilities'], '')
         self.assertEqual(collector['PrivateMounts'], 'yes')
+        self.assertEqual(collector['PrivatePIDs'], 'yes')
         self.assertEqual(collector['NoNewPrivileges'], 'yes')
         self.assertNotIn('RuntimeDirectory', collector)
         self.assertEqual(collector['StandardOutput'], 'truncate:/run/symbi-atomic-status.json')
@@ -91,6 +94,21 @@ class AtomicStatus(unittest.TestCase):
         self.assertNotIn('OnFailure', collector)
         self.assertEqual(observer['OnFailure'], 'poweroff.target')
         self.assertEqual(observer['ExecStopPost'], '/usr/bin/systemctl --no-block poweroff')
+
+    def test_private_pid_namespace_matches_the_pinned_bootc_status_preconditions(self):
+        review = json.loads((ROOT/'image/atomic/status-source-review.json').read_text())
+        sources = {item['path']:item['excerpt'] for item in review['sources']}
+        cli = sources['crates/lib/src/cli.rs']
+        preparation = cli.index('require_root(false)?;')
+        namespace = cli.index('ensure_self_unshared_mount_namespace(&[])?;')
+        self.assertLess(preparation, namespace)
+        self.assertIn('let ns_pid1 = std::fs::read_link("/proc/1/ns/mnt")', cli)
+        self.assertIn('let ns_self = std::fs::read_link("/proc/self/ns/mnt")', cli)
+        self.assertIn('if ns_pid1 != ns_self', cli)
+        self.assertIn('rustix::process::getpid().is_init()', cli)
+        self.assertIn('PrivatePIDs=yes', review['collector_design'])
+        self.assertIn('PID 1', review['collector_design'])
+        self.assertIn('CAP_SYS_PTRACE', review['collector_design'])
 
     def test_status_output_opens_before_runtime_directories_are_created(self):
         settings = dict(line.split('=',1) for line in (ROOT/'image/atomic/s.service').read_text().splitlines()
