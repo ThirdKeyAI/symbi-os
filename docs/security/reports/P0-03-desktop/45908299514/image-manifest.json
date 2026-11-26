@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "built": true,
+  "os_qualified": false,
+  "source_commit": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+  "base": "ghcr.io/secureblue/sericea-nvidia-hardened@sha256:9b8053d581db16d47b1df18698ffe8cc3f70c45a3758363fdc8d85c1b0fcaf5e",
+  "variant": "nvidia",
+  "archive": {
+    "name": "symbiont-os-nvidia.oci.tar.gz",
+    "bytes": 5165612454,
+    "sha256": "732221d7ca5792a15c80755f98060701cb53040bfb8f9172d0054add5286a9b6",
+    "image_id": "sha256:3de540c7c7829546b4e65263c9299141ecd06d5b9858844f0ac42c4f4c5700c4"
+  },
+  "preparation_sha256": "3beabba843e724b9fd6cb76c46dd7ee3099479494da8ea1e05d939e434d9607e"
+}

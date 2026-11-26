@@ -6,16 +6,10 @@ from pathlib import Path
 import subprocess
 
 
-LEGACY_FONTLESS_SOURCE = "23a6c721092ad77c3af33c11cab230ecaaa54cff"
-
-
 def verify_font_payload(source):
-    """Check fonts, except for the exact retained image that predates them."""
+    """Require and check the installed font payload for every retained image."""
     if "fonts" not in source:
-        if source.get("source_commit") != LEGACY_FONTLESS_SOURCE:
-            raise ValueError("Only the exact retained pre-font image may omit font evidence")
-        return {"checked": False, "legacy_source_commit": LEGACY_FONTLESS_SOURCE,
-                "scope": "Exact retained image predates the development font payload"}
+        raise ValueError("Retained development image is missing font evidence")
     from font_verify import verify_installed_fonts
     return {"checked": True, **verify_installed_fonts(source["fonts"])}
 
@@ -60,9 +54,7 @@ def main():
     if len(set(inventory)) != len(inventory) or set(inventory) != set(expected):
         raise ValueError('Final image package inventory changed after installation')
     fonts = verify_font_payload(source)
-    scope = ('Installed bytes and native font parsing only; no boot or containment qualification'
-             if fonts['checked'] else
-             'Installed bytes for exact retained pre-font image; no boot, font or containment qualification')
+    scope = 'Installed bytes and native font parsing only; no boot or containment qualification'
     print(json.dumps({'passed':True, 'os_qualified':False, 'installed_files_checked':count,
                       'installed_package_count':len(inventory), 'all_package_identities_preserved_after_build':True,
                       'fonts':fonts, 'uid':os.geteuid(), 'limits':limits, 'scope':scope}))

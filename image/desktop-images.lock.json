@@ -32,32 +32,32 @@
       "evidence": "docs/security/reports/P0-03-desktop/45870354828/independent-check.json"
     },
     "nvidia": {
-      "tested_commit": "23a6c721092ad77c3af33c11cab230ecaaa54cff",
-      "run_id": 45793771499,
-      "manifest_sha256": "15cbb5847823e24a6be2541db0bcfc882fa7e288fd310ce94d2e18c1696b939a",
+      "tested_commit": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+      "run_id": 45908299514,
+      "manifest_sha256": "1d5b9aad9c01179cd14e6054d72f83678af043a4672c15f1deba01032367f423",
       "manifest": {
         "schema": 1,
         "built": true,
         "os_qualified": false,
-        "source_commit": "23a6c721092ad77c3af33c11cab230ecaaa54cff",
+        "source_commit": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
         "base": "ghcr.io/secureblue/sericea-nvidia-hardened@sha256:9b8053d581db16d47b1df18698ffe8cc3f70c45a3758363fdc8d85c1b0fcaf5e",
         "variant": "nvidia",
         "archive": {
           "name": "symbiont-os-nvidia.oci.tar.gz",
-          "bytes": 5032545971,
-          "sha256": "b39b822045599c3a2748ed2370809b141eca046d3746f458bad021a882b4fda7",
-          "image_id": "sha256:ce7914c6f857f7144f7f6b0785b5af0a37fe86d6569f7d12cb088ff777c6c73b"
+          "bytes": 5165612454,
+          "sha256": "732221d7ca5792a15c80755f98060701cb53040bfb8f9172d0054add5286a9b6",
+          "image_id": "sha256:3de540c7c7829546b4e65263c9299141ecd06d5b9858844f0ac42c4f4c5700c4"
         },
-        "preparation_sha256": "099d28880e1bf663360799f3af9bc8fd1ea20f76ab3ee951c6f37f8010788c5d"
+        "preparation_sha256": "3beabba843e724b9fd6cb76c46dd7ee3099479494da8ea1e05d939e434d9607e"
       },
       "artifact": {
-        "id": 15104527705,
+        "id": 15158529973,
         "name": "desktop-development-image-nvidia",
-        "bytes": 5032547001,
-        "sha256": "704d0bf0bf5cbad9659cf16257320ca85eb0962c3bf89f3b266a07f7e797b3c2"
+        "bytes": 5165613484,
+        "sha256": "0f17c7201fd01fd1d8cc00efd7ae95aecb65ae00e197aef2cf56894b2b7777c4"
       },
-      "expires_at": "2026-11-29T09:46:31Z",
-      "evidence": "docs/security/reports/P0-03-desktop/45793771499/independent-check.json"
+      "expires_at": "2026-11-29T23:10:24Z",
+      "evidence": "docs/security/reports/P0-03-desktop/45908299514/independent-check.json"
     }
   },
   "scope": "Explicitly retained development images for hosted boot testing. Exact artifact verification is required before use; no release signature, boot or OS qualification."
