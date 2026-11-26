@@ -136,3 +136,12 @@ path ownership/modes and debug output under the same isolation limits. Acceptanc
 expectations remain unchanged. The actual source lock has 283 registry packages
 plus Walker; the original discovery artifact's count wording is historical and
 its authenticated bytes are retained unchanged.
+
+Normal-startup logs from run45733459959 identify a Go plugin compatibility error:
+`desktopapplications` was compiled before the patch changed `internal/providers`.
+The next build must compile the real provider from the same patched source as
+the patched launcher. That diagnostic later timed out; its missing final guest
+report is not a pass. Cleanup was verified and raw output retained. Separately,
+the source-bound compiler requirements now request the signed `tesseract` test
+prerequisite. The old four-RPM lock must fail the current-requirements check until
+new discovery is reviewed; no RPM is installed merely because it was requested.
