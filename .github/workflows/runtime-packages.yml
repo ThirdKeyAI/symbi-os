@@ -2,7 +2,7 @@ name: Runtime signed compatibility package discovery
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/runtime_packages/**"
       - "image/assembly/runtime-development.lock.json"

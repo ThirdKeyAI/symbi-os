@@ -60,13 +60,11 @@ installation or rebase route.
 
 ## Hosted validation scheduling
 
-Workspace, policy and formal checks still run on every pull-request update.
-The heavier input/build/VM workflows use component-specific push paths
-for branches in this repository. GitHub compares each push's old and new heads,
-so an unrelated launcher or documentation edit does not rebuild the compositor.
-Their same-repository pull-request jobs are skipped before runner allocation;
-fork contributions retain pull-request validation, and manual dispatch remains
-available. A newer relevant run supersedes the same workflow/ref's older run.
+Workspace, policy and formal checks still run for proposed changes. The heavier
+input, build and VM workflows run automatically on `main` with component-specific
+path filters and remain manually dispatchable on review branches. This prevents
+an integrated feature branch from queuing the full image graph while still
+requiring the real affected jobs before an input or artifact is adopted.
 
 The workflow bodies, pinned actions, resource ceilings, permissions and acceptance
 checks are unchanged. Skipped or cancelled jobs are not passing qualification

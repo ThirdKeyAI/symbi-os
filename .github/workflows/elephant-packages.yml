@@ -2,7 +2,7 @@ name: Elephant signed Go toolchain discovery
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/launcher/elephant-build-requirements.json"
       - "image/launcher/elephant-source.json"

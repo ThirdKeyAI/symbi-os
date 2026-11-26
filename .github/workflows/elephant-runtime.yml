@@ -2,7 +2,7 @@ name: Retained Elephant provider acceptance
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/launcher/hosted_runtime.py"
       - "image/launcher/binary_inputs.py"

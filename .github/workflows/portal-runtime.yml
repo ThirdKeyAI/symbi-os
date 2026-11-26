@@ -2,7 +2,7 @@ name: Retained Hyprland portal runtime
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/portal/source-inputs.json"
       - "image/portal/build-requirements.json"

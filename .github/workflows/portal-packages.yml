@@ -2,7 +2,7 @@ name: Signed Hyprland portal build package discovery
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/portal/source-inputs.json"
       - "image/portal/build-requirements.json"

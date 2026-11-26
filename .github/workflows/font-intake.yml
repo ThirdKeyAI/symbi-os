@@ -2,7 +2,7 @@ name: Nerd Font candidate intake
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/fonts/**"
       - "image/tests/test_font_intake.py"

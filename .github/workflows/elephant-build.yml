@@ -2,7 +2,7 @@ name: Source-built Elephant provider acceptance
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/launcher/hosted_build.py"
       - "image/launcher/toolchain_guest.py"

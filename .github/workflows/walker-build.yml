@@ -2,7 +2,7 @@ name: Source-built Walker compatibility
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/walker/**"
       - "!image/walker/README.md"

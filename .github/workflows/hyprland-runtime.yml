@@ -2,7 +2,7 @@ name: Hyprland runtime compatibility
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/hyprland/hosted_runtime.py"
       - "image/hyprland/runtime_guest.py"

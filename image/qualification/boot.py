@@ -86,7 +86,7 @@ def _safe_artifact_name(name):
     if "private-actions" in path.parts or any(part.lower().endswith((".pem", ".key", ".p12")) for part in path.parts):
         raise ValueError("private qualification material cannot be retained")
     allowed = {"bootc-before.json", "bootc-after.json", "platform.json", "platform.log",
-               "release-driver.log", "release"}
+               "release-driver.log", "vertical-slice.json", "release"}
     if path.parts[0] not in allowed:
         raise ValueError("unexpected public report path")
     return path

@@ -2,7 +2,7 @@ name: Fedora package input discovery
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/hyprland/build-requirements.json"
       - "image/hyprland/candidate-inputs.json"

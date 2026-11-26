@@ -2,7 +2,7 @@ name: Hosted virtual graphics preflight
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/hyprland/graphics/**"
       - "scripts/check-hosted-graphics.sh"

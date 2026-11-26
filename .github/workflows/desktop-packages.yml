@@ -2,7 +2,7 @@ name: Desktop signed package discovery
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/desktop_packages/**"
       - "image/hyprland/guest_inventory.py"

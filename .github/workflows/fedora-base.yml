@@ -2,7 +2,7 @@ name: Fedora base inventory
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/hyprland/inventory.py"
       - "image/hyprland/guest_inventory.py"

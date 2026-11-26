@@ -2,7 +2,7 @@ name: Walker signed Rust and GTK toolchain discovery
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/launcher/walker-build-requirements.json"
       - "image/launcher/walker-source.json"

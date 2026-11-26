@@ -2,7 +2,7 @@ name: Offline Hyprland portal build
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/portal/source-inputs.json"
       - "image/portal/build-requirements.json"

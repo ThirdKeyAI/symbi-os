@@ -2,7 +2,7 @@ name: Hosted Fedora graphics boot
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/hyprland/graphics/**"
       - "image/hyprland/keys/fedora-45-primary.asc"

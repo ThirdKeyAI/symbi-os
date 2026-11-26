@@ -18,6 +18,8 @@ import subprocess
 import sys
 import tomllib
 
+from image.qualification.vertical_slice import validate_vertical_slice
+
 ROOT = Path(__file__).resolve().parents[2]
 REQUIRED_CASES = ("onboarding", "files", "source", "git", "managed", "actions",
                   "broker", "lifecycle", "external-effects")
@@ -159,7 +161,7 @@ def validate_results(native, release, binary_hash, revision, abi):
 def public_reports(output):
     """An exact allowlist; never recursively publish upstream private-actions/."""
     names = ["bootc-before.json", "bootc-after.json", "platform.json", "platform.log",
-             "release-driver.log", "release/qualification.json"]
+             "release-driver.log", "release/qualification.json", "vertical-slice.json"]
     for name in REQUIRED_CASES:
         names += [f"release/{name}.json", f"release/{name}.log",
                   f"release/{name}-verification.json", f"release/{name}-integrity.json"]
@@ -235,15 +237,30 @@ def main():
         run_driver([sys.executable, "-E", "-s", "-B", str(source / "scripts/test-landlock-release.py"),
                     "--binary", str(binary), "--source-directory", str(source), "--require-clean",
                     "--output", str(output / "release")], output / "release-driver.log", 5400)
-        validate_results(json.loads((output / "platform.json").read_text()),
-                         json.loads((output / "release/qualification.json").read_text()),
+        release = json.loads((output / "release/qualification.json").read_text())
+        validate_results(json.loads((output / "platform.json").read_text()), release,
                          args.expected_binary_sha256, revision, args.expected_abi)
+        scripts = source / "scripts"
+        vertical_slice = validate_vertical_slice(
+            release,
+            json.loads((output / "release/managed.json").read_text()),
+            json.loads((output / "release/external-effects-verification.json").read_text()),
+            json.loads((output / "release/external-effects-integrity.json").read_text()),
+            args.expected_binary_sha256,
+            {
+                "managed": digest(scripts / "test-landlock-managed.py"),
+                "external_effects": digest(scripts / "test-external-effect-recovery.py"),
+                "external_effects_verifier": digest(scripts / "verify-external-effect-recovery.py"),
+                "external_effects_integrity": digest(scripts / "test-external-effect-integrity.py"),
+            },
+        )
+        (output / "vertical-slice.json").write_text(json.dumps(vertical_slice, indent=2) + "\n")
         validate_source(source, revision)
         require(digest(binary) == args.expected_binary_sha256, "binary changed during qualification")
         after = read_bootc_status(args.bootc_status_socket)
         validate_deployment(after, args.image_ref)
         (output / "bootc-after.json").write_text(json.dumps(after, indent=2) + "\n")
-        report.update(passed=True, qualified=True)
+        report.update(passed=True, qualified=True, vertical_slice=vertical_slice)
     except (ValueError, OSError, subprocess.SubprocessError) as error:
         report["error"] = str(error)
     finally:

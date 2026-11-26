@@ -2,7 +2,7 @@ name: Launcher Fedora package input discovery
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/launcher/runtime-requirements.json"
       - "image/launcher/candidates.json"

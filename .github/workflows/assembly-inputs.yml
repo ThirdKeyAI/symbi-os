@@ -2,7 +2,7 @@ name: Retained image assembly input compatibility
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/assembly/**"
       - "image/runtime_packages/requirements.json"

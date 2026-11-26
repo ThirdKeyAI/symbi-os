@@ -2,7 +2,7 @@ name: Atomic image preflight
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/boot/**"
       - "image/desktop-images.lock.json"

@@ -30,6 +30,24 @@ Security review uses the [cve.bz API](https://cve.bz/api/public/openapi.json);
 [retained findings](docs/security/reports/P0-03-cve-bz/2026-11-26/native/README.md)
 remain open where source, package or reachability verification is incomplete.
 
+## Installing applications and tools
+
+The supported install path depends on what the software needs:
+
+- Desktop applications are installed per user from Flathub with Flatpak through
+  the graphical software menu. Flatpak permissions remain visible and revocable.
+- Command-line tools, language packages and development stacks go in a Toolbox
+  or Distrobox workspace, where ordinary Fedora, Debian or Ubuntu package
+  managers can be used without modifying the host image.
+- Host drivers, system services and other software that must live under
+  immutable system paths are added to the reviewed image recipe. They arrive as
+  a signed Atomic update and retain the previous deployment for rollback.
+
+Direct host-side `dnf install`, `rpm-ostree install`, Snap, AUR helpers and
+`curl | sh` installers are outside the supported model. The current base
+contains Homebrew tooling, but it is not the v1 package path until its proxy,
+containment and update behavior have passed the same installed-image checks.
+
 ## Start here
 
 - [Build plan and task cards](docs/build-plan.md)

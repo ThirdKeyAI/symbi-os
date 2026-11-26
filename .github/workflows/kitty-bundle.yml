@@ -2,7 +2,7 @@ name: Kitty signed bundle inspection
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/kitty/**"
       - "image/tests/test_kitty_bundle.py"

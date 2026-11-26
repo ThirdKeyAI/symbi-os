@@ -2,7 +2,7 @@ name: Atomic development disk boot
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/atomic/**"
       - "image/boot/inputs.py"

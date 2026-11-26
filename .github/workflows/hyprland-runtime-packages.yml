@@ -2,7 +2,7 @@ name: Hyprland runtime package input discovery
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/hyprland/runtime-requirements.json"
       - "image/hyprland/development-prefix.lock.json"
