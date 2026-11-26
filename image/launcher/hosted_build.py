@@ -59,8 +59,8 @@ def main():
         from bootstrap_cosign import bootstrap
         sys.path.insert(0, str(root/'image'))
         from recipe import render
-        from inventory import require_subject
         sys.path.insert(0, str(root/'image/hyprland'))
+        from inventory import require_subject
         from build_inputs import unpack_rpms, require_current_requirements
         pins = json.loads((root/'image/base-images.json').read_text())
         render(pins, 'generic', root)
