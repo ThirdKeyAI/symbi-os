@@ -1,0 +1,37 @@
+{
+  "build_id": 3116347,
+  "cg_id": null,
+  "completion_time": "2026-10-08 23:29:42.161741+00:00",
+  "completion_ts": 1791502182.161741,
+  "creation_event_id": 180267150,
+  "creation_time": "2026-10-08 21:37:48.220463+00:00",
+  "creation_ts": 1791495468.220463,
+  "draft": false,
+  "epoch": null,
+  "extra": {
+    "source": {
+      "original_url": "git+https://src.fedoraproject.org/rpms/bootc.git#c63d3bb9ae5451d1339e673dd13b6d71850287e0"
+    }
+  },
+  "id": 3116347,
+  "name": "bootc",
+  "nvr": "bootc-1.17.1-1.fc45",
+  "owner_id": 4641,
+  "owner_name": "packit",
+  "package_id": 38735,
+  "package_name": "bootc",
+  "promoter_id": null,
+  "promoter_name": null,
+  "promotion_time": null,
+  "promotion_ts": null,
+  "release": "1.fc45",
+  "source": "git+https://src.fedoraproject.org/rpms/bootc.git#c63d3bb9ae5451d1339e673dd13b6d71850287e0",
+  "start_time": "2026-10-08 21:37:48.213138+00:00",
+  "start_ts": 1791495468.213138,
+  "state": 1,
+  "task_id": 151042804,
+  "version": "1.17.1",
+  "volume_id": 0,
+  "volume_name": "DEFAULT",
+  "cg_name": null
+}
