@@ -1,6 +1,7 @@
 """Authenticate retained development binaries before isolated hosted execution."""
 import hashlib
 import json
+import re
 import shutil
 import stat
 import zipfile
@@ -62,11 +63,16 @@ def unpack_binaries(archive, lock, destination):
 
 def require_bindings(manifest, lock, base, source, rpm_lock_sha256, patch_sha256, marker_sha256):
     """Refuse reuse after any relevant source, patch, compiler or base change."""
+    tested_commit = lock.get('tested_commit')
+    if not isinstance(tested_commit, str) or not re.fullmatch(r'[0-9a-f]{40}', tested_commit):
+        raise ValueError('Retained build needs its exact tested commit')
     expected = {'schema': 1, 'compiled': True, 'os_qualified': False,
-                'provider_loading_qualified': False, 'source_commit': lock['tested_merge'],
+                'provider_loading_qualified': False, 'source_commit': tested_commit,
                 'base': base, 'upstream_revision': source['revision'],
                 'rpm_lock_sha256': rpm_lock_sha256, 'patch_sha256': patch_sha256,
-                'go_mod_sha256': source['go_mod_sha256'], 'go_sum_sha256': source['go_sum_sha256']}
+                'go_mod_sha256': source['go_mod_sha256'], 'go_sum_sha256': source['go_sum_sha256'],
+                'source_variants': {'baseline': 'unmodified', 'marker': 'unmodified',
+                                    'patched': 'provider-patched', 'desktopapplications': 'provider-patched'}}
     if (manifest != lock['manifest'] or any(manifest.get(key) != value for key, value in expected.items())
             or manifest.get('compiled') is not True or manifest.get('os_qualified') is not False
             or manifest.get('provider_loading_qualified') is not False

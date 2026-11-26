@@ -1,15 +1,14 @@
 {
   "schema": 1,
-  "scope": "Compiled development binaries only; upstream OCR test failed and provider acceptance remains unexecuted",
-  "run_id": 45728665797,
-  "head": "525e39025404dfd6f4fca3638bdadef21ff7f911",
-  "tested_merge": "57b1ad738843dff714d3968654716ee201a8d99f",
+  "scope": "Compiled development inputs with complete upstream tests and 17 real provider controls passed; no OS qualification",
+  "run_id": 45735855057,
+  "head": "c518707ad0c072ca0dd14f10c2b8afbc9aa3df3a",
   "artifact": {
-    "id": 15076092608,
-    "bytes": 108468571,
-    "sha256": "67acb8beb9d0bf76c0ba90a8d1d312679ed5c70708e65a9d515d6d0471dffe8d"
+    "id": 15079141579,
+    "bytes": 108468738,
+    "sha256": "dda8b3df435305f45928907b5631d6ab5547b943c65fb254df08a8d0d897df38"
   },
-  "manifest_sha256": "ddf3e7f8b7a85992eb7c3612a3b6ebc3593b3e089e0e5187c8b04ae05d17868d",
+  "manifest_sha256": "8bf5558aa18d977cef385510e06454b47d9cdf6e501a47c7da1110e5679fc747",
   "marker_source_sha256": "212af59b974dc27ce79d338860aeff7b84aa302c28118329448f47dd2bc6864c",
   "manifest": {
     "schema": 1,
@@ -17,21 +16,30 @@
     "os_qualified": false,
     "provider_loading_qualified": false,
     "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
-    "source_commit": "57b1ad738843dff714d3968654716ee201a8d99f",
+    "source_commit": "c518707ad0c072ca0dd14f10c2b8afbc9aa3df3a",
     "upstream_revision": "8f1e21d6efe40b8b3953f95b9574f99f717caf91",
     "binaries": {
-      "desktopapplications": "e36812a7685056a720361f0a7964b05b06121f21a5415dec98b1605fe75e123c",
+      "desktopapplications": "5764570124a7e1fc33a7003d2d75accf9e5a76f2b6f580600abe4609754b5085",
       "marker": "3b0a60e377f02d62e4cf2680f878aecea5966580be2db705e38c742fb47563fb",
       "baseline": "ab6dc81562753880b0fc1df65e8c030a38a5118a9d63bfd67c382f060f117615",
       "patched": "e2c52e8db172d31e39531da945349855354a327b330bc572ccd27569c6f8d15f"
     },
+    "source_variants": {
+      "baseline": "unmodified",
+      "marker": "unmodified",
+      "patched": "provider-patched",
+      "desktopapplications": "provider-patched"
+    },
     "patch_sha256": "9d46941a0540df0162772b04055bf306298e48f3bdcae2c5f3ec97ebb51a7204",
-    "rpm_lock_sha256": "8abf88ef786667f11b7cb146d1a71f1491d63595a1db87a97026c23d04bac351",
+    "rpm_lock_sha256": "de512abc36da31002b6045bf675cabdf8263276c9e43985dfb26fabeaad2d7d0",
     "go_mod_sha256": "c5fe5f8c609ed14dae2fea900a0cbdc00875352a1b3b1bf6bfa9f84f430288b9",
     "go_sum_sha256": "c307c62070ecdac44a964fe304b1325b74d859bb851bd9a807faf52091a0f8d0"
   },
-  "upstream_tests_passed": false,
+  "upstream_tests_passed": true,
   "local_large_download": false,
   "qualified": false,
-  "product_installation": false
+  "product_installation": false,
+  "tested_commit": "c518707ad0c072ca0dd14f10c2b8afbc9aa3df3a",
+  "event": "push",
+  "source_build_provider_controls_passed": true
 }

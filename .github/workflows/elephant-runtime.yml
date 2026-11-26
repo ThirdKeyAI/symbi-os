@@ -70,9 +70,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p .cache
-          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15076092608/zip > .cache/elephant-development-binaries.zip
-          echo '67acb8beb9d0bf76c0ba90a8d1d312679ed5c70708e65a9d515d6d0471dffe8d  .cache/elephant-development-binaries.zip' | sha256sum --check --strict
-      - name: Run actual provider controls and diagnose the failed OCR prerequisite
+          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15079141579/zip > .cache/elephant-development-binaries.zip
+          echo 'dda8b3df435305f45928907b5631d6ab5547b943c65fb254df08a8d0d897df38  .cache/elephant-development-binaries.zip' | sha256sum --check --strict
+      - name: Recheck retained provider binaries and bounded startup diagnostics
         run: bash scripts/check-elephant-runtime.sh
       - name: Retain public runtime evidence including failures
         if: always()

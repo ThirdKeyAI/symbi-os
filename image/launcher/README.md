@@ -30,8 +30,8 @@ profile for the exact Elephant source and go.mod/go.sum hashes in
 must disable automatic toolchain downloads and preserve the upstream lockfile.
 GCC/glibc development inputs support the actual executable/provider CGO builds.
 Discovery itself neither installs the compiler nor executes launcher artifacts.
-The native-provider constructor acceptance driver is prepared; no
-provider-refusal result or product qualification is claimed yet.
+The complete source suite and all 17 real provider-loading controls passed in
+hosted run 45735855057. Product qualification remains open.
 
 
 ## Hosted source build and provider acceptance
@@ -72,9 +72,10 @@ the client, and explicit container removal plus absence checks precede success.
 Only authenticated hosted build or retained-binary workflows may invoke the driver.
 
 The parent is capped at4 GiB/two CPUs/no swap; compiler stages at3 GiB/two CPUs,
-with one Go job. Source compilation has passed; the full upstream suite, provider
-controls and actual launcher/session integration remain incomplete. Product installation,
-Walker validation, browser/portal controls and OS qualification remain open.
+with one Go job. Source compilation, the complete upstream suite and all 17
+provider controls passed in run 45735855057. Actual launcher/session integration,
+product installation, Walker validation, browser/portal controls and OS
+qualification remain open.
 
 ## Walker source-build inputs
 
@@ -103,10 +104,9 @@ compilation and runtime acceptance have not occurred.
 
 Elephant run45728665797 compiled all four planned binaries with the authenticated
 Fedora compiler, then failed upstream `TestRunOCR` because its result was empty.
-`development-binaries.lock.json` binds the retained bytes for later independent
-acceptance without recompilation. This does not turn the failed suite into a
-pass: native-provider controls have not run and upstream-test qualification
-remains incomplete. The source's OCR helper invokes `tesseract` and suppresses
+Those original failed inputs remain historical evidence. The current
+`development-binaries.lock.json` instead binds the later successful build
+45735855057 for independent acceptance without recompilation. The source's OCR helper invokes `tesseract` and suppresses
 execution errors; the next test step must establish the actual tool failure.
 
 ## Independent provider acceptance without recompilation
@@ -116,8 +116,9 @@ hosted runner. Before execution, the archive byte count/hash, manifest bytes and
 all four binary hashes must match the reviewed lock. The loader refuses duplicate,
 unexpected, linked, special, encrypted and oversized members and requires a fresh
 destination. Current base, source/module locks, compiler RPM lock, patch and marker
-source must still match the retained build. The marker source was checked unchanged
-from build head 525e390 before its hash was added to the reuse lock.
+source must still match the retained build. The tested commit is the actual push revision, and the compiled manifest must
+record the real provider and executable as built from the same patched source.
+The baseline and constructor marker remain built from unmodified source.
 
 The same 17 actual provider cases run against the original publisher-authenticated
 base, without installing compiler packages. A separate UID 10001 diagnostic records
@@ -125,9 +126,10 @@ the real `convert`/`tesseract` paths, outputs and errors for the pinned OCR exam
 Both probes use read-only, no-network containers with all capabilities dropped,
 256 MiB/one CPU/no swap and explicit removal/absence checks. The hosted parent is
 limited to 4 GiB/two CPUs/no swap and 25 minutes. No local executable or large
-artifact download is used. A provider pass cannot clear the failed upstream suite:
-the reuse report explicitly retains `upstream_tests_passed: false` and
-`os_qualified: false`. Actual results remain pending until the hosted run finishes.
+artifact download is used. The reuse report retains `upstream_tests_passed: false`
+because it does not rerun that suite, and separately records the reviewed source
+build's passing suite. `os_qualified` stays false. The corrected independent
+reuse/startup run remains pending; the source-build controls have passed.
 
 The first independent run (45732324253) confirmed the missing `tesseract` CLI and
 passed the three baseline constructor controls. Its first patched case refused
@@ -164,3 +166,23 @@ none marks native or OS qualification. Reused-binary reports separately expose
 the reviewed source-build suite status without pretending to rerun that suite.
 Old retained binaries remain rejected after the compiler lock changes; a new
 reviewed compiled manifest is required before runtime reuse.
+
+## Successful corrected source build
+
+[Run 45735855057](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45735855057)
+at c518707 passed the complete upstream suite (including clipboard OCR), unchanged
+module locks and all 17 original provider controls. All probe containers were
+removed and their absence checked. The legitimate application provider is present
+where expected, external constructors are refused by the patched launcher, and
+the three unmodified controls still execute their nonce-bound constructors.
+
+The five signed compiler/test RPMs were reverified and added without changing any
+of the 2,178 base package identities. The 3 GiB compile stage peaked at
+2,139,488,256 bytes without memory-limit or OOM events. The 4 GiB parent recorded
+memory-limit pressure but zero OOM/kill events. Its raw counters are retained.
+The corrected provider is the only changed executable artifact; baseline,
+patched executable and marker hashes match the previous build.
+
+The reviewed 108 MB artifact stays hosted. Exact archive/manifest/binary hashes
+and source bindings are pinned for reuse. This does not install Elephant in the
+product or qualify desktop launch behavior, dependency audits, or the final OS.

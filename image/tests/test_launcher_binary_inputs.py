@@ -24,10 +24,12 @@ class BinaryInputs(unittest.TestCase):
                     'base': 'base@sha256:'+'2'*64, 'upstream_revision': '3'*40,
                     'rpm_lock_sha256': '4'*64, 'patch_sha256': '5'*64,
                     'go_mod_sha256': '6'*64, 'go_sum_sha256': '7'*64,
+                    'source_variants': {'baseline': 'unmodified', 'marker': 'unmodified',
+                                        'patched': 'provider-patched', 'desktopapplications': 'provider-patched'},
                     'binaries': {name: hashlib.sha256(data).hexdigest() for name, data in payloads.items()}}
         expected = copy.deepcopy(manifest)
         raw = json.dumps(manifest).encode()
-        lock = {'schema': 1, 'tested_merge': '1'*40, 'manifest': expected,
+        lock = {'schema': 1, 'tested_commit': '1'*40, 'manifest': expected,
                 'manifest_sha256': hashlib.sha256(raw).hexdigest(), 'marker_source_sha256': '8'*64}
         if manifest_change:
             manifest.update(manifest_change)
@@ -103,6 +105,36 @@ class BinaryInputs(unittest.TestCase):
             for field in source:
                 with self.subTest(field=field), self.assertRaises(ValueError):
                     inputs.require_bindings(**{**arguments, 'source': {**source, field: 'changed'}})
+
+
+    def binding_arguments(self, root):
+        _, lock, _ = self.fixture(root)
+        return {'manifest': lock['manifest'], 'lock': lock, 'base': lock['manifest']['base'],
+                'source': {'revision': '3'*40, 'go_mod_sha256': '6'*64, 'go_sum_sha256': '7'*64},
+                'rpm_lock_sha256': '4'*64, 'patch_sha256': '5'*64, 'marker_sha256': '8'*64}
+
+    def test_tested_commit_must_be_exact_and_match_the_manifest(self):
+        with tempfile.TemporaryDirectory() as directory:
+            arguments = self.binding_arguments(Path(directory))
+            inputs.require_bindings(**arguments)
+            for commit in (None, '', '1'*39, 'g'*40, '2'*40, 1):
+                with self.subTest(commit=commit), self.assertRaises(ValueError):
+                    lock = {**arguments['lock'], 'tested_commit': commit}
+                    inputs.require_bindings(**{**arguments, 'lock': lock})
+            lock = dict(arguments['lock'])
+            del lock['tested_commit']
+            with self.assertRaises(ValueError):
+                inputs.require_bindings(**{**arguments, 'lock': lock})
+
+    def test_provider_and_executable_must_share_the_patched_source(self):
+        with tempfile.TemporaryDirectory() as directory:
+            arguments = self.binding_arguments(Path(directory))
+            for variants in (None, {}, {'baseline': 'unmodified', 'marker': 'unmodified',
+                                       'patched': 'provider-patched', 'desktopapplications': 'unmodified'}):
+                with self.subTest(variants=variants), self.assertRaises(ValueError):
+                    manifest = {**arguments['manifest'], 'source_variants': variants}
+                    inputs.require_bindings(**{**arguments, 'manifest': manifest,
+                                              'lock': {**arguments['lock'], 'manifest': manifest}})
 
 
 if __name__ == '__main__':
