@@ -130,10 +130,12 @@ def main():
             (qualification/'expected.json').chmod(0o644)
             for source,name in [(root/'image/boot/probe.py','probe.py'),
                                 (root/'image/desktop/verify.py','verify.py'),
+                                (root/'image/fonts/verify.py','font_verify.py'),
                                 (root/'docs/security/reports/P0-03-desktop'/str(selected['run_id'])/'preparation.json','preparation.json'),
                                 (root/'docs/security/reports/P0-03-desktop'/str(selected['run_id'])/'install/installed-after-stdout.log','installed-after-stdout.log')]:
                 shutil.copyfile(source,qualification/name);(qualification/name).chmod(0o644)
-            record['probe_hashes']={name:digest(qualification/name) for name in ('probe.py','verify.py','expected.json')}
+            record['probe_hashes']={name:digest(qualification/name)
+                                    for name in ('probe.py','verify.py','font_verify.py','expected.json')}
             for name,script in [('installed-files','verify.py'),('boot-inputs','probe.py')]:
                 container='symbi-atomic-'+name;containers.append(container)
                 command=podman+['run','--rm','--name='+container,'--pull=never','--read-only','--network=none',

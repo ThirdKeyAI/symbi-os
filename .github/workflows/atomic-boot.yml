@@ -2,7 +2,7 @@ name: Atomic development disk boot
 
 on:
   push:
-    branches: ["**"]
+    branches: [main]
     paths:
       - "image/atomic/**"
       - "image/boot/inputs.py"
@@ -32,9 +32,10 @@ concurrency:
 jobs:
   install-and-boot:
     runs-on: ubuntu-24.04
-    timeout-minutes: 100
+    timeout-minutes: 120
     env:
       SYMBI_IMAGE_VARIANT: generic
+      SYMBI_QUALIFICATION: update
     steps:
       - name: Check out the proposed boot harness
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
@@ -57,6 +58,18 @@ jobs:
           )
           timeout 30 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/$artifact" > .cache/atomic-image-artifact.json
           timeout 900 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/$artifact/zip" > .cache/atomic-development-image.zip
+          predecessor=$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from image.atomic.update_contract import require_update_base
+          lock=json.loads(Path('image/atomic/update-base.lock.json').read_text())
+          pins=json.loads(Path('image/base-images.json').read_text())
+          current=json.loads(Path('image/desktop-images.lock.json').read_text())
+          print(require_update_base(lock,pins,current)['artifact']['id'])
+          PY
+          )
+          timeout 30 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/$predecessor" > .cache/atomic-update-artifact.json
+          timeout 900 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/$predecessor/zip" > .cache/atomic-update-image.zip
       - name: Verify metadata and stream the exact retained image
         run: bash scripts/check-atomic-image.sh prepare
       - name: Install a new virtual disk and boot the actual Atomic image
@@ -69,5 +82,6 @@ jobs:
           path: |
             .cache/atomic-image-evidence
             .cache/atomic-disk-evidence
+            .cache/atomic-update-evidence
           if-no-files-found: error
           retention-days: 14

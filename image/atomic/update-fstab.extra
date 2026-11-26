@@ -1,0 +1,1 @@
+LABEL=SYMBIUPDATE /var/lib/symbi-update ext4 ro,nosuid,nodev,noexec 0 0

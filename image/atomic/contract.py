@@ -204,17 +204,21 @@ def installer_arguments(manifest_digest):
             '/output/atomic.raw']
 
 
-def installer_mounts(storage):
+def installer_mounts(storage, *, input_name='installer-input', source_name='signed',
+                     disk_name='disk', temporary_name='installer-tmp'):
     """Expose new host-created loop partitions without sharing host PID/network."""
     private_directory(storage)
-    if any(character in str(storage) for character in (',','\n','\r')):
+    names=(input_name,source_name,disk_name,temporary_name)
+    if (any(character in str(storage) for character in (',','\n','\r'))
+            or any(not re.fullmatch(r'[a-z0-9-]{1,48}',name) for name in names)
+            or len(set(names))!=len(names)):
         raise ValueError('Unsafe container mount specification')
     result=[]
-    for name,destination,readonly in [('installer-input','/inputs',True),('signed','/inputs/signed',True),
-                                      ('disk','/output',False),('installer-tmp','/var/tmp',False)]:
+    for name,destination,readonly in [(input_name,'/inputs',True),(source_name,'/inputs/signed',True),
+                                      (disk_name,'/output',False),(temporary_name,'/var/tmp',False)]:
         source=storage/name;private_directory(source)
         result+=['--mount',f'type=bind,src={source},dst={destination}'+(',ro' if readonly else '')]
-    policy=storage/'installer-input/install-policy.json'
+    policy=storage/input_name/'install-policy.json'
     if policy.resolve()!=policy or not policy.is_file() or policy.stat().st_size>128*1024:
         raise ValueError('Expected a bounded, unlinked installer-only policy')
     result+=['--mount',f'type=bind,src={policy},dst=/etc/containers/policy.json,ro']
