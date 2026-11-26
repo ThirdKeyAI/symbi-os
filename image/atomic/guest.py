@@ -68,12 +68,14 @@ def main():
             'boot_id':Path('/proc/sys/kernel/random/boot_id').read_text().strip(),
             'nics':sorted(path.name for path in Path('/sys/class/net').iterdir()),
             'commands':[],'scope':'CI fixture-signed development artifact boot only; no release, desktop or containment qualification'}
-    def run(command,check=True):
-        result=subprocess.run(command,stdin=subprocess.DEVNULL,capture_output=True,text=True,timeout=60,
+    def run(command,check=True,timeout=60):
+        if type(timeout) is not int or not 1<=timeout<=180:
+            raise ValueError('Invalid bounded boot-observation timeout')
+        result=subprocess.run(command,stdin=subprocess.DEVNULL,capture_output=True,text=True,timeout=timeout,
                               env={'PATH':'/usr/sbin:/usr/bin:/sbin:/bin','LANG':'C.UTF-8'})
         if len(result.stdout.encode())>512*1024 or len(result.stderr.encode())>65536:
             raise ValueError('Oversized boot observation')
-        record['commands'].append({'command':command,'exit_code':result.returncode,
+        record['commands'].append({'command':command,'timeout_seconds':timeout,'exit_code':result.returncode,
                                    'stderr':result.stderr,'stdout_sha256':hashlib.sha256(result.stdout.encode()).hexdigest()})
         if check: result.check_returncode()
         return result.stdout
@@ -94,7 +96,7 @@ def main():
         record['bootc_status'],record['bootc_status_observation']=read_bootc_status(
             Path('/run/symbi-atomic-status.json'),record['bootc_status_diagnostic']['service'])
         fmt='%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n'
-        inventory=run(['/usr/bin/rpm','-qa','--qf',fmt]).splitlines()
+        inventory=run(['/usr/bin/rpm','-qa','--qf',fmt],timeout=180).splitlines()
         if len(set(inventory))!=len(inventory): raise ValueError('Duplicate installed package identity')
         record['inventory_count']=len(inventory)
         record['inventory_sha256']=hashlib.sha256(('\n'.join(sorted(inventory))+'\n').encode()).hexdigest()

@@ -392,3 +392,41 @@ The new regression failed before implementation. All 256 offline image fixtures
 and staged Python/JSON syntax pass at 36,956 KiB peak RSS in 2.03 seconds with
 zero swap. Native installed-image success remains a hosted gate; no OS, desktop,
 containment or release qualification is claimed.
+
+## Installed disk booted; full inventory exceeded the generic probe limit
+
+[Run 45869526684](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45869526684)
+at `88c49ec` completed the native signature positive control and all four
+rejection controls, installed the exact retained generic image to a guarded new
+24 GiB Btrfs disk, and booted that disk under QEMU/TCG. The nonce-bound guest
+report observed kernel 7.3.4, enforcing SELinux, read-only `/usr`, read-only
+Btrfs `/sysroot`, loopback-only networking, a zero-capability observer with
+no-new-privileges, and the expected bootc deployment protected by
+`containerPolicy`.
+
+The full `rpm -qa` inventory then exceeded the probe's generic 60-second command
+limit under its single TCG CPU. Package and payload comparison did not complete.
+The accepted controller result therefore remains failed, with
+`probe_completed`, `os_qualified` and `release_qualified` false. This run uses
+the retained pre-font image from source `23a6c72`; it cannot qualify the current
+font-bearing generic lock.
+
+All 87 original artifact files (230,440 expanded bytes) and independent
+reconciliation are retained under
+`docs/security/reports/P0-03-atomic-boot/45869526684/`. QEMU exited normally
+after 374.68 seconds. The fixture signing keys, three containers, loop devices,
+loaded image, private storage and runroot were removed; no disk or overlay is
+retained. Parent and QEMU cgroups show zero OOM/kill events and zero host swap.
+
+The correction keeps the generic 60-second subprocess limit and assigns only
+the complete RPM inventory an explicit 180-second allowance. The observer gets
+one full guest CPU instead of half of that single CPU, while its 256 MiB memory,
+32-task and zero-swap limits remain. `TimeoutStartSec=420` bounds the enlarged
+slow path. A fail-first AST/unit regression requires all three limits; the 24
+focused guest/controller tests pass afterward. A current-image hosted rerun and
+all remaining desktop, containment, update/rollback and release gates remain
+required.
+
+The final serial repository gate passes all 280 image tests plus Cedar, Rust,
+supply-chain and formal drift checks in 6.20 seconds at 70,188 KiB peak RSS,
+with one Cargo job and zero swap.

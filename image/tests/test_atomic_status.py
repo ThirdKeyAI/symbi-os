@@ -1,4 +1,5 @@
 """Acceptance boundaries for the fixed bootc status collector in the test VM."""
+import ast
 import importlib.util
 import json
 import os
@@ -94,6 +95,26 @@ class AtomicStatus(unittest.TestCase):
         self.assertNotIn('OnFailure', collector)
         self.assertEqual(observer['OnFailure'], 'poweroff.target')
         self.assertEqual(observer['ExecStopPost'], '/usr/bin/systemctl --no-block poweroff')
+
+    def test_full_inventory_has_a_dedicated_bounded_slow_guest_budget(self):
+        settings = dict(line.split('=', 1) for line in (ROOT/'image/atomic/o.service').read_text().splitlines()
+                        if '=' in line and not line.startswith('#'))
+        self.assertEqual(settings['CPUQuota'], '100%')
+        self.assertEqual(settings['TimeoutStartSec'], '420')
+        tree = ast.parse((ROOT/'image/atomic/guest.py').read_text())
+        calls = []
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name) or node.func.id != 'run':
+                continue
+            if not node.args or not isinstance(node.args[0], ast.List):
+                continue
+            command = [item.value for item in node.args[0].elts if isinstance(item, ast.Constant)]
+            if command[:2] == ['/usr/bin/rpm', '-qa']:
+                calls.append(node)
+        self.assertEqual(len(calls), 1)
+        timeouts = [item.value.value for item in calls[0].keywords
+                    if item.arg == 'timeout' and isinstance(item.value, ast.Constant)]
+        self.assertEqual(timeouts, [180])
 
     def test_private_pid_namespace_matches_the_pinned_bootc_status_preconditions(self):
         review = json.loads((ROOT/'image/atomic/status-source-review.json').read_text())
