@@ -232,6 +232,7 @@ def firmware_arguments(directory):
     if directory!=Path('/inputs'): raise ValueError('Fixed read-only firmware input mount required')
     result=[]
     for name,file in [('systemd.extra-unit.o.service','o.service'),
+                      ('systemd.extra-unit.s.service','s.service'),
                       ('symbi-probe.py','guest.py'),('symbi-expected.json','expected.json')]:
         name='opt/io.systemd.credentials/'+name
         if len(name.encode('ascii'))>=56: raise ValueError('QEMU firmware name is too long')
@@ -251,6 +252,15 @@ def validate_report(report,expected,nonce,probe_hash,expected_hash):
                 and 'failure' not in report,'Incomplete boot observation or false release claim')
         require(report['product']=='Symbi-Hosted-Atomic-Probe','Unexpected guest identity')
         uuid.UUID(report['boot_id'])
+        require(report['probe_security']=={'CapEff':'0000000000000000','CapPrm':'0000000000000000',
+                                           'CapBnd':'0000000000000000','NoNewPrivs':'1'},
+                'Observation probe gained privileges')
+        observation=report['bootc_status_observation']
+        require(observation['unit']=='s.service' and observation['service']=={
+                    'Result':'success','ExecMainCode':'1','ExecMainStatus':'0','ActiveState':'active','SubState':'exited'}
+                and type(observation['bytes']) is int and 0<observation['bytes']<=128*1024
+                and re.fullmatch(r'[0-9a-f]{64}',observation['sha256']) is not None,
+                'Incomplete or unbounded fixed status observation')
         require(report['kernel']==expected['kernel'] and report['bootc_version']=='bootc '+expected['bootc_version']
                 and all(report['os'].get(k)==v for k,v in expected['os'].items()),'Wrong booted OS/kernel/installer')
         require(report['nics']==['lo'] and report['selinux']=='Enforcing' and report['selinux_enforce']=='1'

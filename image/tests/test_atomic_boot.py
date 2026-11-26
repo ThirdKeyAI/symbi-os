@@ -134,10 +134,11 @@ class AtomicBoot(unittest.TestCase):
 
     def test_firmware_names_fit_qemu_and_do_not_add_login_credentials(self):
         args=firmware_arguments(Path('/inputs'))
-        self.assertEqual(len(args),6)
-        names=[args[n].split(',file=')[0].removeprefix('name=') for n in (1,3,5)]
+        self.assertEqual(len(args),8)
+        names=[args[n].split(',file=')[0].removeprefix('name=') for n in (1,3,5,7)]
         self.assertTrue(all(len(name.encode('ascii'))<56 for name in names))
         self.assertIn('opt/io.systemd.credentials/systemd.extra-unit.o.service',names)
+        self.assertIn('opt/io.systemd.credentials/systemd.extra-unit.s.service',names)
         self.assertFalse(any('password' in name or 'ssh' in name for name in names))
 
     def test_installer_observes_live_devices_through_readonly_mounts(self):
@@ -247,6 +248,10 @@ class AtomicBoot(unittest.TestCase):
                 'kernel':expected['kernel'],'os':expected['os'],'nics':['lo'],'selinux':'Enforcing',
                 'selinux_enforce':'1','usr_readonly':True,'sysroot_readonly':True,'sysroot_fstype':'btrfs',
                 'bootc_version':'bootc 1.17.1','payload_count':102,'payload_verified':True,
+                'probe_security':{'CapEff':'0000000000000000','CapPrm':'0000000000000000',
+                                  'CapBnd':'0000000000000000','NoNewPrivs':'1'},
+                'bootc_status_observation':{'unit':'s.service','service':{'Result':'success','ExecMainCode':'1',
+                    'ExecMainStatus':'0','ActiveState':'active','SubState':'exited'},'bytes':200,'sha256':'2'*64},
                 'inventory_sha256':expected['inventory_sha256'],'inventory_count':2184,'trust':expected['trust'],
                 'bootc_status':{'apiVersion':'org.containers.bootc/v1','kind':'BootcHost',
                     'spec':{'image':reference},'status':{'type':'bootcHost','booted':{'incompatible':False,
@@ -266,7 +271,8 @@ class AtomicBoot(unittest.TestCase):
                           ('selinux','Permissive'),('selinux_enforce','0'),('usr_readonly',False),
                           ('sysroot_readonly',False),('sysroot_fstype','ext4'),('guest_booted',False),
                           ('os_qualified',True),('release_qualified',True),('payload_verified',False),
-                          ('inventory_count',2183),('inventory_sha256','0'*64),('trust',{})]:
+                          ('inventory_count',2183),('inventory_sha256','0'*64),('trust',{}),
+                          ('probe_security',{'CapEff':'0000000000200000'}),('bootc_status_observation',{})]:
             with self.subTest(key=key):
                 report=copy.deepcopy(original);report[key]=value
                 with self.assertRaises(ValueError): validate_report(report,expected,'a'*32,'e'*64,'f'*64)

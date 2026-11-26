@@ -1,0 +1,26 @@
+{
+  "repository": "bootc-dev/bootc",
+  "revision": "d01e723ae9480fa53aa9db09a7eff0439548e9f6",
+  "version": "1.17.1",
+  "scope": "Static review of the supported status path; not distro binary equivalence",
+  "sources": [
+    {
+      "path": "crates/lib/src/status.rs",
+      "git_blob_sha": "4525f60c711d404e077c8bb4a0b2b98b8c8f25cd",
+      "url": "https://github.com/bootc-dev/bootc/blob/d01e723ae9480fa53aa9db09a7eff0439548e9f6/crates/lib/src/status.rs",
+      "excerpt": "pub(crate) async fn get_host() -> Result<Host> {\n    let env = crate::store::Environment::detect()?;\n    if env.needs_mount_namespace() {\n        crate::cli::prepare_for_write()?;\n    }\n\n    let Some(storage) = BootedStorage::new(env, crate::store::EspAccess::ReadOnly).await? else {\n        // If we're not booted, then return a default.\n        return Ok(Host::default());\n    };\n\n    let mut host = match storage.kind() {\n        Ok(kind) => match kind {\n            BootedStorageKind::Ostree(booted_ostree) => {\n                let (_deployments, host) = get_status(&booted_ostree)?;\n                host\n            }\n            BootedStorageKind::Composefs(booted_cfs) => {\n                crate::bootc_composefs::status::get_composefs_status(&storage, &booted_cfs).await?\n            }\n        },\n        Err(_) => {\n            // If determining storage kind fails (e.g., no booted deployment),\n            // return a default host indicating the system is not deployed via bootc\n            Host::default()\n        }\n    };\n\n    // Surface whether the physical root is on a read-only medium (e.g. a live\n    // ISO), so consumers know mutating operations are unavailable.\n    host.status.read_only = storage.is_ro;\n\n    Ok(host)\n}"
+    },
+    {
+      "path": "crates/lib/src/cli.rs",
+      "git_blob_sha": "0a7c0e5987cd1888375f4c75f68fd4e1927d6d5f",
+      "url": "https://github.com/bootc-dev/bootc/blob/d01e723ae9480fa53aa9db09a7eff0439548e9f6/crates/lib/src/cli.rs",
+      "excerpt": "#[context(\"Querying root privilege\")]\npub(crate) fn require_root(is_container: bool) -> Result<()> {\n    ensure!(\n        rustix::process::getuid().is_root(),\n        if is_container {\n            \"The user inside the container from which you are running this command must be root\"\n        } else {\n            \"This command must be executed as the root user\"\n        }\n    );\n\n    ensure!(\n        rustix::thread::capability_is_in_bounding_set(rustix::thread::CapabilitySet::SYS_ADMIN)?,\n        if is_container {\n            \"The container must be executed with full privileges (e.g. --privileged flag)\"\n        } else {\n            \"This command requires full root privileges (CAP_SYS_ADMIN)\"\n        }\n    );\n\n    tracing::trace!(\"Verified uid 0 with CAP_SYS_ADMIN\");\n\n    Ok(())\n}"
+    },
+    {
+      "path": "crates/lib/src/store/mod.rs",
+      "git_blob_sha": "dbda82819720f2dd7253126c70c9aa35287ebb8b",
+      "url": "https://github.com/bootc-dev/bootc/blob/d01e723ae9480fa53aa9db09a7eff0439548e9f6/crates/lib/src/store/mod.rs",
+      "excerpt": "impl Environment {\n    /// Detect the current runtime environment.\n    pub(crate) fn detect() -> Result<Self> {\n        if ostree_ext::container_utils::running_in_container() {\n            return Ok(Self::Container);\n        }\n\n        if let Some(cmdline) = composefs_booted()? {\n            return Ok(Self::ComposefsBooted(cmdline.clone()));\n        }\n\n        if ostree_booted()? {\n            return Ok(Self::OstreeBooted);\n        }\n\n        Ok(Self::Other)\n    }\n\n    /// Returns true if this environment requires entering a mount namespace\n    /// before loading storage (to avoid leaving /sysroot writable).\n    pub(crate) fn needs_mount_namespace(&self) -> bool {\n        matches!(self, Self::OstreeBooted | Self::ComposefsBooted(_))\n    }\n}"
+    }
+  ]
+}

@@ -15,6 +15,22 @@ def sha256(path):
     with path.open('rb') as source: return hashlib.file_digest(source,'sha256').hexdigest()
 
 
+def read_bootc_status(path, properties):
+    required={'Result':'success','ExecMainCode':'1','ExecMainStatus':'0',
+              'ActiveState':'active','SubState':'exited'}
+    if properties!=required: raise ValueError('Fixed bootc status collector did not complete')
+    fd=os.open(path,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK)
+    with os.fdopen(fd,'rb') as source:
+        info=os.fstat(source.fileno())
+        if (not stat.S_ISREG(info.st_mode) or info.st_uid!=0 or info.st_nlink!=1
+                or stat.S_IMODE(info.st_mode)!=0o600 or not 0<info.st_size<=128*1024):
+            raise ValueError('Status output is not one bounded private root-owned regular file')
+        raw=source.read(128*1024+1)
+        if len(raw)!=info.st_size: raise ValueError('Status output changed during observation')
+    return json.loads(raw), {'unit':'s.service','service':properties,'bytes':len(raw),
+                             'sha256':hashlib.sha256(raw).hexdigest()}
+
+
 def main():
     product=Path('/sys/class/dmi/id/product_name').read_text().strip()
     if (os.geteuid()!=0 or product!='Symbi-Hosted-Atomic-Probe'
@@ -30,7 +46,7 @@ def main():
             'kernel':platform.release(),'os':platform.freedesktop_os_release(),
             'boot_id':Path('/proc/sys/kernel/random/boot_id').read_text().strip(),
             'nics':sorted(path.name for path in Path('/sys/class/net').iterdir()),
-            'commands':[],'scope':'Unsigned development artifact boot only; no release, desktop or containment qualification'}
+            'commands':[],'scope':'CI fixture-signed development artifact boot only; no release, desktop or containment qualification'}
     def run(command):
         result=subprocess.run(command,stdin=subprocess.DEVNULL,capture_output=True,text=True,timeout=60,
                               env={'PATH':'/usr/sbin:/usr/bin:/sbin:/bin','LANG':'C.UTF-8'})
@@ -41,6 +57,11 @@ def main():
         result.check_returncode()
         return result.stdout
     try:
+        process={k:v.strip() for k,v in (line.split(':',1) for line in Path('/proc/self/status').read_text().splitlines() if ':' in line)}
+        record['probe_security']={k:process[k] for k in ('CapEff','CapPrm','CapBnd','NoNewPrivs')}
+        if record['probe_security']!={'CapEff':'0000000000000000','CapPrm':'0000000000000000',
+                                      'CapBnd':'0000000000000000','NoNewPrivs':'1'}:
+            raise ValueError('Observation probe gained privileges')
         record['selinux']=run(['/usr/sbin/getenforce']).strip()
         record['selinux_enforce']=Path('/sys/fs/selinux/enforce').read_text().strip()
         record['usr_readonly']=bool(os.statvfs('/usr').f_flag & os.ST_RDONLY)
@@ -48,7 +69,10 @@ def main():
         record['sysroot_fstype']=run(['/usr/bin/findmnt','-n','-o','FSTYPE','--target','/sysroot']).strip()
         record['cmdline']=Path('/proc/cmdline').read_text().strip()
         record['bootc_version']=run(['/usr/bin/bootc','--version']).strip()
-        record['bootc_status']=json.loads(run(['/usr/bin/bootc','status','--json']))
+        properties=dict(line.split('=',1) for line in run(['/usr/bin/systemctl','show','s.service',
+                        '--property=Result,ExecMainCode,ExecMainStatus,ActiveState,SubState']).splitlines())
+        record['bootc_status'],record['bootc_status_observation']=read_bootc_status(
+            Path('/run/symbi-atomic-status/status.json'),properties)
         fmt='%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n'
         inventory=run(['/usr/bin/rpm','-qa','--qf',fmt]).splitlines()
         if len(set(inventory))!=len(inventory): raise ValueError('Duplicate installed package identity')

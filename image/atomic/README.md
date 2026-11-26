@@ -188,3 +188,52 @@ With the independent desktop package discovery additions, all 244 offline image
 tests pass at 37,656 KiB RSS, 0.83 CPU seconds and zero swap, under the same
 128 MiB/10%-CPU cap. Actual signature controls and installation/boot remain
 pending the corrected hosted attempt.
+
+## Installed-image boot and separate status collector
+
+[Run 45818340666](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45818340666)
+at `30d4ab7` completed bootc installation and booted the actual retained image's
+kernel `7.3.4-300.secureblue.1.fc45.x86_64`. The native source-policy positive
+control and all four rejection controls passed; the ephemeral private keys were
+removed. The guest reported secureblue 45, enforcing SELinux, read-only `/usr`
+and `/sysroot`, Btrfs, and only loopback. Its probe then failed at `bootc status`:
+upstream's booted status path requires `CAP_SYS_ADMIN` to enter a private mount
+namespace. Payload/inventory/deployment checks were not reached. The accepted
+boot result remains failed, not an OS or release qualification.
+
+All 87 original files and an independent byte-bound reconciliation are retained
+under `docs/security/reports/P0-03-atomic-boot/45818340666/`. Three containers,
+loop devices, image, private storage and runroot were cleaned up. Hosted parent
+memory reached its ceiling (163,476 max events), with no OOM/kill or host swap;
+the QEMU container peaked at 3,151,433,728 bytes, with zero max/OOM/kill events.
+The guest's own compressed zram swap is not a claim of zero guest swap.
+No after-boot disk digest was accepted on this failed path. The same source's
+[workspace/formal check](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45818361831)
+passed.
+
+The corrected test uses a separate firmware-generated `s.service` that executes
+only `/usr/bin/bootc status --json` inside the disposable VM. Its sole capability
+is `CAP_SYS_ADMIN`, with a private mount namespace, no new privileges, no imported
+credentials or caller-controlled command, and a 256 MiB/half-CPU/32-task/zero-swap
+ceiling. Its only report is a private root-owned file in a fresh `/run` directory.
+The installed bootc command uses that namespace for its storage query; global
+read-only mounts and SELinux are still checked afterward. This collector's guest
+privilege is explicit test infrastructure, not a new product service or agent
+permission. No collector capability reaches the observation probe or host QEMU.
+
+The original zero-capability Python probe depends on successful completion of
+that fixed collector, verifies its service result and bounded regular output,
+and then applies every existing kernel, payload, inventory, trust and deployment
+check. It also reports and checks its own empty effective/permitted/bounding
+capability sets and no-new-privileges state. The short extra unit fits the same
+firmware transport; its input hash is retained. No package or image rebuild is
+needed. The exact upstream [status source review](status-source-review.json)
+records why the namespace is needed; it does not claim distro binary equivalence.
+
+Two new acceptance tests failed before implementation and now pass. Together
+with the strengthened existing report/firmware tests, all 246 image fixtures pass
+at 36,360 KiB peak RSS, 0.80 CPU seconds and zero swap under the local 128 MiB/10%
+CPU limit. These fixtures do not qualify the native collector; that requires the
+next hosted run. No release key, signature exception, new dependency, agent
+authorization or journal event is introduced. INV-12 and human TCB review remain
+required, as do desktop, sandbox, release and rollback qualification.

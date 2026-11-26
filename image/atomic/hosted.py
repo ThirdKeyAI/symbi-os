@@ -168,7 +168,7 @@ def main():
         expected['inventory_sha256']=hashlib.sha256(('\n'.join(sorted(inventory))+'\n').encode()).hexdigest()
         expected['nonce']=secrets.token_hex(16)
         boot_input=storage/'boot-input';boot_input.mkdir(mode=0o755)
-        for name in ('boot.py','contract.py','guest.py','o.service'):
+        for name in ('boot.py','contract.py','guest.py','o.service','s.service'):
             shutil.copyfile(root/'image/atomic'/name,boot_input/name);(boot_input/name).chmod(0o644)
         (boot_input/'atomic.raw').touch(mode=0o644)
         raw=(json.dumps(expected,sort_keys=True)+'\n').encode()
@@ -186,7 +186,7 @@ def main():
                        '--mount',f'type=bind,src={disk},dst=/inputs/atomic.raw,ro',
                        '--mount',f'type=bind,src={boot_output},dst=/output',
                        '--entrypoint=/usr/bin/python3',image_id,'/inputs/boot.py']
-        record['boot_inputs']={name:sha256(boot_input/name) for name in ('boot.py','contract.py','guest.py','o.service','expected.json')}
+        record['boot_inputs']={name:sha256(boot_input/name) for name in ('boot.py','contract.py','guest.py','o.service','s.service','expected.json')}
         print('Atomic boot: starting the offline VM under unprivileged QEMU/TCG',flush=True)
         run('boot',command,960)
         result=unique_json((boot_output/'result.json').read_bytes())

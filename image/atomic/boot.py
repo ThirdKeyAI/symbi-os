@@ -25,6 +25,7 @@ def main():
     record={'schema':1,'passed':False,'guest_booted':False,'os_qualified':False,'release_qualified':False,
             'limits':limits,'probe_sha256':sha256(inputs/'guest.py'),
             'expected_sha256':sha256(inputs/'expected.json'),'unit_sha256':sha256(inputs/'o.service'),
+            'status_unit_sha256':sha256(inputs/'s.service'),
             'nonce':expected['nonce'],'scope':'Offline Atomic development image installation and boot only'}
     child=None
     try:
