@@ -139,6 +139,17 @@ Super+Shift+O shortcut, vault edit/commit, updater refusal, bridge refusal and
 selected-base loader test are release gates. Agent access is deferred to P1-13's
 named read contracts and isolated Git-diff workflow.
 
+## Requested terminal applications
+
+Yazi, Glum and Tootles are selected desktop requirements under
+`image/default_apps/`. Exact stable tag commits and license identities are
+recorded, while installation and qualification remain false. Yazi becomes the
+terminal file manager after its runtime package and theme downloads are disabled
+and preview/file-operation tests pass. Glum supplies local Markdown reading.
+Tootles supplies the human Mastodon and Bluesky TUI with Tokyo Night and mpv
+integration, but real-account use remains blocked on qualified secret storage
+and isolation of account tokens from governed sessions.
+
 ## Hosted BlueBuild compatibility check
 
 `image/toolchain/bluebuild.json` pins the experimental source build to

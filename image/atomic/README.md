@@ -5,8 +5,9 @@ image** on a new virtual disk and boots it on disposable GitHub infrastructure.
 It generates a temporary offline CI fixture key, destroys its private material,
 and has no ThirdKey release-signing or publication authority. This is not a user
 installation route.
-Passing it does not establish desktop, sandbox, release, NVIDIA or rollback
-qualification.
+The ordinary Atomic workflow now extends that harness through an exact retained
+predecessor, signed switch and booted rollback. Passing it does not establish
+desktop, sandbox, release or NVIDIA qualification.
 
 The first prerequisite passed in [preflight 45804599421](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45804599421)
 at `97e49d111d0d71b5393f4067e713ccd39b74f55f`: complete saved-archive identity,
@@ -441,3 +442,31 @@ source disk and firmware-supplied test services; it does not change the Atomic
 installer, local source signature policy, release policy, base image or ordinary
 boot result. Its evidence and qualification claim remain separate under
 `.cache/landlock-qualification-evidence`.
+
+## Signed update and booted rollback gate
+
+`update-base.lock.json` binds an older retained generic image, its hosted
+artifact and the exact preflight evidence that previously inspected it. The
+Atomic workflow downloads both that predecessor and the current image by
+artifact ID, then validates workflow commit, name, size, digest and expiry. It
+uses the already-loaded current image only as the bounded installer and tooling
+environment; the predecessor's opaque OCI blobs are independently verified and
+signed by a second ephemeral offline fixture key.
+
+The predecessor is installed to a new guarded regular-file disk. The current
+image is exposed through a second read-only ext4 disk labeled `SYMBIUPDATE`.
+Inside the offline VM, a temporary firmware-generated service mounts that disk
+read-only with `nosuid,nodev,noexec`, temporarily binds an enforcing policy for
+the exact fixture-signed manifest, and invokes `bootc switch --transport dir
+--enforce-container-sigpolicy`. Three boots reuse one qcow2 overlay: the first
+stages the current digest, the second proves it booted and queues `bootc
+rollback`, and the third proves the exact predecessor booted again. Every boot
+requires the expected digest and `containerPolicy` status; only loopback is
+present and host swap remains disabled.
+
+This is a development recovery proof, not release signing. Both fixture keys
+are generated offline and their private material is removed. The shipped
+default-reject policy remains in each image; the temporary update policy exists
+only in the disposable service mount namespace. The hosted run and current
+preflight binding are still pending. Eleven focused update tests and the full
+325-test image suite pass locally; the native VM result is not yet claimed.

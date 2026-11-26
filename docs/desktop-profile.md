@@ -2,8 +2,9 @@
 
 Owner decision: Symbi OS should keep the owner's Ombuntu desktop habits:
 MPlayer, familiar menus, Tokyo Night by default, Kitty as the default terminal,
-Nerd Fonts, terminal customizations, Tolaria as the default second brain, and
-the same keyboard shortcuts. This is part of P0-03 desktop integration. The
+Nerd Fonts, terminal customizations, Tolaria as the default second brain, Yazi,
+Glum, Tootles, and the same keyboard shortcuts. This is part of P0-03 desktop
+integration. The
 requirements below are pending; the already-built generic and NVIDIA images do
 not yet contain this full profile.
 
@@ -26,6 +27,9 @@ the OS's existing Ombuntu input pin.
 | Media | Both MPlayer and mpv are installed | Include the explicitly requested MPlayer; retain mpv compatibility for the Ombuntu media profile and qualify real audio/video playback |
 | Menus | Walker application launcher, Omarchy menu, capture/toggle/hardware/system/theme/background menus, keybinding help, bar menu entry | Port the familiar menu structure and shortcuts to working Fedora actions; retain the planned Agents section for the cards that implement it |
 | Notes | The recorded session maps Super+Shift+O to Obsidian | Ship the patched Tolaria desktop app, expose it through Walker and keep Super+Shift+O as the note/second-brain shortcut |
+| Terminal file manager | Yazi was not part of the captured installed package baseline | Ship Yazi in Kitty from menus and the existing file-manager chord while preserving graphical portal file selection |
+| Markdown reader | Glum was not part of the captured installed package baseline | Ship Glum with its man page and completions; expose an explicit Read in Glum action without silently changing user MIME choices |
+| Social client | Tootles was not part of the captured installed package baseline | Ship the Tootles Mastodon and Bluesky TUI in Kitty with Tokyo Night selected, mpv media integration and human-controlled account setup |
 | Shell | Bash imports Omarchy defaults; Starship, mise, zoxide, fzf, eza, bat, fd and ripgrep are available | Port interactive prompt, navigation, completion, history, aliases and file previews using packaged tools and Fedora paths |
 | Terminal tools | tmux, Neovim, btop, fastfetch and lazygit are installed | Include and configure the matching terminal workflow; record exact authenticated Fedora/source inputs before assembly |
 
@@ -48,6 +52,21 @@ package downloads and durable agent-configuration writes are disabled in the OS
 build. Governed agent reads and isolated-branch writes belong to P1-13. An agent
 write is presented as a diff and cannot merge or push without a separate human
 decision.
+
+Yazi ships with no downloaded theme or third-party Lua plugin. Its `ya pkg`
+network install and update route must be unavailable in the immutable OS build;
+reviewed extensions, if any, enter through the signed image recipe. File
+previews run under the user session with bounded resources and must not turn
+untrusted file names into shell input. Yazi's integrated plugin system, remote
+filesystems and package manager require this work before it can satisfy INV-12.
+
+Glum is a local Markdown reader. The image uses a pinned authenticated source or
+release artifact rather than its convenience installer. Clipboard, editor and
+link-opening actions remain explicit human gestures. Tootles is a networked
+human application: account creation is interactive, agent routes do not receive
+its tokens, and the image must qualify secret storage, user-selected server
+egress, media cache, browser handoff and mpv subprocesses before enabling real
+accounts. Its Tokyo Night theme is the initial default.
 
 ## Preserve shortcuts
 
@@ -140,6 +159,14 @@ apply to the curated menu/theme port.
 - [ ] Launch Tolaria from Walker and Super+Shift+O on both image variants; open
   an existing Git vault, edit and commit a Markdown note, and verify that update,
   loopback bridge, direct-provider and durable config-write routes stay disabled.
+- [ ] Launch Yazi in Kitty from Walker and the preserved file-manager chord;
+  exercise file operations, previews, unusual names, cancellation and resource
+  bounds, and prove runtime package and theme downloads are unavailable.
+- [ ] Launch Glum on local Markdown with links, images and metacharacters; verify
+  its pinned bytes, man page, completions and explicit external-application
+  handoffs. Launch Tootles in offline demo and with test Mastodon and Bluesky
+  accounts; verify Tokyo Night, private credentials, bounded media, mpv and
+  revocation without exposing account material to governed sessions.
 - [ ] Exercise each shipped menu action, unavailable optional-app handling,
   font/icon rendering, both media players and audio/video output in the actual
   image. No shortcut is silently remapped or claimed complete because it parses.

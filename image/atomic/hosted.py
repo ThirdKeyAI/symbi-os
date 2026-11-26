@@ -18,13 +18,13 @@ from image.launcher.probes.bounded_process import run_bounded
 def main():
     qualification=os.environ.get('SYMBI_QUALIFICATION','')
     if (os.environ.get('GITHUB_ACTIONS')!='true' or os.environ.get('RUNNER_ENVIRONMENT')!='github-hosted'
-            or os.environ.get('SYMBI_IMAGE_VARIANT')!='generic' or qualification not in ('','landlock')
+            or os.environ.get('SYMBI_IMAGE_VARIANT')!='generic' or qualification not in ('','landlock','update')
             or os.geteuid()!=0):
         raise SystemExit('Use the disposable hosted generic Atomic install/boot unit')
     root=Path.cwd().resolve()
     process=Path('/sys/fs/cgroup')/Path(Path('/proc/self/cgroup').read_text().strip().split('::',1)[1]).relative_to('/')
     group=process.parent
-    unit_prefix='symbi-landlock-' if qualification else 'symbi-atomic-disk-'
+    unit_prefix='symbi-landlock-' if qualification=='landlock' else 'symbi-atomic-disk-'
     if (process.name!='supervisor' or not group.name.startswith(unit_prefix)
             or not group.name.endswith('.service') or (group/'cgroup.procs').read_text().strip()):
         raise ValueError('Unexpected delegated installer controller')
@@ -134,6 +134,16 @@ def main():
         if hashlib.sha256(policy_bytes).hexdigest()!=expected['trust']['etc/containers/policy.json']:
             raise ValueError('The immutable release policy binding changed')
         local_policy=installer_policy(policy,(signing_output/'good-public.asc').read_bytes(),readiness['manifest_digest'])
+        if qualification=='update':
+            from image.atomic.update_hosted import run_update
+            print('Atomic update: installing the exact predecessor for a signed switch and booted rollback',flush=True)
+            record['update']=run_update(root,group,podman,image_id,storage,containers,run,pins,
+                                        lock,readiness['manifest_digest'],storage/'signed',
+                                        signing_output,signed,policy,policy_bytes)
+            record['guest_booted']=record['update']['guest_booted'] is True
+            record['update_qualified']=record['update']['passed'] is True
+            record['passed']=record['guest_booted'] and record['update_qualified']
+            return
         disk_dir=storage/'disk';disk_dir.mkdir(mode=0o700)
         identity=create_disk(disk_dir,24*1024**3);disk=disk_dir/'atomic.raw'
         record['disk']=identity

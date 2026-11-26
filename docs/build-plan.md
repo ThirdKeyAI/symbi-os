@@ -110,6 +110,11 @@ The product image is Fedora Atomic (bootc), built with [BlueBuild](https://blue-
   durable writes to real harness configuration. Super+Shift+O keeps the existing
   note-app shortcut. Human vault selection and editing stay local; governed agent
   access is delivered by P1-13 through named contracts and reviewed Git diffs.
+- Owner-selected terminal applications: Yazi as the terminal file manager,
+  Glum as the local Markdown reader, and Tootles as the Mastodon and Bluesky
+  client. They use pinned authenticated inputs. Yazi runtime package and theme
+  downloads are disabled; Tootles account credentials remain in the human
+  session and require qualified secret storage before real-account use.
 - Managed browser policies (telemetry off, keyring-backed passwords) and developer-tool telemetry opt-outs, borrowed from Ombuntu.
 - Security by removal: `hyprpm` and all Hyprland plugins disabled, no menu extensions, no remote themes, no `curl | sh` installers anywhere.
 

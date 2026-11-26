@@ -26,6 +26,11 @@ Markdown vaults are intended for the human and governed agents. The exact source
 tool input and fail-closed OS patch are prepared, but the application is not yet
 present in the built images; signed Fedora build inputs, an offline source build,
 loader checks and a real desktop launch remain required.
+The requested desktop set also includes Yazi as the terminal file manager, Glum
+as a terminal Markdown reader, and Tootles as the keyboard-first Mastodon and
+Bluesky client. These are selected requirements, not claims about the current
+images; exact signed inputs, disabled runtime package downloads, credential
+handling and installed-image tests remain gates.
 Security review uses the [cve.bz API](https://cve.bz/api/public/openapi.json);
 [retained findings](docs/security/reports/P0-03-cve-bz/2026-11-26/native/README.md)
 remain open where source, package or reachability verification is incomplete.

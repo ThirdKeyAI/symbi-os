@@ -1,0 +1,30 @@
+[Unit]
+Description=Disposable hosted signed update and rollback phase
+ConditionPathExists=!/etc/initrd-release
+RequiresMountsFor=/var/lib/symbi-update/source
+After=local-fs.target systemd-udev-trigger.service
+OnFailure=poweroff.target
+
+[Service]
+Type=oneshot
+StateDirectory=symbi-update-test
+StateDirectoryMode=0700
+ImportCredential=symbi-update.py
+ImportCredential=symbi-update-expected.json
+ImportCredential=symbi-update-policy.json
+ExecStart=/usr/bin/python3 %d/symbi-update.py %d/symbi-update-expected.json %d/symbi-update-policy.json
+ExecStopPost=/usr/bin/systemctl --no-block poweroff
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=LANG=C.UTF-8
+UMask=0077
+PrivateTmp=yes
+PrivateMounts=yes
+ProtectHome=yes
+MemoryMax=1536M
+MemorySwapMax=0
+CPUQuota=100%
+TasksMax=128
+TimeoutStartSec=1500
+TimeoutStopSec=30
+StandardOutput=journal+console
+StandardError=journal+console

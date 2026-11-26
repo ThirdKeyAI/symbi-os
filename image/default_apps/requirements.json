@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "qualified": false,
+  "installed": false,
+  "applications": {
+    "yazi": {
+      "role": "terminal-file-manager",
+      "repository": "https://github.com/sxyazi/yazi",
+      "version": "v26.9.1",
+      "revision": "8dd895c695a5950330c2623eb43debf323b60654",
+      "license": "MIT",
+      "network": "disabled-by-default",
+      "blockers": [
+        "authenticate exact source or release payload",
+        "disable runtime package and theme downloads",
+        "ship no unreviewed Lua plugins",
+        "qualify previews and file operations on the installed image"
+      ]
+    },
+    "glum": {
+      "role": "terminal-markdown-reader",
+      "repository": "https://github.com/jaschadub/glum",
+      "version": "v0.2.2",
+      "revision": "7608edc56e5b48c6c398e1f36a3c64c49e4261f8",
+      "license": "Apache-2.0",
+      "network": "explicit-link-opening-only",
+      "blockers": [
+        "verify exact release signature and provenance",
+        "build or consume the pinned artifact without a convenience installer",
+        "qualify clipboard editor link and image handoffs"
+      ]
+    },
+    "tootles": {
+      "role": "terminal-social-client",
+      "repository": "https://github.com/tootles-dev/tootles",
+      "version": "v0.2.0",
+      "revision": "40d7a63c5ec0e08cb3eb8241b50a2af6cf76c98a",
+      "license": "MIT",
+      "network": "human-selected-mastodon-and-bluesky-servers",
+      "blockers": [
+        "verify exact release signature and provenance",
+        "qualify secret storage before real-account use",
+        "keep account tokens outside governed sessions",
+        "qualify browser media-cache and mpv handoffs"
+      ]
+    }
+  },
+  "scope": "Owner-selected default application requirements; no package or trust selection yet"
+}
