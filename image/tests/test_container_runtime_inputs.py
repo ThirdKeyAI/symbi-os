@@ -164,7 +164,7 @@ class ContainerRuntimeInputs(unittest.TestCase):
             with self.assertRaises(ValueError):
                 mod.inspect_checksums(path, pins)
 
-    def test_fedora_runtime_profile_is_separate_and_heavy_jobs_are_manual_or_main(self):
+    def test_fedora_runtime_profile_is_separate_and_prep_branch_is_passive(self):
         requirements = json.loads(
             (ROOT / "image/container/runtime-requirements.json").read_text())
         self.assertEqual(requirements["profile"], "container-runtime")
@@ -192,14 +192,17 @@ class ContainerRuntimeInputs(unittest.TestCase):
         self.assertEqual(profile["type"], "choice")
         self.assertEqual(profile["default"], "hyprland")
         self.assertEqual(profile["options"], ["hyprland", "container-runtime"])
-        self.assertEqual(triggers["push"]["branches"], ["main"])
+        self.assertEqual(
+            triggers["push"]["branches"],
+            ["main", "card/P0-05-native-prep"],
+        )
         job = document["jobs"]["packages"]
         selected = job["env"]["SYMBI_FEDORA_PACKAGE_PROFILE"]
         self.assertEqual(
             selected,
-            "${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'hyprland' }}",
+            "${{ github.event_name == 'workflow_dispatch' && inputs.profile || (github.event_name == 'push' && github.ref_name == 'card/P0-05-native-prep' && 'container-runtime' || 'hyprland') }}",
         )
-        self.assertIn("inputs.profile == 'container-runtime'", document["concurrency"]["group"])
+        self.assertIn("github.ref_name == 'card/P0-05-native-prep'", document["concurrency"]["group"])
         command = next(step["run"] for step in job["steps"]
                        if step["name"] == "Authenticate and resolve Fedora build inputs without installation")
         self.assertIn('case "$SYMBI_FEDORA_PACKAGE_PROFILE" in', command)
@@ -208,16 +211,21 @@ class ContainerRuntimeInputs(unittest.TestCase):
         self.assertNotIn("${{ inputs.profile }}", command)
         artifact_names = [step["with"]["name"] for step in job["steps"]
                           if step.get("uses", "").startswith("actions/upload-artifact@")]
-        self.assertTrue(all("inputs.profile == 'container-runtime'" in name
+        self.assertTrue(all("env.SYMBI_FEDORA_PACKAGE_PROFILE == 'container-runtime'" in name
                             for name in artifact_names))
-        self.assertIn("contents: read", workflow)
+        self.assertEqual(document["permissions"], {"contents": "read"})
 
-        intake_workflow = (ROOT / ".github/workflows/gvisor-intake.yml").read_text()
-        self.assertIn("branches: [main]", intake_workflow)
+        intake_path = ROOT / ".github/workflows/gvisor-intake.yml"
+        intake_workflow = intake_path.read_text()
+        intake_document = yaml.safe_load(intake_workflow)
+        self.assertEqual(
+            intake_document[True]["push"]["branches"],
+            ["main", "card/P0-05-native-prep"],
+        )
         self.assertIn("workflow_dispatch:", intake_workflow)
         self.assertNotIn('branches: ["**"]', intake_workflow)
         self.assertNotIn("pull_request:", intake_workflow)
-        self.assertIn("contents: read", intake_workflow)
+        self.assertEqual(intake_document["permissions"], {"contents": "read"})
 
         intake_wrapper = (ROOT / "scripts/check-gvisor-intake.sh").read_text()
         for required in (

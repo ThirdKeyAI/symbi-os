@@ -2,7 +2,7 @@ name: gVisor release intake
 
 on:
   push:
-    branches: [main]
+    branches: [main, card/P0-05-native-prep]
     paths:
       - "image/container/gvisor-inputs.json"
       - "image/container/runtime_inputs.py"

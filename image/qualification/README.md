@@ -115,10 +115,17 @@ status-service inputs.
 
 The gate currently stops before allocating the 60 GiB install disk because
 `image/container/fedora-runtime.lock.json` does not yet exist. That future lock
-must select exact signed Fedora engine RPMs and bind every installed gVisor file
-to the authenticated package inventory. The retained preflight result keeps
-`passed`, `qualified`, native-matrix, managed-route and escape-suite fields false.
-This is a bounded fail-closed controller skeleton, not Fedora execution evidence.
+must bind the exact passive workflow run and candidate artifact, then retain the
+full resolved RPM closure using the fields the discovery job actually produces:
+filename, byte count, SHA-256, NEVRA, vendor, license, signature status and the
+Fedora signing-key fingerprint. Fedora deliberately uses `repo_gpgcheck=0`, so
+the lock must not synthesize a per-package `repository_metadata_sha256`; the
+reviewed repository-configuration hash and each RPM's verified signature are
+separate evidence. A later installation record must bind that complete closure
+and every installed gVisor file to the retained development image. The retained
+preflight result keeps `passed`, `qualified`, native-matrix, managed-route and
+escape-suite fields false. This is a bounded fail-closed controller skeleton,
+not Fedora execution evidence.
 
 ## Hosted Landlock execution
 
