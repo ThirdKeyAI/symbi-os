@@ -75,7 +75,7 @@ def main():
         require_current_requirements(lock, json.loads((root/'image/launcher/elephant-build-requirements.json').read_text()))
         assert lock['base'] == base['image']
         unpack_rpms(root/'.cache/elephant-build-rpms.zip', lock, inputs/'packages')
-        for name in ('build-rpms.lock.json', 'elephant-source.json', 'provider-patch.json', 'build_guest.py', 'toolchain_guest.py'):
+        for name in ('build-rpms.lock.json', 'elephant-source.json', 'provider-patch.json', 'build_guest.py', 'toolchain_guest.py', 'go_identity.py'):
             shutil.copyfile(root/'image/launcher'/name, inputs/name)
         shutil.copyfile(root/'image/launcher/patches/0001-packaged-application-provider-only.patch', inputs/'provider.patch')
         shutil.copytree(root/'image/launcher/probes', inputs/'probes')
@@ -155,10 +155,10 @@ def main():
         record['failure'] = type(error).__name__+': '+str(error)
         raise
     finally:
-        for mode in ('download', 'compile'):
-            source = output/(mode+'-evidence')
-            if source.is_dir() and not (evidence/mode).exists():
-                shutil.copytree(source, evidence/mode)
+        for directory, name in (('toolchain-evidence', 'toolchain'), ('download-evidence', 'download'), ('compile-evidence', 'compile')):
+            source = output/directory
+            if source.is_dir() and not (evidence/name).exists():
+                shutil.copytree(source, evidence/name)
         record['cgroup_final'] = {name: (group/name).read_text().strip() for name in (*limits, 'memory.peak', 'memory.events', 'cpu.stat')}
         save()
 

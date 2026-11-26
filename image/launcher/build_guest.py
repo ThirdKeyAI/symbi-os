@@ -7,6 +7,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+from go_identity import require_compiler
 
 
 def digest(path):
@@ -29,7 +30,7 @@ def main():
     evidence.mkdir()
     source = output/'source'
     environment = {'PATH': '/usr/bin:/bin', 'HOME': '/output/home', 'LANG': 'C.UTF-8',
-                   'GOTOOLCHAIN': 'local', 'GOFLAGS': '-mod=readonly -p=1', 'GOMAXPROCS': '1',
+                   'GOTOOLCHAIN': 'local', 'GOENV': 'off', 'GOFLAGS': '-mod=readonly -p=1', 'GOMAXPROCS': '1',
                    'GOPATH': '/output/go', 'GOCACHE': '/output/go-build', 'CGO_ENABLED': '1', 'TMPDIR': '/output/tmp',
                    'GOPROXY': 'https://proxy.golang.org' if mode == 'download' else 'off',
                    'GOSUMDB': 'sum.golang.org' if mode == 'download' else 'off',
@@ -63,7 +64,10 @@ def main():
             (output/'tmp').mkdir(mode=0o700)
         locks(source)
         run('compiler-version', ['go', 'version'])
-        assert (evidence/'compiler-version.log').read_text().strip() == 'go version go1.27.4 linux/amd64'
+        run('compiler-identity', ['go', 'env', '-json', 'GOVERSION', 'GOOS', 'GOARCH',
+                                 'GOTOOLCHAIN', 'CGO_ENABLED', 'GOEXPERIMENT'])
+        record['go_identity'] = json.loads((evidence/'compiler-identity.log').read_text())
+        require_compiler(record['go_identity'])
         if mode == 'download':
             run('download-locked-modules', ['go', 'mod', 'download'], timeout=1200)
             run('verify-downloaded-modules', ['go', 'mod', 'verify'])

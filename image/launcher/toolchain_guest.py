@@ -26,6 +26,7 @@ def main():
         raise SystemExit('Use the disposable authenticated Fedora runtime container')
     from guest_inventory import require_fedora_family
     from resolve_packages import require_keyring, require_verified_rpm
+    from go_identity import require_compiler
     require_fedora_family(platform.freedesktop_os_release())
     inputs, output = Path('/inputs'), Path('/output')
     evidence = output / 'toolchain-evidence'
@@ -83,9 +84,13 @@ def main():
         require_additive(before, after, expected)
         record['added_packages'] = sorted(expected)
         record['all_base_packages_unchanged'] = True
-        version = run('go-version', ['go', 'version']).stdout.strip()
-        assert version == 'go version go1.27.4 linux/amd64'
+        compiler_env = ['env', 'GOTOOLCHAIN=local', 'GOENV=off', 'GOPROXY=off', 'CGO_ENABLED=1']
+        version = run('go-version', compiler_env+['go', 'version']).stdout.strip()
         record['go_version'] = version
+        identity = json.loads(run('go-identity', compiler_env+['go', 'env', '-json',
+                                  'GOVERSION', 'GOOS', 'GOARCH', 'GOTOOLCHAIN', 'CGO_ENABLED', 'GOEXPERIMENT']).stdout)
+        record['go_identity'] = identity
+        require_compiler(identity)
         record['passed'] = True
     except Exception as error:
         record['failure'] = type(error).__name__ + ': ' + str(error)
