@@ -1,5 +1,5 @@
 [Unit]
-Description=Fixed bootc status service for hosted Landlock qualification
+Description=Fixed bootc status service for hosted runtime qualification
 ConditionPathExists=!/etc/initrd-release
 After=local-fs.target
 Before=l.service

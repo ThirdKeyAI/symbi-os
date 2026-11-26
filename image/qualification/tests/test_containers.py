@@ -77,6 +77,13 @@ class ContainerEvidence(unittest.TestCase):
         self.assertNotIn("HTTPProxy", retained)
         self.assertEqual(retained["CgroupVersion"], "2")
 
+    def test_boot_status_uses_the_fixed_output_only_socket(self):
+        source = (ROOT / "image/qualification/containers.py").read_text()
+        self.assertIn('parser.add_argument("--bootc-status-socket", type=Path)', source)
+        self.assertIn("validate_status_socket(args.bootc_status_socket)", source)
+        self.assertEqual(source.count("read_bootc_status(args.bootc_status_socket)"), 2)
+        self.assertNotIn('command_output(["bootc", "status", "--json"])', source)
+
 
 if __name__ == "__main__":
     unittest.main()

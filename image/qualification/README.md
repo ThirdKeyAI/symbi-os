@@ -69,6 +69,33 @@ tests before making a release claim. A passing Landlock report is limited to the
 listed routes, exact binary, image, architecture and policy. It is not a proof of
 every OS invariant, real Claude compatibility, or resistance after host compromise.
 
+## Container procedure
+
+P0-05 uses the same disposable selected Secureblue Fedora 45 guest, authenticated
+runtime source and binary, immutable bootc image reference, and fixed two-read
+`q.service` status socket as P0-04. The fixture image must already be cached by
+digest, and the authenticated `runsc` executable must already be installed; the
+driver does not pull, build, reconfigure the daemon or grant root to the runtime
+user.
+
+```sh
+python3 image/qualification/containers.py \
+  --source "$PINNED_SOURCE_CHECKOUT" \
+  --binary /usr/bin/symbi \
+  --expected-binary-sha256 "$VERIFIED_BINARY_SHA256" \
+  --expected-runsc-sha256 "$VERIFIED_RUNSC_SHA256" \
+  --fixture-ref "$VERIFIED_FIXTURE_REFERENCE_WITH_DIGEST" \
+  --image-ref "$VERIFIED_IMAGE_REFERENCE_WITH_DIGEST" \
+  --bootc-status-socket /run/symbi-qualification/status.sock \
+  --output "$NEW_PRIVATE_EVIDENCE_DIRECTORY"
+```
+
+The driver inspects the daemon, fixture image and each bounded runc/runsc probe,
+runs every pinned upstream Docker fixture driver, rechecks source and executable
+digests, and validates the deployment again through the second fixed socket
+response. Its `qualified` field deliberately remains false until the managed-CLI
+broker, escape suite and required reviews are complete.
+
 ## Upstream references
 
 - [Pinned platform diagnostic](https://github.com/ThirdKeyAI/Symbiont/blob/deddb9e997244d2289c217ad76b8fde0e9b0339b/scripts/test-landlock-platform.py)

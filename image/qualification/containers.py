@@ -14,8 +14,9 @@ import sys
 import tomllib
 import uuid
 
-from landlock import (ROOT, DIGEST_REF, command_output, digest, host_details, require,
-                      run_driver, validate_deployment, validate_source)
+from landlock import (ROOT, DIGEST_REF, command_output, digest, host_details,
+                      read_bootc_status, require, run_driver, validate_deployment,
+                      validate_source, validate_status_socket)
 
 FIXTURE_DRIVERS = ("test-filesystem-grants.py", "test-source-broker.py", "test-git-source.py")
 PAYLOAD = r'''
@@ -131,6 +132,7 @@ def main():
     parser.add_argument("--expected-runsc-sha256")
     parser.add_argument("--fixture-ref")
     parser.add_argument("--image-ref")
+    parser.add_argument("--bootc-status-socket", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     report = {"card": "P0-05", "passed": False, "qualified": False,
@@ -143,7 +145,8 @@ def main():
             print(json.dumps(report, indent=2))
             return 0
         require(all((args.source, args.binary, args.expected_binary_sha256, args.expected_runsc_sha256,
-                     args.fixture_ref, args.image_ref, args.output)), "all qualification inputs are required")
+                     args.fixture_ref, args.image_ref, args.bootc_status_socket, args.output)),
+                "all qualification inputs are required")
         for value in (args.expected_binary_sha256, args.expected_runsc_sha256):
             require(re.fullmatch(r"[a-f0-9]{64}", value), "invalid authenticated binary digest")
         require(DIGEST_REF.fullmatch(args.fixture_ref), "fixture must use an authenticated immutable image reference")
@@ -153,7 +156,8 @@ def main():
         validate_source(source, revision)
         require(digest(binary) == args.expected_binary_sha256, "runtime binary hash mismatch")
         require(digest("/usr/bin/runsc") == args.expected_runsc_sha256, "runsc binary hash mismatch")
-        bootc = json.loads(command_output(["bootc", "status", "--json"]))
+        validate_status_socket(args.bootc_status_socket)
+        bootc = read_bootc_status(args.bootc_status_socket)
         validate_deployment(bootc, args.image_ref)
         candidate = args.output.resolve()
         require(not candidate.is_relative_to("/tmp") and not candidate.is_relative_to(source), "use guest disk outside /tmp and source")
@@ -187,7 +191,9 @@ def main():
         validate_source(source, revision)
         require(digest(binary) == args.expected_binary_sha256 and digest("/usr/bin/runsc") == args.expected_runsc_sha256,
                 "qualification binary changed")
-        validate_deployment(json.loads(command_output(["bootc", "status", "--json"])), args.image_ref)
+        after = read_bootc_status(args.bootc_status_socket)
+        validate_deployment(after, args.image_ref)
+        (output / "bootc-after.json").write_text(json.dumps(after, indent=2) + "\n")
         report["passed"] = True
     except (ValueError, OSError, subprocess.SubprocessError, KeyError) as error:
         report["error"] = str(error)
