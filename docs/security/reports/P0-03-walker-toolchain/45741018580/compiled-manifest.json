@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "compiled": true,
+  "os_qualified": false,
+  "gui_qualified": false,
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "source_commit": "2daf90717b8a0058e2103a215db98702163bc49d",
+  "upstream_revision": "a515085fd39fae80acc086c8fbfd9b7771a9a11d",
+  "version": "2.17.2",
+  "binary_sha256": "4566e3710ef9c04752e5268b472a88325ed813cd8846318315496bbd422ab31f",
+  "binary_bytes": 7363968,
+  "cargo_toml_sha256": "d1676045d1101a2d92c5669e54e36e63363d3e79dbc10c561662039ae2453a90",
+  "cargo_lock_sha256": "3448367c28c769e29f681ea2de84d4a822f08569bbef6628f03535c61fec2315",
+  "build_rs_sha256": "87ecaa8f156b6ea8133674c9d647d10273711523a0696e344dbd12d66f7f0db5",
+  "build_rpm_lock_sha256": "cd96d4c744672542b28dfde365a1b5fd5a5e17426139ad2900a9aa46e7317b83"
+}

@@ -107,7 +107,9 @@ claimed; no blanket exemptions are introduced.
 Public evidence upload uses
 [`actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02`](https://github.com/actions/upload-artifact/commit/ea165f8d65b6e75b540449e92b4886f43607fa02)
 (v4.6.2, MIT), the pin used by Symbiont. GitHub reports its merge signature
-verified. Only `.cache/image-tool-evidence/` is uploaded for fourteen days;
+verified. Public `.cache/image-tool-evidence/` is retained for fourteen days.
+The current workflow also retains the bounded compiled CLI, original upstream
+license and source/compiler-bound manifest as a separate development artifact;
 no signing environment, private material or compiler target directory is attached.
 
 The first hosted attempt on Rust 1.95.0 failed with E0658 at three upstream
@@ -171,3 +173,13 @@ GFDL-1.3-no-invariants-or-later), ncurses-devel and ncurses-c++-libs 6.6-3.fc45
 (MIT-open-group). Exact bytes, licenses and signatures are in the build lock and
 retained report. These are development-stage inputs, not a completed audit or
 permission to overwrite the product base libraries.
+
+
+Walker source/runtime run 45741018580 passed the exact v2.17.2 build with the
+unchanged 284-entry Cargo.lock, all 14 upstream tests and four real CLI controls
+on the original secureblue base. Source, compiler/RPM inputs, executable bytes
+and the original GPL-3.0 license file are bound in
+`image/launcher/walker-development-binary.lock.json`. Compilation and tests are
+compatibility evidence, not an audit of the 283 registry dependencies. No Cargo
+vet audits/exemptions are added; final source/dependency/license/SBOM review and
+actual desktop/image acceptance remain open.

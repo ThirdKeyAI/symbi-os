@@ -1,5 +1,17 @@
 # Hosted Walker source and CLI acceptance
 
+[Run 45741018580](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45741018580)
+passed source compilation, all 14 upstream tests and the four real CLI controls.
+The reviewed artifact is pinned in `../launcher/walker-development-binary.lock.json`
+for later reuse; its 7.36 MB executable stays on hosted storage. The separate
+runtime stage added only the signed gtk4-layer-shell package and preserved all
+2,178 original package identities. All five containers were removed and checked
+absent. The 3 GiB compiler stage peaked at 2,451,918,848 bytes with no limit/OOM
+events; the 4 GiB parent recorded memory pressure but no OOM/kill. Exact source,
+compiler, full signature logs, inventories, test results and counters are retained
+under `docs/security/reports/P0-03-walker-toolchain/45741018580/`. Desktop/GUI
+integration, dependency audits and the actual Atomic image remain unqualified.
+
 The separate workflow builds the exact Walker v2.17.2 revision in
 `../launcher/walker-source.json`. Both its compiler and runtime RPM artifacts
 were already reviewed and locked; this job rechecks their bytes, full Fedora

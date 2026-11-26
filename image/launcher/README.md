@@ -99,8 +99,8 @@ Hosted Walker discovery45729431180 passed. `walker-build-rpms.lock.json` records
 91 signed candidate packages, including Rust/Cargo1.100.0, GTK development
 headers and protoc33.5. None shares a package name with the installed base.
 Discovery preserved the installed inventory and rejected a missing key and
-tampered payload. The bundle stays on hosted storage; installation, source
-compilation and runtime acceptance have not occurred.
+tampered payload. The bundle stays on hosted storage. Discovery itself did not install or compile;
+subsequent source/runtime results are recorded in the Walker procedure below.
 
 Elephant run45728665797 compiled all four planned binaries with the authenticated
 Fedora compiler, then failed upstream `TestRunOCR` because its result was empty.
@@ -219,5 +219,7 @@ This establishes development provider reuse, not desktop or OS qualification.
 
 The [Walker source procedure](../walker/README.md) now prepares the separately
 pinned Rust/GTK build and original-base CLI controls. It reuses both authenticated
-RPM bundles and runs only on resource-limited hosted workers. Actual Walker
-compilation, tests, runtime acceptance and dependency review remain pending.
+RPM bundles and runs only on resource-limited hosted workers. Walker run 45741018580 passed actual compilation, all 14 upstream tests and four
+original-base CLI controls. `walker-development-binary.lock.json` pins the exact
+retained artifact and original source license for reuse. Desktop integration,
+dependency review and OS qualification remain pending.

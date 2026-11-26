@@ -1,0 +1,196 @@
+Package                   Arch   Version            Repository        Size
+Installing:
+ brotli                   x86_64 0:1.2.1-1.fc45     @commandline  33.5 KiB
+ brotli-devel             x86_64 0:1.2.1-1.fc45     @commandline  65.8 KiB
+ bzip2-devel              x86_64 0:1.0.8-24.fc45    @commandline 309.8 KiB
+ cairo-devel              x86_64 0:1.18.6-1.fc45    @commandline   2.3 MiB
+ cairo-gobject-devel      x86_64 0:1.18.6-1.fc45    @commandline   7.0 KiB
+ cargo                    x86_64 0:1.100.0-1.fc45   @commandline  23.4 MiB
+ fontconfig-devel         x86_64 0:2.18.3-2.fc45    @commandline 127.7 KiB
+ freetype-devel           x86_64 0:2.14.3-3.fc45    @commandline   8.6 MiB
+ fribidi-devel            x86_64 0:1.0.18-1.fc45    @commandline  78.3 KiB
+ gdk-pixbuf2-devel        x86_64 0:2.44.8-3.fc45    @commandline   2.2 MiB
+ glib2-devel              x86_64 0:2.90.1-1.fc45    @commandline  15.8 MiB
+ glycin-devel             x86_64 0:2.2.6-1.fc45     @commandline 151.6 KiB
+ gpgme-devel              x86_64 0:2.0.1-6.fc45     @commandline 292.5 KiB
+ gpgmepp-devel            x86_64 1:2.0.0-2.fc45     @commandline 167.7 KiB
+ graphene-devel           x86_64 0:1.10.8-6.fc45    @commandline   2.3 MiB
+ graphite2-devel          x86_64 0:1.3.14-22.fc45   @commandline  49.3 KiB
+ gtk4-devel               x86_64 0:4.24.1-1.fc45    @commandline  12.5 MiB
+ gtk4-layer-shell         x86_64 0:1.3.0-3.fc45     @commandline  69.1 KiB
+ gtk4-layer-shell-devel   x86_64 0:1.3.0-3.fc45     @commandline  97.7 KiB
+ harfbuzz-cairo           x86_64 0:15.0.0-2.fc45    @commandline  52.1 KiB
+ harfbuzz-devel           x86_64 0:15.0.0-2.fc45    @commandline   6.6 MiB
+ harfbuzz-gpu             x86_64 0:15.0.0-2.fc45    @commandline 176.2 KiB
+ harfbuzz-raster          x86_64 0:15.0.0-2.fc45    @commandline 120.5 KiB
+ harfbuzz-vector          x86_64 0:15.0.0-2.fc45    @commandline 117.3 KiB
+ keyutils-libs-devel      x86_64 0:1.6.3-8.fc45     @commandline  48.2 KiB
+ krb5-devel               x86_64 0:1.22.2-11.fc45   @commandline 709.9 KiB
+ lcms2-devel              x86_64 0:2.16-8.fc45      @commandline 135.7 KiB
+ libGLEW                  x86_64 0:2.2.0-13.fc45    @commandline 760.3 KiB
+ libX11-devel             x86_64 0:1.8.13-3.fc45    @commandline   1.0 MiB
+ libXau-devel             x86_64 0:1.0.12-5.fc45    @commandline   7.3 KiB
+ libXext-devel            x86_64 0:1.3.6-6.fc45     @commandline  97.7 KiB
+ libXft-devel             x86_64 0:2.3.8-11.fc45    @commandline  29.1 KiB
+ libXrender-devel         x86_64 0:0.9.12-5.fc45    @commandline  50.1 KiB
+ libassuan-devel          x86_64 0:2.5.7-6.fc45     @commandline  78.8 KiB
+ libblkid-devel           x86_64 0:2.42.4-1.fc45    @commandline  45.0 KiB
+ libcom_err-devel         x86_64 0:1.47.4-2.fc45    @commandline  16.7 KiB
+ libcurl-devel            x86_64 0:8.21.0-9.fc45    @commandline   1.4 MiB
+ libdatrie-devel          x86_64 0:0.2.14-3.fc45    @commandline 411.3 KiB
+ libffi-devel             x86_64 0:3.5.2-3.fc45     @commandline  33.9 KiB
+ libgit2_1.9              x86_64 0:1.9.7-3.fc45     @commandline   1.4 MiB
+ libgpg-error-devel       x86_64 0:1.61-2.fc45      @commandline 173.6 KiB
+ libicu-devel             x86_64 0:78.3-9.fc45      @commandline   5.2 MiB
+ libidn2-devel            x86_64 0:2.3.8-4.fc45     @commandline 152.1 KiB
+ libjpeg-turbo-devel      x86_64 0:3.1.4.1-2.fc45   @commandline 354.2 KiB
+ libkadm5                 x86_64 0:1.22.2-11.fc45   @commandline 217.9 KiB
+ liblerc-devel            x86_64 0:4.3.0-1.fc45     @commandline   4.3 MiB
+ libmount-devel           x86_64 0:2.42.4-1.fc45    @commandline  66.5 KiB
+ libnghttp2-devel         x86_64 0:1.69.0-6.fc45    @commandline 288.0 KiB
+ libnghttp3-devel         x86_64 0:1.19.0-1.fc45    @commandline 119.9 KiB
+ libpng-devel             x86_64 2:1.6.59-1.fc45    @commandline 906.6 KiB
+ libpsl-devel             x86_64 0:0.23.1-1.fc45    @commandline 111.5 KiB
+ libseccomp-devel         x86_64 0:2.6.1-3.fc45     @commandline 115.6 KiB
+ libselinux-devel         x86_64 0:3.11-5.fc45      @commandline 121.9 KiB
+ libsepol-devel           x86_64 0:3.11-2.fc45      @commandline 120.7 KiB
+ libssh-devel             x86_64 0:0.12.2-1.fc45    @commandline 204.2 KiB
+ libthai-devel            x86_64 0:0.1.30-3.fc45    @commandline 510.5 KiB
+ libtiff-devel            x86_64 0:4.7.2-3.fc45     @commandline 885.0 KiB
+ libverto-devel           x86_64 0:0.3.2-13.fc45    @commandline  25.7 KiB
+ libwebp-devel            x86_64 0:1.6.0-4.fc45     @commandline 121.7 KiB
+ libxcb-devel             x86_64 0:1.17.0-8.fc45    @commandline   2.6 MiB
+ libxml2-devel            x86_64 0:2.15.4-1.fc45    @commandline   6.7 MiB
+ libzstd-devel            x86_64 0:1.5.7-6.fc45     @commandline 217.6 KiB
+ llhttp                   x86_64 0:9.4.4-1.fc45     @commandline  97.2 KiB
+ lzo-devel                x86_64 0:2.10-17.fc45     @commandline 212.2 KiB
+ lzo-minilzo              x86_64 0:2.10-17.fc45     @commandline  36.5 KiB
+ ngtcp2-crypto-ossl-devel x86_64 0:1.22.1-3.fc45    @commandline   7.5 KiB
+ ngtcp2-devel             x86_64 0:1.22.1-3.fc45    @commandline 262.8 KiB
+ nspr-devel               x86_64 0:4.39.0-10.fc45   @commandline 438.5 KiB
+ nss-devel                x86_64 0:3.133.0-1.fc45   @commandline 637.8 KiB
+ nss-softokn-devel        x86_64 0:3.133.0-1.fc45   @commandline  12.1 KiB
+ nss-softokn-freebl-devel x86_64 0:3.133.0-1.fc45   @commandline 693.5 KiB
+ nss-util-devel           x86_64 0:3.133.0-1.fc45   @commandline 329.4 KiB
+ openjpeg-devel           x86_64 0:2.5.4-5.fc45     @commandline  75.7 KiB
+ openjpeg-tools           x86_64 0:2.5.4-5.fc45     @commandline 184.5 KiB
+ openssl-devel            x86_64 1:4.0.3-1.fc45     @commandline   4.7 MiB
+ pango-devel              x86_64 0:1.58.2-1.fc45    @commandline   1.5 MiB
+ pcre2-devel              x86_64 0:10.49-1.fc45     @commandline   2.1 MiB
+ pixman-devel             x86_64 0:0.46.2-4.fc45    @commandline  56.1 KiB
+ poppler-devel            x86_64 0:26.08.0-2.fc45   @commandline   1.7 MiB
+ poppler-glib-devel       x86_64 0:26.08.0-2.fc45   @commandline 920.8 KiB
+ protobuf-compiler        x86_64 0:33.5-7.fc45      @commandline   5.5 MiB
+ publicsuffix-list        noarch 0:20260624-2.fc45  @commandline 345.9 KiB
+ rust                     x86_64 0:1.100.0-1.fc45   @commandline  97.4 MiB
+ rust-std-static          x86_64 0:1.100.0-1.fc45   @commandline 176.2 MiB
+ sysprof-capture-devel    x86_64 0:51.0-1.fc45      @commandline 852.8 KiB
+ vulkan-headers           noarch 0:1.4.350.0-4.fc45 @commandline  38.8 MiB
+ vulkan-loader-devel      x86_64 0:1.4.350.0-2.fc45 @commandline   8.0 KiB
+ wayland-devel            x86_64 0:1.26.0-3.fc45    @commandline 724.6 KiB
+ xorg-x11-proto-devel     noarch 0:2025.1-3.fc45    @commandline   1.8 MiB
+ xz-devel                 x86_64 1:5.8.3-2.fc45     @commandline 258.8 KiB
+ zlib-ng-compat-devel     x86_64 0:2.3.3-6.fc45     @commandline 107.0 KiB
+
+Transaction Summary:
+ Installing:        91 packages
+
+Updating and loading repositories:
+Repositories loaded.
+Total size of inbound packages is 107 MiB. Need to download 0 B.
+After this operation, 441 MiB extra will be used (install 441 MiB, remove 0 B).
+Running transaction
+[ 1/93] Verify package files            100% | 264.0   B/s |  91.0   B |  00m00s
+[ 2/93] Prepare transaction             100% | 315.0   B/s |  91.0   B |  00m00s
+[ 3/93] Installing zlib-ng-compat-devel 100% |  35.3 MiB/s | 108.6 KiB |  00m00s
+[ 4/93] Installing libpng-devel-2:1.6.5 100% |  29.7 MiB/s | 911.7 KiB |  00m00s
+[ 5/93] Installing xorg-x11-proto-devel 100% | 179.6 MiB/s |   1.8 MiB |  00m00s
+[ 6/93] Installing nspr-devel-0:4.39.0- 100% |  16.2 MiB/s | 447.0 KiB |  00m00s
+[ 7/93] Installing libgpg-error-devel-0 100% |   6.6 MiB/s | 175.8 KiB |  00m00s
+[ 8/93] Installing nss-util-devel-0:3.1 100% |  12.6 MiB/s | 335.5 KiB |  00m00s
+[ 9/93] Installing xz-devel-1:5.8.3-2.f 100% | 128.2 MiB/s | 262.6 KiB |  00m00s
+[10/93] Installing pixman-devel-0:0.46. 100% |  27.8 MiB/s |  56.9 KiB |  00m00s
+[11/93] Installing pcre2-devel-0:10.49- 100% |  60.7 MiB/s |   2.1 MiB |  00m00s
+[12/93] Installing openssl-devel-1:4.0. 100% | 144.6 MiB/s |   5.6 MiB |  00m00s
+[13/93] Installing ngtcp2-devel-0:1.22. 100% | 128.9 MiB/s | 264.1 KiB |  00m00s
+[14/93] Installing libzstd-devel-0:1.5. 100% | 107.0 MiB/s | 219.1 KiB |  00m00s
+[15/93] Installing libjpeg-turbo-devel- 100% | 174.2 MiB/s | 356.7 KiB |  00m00s
+[16/93] Installing libidn2-devel-0:2.3. 100% |  78.0 MiB/s | 159.8 KiB |  00m00s
+[17/93] Installing libffi-devel-0:3.5.2 100% |  34.7 MiB/s |  35.6 KiB |  00m00s
+[18/93] Installing wayland-devel-0:1.26 100% |  24.7 MiB/s | 733.3 KiB |  00m00s
+[19/93] Installing ngtcp2-crypto-ossl-d 100% |   3.9 MiB/s |   8.1 KiB |  00m00s
+[20/93] Installing libxml2-devel-0:2.15 100% | 197.7 MiB/s |   6.7 MiB |  00m00s
+[21/93] Installing libassuan-devel-0:2. 100% |   3.3 MiB/s |  79.9 KiB |  00m00s
+[22/93] Installing libXau-devel-0:1.0.1 100% |   1.3 MiB/s |   9.1 KiB |  00m00s
+[23/93] Installing libxcb-devel-0:1.17. 100% | 111.7 MiB/s |   3.0 MiB |  00m00s
+[24/93] Installing libX11-devel-0:1.8.1 100% | 157.9 MiB/s |   1.1 MiB |  00m00s
+[25/93] Installing libXrender-devel-0:0 100% |  49.8 MiB/s |  51.0 KiB |  00m00s
+[26/93] Installing libXext-devel-0:1.3. 100% |  35.7 MiB/s | 109.8 KiB |  00m00s
+[27/93] Installing rust-0:1.100.0-1.fc4 100% | 392.8 MiB/s |  97.4 MiB |  00m00s
+[28/93] Installing rust-std-static-0:1. 100% | 364.1 MiB/s | 176.2 MiB |  00m00s
+[29/93] Installing vulkan-headers-0:1.4 100% | 252.2 MiB/s |  38.8 MiB |  00m00s
+[30/93] Installing vulkan-loader-devel- 100% | 154.0 KiB/s |   9.1 KiB |  00m00s
+[31/93] Installing sysprof-capture-deve 100% |  15.2 MiB/s | 855.7 KiB |  00m00s
+[32/93] Installing publicsuffix-list-0: 100% |  42.3 MiB/s | 346.9 KiB |  00m00s
+[33/93] Installing libpsl-devel-0:0.23. 100% |  56.0 MiB/s | 114.8 KiB |  00m00s
+[34/93] Installing openjpeg-tools-0:2.5 100% |   6.7 MiB/s | 186.5 KiB |  00m00s
+[35/93] Installing openjpeg-devel-0:2.5 100% |  37.8 MiB/s |  77.4 KiB |  00m00s
+[36/93] Installing nss-softokn-freebl-d 100% | 226.1 MiB/s | 694.6 KiB |  00m00s
+[37/93] Installing nss-softokn-devel-0: 100% | 526.2 KiB/s |  13.2 KiB |  00m00s
+[38/93] Installing nss-devel-0:3.133.0- 100% |  22.5 MiB/s | 644.5 KiB |  00m00s
+[39/93] Installing lzo-minilzo-0:2.10-1 100% |  18.5 MiB/s |  37.8 KiB |  00m00s
+[40/93] Installing lzo-devel-0:2.10-17. 100% | 105.1 MiB/s | 215.3 KiB |  00m00s
+[41/93] Installing llhttp-0:9.4.4-1.fc4 100% |  48.1 MiB/s |  98.6 KiB |  00m00s
+[42/93] Installing libgit2_1.9-0:1.9.7- 100% | 233.3 MiB/s |   1.4 MiB |  00m00s
+[43/93] Installing libwebp-devel-0:1.6. 100% |  40.8 MiB/s | 125.4 KiB |  00m00s
+[44/93] Installing libverto-devel-0:0.3 100% |  25.7 MiB/s |  26.4 KiB |  00m00s
+[45/93] Installing libsepol-devel-0:3.1 100% |  31.3 MiB/s | 128.2 KiB |  00m00s
+[46/93] Installing libselinux-devel-0:3 100% |  51.0 MiB/s | 156.6 KiB |  00m00s
+[47/93] Installing libseccomp-devel-0:2 100% |   4.6 MiB/s | 122.5 KiB |  00m00s
+[48/93] Installing libnghttp3-devel-0:1 100% |  58.9 MiB/s | 120.7 KiB |  00m00s
+[49/93] Installing libnghttp2-devel-0:1 100% | 141.2 MiB/s | 289.1 KiB |  00m00s
+[50/93] Installing liblerc-devel-0:4.3. 100% | 722.5 MiB/s |   4.3 MiB |  00m00s
+[51/93] Installing libtiff-devel-0:4.7. 100% | 291.6 MiB/s | 895.9 KiB |  00m00s
+[52/93] Installing libkadm5-0:1.22.2-11 100% |  53.7 MiB/s | 219.9 KiB |  00m00s
+[53/93] Installing libicu-devel-0:78.3- 100% | 108.9 MiB/s |   5.2 MiB |  00m00s
+[54/93] Installing libdatrie-devel-0:0. 100% |  15.7 MiB/s | 418.4 KiB |  00m00s
+[55/93] Installing libthai-devel-0:0.1. 100% | 170.1 MiB/s | 522.6 KiB |  00m00s
+[56/93] Installing libcom_err-devel-0:1 100% | 730.9 KiB/s |  18.3 KiB |  00m00s
+[57/93] Installing libblkid-devel-0:2.4 100% |  45.1 MiB/s |  46.2 KiB |  00m00s
+[58/93] Installing libmount-devel-0:2.4 100% |  32.9 MiB/s |  67.4 KiB |  00m00s
+[59/93] Installing glib2-devel-0:2.90.1 100% | 217.8 MiB/s |  15.9 MiB |  00m00s
+[60/93] Installing gpgme-devel-0:2.0.1- 100% |  11.1 MiB/s | 294.7 KiB |  00m00s
+[61/93] Installing gpgmepp-devel-1:2.0. 100% |  42.9 MiB/s | 175.8 KiB |  00m00s
+[62/93] Installing graphene-devel-0:1.1 100% | 468.2 MiB/s |   2.3 MiB |  00m00s
+[63/93] Installing libGLEW-0:2.2.0-13.f 100% | 185.9 MiB/s | 761.4 KiB |  00m00s
+[64/93] Installing lcms2-devel-0:2.16-8 100% |  66.6 MiB/s | 136.4 KiB |  00m00s
+[65/93] Installing keyutils-libs-devel- 100% |  27.0 MiB/s |  55.2 KiB |  00m00s
+[66/93] Installing krb5-devel-0:1.22.2- 100% |  23.4 MiB/s | 719.2 KiB |  00m00s
+[67/93] Installing libssh-devel-0:0.12. 100% | 101.0 MiB/s | 206.9 KiB |  00m00s
+[68/93] Installing harfbuzz-vector-0:15 100% |  57.7 MiB/s | 118.1 KiB |  00m00s
+[69/93] Installing harfbuzz-raster-0:15 100% |  59.3 MiB/s | 121.4 KiB |  00m00s
+[70/93] Installing harfbuzz-gpu-0:15.0. 100% |  86.5 MiB/s | 177.1 KiB |  00m00s
+[71/93] Installing harfbuzz-cairo-0:15. 100% |  25.9 MiB/s |  53.0 KiB |  00m00s
+[72/93] Installing gtk4-layer-shell-0:1 100% |  23.1 MiB/s |  71.0 KiB |  00m00s
+[73/93] Installing graphite2-devel-0:1. 100% |  49.6 MiB/s |  50.8 KiB |  00m00s
+[74/93] Installing fribidi-devel-0:1.0. 100% |  40.1 MiB/s |  82.1 KiB |  00m00s
+[75/93] Installing bzip2-devel-0:1.0.8- 100% | 303.5 MiB/s | 310.7 KiB |  00m00s
+[76/93] Installing brotli-0:1.2.1-1.fc4 100% |   1.4 MiB/s |  34.3 KiB |  00m00s
+[77/93] Installing brotli-devel-0:1.2.1 100% |  22.2 MiB/s |  68.2 KiB |  00m00s
+[78/93] Installing freetype-devel-0:2.1 100% | 226.2 MiB/s |   8.6 MiB |  00m00s
+[79/93] Installing fontconfig-devel-0:2 100% |  40.1 MiB/s | 164.2 KiB |  00m00s
+[80/93] Installing cairo-devel-0:1.18.6 100% | 381.8 MiB/s |   2.3 MiB |  00m00s
+[81/93] Installing harfbuzz-devel-0:15. 100% | 157.5 MiB/s |   6.6 MiB |  00m00s
+[82/93] Installing cairo-gobject-devel- 100% |   7.4 MiB/s |   7.6 KiB |  00m00s
+[83/93] Installing glycin-devel-0:2.2.6 100% |  74.5 MiB/s | 152.7 KiB |  00m00s
+[84/93] Installing gdk-pixbuf2-devel-0: 100% |  75.2 MiB/s |   2.3 MiB |  00m00s
+[85/93] Installing libXft-devel-0:2.3.8 100% |  20.3 MiB/s |  41.6 KiB |  00m00s
+[86/93] Installing pango-devel-0:1.58.2 100% | 193.1 MiB/s |   1.5 MiB |  00m00s
+[87/93] Installing gtk4-devel-0:4.24.1- 100% | 174.7 MiB/s |  12.6 MiB |  00m00s
+[88/93] Installing libcurl-devel-0:8.21 100% |  44.7 MiB/s |   1.5 MiB |  00m00s
+[89/93] Installing poppler-devel-0:26.0 100% | 194.5 MiB/s |   1.8 MiB |  00m00s
+[90/93] Installing poppler-glib-devel-0 100% | 300.7 MiB/s | 923.8 KiB |  00m00s
+[91/93] Installing gtk4-layer-shell-dev 100% |  32.5 MiB/s |  99.8 KiB |  00m00s
+[92/93] Installing cargo-0:1.100.0-1.fc 100% | 266.4 MiB/s |  23.4 MiB |  00m00s
+[93/93] Installing protobuf-compiler-0: 100% |  11.0 MiB/s |   5.5 MiB |  00m01s
+Complete!
