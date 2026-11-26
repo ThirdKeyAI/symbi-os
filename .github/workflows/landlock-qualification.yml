@@ -17,6 +17,7 @@ on:
       - "upstream/symbiont.toml"
       - "scripts/check-atomic-image.sh"
       - "scripts/check-landlock-qualification.sh"
+      - "scripts/check-container-preflight.sh"
       - "scripts/check-container-qualification.sh"
       - ".github/workflows/landlock-qualification.yml"
       - "!image/qualification/README.md"
@@ -68,6 +69,9 @@ jobs:
           ref: be3bef1dababb49a68450a883dc1ba97fa6322b0
           path: .cache/container-fixture-source
           persist-credentials: false
+      - name: Validate container inputs before large image transfer
+        if: env.SYMBI_REQUESTED_QUALIFICATION == 'containers'
+        run: bash scripts/check-container-preflight.sh
       - name: Download the exact retained development image
         env:
           GH_TOKEN: ${{ github.token }}

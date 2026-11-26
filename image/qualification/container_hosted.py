@@ -14,6 +14,7 @@ import tomllib
 
 
 REQUIRED_FEDORA_PACKAGES = {"moby-engine", "docker-cli", "container-selinux"}
+FEDORA_REPOSITORY_FINGERPRINT = "4F50A6114CD5C6976A7F1179655A4B02F577861E"
 REPOSITORY_FINGERPRINT = "6F1DF85E3A71C24918E727D56FC6D554E32BD943"
 SHARED_BOOT_STATUS_INPUTS = {
     "fstab.extra": "image/qualification/fstab.extra",
@@ -202,8 +203,11 @@ def load_authenticated_runsc(root, verify=verify_release_signature):
 
 def validate_fedora_contract(contract, runsc):
     require(contract.get("schema") == 1 and contract.get("selected") is True
-            and contract.get("installed") is True,
-            "Fedora container runtime contract is not selected and installed")
+            and contract.get("installed") is True
+            and contract.get("qualified") is False
+            and contract.get("os_qualified") is False
+            and contract.get("release_qualified") is False,
+            "Fedora container runtime contract is not selected, installed and explicitly unqualified")
     packages = contract.get("packages")
     require(isinstance(packages, dict) and set(packages) == REQUIRED_FEDORA_PACKAGES,
             "Fedora runtime package set is incomplete or contains unreviewed packages")
@@ -212,7 +216,9 @@ def validate_fedora_contract(contract, runsc):
                 and package["nevra"].startswith(name + "-")
                 and re.fullmatch(r"[a-f0-9]{64}", package.get("rpm_sha256", ""))
                 and package.get("signature_verified") is True
-                and re.fullmatch(r"[A-Fa-f0-9]{40}", package.get("signing_fingerprint", ""))
+                and isinstance(package.get("signing_fingerprint"), str)
+                and package.get("signing_fingerprint", "").upper()
+                == FEDORA_REPOSITORY_FINGERPRINT
                 and re.fullmatch(r"[a-f0-9]{64}", package.get("repository_metadata_sha256", "")),
                 "Fedora package lacks exact signed repository and RPM bindings")
     require(contract.get("runsc_package_sha256") == runsc["package_sha256"]
@@ -277,6 +283,11 @@ def run_container_preflight(root, source_commit, image_source_commit):
         result = build_preflight(root, source_commit, image_source_commit)
         result["fixture_checkout"] = validate_fixture_checkout(
             root / ".cache/container-fixture-source", result["fixture_source"])
+        # Passing here means only that every immutable input needed before the
+        # large image transfer is present and internally consistent.  The
+        # native matrix and later route gates remain explicit blockers and the
+        # qualification flags stay false.
+        result["passed"] = result.get("fedora_runtime_ready") is True
         return result
     except Exception as error:
         result["failure"] = type(error).__name__ + ": " + str(error)

@@ -93,6 +93,15 @@ release. Until a signed Fedora runtime lock binds the engine RPMs and installed
 gVisor files, the controller exits before disk allocation and retains an
 explicitly unqualified result.
 
+That input preflight runs before the retained desktop-image artifact is
+downloaded. A missing or invalid lock therefore fails without transferring the
+multi-gigabyte image. A passing input preflight means only that immutable inputs
+are ready for the native stage: all qualification fields remain false, and the
+native matrix, managed route, escape suite and review stay listed as blockers.
+The lock must also retain false qualification fields and use the exact pinned
+Fedora 45 RPM-signing fingerprint. It cannot be generated from the passive,
+unsigned gVisor release intake alone.
+
 ## Required remaining evidence
 
 - Build exact-source supervisor/runtime test executables on the isolated builder.
