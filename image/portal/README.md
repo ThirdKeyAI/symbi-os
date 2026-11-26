@@ -117,3 +117,22 @@ counters were reconciled from all 53 original evidence files. Workspace/formal
 checks at the runtime implementation commit also passed. Product image
 integration, immutable fresh-consent behavior and booted portal acceptance
 remain pending. No OS/consent qualification flag is promoted by this result.
+
+
+## Fresh-consent downstream build
+
+The upstream persistence feature conflicts with the OS requirement to ask for
+a new selection each session. A [reviewed downstream change](CONSENT-REVIEW.md)
+now removes restore-token handling, always invokes the fixed installed picker,
+removes the remember control, refuses persistence flags and explicitly returns
+`persist_mode=0`. The source/test patch and fourteen original snapshots are bound
+by `consent-inputs.json`, alongside the exact OS Apache license/copyright.
+
+`portal-consent.yml` reuses the existing toolkit and compositor and rebuilds only
+the portal/picker. It requires the new native formatter tests to fail on the
+original implementation and pass after the patch, then checks installed option
+refusals, loaders/version and additive original-base runtime compatibility.
+Every retained file except the two executables must remain unchanged; only the
+exact downstream license is added. All 191 offline checks pass. Native results,
+complete backend/GUI consent acceptance, image integration and human review are
+pending; qualification flags remain false.

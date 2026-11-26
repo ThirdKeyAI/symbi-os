@@ -1,0 +1,139 @@
+name: Offline portal fresh-consent build
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "LICENSE"
+      - "image/portal/consent-inputs.json"
+      - "image/portal/consent_inputs.py"
+      - "image/portal/consent-reviewed/**"
+      - "image/portal/patches/**"
+      - "image/portal/compile_consent.py"
+      - "image/portal/hosted_consent.py"
+      - "image/portal/source-inputs.json"
+      - "image/portal/build-requirements.json"
+      - "image/portal/build-rpms.lock.json"
+      - "image/portal/development-prefix.lock.json"
+      - "image/portal/build_guest.py"
+      - "image/portal/build_inputs.py"
+      - "image/portal/inputs.py"
+      - "image/portal/prefix_input.py"
+      - "image/portal/runtime_inputs.py"
+      - "image/portal/runtime_guest.py"
+      - "image/portal/reviewed/**"
+      - "image/hyprland/candidate-inputs.json"
+      - "image/hyprland/development-prefix.lock.json"
+      - "image/hyprland/build-rpms.lock.json"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/prefix_input.py"
+      - "image/hyprland/patches/**"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/fedora-package-trust.json"
+      - "image/hyprland/keys/**"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/reuse.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - "image/desktop/prepare.py"
+      - "image/desktop/inputs.py"
+      - "image/assembly/runtime_install.py"
+      - "image/walker/inputs.py"
+      - "image/launcher/probes/bounded_process.py"
+      - "scripts/check-portal-consent.sh"
+      - ".github/workflows/portal-consent.yml"
+  pull_request:
+    paths:
+      - "LICENSE"
+      - "image/portal/**"
+      - "image/hyprland/**"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/**"
+      - "image/desktop/prepare.py"
+      - "image/desktop/inputs.py"
+      - "image/assembly/runtime_install.py"
+      - "image/walker/inputs.py"
+      - "image/launcher/probes/bounded_process.py"
+      - "scripts/check-portal-consent.sh"
+      - ".github/workflows/portal-consent.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: portal-consent-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  portal:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
+    steps:
+      - name: Check out proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Validate exact consent patch and retained build inputs
+        run: |
+          mkdir -p .cache/portal-consent-evidence
+          python3 - <<'PY' > .cache/portal-consent-evidence/requirements-check.log 2>&1
+          from pathlib import Path
+          from image.portal.inputs import load_inputs
+          from image.portal.build_inputs import require_rpm_bindings
+          from image.portal.consent_inputs import load_consent
+          from image.portal.prefix_input import require_portal_manifest
+          from image.toolchain.reuse import unique_json, digest
+          root = Path.cwd()
+          pins, requirements, bindings = load_inputs(root)
+          load_consent(root, pins)
+          trust = unique_json((root/'image/hyprland/fedora-package-trust.json').read_bytes())
+          packages = unique_json((root/'image/portal/build-rpms.lock.json').read_bytes())
+          base = trust['source']['image']
+          require_rpm_bindings(packages, requirements, base, trust)
+          compositor = unique_json((root/'image/hyprland/development-prefix.lock.json').read_bytes())
+          parent = unique_json((root/'image/portal/development-prefix.lock.json').read_bytes())
+          require_portal_manifest(parent['manifest'], parent, pins, base,
+                                 digest(root/'image/portal/build-rpms.lock.json'), compositor['manifest_sha256'])
+          print('Exact source, patch, RPM and retained native prefix bindings passed')
+          PY
+      - name: Download exact artifacts for toolkit and compositor reuse
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15092560593/zip > .cache/portal-build-rpms.zip
+          echo 'ce26dda0cab7e61de9c888503d2e5d3ff87e23f74e859fbfd270dd9de74c2565  .cache/portal-build-rpms.zip' | sha256sum --check --strict
+          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15070319189/zip > .cache/hyprland-development-prefix.zip
+          echo 'b86fde7463a786a5bb5763edf3ee23cfac3829e7c5b596ad829e4d4861814743  .cache/hyprland-development-prefix.zip' | sha256sum --check --strict
+          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15096125599/zip > .cache/portal-development-prefix.zip
+          echo 'c3afcb37358a45120cc4e5e05d7dcc520d888613f45710ef4a996b0e7b2ec362  .cache/portal-development-prefix.zip' | sha256sum --check --strict
+      - name: Run native before and after regressions and rebuild only the portal
+        run: bash scripts/check-portal-consent.sh
+      - name: Retain public evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: portal-consent-evidence
+          path: .cache/portal-consent-evidence/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Retain the unqualified patched prefix before desktop acceptance
+        if: ${{ always() && hashFiles('.cache/portal-consent-payload/manifest.json') != '' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: portal-consent-prefix
+          path: |
+            .cache/portal-consent-payload/portal-prefix.tar.gz
+            .cache/portal-consent-payload/manifest.json
+          retention-days: 14
+          compression-level: 0
+          if-no-files-found: error

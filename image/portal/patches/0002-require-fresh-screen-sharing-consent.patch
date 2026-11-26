@@ -1,0 +1,423 @@
+--- a/hyprland-share-picker/Picker.cpp
++++ b/hyprland-share-picker/Picker.cpp
+@@ -6,7 +6,6 @@
+ #include <hyprtoolkit/core/Backend.hpp>
+ #include <hyprtoolkit/core/Output.hpp>
+ #include <hyprtoolkit/element/Button.hpp>
+-#include <hyprtoolkit/element/Checkbox.hpp>
+ #include <hyprtoolkit/element/ColumnLayout.hpp>
+ #include <hyprtoolkit/element/Null.hpp>
+ #include <hyprtoolkit/element/Rectangle.hpp>
+@@ -33,9 +32,8 @@
+     return CTextBuilder::begin()->text(std::move(text))->fontSize(std::move(fontSize))->color([backend] { return backend->getPalette()->m_colors.text; })->commence();
+ }
+ 
+-CPicker::CPicker(const CSharedPointer<IBackend>& backend, std::vector<SOutputEntry> outputs, std::vector<SWindowEntry> windows, std::vector<SWorkspaceEntry> workspaces,
+-                 bool allowTokenByDefault) :
+-    m_backend(backend), m_outputs(std::move(outputs)), m_windows(std::move(windows)), m_workspaces(std::move(workspaces)), m_allowTokenByDefault(allowTokenByDefault) {
++CPicker::CPicker(const CSharedPointer<IBackend>& backend, std::vector<SOutputEntry> outputs, std::vector<SWindowEntry> windows, std::vector<SWorkspaceEntry> workspaces) :
++    m_backend(backend), m_outputs(std::move(outputs)), m_windows(std::move(windows)), m_workspaces(std::move(workspaces)) {
+     for (const auto& toolkitOutput : m_backend->getOutputs()) {
+         const auto MATCH = std::ranges::find_if(m_outputs, [&toolkitOutput](const auto& output) { return output.name == toolkitOutput->port(); });
+         if (MATCH != m_outputs.end()) {
+@@ -93,12 +91,7 @@
+     m_contentHost->setGrow(true);
+     m_mainLayout->addChild(m_contentHost);
+ 
+-    const auto TOKEN_ROW = CRowLayoutBuilder::begin()->size({CDynamicSize::HT_SIZE_PERCENT, CDynamicSize::HT_SIZE_AUTO, {1.F, 1.F}})->gap(8)->commence();
+-    m_allowToken         = CCheckboxBuilder::begin()->toggled(m_allowTokenByDefault)->commence();
+-    TOKEN_ROW->addChild(m_allowToken);
+-    const auto TOKEN_LABEL = makeText(m_backend, "Remember this choice for future requests");
+-    TOKEN_ROW->addChild(TOKEN_LABEL);
+-    m_mainLayout->addChild(TOKEN_ROW);
++    m_mainLayout->addChild(makeText(m_backend, "Permission applies to this sharing session only."));
+ 
+     const auto ACTION_ROW = CRowLayoutBuilder::begin()->size({CDynamicSize::HT_SIZE_PERCENT, CDynamicSize::HT_SIZE_AUTO, {1.F, 1.F}})->gap(8)->commence();
+     const auto SPACER     = CNullBuilder::begin()->commence();
+@@ -349,7 +342,7 @@
+     if (!m_selection)
+         return;
+ 
+-    std::cout << formatSelection(*m_selection, m_allowToken->state()) << std::flush;
++    std::cout << formatSelection(*m_selection, false) << std::flush;
+     m_window->close();
+     m_backend->destroy();
+ }
+--- a/hyprland-share-picker/Picker.hpp
++++ b/hyprland-share-picker/Picker.hpp
+@@ -14,7 +14,6 @@
+     class IBackend;
+     class IWindow;
+     class CButtonElement;
+-    class CCheckboxElement;
+     class CColumnLayoutElement;
+     class CNullElement;
+ }
+@@ -22,7 +21,7 @@
+ class CPicker {
+   public:
+     CPicker(const Hyprutils::Memory::CSharedPointer<Hyprtoolkit::IBackend>& backend, std::vector<SOutputEntry> outputs, std::vector<SWindowEntry> windows,
+-            std::vector<SWorkspaceEntry> workspaces, bool allowTokenByDefault);
++            std::vector<SWorkspaceEntry> workspaces);
+     ~CPicker();
+ 
+     bool initialize();
+@@ -56,7 +55,6 @@
+     Hyprutils::Memory::CSharedPointer<Hyprtoolkit::IWindow>                     m_window;
+     Hyprutils::Memory::CSharedPointer<Hyprtoolkit::CColumnLayoutElement>        m_mainLayout;
+     Hyprutils::Memory::CSharedPointer<Hyprtoolkit::CNullElement>                m_contentHost;
+-    Hyprutils::Memory::CSharedPointer<Hyprtoolkit::CCheckboxElement>            m_allowToken;
+     Hyprutils::Memory::CSharedPointer<Hyprtoolkit::CButtonElement>              m_shareButton;
+     std::vector<Hyprutils::Memory::CSharedPointer<Hyprtoolkit::CButtonElement>> m_tabButtons;
+     std::vector<Hyprutils::Memory::CSharedPointer<Hyprtoolkit::CButtonElement>> m_sourceButtons;
+@@ -68,5 +66,4 @@
+     std::optional<size_t>                                                       m_selectedSource;
+     ePickerTab                                                                  m_activeTab           = PICKER_TAB_OUTPUTS;
+     bool                                                                        m_regionSelecting     = false;
+-    bool                                                                        m_allowTokenByDefault = false;
+ };
+--- a/hyprland-share-picker/PickerData.cpp
++++ b/hyprland-share-picker/PickerData.cpp
+@@ -239,8 +239,9 @@
+     };
+ }
+ 
+-std::string formatSelection(const SSelection& selection, bool allowToken) {
+-    std::string result = std::string{"[SELECTION]"} + (allowToken ? "r/" : "/");
++std::string formatSelection(const SSelection& selection, bool /*allowToken*/) {
++    // Retain the upstream call signature, but never serialize persistence.
++    std::string result = "[SELECTION]/";
+ 
+     switch (selection.type) {
+         case SELECTION_OUTPUT: return result + "screen:" + selection.output + "\n";
+--- a/hyprland-share-picker/main.cpp
++++ b/hyprland-share-picker/main.cpp
+@@ -5,15 +5,13 @@
+ 
+ #include <cstdlib>
+ #include <iostream>
+-#include <string_view>
+ 
+-int main(int argc, char** argv) {
++int main(int argc, char**) {
+     setenv("HT_QUIET", "1", 0);
+ 
+-    bool allowTokenByDefault = false;
+-    for (int i = 1; i < argc; ++i) {
+-        if (std::string_view{argv[i]} == "--allow-token")
+-            allowTokenByDefault = true;
++    if (argc != 1) {
++        std::cerr << "[XDPH_PICKER_ERROR] This picker accepts no command-line options\n";
++        return 2;
+     }
+ 
+     const auto BACKEND = Hyprtoolkit::IBackend::create();
+@@ -30,7 +28,7 @@
+     const auto WORKSPACE_LIST_V3 = std::getenv("XDPH_WORKSPACE_SHARING_LIST_V3");
+ 
+     CPicker    picker(BACKEND, parseOutputList(OUTPUT_LIST ? OUTPUT_LIST : ""), parseWindowList(WINDOW_LIST ? WINDOW_LIST : ""),
+-                      WORKSPACE_LIST_V3 ? parseWorkspaceListV3(WORKSPACE_LIST_V3) : parseWorkspaceList(WORKSPACE_LIST ? WORKSPACE_LIST : ""), allowTokenByDefault);
++                      WORKSPACE_LIST_V3 ? parseWorkspaceListV3(WORKSPACE_LIST_V3) : parseWorkspaceList(WORKSPACE_LIST ? WORKSPACE_LIST : ""));
+     if (!picker.initialize()) {
+         std::cerr << "[XDPH_PICKER_ERROR] Failed to create the picker window\n";
+         BACKEND->destroy();
+--- a/src/portals/Screencopy.cpp
++++ b/src/portals/Screencopy.cpp
+@@ -21,32 +21,6 @@
+ constexpr static int MAX_RETRIES        = 10;
+ constexpr static int MAX_DMABUF_RETRIES = 2;
+ 
+-//
+-static sdbus::Struct<std::string, uint32_t, sdbus::Variant> getFullRestoreStruct(const SSelectionData& data, uint32_t cursor) {
+-    std::unordered_map<std::string, sdbus::Variant> mapData;
+-
+-    switch (data.type) {
+-        case TYPE_GEOMETRY:
+-            mapData["output"]   = sdbus::Variant{data.output};
+-            mapData["geometry"] = sdbus::Variant{sdbus::Struct<uint32_t, uint32_t, uint32_t, uint32_t>{data.x, data.y, data.w, data.h}};
+-            break;
+-        case TYPE_OUTPUT: mapData["output"] = sdbus::Variant{data.output}; break;
+-        case TYPE_WORKSPACE: mapData["workspace"] = sdbus::Variant{data.workspace}; break;
+-        case TYPE_WINDOW:
+-            mapData["windowHandle"] = sdbus::Variant{(uint64_t)data.windowHandle->resource()};
+-            mapData["windowClass"]  = sdbus::Variant{data.windowClass};
+-            break;
+-        default: Debug::log(ERR, "[screencopy] wonk selection in token saving"); break;
+-    }
+-    mapData["timeIssued"] = sdbus::Variant{uint64_t(time(nullptr))};
+-    mapData["token"]      = sdbus::Variant{std::string("todo")};
+-    mapData["withCursor"] = sdbus::Variant{cursor};
+-
+-    sdbus::Variant restoreData{mapData};
+-
+-    return sdbus::Struct<std::string, uint32_t, sdbus::Variant>{"hyprland", 3, restoreData};
+-}
+-
+ dbUasv CScreencopyPortal::onCreateSession(sdbus::ObjectPath requestHandle, sdbus::ObjectPath sessionHandle, std::string appID,
+                                           std::unordered_map<std::string, sdbus::Variant> opts) {
+     g_pPortalManager->m_sHelpers.toplevel->activate();
+@@ -98,22 +72,6 @@
+         PSESSION->cursorMode = **PCURSORMODE;
+         Debug::log(LOG, "[screencopy] default cursor_mode to {}", PSESSION->cursorMode);
+     }
+-
+-    struct {
+-        bool        exists       = false;
+-        bool        hasWorkspace = false;
+-        std::string token, output;
+-        uint64_t    windowHandle = 0;
+-        bool        withCursor   = false;
+-        uint64_t    timeIssued   = 0;
+-        std::string windowClass, workspace;
+-        struct {
+-            uint32_t x = 0;
+-            uint32_t y = 0;
+-            uint32_t w = 0;
+-            uint32_t h = 0;
+-        } geometry;
+-    } restoreData;
+ 
+     for (auto& [key, val] : options) {
+ 
+@@ -126,139 +84,17 @@
+                 PSESSION->cursorMode = mode;
+                 Debug::log(LOG, "[screencopy] option cursor_mode to {}", PSESSION->cursorMode);
+             }
+-        } else if (key == "restore_data") {
+-            // suv
+-            // v -> r(susbt) -> v2
+-            // v -> a(sv) -> v3
+-            std::string issuer;
+-            uint32_t    version;
+-            auto        suv = val.get<sdbus::Struct<std::string, uint32_t, sdbus::Variant>>();
+-            issuer          = suv.get<0>();
+-            version         = suv.get<1>();
+-
+-            sdbus::Variant data = suv.get<2>();
+-
+-            if (issuer != "hyprland") {
+-                Debug::log(LOG, "[screencopy] Restore token from {}, ignoring", issuer);
+-                continue;
+-            }
+-
+-            Debug::log(LOG, "[screencopy] Restore token from {} ver {}", issuer, version);
+-
+-            if (version != 2 && version != 3) {
+-                Debug::log(LOG, "[screencopy] Restore token ver unsupported, skipping", issuer);
+-                continue;
+-            }
+-
+-            if (version == 2) {
+-                auto susbt = data.get<sdbus::Struct<std::string, uint32_t, std::string, bool, uint64_t>>();
+-
+-                restoreData.exists = true;
+-
+-                restoreData.token        = susbt.get<0>();
+-                restoreData.windowHandle = susbt.get<1>();
+-                restoreData.output       = susbt.get<2>();
+-                restoreData.withCursor   = susbt.get<3>();
+-                restoreData.timeIssued   = susbt.get<4>();
+-
+-                Debug::log(LOG, "[screencopy] Restore token v2 {} with data: {} {} {} {}", restoreData.token, restoreData.windowHandle, restoreData.output, restoreData.withCursor,
+-                           restoreData.timeIssued);
+-            } else {
+-                // ver 3
+-                auto sv = data.get<std::unordered_map<std::string, sdbus::Variant>>();
+-
+-                restoreData.exists = true;
+-
+-                for (auto& [tkkey, tkval] : sv) {
+-                    if (tkkey == "output")
+-                        restoreData.output = tkval.get<std::string>();
+-                    else if (tkkey == "windowHandle")
+-                        restoreData.windowHandle = tkval.get<uint64_t>();
+-                    else if (tkkey == "windowClass")
+-                        restoreData.windowClass = tkval.get<std::string>();
+-                    else if (tkkey == "workspace") {
+-                        restoreData.workspace    = tkval.get<std::string>();
+-                        restoreData.hasWorkspace = true;
+-                    } else if (tkkey == "withCursor")
+-                        restoreData.withCursor = tkval.get<uint32_t>() == EMBEDDED;
+-                    else if (tkkey == "timeIssued")
+-                        restoreData.timeIssued = tkval.get<uint64_t>();
+-                    else if (tkkey == "token")
+-                        restoreData.token = tkval.get<std::string>();
+-                    else if (tkkey == "geometry") {
+-                        auto geo               = tkval.get<sdbus::Struct<uint32_t, uint32_t, uint32_t, uint32_t>>();
+-                        restoreData.geometry.x = geo.get<0>();
+-                        restoreData.geometry.y = geo.get<1>();
+-                        restoreData.geometry.w = geo.get<2>();
+-                        restoreData.geometry.h = geo.get<3>();
+-                    } else
+-                        Debug::log(LOG, "[screencopy] restore token v3, unknown prop {}", tkkey);
+-                }
+-
+-                Debug::log(LOG, "[screencopy] Restore token v3 {} with data: {} {} {} {} {}", restoreData.token, restoreData.windowHandle, restoreData.windowClass,
+-                           restoreData.output, restoreData.withCursor, restoreData.timeIssued);
+-            }
+-        } else if (key == "persist_mode") {
+-            PSESSION->persistMode = val.get<uint32_t>();
+-            Debug::log(LOG, "[screencopy] option persist_mode to {}", PSESSION->persistMode);
++        } else if (key == "restore_data" || key == "persist_mode") {
++            // Symbi OS never restores a previous screen-sharing selection.
++            // Ignore the payload without decoding it, including old or malformed data.
++            Debug::log(LOG, "[screencopy] ignoring {}; fresh selection is required", key);
+         } else {
+             Debug::log(LOG, "[screencopy] unused option {}", key);
+         }
+     }
+ 
+-    // clang-format off
+-    const bool     RESTOREDATAVALID = restoreData.exists &&
+-    (
+-        (!restoreData.output.empty() && g_pPortalManager->getOutputFromName(restoreData.output)) || // output exists
+-        (!restoreData.windowClass.empty() && g_pPortalManager->m_sHelpers.toplevel->handleFromClass(restoreData.windowClass)) || // window exists
+-        (restoreData.hasWorkspace && hasWorkspaceCapabilities() && g_pPortalManager->m_sHelpers.workspaceTracker->fromName(restoreData.workspace))
+-    );
+-    // clang-format on
+-
+-    SSelectionData SHAREDATA;
+-    if (RESTOREDATAVALID) {
+-        Debug::log(LOG, "[screencopy] restore data valid, not prompting");
+-
+-        const bool WINDOW      = !restoreData.windowClass.empty();
+-        const bool WORKSPACE   = restoreData.hasWorkspace;
+-        const bool GEOMETRY    = restoreData.geometry.w > 0 && restoreData.geometry.h > 0;
+-        const auto HANDLEMATCH = WINDOW && restoreData.windowHandle != 0 ? g_pPortalManager->m_sHelpers.toplevel->handleFromHandleFull(restoreData.windowHandle) : nullptr;
+-
+-        if (WORKSPACE) {
+-            const auto WS = hasWorkspaceCapabilities() ? g_pPortalManager->m_sHelpers.workspaceTracker->fromName(restoreData.workspace) : nullptr;
+-            if (WS) {
+-                SHAREDATA.workspace       = restoreData.workspace;
+-                SHAREDATA.workspaceHandle = WS;
+-                SHAREDATA.type            = TYPE_WORKSPACE;
+-            }
+-        } else if (WINDOW) {
+-            const auto HANDLE = HANDLEMATCH ? HANDLEMATCH : g_pPortalManager->m_sHelpers.toplevel->handleFromClass(restoreData.windowClass);
+-            if (HANDLE) {
+-                SHAREDATA.windowClass  = restoreData.windowClass;
+-                SHAREDATA.windowHandle = HANDLE->handle;
+-                SHAREDATA.type         = TYPE_WINDOW;
+-            }
+-        } else {
+-            SHAREDATA.output = restoreData.output;
+-            SHAREDATA.type   = GEOMETRY ? TYPE_GEOMETRY : TYPE_OUTPUT;
+-
+-            if (GEOMETRY) {
+-                SHAREDATA.x = restoreData.geometry.x;
+-                SHAREDATA.y = restoreData.geometry.y;
+-                SHAREDATA.w = restoreData.geometry.w;
+-                SHAREDATA.h = restoreData.geometry.h;
+-            }
+-        }
+-
+-        SHAREDATA.allowToken = true; // user allowed token before
+-        PSESSION->cursorMode = restoreData.withCursor ? EMBEDDED : HIDDEN;
+-    }
+-
+-    if (SHAREDATA.type == TYPE_INVALID) {
+-        Debug::log(LOG, "[screencopy] restore data invalid / missing, prompting");
+-
+-        SHAREDATA = promptForScreencopySelection();
+-    }
++    Debug::log(LOG, "[screencopy] prompting for a fresh selection");
++    SSelectionData SHAREDATA = promptForScreencopySelection();
+ 
+     Debug::log(LOG, "[screencopy] SHAREDATA returned selection {}", (int)SHAREDATA.type);
+ 
+@@ -313,13 +149,9 @@
+ 
+     std::unordered_map<std::string, sdbus::Variant> options;
+ 
+-    if (PSESSION->selection.allowToken) {
+-        // give them a token :)
+-        options["restore_data"] = sdbus::Variant{getFullRestoreStruct(PSESSION->selection, PSESSION->cursorMode)};
+-        options["persist_mode"] = sdbus::Variant{uint32_t{2}};
+-
+-        Debug::log(LOG, "[screencopy] Sent restore token to {}", PSESSION->sessionHandle.c_str());
+-    }
++    // The backend protocol inherits the requested mode if this is omitted.
++    // Explicitly refuse persistence and never return restore_data.
++    options["persist_mode"] = sdbus::Variant{uint32_t{0}};
+ 
+     uint32_t type = 0;
+     switch (PSESSION->selection.type) {
+--- a/src/portals/Screencopy.hpp
++++ b/src/portals/Screencopy.hpp
+@@ -73,7 +73,6 @@
+         std::string                               appid;
+         sdbus::ObjectPath                         requestHandle, sessionHandle;
+         uint32_t                                  cursorMode  = HIDDEN;
+-        uint32_t                                  persistMode = 0;
+ 
+         std::unique_ptr<SDBusRequest>             request;
+         std::unique_ptr<SDBusSession>             session;
+--- a/src/shared/ScreencopyShared.cpp
++++ b/src/shared/ScreencopyShared.cpp
+@@ -151,15 +151,9 @@
+         selection = selection.substr(0, LINE_END);
+ 
+     const auto FLAGS = takeUntil(selection, '/');
+-    if (!FLAGS)
++    // Only fresh selections are accepted; remembered or unknown flags fail closed.
++    if (!FLAGS || !FLAGS->empty())
+         return data;
+-
+-    for (const auto FLAG : *FLAGS) {
+-        if (FLAG == 'r')
+-            data.allowToken = true;
+-        else
+-            Debug::log(LOG, "[screencopy] unknown flag from share-picker: {}", FLAG);
+-    }
+ 
+     if (selection.starts_with("screen:")) {
+         data.output = selection.substr(7);
+@@ -243,21 +237,11 @@
+     const char*         XCURSOR_SIZE                = getenv("XCURSOR_SIZE");
+     const char*         HYPRLAND_INSTANCE_SIGNATURE = getenv("HYPRLAND_INSTANCE_SIGNATURE");
+ 
+-    static auto* const* PALLOWTOKENBYDEFAULT =
+-        (Hyprlang::INT* const*)g_pPortalManager->m_sConfig.config->getConfigValuePtr("screencopy:allow_token_by_default")->getDataStaticPtr();
+-    static auto* const* PCUSTOMPICKER = (Hyprlang::STRING* const)g_pPortalManager->m_sConfig.config->getConfigValuePtr("screencopy:custom_picker_binary")->getDataStaticPtr();
+-
+     std::vector<SWorkspaceChoice> workspaces;
+     std::string                   v2Workspaces, legacyWorkspaces;
+-    std::vector<std::string>      args;
+-    if (**PALLOWTOKENBYDEFAULT)
+-        args.emplace_back("--allow-token");
+-
+-    const bool CUSTOM_PICKER = !std::string{*PCUSTOMPICKER}.empty();
+-    CProcess   proc(CUSTOM_PICKER ? *PCUSTOMPICKER : "hyprland-share-picker", args);
++    // This image-owned picker cannot be replaced by a config option or PATH lookup.
++    CProcess proc("/usr/lib/symbi/portal/bin/hyprland-share-picker", std::vector<std::string>{});
+     proc.addEnv("WAYLAND_DISPLAY", WAYLAND_DISPLAY ? WAYLAND_DISPLAY : "");
+-    if (CUSTOM_PICKER)
+-        proc.addEnv("QT_QPA_PLATFORM", "wayland");
+     proc.addEnv("XCURSOR_SIZE", XCURSOR_SIZE ? XCURSOR_SIZE : "24");
+     proc.addEnv("HYPRLAND_INSTANCE_SIGNATURE", HYPRLAND_INSTANCE_SIGNATURE ? HYPRLAND_INSTANCE_SIGNATURE : "0");
+     proc.addEnv("XDPH_WINDOW_SHARING_LIST", buildWindowList());
+@@ -273,12 +257,8 @@
+     const auto RETVALERR = proc.stdErr();
+ 
+     if (!RETVAL.contains("[SELECTION]")) {
+-        constexpr const char* QPA_ERR = "qt.qpa.plugin: Could not find the Qt platform plugin";
+-        constexpr const char* HT_ERR  = "[XDPH_PICKER_ERROR]";
+-
+-        if (CUSTOM_PICKER && (RETVAL.contains(QPA_ERR) || RETVALERR.contains(QPA_ERR)))
+-            addHyprlandNotification("3", 7000, "0", "[xdph] Could not open the picker: qt5-wayland or qt6-wayland doesn't seem to be installed.");
+-        else if (!CUSTOM_PICKER && (RETVAL.contains(HT_ERR) || RETVALERR.contains(HT_ERR)))
++        constexpr const char* HT_ERR = "[XDPH_PICKER_ERROR]";
++        if (RETVAL.contains(HT_ERR) || RETVALERR.contains(HT_ERR))
+             addHyprlandNotification("3", 7000, "0", "[xdph] Could not open the share picker.");
+ 
+         return {};
+--- a/src/shared/ScreencopyShared.hpp
++++ b/src/shared/ScreencopyShared.hpp
+@@ -37,7 +37,6 @@
+     SP<CCZwlrForeignToplevelHandleV1> windowHandle = nullptr;
+     WP<CTrackedWorkspace>             workspaceHandle;
+     uint32_t                          x = 0, y = 0, w = 0, h = 0; // for TYPE_GEOMETRY
+-    bool                              allowToken = false;
+ 
+     // for restoring
+     std::string windowClass;
