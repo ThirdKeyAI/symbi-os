@@ -1,0 +1,21 @@
+test_portal_prefix (unittest.loader._FailedTest.test_portal_prefix) ... ERROR
+
+======================================================================
+ERROR: test_portal_prefix (unittest.loader._FailedTest.test_portal_prefix)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_portal_prefix
+Traceback (most recent call last):
+  File "/usr/lib/python3.14/unittest/loader.py", line 426, in _find_test_path
+    module = self._get_module_from_name(name)
+  File "/usr/lib/python3.14/unittest/loader.py", line 367, in _get_module_from_name
+    __import__(name)
+    ~~~~~~~~~~^^^^^^
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-portal-runtime-stage/image/tests/test_portal_prefix.py", line 12, in <module>
+    from image.portal.prefix_input import require_portal_manifest, unpack_portal
+ModuleNotFoundError: No module named 'image.portal.prefix_input'
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)

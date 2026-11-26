@@ -81,5 +81,32 @@ publication right or local compilation is used. The first native run compiled bo
 then stopped before portal installation because the report wrapper expected a
 CTest name without its class prefix. The exact-pair correction and raw results
 are retained in [the first-build report](../../docs/security/reports/P0-03-portal-build/45770130727/README.md).
-All 172 offline checks pass. A corrected native run, installed prefix and actual
-desktop consent qualification remain pending.
+The corrected [native build](../../docs/security/reports/P0-03-portal-build/45773194827/README.md)
+compiled and installed both components, passed all 93 native cases and the
+three compiler-container loader checks, and retained the full prefix. Its first
+unchanged-base loader check failed for `libiniparser.so.4`; the other two base
+loaders did not run. The failed workflow remains failed.
+
+## Retained runtime verification
+
+`development-prefix.lock.json` binds the exact 48-file development prefix,
+sources, tests, package closure and original notices. `prefix_input.py` refuses
+altered archives, unsafe paths/links, hardlinks, special files, unexpected modes,
+oversized inputs, stale bindings and incomplete native test accounting.
+
+`portal-runtime.yml` reuses this prefix and the retained compositor without
+recompilation. It selects only the authenticated iniparser runtime RPM from the
+existing 173-package build artifact. The disposable writable base has no network;
+real full-key signature, missing-key and tampered-package checks precede an
+offline additive install. Original packages and all crypto configuration slots
+must remain unchanged. Native loader/version probes drop to UID/GID 10001,
+verify zero effective/permitted/inheritable/ambient capabilities and no new
+privileges, and use read-only mounted prefixes.
+
+The hosted controller has 4 GiB/two CPUs/no swap/256 tasks, and the runtime
+container has 2 GiB/one CPU/no swap/128 tasks. The controller checks headroom,
+limits, OOM counters and container removal/absence. Download credentials are
+read-only and never enter the resource unit or container. The local wrappers
+refuse execution; all 183 offline checks pass. Actual hosted runtime acceptance,
+image integration, immutable fresh-consent behavior and booted portal acceptance
+remain pending. No qualification flag is promoted by artifact retention.
