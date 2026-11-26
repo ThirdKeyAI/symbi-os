@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "passed": false,
+  "os_qualified": false,
+  "repository": "ThirdKeyAI/symbi-os",
+  "workflow_run": 45754029034,
+  "job_id": 139688296733,
+  "source_commit": "d5c2b20d27b63d2d26a5a75154bebb17900c981c",
+  "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45754029034",
+  "variant": "generic",
+  "failure": "hosted preparation unit oom-kill; code=killed/status=KILL",
+  "limits": {
+    "memory_bytes": 536870912,
+    "cpu_quota_percent": 100,
+    "swap_bytes": 0,
+    "tasks": 64
+  },
+  "observed": {
+    "archive_hash_checks_passed": 8,
+    "runtime_seconds": 3.681,
+    "cpu_seconds": 2.887,
+    "memory_peak_display": "512.0M",
+    "swap_peak_display": "0B"
+  },
+  "precise_extraction_phase": "unavailable",
+  "cause_beyond_cgroup_oom": "unconfirmed",
+  "image_build_started": false,
+  "image_built": false,
+  "native_compilation_started": false,
+  "artifact": {
+    "id": 15087315826,
+    "bytes": 334,
+    "sha256": "d12b62df47fac3527384008ed35ce4672b1a1c8407f8eaadd63c33e8ebe7b163",
+    "retention": "Referenced from GitHub metadata; archive not downloaded locally."
+  },
+  "excerpt": {
+    "file": "job-excerpt.log",
+    "bytes": 985,
+    "sha256": "a895e123ce05825962cc9e2ab0baa90cbcf46eb065147f19aaf5e3be4eb594be",
+    "provenance": "Selected exact timestamped lines from the decoded GitHub workflow job log."
+  }
+}

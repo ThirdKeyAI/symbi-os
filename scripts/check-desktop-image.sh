@@ -14,7 +14,7 @@ case "${1:-}" in
     set +e
     sudo systemd-run --unit="$unit" --wait --pipe --working-directory="$root" \
       --uid="$(id -u)" --gid="$(id -g)" \
-      --property=MemoryMax=512M --property=MemorySwapMax=0 --property=CPUQuota=100% \
+      --property=MemoryMax=1G --property=MemorySwapMax=0 --property=CPUQuota=100% \
       --property=TasksMax=64 --property=Nice=10 --property=RuntimeMaxSec=15min --property=KillMode=control-group \
       /usr/bin/env -i PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
       "HOME=$HOME" "USER=$USER" GITHUB_ACTIONS=true RUNNER_ENVIRONMENT=github-hosted \
@@ -26,6 +26,14 @@ case "${1:-}" in
       python3 -m image.desktop.prepare 2>&1 | tee "$evidence/hosted-prepare.log"
     status=${PIPESTATUS[0]}
     set -e
+    # The runner owns the evidence directory; only reading unit state needs sudo.
+    # shellcheck disable=SC2024
+    if ! sudo systemctl show "$unit" --property=LoadState --property=Result \
+      --property=MemoryPeak --property=MemorySwapPeak --property=CPUUsageNSec \
+      --property=ExecMainCode --property=ExecMainStatus > "$evidence/prepare-systemd-result.txt"; then
+      printf '\nUnit measurements unavailable; use retained preparation checkpoints and unit log.\n' \
+        >> "$evidence/prepare-systemd-result.txt"
+    fi
     ;;
   build)
     unit="symbi-desktop-build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"

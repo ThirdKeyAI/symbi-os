@@ -4,11 +4,23 @@ from pathlib import Path
 import tempfile
 import unittest
 
+from image.desktop.prepare import copy_regular
 from image.desktop.inputs import required_package_delta, require_transaction, select_prefix_files
 from image.desktop.recipe import render_desktop, review_containerfile
 
 
 class DesktopAssembly(unittest.TestCase):
+    def test_payload_copy_preserves_bytes_and_mode_and_rejects_links_or_overwrites(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); source = root/'source'; source.write_bytes(b'non-executable fixture' * 100)
+            target = root/'payload/binary'
+            copy_regular(source, target, executable=True)
+            self.assertEqual(source.read_bytes(), target.read_bytes())
+            self.assertEqual(target.stat().st_mode & 0o777, 0o755)
+            with self.assertRaises(ValueError): copy_regular(source, target)
+            (root/'linked').symlink_to(source)
+            with self.assertRaises(ValueError): copy_regular(root/'linked', root/'other')
+
     def test_only_missing_exact_packages_are_added(self):
         before = ['base\t0\t1\t1.fc45\tx86_64', 'library\t1\t3\t1.fc45\tx86_64']
         required = ['library\t1\t3\t1.fc45\tx86_64', 'new\t0\t2\t1.fc45\tx86_64']

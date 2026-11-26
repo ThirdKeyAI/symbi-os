@@ -20,7 +20,7 @@ The transaction must preserve all original base packages and crypto configuratio
 The compilation inputs were produced on the generic base; each target variant
 must pass its own installed-image checks. Generic evidence does not qualify NVIDIA.
 
-The hosted preparation unit has 512 MiB, one CPU and no swap. The pull/controller
+The hosted preparation unit has 1 GiB, one CPU and no swap. The pull/controller
 unit has 4 GiB/two CPUs/no swap. The complete image build runs inside a separate
 descendant cgroup capped at 2 GiB/one CPU/no swap/128 tasks, including its Buildah
 children. Image RUNs additionally enforce memory/CPU limits and network isolation.
@@ -44,10 +44,22 @@ required. The workflow never receives the protected release signing environment.
 Generic builds run on relevant pushes; NVIDIA uses the explicit manual variant
 after the common assembly path succeeds. No large artifact or VM runs locally.
 
-The six local regressions cover additive transactions, replacement/removal and
+The seven local regressions cover byte/mode-preserving payload copies, additive transactions, replacement/removal and
 extra-package refusals, runtime-only prefix selection, unsafe links, recipe order
 and generated external-image/command rejection. They do not substitute for hosted
 assembly or final-image acceptance.
+
+The [first assembly attempt](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45754029034)
+verified all eight retained input archives, then hit its original 512 MiB
+preparation limit after 3.681 seconds. No image build or container started. The
+log does not identify the extraction phase or distinguish process memory from
+file cache, so the precise cause is unconfirmed. Preparation now retains phase
+checkpoints with process and cgroup counters, uses a 1 GiB hosted limit and
+flushes/releases this run's copied-file cache in bounded chunks. Extracted files
+are synced and their clean cache released between components. No global cache
+flush, source rebuild or local resource increase is involved. If systemd has
+already unloaded the unit, default fields from `LoadState=not-found` are not
+measurement evidence. The correction still needs its hosted result.
 
 Build and cleanup behavior follows the primary
 [Podman build documentation](https://docs.podman.io/en/latest/markdown/podman-build.1.html)

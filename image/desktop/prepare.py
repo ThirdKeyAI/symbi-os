@@ -22,8 +22,32 @@ def copy_regular(source, target, executable=False):
     target.parent.mkdir(parents=True, exist_ok=True)
     if target.exists() or target.is_symlink():
         raise ValueError('Overlapping desktop payload: '+str(target))
-    shutil.copyfile(source, target)
+    # Keep dirty file pages bounded as well as Python buffers. A complete
+    # runtime executable is about 500 MiB; copying it in one sendfile call can
+    # otherwise retain a large dirty working set inside a small cgroup.
+    with source.open('rb') as incoming, target.open('xb') as outgoing:
+        pending = 0
+        while chunk := incoming.read(1024**2):
+            outgoing.write(chunk)
+            pending += len(chunk)
+            if pending >= 16*1024**2:
+                outgoing.flush()
+                os.fsync(outgoing.fileno())
+                os.posix_fadvise(outgoing.fileno(), 0, 0, os.POSIX_FADV_DONTNEED)
+                pending = 0
+        outgoing.flush()
+        os.fsync(outgoing.fileno())
+        os.posix_fadvise(outgoing.fileno(), 0, 0, os.POSIX_FADV_DONTNEED)
     target.chmod(0o755 if executable else 0o644)
+
+
+def release_file_cache(directory):
+    """Sync only this run's extracted files, then release their clean cache."""
+    for path in directory.rglob('*'):
+        if path.is_file() and not path.is_symlink():
+            with path.open('r+b') as stream:
+                os.fsync(stream.fileno())
+                os.posix_fadvise(stream.fileno(), 0, 0, os.POSIX_FADV_DONTNEED)
 
 
 def inventory(directory):
@@ -47,7 +71,7 @@ def main():
     group = Path('/sys/fs/cgroup')/Path(Path('/proc/self/cgroup').read_text().strip().split('::', 1)[1]).relative_to('/')
     limits = {n: (group/n).read_text().strip() for n in ('memory.max', 'memory.swap.max', 'cpu.max', 'pids.max')}
     if not group.name.startswith('symbi-desktop-prep-') or limits != {
-            'memory.max': '536870912', 'memory.swap.max': '0', 'cpu.max': '100000 100000', 'pids.max': '64'}:
+            'memory.max': '1073741824', 'memory.swap.max': '0', 'cpu.max': '100000 100000', 'pids.max': '64'}:
         raise ValueError('Unexpected desktop preparation limits')
     variant = os.environ['SYMBI_IMAGE_VARIANT']
     evidence = root/'.cache/desktop-image-evidence'
@@ -59,7 +83,21 @@ def main():
     payload = context/'payload'
     payload.mkdir()
     record = {'passed': False, 'os_qualified': False, 'source_commit': os.environ['GITHUB_SHA'],
-              'variant': variant, 'limits': limits, 'artifacts': {}}
+              'variant': variant, 'limits': limits, 'artifacts': {}, 'checkpoints': []}
+
+    def checkpoint(phase):
+        record['phase'] = phase
+        record['checkpoints'].append({'phase': phase, 'memory.current': (group/'memory.current').read_text().strip(),
+            'memory.peak': (group/'memory.peak').read_text().strip(), 'memory.events': (group/'memory.events').read_text().strip(),
+            'memory.stat': (group/'memory.stat').read_text(),
+            'process_memory': [line for line in Path('/proc/self/status').read_text().splitlines() if line.startswith(('VmRSS:', 'VmHWM:'))]})
+        temporary = evidence/'preparation.json.tmp'
+        with temporary.open('w') as output:
+            output.write(json.dumps(record, indent=2)+'\n')
+            output.flush()
+            os.fsync(output.fileno())
+        temporary.replace(evidence/'preparation.json')
+        print('Desktop preparation: '+phase, flush=True)
 
     def load(relative):
         return unique_json((root/relative).read_bytes())
@@ -70,6 +108,7 @@ def main():
         return lock
 
     try:
+        checkpoint('validate-target-and-builder')
         pins = load('image/base-images.json')
         recipe = render_desktop(pins, variant, root)
         build_base = pins['variants']['generic']['image']
@@ -78,13 +117,17 @@ def main():
         tool_lock = artifact('bluebuild', 'image/development-builder.lock.json')
         tool = unpack_tool(root/'.cache/bluebuild-development-tool.zip', tool_lock,
                            root/'image/toolchain/bluebuild.json', storage/'tool')
+        release_file_cache(storage/'tool')
         for row in tool['patches']:
             if digest(root/row['path']) != row['sha256']:
                 raise ValueError('Current builder patch changed')
+        checkpoint('extract-compositor')
         hypr_lock = artifact('hyprland', 'image/hyprland/development-prefix.lock.json')
         record['prefix_link_rewrites'] = []
         hypr = unpack_prefix(root/'.cache/hyprland-development-prefix.zip', hypr_lock,
                              storage/'prefix', record['prefix_link_rewrites'])
+        release_file_cache(storage/'prefix')
+        checkpoint('select-compositor-runtime')
         sources = load('image/hyprland/candidate-inputs.json')
         expected = {row['name']: row['rev'] for row in sources['libraries']}
         expected.update(Hyprland=sources['hyprland_revision'], glaze=sources['glaze']['revision'])
@@ -106,6 +149,7 @@ def main():
             target = payload/'usr/bin'/name
             target.parent.mkdir(parents=True, exist_ok=True)
             target.symlink_to('../lib/symbi/hyprland/bin/'+name)
+        checkpoint('extract-elephant')
         elephant_lock = artifact('elephant', 'image/launcher/development-binaries.lock.json')
         if (elephant_lock.get('upstream_tests_passed') is not True
                 or elephant_lock.get('source_build_provider_controls_passed') is not True):
@@ -119,16 +163,23 @@ def main():
                          digest(root/'image/launcher/build-rpms.lock.json'), patch_hash,
                          digest(root/'image/launcher/probes/native_marker.go'))
         unpack_binaries(root/'.cache/elephant-development-binaries.zip', elephant_lock, storage/'elephant')
+        release_file_cache(storage/'elephant')
         copy_regular(storage/'elephant/patched', payload/'usr/bin/elephant', True)
         copy_regular(storage/'elephant/desktopapplications', payload/'usr/lib/symbi/elephant/providers/desktopapplications.so')
+        checkpoint('extract-walker')
         walker_lock = artifact('walker', 'image/launcher/walker-development-binary.lock.json')
         unpack_walker(root/'.cache/walker-development-binary.zip', walker_lock, root, build_base, storage/'walker')
+        release_file_cache(storage/'walker')
         copy_regular(storage/'walker/walker', payload/'usr/bin/walker', True)
+        checkpoint('extract-symbiont')
         runtime_lock = artifact('symbiont', 'image/assembly/runtime-development.lock.json')
         unpack_runtime(root/'.cache/symbiont-runtime.zip', runtime_lock, root/'upstream/symbiont.toml',
                        root/'image/assembly/runtime-build-result.json', storage/'runtime')
+        release_file_cache(storage/'runtime')
+        checkpoint('copy-symbiont')
         for name in ('symbi', 'symbi-sandbox-supervisor'):
             copy_regular(storage/'runtime'/name, payload/'usr/bin'/name, True)
+        checkpoint('prepare-signed-rpms-and-licenses')
         install = context/'install-inputs'
         install.mkdir()
         packages = []
@@ -185,6 +236,7 @@ def main():
             copy_regular(root/relative, context/relative)
         for path in context.rglob('*'):
             if path.is_dir() and not path.is_symlink(): path.chmod(0o755)
+        checkpoint('validate-and-generate-containerfile')
         recipe_path = context/'recipe.json'
         recipe_path.write_text(json.dumps(recipe, indent=2)+'\n')
         env = dict(os.environ, BLUEBUILD_REVISION=tool['upstream_revision'], RAYON_NUM_THREADS='1',
@@ -209,6 +261,7 @@ def main():
         record['context'] = inventory(context)
         record['required_packages'] = packages
         record['passed'] = True
+        checkpoint('complete')
     except Exception as error:
         record['failure'] = type(error).__name__+': '+str(error)
         raise
