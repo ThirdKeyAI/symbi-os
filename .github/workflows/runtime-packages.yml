@@ -67,7 +67,7 @@ jobs:
   packages:
     # Internal branches run once per relevant push; forks retain PR validation.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 50
     steps:
       - name: Check out proposed OS revision
