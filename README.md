@@ -12,7 +12,7 @@ Fedora Atomic image with Hyprland and the upstream Symbiont runtime.
 are complete. A generic development OCI image now builds with maintained
 Hyprland, Walker, the restricted Elephant application provider, Symbiont 3.0
 and its sandbox supervisor. Its installed-file, package, loader, CLI and
-configuration checks pass; see [the retained image evidence](docs/security/reports/P0-03-desktop/45756829042/independent-check.json).
+configuration checks pass; see [the retained image evidence](docs/security/reports/P0-03-desktop/45758278776/independent-check.json).
 Actual image boot, desktop interaction, Fedora sandbox qualification and signed
 updates/rollback remain open. No OS release has been published. The desktop
 trusted approval surface and OS agent services are planned in later phases.

@@ -112,4 +112,21 @@ linter passed 13 checks, skipped one and warned about the base's kernel symvers
 file in /boot. Full evidence and independent reconciliation are retained in
 `docs/security/reports/P0-03-desktop/45756829042/`. The 4.03 GB development OCI
 archive remains hosted; it is not boot or release qualification. The subsequent
-release-policy packaging change still requires its own image result.
+release-policy packaging change passed its own image checks below.
+
+## Installed release-policy result
+
+[Run 45758278776](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45758278776)
+at `1e171d1` passed the updated generic image build and installed checks.
+All 88 installed files/links, including both enforcing trust files, match
+the reviewed payload. Independent reconciliation matches the trust hashes
+to freshly rendered approved public inputs and verifies the small image
+manifest against the build and preparation reports. The five RPM signatures,
+2,178 preserved base packages, 2,183 final packages, 40 original crypto
+configuration slots, six loader checks, CLI/provider/Lua checks and all 13
+container removals also pass. The unchanged bootc warning and skipped check
+remain visible. All memory-pressure counters are retained; no OOM or kill
+occurred. Evidence is under
+`docs/security/reports/P0-03-desktop/45758278776/`. The large image remains
+hosted and requires verification by its consumer before use. The installed
+policy check does not qualify real signature rejection, boot or rollback.
