@@ -8,7 +8,7 @@ import shutil
 import re
 
 from image.atomic.contract import (create_disk,require_disk,sha256,unique_json,
-                                   unpack_oci,validate_report)
+                                   unpack_oci,validate_report,installer_mounts)
 from image.boot.inputs import require_desktop_image
 from image.boot.preflight import expected_inputs,validate_loaded_image,validate_report as validate_preflight
 from image.launcher.probes.bounded_process import run_bounded
@@ -111,11 +111,7 @@ def main():
                 '--env=LANG=C.UTF-8','--env=PYTHONDONTWRITEBYTECODE=1']
         command=podman+['run','--rm','--name='+container,*common,'--privileged',
                        '--memory=2g','--memory-swap=2g','--cpus=1','--pids-limit=128',
-                       '--mount',f'type=bind,src={installer_input},dst=/inputs,ro',
-                       '--mount',f'type=bind,src={storage}/oci,dst=/inputs/oci,ro',
-                       '--mount',f'type=bind,src={disk_dir},dst=/output',
-                       '--mount',f'type=bind,src={temporary},dst=/var/tmp',
-                       '--mount','type=bind,src=/run/udev,dst=/run/udev,ro',
+                       *installer_mounts(storage),
                        '--entrypoint=/usr/bin/python3',image_id,'/inputs/install.py']
         require_disk(disk,identity);record['installation_attempted']=True;save()
         print('Atomic install: bootc is writing only the new private 24 GiB regular file',flush=True)

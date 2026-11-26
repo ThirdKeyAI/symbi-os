@@ -140,6 +140,34 @@ class AtomicBoot(unittest.TestCase):
         self.assertIn('opt/io.systemd.credentials/systemd.extra-unit.o.service',names)
         self.assertFalse(any('password' in name or 'ssh' in name for name in names))
 
+    def test_installer_observes_live_devices_through_readonly_mounts(self):
+        from image.atomic.contract import installer_mounts
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            for name in ('installer-input','oci','disk','installer-tmp'):
+                (root/name).mkdir(mode=0o700)
+            args=installer_mounts(root)
+            mounts=[dict(field.split('=',1) if '=' in field else (field,True)
+                         for field in args[n].split(',')) for n in range(1,len(args),2)]
+            by_target={row['dst']:row for row in mounts}
+            self.assertEqual(by_target['/dev'],{'type':'bind','src':'/dev','dst':'/dev','ro':True,'bind-nonrecursive':True})
+            self.assertEqual(by_target['/run/udev'],{'type':'bind','src':'/run/udev','dst':'/run/udev','ro':True,'bind-nonrecursive':True})
+            self.assertEqual({p for p,row in by_target.items() if not row.get('ro')},{'/output','/var/tmp'})
+            for target in ('/output','/var/tmp'):
+                self.assertTrue(Path(by_target[target]['src']).is_relative_to(root))
+            self.assertTrue(by_target['/inputs']['ro']);self.assertTrue(by_target['/inputs/oci']['ro'])
+
+    def test_installer_rejects_shared_or_linked_host_input_directories(self):
+        from image.atomic.contract import installer_mounts
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            for name in ('installer-input','oci','disk','installer-tmp'):
+                (root/name).mkdir(mode=0o700)
+            (root/'disk').chmod(0o755)
+            with self.assertRaises(ValueError): installer_mounts(root)
+            (root/'disk').rmdir();(root/'disk').symlink_to('/dev')
+            with self.assertRaises(ValueError): installer_mounts(root)
+
     def boot(self):
         expected={'os':{'ID':'secureblue','ID_LIKE':'fedora','VERSION_ID':'45','IMAGE_ID':'sericea-main-hardened'},
                   'kernel':'7.3.4-300.secureblue.1.fc45.x86_64','bootc_version':'1.17.1',

@@ -30,7 +30,7 @@ checked before and after installation. `--via-loopback` is mandatory; neither
 existing disk replacement nor host block-device installation is offered.
 The installer container is privileged for loop setup, filesystems and mounts,
 but has a private PID namespace, no network, no credentials, private temporary
-storage and only read-only host udev metadata. This privilege is confined to
+storage and read-only live host `/dev` and udev metadata mounts. This privilege is confined to
 the disposable hosted runner. Cleanup targets only loop devices still bound
 to this exact new file after the containers stop.
 
@@ -88,3 +88,31 @@ proof. No production dependency, policy exemption or journal event is added.
 Affected invariant: INV-12. All other invariants remain requirements; no agent
 authorization or trusted-input implementation is introduced. Human TCB review
 and protected release approval remain required before the relevant merge/release.
+
+## First actual installation attempt and device-visibility correction
+
+[Run 45808682061](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45808682061)
+at `5ef30a1` passed exact artifact/image identity and all 131 OCI blobs/129 layers
+(4,088,888,273 bytes). The fixed new regular-file target passed its guard and
+bootc created BIOS/EFI/root partitions. It stopped before filesystem creation:
+the private container's initial `/dev` lacked the new `/dev/loop2p3` node.
+All 25 original small files are retained. The installer, image, loop attachment,
+private image/disk storage and runroot were removed; no OOM/kill/swap occurred.
+No VM started and no successful installation or boot is claimed.
+
+The correction binds the hosted runner's live `/dev` read-only and nonrecursively into the already
+privileged installer, allowing host udev's new partition nodes to become visible.
+This does not make block devices read-only: the installer still needs block I/O
+to its guarded private loop file. The bind prevents creating/removing host
+device-directory entries. Only the private disk and temporary directories are
+writable directory mounts. Private PID/no-network namespaces, exact target-file
+identity, resource limits, SELinux and update-policy requirements are unchanged.
+Two new tests check those mount properties and reject shared or symlinked input
+directories. All 232 image tests pass at 36,792 KiB peak RSS, 0.77 CPU seconds
+and zero swap; the original full workspace/formal run `45808699180` also passed.
+Actual corrected install/boot remains pending the next hosted attempt.
+
+The device bind uses Podman's documented `bind-nonrecursive` option so host
+`/dev/shm`, `/dev/pts` and other submounts are not imported. The new regression
+failed on the initial recursive mount before this correction. See
+[Podman bind options](https://docs.podman.io/en/latest/markdown/podman-run.1.html).

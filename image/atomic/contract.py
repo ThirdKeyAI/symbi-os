@@ -155,6 +155,26 @@ def installer_arguments(manifest_digest):
             '/output/atomic.raw']
 
 
+def installer_mounts(storage):
+    """Expose new host-created loop partitions without sharing host PID/network."""
+    private_directory(storage)
+    if any(character in str(storage) for character in (',','\n','\r')):
+        raise ValueError('Unsafe container mount specification')
+    result=[]
+    for name,destination,readonly in [('installer-input','/inputs',True),('oci','/inputs/oci',True),
+                                      ('disk','/output',False),('installer-tmp','/var/tmp',False)]:
+        source=storage/name;private_directory(source)
+        result+=['--mount',f'type=bind,src={source},dst={destination}'+(',ro' if readonly else '')]
+    # A privileged container's initial /dev is a snapshot of device nodes. The
+    # host udev daemon creates partition nodes after bootc attaches/partitions
+    # its loop file. A live read-only bind makes those nodes visible, while
+    # preventing the installer from creating/removing host device-directory entries.
+    # Do not recursively import host /dev/shm, /dev/pts or other submounts.
+    for path in ('/dev','/run/udev'):
+        result+=['--mount',f'type=bind,src={path},dst={path},ro,bind-nonrecursive']
+    return result
+
+
 def firmware_arguments(directory):
     if directory!=Path('/inputs'): raise ValueError('Fixed read-only firmware input mount required')
     result=[]
