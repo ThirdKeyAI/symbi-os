@@ -146,6 +146,15 @@ CLI cases and complete upstream suite before execution. No image is uploaded by
 this workflow. Source/dependency review, external-reference authentication and
 actual OS qualification remain separate gates.
 
+`toolchain/reuse.py` prepares that artifact-consumption boundary. It requires
+reviewed passing CLI/upstream flags, a byte-identical current tool configuration,
+matching source/compiler/patch bindings and exact archive/manifest/file hashes.
+Only the executable, original license and manifest are accepted; duplicate,
+escaping, linked, special, encrypted, oversized or ambiguous JSON inputs fail
+before execution, and partial extracted output is removed. Seven fixture tests
+exercise this boundary with non-executable bytes. A real artifact lock is added
+only after the next hosted tool run and its retained evidence are reviewed.
+
 The downstream patch in `toolchain/patches/` adds a closed, embedded schema for
 this OS's v2 recipe profile, then requires successful upstream typed parsing and
 OCI-reference parsing. It supports only the two OS image names, amd64, local
