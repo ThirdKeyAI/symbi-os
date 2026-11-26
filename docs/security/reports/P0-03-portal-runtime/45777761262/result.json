@@ -1,0 +1,186 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "consent_qualified": false,
+  "source_commit": "ddb34fce5ae13d6e521f719e145fb36cafa59732",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "base-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "pull",
+      "exit_code": 0
+    },
+    {
+      "name": "offline-runtime",
+      "exit_code": 0
+    },
+    {
+      "name": "container-cleanup",
+      "exit_code": 0
+    },
+    {
+      "name": "container-exists",
+      "exit_code": 1
+    }
+  ],
+  "native_components_recompiled": false,
+  "product_installation": false,
+  "scope": "Retained binaries with one authenticated additive library on the disposable generic base; no GUI or consent qualification",
+  "prefix_link_rewrites": [
+    {
+      "name": "hyprland/bin/hyprland",
+      "original_target": "/usr/lib/symbi/hyprland/bin/Hyprland",
+      "relative_target": "Hyprland"
+    }
+  ],
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "source_inputs": {
+    "schema": 1,
+    "scope": "Candidate portal and share-picker toolkit selected by the pinned compositor; source metadata only, no build or OS qualification",
+    "qualified": false,
+    "hyprland_revision": "11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947",
+    "hyprland_flake_lock": {
+      "path": "image/portal/reviewed/Hyprland-flake.lock",
+      "sha256": "db45c25bd98a86c5c5cb2494ff6994d39db7f2d0eb05fc98d27d30b6c833cabe",
+      "git_blob": "d84c3724fcbad32a2082c566292dd7815c3f08e4"
+    },
+    "reused_input_bindings": {
+      "image/hyprland/candidate-inputs.json": "d5c64bd34e52e4c61a14fde19ad429c31dcf3862d8c051bd029c4c73deca2ecb",
+      "image/hyprland/development-prefix.lock.json": "484cf1c675b20c8e603ef6094ecd1e07c7e8fd58047bdba1e8f7eabfb26b0650",
+      "image/hyprland/build-rpms.lock.json": "fe160b4ed81b2e4910df098f6648b499264e8d989eea07feb59a841ecc9131a4",
+      "image/hyprland/patches/0001-disable-native-loading.patch": "068d061f29c6ccbef25d402972a14c72195811e40888027b71760f6656f6eeff"
+    },
+    "components": [
+      {
+        "name": "hyprtoolkit",
+        "lock_node": "hyprtoolkit",
+        "revision": "92646e15fb295285b10de626f2d9597216465f7b",
+        "version": "0.6.0",
+        "repository": "https://github.com/hyprwm/hyprtoolkit.git",
+        "license": "BSD-3-Clause",
+        "reviewed_files": {
+          "VERSION": {
+            "path": "image/portal/reviewed/hyprtoolkit/VERSION",
+            "bytes": 6,
+            "sha256": "97a5d6e540a6120d09c39ddb667e0e8e2bac7fcc2ffef813b82e08fd60365bce",
+            "git_blob": "a918a2aa18d5bec6a8bb93891a7a63c243111796"
+          },
+          "CMakeLists.txt": {
+            "path": "image/portal/reviewed/hyprtoolkit/CMakeLists.txt",
+            "bytes": 8506,
+            "sha256": "053653a92c0b7f6936e4a9c745d4281c6f5ac87be12d684503aba72ab3452195",
+            "git_blob": "540b8e6d7d3a0ba6fa8f66c46bd59ac6d83021df"
+          },
+          "LICENSE": {
+            "path": "image/portal/reviewed/hyprtoolkit/LICENSE",
+            "bytes": 1503,
+            "sha256": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143",
+            "git_blob": "daf5abfc33b687ea2368b58e8dd58e8180b00c47"
+          },
+          "scripts/generateShaderIncludes.sh": {
+            "path": "image/portal/reviewed/hyprtoolkit/scripts/generateShaderIncludes.sh",
+            "bytes": 829,
+            "sha256": "208b260558dd3de4519361b0ab6fb841f6736456ea430750ae8edbc43a24c17e",
+            "git_blob": "58594c9cd86873cfbb98bce29e28f7f111891c68"
+          }
+        }
+      },
+      {
+        "name": "xdg-desktop-portal-hyprland",
+        "lock_node": "xdph",
+        "revision": "85450448ea40a54ec4f10bd607e68019d8f5cc41",
+        "version": "1.5.0",
+        "repository": "https://github.com/hyprwm/xdg-desktop-portal-hyprland.git",
+        "license": "BSD-3-Clause",
+        "reviewed_files": {
+          "VERSION": {
+            "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/VERSION",
+            "bytes": 6,
+            "sha256": "acb57a7135b2d7d6e665f67f056e21353023b93835f54def1ae523bf76f1bfb3",
+            "git_blob": "bc80560fad66ca670bdfbd1e5c973a024d4d0325"
+          },
+          "CMakeLists.txt": {
+            "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/CMakeLists.txt",
+            "bytes": 6138,
+            "sha256": "b5d66bb400772968346edf61b6b568fba623bdf355bb8af8c2aa4c2a6354c450",
+            "git_blob": "51af533f24de44d4785164755f4412d3a716535b"
+          },
+          "LICENSE": {
+            "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/LICENSE",
+            "bytes": 1515,
+            "sha256": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+            "git_blob": "f18025f342e9c7043902f8dd22549d88bd6facf8"
+          },
+          "hyprland-share-picker/CMakeLists.txt": {
+            "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/hyprland-share-picker/CMakeLists.txt",
+            "bytes": 904,
+            "sha256": "3f0439e00661d676cd370c496b8f9b473ef4dc362b9a40d3513f6a9e9c305c58",
+            "git_blob": "2fe614800afa9f20f34dea0ee85cd4ecb61080ef"
+          }
+        }
+      }
+    ]
+  },
+  "reviewed_source_bindings": {
+    "image/portal/source-inputs.json": "759e7e4e4cbe63cb5c0ef39963e4f95b39a68b803e6d9100d10f3a40cc722514",
+    "image/hyprland/candidate-inputs.json": "d5c64bd34e52e4c61a14fde19ad429c31dcf3862d8c051bd029c4c73deca2ecb",
+    "image/hyprland/development-prefix.lock.json": "484cf1c675b20c8e603ef6094ecd1e07c7e8fd58047bdba1e8f7eabfb26b0650",
+    "image/hyprland/build-rpms.lock.json": "fe160b4ed81b2e4910df098f6648b499264e8d989eea07feb59a841ecc9131a4",
+    "image/hyprland/patches/0001-disable-native-loading.patch": "068d061f29c6ccbef25d402972a14c72195811e40888027b71760f6656f6eeff",
+    "image/portal/reviewed/hyprtoolkit/VERSION": "97a5d6e540a6120d09c39ddb667e0e8e2bac7fcc2ffef813b82e08fd60365bce",
+    "image/portal/reviewed/hyprtoolkit/CMakeLists.txt": "053653a92c0b7f6936e4a9c745d4281c6f5ac87be12d684503aba72ab3452195",
+    "image/portal/reviewed/hyprtoolkit/LICENSE": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143",
+    "image/portal/reviewed/hyprtoolkit/scripts/generateShaderIncludes.sh": "208b260558dd3de4519361b0ab6fb841f6736456ea430750ae8edbc43a24c17e",
+    "image/portal/reviewed/xdg-desktop-portal-hyprland/VERSION": "acb57a7135b2d7d6e665f67f056e21353023b93835f54def1ae523bf76f1bfb3",
+    "image/portal/reviewed/xdg-desktop-portal-hyprland/CMakeLists.txt": "b5d66bb400772968346edf61b6b568fba623bdf355bb8af8c2aa4c2a6354c450",
+    "image/portal/reviewed/xdg-desktop-portal-hyprland/LICENSE": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+    "image/portal/reviewed/xdg-desktop-portal-hyprland/hyprland-share-picker/CMakeLists.txt": "3f0439e00661d676cd370c496b8f9b473ef4dc362b9a40d3513f6a9e9c305c58",
+    "image/portal/reviewed/Hyprland-flake.lock": "db45c25bd98a86c5c5cb2494ff6994d39db7f2d0eb05fc98d27d30b6c833cabe",
+    "image/hyprland/build-requirements.json": "fa610060ebed142edc072cea832945da3da3e0d58bdf14cd1d35089f1302b92a"
+  },
+  "runtime_package": {
+    "filename": "iniparser-4.2.6-5.fc45.x86_64.rpm",
+    "bytes": 26470,
+    "sha256": "8774475752a94ae62e9958819c03fa3977677d53c93b3b981a82f480b1767743",
+    "nevra": "iniparser-4.2.6-5.fc45.x86_64",
+    "vendor": "Fedora Project",
+    "license": "MIT",
+    "signature_verified": true,
+    "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+  },
+  "rpm_lock_sha256": "81fb8788e0acb25ee15bcb6d38c7438c4cba102e1fd616d944ddc03f99375ab8",
+  "portal_manifest_sha256": "fbb337e28befd8a65f0c49a47eb7201cf7048062df0ea9b212b607df07e2e3d8",
+  "reused_compositor_manifest_sha256": "d158ab5e6948abc59084bf60b771fa0abf92f8c39d47fb77c40b2c6e5e5bee08",
+  "input_bindings": {
+    "build-rpms.lock.json": "81fb8788e0acb25ee15bcb6d38c7438c4cba102e1fd616d944ddc03f99375ab8",
+    "source-inputs.json": "759e7e4e4cbe63cb5c0ef39963e4f95b39a68b803e6d9100d10f3a40cc722514",
+    "runtime_guest.py": "4896517301f2efbfb01d6f144f2fdaed683817d050fed22be0a7930825bc37c6",
+    "runtime_inputs.py": "13979f98eb7baea68da61f00906af3741fdc70ab5d575f74855a6c2171ce7f3c",
+    "desktop_inputs.py": "cc2672b17e2916d82adf1cc0de6b530c79c2da5441d2b01d88f27583ebf7f115",
+    "runtime_install.py": "d7d36d7a056861cafe058d3a31ae609d372257cbff6f0cfd77b6dc3bdd62e884",
+    "package_identity.py": "b745e4b72be4404bfe7291a11fd9c5378487fc4158ef957d2221f792e9fe90ab",
+    "bounded_process.py": "31353489fcf05bb3a6e7ddd423e6737ccd366e9ba3b328c04339dc96f3224788",
+    "resolve_packages.py": "9cde06bf10749202d5248b66dd0c50bf214edd08e37c12e48527b31ec2356bcd",
+    "guest_inventory.py": "c214e843b92b0bb2c7ecdef047e35162165fa30a8381e88f22fcc17aefbbd9d8",
+    "reuse.py": "7cb0fc01cb19e93f300bcd9c46b8a80d30b58d2e2c1f9f86024731ff1597e73d",
+    "fedora-45-primary.asc": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425"
+  },
+  "runtime_report_sha256": "8c7679acc7e48521519dfaa0032af17879a997f5d8fddc386ca37d4b49dc9d08",
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4360118272",
+    "memory.events": "low 0\nhigh 0\nmax 41706\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 158133838\nuser_usec 94836623\nsystem_usec 63297215\nnice_usec 90753000\ncore_sched.force_idle_usec 0\nnr_periods 1583\nnr_throttled 485\nthrottled_usec 26232740\nnr_bursts 0\nburst_usec 0"
+  }
+}

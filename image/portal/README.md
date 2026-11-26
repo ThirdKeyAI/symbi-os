@@ -107,6 +107,13 @@ The hosted controller has 4 GiB/two CPUs/no swap/256 tasks, and the runtime
 container has 2 GiB/one CPU/no swap/128 tasks. The controller checks headroom,
 limits, OOM counters and container removal/absence. Download credentials are
 read-only and never enter the resource unit or container. The local wrappers
-refuse execution; all 183 offline checks pass. Actual hosted runtime acceptance,
-image integration, immutable fresh-consent behavior and booted portal acceptance
-remain pending. No qualification flag is promoted by artifact retention.
+refuse execution; all 183 offline checks pass.
+
+[Retained runtime acceptance passed](../../docs/security/reports/P0-03-portal-runtime/45777761262/README.md):
+all three loaders and the actual portal version succeeded, with exactly one
+signed package added and all 2,178 original packages/40 crypto entries preserved.
+Real missing-key/tamper controls, unprivileged identity, cleanup and zero-OOM
+counters were reconciled from all 53 original evidence files. Workspace/formal
+checks at the runtime implementation commit also passed. Product image
+integration, immutable fresh-consent behavior and booted portal acceptance
+remain pending. No OS/consent qualification flag is promoted by this result.
