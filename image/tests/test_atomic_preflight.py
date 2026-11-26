@@ -12,7 +12,9 @@ from image.boot.preflight import validate_report, validate_loaded_image
 class AtomicPreflight(unittest.TestCase):
     def fixture(self):
         file = {'bytes': 2048, 'sha256': 'a'*64, 'uid': 0, 'mode': 0o644}
-        expected = {'kernel': '7.3.4-200.fc45.x86_64', 'bootc_version': '1.17.1',
+        expected = {'os': {'ID':'secureblue','ID_LIKE':'fedora','VERSION_ID':'45',
+                            'VARIANT_ID':'sericea-main-hardened','IMAGE_ID':'sericea-main-hardened'},
+                    'kernel': '7.3.4-200.fc45.x86_64', 'bootc_version': '1.17.1',
                     'packages': ['bootc\t0\t1.17.1\t1.fc45\tx86_64',
                                  'kernel-core\t0\t7.3.4\t200.fc45\tx86_64'],
                     'trust': {'etc/containers/policy.json': 'b'*64,
@@ -22,10 +24,10 @@ class AtomicPreflight(unittest.TestCase):
                   'root_readonly': True, 'interfaces': ['lo'],
                   'limits': {'memory.max': '536870912', 'memory.swap.max': '0',
                              'cpu.max': '100000 100000', 'pids.max': '64'},
-                  'os': {'ID': 'fedora', 'VERSION_ID': '45'}, 'selinux': {'SELINUX': 'enforcing'},
+                  'os': expected['os'].copy(), 'selinux': {'SELINUX': 'enforcing'},
                   'packages': expected['packages'].copy(), 'bootc_version': 'bootc 1.17.1',
                   'root_fs': {'root-fs-type': 'btrfs'}, 'install_options': ['--source-imgref',
-                    '--target-imgref', '--enforce-container-sigpolicy', '--generic-image', '--via-loopback'],
+                    '--target-imgref', '--enforce-container-sigpolicy', '--generic-image', '--via-loopback', '--filesystem'],
                   'kernel': {'version': expected['kernel'], 'vmlinuz': file.copy(), 'initramfs.img': file.copy()},
                   'trust': {path: {**file, 'sha256': digest} for path,digest in expected['trust'].items()}}
         return report, expected
@@ -70,6 +72,23 @@ class AtomicPreflight(unittest.TestCase):
                 else: candidate[key]=None
                 with self.subTest(key=key,action=action),self.assertRaises(ValueError):
                     validate_report(candidate,expected)
+
+    def test_no_installer_default_requires_explicit_filesystem_choice(self):
+        report,expected=self.fixture()
+        report['root_fs']['root-fs-type']=None
+        requirements=validate_report(report,expected)
+        self.assertEqual(requirements,{'filesystem_default':None,'filesystem_argument_required':True})
+        self.assertFalse(report['os_qualified']);self.assertFalse(report['guest_booted'])
+        report['root_fs']['root-fs-type']='btrfs'
+        self.assertEqual(validate_report(report,expected),
+                         {'filesystem_default':'btrfs','filesystem_argument_required':False})
+
+    def test_exact_secureblue_variant_and_fedora_lineage_are_required(self):
+        report,expected=self.fixture()
+        for key,value in [('ID','fedora'),('ID_LIKE','debian'),('VERSION_ID','44'),
+                          ('VARIANT_ID','sericea-nvidia-hardened'),('IMAGE_ID','other')]:
+            candidate=copy.deepcopy(report);candidate['os'][key]=value
+            with self.subTest(key=key),self.assertRaises(ValueError): validate_report(candidate,expected)
 
     def test_only_one_exact_loaded_image_is_selected(self):
         image_id='sha256:'+'e'*64

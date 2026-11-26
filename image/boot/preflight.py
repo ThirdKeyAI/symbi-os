@@ -10,7 +10,7 @@ from image.toolchain.reuse import unique_json
 LIMITS = {'memory.max': '536870912', 'memory.swap.max': '0',
           'cpu.max': '100000 100000', 'pids.max': '64'}
 OPTIONS = {'--source-imgref', '--target-imgref', '--enforce-container-sigpolicy',
-           '--generic-image', '--via-loopback'}
+           '--generic-image', '--via-loopback', '--filesystem'}
 
 
 def validate_loaded_image(rows, image_id):
@@ -34,12 +34,12 @@ def validate_report(report, expected):
                 or report['root_readonly'] is not True or report['interfaces'] != ['lo']
                 or report['limits'] != LIMITS):
             raise ValueError('Image preflight isolation or qualification scope changed')
-        if (report['os'].get('ID') != 'fedora' or report['os'].get('VERSION_ID') != '45'
+        if (any(report['os'].get(key) != value for key,value in expected['os'].items())
                 or report['selinux'].get('SELINUX') != 'enforcing'
                 or sorted(report['packages']) != sorted(expected['packages'])
                 or report['bootc_version'] != 'bootc '+expected['bootc_version']
                 or report['kernel']['version'] != expected['kernel']
-                or report['root_fs']['root-fs-type'] not in ('btrfs', 'ext4', 'xfs')
+                or report['root_fs']['root-fs-type'] not in (None, 'btrfs', 'ext4', 'xfs')
                 or not isinstance(report['install_options'], list)
                 or not OPTIONS.issubset(report['install_options'])):
             raise ValueError('Image kernel, installer, packages or SELinux configuration changed')
@@ -58,11 +58,18 @@ def validate_report(report, expected):
                 raise ValueError('Image trust bytes differ from the approved policy: '+path)
     except (KeyError, TypeError, AttributeError) as error:
         raise ValueError('Malformed Atomic image preflight report') from error
+    return {'filesystem_default': report['root_fs']['root-fs-type'],
+            'filesystem_argument_required': report['root_fs']['root-fs-type'] is None}
 
 
 def expected_inputs(root, lock, pins, variant):
     manifest = require_desktop_image(lock, pins, variant)
     selected = lock['images'][variant]
+    flavor = {'generic':'sericea-main-hardened', 'nvidia':'sericea-nvidia-hardened'}[variant]
+    if not manifest['base'].startswith('ghcr.io/secureblue/'+flavor+'@sha256:'):
+        raise ValueError('Unreviewed Atomic distribution identity')
+    os_identity = {'ID':'secureblue', 'ID_LIKE':'fedora', 'VERSION_ID':'45',
+                   'VARIANT_ID':flavor, 'IMAGE_ID':flavor}
     evidence = root/'docs/security/reports/P0-03-desktop'/str(selected['run_id'])
     if evidence.resolve() != evidence: raise ValueError('Linked retained evidence path')
     raw = (evidence/'preparation.json').read_bytes()
@@ -90,4 +97,4 @@ def expected_inputs(root, lock, pins, variant):
         if prepared['payload'][path]['sha256'] != digest:
             raise ValueError('Retained installed trust differs from current approved public inputs')
         trust[path] = digest
-    return {'kernel': kernel_version, 'bootc_version': rows['bootc'][2], 'packages': packages, 'trust': trust}
+    return {'os': os_identity, 'kernel': kernel_version, 'bootc_version': rows['bootc'][2], 'packages': packages, 'trust': trust}

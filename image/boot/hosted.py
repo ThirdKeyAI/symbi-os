@@ -149,7 +149,7 @@ def main():
                         raise ValueError('Installed payload re-verification failed')
                     record['installed_files']=result
                 else:
-                    validate_report(result,expected)
+                    record['install_requirements']=validate_report(result,expected)
                     if (result['kernel']!=kernel
                             or result.get('kernel_source_sha256')!=record['kernel_copy']['observation_sha256']):
                         raise ValueError('Unprivileged report changed its bound kernel observation')

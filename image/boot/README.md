@@ -53,3 +53,13 @@ installed permissions change, and the private copied bytes are deleted after
 hashing. The two unprivileged probes receive only hash-bound metadata. Four new
 regressions pass; all 217 image tests pass locally. Corrected hosted acceptance
 is pending. This still performs no disk installation or boot.
+
+
+The second preflight successfully inspected the protected kernel inputs and kept
+all permissions intact. Its controller then rejected the actual secureblue
+identity and absent bootc filesystem default because the harness expected plain
+Fedora and a configured default. The corrected validator requires the exact
+selected secureblue variant and explicitly reports that a later installer must
+choose a filesystem. It does not silently pick or install one. The original failed
+run and complete 41-file evidence remain retained under `45802753036/`.
+All 219 local image tests pass; the corrected hosted result is pending.
