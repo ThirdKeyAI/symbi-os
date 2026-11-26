@@ -1,0 +1,169 @@
+{
+  "run_id": 45732324253,
+  "job_id": 139617096295,
+  "head": "8ab2ca996599fa61441f0c7fe4089ba07088b69b",
+  "artifact": {
+    "id": 15077092180,
+    "bytes": 23538,
+    "sha256": "dfbc2377fd414f79b174a924c0e204d91126ca9a2096c399a5771f103fd4ca8b"
+  },
+  "selected_files": [
+    {
+      "path": "result.json",
+      "original_sha256": "09820a31d527c98469d36c3a316b7d7c3ec5b6ecdc56d0943bfbc44e0bf812d1",
+      "retained_sha256": "09820a31d527c98469d36c3a316b7d7c3ec5b6ecdc56d0943bfbc44e0bf812d1"
+    },
+    {
+      "path": "base-signature.json",
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    {
+      "path": "compiled-manifest.json",
+      "original_sha256": "ddf3e7f8b7a85992eb7c3612a3b6ebc3593b3e089e0e5187c8b04ae05d17868d",
+      "retained_sha256": "ddf3e7f8b7a85992eb7c3612a3b6ebc3593b3e089e0e5187c8b04ae05d17868d"
+    },
+    {
+      "path": "ocr/result.json",
+      "original_sha256": "1bd6152229c722f11b18542c3953373051b5e26de381f5e81e5e4d203f8a8363",
+      "retained_sha256": "1bd6152229c722f11b18542c3953373051b5e26de381f5e81e5e4d203f8a8363"
+    },
+    {
+      "path": "ocr/create-test-image-stdout.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "ocr/create-test-image-stderr.log",
+      "original_sha256": "537d254427687d3751d62caf84159fbaae96312166630e451b4ebef8b3938b3b",
+      "retained_sha256": "db76f4aa20e3a1b15dc21da9b2f2166086f1e0cc70af6fcb2ffbd0ea1e3b97de"
+    },
+    {
+      "path": "providers/provider-loading.json",
+      "original_sha256": "e4c7dc809502836a7518dacb7e3bde2a530635eab60129c46ef6ad94f0ae06cf",
+      "retained_sha256": "e4c7dc809502836a7518dacb7e3bde2a530635eab60129c46ef6ad94f0ae06cf"
+    },
+    {
+      "path": "providers/baseline-development-cleanup-err.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/baseline-development-cleanup-out.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/baseline-development-exists-err.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/baseline-development-exists-out.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/baseline-development-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/baseline-development-stdout.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/baseline-environment-cleanup-err.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/baseline-environment-cleanup-out.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/baseline-environment-exists-err.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/baseline-environment-exists-out.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/baseline-environment-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/baseline-environment-stdout.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/baseline-user-config-cleanup-err.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/baseline-user-config-cleanup-out.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/baseline-user-config-exists-err.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/baseline-user-config-exists-out.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/baseline-user-config-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/baseline-user-config-stdout.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/patched-environment-cleanup-err.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/patched-environment-cleanup-out.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/patched-environment-exists-err.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/patched-environment-exists-out.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/patched-environment-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "providers/patched-environment-stdout.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "scope": "Actual failure retained; 3 baseline constructors pass, first patched case omits legitimate provider; remaining cases not run; OCR executable absent",
+  "os_qualified": false
+}

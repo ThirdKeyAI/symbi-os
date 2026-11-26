@@ -1,0 +1,60 @@
+{
+  "passed": false,
+  "os_qualified": false,
+  "upstream_tests_passed": false,
+  "source_commit": "8ab2ca996599fa61441f0c7fe4089ba07088b69b",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "pull-base",
+      "exit_code": 0
+    },
+    {
+      "name": "ocr-diagnostic",
+      "exit_code": 0
+    }
+  ],
+  "scope": "Retained-binary provider controls and separate OCR diagnostics; no upstream-suite or OS qualification",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "artifact": {
+    "id": 15076092608,
+    "bytes": 108468571,
+    "sha256": "67acb8beb9d0bf76c0ba90a8d1d312679ed5c70708e65a9d515d6d0471dffe8d"
+  },
+  "current_bindings": {
+    "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+    "source": {
+      "schema": 1,
+      "repository": "https://github.com/abenz1267/elephant",
+      "revision": "8f1e21d6efe40b8b3953f95b9574f99f717caf91",
+      "go_minimum": "1.27.1",
+      "go_mod_sha256": "c5fe5f8c609ed14dae2fea900a0cbdc00875352a1b3b1bf6bfa9f84f430288b9",
+      "go_sum_sha256": "c307c62070ecdac44a964fe304b1325b74d859bb851bd9a807faf52091a0f8d0",
+      "scope": "Pinned development source inputs; source build and provider refusal acceptance remain unexecuted",
+      "os_qualified": false
+    },
+    "rpm_lock_sha256": "8abf88ef786667f11b7cb146d1a71f1491d63595a1db87a97026c23d04bac351",
+    "patch_sha256": "9d46941a0540df0162772b04055bf306298e48f3bdcae2c5f3ec97ebb51a7204",
+    "marker_sha256": "212af59b974dc27ce79d338860aeff7b84aa302c28118329448f47dd2bc6864c"
+  },
+  "original_build_run": 45728665797,
+  "ocr_container_absent": true,
+  "ocr_missing_executables": [
+    "tesseract"
+  ],
+  "failure": "RuntimeError: Native-provider acceptance failed: patched-environment",
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4304560128",
+    "memory.events": "low 0\nhigh 0\nmax 31287\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 178272832\nuser_usec 139337435\nsystem_usec 38935396\nnice_usec 136720000\ncore_sched.force_idle_usec 0\nnr_periods 1194\nnr_throttled 626\nthrottled_usec 80469808\nnr_bursts 0\nburst_usec 0"
+  }
+}

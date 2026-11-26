@@ -94,6 +94,7 @@ def main():
         record['original_build_run'] = lock['run_id']
         (evidence/'compiled-manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
         shutil.copyfile(root/'image/launcher/ocr_diagnostic.py', inputs/'ocr_diagnostic.py')
+        shutil.copyfile(root/'image/launcher/loader_diagnostic.py', inputs/'loader_diagnostic.py')
         shutil.copyfile(root/'image/launcher/probes/bounded_process.py', inputs/'bounded_process.py')
         auth = storage/'auth.json'
         auth.write_text('{"auths": {}}\n')
@@ -122,6 +123,27 @@ def main():
         if diagnostic.get('diagnostic_completed') is not True or diagnostic.get('upstream_tests_passed') is not False:
             raise ValueError('OCR diagnostic did not finish with its limited scope')
         record['ocr_missing_executables'] = diagnostic['missing_executables']
+        # listproviders installs a discard logger, so separately retain the
+        # exact normal-startup error before applying the unchanged acceptance.
+        trusted = inputs/'packaged/elephant/providers'
+        trusted.mkdir(mode=0o755, parents=True)
+        shutil.copyfile(inputs/'binaries/desktopapplications', trusted/'desktopapplications.so')
+        (trusted/'desktopapplications.so').chmod(0o644)
+        loader_container = 'symbi-elephant-loader-diagnostic'
+        loader_command = [('--name='+loader_container if value == '--name='+container else value)
+                          for value in command[:-2]]
+        loader_command += ['--mount', f'type=bind,src={inputs / "packaged"},dst=/usr/lib/symbi,ro',
+                           base['image'], '/inputs/loader_diagnostic.py']
+        try:
+            run('loader-diagnostic', loader_command, 45)
+        finally:
+            removed = run_bounded(podman+['rm', '--force', '--ignore', loader_container],
+                                  evidence/'loader-cleanup-stdout.log', evidence/'loader-cleanup-stderr.log')
+            exists = run_bounded(podman+['container', 'exists', loader_container],
+                                 evidence/'loader-exists-stdout.log', evidence/'loader-exists-stderr.log')
+            record['loader_container_absent'] = removed.returncode == 0 and exists.returncode == 1
+            if not record['loader_container_absent']:
+                raise RuntimeError('Loader diagnostic container cleanup failed')
         binaries = {name: inputs/'binaries'/name for name in BINARIES}
         result = run_checks(podman, base['image'], '/'+str(group.relative_to('/sys/fs/cgroup')),
                             storage/'provider-probes', binaries, manifest['binaries'], evidence/'providers')
@@ -135,7 +157,7 @@ def main():
     finally:
         diagnostic_evidence = evidence/'ocr'
         diagnostic_evidence.mkdir(exist_ok=True)
-        names = ['result.json', 'ocr_test.png']
+        names = ['result.json', 'ocr_test.png', 'loader-result.json', 'loader-stdout.log', 'loader-stderr.log']
         for name in ('tesseract-version', 'tesseract-languages', 'create-test-image', 'ocr'):
             names.extend((name+'-stdout.log', name+'-stderr.log'))
         for name in names:

@@ -77,7 +77,7 @@ Walker validation, browser/portal controls and OS qualification remain open.
 ## Walker source-build inputs
 
 `walker-source.json` pins v2.17.2 by full source revision and the Cargo manifest,
-lockfile and build-script hashes. The lock contains 284 registry packages.
+lockfile and build-script hashes. The lock contains 284 package entries: 283 registry dependencies and Walker itself.
 Checksummed crate metadata establishes Rust 1.92, GTK 4.12/GIO 2.80 features,
 gtk4-layer-shell 1.0 and `protoc` from PATH as input requirements. The source's
 build script uses protobuf-codegen's default system compiler; it does not select
@@ -126,3 +126,13 @@ limited to 4 GiB/two CPUs/no swap and 25 minutes. No local executable or large
 artifact download is used. A provider pass cannot clear the failed upstream suite:
 the reuse report explicitly retains `upstream_tests_passed: false` and
 `os_qualified: false`. Actual results remain pending until the hosted run finishes.
+
+The first independent run (45732324253) confirmed the missing `tesseract` CLI and
+passed the three baseline constructor controls. Its first patched case refused
+the external constructor but failed to list the real application provider. The
+other thirteen cases were not reached. Because upstream `listproviders` discards
+all loader logs, a separate five-second normal-startup diagnostic now retains
+path ownership/modes and debug output under the same isolation limits. Acceptance
+expectations remain unchanged. The actual source lock has 283 registry packages
+plus Walker; the original discovery artifact's count wording is historical and
+its authenticated bytes are retained unchanged.
