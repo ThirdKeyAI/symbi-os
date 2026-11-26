@@ -205,3 +205,27 @@ The complete Fedora 45 signature and real missing-key/tamper refusals passed.
 key and requirements. The isolated offline acceptance must preserve original
 packages and crypto configuration; actual TLS policy compatibility and final
 release review remain open. This is not a cargo-vet audit or exemption.
+
+## P0-03 portal and share-picker candidate inputs
+
+The already pinned Hyprland 0.57.2 flake selects
+`xdg-desktop-portal-hyprland` 1.5.0 at
+`85450448ea40a54ec4f10bd607e68019d8f5cc41` and `hyprtoolkit` 0.6.0 at
+`92646e15fb295285b10de626f2d9597216465f7b`. Both are BSD-3-Clause; original
+license bytes and the selected CMake/version inputs are retained under
+`image/portal/reviewed/`, with Git object IDs, lengths and SHA-256 hashes in
+`source-inputs.json`. These are primary-source identity and build-scope checks,
+not publisher signatures or complete source/dependency audits.
+
+The portal needs PipeWire, SPA and sdbus-c++; the toolkit additionally needs
+iniparser and abseil's flat-hash-map provider. The discovery profile reuses the
+existing compositor build requirement list plus these five explicit providers,
+so the retained prefix's transitive pkg-config dependencies remain available.
+All RPMs must come from the existing reviewed Fedora release/update inputs and
+pass full signature, identity and negative controls before a build lock can be
+adopted. The discovery does not install packages or rebuild native components.
+Later compilation must reuse the exact retained compositor prefix, enforce
+the upstream version requirements offline and refuse subproject fetching.
+No Cargo dependencies, audit records or exemptions are added. Actual portal
+build, license/SBOM review, consent/token behavior and desktop qualification
+remain open. See [portal preparation](../image/portal/README.md).

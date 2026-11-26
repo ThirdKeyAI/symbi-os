@@ -216,3 +216,13 @@ audits. The initial and final cgroup counters are collected inside the unit;
 a post-exit systemd query labels a garbage-collected unit instead of showing
 default limits as measured values. The first success predates the final-counter
 fix and records that evidence limitation explicitly.
+
+## Hyprland portal preparation
+
+The built development images currently have GTK and wlroots portal backends;
+the Hyprland backend and its matching native share picker are still missing.
+[Portal preparation](portal/README.md) pins the pair selected by the existing
+compositor lockfile and provides hosted signed-RPM discovery. Its source/input
+guards and negative tests do not establish portal compilation, screen-share
+consent or restore-token behavior. Existing image and native compiler artifacts
+remain unchanged and are reused for subsequent work.
