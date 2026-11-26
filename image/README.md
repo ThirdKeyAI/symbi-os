@@ -120,7 +120,7 @@ upstream lockfile and the explicit `v1_0_0` feature. The separate
 `Image tool compatibility` workflow compiles it only on a GitHub-hosted runner,
 under a verified 4 GiB memory limit, no swap, two CPUs, one Cargo job and a
 45-minute deadline. These hosted tool limits do not change the workstation's
-existing VM limits or the image-container limits above.
+local resource limits or the image-container limits above. The local VM remains off.
 
 The acceptance script invokes the actual CLI with validation enabled for both
 OS recipes, then malformed/unpinned recipe cases, then Containerfile generation.
@@ -132,10 +132,19 @@ through its v1 validator. That result is retained before the downstream fix.
 No validation bypass is available in this workflow.
 
 The workflow has read-only repository permission, no release environment, no
-OIDC permission and no registry write permission. It uploads public logs, pins
-and generated text as evidence, not a compiler binary or image. Even a passing
-CLI check does not establish source audit coverage, authenticate an OS build,
-or qualify generated external image references; those remain separate gates.
+OIDC permission and no registry write permission. Earlier passing runs retained
+public logs, pins and generated text, but not the compiled executable. The next
+hosted run also retains the exact development CLI and original upstream license
+as `bluebuild-development-tool`, so later image assembly can reuse those bytes.
+The runner is Ubuntu 24.04, matching the planned assembly host. The binary is
+bounded to 128 MiB; its immutable manifest binds the OS commit, upstream source,
+configuration, unchanged Cargo.lock, applied patch, compiler, features, profile,
+license and executable hashes. Retention occurs after compilation and before
+later acceptance, so a retained artifact alone never means those later checks
+passed. Reuse must verify the artifact/manifest digests and the same run's 17
+CLI cases and complete upstream suite before execution. No image is uploaded by
+this workflow. Source/dependency review, external-reference authentication and
+actual OS qualification remain separate gates.
 
 The downstream patch in `toolchain/patches/` adds a closed, embedded schema for
 this OS's v2 recipe profile, then requires successful upstream typed parsing and
