@@ -126,10 +126,11 @@ performs only this reconciliation; it cannot sign, attest, push or promote an
 image. It runs only on a selected `v*` tag and accepts evidence only from the
 candidate workflow at the same tag and source commit.
 
-The scheduled `upstream-check.yml` applies the same evidence gate to candidate
+The manual `upstream-check.yml` applies the same evidence gate to candidate
 base digests, preserves the existing repositories and trust roots, reruns the
 serial repository checks and opens a review PR only after independent artifact
 revalidation. The candidate workflow deliberately cannot create either expected
 artifact while actual image builds, native qualification, signing and
 publication remain outstanding. Therefore both paths fail before an upload or
-Git write today; authored success flags do not qualify a release.
+Git write today; authored success flags do not qualify a release. Its planned
+weekly trigger remains disabled until an authentic candidate can be produced.

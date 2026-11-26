@@ -591,9 +591,10 @@ class WorkflowContractTests(unittest.TestCase):
         for forbidden in ("packages: write", "id-token: write", "COSIGN_PRIVATE_KEY", " cosign sign", " podman push"):
             self.assertNotIn(forbidden, text)
 
-    def test_scheduled_upstream_pr_requires_full_candidate_evidence(self):
+    def test_manual_upstream_pr_requires_full_candidate_evidence(self):
         document = self.load("upstream-check.yml")
-        self.assertIn("schedule", document[True])
+        self.assertNotIn("schedule", document[True])
+        self.assertIn("workflow_dispatch", document[True])
         self.assertEqual(document["concurrency"]["cancel-in-progress"], True)
         self.assertEqual(document["jobs"]["qualify-candidate"]["permissions"],
                          {"contents": "read", "actions": "read"})

@@ -1,8 +1,6 @@
 name: Qualified upstream base check
 
 on:
-  schedule:
-    - cron: "17 9 * * 2"
   workflow_dispatch:
     inputs:
       evidence_run_id:

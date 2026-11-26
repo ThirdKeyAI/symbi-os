@@ -37,13 +37,14 @@ stay disabled until the actual image, signing and P0 producers are integrated.
 
 `upstream-check.yml` consumes a separately built candidate artifact. The
 artifact contains `base-images.json` plus a complete `release-evidence/` bundle
-with purpose `upstream-candidate`. The scheduled job preserves repositories and
+with purpose `upstream-candidate`. The manual job preserves repositories and
 trust roots, permits digest changes only, reruns the serial repository gate and
 revalidates the artifact in a separate job before opening a review PR. Missing,
 stale or incomplete evidence stops before any Git write. The configured
 `SYMBI_UPSTREAM_EVIDENCE_RUN_ID` must identify the qualifying
 `release-candidate.yml` run. That workflow currently refuses every candidate
-before upload, so the schedule cannot reach its Git-writing job.
+before upload. The weekly trigger remains disabled until the authentic producer
+exists, avoiding recurring failures while retaining manual contract review.
 
 These offline validators are acceptance machinery, not evidence that an image
 was built, signed, booted, rolled back, or qualified.
