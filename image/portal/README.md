@@ -1,7 +1,7 @@
 # Hyprland portal candidate inputs
 
-The current images have GTK and wlroots portal backends but do not yet contain
-the Hyprland backend. `source-inputs.json` selects the exact portal and toolkit
+The current generic and NVIDIA development images include the patched Hyprland
+backend and picker alongside the original GTK and wlroots backends. `source-inputs.json` selects the exact portal and toolkit
 revisions from the already selected compositor's `flake.lock`. It also binds
 the retained full compositor prefix, source/build inputs and native-loading
 patch. Both upstream licenses are BSD-3-Clause; their original bytes are kept.
@@ -34,7 +34,8 @@ and after, and the temporary container must be absent after cleanup. Evidence
 and candidate RPMs are retained separately. The workflow has read-only repository
 permission and no release environment, signing secrets or publishing rights.
 
-Before the portal can enter a development image:
+Build gates 1–4 below now pass for both development image variants. The booted
+desktop qualification in step 5 remains open:
 
 1. Retain and review the actual signed-RPM result, then pin the exact artifact.
 2. Authenticate and reuse the existing full compositor development prefix.
@@ -162,5 +163,39 @@ compiled-toolkit parent. `consent_prefix.py` now validates this output independe
 parent and reuses the same strict archive extractor. `desktop/portal.py` selects
 only the eleven runtime/activation entries; the desktop recipe consumes the
 exact patched artifact and signed iniparser package. No native archive was
-downloaded locally. The updated image still needs hosted assembly and probes. Full
+downloaded locally. Both updated image variants now pass hosted assembly and installed probes. Full
 D-Bus/GUI/capture/lifecycle and product-image qualification remain pending.
+
+
+## Patched portal installed in both development images
+
+The generic [45792057599](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45792057599)
+and NVIDIA [45793771499](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45793771499)
+images pass actual assembly and installed checks at `23a6c72`. Independent
+reconciliation covers all 192 original files per run: 102 installed payload files,
+six signed RPM identities, nine loaders, four version/provider probes, both
+picker-option refusals, exact activation/default files, three Lua controls and
+all 20 container removals. Generic preserves 2,178 base packages and ends at
+2,184; NVIDIA preserves 2,324 and ends at 2,329. All 40 original crypto entries
+remain unchanged. There are memory-limit events but zero OOM/kill/group-kill.
+Bootc retains its one warning and skipped check. Full workspace/formal run
+[45792075010](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45792075010) also passes.
+
+`image/desktop-images.lock.json` pins both hosted development archives and exact
+manifests. `image/boot/inputs.py` is a strict streaming consumer for the later
+hosted boot harness. Six new refusal/cleanup tests were run before implementation;
+all **207 image tests** now pass under 128 MiB/10%-CPU/zero-swap local limits,
+peaking at 35,460 KiB with 0.70 CPU seconds. Real image consumption by this new
+helper, actual Atomic boot and all desktop/containment/release gates still need
+qualification. Native payloads remain hosted; local evidence reconciliation
+peaked at 24,180 KiB. No physical GPU workload ran. The original build/TCB source
+pins, protections and qualification flags remain unchanged.
+
+The cve.bz iniparser follow-up retains exact upstream source, a public immutable
+Fedora packaging view and selected toolkit callers. Static source inspection
+finds a remaining length-boundary concern in the dump function. The reviewed
+icon-loading caller uses load/getstring/free, without that dump operation in the
+three inspected files. This is neither whole-program unreachability nor a
+confirmed OS exploit; exact installed-build provenance and broader caller review
+remain pending. The advisory stays open with no dependency pin or exception
+change. See `P0-03-cve-bz/2026-11-26/native/iniparser-followup/`.

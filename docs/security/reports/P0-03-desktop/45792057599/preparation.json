@@ -1,0 +1,1545 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "source_commit": "23a6c721092ad77c3af33c11cab230ecaaa54cff",
+  "variant": "generic",
+  "limits": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "64"
+  },
+  "artifacts": {
+    "bluebuild": {
+      "lock": "image/development-builder.lock.json",
+      "lock_sha256": "56fabc0da8daf24e3afdd52e6d76d2a861415eee14ab7523dcfb5232521cf685",
+      "id": 15081564466,
+      "bytes": 68141988,
+      "sha256": "2ab11618c7d11c5599aa23a885fe0ad74dd8b73c7adb296e0d2427373432c3fb"
+    },
+    "hyprland": {
+      "lock": "image/hyprland/development-prefix.lock.json",
+      "lock_sha256": "484cf1c675b20c8e603ef6094ecd1e07c7e8fd58047bdba1e8f7eabfb26b0650",
+      "id": 15070319189,
+      "bytes": 73342447,
+      "sha256": "b86fde7463a786a5bb5763edf3ee23cfac3829e7c5b596ad829e4d4861814743"
+    },
+    "portal": {
+      "lock": "image/portal/consent-prefix.lock.json",
+      "lock_sha256": "c121351f04dc96550022a1815b962a6b052c7b153cb6e7e794a8ca3311e8f855",
+      "id": 15100886169,
+      "name": "portal-consent-prefix",
+      "bytes": 1461777,
+      "sha256": "d96d07ce422a3de7f12bb75f32a77f7df3f40e6386ee4ada644b7a5d7f92aa40"
+    },
+    "elephant": {
+      "lock": "image/launcher/development-binaries.lock.json",
+      "lock_sha256": "9baea0445ab8403fc5ed8bf6461ace6f562524b3167fe93eda1ee02965fbf124",
+      "id": 15079141579,
+      "bytes": 108468738,
+      "sha256": "dda8b3df435305f45928907b5631d6ab5547b943c65fb254df08a8d0d897df38"
+    },
+    "walker": {
+      "lock": "image/launcher/walker-development-binary.lock.json",
+      "lock_sha256": "262a46c02426d37cc51e70d5ddad85bc07a61bd18b7556e345be91edca606246",
+      "id": 15081693039,
+      "bytes": 7365060,
+      "sha256": "be2a8c621c3a99f03d8a475d7a6adb21fd6a00dbca601f79fd0f262ae213ac82"
+    },
+    "symbiont": {
+      "lock": "image/assembly/runtime-development.lock.json",
+      "lock_sha256": "68f2540541634e5b25f6cfb8417a2a5c20ee267073f617183999f9a804b6d42a",
+      "id": 15066141540,
+      "bytes": 529348296,
+      "sha256": "bed79f624444c6dc0c3a5105facdcd9ad637a26f4fcd6cacb6e10544c36a0724"
+    },
+    "hyprland-rpms": {
+      "lock": "image/hyprland/runtime-rpms.lock.json",
+      "lock_sha256": "d3bb98ae070021e20e695d5260eb97ab6c74fa4c3b60fca8e0227335c22af332",
+      "id": 15072725272,
+      "bytes": 362098,
+      "sha256": "ec4f092437c10b7ef63ab6c232240bb1c21898ece79d76bf10fbf47995a2cb85"
+    },
+    "walker-rpms": {
+      "lock": "image/launcher/runtime-rpms.lock.json",
+      "lock_sha256": "56de8100355c30a9912545bc502ac33dfee5a9de03a455bc114c53813bf69d71",
+      "id": 15068598980,
+      "name": "launcher-runtime-rpm-candidates",
+      "bytes": 42545,
+      "sha256": "43ef54a307fcb72b7dd878a0930683544ed50904f5c294a32c2e236a5d614a0a"
+    },
+    "symbiont-rpms": {
+      "lock": "image/assembly/runtime-rpms.lock.json",
+      "lock_sha256": "40163f101ecfc969c9e4bfe549e0cb5ffa3b25148dac42c3962c7af3f11b2142",
+      "id": 15084582682,
+      "bytes": 2896586,
+      "sha256": "bea530216afb23f6c370fe4027e76740287a588d917b1ff7c09a4c9081061fa0"
+    },
+    "portal-rpms": {
+      "lock": "image/portal/build-rpms.lock.json",
+      "lock_sha256": "81fb8788e0acb25ee15bcb6d38c7438c4cba102e1fd616d944ddc03f99375ab8",
+      "id": 15092560593,
+      "name": "portal-build-rpm-candidates",
+      "bytes": 153315325,
+      "sha256": "ce26dda0cab7e61de9c888503d2e5d3ff87e23f74e859fbfd270dd9de74c2565"
+    }
+  },
+  "checkpoints": [
+    {
+      "phase": "validate-target-and-builder",
+      "memory.current": "11153408",
+      "memory.peak": "11153408",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 10473472\nfile 237568\nkernel 188416\nkernel_stack 0\npagetables 102400\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 0\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 10465280\ninactive_file 192512\nactive_file 32768\nunevictable 0\nslab_reclaimable 45944\nslab_unreclaimable 32360\nslab 78304\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 2966\npgmajfault 1\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   20708 kB",
+        "VmRSS:\t   20708 kB"
+      ]
+    },
+    {
+      "phase": "extract-compositor",
+      "memory.current": "11513856",
+      "memory.peak": "83492864",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 10735616\nfile 258048\nkernel 204800\nkernel_stack 0\npagetables 102400\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 12288\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 10735616\ninactive_file 225280\nactive_file 32768\nunevictable 0\nslab_reclaimable 65368\nslab_unreclaimable 32360\nslab 97728\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 4089\npgmajfault 1\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   22824 kB",
+        "VmRSS:\t   20964 kB"
+      ]
+    },
+    {
+      "phase": "select-compositor-runtime",
+      "memory.current": "19247104",
+      "memory.peak": "225951744",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 15323136\nfile 1433600\nkernel 1875968\nkernel_stack 0\npagetables 110592\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 1183744\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 15323136\ninactive_file 1400832\nactive_file 32768\nunevictable 0\nslab_reclaimable 1732896\nslab_unreclaimable 32128\nslab 1765024\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 30360\npgmajfault 1\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   25492 kB",
+        "VmRSS:\t   25452 kB"
+      ]
+    },
+    {
+      "phase": "extract-patched-portal",
+      "memory.current": "139038720",
+      "memory.peak": "225951744",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 16523264\nfile 119967744\nkernel 2015232\nkernel_stack 0\npagetables 110592\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 1269760\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 16523264\ninactive_file 119930880\nactive_file 32768\nunevictable 0\nslab_reclaimable 1854064\nslab_unreclaimable 27896\nslab 1881960\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 30653\npgmajfault 1\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   26624 kB",
+        "VmRSS:\t   26624 kB"
+      ]
+    },
+    {
+      "phase": "extract-elephant",
+      "memory.current": "143978496",
+      "memory.peak": "225951744",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 16588800\nfile 124653568\nkernel 2162688\nkernel_stack 0\npagetables 110592\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 1470464\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 16588800\ninactive_file 124620800\nactive_file 32768\nunevictable 0\nslab_reclaimable 2006768\nslab_unreclaimable 27856\nslab 2034624\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 30672\npgmajfault 1\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   26848 kB",
+        "VmRSS:\t   26848 kB"
+      ]
+    },
+    {
+      "phase": "extract-walker",
+      "memory.current": "214364160",
+      "memory.peak": "255643648",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 16588800\nfile 195031040\nkernel 2187264\nkernel_stack 0\npagetables 110592\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 1482752\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 16588800\ninactive_file 194998272\nactive_file 32768\nunevictable 0\nslab_reclaimable 2035616\nslab_unreclaimable 28056\nslab 2063672\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 30672\npgmajfault 1\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   26848 kB",
+        "VmRSS:\t   26848 kB"
+      ]
+    },
+    {
+      "phase": "extract-symbiont",
+      "memory.current": "221851648",
+      "memory.peak": "255643648",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 16588800\nfile 202395648\nkernel 2195456\nkernel_stack 0\npagetables 110592\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 1482752\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 16588800\ninactive_file 202362880\nactive_file 32768\nunevictable 0\nslab_reclaimable 2044328\nslab_unreclaimable 33320\nslab 2077648\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 30672\npgmajfault 1\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   26848 kB",
+        "VmRSS:\t   26848 kB"
+      ]
+    },
+    {
+      "phase": "copy-symbiont",
+      "memory.current": "221519872",
+      "memory.peak": "765517824",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 16588800\nfile 202403840\nkernel 2207744\nkernel_stack 0\npagetables 110592\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 1486848\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 16588800\ninactive_file 202371072\nactive_file 32768\nunevictable 0\nslab_reclaimable 2059744\nslab_unreclaimable 33320\nslab 2093064\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 30672\npgmajfault 1\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   26848 kB",
+        "VmRSS:\t   26848 kB"
+      ]
+    },
+    {
+      "phase": "prepare-signed-rpms-and-licenses",
+      "memory.current": "751026176",
+      "memory.peak": "765517824",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 16588800\nfile 731758592\nkernel 2228224\nkernel_stack 0\npagetables 110592\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 1486848\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 16588800\ninactive_file 731725824\nactive_file 32768\nunevictable 0\nslab_reclaimable 2073296\nslab_unreclaimable 29288\nslab 2102584\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 30672\npgmajfault 1\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   26848 kB",
+        "VmRSS:\t   26848 kB"
+      ]
+    },
+    {
+      "phase": "select-signed-portal-runtime",
+      "memory.current": "754524160",
+      "memory.peak": "765517824",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 16588800\nfile 735105024\nkernel 2363392\nkernel_stack 0\npagetables 110592\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 4833280\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 16588800\ninactive_file 735072256\nactive_file 32768\nunevictable 0\nslab_reclaimable 2203840\nslab_unreclaimable 29288\nslab 2233128\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 30672\npgmajfault 1\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   26848 kB",
+        "VmRSS:\t   26848 kB"
+      ]
+    },
+    {
+      "phase": "prepare-image-trust",
+      "memory.current": "754712576",
+      "memory.peak": "912834560",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 16625664\nfile 735223808\nkernel 2641920\nkernel_stack 0\npagetables 110592\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 4919296\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 16625664\ninactive_file 735191040\nactive_file 32768\nunevictable 0\nslab_reclaimable 2484024\nslab_unreclaimable 33320\nslab 2517344\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 30681\npgmajfault 1\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   26884 kB",
+        "VmRSS:\t   26884 kB"
+      ]
+    },
+    {
+      "phase": "validate-and-generate-containerfile",
+      "memory.current": "755138560",
+      "memory.peak": "912834560",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 16629760\nfile 735535104\nkernel 2748416\nkernel_stack 0\npagetables 110592\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 5226496\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 16629760\ninactive_file 735502336\nactive_file 32768\nunevictable 0\nslab_reclaimable 2594280\nslab_unreclaimable 33320\nslab 2627600\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 30683\npgmajfault 1\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   26888 kB",
+        "VmRSS:\t   26888 kB"
+      ]
+    },
+    {
+      "phase": "complete",
+      "memory.current": "1073676288",
+      "memory.peak": "1073741824",
+      "memory.events": "low 0\nhigh 0\nmax 2111\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 16633856\nfile 1053736960\nkernel 3305472\nkernel_stack 0\npagetables 110592\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 5279744\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 16633856\ninactive_file 912699392\nactive_file 140914688\nunevictable 0\nslab_reclaimable 3145544\nslab_unreclaimable 35496\nslab 3181040\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 135820\npgsteal 135820\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 135820\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 135820\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 67332\npgmajfault 1630\npgrefill 156\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   26892 kB",
+        "VmRSS:\t   26892 kB"
+      ]
+    }
+  ],
+  "phase": "complete",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "component_compilation_base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "prefix_link_rewrites": [
+    {
+      "name": "hyprland/bin/hyprland",
+      "original_target": "/usr/lib/symbi/hyprland/bin/Hyprland",
+      "relative_target": "Hyprland"
+    }
+  ],
+  "portal": {
+    "manifest_sha256": "95d4287f2598e34f02be2654a3ff8009c9b46e464592db325e5d08acea76a728",
+    "bindings": {
+      "image/portal/source-inputs.json": "759e7e4e4cbe63cb5c0ef39963e4f95b39a68b803e6d9100d10f3a40cc722514",
+      "image/hyprland/candidate-inputs.json": "d5c64bd34e52e4c61a14fde19ad429c31dcf3862d8c051bd029c4c73deca2ecb",
+      "image/hyprland/development-prefix.lock.json": "484cf1c675b20c8e603ef6094ecd1e07c7e8fd58047bdba1e8f7eabfb26b0650",
+      "image/hyprland/build-rpms.lock.json": "fe160b4ed81b2e4910df098f6648b499264e8d989eea07feb59a841ecc9131a4",
+      "image/hyprland/patches/0001-disable-native-loading.patch": "068d061f29c6ccbef25d402972a14c72195811e40888027b71760f6656f6eeff",
+      "image/portal/reviewed/hyprtoolkit/VERSION": "97a5d6e540a6120d09c39ddb667e0e8e2bac7fcc2ffef813b82e08fd60365bce",
+      "image/portal/reviewed/hyprtoolkit/CMakeLists.txt": "053653a92c0b7f6936e4a9c745d4281c6f5ac87be12d684503aba72ab3452195",
+      "image/portal/reviewed/hyprtoolkit/LICENSE": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143",
+      "image/portal/reviewed/hyprtoolkit/scripts/generateShaderIncludes.sh": "208b260558dd3de4519361b0ab6fb841f6736456ea430750ae8edbc43a24c17e",
+      "image/portal/reviewed/xdg-desktop-portal-hyprland/VERSION": "acb57a7135b2d7d6e665f67f056e21353023b93835f54def1ae523bf76f1bfb3",
+      "image/portal/reviewed/xdg-desktop-portal-hyprland/CMakeLists.txt": "b5d66bb400772968346edf61b6b568fba623bdf355bb8af8c2aa4c2a6354c450",
+      "image/portal/reviewed/xdg-desktop-portal-hyprland/LICENSE": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+      "image/portal/reviewed/xdg-desktop-portal-hyprland/hyprland-share-picker/CMakeLists.txt": "3f0439e00661d676cd370c496b8f9b473ef4dc362b9a40d3513f6a9e9c305c58",
+      "image/portal/reviewed/Hyprland-flake.lock": "db45c25bd98a86c5c5cb2494ff6994d39db7f2d0eb05fc98d27d30b6c833cabe",
+      "image/hyprland/build-requirements.json": "fa610060ebed142edc072cea832945da3da3e0d58bdf14cd1d35089f1302b92a",
+      "image/portal/build-rpms.lock.json": "81fb8788e0acb25ee15bcb6d38c7438c4cba102e1fd616d944ddc03f99375ab8",
+      "image/portal/development-prefix.lock.json": "abc80998ff1ec66160f0738a7e5fc0865b39c6a2e65fe7f7870633dde02a1240",
+      "image/portal/consent-inputs.json": "600eb0bc6f853ffcea25be529af0e28e2283d4ec6901805ae5f558b784d44be4",
+      "LICENSE": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+      "image/portal/consent-reviewed/LICENSE": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+      "image/portal/consent-reviewed/contrib/systemd/xdg-desktop-portal-hyprland.service.in": "ba6b2c223f6d674ac7b04d42b25af818ac0df8ab58fa424023d14b51f9f00db2",
+      "image/portal/consent-reviewed/hyprland-share-picker/Picker.cpp": "7f2e8895e528b07ee8f12769d3dcc675b0e8a4d9e8e39001c13139ca4ccd917b",
+      "image/portal/consent-reviewed/hyprland-share-picker/Picker.hpp": "708bf45cedc93962822a625ba06ef21fcf89cbccc7bd54344caec1f34369df40",
+      "image/portal/consent-reviewed/hyprland-share-picker/PickerData.cpp": "04c61402c60de8881c125df1b8348a8322833c3523af3676a9409c16932d677b",
+      "image/portal/consent-reviewed/hyprland-share-picker/PickerData.hpp": "c5dfd40a9e47ddd97b5e5905673e913e87ebcde07a9e9b0682bb9897643c78a8",
+      "image/portal/consent-reviewed/hyprland-share-picker/PickerDataTest.cpp": "f872f91bd7de1817f9a463baf6e28f85f6db6c06f2b919b466c720698abbdbd7",
+      "image/portal/consent-reviewed/hyprland-share-picker/main.cpp": "aacad7a0605cedd26a72029eff3fca20ee5bca1c52940561593ebdf066b3bac2",
+      "image/portal/consent-reviewed/org.freedesktop.impl.portal.desktop.hyprland.service.in": "0e3b4ffcff6b6e626974309165aa782ac996274eb03f446422fcd8df8561b2e0",
+      "image/portal/consent-reviewed/src/core/PortalManager.cpp": "aa990965d36d1c5a248ff6046ec0fddadeb2e7a5916b6dac9b6947ff5f95ad67",
+      "image/portal/consent-reviewed/src/portals/Screencopy.cpp": "c6c9f3a222411715190b17641618e63067cafa4d097a423aa186a2af0d4bdf98",
+      "image/portal/consent-reviewed/src/portals/Screencopy.hpp": "53b47796fe837aaf8dccee6b1717e76d4c053e5e8601eb9679021ceaf47071f8",
+      "image/portal/consent-reviewed/src/shared/ScreencopyShared.cpp": "fae2f5bb0188a1dafabafc47737bada52867ad7475a051409fbd06a17738b646",
+      "image/portal/consent-reviewed/src/shared/ScreencopyShared.hpp": "80dc2c048c9c183eb1d973ee0e950483bb5ec919b21fe242c06f24a92ab92356",
+      "image/portal/patches/0001-no-restore-tests.patch": "7b2ddb34ee84ecc54d0b50ea4acd6529f7841ccd0ef97844c2f72c5a478f6b4b",
+      "image/portal/patches/0002-require-fresh-screen-sharing-consent.patch": "ff242489a3f0a904f33e98c39db3eee23d836740649f0120032100c4b9a5629b",
+      "image/portal/consent-reviewed/LICENSE.symbi-os": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+      "image/hyprland/fedora-package-trust.json": "3801b3f6ad666bc0f762f2502fdaebac0eb051fbbadcb343fd2559e3b05ec443",
+      "image/portal/consent-prefix.lock.json": "c121351f04dc96550022a1815b962a6b052c7b153cb6e7e794a8ca3311e8f855"
+    },
+    "parent_manifest_sha256": "fbb337e28befd8a65f0c49a47eb7201cf7048062df0ea9b212b607df07e2e3d8",
+    "unchanged_retained_files": [
+      "include/hyprtoolkit/core/Animation.hpp",
+      "include/hyprtoolkit/core/Backend.hpp",
+      "include/hyprtoolkit/core/BackendServices.hpp",
+      "include/hyprtoolkit/core/CoreMacros.hpp",
+      "include/hyprtoolkit/core/EmbeddedBackend.hpp",
+      "include/hyprtoolkit/core/Input.hpp",
+      "include/hyprtoolkit/core/LogTypes.hpp",
+      "include/hyprtoolkit/core/Output.hpp",
+      "include/hyprtoolkit/core/SessionLock.hpp",
+      "include/hyprtoolkit/core/Timer.hpp",
+      "include/hyprtoolkit/element/Button.hpp",
+      "include/hyprtoolkit/element/Checkbox.hpp",
+      "include/hyprtoolkit/element/ColumnLayout.hpp",
+      "include/hyprtoolkit/element/Combobox.hpp",
+      "include/hyprtoolkit/element/Element.hpp",
+      "include/hyprtoolkit/element/Image.hpp",
+      "include/hyprtoolkit/element/Line.hpp",
+      "include/hyprtoolkit/element/Null.hpp",
+      "include/hyprtoolkit/element/ProgressBar.hpp",
+      "include/hyprtoolkit/element/RadioGroup.hpp",
+      "include/hyprtoolkit/element/Rectangle.hpp",
+      "include/hyprtoolkit/element/RowLayout.hpp",
+      "include/hyprtoolkit/element/ScrollArea.hpp",
+      "include/hyprtoolkit/element/Slider.hpp",
+      "include/hyprtoolkit/element/Spinbox.hpp",
+      "include/hyprtoolkit/element/Text.hpp",
+      "include/hyprtoolkit/element/Textbox.hpp",
+      "include/hyprtoolkit/palette/Color.hpp",
+      "include/hyprtoolkit/palette/Gradient.hpp",
+      "include/hyprtoolkit/palette/Palette.hpp",
+      "include/hyprtoolkit/system/Icons.hpp",
+      "include/hyprtoolkit/types/FontTypes.hpp",
+      "include/hyprtoolkit/types/ImageTypes.hpp",
+      "include/hyprtoolkit/types/PointerShape.hpp",
+      "include/hyprtoolkit/types/SizeType.hpp",
+      "include/hyprtoolkit/window/EmbeddedSurface.hpp",
+      "include/hyprtoolkit/window/Window.hpp",
+      "lib/libhyprtoolkit.so",
+      "lib/libhyprtoolkit.so.0.6.0",
+      "lib/libhyprtoolkit.so.6",
+      "lib/pkgconfig/hyprtoolkit.pc",
+      "lib/systemd/user/xdg-desktop-portal-hyprland.service",
+      "share/dbus-1/services/org.freedesktop.impl.portal.desktop.hyprland.service",
+      "share/licenses/hyprtoolkit/LICENSE",
+      "share/licenses/xdg-desktop-portal-hyprland/LICENSE",
+      "share/xdg-desktop-portal/portals/hyprland.portal"
+    ],
+    "native_negative_controls": {
+      "original_native_test_failed": true,
+      "allow-token_rejected": true,
+      "unknown-option_rejected": true
+    },
+    "consent_qualified": false,
+    "version": "1.5.0",
+    "runtime_package": {
+      "filename": "iniparser-4.2.6-5.fc45.x86_64.rpm",
+      "bytes": 26470,
+      "sha256": "8774475752a94ae62e9958819c03fa3977677d53c93b3b981a82f480b1767743",
+      "nevra": "iniparser-4.2.6-5.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    }
+  },
+  "image_trust": {
+    "release_trust_sha256": "1447ddf75aa552bc2344a033d5eacef8ecaf6e0ad259fc09d67ab03474d7f564",
+    "base_pins_sha256": "3c22f018716079a063c239f38c03b5a08017ec5d42f478b306a94adb23ce1dfb",
+    "release_repositories": {
+      "generic": "ghcr.io/thirdkeyai/symbiont-os",
+      "nvidia": "ghcr.io/thirdkeyai/symbiont-os-nvidia"
+    },
+    "files": {
+      "etc/containers/policy.json": {
+        "sha256": "974d657b12acca4cd4db7ca6f4788f65b0f366d2193bdb6f0502d6c239c1a7a5",
+        "bytes": 2376
+      },
+      "etc/containers/registries.d/symbiont.yaml": {
+        "sha256": "336ad92f00b0f2fb6954fbcab7fc6541d4333a884f6038900eb94f7300104bfa",
+        "bytes": 538
+      }
+    },
+    "signature_qualified": false,
+    "scope": "Installed enforcing policy preparation; actual signature/update/rollback controls remain required"
+  },
+  "payload": {
+    "etc/containers/policy.json": {
+      "sha256": "974d657b12acca4cd4db7ca6f4788f65b0f366d2193bdb6f0502d6c239c1a7a5",
+      "bytes": 2376,
+      "mode": 420
+    },
+    "etc/containers/registries.d/symbiont.yaml": {
+      "sha256": "336ad92f00b0f2fb6954fbcab7fc6541d4333a884f6038900eb94f7300104bfa",
+      "bytes": 538,
+      "mode": 420
+    },
+    "usr/bin/Hyprland": {
+      "link": "../lib/symbi/hyprland/bin/Hyprland"
+    },
+    "usr/bin/elephant": {
+      "sha256": "e2c52e8db172d31e39531da945349855354a327b330bc572ccd27569c6f8d15f",
+      "bytes": 34445144,
+      "mode": 493
+    },
+    "usr/bin/hyprctl": {
+      "link": "../lib/symbi/hyprland/bin/hyprctl"
+    },
+    "usr/bin/symbi": {
+      "sha256": "1e90af1fe424ec37ad716bbc1e069c0bc7a78f59c49871b7e79506bda69f49c7",
+      "bytes": 520712360,
+      "mode": 493
+    },
+    "usr/bin/symbi-sandbox-supervisor": {
+      "sha256": "57af2b2931c891c8ee7df21ac063aea64571acc460ababdcb09b8df7ed21c269",
+      "bytes": 8635672,
+      "mode": 493
+    },
+    "usr/bin/walker": {
+      "sha256": "4566e3710ef9c04752e5268b472a88325ed813cd8846318315496bbd422ab31f",
+      "bytes": 7363968,
+      "mode": 493
+    },
+    "usr/lib/symbi/elephant/providers/desktopapplications.so": {
+      "sha256": "5764570124a7e1fc33a7003d2d75accf9e5a76f2b6f580600abe4609754b5085",
+      "bytes": 35904864,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/bin/Hyprland": {
+      "sha256": "0f5dc9a3bb14265516a1a7c16a90ff0ad54fda94c7caed5defb4b234ecb7f34a",
+      "bytes": 64816096,
+      "mode": 493
+    },
+    "usr/lib/symbi/hyprland/bin/hyprctl": {
+      "sha256": "683ed4ff31f059a018ea745f20bad543fa0ba7b655eabfcba4ed47755d1df028",
+      "bytes": 302672,
+      "mode": 493
+    },
+    "usr/lib/symbi/hyprland/bin/hyprland": {
+      "link": "Hyprland"
+    },
+    "usr/lib/symbi/hyprland/lib/libaquamarine.so": {
+      "link": "libaquamarine.so.15"
+    },
+    "usr/lib/symbi/hyprland/lib/libaquamarine.so.0.16.0": {
+      "sha256": "b4287d2eea93d2a8a83b7d5ec160934b294f758f6589903beba48541c3062c30",
+      "bytes": 1805688,
+      "mode": 493
+    },
+    "usr/lib/symbi/hyprland/lib/libaquamarine.so.15": {
+      "link": "libaquamarine.so.0.16.0"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprcursor.so": {
+      "link": "libhyprcursor.so.0"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprcursor.so.0": {
+      "link": "libhyprcursor.so.0.1.13"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprcursor.so.0.1.13": {
+      "sha256": "9961ab4b301be079a92597a9f90ea51d61899cf2b10fb074551bad1df91475c2",
+      "bytes": 504112,
+      "mode": 493
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprgraphics.so": {
+      "link": "libhyprgraphics.so.5"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprgraphics.so.0.6.0": {
+      "sha256": "228ca7a2ee5161cd26d00a5ebc7026de78de2c655f7e4d78d89bf8072c156f78",
+      "bytes": 285264,
+      "mode": 493
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprgraphics.so.5": {
+      "link": "libhyprgraphics.so.0.6.0"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprlang.so": {
+      "link": "libhyprlang.so.2"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprlang.so.0.6.8": {
+      "sha256": "91d21a31b230fc3076baeb91cf2dea7c275b905188a20070ebda745d6f36720e",
+      "bytes": 352688,
+      "mode": 493
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprlang.so.2": {
+      "link": "libhyprlang.so.0.6.8"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprutils.so": {
+      "link": "libhyprutils.so.13"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprutils.so.0.14.3": {
+      "sha256": "3b1b81dacdcfd36cd0a5cbce256919d1b46be8a9f2c69bd115199c46e227bb44",
+      "bytes": 819784,
+      "mode": 493
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprutils.so.13": {
+      "link": "libhyprutils.so.0.14.3"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprwire.so": {
+      "link": "libhyprwire.so.3"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprwire.so.0.3.1": {
+      "sha256": "7bfd7cab30f684d7216d77513e5af259f0ebc3b5141b4147c4ce3782d1808c35",
+      "bytes": 497144,
+      "mode": 493
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprwire.so.3": {
+      "link": "libhyprwire.so.0.3.1"
+    },
+    "usr/lib/symbi/hyprland/share/glaze/glazeConfig.cmake": {
+      "sha256": "c7f06a934567652bf88f4c6e163d8282e96b0babdd7cb73472233342c74e6a86",
+      "bytes": 1740,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/glaze/glazeConfigVersion.cmake": {
+      "sha256": "b5d282f493da2122b79e0d4a8320a0cfe09600aa667432a406f061231729ca24",
+      "bytes": 2303,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/glaze/glazeTargets.cmake": {
+      "sha256": "1d5751421b2f6f6d44f6af9a4519f31f89aeda220401dd33a5e791017c54d9a5",
+      "bytes": 4582,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hypr/hyprland.lua": {
+      "sha256": "5553823a068db8b7a8a8db08fdb27c26fd5fda7e6f4a3b3cf059c0829dfb1148",
+      "bytes": 12532,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hypr/lockdead.png": {
+      "sha256": "40b72bd747f3c2f3e35ad3a36044913ae5044f794fb64796c2e2112878061c4d",
+      "bytes": 163413,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hypr/lockdead2.png": {
+      "sha256": "21b8cad92c373629df17c759c03857b26ec9677bd1632f999501163c3cbf6e6b",
+      "bytes": 49466,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hypr/stubs/hl.meta.lua": {
+      "sha256": "163461a787ba92d81f946c14bed90a38a740ded9e010bd67c2bc4bec41320e1d",
+      "bytes": 76715,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hypr/wall0.png": {
+      "sha256": "0c5e15cefa96b5938db7ad817e29eb9447e6b0eef1efdb73600f2fa51390035e",
+      "bytes": 14194868,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hypr/wall1.png": {
+      "sha256": "dfe2c0231476fff83d50d0a146cb2701aa96ff660c6d0cd0a9c363c6bb911810",
+      "bytes": 6144371,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hypr/wall2.png": {
+      "sha256": "97bb1fed9b9e1b71fd8e814aec1bab71ddf5fbc6ffbd6a09c2d70b0881f8132e",
+      "bytes": 28264194,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-ctm-control-v1.xml": {
+      "sha256": "7e1bef7a2a935c05a7fb65d1bf98c2434037d869276248c926b56ea80a8bd2f4",
+      "bytes": 4425,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-focus-grab-v1.xml": {
+      "sha256": "0bc60c14d27f9079e0d1d9d706f91e67ad7da585f3b7f34ff7186a376c0285b4",
+      "bytes": 5447,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-global-shortcuts-v1.xml": {
+      "sha256": "00a2f728602c160cdaf67a5be61d1a503fcc0d95323456dbb2a6fa83b299d915",
+      "bytes": 4964,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-input-capture-v1.xml": {
+      "sha256": "fff89f6f9de622fefa1a62a6e6970f76683b6328454565583046abebcfe2c360",
+      "bytes": 6765,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-lock-notify-v1.xml": {
+      "sha256": "360589bc58a0a82768b477564f429dc4a8c016ae8311efad12e03f249ac704fc",
+      "bytes": 4280,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-surface-v1.xml": {
+      "sha256": "d1c37cf912b71696344d825ca85e948cb7a0406d86b6836d07ff0e8a7670c497",
+      "bytes": 5768,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-toplevel-export-v1.xml": {
+      "sha256": "2b8e16da22df333494b616a2c83394dcc9aac04405da535126d68106786441ad",
+      "bytes": 10245,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-toplevel-mapping-v1.xml": {
+      "sha256": "05464521a13c96ed274a8545d84ac03980d94b32bd55a8467c7949ed1a1ee96e",
+      "bytes": 4792,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-workspace-image-capture-source-v1.xml": {
+      "sha256": "8c8e4d3164c3574ca728fdca27dbc3c35b19845cdf352815b73ae2fdad840d5a",
+      "bytes": 4158,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/man/man1/Hyprland.1": {
+      "sha256": "bf3f3541818371dffbda7258e3653db5d09fda2edbc445649262ae505d4a9892",
+      "bytes": 1625,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/man/man1/hyprctl.1": {
+      "sha256": "a688f07ff54c22a2f16fea0cd3b0121710b78058656c9e118541f90d03952c3b",
+      "bytes": 3377,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/pkgconfig/hyprland-protocols.pc": {
+      "sha256": "c39fb5e4c23d1abbe9310cea2fe9989ca68f47841fb539e1b2c28147a531a71a",
+      "bytes": 198,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/pkgconfig/hyprland.pc": {
+      "sha256": "26a19c8b98794a98ec704fa069ffcf68c631d422640960c95b2338ecd5df9e5f",
+      "bytes": 520,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/wayland-sessions/hyprland.desktop": {
+      "sha256": "13f04806f266922f1a1306a441dc38616d7d3301ffcfe0ec6c1a56d2601e0964",
+      "bytes": 210,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/xdg-desktop-portal/hyprland-portals.conf": {
+      "sha256": "aa061ba0530569907cf280870cc2b86333e0d7c2965d9ac020f5b3e05e9bd2e2",
+      "bytes": 32,
+      "mode": 420
+    },
+    "usr/lib/symbi/portal/bin/hyprland-share-picker": {
+      "sha256": "5431d5f38487e4339a9052f493aadd7d08454603c0f5089a068f706538def843",
+      "bytes": 295808,
+      "mode": 493
+    },
+    "usr/lib/symbi/portal/lib/libhyprtoolkit.so": {
+      "link": "libhyprtoolkit.so.6"
+    },
+    "usr/lib/symbi/portal/lib/libhyprtoolkit.so.0.6.0": {
+      "sha256": "1a554314e525e93b3e63dc6db6429bb4d64d4c43dda3f0db0aa26a66bc148f90",
+      "bytes": 2650064,
+      "mode": 493
+    },
+    "usr/lib/symbi/portal/lib/libhyprtoolkit.so.6": {
+      "link": "libhyprtoolkit.so.0.6.0"
+    },
+    "usr/lib/symbi/portal/libexec/xdg-desktop-portal-hyprland": {
+      "sha256": "26b9e1ccddf6ab5c1c398b37154d10946d16d58ac55cfd16fa13be36f567ce9a",
+      "bytes": 1341224,
+      "mode": 493
+    },
+    "usr/lib/symbi/portal/share/licenses/hyprtoolkit/LICENSE": {
+      "sha256": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "usr/lib/symbi/portal/share/licenses/symbi-os-portal-patch/LICENSE": {
+      "sha256": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+      "bytes": 10784,
+      "mode": 420
+    },
+    "usr/lib/symbi/portal/share/licenses/xdg-desktop-portal-hyprland/LICENSE": {
+      "sha256": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+      "bytes": 1515,
+      "mode": 420
+    },
+    "usr/lib/systemd/user/xdg-desktop-portal-hyprland.service": {
+      "sha256": "0b94927fbc13c5d53b171e37679a13608d773e9f96906eb492722db06ef8b82b",
+      "bytes": 341,
+      "mode": 420
+    },
+    "usr/share/dbus-1/services/org.freedesktop.impl.portal.desktop.hyprland.service": {
+      "sha256": "b230f1ce2f898291a73ad2cb719aa9a5fe54c51a53bda378c8f805ec71b08c65",
+      "bytes": 180,
+      "mode": 420
+    },
+    "usr/share/doc/symbiont-os/development-inputs.json": {
+      "sha256": "65c430bdf1c4fb6729ee1147ed84381a8399dc9d71375adc3fb94cee945daff1",
+      "bytes": 30101,
+      "mode": 420
+    },
+    "usr/share/doc/symbiont-os/patches/0001-disable-native-loading.patch": {
+      "sha256": "068d061f29c6ccbef25d402972a14c72195811e40888027b71760f6656f6eeff",
+      "bytes": 7318,
+      "mode": 420
+    },
+    "usr/share/doc/symbiont-os/patches/0001-no-restore-tests.patch": {
+      "sha256": "7b2ddb34ee84ecc54d0b50ea4acd6529f7841ccd0ef97844c2f72c5a478f6b4b",
+      "bytes": 3953,
+      "mode": 420
+    },
+    "usr/share/doc/symbiont-os/patches/0001-packaged-application-provider-only.patch": {
+      "sha256": "9d46941a0540df0162772b04055bf306298e48f3bdcae2c5f3ec97ebb51a7204",
+      "bytes": 2647,
+      "mode": 420
+    },
+    "usr/share/doc/symbiont-os/patches/0002-require-fresh-screen-sharing-consent.patch": {
+      "sha256": "ff242489a3f0a904f33e98c39db3eee23d836740649f0120032100c4b9a5629b",
+      "bytes": 20855,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/Elephant-GPL-3.0": {
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "bytes": 35149,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/Hyprland.LICENSE": {
+      "sha256": "e01df754903af0ab26babb317b5f5a62dd95f770b733c5275414dd3245d00ae7",
+      "bytes": 1521,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/Symbiont-Apache-2.0": {
+      "sha256": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+      "bytes": 10784,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/Walker-GPL-3.0": {
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "bytes": 35149,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/aquamarine.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/glaze.LICENSE": {
+      "sha256": "5d49e66411a0807a7c8d6b911b9a26b59e940c71aebe561a3ad8b0b80ac4b7b6",
+      "bytes": 1080,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/hyprcursor.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/hyprgraphics.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/hyprland-protocols.LICENSE": {
+      "sha256": "ea36a60a50dfa150ca3c5816cb6b0ad5b559da380e9f5b2babd4abbf7962a35a",
+      "bytes": 1524,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/hyprlang.LICENSE": {
+      "sha256": "a5681bf9b05db14d86776930017c647ad9e6e56ff6bbcfdf21e5848288dfaf1b",
+      "bytes": 7651,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/hyprutils.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/hyprwayland-scanner.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/hyprwire.LICENSE": {
+      "sha256": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/udis86.LICENSE": {
+      "sha256": "1070640aab24327354da44507627d1db6c67482a6facc8375a758796a05e3dff",
+      "bytes": 1337,
+      "mode": 420
+    },
+    "usr/share/xdg-desktop-portal/portals/hyprland.portal": {
+      "sha256": "43b2fe354c2d4cc51bd237be8b6586cc6b6f5681451a4079adf2a97909d73431",
+      "bytes": 281,
+      "mode": 420
+    }
+  },
+  "overlay": {
+    "etc/NetworkManager/conf.d/99-symbi-no-connectivity-check.conf": {
+      "sha256": "6e13e0bc7b133d9b3fc45e49a9caa51404160fc2d9e9fc0828bf08438ae1ab4b",
+      "bytes": 29,
+      "mode": 420
+    },
+    "etc/chromium/policies/managed/symbi-privacy.json": {
+      "sha256": "3d11dcb24648629b45a087d72207e8e29918209b866c9039f65d52b601e4e463",
+      "bytes": 649,
+      "mode": 420
+    },
+    "etc/firefox/policies/policies.json": {
+      "sha256": "f0388ac45bfdd5f026b5f8f5462ec8d19c8320b46659e82ffd417faade7a6def",
+      "bytes": 1584,
+      "mode": 420
+    },
+    "etc/profile.d/symbi-privacy.sh": {
+      "sha256": "2b207b3b81affc3fe4bf17608b21a35845e87b4946dc99b6a4aea74d32777225",
+      "bytes": 555,
+      "mode": 420
+    },
+    "usr/libexec/symbi-desktop-session": {
+      "sha256": "2e38975b0d7e9e2ac4ede217dc2697ce9c2cd9b12177d664ea525015276023d4",
+      "bytes": 299,
+      "mode": 493
+    },
+    "usr/libexec/symbi-seed-config": {
+      "sha256": "0cb0108e6f52db57482738dc4c12bdbe5d2b544436746fa8015b6d0aab94c775",
+      "bytes": 1261,
+      "mode": 493
+    },
+    "usr/share/symbiont/defaults/hypr/appearance.lua": {
+      "sha256": "6b284715b71bb84f691ba736522b7c7b95ccb7d831812c96a2acc9c65a4bfe02",
+      "bytes": 228,
+      "mode": 420
+    },
+    "usr/share/symbiont/defaults/hypr/hyprland.lua": {
+      "sha256": "16857dd5d0dfa102b9ad0ff429c7ceba7d8faf6178499e8708837c86798187e4",
+      "bytes": 920,
+      "mode": 420
+    },
+    "usr/share/symbiont/defaults/hypr/input.lua": {
+      "sha256": "c92291506e7335a4c99c243467d8bd7f37dd25efc902119f78df8eef935eba1f",
+      "bytes": 345,
+      "mode": 420
+    },
+    "usr/share/symbiont/defaults/hypr/xdph.conf": {
+      "sha256": "f6771ee38b331066f5b92a8bdf055092367f67f9b0be90628bbf56f5c605ef33",
+      "bytes": 206,
+      "mode": 420
+    },
+    "usr/share/symbiont/defaults/walker/config.toml": {
+      "sha256": "c537ad71b21a7c79d65f2214c42f9acb70211b094588f8b9bb44da4733e187b3",
+      "bytes": 246,
+      "mode": 420
+    },
+    "usr/share/symbiont/defaults/waybar/config.jsonc": {
+      "sha256": "29c05c27c4870a25bee06a7541d4c8b205cdf543240aab202d96ad391e1d3926",
+      "bytes": 608,
+      "mode": 420
+    },
+    "usr/share/symbiont/defaults/waybar/style.css": {
+      "sha256": "68600820a69b86146acc268029522b5faa5ee3558439c24ae9ded1ade4ddb207",
+      "bytes": 285,
+      "mode": 420
+    },
+    "usr/share/wayland-sessions/symbi.desktop": {
+      "sha256": "0179ddf896ace19f934f2f4f502cf24ed6da0197987feaa6154ccdadb4b6946b",
+      "bytes": 142,
+      "mode": 420
+    },
+    "usr/lib/systemd/user/symbi-elephant.service": {
+      "sha256": "d724bc39db88d330068ccbab1a5b8ed6b30648a21c42ffeb11c8d2c1f996b43c",
+      "bytes": 221,
+      "mode": 420
+    },
+    "usr/libexec/symbi-launch-desktop-services": {
+      "sha256": "3ef0d169d9a4225c27f654cee1f79bb8f1fe4f7aefd1f26553d2315d12a9d967",
+      "bytes": 416,
+      "mode": 493
+    },
+    "usr/share/xdg-desktop-portal/hyprland-portals.conf": {
+      "sha256": "f78c100ca09f96539d2945703c3654187da2aacfafa506a69b43aae709a3590c",
+      "bytes": 120,
+      "mode": 420
+    }
+  },
+  "context": {
+    ".bluebuild-scripts_a654ee88/exports.sh": {
+      "sha256": "7bb804f8ff5c6f38b1a394e806335bfeafad01cb7b2b5083a12b240456d11b08",
+      "bytes": 2529,
+      "mode": 493
+    },
+    ".bluebuild-scripts_a654ee88/post_build.sh": {
+      "sha256": "31d0d7fa9a19f25ea5c85ce8f7e8b42e04497888d9919ff94155388bef5fa98b",
+      "bytes": 1380,
+      "mode": 493
+    },
+    ".bluebuild-scripts_a654ee88/pre_build.sh": {
+      "sha256": "6732063c1e32c92fd4e74b71d116ccf0092c30ac729f93621f2aeb58047c65ff",
+      "bytes": 731,
+      "mode": 493
+    },
+    ".bluebuild-scripts_a654ee88/run_module.sh": {
+      "sha256": "c16b953149daccbcda05c39f3cd8e47cf6256c349f5d406a1643b02f931d2d00",
+      "bytes": 1781,
+      "mode": 493
+    },
+    ".bluebuild-scripts_a654ee88/setup.sh": {
+      "sha256": "c60e2f1cd1101b91bfd124fc4c08f442f3abbb1a06bd7418b4170908b413e169",
+      "bytes": 1042,
+      "mode": 493
+    },
+    ".gitignore": {
+      "sha256": "4101bed5b2e32af64682cc2db27e297151fdc5a05162260d94bcea7328b693a3",
+      "bytes": 22,
+      "mode": 420
+    },
+    "Containerfile": {
+      "sha256": "24e5aec8dc99e556e23863a82264678dc50b81df8631f8b4f3efaf9f5b429bfd",
+      "bytes": 2519,
+      "mode": 420
+    },
+    "LICENSE": {
+      "sha256": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+      "bytes": 10784,
+      "mode": 420
+    },
+    "image/desktop/session/usr/lib/systemd/user/symbi-elephant.service": {
+      "sha256": "d724bc39db88d330068ccbab1a5b8ed6b30648a21c42ffeb11c8d2c1f996b43c",
+      "bytes": 221,
+      "mode": 420
+    },
+    "image/desktop/session/usr/libexec/symbi-launch-desktop-services": {
+      "sha256": "3ef0d169d9a4225c27f654cee1f79bb8f1fe4f7aefd1f26553d2315d12a9d967",
+      "bytes": 416,
+      "mode": 493
+    },
+    "image/desktop/session/usr/share/symbiont/defaults/hypr/hyprland.lua": {
+      "sha256": "16857dd5d0dfa102b9ad0ff429c7ceba7d8faf6178499e8708837c86798187e4",
+      "bytes": 920,
+      "mode": 420
+    },
+    "image/desktop/session/usr/share/xdg-desktop-portal/hyprland-portals.conf": {
+      "sha256": "f78c100ca09f96539d2945703c3654187da2aacfafa506a69b43aae709a3590c",
+      "bytes": 120,
+      "mode": 420
+    },
+    "image/harden-image.sh": {
+      "sha256": "4cd766d8a65049b07e1cda1a6b0a842483bf4132c07f97f23f5978390a48f537",
+      "bytes": 1907,
+      "mode": 420
+    },
+    "image/keys/secureblue-2026.pub": {
+      "sha256": "9cbd48de48d467f86e0f31f9454c6e0bb663f3d033ecd92143f62577eb1cb5eb",
+      "bytes": 178,
+      "mode": 420
+    },
+    "image/overlay/etc/NetworkManager/conf.d/99-symbi-no-connectivity-check.conf": {
+      "sha256": "6e13e0bc7b133d9b3fc45e49a9caa51404160fc2d9e9fc0828bf08438ae1ab4b",
+      "bytes": 29,
+      "mode": 420
+    },
+    "image/overlay/etc/chromium/policies/managed/symbi-privacy.json": {
+      "sha256": "3d11dcb24648629b45a087d72207e8e29918209b866c9039f65d52b601e4e463",
+      "bytes": 649,
+      "mode": 420
+    },
+    "image/overlay/etc/firefox/policies/policies.json": {
+      "sha256": "f0388ac45bfdd5f026b5f8f5462ec8d19c8320b46659e82ffd417faade7a6def",
+      "bytes": 1584,
+      "mode": 420
+    },
+    "image/overlay/etc/profile.d/symbi-privacy.sh": {
+      "sha256": "2b207b3b81affc3fe4bf17608b21a35845e87b4946dc99b6a4aea74d32777225",
+      "bytes": 555,
+      "mode": 420
+    },
+    "image/overlay/usr/libexec/symbi-desktop-session": {
+      "sha256": "2e38975b0d7e9e2ac4ede217dc2697ce9c2cd9b12177d664ea525015276023d4",
+      "bytes": 299,
+      "mode": 493
+    },
+    "image/overlay/usr/libexec/symbi-seed-config": {
+      "sha256": "0cb0108e6f52db57482738dc4c12bdbe5d2b544436746fa8015b6d0aab94c775",
+      "bytes": 1261,
+      "mode": 493
+    },
+    "image/overlay/usr/share/symbiont/defaults/hypr/appearance.lua": {
+      "sha256": "6b284715b71bb84f691ba736522b7c7b95ccb7d831812c96a2acc9c65a4bfe02",
+      "bytes": 228,
+      "mode": 420
+    },
+    "image/overlay/usr/share/symbiont/defaults/hypr/hyprland.lua": {
+      "sha256": "117ecc7de610d0561a08084cf86e6fc66500b4b8d30ec59910defd5830dbce22",
+      "bytes": 893,
+      "mode": 420
+    },
+    "image/overlay/usr/share/symbiont/defaults/hypr/input.lua": {
+      "sha256": "c92291506e7335a4c99c243467d8bd7f37dd25efc902119f78df8eef935eba1f",
+      "bytes": 345,
+      "mode": 420
+    },
+    "image/overlay/usr/share/symbiont/defaults/hypr/xdph.conf": {
+      "sha256": "f6771ee38b331066f5b92a8bdf055092367f67f9b0be90628bbf56f5c605ef33",
+      "bytes": 206,
+      "mode": 420
+    },
+    "image/overlay/usr/share/symbiont/defaults/walker/config.toml": {
+      "sha256": "c537ad71b21a7c79d65f2214c42f9acb70211b094588f8b9bb44da4733e187b3",
+      "bytes": 246,
+      "mode": 420
+    },
+    "image/overlay/usr/share/symbiont/defaults/waybar/config.jsonc": {
+      "sha256": "29c05c27c4870a25bee06a7541d4c8b205cdf543240aab202d96ad391e1d3926",
+      "bytes": 608,
+      "mode": 420
+    },
+    "image/overlay/usr/share/symbiont/defaults/waybar/style.css": {
+      "sha256": "68600820a69b86146acc268029522b5faa5ee3558439c24ae9ded1ade4ddb207",
+      "bytes": 285,
+      "mode": 420
+    },
+    "image/overlay/usr/share/wayland-sessions/symbi.desktop": {
+      "sha256": "0179ddf896ace19f934f2f4f502cf24ed6da0197987feaa6154ccdadb4b6946b",
+      "bytes": 142,
+      "mode": 420
+    },
+    "image/vendor/omarchy/LICENSE": {
+      "sha256": "717ba1949502290f8e47688ae2e323acd06c8ca47aec9f7596b15f678c1af4a2",
+      "bytes": 1063,
+      "mode": 420
+    },
+    "image/vendor/ombuntu/LICENSE": {
+      "sha256": "f0a979ff292634dd3de88efb7e2e89be9c0f69ae6545591f58a32be9b43df183",
+      "bytes": 1136,
+      "mode": 420
+    },
+    "install-inputs/bounded_process.py": {
+      "sha256": "31353489fcf05bb3a6e7ddd423e6737ccd366e9ba3b328c04339dc96f3224788",
+      "bytes": 2222,
+      "mode": 420
+    },
+    "install-inputs/combined-lock.json": {
+      "sha256": "1b73d6b534715a0ca3f975d7c1864633c9a7082c95fd7d05a7ef4fde53b2278e",
+      "bytes": 2950,
+      "mode": 420
+    },
+    "install-inputs/fedora-45-primary.asc": {
+      "sha256": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425",
+      "bytes": 1672,
+      "mode": 420
+    },
+    "install-inputs/guest_inventory.py": {
+      "sha256": "c214e843b92b0bb2c7ecdef047e35162165fa30a8381e88f22fcc17aefbbd9d8",
+      "bytes": 8382,
+      "mode": 420
+    },
+    "install-inputs/inputs.py": {
+      "sha256": "cc2672b17e2916d82adf1cc0de6b530c79c2da5441d2b01d88f27583ebf7f115",
+      "bytes": 2843,
+      "mode": 420
+    },
+    "install-inputs/install.py": {
+      "sha256": "def2c4ea06383ef51d558ab3301b6606294fc3e29277a632f5d56d664a4fefec",
+      "bytes": 6881,
+      "mode": 420
+    },
+    "install-inputs/package_identity.py": {
+      "sha256": "b745e4b72be4404bfe7291a11fd9c5378487fc4158ef957d2221f792e9fe90ab",
+      "bytes": 4174,
+      "mode": 420
+    },
+    "install-inputs/resolve_packages.py": {
+      "sha256": "9cde06bf10749202d5248b66dd0c50bf214edd08e37c12e48527b31ec2356bcd",
+      "bytes": 7915,
+      "mode": 420
+    },
+    "install-inputs/rpms/gtk4-layer-shell-1.3.0-3.fc45.x86_64.rpm": {
+      "sha256": "a9972d6b141f80a02ecec196d0967ef5cce0788bb09cba0c5ceac0dee3c6b09e",
+      "bytes": 37039,
+      "mode": 420
+    },
+    "install-inputs/rpms/iniparser-4.2.6-5.fc45.x86_64.rpm": {
+      "sha256": "8774475752a94ae62e9958819c03fa3977677d53c93b3b981a82f480b1767743",
+      "bytes": 26470,
+      "mode": 420
+    },
+    "install-inputs/rpms/libeis-1.6.0-3.fc45.x86_64.rpm": {
+      "sha256": "44ccf3c6f99af7f0aa9522fe2080164754644a74615612ea67e3b82ca8ac9e97",
+      "bytes": 59677,
+      "mode": 420
+    },
+    "install-inputs/rpms/muParser-2.3.5-6.fc45.x86_64.rpm": {
+      "sha256": "b86f69f9300cc8ba09662f4d196eb2a1b431c7548d21bc33c53636dfb2a5fcd2",
+      "bytes": 185483,
+      "mode": 420
+    },
+    "install-inputs/rpms/openssl3-libs-3.5.9-1.fc45.x86_64.rpm": {
+      "sha256": "60fdefdada231053ca4da86e69ecd2706fd09bab7690cf978c7f0b24d41c17fc",
+      "bytes": 2890302,
+      "mode": 420
+    },
+    "install-inputs/rpms/tomlplusplus-3.4.0-8.fc45.x86_64.rpm": {
+      "sha256": "f3ae3af984a168fc5eb2b0c6a12b6aab057bfc9bd40f5d280a99a50324d89d17",
+      "bytes": 108860,
+      "mode": 420
+    },
+    "install-inputs/runtime_install.py": {
+      "sha256": "d7d36d7a056861cafe058d3a31ae609d372257cbff6f0cfd77b6dc3bdd62e884",
+      "bytes": 9561,
+      "mode": 420
+    },
+    "payload/etc/containers/policy.json": {
+      "sha256": "974d657b12acca4cd4db7ca6f4788f65b0f366d2193bdb6f0502d6c239c1a7a5",
+      "bytes": 2376,
+      "mode": 420
+    },
+    "payload/etc/containers/registries.d/symbiont.yaml": {
+      "sha256": "336ad92f00b0f2fb6954fbcab7fc6541d4333a884f6038900eb94f7300104bfa",
+      "bytes": 538,
+      "mode": 420
+    },
+    "payload/usr/bin/Hyprland": {
+      "link": "../lib/symbi/hyprland/bin/Hyprland"
+    },
+    "payload/usr/bin/elephant": {
+      "sha256": "e2c52e8db172d31e39531da945349855354a327b330bc572ccd27569c6f8d15f",
+      "bytes": 34445144,
+      "mode": 493
+    },
+    "payload/usr/bin/hyprctl": {
+      "link": "../lib/symbi/hyprland/bin/hyprctl"
+    },
+    "payload/usr/bin/symbi": {
+      "sha256": "1e90af1fe424ec37ad716bbc1e069c0bc7a78f59c49871b7e79506bda69f49c7",
+      "bytes": 520712360,
+      "mode": 493
+    },
+    "payload/usr/bin/symbi-sandbox-supervisor": {
+      "sha256": "57af2b2931c891c8ee7df21ac063aea64571acc460ababdcb09b8df7ed21c269",
+      "bytes": 8635672,
+      "mode": 493
+    },
+    "payload/usr/bin/walker": {
+      "sha256": "4566e3710ef9c04752e5268b472a88325ed813cd8846318315496bbd422ab31f",
+      "bytes": 7363968,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/elephant/providers/desktopapplications.so": {
+      "sha256": "5764570124a7e1fc33a7003d2d75accf9e5a76f2b6f580600abe4609754b5085",
+      "bytes": 35904864,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/bin/Hyprland": {
+      "sha256": "0f5dc9a3bb14265516a1a7c16a90ff0ad54fda94c7caed5defb4b234ecb7f34a",
+      "bytes": 64816096,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/hyprland/bin/hyprctl": {
+      "sha256": "683ed4ff31f059a018ea745f20bad543fa0ba7b655eabfcba4ed47755d1df028",
+      "bytes": 302672,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/hyprland/bin/hyprland": {
+      "link": "Hyprland"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libaquamarine.so": {
+      "link": "libaquamarine.so.15"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libaquamarine.so.0.16.0": {
+      "sha256": "b4287d2eea93d2a8a83b7d5ec160934b294f758f6589903beba48541c3062c30",
+      "bytes": 1805688,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libaquamarine.so.15": {
+      "link": "libaquamarine.so.0.16.0"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprcursor.so": {
+      "link": "libhyprcursor.so.0"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprcursor.so.0": {
+      "link": "libhyprcursor.so.0.1.13"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprcursor.so.0.1.13": {
+      "sha256": "9961ab4b301be079a92597a9f90ea51d61899cf2b10fb074551bad1df91475c2",
+      "bytes": 504112,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprgraphics.so": {
+      "link": "libhyprgraphics.so.5"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprgraphics.so.0.6.0": {
+      "sha256": "228ca7a2ee5161cd26d00a5ebc7026de78de2c655f7e4d78d89bf8072c156f78",
+      "bytes": 285264,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprgraphics.so.5": {
+      "link": "libhyprgraphics.so.0.6.0"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprlang.so": {
+      "link": "libhyprlang.so.2"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprlang.so.0.6.8": {
+      "sha256": "91d21a31b230fc3076baeb91cf2dea7c275b905188a20070ebda745d6f36720e",
+      "bytes": 352688,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprlang.so.2": {
+      "link": "libhyprlang.so.0.6.8"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprutils.so": {
+      "link": "libhyprutils.so.13"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprutils.so.0.14.3": {
+      "sha256": "3b1b81dacdcfd36cd0a5cbce256919d1b46be8a9f2c69bd115199c46e227bb44",
+      "bytes": 819784,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprutils.so.13": {
+      "link": "libhyprutils.so.0.14.3"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprwire.so": {
+      "link": "libhyprwire.so.3"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprwire.so.0.3.1": {
+      "sha256": "7bfd7cab30f684d7216d77513e5af259f0ebc3b5141b4147c4ce3782d1808c35",
+      "bytes": 497144,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprwire.so.3": {
+      "link": "libhyprwire.so.0.3.1"
+    },
+    "payload/usr/lib/symbi/hyprland/share/glaze/glazeConfig.cmake": {
+      "sha256": "c7f06a934567652bf88f4c6e163d8282e96b0babdd7cb73472233342c74e6a86",
+      "bytes": 1740,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/glaze/glazeConfigVersion.cmake": {
+      "sha256": "b5d282f493da2122b79e0d4a8320a0cfe09600aa667432a406f061231729ca24",
+      "bytes": 2303,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/glaze/glazeTargets.cmake": {
+      "sha256": "1d5751421b2f6f6d44f6af9a4519f31f89aeda220401dd33a5e791017c54d9a5",
+      "bytes": 4582,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hypr/hyprland.lua": {
+      "sha256": "5553823a068db8b7a8a8db08fdb27c26fd5fda7e6f4a3b3cf059c0829dfb1148",
+      "bytes": 12532,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hypr/lockdead.png": {
+      "sha256": "40b72bd747f3c2f3e35ad3a36044913ae5044f794fb64796c2e2112878061c4d",
+      "bytes": 163413,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hypr/lockdead2.png": {
+      "sha256": "21b8cad92c373629df17c759c03857b26ec9677bd1632f999501163c3cbf6e6b",
+      "bytes": 49466,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hypr/stubs/hl.meta.lua": {
+      "sha256": "163461a787ba92d81f946c14bed90a38a740ded9e010bd67c2bc4bec41320e1d",
+      "bytes": 76715,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hypr/wall0.png": {
+      "sha256": "0c5e15cefa96b5938db7ad817e29eb9447e6b0eef1efdb73600f2fa51390035e",
+      "bytes": 14194868,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hypr/wall1.png": {
+      "sha256": "dfe2c0231476fff83d50d0a146cb2701aa96ff660c6d0cd0a9c363c6bb911810",
+      "bytes": 6144371,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hypr/wall2.png": {
+      "sha256": "97bb1fed9b9e1b71fd8e814aec1bab71ddf5fbc6ffbd6a09c2d70b0881f8132e",
+      "bytes": 28264194,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-ctm-control-v1.xml": {
+      "sha256": "7e1bef7a2a935c05a7fb65d1bf98c2434037d869276248c926b56ea80a8bd2f4",
+      "bytes": 4425,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-focus-grab-v1.xml": {
+      "sha256": "0bc60c14d27f9079e0d1d9d706f91e67ad7da585f3b7f34ff7186a376c0285b4",
+      "bytes": 5447,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-global-shortcuts-v1.xml": {
+      "sha256": "00a2f728602c160cdaf67a5be61d1a503fcc0d95323456dbb2a6fa83b299d915",
+      "bytes": 4964,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-input-capture-v1.xml": {
+      "sha256": "fff89f6f9de622fefa1a62a6e6970f76683b6328454565583046abebcfe2c360",
+      "bytes": 6765,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-lock-notify-v1.xml": {
+      "sha256": "360589bc58a0a82768b477564f429dc4a8c016ae8311efad12e03f249ac704fc",
+      "bytes": 4280,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-surface-v1.xml": {
+      "sha256": "d1c37cf912b71696344d825ca85e948cb7a0406d86b6836d07ff0e8a7670c497",
+      "bytes": 5768,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-toplevel-export-v1.xml": {
+      "sha256": "2b8e16da22df333494b616a2c83394dcc9aac04405da535126d68106786441ad",
+      "bytes": 10245,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-toplevel-mapping-v1.xml": {
+      "sha256": "05464521a13c96ed274a8545d84ac03980d94b32bd55a8467c7949ed1a1ee96e",
+      "bytes": 4792,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-workspace-image-capture-source-v1.xml": {
+      "sha256": "8c8e4d3164c3574ca728fdca27dbc3c35b19845cdf352815b73ae2fdad840d5a",
+      "bytes": 4158,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/man/man1/Hyprland.1": {
+      "sha256": "bf3f3541818371dffbda7258e3653db5d09fda2edbc445649262ae505d4a9892",
+      "bytes": 1625,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/man/man1/hyprctl.1": {
+      "sha256": "a688f07ff54c22a2f16fea0cd3b0121710b78058656c9e118541f90d03952c3b",
+      "bytes": 3377,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/pkgconfig/hyprland-protocols.pc": {
+      "sha256": "c39fb5e4c23d1abbe9310cea2fe9989ca68f47841fb539e1b2c28147a531a71a",
+      "bytes": 198,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/pkgconfig/hyprland.pc": {
+      "sha256": "26a19c8b98794a98ec704fa069ffcf68c631d422640960c95b2338ecd5df9e5f",
+      "bytes": 520,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/wayland-sessions/hyprland.desktop": {
+      "sha256": "13f04806f266922f1a1306a441dc38616d7d3301ffcfe0ec6c1a56d2601e0964",
+      "bytes": 210,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/xdg-desktop-portal/hyprland-portals.conf": {
+      "sha256": "aa061ba0530569907cf280870cc2b86333e0d7c2965d9ac020f5b3e05e9bd2e2",
+      "bytes": 32,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/portal/bin/hyprland-share-picker": {
+      "sha256": "5431d5f38487e4339a9052f493aadd7d08454603c0f5089a068f706538def843",
+      "bytes": 295808,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/portal/lib/libhyprtoolkit.so": {
+      "link": "libhyprtoolkit.so.6"
+    },
+    "payload/usr/lib/symbi/portal/lib/libhyprtoolkit.so.0.6.0": {
+      "sha256": "1a554314e525e93b3e63dc6db6429bb4d64d4c43dda3f0db0aa26a66bc148f90",
+      "bytes": 2650064,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/portal/lib/libhyprtoolkit.so.6": {
+      "link": "libhyprtoolkit.so.0.6.0"
+    },
+    "payload/usr/lib/symbi/portal/libexec/xdg-desktop-portal-hyprland": {
+      "sha256": "26b9e1ccddf6ab5c1c398b37154d10946d16d58ac55cfd16fa13be36f567ce9a",
+      "bytes": 1341224,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/portal/share/licenses/hyprtoolkit/LICENSE": {
+      "sha256": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/portal/share/licenses/symbi-os-portal-patch/LICENSE": {
+      "sha256": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+      "bytes": 10784,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/portal/share/licenses/xdg-desktop-portal-hyprland/LICENSE": {
+      "sha256": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+      "bytes": 1515,
+      "mode": 420
+    },
+    "payload/usr/lib/systemd/user/xdg-desktop-portal-hyprland.service": {
+      "sha256": "0b94927fbc13c5d53b171e37679a13608d773e9f96906eb492722db06ef8b82b",
+      "bytes": 341,
+      "mode": 420
+    },
+    "payload/usr/share/dbus-1/services/org.freedesktop.impl.portal.desktop.hyprland.service": {
+      "sha256": "b230f1ce2f898291a73ad2cb719aa9a5fe54c51a53bda378c8f805ec71b08c65",
+      "bytes": 180,
+      "mode": 420
+    },
+    "payload/usr/share/doc/symbiont-os/development-inputs.json": {
+      "sha256": "65c430bdf1c4fb6729ee1147ed84381a8399dc9d71375adc3fb94cee945daff1",
+      "bytes": 30101,
+      "mode": 420
+    },
+    "payload/usr/share/doc/symbiont-os/patches/0001-disable-native-loading.patch": {
+      "sha256": "068d061f29c6ccbef25d402972a14c72195811e40888027b71760f6656f6eeff",
+      "bytes": 7318,
+      "mode": 420
+    },
+    "payload/usr/share/doc/symbiont-os/patches/0001-no-restore-tests.patch": {
+      "sha256": "7b2ddb34ee84ecc54d0b50ea4acd6529f7841ccd0ef97844c2f72c5a478f6b4b",
+      "bytes": 3953,
+      "mode": 420
+    },
+    "payload/usr/share/doc/symbiont-os/patches/0001-packaged-application-provider-only.patch": {
+      "sha256": "9d46941a0540df0162772b04055bf306298e48f3bdcae2c5f3ec97ebb51a7204",
+      "bytes": 2647,
+      "mode": 420
+    },
+    "payload/usr/share/doc/symbiont-os/patches/0002-require-fresh-screen-sharing-consent.patch": {
+      "sha256": "ff242489a3f0a904f33e98c39db3eee23d836740649f0120032100c4b9a5629b",
+      "bytes": 20855,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/Elephant-GPL-3.0": {
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "bytes": 35149,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/Hyprland.LICENSE": {
+      "sha256": "e01df754903af0ab26babb317b5f5a62dd95f770b733c5275414dd3245d00ae7",
+      "bytes": 1521,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/Symbiont-Apache-2.0": {
+      "sha256": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+      "bytes": 10784,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/Walker-GPL-3.0": {
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "bytes": 35149,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/aquamarine.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/glaze.LICENSE": {
+      "sha256": "5d49e66411a0807a7c8d6b911b9a26b59e940c71aebe561a3ad8b0b80ac4b7b6",
+      "bytes": 1080,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/hyprcursor.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/hyprgraphics.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/hyprland-protocols.LICENSE": {
+      "sha256": "ea36a60a50dfa150ca3c5816cb6b0ad5b559da380e9f5b2babd4abbf7962a35a",
+      "bytes": 1524,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/hyprlang.LICENSE": {
+      "sha256": "a5681bf9b05db14d86776930017c647ad9e6e56ff6bbcfdf21e5848288dfaf1b",
+      "bytes": 7651,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/hyprutils.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/hyprwayland-scanner.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/hyprwire.LICENSE": {
+      "sha256": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/udis86.LICENSE": {
+      "sha256": "1070640aab24327354da44507627d1db6c67482a6facc8375a758796a05e3dff",
+      "bytes": 1337,
+      "mode": 420
+    },
+    "payload/usr/share/xdg-desktop-portal/portals/hyprland.portal": {
+      "sha256": "43b2fe354c2d4cc51bd237be8b6586cc6b6f5681451a4079adf2a97909d73431",
+      "bytes": 281,
+      "mode": 420
+    },
+    "recipe.json": {
+      "sha256": "167e0e01cd18d041518c8540f21fb52557ced1bca4d072c846383ee9e316ed33",
+      "bytes": 1342,
+      "mode": 420
+    }
+  },
+  "required_packages": [
+    {
+      "filename": "libeis-1.6.0-3.fc45.x86_64.rpm",
+      "bytes": 59677,
+      "sha256": "44ccf3c6f99af7f0aa9522fe2080164754644a74615612ea67e3b82ca8ac9e97",
+      "nevra": "libeis-1.6.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "muParser-2.3.5-6.fc45.x86_64.rpm",
+      "bytes": 185483,
+      "sha256": "b86f69f9300cc8ba09662f4d196eb2a1b431c7548d21bc33c53636dfb2a5fcd2",
+      "nevra": "muParser-2.3.5-6.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-2-Clause",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "tomlplusplus-3.4.0-8.fc45.x86_64.rpm",
+      "bytes": 108860,
+      "sha256": "f3ae3af984a168fc5eb2b0c6a12b6aab057bfc9bd40f5d280a99a50324d89d17",
+      "nevra": "tomlplusplus-3.4.0-8.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gtk4-layer-shell-1.3.0-3.fc45.x86_64.rpm",
+      "bytes": 37039,
+      "sha256": "a9972d6b141f80a02ecec196d0967ef5cce0788bb09cba0c5ceac0dee3c6b09e",
+      "nevra": "gtk4-layer-shell-1.3.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "openssl3-libs-3.5.9-1.fc45.x86_64.rpm",
+      "bytes": 2890302,
+      "sha256": "60fdefdada231053ca4da86e69ecd2706fd09bab7690cf978c7f0b24d41c17fc",
+      "nevra": "openssl3-libs-1:3.5.9-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "iniparser-4.2.6-5.fc45.x86_64.rpm",
+      "bytes": 26470,
+      "sha256": "8774475752a94ae62e9958819c03fa3977677d53c93b3b981a82f480b1767743",
+      "nevra": "iniparser-4.2.6-5.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    }
+  ],
+  "cgroup_final": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "64",
+    "memory.peak": "1073741824",
+    "memory.events": "low 0\nhigh 0\nmax 2112\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 5452806\nuser_usec 4115249\nsystem_usec 1337557\nnice_usec 4052000\ncore_sched.force_idle_usec 0\nnr_periods 187\nnr_throttled 1\nthrottled_usec 359\nnr_bursts 0\nburst_usec 0"
+  }
+}

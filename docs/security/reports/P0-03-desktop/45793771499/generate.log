@@ -1,0 +1,4 @@
+WARN  => Setting the inspect driver is deprecated.
+INFO  => Recipe /home/runner/work/symbi-os/symbi-os/.cache/desktop-image-inputs/context/recipe.json is valid (Symbi OS v2 profile)
+INFO  => Templating for recipe at /home/runner/work/symbi-os/symbi-os/.cache/desktop-image-inputs/context/recipe.json
+INFO  => Retrieving OS version from ghcr.io/secureblue/sericea-nvidia-hardened@sha256:9b8053d581db16d47b1df18698ffe8cc3f70c45a3758363fdc8d85c1b0fcaf5e

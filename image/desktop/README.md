@@ -7,13 +7,14 @@ Containerfile. The original foundation renderer remains unchanged.
 
 The image installs the maintained Hyprland compositor and private shared
 libraries, the patched Elephant application provider, Walker, `symbi` and its
-sandbox supervisor. It includes the original component licenses, source/artifact
+sandbox supervisor, plus the patched Hyprland portal and share picker. It includes
+the original component licenses, source/artifact
 bindings, downstream patches and desktop defaults. The application service starts
 from the compositor session, with its display environment imported into the user
 service manager. No service or UI gains approval authority.
 
-Five signed Fedora runtime libraries are installed offline: libeis, muParser,
-tomlplusplus, gtk4-layer-shell and openssl3-libs. Every package is checked again
+Six signed Fedora runtime libraries are checked for offline installation: libeis,
+muParser, tomlplusplus, gtk4-layer-shell, openssl3-libs and iniparser. Every package is checked again
 against the pinned full Fedora fingerprint, payload digest and complete RPM
 identity. Existing identical packages are retained; replacements are refused.
 The transaction must preserve all original base packages and crypto configuration.
@@ -171,8 +172,8 @@ limits. Shared file-helper behavior is unchanged by its move to `files.py`;
 future desktop assembly changes no longer trigger portal compilation solely
 through that shared import. Exact source/native artifact hashes remain pinned.
 Evidence: `docs/security/reports/P0-03-portal-integration/2026-11-26/`.
-No native/image workload ran locally. Hosted image and exact-head workspace/formal
-results remain pending; no OS or consent qualification claim is added.
+No native/image workload ran locally. Both hosted image variants and workspace/formal checks now pass at `23a6c72`,
+as recorded below; no OS or consent qualification claim is added.
 
 The vendor selection is `/usr/share/xdg-desktop-portal/hyprland-portals.conf`.
 It follows the frontend's documented [desktop-specific search order and backend
@@ -181,3 +182,37 @@ The original [portal descriptor](https://github.com/hyprwm/xdg-desktop-portal-hy
 and retained systemd/D-Bus templates supply the exact activation schema.
 User preference overrides and other installed backends remain part of the
 future trusted desktop threat model; this configuration is not that boundary.
+
+
+## Patched portal installed in both development images
+
+The generic [45792057599](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45792057599)
+and NVIDIA [45793771499](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45793771499)
+images pass actual assembly and installed checks at `23a6c72`. Independent
+reconciliation covers all 192 original files per run: 102 installed payload files,
+six signed RPM identities, nine loaders, four version/provider probes, both
+picker-option refusals, exact activation/default files, three Lua controls and
+all 20 container removals. Generic preserves 2,178 base packages and ends at
+2,184; NVIDIA preserves 2,324 and ends at 2,329. All 40 original crypto entries
+remain unchanged. There are memory-limit events but zero OOM/kill/group-kill.
+Bootc retains its one warning and skipped check. Full workspace/formal run
+[45792075010](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45792075010) also passes.
+
+`image/desktop-images.lock.json` pins both hosted development archives and exact
+manifests. `image/boot/inputs.py` is a strict streaming consumer for the later
+hosted boot harness. Six new refusal/cleanup tests were run before implementation;
+all **207 image tests** now pass under 128 MiB/10%-CPU/zero-swap local limits,
+peaking at 35,460 KiB with 0.70 CPU seconds. Real image consumption by this new
+helper, actual Atomic boot and all desktop/containment/release gates still need
+qualification. Native payloads remain hosted; local evidence reconciliation
+peaked at 24,180 KiB. No physical GPU workload ran. The original build/TCB source
+pins, protections and qualification flags remain unchanged.
+
+The cve.bz iniparser follow-up retains exact upstream source, a public immutable
+Fedora packaging view and selected toolkit callers. Static source inspection
+finds a remaining length-boundary concern in the dump function. The reviewed
+icon-loading caller uses load/getstring/free, without that dump operation in the
+three inspected files. This is neither whole-program unreachability nor a
+confirmed OS exploit; exact installed-build provenance and broader caller review
+remain pending. The advisory stays open with no dependency pin or exception
+change. See `P0-03-cve-bz/2026-11-26/native/iniparser-followup/`.

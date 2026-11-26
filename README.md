@@ -11,12 +11,19 @@ Fedora Atomic image with Hyprland and the upstream Symbiont runtime.
 **Current state: P0 image development.** The scaffold and five TLA+ design models
 are complete. Generic and NVIDIA development OCI images now build with maintained
 Hyprland, Walker, the restricted Elephant application provider, Symbiont 3.0
-and its sandbox supervisor. Their installed-file, package, loader, CLI and
-configuration checks pass; see the retained [generic evidence](docs/security/reports/P0-03-desktop/45758278776/independent-check.json)
-and [NVIDIA evidence](docs/security/reports/P0-03-desktop/45760174895/independent-check.json).
+and its sandbox supervisor, plus the patched Hyprland portal and share picker.
+Their installed-file, package, loader, CLI and
+configuration checks pass; see the retained [generic evidence](docs/security/reports/P0-03-desktop/45792057599/independent-check.json)
+and [NVIDIA evidence](docs/security/reports/P0-03-desktop/45793771499/independent-check.json).
 Actual image boot, desktop interaction, Fedora sandbox qualification and signed
 updates/rollback remain open. No OS release has been published. The desktop
 trusted approval surface and OS agent services are planned in later phases.
+
+The requested [Ombuntu desktop profile](docs/desktop-profile.md), including its
+shortcuts, Kitty, Tokyo Night, Nerd Fonts and MPlayer, still needs integration.
+Security review uses the [cve.bz API](https://cve.bz/api/public/openapi.json);
+[retained findings](docs/security/reports/P0-03-cve-bz/2026-11-26/native/README.md)
+remain open where source, package or reachability verification is incomplete.
 
 ## Start here
 
