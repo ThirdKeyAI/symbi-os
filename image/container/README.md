@@ -8,8 +8,17 @@ own qualification. Podman can still be an image-build tool on a separate runner.
 Fedora's [package catalogue](https://packages.fedoraproject.org/pkgs/moby-engine/moby-engine/)
 lists the engine and related Docker CLI package. Exact RPM NEVRAs, dependencies,
 repository keys and package hashes must be locked for the selected P0-03 base;
-the mutable package catalogue is not a release pin. `runsc` also needs an
-authenticated immutable binary and source/build identity.
+the mutable package catalogue is not a release pin. The separate
+`container-runtime` discovery profile now prepares those exact candidates on a
+hosted Fedora runner without installing them.
+
+`gvisor-inputs.json` fixes release `release-20261123.1`, its commit and tag
+object, the complete x86_64 bzip2 archive, the publisher checksum list, license,
+and every archive member. The passive hosted intake refuses aliases, duplicate
+paths, links, special files, privileged modes, changed payloads and unexpected
+members. It neither extracts nor executes the archive. The tag and commit are
+unsigned and no GitHub attestation was found, so this candidate remains
+unselected and cannot establish release or OS qualification by itself.
 
 `daemon.json` is a reviewed configuration input, **not installed or enabled on
 the host or current image overlay**. After the packages and runsc pin are ready,

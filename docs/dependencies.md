@@ -157,6 +157,22 @@ not implied. No Cargo dependency or fabricated audit is added. The complete
 fixtures and runtime resource-membership probes must actually pass before any
 container-route execution claim is made.
 
+## P0-05 Fedora container candidate inputs
+
+`image/container/gvisor-inputs.json` fixes gVisor `release-20261123.1` at commit
+`81f68cb7d4661a9313d891a1758a765abe8eb27e`. It binds the official 84,944,091-byte
+x86_64 bzip2 archive by SHA-256 and SHA-512, the complete official SHA-512 list,
+the Apache-2.0 license and all ten archive members. Standard-library streaming
+inspection requires no candidate execution or third-party decompressor. The tag
+and commit are unsigned and no GitHub attestation was found, so the input is not
+selected or qualified.
+
+`image/container/runtime-requirements.json` separately requests Fedora
+`moby-engine`, `docker-cli` and `container-selinux`. Hosted discovery must resolve
+and authenticate exact RPMs against the selected Fedora 45 base before any image
+installation. Neither the mutable package catalogue nor the passive gVisor
+intake supplies that acceptance.
+
 ## P0-03 Fedora compositor development inputs
 
 `image/hyprland/build-rpms.lock.json` records 162 exact Fedora 45 RPMs and their
