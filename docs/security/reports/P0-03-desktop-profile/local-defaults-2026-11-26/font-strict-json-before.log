@@ -1,0 +1,26 @@
+test_pin_json_rejects_duplicate_keys_at_any_depth (image.tests.test_font_intake.PassiveFontArchive.test_pin_json_rejects_duplicate_keys_at_any_depth) ... 
+  test_pin_json_rejects_duplicate_keys_at_any_depth (image.tests.test_font_intake.PassiveFontArchive.test_pin_json_rejects_duplicate_keys_at_any_depth) (content='{"schema": 1, "schema": 2}') ... ERROR
+  test_pin_json_rejects_duplicate_keys_at_any_depth (image.tests.test_font_intake.PassiveFontArchive.test_pin_json_rejects_duplicate_keys_at_any_depth) (content='{"asset": {"bytes": 1, "bytes": 2}}') ... ERROR
+
+======================================================================
+ERROR: test_pin_json_rejects_duplicate_keys_at_any_depth (image.tests.test_font_intake.PassiveFontArchive.test_pin_json_rejects_duplicate_keys_at_any_depth) (content='{"schema": 1, "schema": 2}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/vmstore/repos2/symbi-os/.cache/p0-image-followup/image/tests/test_font_intake.py", line 151, in test_pin_json_rejects_duplicate_keys_at_any_depth
+    mod.load_json(path)
+    ^^^^^^^^^^^^^
+AttributeError: module 'font_intake' has no attribute 'load_json'
+
+======================================================================
+ERROR: test_pin_json_rejects_duplicate_keys_at_any_depth (image.tests.test_font_intake.PassiveFontArchive.test_pin_json_rejects_duplicate_keys_at_any_depth) (content='{"asset": {"bytes": 1, "bytes": 2}}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/vmstore/repos2/symbi-os/.cache/p0-image-followup/image/tests/test_font_intake.py", line 151, in test_pin_json_rejects_duplicate_keys_at_any_depth
+    mod.load_json(path)
+    ^^^^^^^^^^^^^
+AttributeError: module 'font_intake' has no attribute 'load_json'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.010s
+
+FAILED (errors=2)

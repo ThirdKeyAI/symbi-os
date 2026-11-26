@@ -184,3 +184,26 @@ Authenticated Kitty 0.51.0 source contains the corresponding reviewed fixes;
 are retained. It remains unselected pending native build, dependency and desktop
 qualification. The requested Kitty default and all reference shortcuts remain
 requirements; the built images still have their minimal Foot profile.
+
+## First implementation tranche
+
+The image defaults now include a shared, reviewable Lua binding file with 69
+named chords. It implements 56 compositor, ten-workspace and media bindings and
+keeps 13 unavailable menu/application chords reserved with `no_op`. The existing
+Super+Space launcher and Super+Alt+Space main-menu meanings are preserved. This
+is the first working subset of the 190-entry reference; every omitted or
+reserved entry still needs explicit booted-session accounting.
+
+Tokyo Night is selected from shipped local Hyprland, Waybar and Walker data.
+Kitty and tmux profiles carry the selected presentation and terminal-key
+behavior without copying Kitty remote control or tmux shell hooks. Foot remains
+the active terminal until Kitty 0.51.0 and its bundled dependency closure pass
+native review. The profiles do not claim that Kitty or tmux is installed.
+
+A separate Nerd Fonts v3.5.1 intake pins JetBrains Mono and Symbols Only release
+assets and notices. Exact cached assets passed passive bounded inventory without
+extraction or font parser execution. The hosted intake, native font rendering,
+package integration, menu implementations, application tests and complete
+190-binding session inventory remain acceptance gates. Local fail-first and
+passing evidence is retained under
+`security/reports/P0-03-desktop-profile/local-defaults-2026-11-26/`.
