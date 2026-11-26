@@ -1,0 +1,69 @@
+{
+  "scope": "Public metadata only; no dependency selected, no install/build or security qualification. Empty queries are not vulnerability clearance.",
+  "requests": [
+    {
+      "url": "https://koji.fedoraproject.org/kojihub",
+      "method": "getPackage",
+      "argument": "shader-slang",
+      "body_sha256": "08977e16c8ad75e6d3ffca0a0bd1cc5f14e3d5a06d0c2421b877fae626dc8639",
+      "file": "shader-slang-koji.xml",
+      "bytes": 114,
+      "sha256": "8c8c1b745c8a4bd276a56d224b87b5d0c5309c19415db6eca4e4e34a121eb8f4",
+      "retrieved_at": "2026-11-26T13:29:43.124316+00:00",
+      "result": null
+    },
+    {
+      "url": "https://koji.fedoraproject.org/kojihub",
+      "method": "getPackage",
+      "argument": "slang-shader",
+      "body_sha256": "e65aab3966b23adf3494ab21c28b4e334b37758523679b836835e9b712aeeb89",
+      "file": "slang-shader-koji.xml",
+      "bytes": 114,
+      "sha256": "8c8c1b745c8a4bd276a56d224b87b5d0c5309c19415db6eca4e4e34a121eb8f4",
+      "retrieved_at": "2026-11-26T13:29:43.660348+00:00",
+      "result": null
+    },
+    {
+      "url": "https://koji.fedoraproject.org/kojihub",
+      "method": "getPackage",
+      "argument": "slang",
+      "body_sha256": "6c8b94e064526de9a5237b25f0ecc72050a43175cd7e83a2f8cc90265164d703",
+      "file": "slang-koji.xml",
+      "bytes": 268,
+      "sha256": "1bebf0acbecb566d55567c9d966999928cb27c4b38efa53332d0d125d4b925f6",
+      "retrieved_at": "2026-11-26T13:29:44.226473+00:00",
+      "result": {
+        "id": 1017,
+        "name": "slang"
+      }
+    },
+    {
+      "url": "https://cve.bz/api/public/cves?q=shader-slang&limit=100",
+      "method": "GET",
+      "file": "shader-slang-cve-bz.json",
+      "bytes": 3609,
+      "sha256": "3bc5d7a0b62fdeff72e205f206d225c09b55ff3f9d93bd540c3bec6a23396348",
+      "retrieved_at": "2026-11-26T13:29:44.795631+00:00",
+      "response_keys": [
+        "entries",
+        "next",
+        "importing",
+        "attribution"
+      ]
+    },
+    {
+      "url": "https://cve.bz/api/public/cves?q=shader_slang&limit=100",
+      "method": "GET",
+      "file": "shader_slang-cve-bz.json",
+      "bytes": 2863,
+      "sha256": "e8f1620207e7a9a6f595f292ef1811f0410a40563fff4a7176ca99c64c5546f6",
+      "retrieved_at": "2026-11-26T13:29:45.140312+00:00",
+      "response_keys": [
+        "entries",
+        "next",
+        "importing",
+        "attribution"
+      ]
+    }
+  ]
+}
