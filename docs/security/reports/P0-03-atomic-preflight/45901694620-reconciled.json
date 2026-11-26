@@ -1,0 +1,29 @@
+{
+  "source": {
+    "schema": 1,
+    "variant": "generic",
+    "preflight_run": 45901694620,
+    "source_commit": "370ac0af566cd94d7452fd415c59d3def9619b85",
+    "inspect_sha256": "2d59f4ae0f2e7d81d1c6072b9cd5da8dfd0a28d257f49b51aef5a2f5657839c5",
+    "prepare_sha256": "9a7d078d63be07dfc075b78d52537527a0761f3ec1b8077b700cf17c1bbe6ee5",
+    "manifest_digest": "sha256:1dcf72c2e3eda7e5480269b1559e3b5527c77fdb70d28983d4e29baa03b8de6e"
+  },
+  "original_files": 41,
+  "expanded_bytes": 201047,
+  "artifact_id": 15156247784,
+  "artifact_bytes": 62566,
+  "artifact_sha256": "3433f787ee8a1d3c9501592dcfac435abc81843650bf7db2dbe8b4004f780ebe",
+  "passed": true,
+  "installation_attempted": false,
+  "guest_booted": false,
+  "os_qualified": false,
+  "resource_peaks": {
+    "prepare": "27062272",
+    "inspect": "4294971392"
+  },
+  "install_requirements": {
+    "filesystem_default": null,
+    "filesystem_argument_required": true
+  },
+  "cleanup_verified": true
+}
