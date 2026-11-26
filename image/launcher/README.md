@@ -44,6 +44,13 @@ fixed upstream go.mod/go.sum and the Go checksum service; compilation has no
 network and requires both upstream files to remain byte-identical. Source and
 module/dependency review remain release gates; no blanket audit is asserted.
 
+The compiler identity gate pins Fedora's observed `go1.27.4-X:nodwarf5` and
+`GOEXPERIMENT=nodwarf5`, alongside linux/amd64 and CGO enabled. These exact values
+were retained after installing the authenticated four-RPM bundle in hosted run
+45727353652. The initially assumed undecorated version was refused before any
+source compilation. No version prefix matching or arbitrary suffix is accepted;
+the RPM hashes, signatures and unchanged-base checks remain required.
+
 The source build emits unmodified and patched executables, the actual packaged
 desktopapplications provider and a Go constructor marker using the same compiler
 and flags. Compiled bytes are retained before later acceptance. The downstream
