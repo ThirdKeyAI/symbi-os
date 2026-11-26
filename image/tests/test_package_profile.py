@@ -16,7 +16,8 @@ class PackageProfiles(unittest.TestCase):
             for profile, relative in [('hyprland', 'image/hyprland/build-requirements.json'),
                                       ('hyprland-runtime', 'image/hyprland/runtime-requirements.json'),
                                       ('launcher', 'image/launcher/runtime-requirements.json'),
-                                      ('elephant-build', 'image/launcher/elephant-build-requirements.json')]:
+                                      ('elephant-build', 'image/launcher/elephant-build-requirements.json'),
+                                      ('walker-build', 'image/launcher/walker-build-requirements.json')]:
                 path = root / relative
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text('{"packages": ["' + profile + '"]}')

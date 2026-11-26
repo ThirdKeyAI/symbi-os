@@ -19,7 +19,8 @@ def requirements_input(root, profile):
     profiles = {'hyprland': 'image/hyprland/build-requirements.json',
                 'hyprland-runtime': 'image/hyprland/runtime-requirements.json',
                 'launcher': 'image/launcher/runtime-requirements.json',
-                'elephant-build': 'image/launcher/elephant-build-requirements.json'}
+                'elephant-build': 'image/launcher/elephant-build-requirements.json',
+                'walker-build': 'image/launcher/walker-build-requirements.json'}
     if profile not in profiles:
         raise ValueError('Unknown package discovery profile')
     relative = profiles[profile]
@@ -33,7 +34,7 @@ def main():
     if os.environ.get('GITHUB_ACTIONS') != 'true' or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted' or os.geteuid() != 0:
         raise SystemExit('Package discovery requires the disposable hosted resource unit')
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--profile', choices=('hyprland', 'hyprland-runtime', 'launcher', 'elephant-build'), default='hyprland')
+    parser.add_argument('--profile', choices=('hyprland', 'hyprland-runtime', 'launcher', 'elephant-build', 'walker-build'), default='hyprland')
     args = parser.parse_args()
     root = Path.cwd()
     selected_requirements = requirements_input(root, args.profile)
@@ -79,7 +80,7 @@ def main():
         bindings = {}
         for name, path in paths.items():
             source = (root / path).resolve(strict=True)
-            allowed_root = root / 'image/launcher' if name == 'build-requirements.json' and args.profile in ('launcher', 'elephant-build') else root / 'image/hyprland'
+            allowed_root = root / 'image/launcher' if name == 'build-requirements.json' and args.profile in ('launcher', 'elephant-build', 'walker-build') else root / 'image/hyprland'
             assert source.is_relative_to(allowed_root)
             target = inputs / name
             target.parent.mkdir(parents=True, exist_ok=True)

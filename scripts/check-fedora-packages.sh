@@ -3,7 +3,7 @@ set -euo pipefail
 [[ $# -le 1 ]] || { echo 'Expected at most one package profile.' >&2; exit 2; }
 profile=${1:-hyprland}
 case "$profile" in
-  hyprland|hyprland-runtime|launcher|elephant-build) ;;
+  hyprland|hyprland-runtime|launcher|elephant-build|walker-build) ;;
   *) echo 'Unknown package discovery profile.' >&2; exit 2 ;;
 esac
 [[ "${GITHUB_ACTIONS:-}" == true && "${RUNNER_ENVIRONMENT:-}" == github-hosted ]] || {

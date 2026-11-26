@@ -73,3 +73,21 @@ The parent is capped at4 GiB/two CPUs/no swap; compiler stages at3 GiB/two CPUs,
 with one Go job. This is development work: compilation, provider controls and
 actual launcher/session integration have not yet passed. Product installation,
 Walker validation, browser/portal controls and OS qualification remain open.
+
+## Walker source-build inputs
+
+`walker-source.json` pins v2.17.2 by full source revision and the Cargo manifest,
+lockfile and build-script hashes. The lock contains 284 registry packages.
+Checksummed crate metadata establishes Rust 1.92, GTK 4.12/GIO 2.80 features,
+gtk4-layer-shell 1.0 and `protoc` from PATH as input requirements. The source's
+build script uses protobuf-codegen's default system compiler; it does not select
+the vendored protoc executable. This is metadata review, not a dependency audit.
+
+`walker-packages.yml` resolves the separate `walker-build` profile in the signed
+base, downloads candidates, verifies their complete RPM signatures/payloads and
+exercises missing-key/tampered-byte refusals without installing any package.
+It uses the existing 3 GiB/two-CPU/no-swap hosted parent and 2 GiB/one-CPU guest.
+The actual compiler versions and native dependencies must be reviewed and locked
+after discovery, then compiled offline with the unchanged upstream Cargo.lock.
+Existing compositor, Elephant and launcher runtime locks are unchanged. No local
+Rust/GTK build, source-to-binary correspondence or Walker acceptance is claimed.
