@@ -1,8 +1,7 @@
-"""Validate the exact, signed Glum Linux release candidate without extracting it."""
+"""Validate the exact Glum Linux release candidate without extracting it."""
 import hashlib
 import json
 from pathlib import Path
-import re
 import tarfile
 
 
@@ -32,9 +31,7 @@ SOURCE = {
     "bytes": 4823054,
     "sha256": "01c0d6d97c58bdb48061eb7d5220f3ba2bad220800ff1f909e11b38f55b527f0",
 }
-ASSET_ID = 617523321
 ASSET_NAME = "glum-v0.4.1-x86_64-unknown-linux-gnu.tar.gz"
-ASSET_URL = IDENTITY[0] + "/releases/download/v0.4.1/" + ASSET_NAME
 DIRECTORIES = [
     "share",
     "share/zsh",
@@ -47,15 +44,124 @@ DIRECTORIES = [
     "share/man/man1",
 ]
 FILES = {
-    "CHANGELOG.md": (0o644, False, "release-notes"),
-    "LICENSE": (0o644, True, "license"),
-    "NOTICE": (0o644, True, "notice"),
-    "README.md": (0o644, False, "documentation"),
-    "glum": (0o755, True, "binary"),
-    "share/zsh/site-functions/_glum": (0o644, True, "zsh-completion"),
-    "share/bash-completion/completions/glum": (0o644, True, "bash-completion"),
-    "share/fish/vendor_completions.d/glum.fish": (0o644, True, "fish-completion"),
-    "share/man/man1/glum.1": (0o644, True, "manpage"),
+    "CHANGELOG.md": {
+        "bytes": 16082,
+        "sha256": "35258dd8e392d184232784b8dbf5f14cee9cb3b7c74213cdcb07a6216df94d42",
+        "mode": 0o644,
+        "install": False,
+        "role": "release-notes",
+    },
+    "LICENSE": {
+        "bytes": 11305,
+        "sha256": "7b3c40ac89912496e3a3d10ba8a6714d4022d9f8b60f89797169606f86797258",
+        "mode": 0o644,
+        "install": True,
+        "role": "license",
+    },
+    "NOTICE": {
+        "bytes": 236,
+        "sha256": "04f7943c9982a2695534add74015be58fbaa501dc5ad86385a274108c2317d15",
+        "mode": 0o644,
+        "install": True,
+        "role": "notice",
+    },
+    "README.md": {
+        "bytes": 13259,
+        "sha256": "6ee5d9b0db7d068724b2850e97c3046e4ce2ba351265200c7f18e49a1d33d9fe",
+        "mode": 0o644,
+        "install": False,
+        "role": "documentation",
+    },
+    "glum": {
+        "bytes": 4727920,
+        "sha256": "381cc4d764a44bab6180f16e5d44642c4d7e6f8404c1ddb6736eef19a4d62260",
+        "mode": 0o755,
+        "install": True,
+        "role": "binary",
+    },
+    "share/zsh/site-functions/_glum": {
+        "bytes": 5384,
+        "sha256": "e58cf71d14da76c13d1ed2dbfef772c6bd19c15abd3d6d7eacaa00409e54ae4b",
+        "mode": 0o644,
+        "install": True,
+        "role": "zsh-completion",
+    },
+    "share/bash-completion/completions/glum": {
+        "bytes": 2671,
+        "sha256": "107d60fc17f322756e5a1516c0bb97258afd20708da1c8a540eb3bb627c784fa",
+        "mode": 0o644,
+        "install": True,
+        "role": "bash-completion",
+    },
+    "share/fish/vendor_completions.d/glum.fish": {
+        "bytes": 4202,
+        "sha256": "4e578542e7a284c08bab7c7fb83bd6a9307013c90d44865f2ad42770421307c7",
+        "mode": 0o644,
+        "install": True,
+        "role": "fish-completion",
+    },
+    "share/man/man1/glum.1": {
+        "bytes": 5392,
+        "sha256": "7143b6d65bcd3bfa5d8247b08929b5110814e86a4ad946ba94c232f934b56d71",
+        "mode": 0o644,
+        "install": True,
+        "role": "manpage",
+    },
+}
+ASSET = {
+    "id": 617523321,
+    "name": ASSET_NAME,
+    "url": IDENTITY[0] + "/releases/download/v0.4.1/" + ASSET_NAME,
+    "bytes": 1986149,
+    "sha256": "640e94aa3d9aa5a5dcd8431ee4ac35119b51f976d2bbc952d2a34c2768566594",
+    "members": 18,
+    "regular_files": 9,
+    "directories": DIRECTORIES,
+    "symlinks": 0,
+    "hardlinks": 0,
+    "expanded_bytes": 4786451,
+}
+SIGNATURE_ASSETS = {
+    "certificate_asset": {
+        "id": 617523310,
+        "name": ASSET_NAME + ".pem",
+        "url": IDENTITY[0] + "/releases/download/v0.4.1/" + ASSET_NAME + ".pem",
+        "bytes": 3252,
+        "sha256": "a54bf5b0fc81866cc0a0ef89d1b2c02eee7e8fd9f7734b5eb249c5b3c6b1668c",
+    },
+    "signature_asset": {
+        "id": 617523312,
+        "name": ASSET_NAME + ".sig",
+        "url": IDENTITY[0] + "/releases/download/v0.4.1/" + ASSET_NAME + ".sig",
+        "bytes": 96,
+        "sha256": "9b51cf19b471132a8513213b62bbde49b9294f6f96667c5490a151c1947bfcfb",
+    },
+    "checksums_asset": {
+        "id": 617523342,
+        "name": "checksums.txt",
+        "url": IDENTITY[0] + "/releases/download/v0.4.1/checksums.txt",
+        "bytes": 896,
+        "sha256": "7746def6d7e782b63bb2a4fe6e21da70114f53e20966af75f09c02fb156d1f0a",
+    },
+}
+DECODED_CERTIFICATE = {
+    "bytes": 2439,
+    "sha256": "dbd7b39d181ab34f55393423679f9946b0961e2989a30b61aaa0b40100229cef",
+    "issuer": "O=sigstore.dev, CN=sigstore-intermediate",
+    "serial": "3E0669387576A98A5DD6CAD491133EC9EA332BAD",
+    "not_before": "2026-10-07T04:10:04Z",
+    "not_after": "2026-10-07T04:20:04Z",
+    "san": "https://github.com/jaschadub/glum/.github/workflows/release-binaries.yml@refs/tags/v0.4.1",
+    "oidc_issuer": "https://token.actions.githubusercontent.com",
+    "repository": "jaschadub/glum",
+    "commit": IDENTITY[2],
+    "ref": "refs/tags/v0.4.1",
+    "workflow": "Release Binaries",
+    "workflow_run_url": "https://github.com/jaschadub/glum/actions/runs/37569571310/attempts/1",
+}
+DECODED_SIGNATURE = {
+    "bytes": 70,
+    "sha256": "985b6320ce050d93f65465d076e12aa0ddef4c6ab2902ed31479c4c74879b88b",
 }
 
 
@@ -77,8 +183,18 @@ def _unique_json(raw):
     return value
 
 
-def _hash(value, length=64):
-    return isinstance(value, str) and re.fullmatch(r"[a-f0-9]{%d}" % length, value)
+def _exact(value, expected):
+    if type(value) is not type(expected):
+        return False
+    if isinstance(expected, dict):
+        return set(value) == set(expected) and all(
+            _exact(value[key], item) for key, item in expected.items()
+        )
+    if isinstance(expected, list):
+        return len(value) == len(expected) and all(
+            _exact(actual, item) for actual, item in zip(value, expected, strict=True)
+        )
+    return value == expected
 
 
 def _safe_relative(value):
@@ -91,20 +207,6 @@ def _safe_relative(value):
     ):
         return False
     return all(part not in ("", ".", "..") for part in value.split("/"))
-
-
-def _asset_record(value, expected_id, expected_name):
-    expected_url = IDENTITY[0] + "/releases/download/v0.4.1/" + expected_name
-    return (
-        isinstance(value, dict)
-        and set(value) == {"id", "name", "url", "bytes", "sha256"}
-        and value["id"] == expected_id
-        and value["name"] == expected_name
-        and value["url"] == expected_url
-        and type(value["bytes"]) is int
-        and 0 < value["bytes"] <= MAX_ARCHIVE
-        and _hash(value["sha256"])
-    )
 
 
 def load_release_inputs(path=INPUTS):
@@ -139,9 +241,9 @@ def load_release_inputs(path=INPUTS):
         or value["schema"] != 1
         or value["status"] != "official-release-candidate"
         or (value["repository"], value["version"], value["revision"]) != IDENTITY
-        or value["release"] != RELEASE
-        or value["tag"] != TAG
-        or value["source"] != SOURCE
+        or not _exact(value["release"], RELEASE)
+        or not _exact(value["tag"], TAG)
+        or not _exact(value["source"], SOURCE)
         or value["selected"] is not False
         or value["security_qualified"] is not False
         or value["os_qualified"] is not False
@@ -167,39 +269,19 @@ def load_release_inputs(path=INPUTS):
             "expanded_bytes",
             "files",
         }
-        or asset["id"] != ASSET_ID
-        or asset["name"] != ASSET_NAME
-        or asset["url"] != ASSET_URL
-        or type(asset["bytes"]) is not int
-        or not 0 < asset["bytes"] <= MAX_ARCHIVE
-        or not _hash(asset["sha256"])
-        or asset["members"] != len(DIRECTORIES) + len(FILES)
-        or asset["regular_files"] != len(FILES)
-        or asset["directories"] != DIRECTORIES
-        or asset["symlinks"] != 0
-        or asset["hardlinks"] != 0
-        or type(asset["expanded_bytes"]) is not int
-        or not 0 < asset["expanded_bytes"] <= MAX_ARCHIVE
+        or not _exact({key: asset[key] for key in ASSET}, ASSET)
         or not isinstance(asset["files"], dict)
         or set(asset["files"]) != set(FILES)
     ):
         raise ValueError("unexpected Glum release asset inventory")
-    expanded = 0
     for name, expected in FILES.items():
         row = asset["files"][name]
         if (
             not _safe_relative(name)
             or not isinstance(row, dict)
-            or set(row) != {"bytes", "sha256", "mode", "install", "role"}
-            or type(row["bytes"]) is not int
-            or not 0 < row["bytes"] <= MAX_FILE
-            or not _hash(row["sha256"])
-            or (row["mode"], row["install"], row["role"]) != expected
+            or not _exact(row, expected)
         ):
             raise ValueError("unexpected Glum release file: " + name)
-        expanded += row["bytes"]
-    if expanded != asset["expanded_bytes"]:
-        raise ValueError("Glum release expanded size differs from its file inventory")
     signature = value["signature"]
     if not isinstance(signature, dict) or set(signature) != {
         "certificate_asset",
@@ -214,43 +296,20 @@ def load_release_inputs(path=INPUTS):
     }:
         raise ValueError("unexpected Glum release signature record")
     if (
-        not _asset_record(
-            signature["certificate_asset"],
-            617523310,
-            ASSET_NAME + ".pem",
+        any(
+            not _exact(signature[name], expected)
+            for name, expected in SIGNATURE_ASSETS.items()
         )
-        or not _asset_record(
-            signature["signature_asset"],
-            617523312,
-            ASSET_NAME + ".sig",
-        )
-        or not _asset_record(signature["checksums_asset"], 617523342, "checksums.txt")
-        or signature["asset_sha256"] != asset["sha256"]
+        or signature["asset_sha256"] != ASSET["sha256"]
         or signature["payload_signature_verified"] is not True
         or signature["fulcio_chain_verified"] is not False
         or signature["transparency_log_verified"] is not False
     ):
         raise ValueError("unbound or prematurely trusted Glum release signature")
-    certificate = signature["decoded_certificate"]
-    expected_certificate = {
-        "bytes": 2439,
-        "sha256": "dbd7b39d181ab34f55393423679f9946b0961e2989a30b61aaa0b40100229cef",
-        "issuer": "O=sigstore.dev, CN=sigstore-intermediate",
-        "serial": "3E0669387576A98A5DD6CAD491133EC9EA332BAD",
-        "not_before": "2026-10-07T04:10:04Z",
-        "not_after": "2026-10-07T04:20:04Z",
-        "san": "https://github.com/jaschadub/glum/.github/workflows/release-binaries.yml@refs/tags/v0.4.1",
-        "oidc_issuer": "https://token.actions.githubusercontent.com",
-        "repository": "jaschadub/glum",
-        "commit": IDENTITY[2],
-        "ref": "refs/tags/v0.4.1",
-        "workflow": "Release Binaries",
-        "workflow_run_url": "https://github.com/jaschadub/glum/actions/runs/37569571310/attempts/1",
-    }
-    if certificate != expected_certificate or signature["decoded_signature"] != {
-        "bytes": 70,
-        "sha256": "985b6320ce050d93f65465d076e12aa0ddef4c6ab2902ed31479c4c74879b88b",
-    }:
+    if (
+        not _exact(signature["decoded_certificate"], DECODED_CERTIFICATE)
+        or not _exact(signature["decoded_signature"], DECODED_SIGNATURE)
+    ):
         raise ValueError("Glum release certificate identity differs from the reviewed input")
     return value
 

@@ -48,7 +48,7 @@ class GlumReleaseInputs(unittest.TestCase):
         self.assertFalse(pins["os_qualified"])
 
     def fixture(self, root):
-        pins = json.loads((ROOT / "image/default_apps/glum-release-inputs.json").read_text())
+        pins = copy.deepcopy(load_release_inputs())
         bodies = {}
         for name, row in pins["asset"]["files"].items():
             body = (b"\x7fELF" if name == "glum" else b"") + ("fixture:" + name + "\n").encode()
@@ -70,24 +70,46 @@ class GlumReleaseInputs(unittest.TestCase):
         pins["asset"]["sha256"] = sha(archive.read_bytes())
         pins["asset"]["expanded_bytes"] = sum(len(body) for body in bodies.values())
         pins["signature"]["asset_sha256"] = pins["asset"]["sha256"]
-        path = root / "release.json"
-        path.write_text(json.dumps(pins, sort_keys=True) + "\n")
-        return archive, path, bodies
+        return archive, pins, bodies
 
     def test_exact_archive_inventory_is_passively_accepted(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
-            archive, path, bodies = self.fixture(root)
-            result = inspect_release_archive(archive, load_release_inputs(path))
+            archive, pins, bodies = self.fixture(root)
+            result = inspect_release_archive(archive, pins)
             self.assertEqual(result["files"], len(bodies))
-            self.assertEqual(set(root.iterdir()), {archive, path})
+            self.assertEqual(list(root.iterdir()), [archive])
+
+    def test_substituted_asset_member_and_signature_metadata_are_refused(self):
+        for mutation in (
+            "asset-hash",
+            "member-hash",
+            "signature-asset-hash",
+            "signature-asset-size",
+        ):
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as directory:
+                pins = json.loads(
+                    (ROOT / "image/default_apps/glum-release-inputs.json").read_text()
+                )
+                if mutation == "asset-hash":
+                    pins["asset"]["sha256"] = "0" * 64
+                    pins["signature"]["asset_sha256"] = "0" * 64
+                elif mutation == "member-hash":
+                    pins["asset"]["files"]["glum"]["sha256"] = "0" * 64
+                elif mutation == "signature-asset-hash":
+                    pins["signature"]["signature_asset"]["sha256"] = "0" * 64
+                else:
+                    pins["signature"]["signature_asset"]["bytes"] += 1
+                path = Path(directory).resolve() / "release.json"
+                path.write_text(json.dumps(pins, sort_keys=True) + "\n")
+                with self.assertRaises(ValueError):
+                    load_release_inputs(path)
 
     def test_changed_bytes_extra_member_link_and_premature_qualification_fail(self):
         for mutation in ("bytes", "extra", "link", "qualified"):
             with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory).resolve()
-                archive, path, _ = self.fixture(root)
-                pins = load_release_inputs(path)
+                archive, pins, _ = self.fixture(root)
                 if mutation == "bytes":
                     archive.write_bytes(archive.read_bytes() + b"changed")
                 elif mutation in ("extra", "link"):

@@ -9,6 +9,7 @@ import unittest
 from unittest import mock
 import zipfile
 
+from image.default_apps.glum_release import load_release_inputs as load_glum_release_inputs
 from image.default_apps.payload import (
     load_payload_contract,
     unpack_payload,
@@ -67,9 +68,7 @@ class DefaultApplicationPayload(unittest.TestCase):
         source_path = root / "source-inputs.json"
         release_path = root / "glum-release-inputs.json"
         sources = json.loads((ROOT / "image/default_apps/source-inputs.json").read_text())
-        release = json.loads(
-            (ROOT / "image/default_apps/glum-release-inputs.json").read_text()
-        )
+        release = copy.deepcopy(load_glum_release_inputs())
         contract = json.loads((ROOT / "image/default_apps/payload-contract.json").read_text())
         contents = {}
         for name, app in contract["applications"].items():
@@ -105,7 +104,10 @@ class DefaultApplicationPayload(unittest.TestCase):
         contract["glum_release_inputs_sha256"] = sha(release_path.read_bytes())
         contract_path = root / "payload-contract.json"
         contract_path.write_text(json.dumps(contract, sort_keys=True) + "\n")
-        loaded = load_payload_contract(contract_path, source_path, release_path)
+        with mock.patch(
+            "image.default_apps.payload.load_release_inputs", return_value=release
+        ):
+            loaded = load_payload_contract(contract_path, source_path, release_path)
         applications = {}
         for name, app in loaded["applications"].items():
             source = sources["applications"][name]
@@ -174,24 +176,48 @@ class DefaultApplicationPayload(unittest.TestCase):
             },
             "scope": "Fixture development payload; native desktop qualification remains open",
         }
-        return archive, lock, contract_path, source_path, release_path, contents
+        return (
+            archive,
+            lock,
+            contract_path,
+            source_path,
+            release_path,
+            release,
+            contents,
+        )
 
     def test_exact_payload_is_staged_offline_with_modes_and_source_assets_bound(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
-            archive, lock, contract, sources, release, contents = self.fixture(root)
+            archive, lock, contract, sources, release_path, release, contents = self.fixture(
+                root
+            )
             destination = root / "payload"
             destination.mkdir()
-            manifest = unpack_payload(
-                archive, lock, contract, sources, destination, "a" * 40, release
-            )
+            with mock.patch(
+                "image.default_apps.payload.load_release_inputs", return_value=release
+            ):
+                manifest = unpack_payload(
+                    archive,
+                    lock,
+                    contract,
+                    sources,
+                    destination,
+                    "a" * 40,
+                    release_path,
+                )
             self.assertEqual(set(manifest["applications"]), {"yazi", "glum", "tootles"})
             for app in manifest["applications"].values():
                 for row in app["files"]:
                     target = destination / row["destination"]
                     self.assertEqual(target.read_bytes(), contents[row["bundle"]])
                     self.assertEqual(target.stat().st_mode & 0o777, row["mode"])
-            report = verify_payload_tree(destination, manifest, contract, sources, release)
+            with mock.patch(
+                "image.default_apps.payload.load_release_inputs", return_value=release
+            ):
+                report = verify_payload_tree(
+                    destination, manifest, contract, sources, release_path
+                )
             self.assertTrue(report["passed"])
             self.assertFalse(report["os_qualified"])
             self.assertFalse(report["native_desktop_qualified"])
@@ -210,7 +236,15 @@ class DefaultApplicationPayload(unittest.TestCase):
         for mutation in mutations:
             with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory).resolve()
-                archive, lock, contract, sources, release_inputs, _ = self.fixture(root)
+                (
+                    archive,
+                    lock,
+                    contract,
+                    sources,
+                    release_path,
+                    release,
+                    _,
+                ) = self.fixture(root)
                 if mutation == "archive":
                     archive.write_bytes(archive.read_bytes() + b"changed")
                 elif mutation == "manifest":
@@ -227,7 +261,9 @@ class DefaultApplicationPayload(unittest.TestCase):
                     lock["attestation"]["verified"] = False
                 destination = root / "payload"
                 destination.mkdir()
-                with self.assertRaises(ValueError):
+                with mock.patch(
+                    "image.default_apps.payload.load_release_inputs", return_value=release
+                ), self.assertRaises(ValueError):
                     unpack_payload(
                         archive,
                         lock,
@@ -235,7 +271,7 @@ class DefaultApplicationPayload(unittest.TestCase):
                         sources,
                         destination,
                         "a" * 40,
-                        release_inputs,
+                        release_path,
                     )
                 self.assertEqual(list(destination.iterdir()), [])
 
@@ -243,7 +279,15 @@ class DefaultApplicationPayload(unittest.TestCase):
         for mutation in ("extra", "asset", "destination"):
             with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory).resolve()
-                archive, lock, contract_path, source_path, release_path, contents = self.fixture(root)
+                (
+                    archive,
+                    lock,
+                    contract_path,
+                    source_path,
+                    release_path,
+                    release,
+                    contents,
+                ) = self.fixture(root)
                 if mutation == "extra":
                     with zipfile.ZipFile(archive, "a") as bundle:
                         bundle.writestr("yazi/ya", b"runtime package manager")
@@ -278,7 +322,9 @@ class DefaultApplicationPayload(unittest.TestCase):
                     lock["contract_sha256"] = sha(contract_path.read_bytes())
                 destination = root / "payload"
                 destination.mkdir()
-                with self.assertRaises(ValueError):
+                with mock.patch(
+                    "image.default_apps.payload.load_release_inputs", return_value=release
+                ), self.assertRaises(ValueError):
                     unpack_payload(
                         archive,
                         lock,
@@ -293,7 +339,15 @@ class DefaultApplicationPayload(unittest.TestCase):
         for mutation in ("overwrite", "linked-parent"):
             with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory).resolve()
-                archive, lock, contract, sources, release, _ = self.fixture(root)
+                (
+                    archive,
+                    lock,
+                    contract,
+                    sources,
+                    release_path,
+                    release,
+                    _,
+                ) = self.fixture(root)
                 destination = root / "payload"
                 destination.mkdir()
                 if mutation == "overwrite":
@@ -304,7 +358,9 @@ class DefaultApplicationPayload(unittest.TestCase):
                     (root / "outside").mkdir()
                     (destination / "usr").symlink_to(root / "outside", target_is_directory=True)
                 before = sorted(str(path.relative_to(destination)) for path in destination.rglob("*"))
-                with self.assertRaises(ValueError):
+                with mock.patch(
+                    "image.default_apps.payload.load_release_inputs", return_value=release
+                ), self.assertRaises(ValueError):
                     unpack_payload(
                         archive,
                         lock,
@@ -312,7 +368,7 @@ class DefaultApplicationPayload(unittest.TestCase):
                         sources,
                         destination,
                         "a" * 40,
-                        release,
+                        release_path,
                     )
                 after = sorted(str(path.relative_to(destination)) for path in destination.rglob("*"))
                 self.assertEqual(after, before)
@@ -320,7 +376,15 @@ class DefaultApplicationPayload(unittest.TestCase):
     def test_failed_copy_removes_files_and_directories_from_that_attempt(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
-            archive, lock, contract, sources, release, _ = self.fixture(root)
+            (
+                archive,
+                lock,
+                contract,
+                sources,
+                release_path,
+                release,
+                _,
+            ) = self.fixture(root)
             destination = root / "payload"
             destination.mkdir()
             calls = 0
@@ -334,7 +398,11 @@ class DefaultApplicationPayload(unittest.TestCase):
                 target.write_bytes(b"partial")
                 raise OSError("injected copy failure")
 
-            with mock.patch("image.default_apps.payload.copy_regular", side_effect=fail_second):
+            with mock.patch(
+                "image.default_apps.payload.load_release_inputs", return_value=release
+            ), mock.patch(
+                "image.default_apps.payload.copy_regular", side_effect=fail_second
+            ):
                 with self.assertRaises(OSError):
                     unpack_payload(
                         archive,
@@ -343,7 +411,7 @@ class DefaultApplicationPayload(unittest.TestCase):
                         sources,
                         destination,
                         "a" * 40,
-                        release,
+                        release_path,
                     )
             self.assertEqual(list(destination.iterdir()), [])
 

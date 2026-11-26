@@ -18,11 +18,13 @@ unsigned. Exact commit and archive hashes prevent silent input changes after
 review, but the source intake does not claim release authenticity or security
 qualification. `glum-release-inputs.json` separately fixes Glum's official
 v0.4.1 x86_64 Linux release asset, GitHub release and asset IDs, exact archive
-inventory, detached signature bytes and certificate identity. The signature
-verifies over the asset and the certificate binds the release workflow, tag and
-source commit. The Fulcio trust chain and transparency log are not yet verified,
-so the candidate remains unselected and unqualified. Yazi and Tootles still
-need authenticated executable provenance.
+inventory, detached signature bytes and supplied certificate. A raw detached
+signature check was observed over the exact asset using that certificate's
+public key. The untrusted certificate fields state the expected release
+workflow, tag and source commit, but its Fulcio trust chain and transparency-log
+entry have not been verified. Full Sigstore publisher trust is therefore not
+established, and the candidate remains unselected and unqualified. Yazi and
+Tootles still need authenticated executable provenance.
 
 Yazi is the terminal file manager launched in Kitty. Only the `yazi` binary is
 in the planned payload: the `ya` package manager is explicitly excluded, and

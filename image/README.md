@@ -153,10 +153,12 @@ and isolation of account tokens from governed sessions.
 The offline payload boundary now fixes all fifteen intended binary, desktop,
 manual, completion and licence destinations and rejects extra archive members, `ya`,
 updater helpers, plugins and downloaded-theme paths. It also requires exact
-source bindings, the exact signed Glum v0.4.1 Linux asset and a retained
-build-provenance subject before staging. The Glum asset signature verifies and
-its certificate binds the release workflow, tag and commit; the Fulcio trust
-chain and transparency-log checks remain open. No such
+source bindings, the exact Glum v0.4.1 Linux release asset and a retained
+build-provenance subject before staging. A raw detached-signature check was
+observed over that asset using the supplied certificate's public key. The
+certificate fields state the expected workflow, tag and commit, but the Fulcio
+chain and transparency-log entry are unverified, so full Sigstore publisher
+trust is not established. No such
 executable artifact or lock is retained yet, so desktop preparation remains
 deliberately disconnected and all release, security, native-desktop and
 real-account qualification flags stay false.

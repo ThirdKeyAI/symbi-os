@@ -158,5 +158,5 @@
   "selected": false,
   "security_qualified": false,
   "os_qualified": false,
-  "scope": "Exact official Glum Linux release candidate metadata and payload inventory; signature bytes verify the archive, but Fulcio-chain, transparency-log and native desktop qualification remain open"
+  "scope": "Exact official Glum Linux release candidate metadata and payload inventory; raw detached-signature verification was observed with the supplied certificate, but full Sigstore trust and native desktop qualification remain open"
 }
