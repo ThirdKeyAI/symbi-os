@@ -64,3 +64,24 @@ OpenSSL and xz), then exercise changed name/epoch/version/release/architecture a
 missing/noncanonical epochs. Every changed identity still fails. No package,
 hash, signature, source pin, sandbox or resource limit changes. Actual installation,
 compiler identity, source build and runtime acceptance remain hosted gates.
+
+
+## Walker toolchain installed; commit output separated
+
+[Run 45740248043](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45740248043)
+verified all 91 RPM signatures, full identities and hashes, then installed them
+offline while preserving all 2,178 original package identities. Exact stable
+Rust/Cargo 1.100.0, protoc 33.5 and all required native versions passed. The
+2 GiB installation guest peaked at 1,000,763,392 bytes without limit/OOM events.
+Full package, compiler and inventory evidence is retained under
+`P0-03-walker-toolchain/45740248043/`.
+
+Podman committed that disposable compiler successfully, but its progress output
+was combined with stdout, making the wrapper's exact image-ID check fail.
+Source compilation was not reached. The container was removed and verified
+absent. The wrapper now retains stdout and stderr separately, accepts exactly
+one complete image ID only from successful stdout, and preserves progress logs.
+Two real-process regressions reproduce the mixed-stream failure and reject
+ambiguous stdout or a nonzero exit even when it prints a plausible ID. No input,
+identity, signature or resource gate changes; the next hosted run must still
+complete acquisition, offline compilation, upstream tests and runtime controls.

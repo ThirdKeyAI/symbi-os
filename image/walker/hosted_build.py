@@ -9,6 +9,12 @@ import subprocess
 import sys
 from inputs import digest, require_source
 
+sys.path.insert(0, str(Path(__file__).parents[1]/'launcher/probes'))
+try:
+    from bounded_process import run_bounded
+finally:
+    sys.path.pop(0)
+
 
 def retain_directory(source, destination):
     """Copy bounded regular evidence without following guest-created links."""
@@ -33,6 +39,16 @@ def retain_directory(source, destination):
         target = destination/path.relative_to(source)
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(path, target)
+
+
+def capture_image_id(command, evidence, name):
+    result = run_bounded(command, evidence/(name+'.log'), evidence/(name+'-stderr.log'),
+                         timeout=300, max_bytes=1024**2)
+    result.check_returncode()
+    match = re.fullmatch(r'(?:sha256:)?([0-9a-f]{64})', result.stdout.strip())
+    if not match:
+        raise ValueError('Unexpected committed image identity')
+    return 'sha256:'+match[1]
 
 
 def main():
@@ -92,11 +108,13 @@ def main():
         try:
             completed = run(name, command, timeout, check=False)
             if completed.returncode == 0 and commit:
-                run(name+'-commit', podman+['commit', identifier], 300)
-                match = re.fullmatch(r'(?:sha256:)?([0-9a-f]{64})', (evidence/(name+'-commit.log')).read_text().strip())
-                if not match:
-                    raise ValueError('Unexpected committed image identity')
-                image_id = 'sha256:'+match[1]
+                commit_command = podman+['commit', identifier]
+                record['active_command'] = {'name': name+'-commit', 'command': commit_command}
+                save()
+                image_id = capture_image_id(commit_command, evidence, name+'-commit')
+                record['commands'].append({'name': name+'-commit', 'exit_code': 0})
+                del record['active_command']
+                save()
             if check:
                 completed.check_returncode()
             return completed, image_id
