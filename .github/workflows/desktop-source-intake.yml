@@ -1,4 +1,4 @@
-name: Tolaria source intake
+name: Desktop source intake
 
 on:
   push:
@@ -8,34 +8,43 @@ on:
       - "image/tolaria/inputs.py"
       - "image/tolaria/intake.py"
       - "image/tolaria/patches/**"
+      - "image/default_apps/source-inputs.json"
+      - "image/default_apps/inputs.py"
+      - "image/default_apps/intake.py"
       - "image/tests/test_tolaria_inputs.py"
+      - "image/tests/test_default_app_inputs.py"
       - "scripts/check-tolaria-intake.sh"
-      - ".github/workflows/tolaria-intake.yml"
+      - "scripts/check-default-app-intake.sh"
+      - ".github/workflows/desktop-source-intake.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: tolaria-intake-${{ github.ref }}
+  group: desktop-source-intake-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   inspect:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Check out the proposed OS revision
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
-      - name: Authenticate and inventory fixed public inputs without execution
+      - name: Authenticate and inventory fixed Tolaria inputs without execution
         run: bash scripts/check-tolaria-intake.sh
+      - name: Authenticate and inventory fixed terminal application inputs without execution
+        run: bash scripts/check-default-app-intake.sh
       - name: Retain bounded public evidence including failures
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: tolaria-source-intake-evidence
-          path: .cache/tolaria-intake-evidence/
+          name: desktop-source-intake-evidence
+          path: |
+            .cache/tolaria-intake-evidence/
+            .cache/default-app-intake-evidence/
           retention-days: 14
           if-no-files-found: error

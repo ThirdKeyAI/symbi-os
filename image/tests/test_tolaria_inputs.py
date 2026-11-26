@@ -117,7 +117,7 @@ class TolariaInputs(unittest.TestCase):
             self.assertIn(required, wrapper)
         self.assertLess(wrapper.index("systemd-run"),
                         wrapper.index('mv -- "$hosted_log" "$evidence/hosted-intake.log"'))
-        workflow = (ROOT / ".github/workflows/tolaria-intake.yml").read_text()
+        workflow = (ROOT / ".github/workflows/desktop-source-intake.yml").read_text()
         self.assertIn("branches: [main]", workflow)
         self.assertIn("workflow_dispatch:", workflow)
         self.assertNotIn('branches: ["**"]', workflow)

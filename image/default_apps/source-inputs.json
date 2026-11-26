@@ -1,0 +1,234 @@
+{
+  "schema": 1,
+  "status": "candidate-source-intake-only",
+  "applications": {
+    "yazi": {
+      "repository": "https://github.com/sxyazi/yazi",
+      "version": "v26.9.1",
+      "revision": "8dd895c695a5950330c2623eb43debf323b60654",
+      "license": "MIT",
+      "tag": {
+        "kind": "lightweight",
+        "object": "8dd895c695a5950330c2623eb43debf323b60654",
+        "signed": false
+      },
+      "source": {
+        "url": "https://github.com/sxyazi/yazi/archive/8dd895c695a5950330c2623eb43debf323b60654.tar.gz",
+        "bytes": 1175996,
+        "sha256": "ff68e645d81c5b275e12f7be5493e8cae170026fce9537f40c67a786cfac235c",
+        "root": "yazi-8dd895c695a5950330c2623eb43debf323b60654",
+        "members": 1645,
+        "regular_files": 1413,
+        "directories": 231,
+        "symlinks": 1,
+        "hardlinks": 0,
+        "expanded_bytes": 3102340,
+        "links": {
+          "CLAUDE.md": "AGENTS.md"
+        },
+        "required_files": {
+          "Cargo.toml": {
+            "bytes": 4622,
+            "sha256": "4cd022bc588dd1d4c284f4659ef47ca25ac286f3e2726bbc89b5b2c7a3543ca4"
+          },
+          "Cargo.lock": {
+            "bytes": 139948,
+            "sha256": "d0b740be4916d9ec6a1d54532e31370dfd5342cf8ed41478c7bf1532ba2162e2"
+          },
+          "LICENSE": {
+            "bytes": 1065,
+            "sha256": "e66519d3d006dc76760d00d40361d24d2b97ba80ab93438885e78bc5a70bdd9c"
+          },
+          "LICENSE-ICONS": {
+            "bytes": 1066,
+            "sha256": "dff7f6aef077add7cab5fc8e2449770aea01bbc875058a33e9b8a884ac9fc648"
+          },
+          "assets/yazi.desktop": {
+            "bytes": 310,
+            "sha256": "261a2b6d6f8ff85fe0707e675737cd6fd16d7678ecc19c724b1094707c6e582d"
+          },
+          "yazi-fm/Cargo.toml": {
+            "bytes": 2973,
+            "sha256": "c62b539dd9d74b0772f3d7ee149aed3f30a4cea1c6b7bbd958b27119a14ccd47"
+          },
+          "yazi-cli/Cargo.toml": {
+            "bytes": 2037,
+            "sha256": "a9944722b57a9dc116ddbe216f4164ca3a24737d3c22a0c81f2caedc2f51d2e8"
+          }
+        }
+      },
+      "cargo_lock": {
+        "version": 4,
+        "packages": 557,
+        "sources": [
+          "git+https://github.com/yazi-rs/ratatui.git?branch=fix_buffer_diff_wide_cells#dde5e05eccfe5b7cb7712b4bdf76edd0c2cd1f25",
+          "local",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ],
+        "git_packages": [
+          {
+            "name": "ratatui-core",
+            "version": "0.1.2",
+            "source": "git+https://github.com/yazi-rs/ratatui.git?branch=fix_buffer_diff_wide_cells#dde5e05eccfe5b7cb7712b4bdf76edd0c2cd1f25"
+          }
+        ]
+      },
+      "build": {
+        "rust_version": "1.95.0",
+        "package": "yazi-fm",
+        "installed_binaries": [
+          "yazi"
+        ],
+        "excluded_binaries": [
+          "ya"
+        ]
+      }
+    },
+    "glum": {
+      "repository": "https://github.com/jaschadub/glum",
+      "version": "v0.2.2",
+      "revision": "7608edc56e5b48c6c398e1f36a3c64c49e4261f8",
+      "license": "Apache-2.0",
+      "tag": {
+        "kind": "annotated",
+        "object": "4f6a484013bcf46ff234c34c8fa86141bd38f448",
+        "signed": false
+      },
+      "source": {
+        "url": "https://github.com/jaschadub/glum/archive/7608edc56e5b48c6c398e1f36a3c64c49e4261f8.tar.gz",
+        "bytes": 4790077,
+        "sha256": "c42be32f5abc586318cf4aabb3f84bf5402f75b8b1ca733b008a51bae28212e0",
+        "root": "glum-7608edc56e5b48c6c398e1f36a3c64c49e4261f8",
+        "members": 37,
+        "regular_files": 30,
+        "directories": 7,
+        "symlinks": 0,
+        "hardlinks": 0,
+        "expanded_bytes": 5045895,
+        "links": {},
+        "required_files": {
+          "Cargo.toml": {
+            "bytes": 4634,
+            "sha256": "0a2359f7264e97e452b8b8e73750399ebc9a59032aba6a7f9c2c31d470a1cc7c"
+          },
+          "Cargo.lock": {
+            "bytes": 33469,
+            "sha256": "db56c4fc7e47a1bb1f548835c14d874bd987a00e850fa0cc9c23f7bae9aa6ac8"
+          },
+          "LICENSE": {
+            "bytes": 11305,
+            "sha256": "7b3c40ac89912496e3a3d10ba8a6714d4022d9f8b60f89797169606f86797258"
+          },
+          "NOTICE": {
+            "bytes": 236,
+            "sha256": "04f7943c9982a2695534add74015be58fbaa501dc5ad86385a274108c2317d15"
+          },
+          "README.md": {
+            "bytes": 9143,
+            "sha256": "f961c1e6cc74429f56db97379342e920f55840229196ce8467839d8783a1dc66"
+          },
+          "build.rs": {
+            "bytes": 265,
+            "sha256": "ef5defe9609c643fffe8a3ba3042dc112d2dcb381cdcc1688fa904658f03799b"
+          },
+          "scripts/install.sh": {
+            "bytes": 4332,
+            "sha256": "5cbbb41f16a7b2fbf212569cc6f447dddbf0f25401a02f0bc38276e532cad621"
+          }
+        }
+      },
+      "cargo_lock": {
+        "version": 3,
+        "packages": 144,
+        "sources": [
+          "local",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ],
+        "git_packages": []
+      },
+      "build": {
+        "rust_version": "1.75",
+        "package": "glum",
+        "installed_binaries": [
+          "glum"
+        ],
+        "excluded_binaries": []
+      }
+    },
+    "tootles": {
+      "repository": "https://github.com/tootles-dev/tootles",
+      "version": "v0.2.0",
+      "revision": "40d7a63c5ec0e08cb3eb8241b50a2af6cf76c98a",
+      "license": "MIT",
+      "tag": {
+        "kind": "annotated",
+        "object": "75563198162f729de7051cd7cbd8523b9a837fd4",
+        "signed": false
+      },
+      "source": {
+        "url": "https://github.com/tootles-dev/tootles/archive/40d7a63c5ec0e08cb3eb8241b50a2af6cf76c98a.tar.gz",
+        "bytes": 1006391,
+        "sha256": "0706d047171f58683a5611fb400749ac89a60b22688f887c843d60402bff181e",
+        "root": "tootles-40d7a63c5ec0e08cb3eb8241b50a2af6cf76c98a",
+        "members": 89,
+        "regular_files": 73,
+        "directories": 16,
+        "symlinks": 0,
+        "hardlinks": 0,
+        "expanded_bytes": 5475190,
+        "links": {},
+        "required_files": {
+          "Cargo.toml": {
+            "bytes": 1143,
+            "sha256": "cab05a40a47210452621e5c820f2e222a1b9634199ffea52345e32514fd07e3d"
+          },
+          "Cargo.lock": {
+            "bytes": 97714,
+            "sha256": "32b6b97c8b3723684521b1905154176a65f7df0d5e142e1e305c14ba6cc021d7"
+          },
+          "LICENSE": {
+            "bytes": 1077,
+            "sha256": "f456b60491eea56ec02a9c325b52a572cfde22daf701b66d9a8d84d57ad24f0c"
+          },
+          "README.md": {
+            "bytes": 19196,
+            "sha256": "ce3570f43c8a6fcd5b686e26fe4f04a36e3dc69aa122a955b5ae80197671e6f2"
+          },
+          "packaging/tootles.desktop": {
+            "bytes": 246,
+            "sha256": "be885a8b54f1d281f97e940751e6823d79679e65c6f8095dc660bb217d079bcf"
+          },
+          "packaging/tootles.1": {
+            "bytes": 4041,
+            "sha256": "5ecd6d9c61dcca7e7c12103bdb89426fcdab781939476aa2c4ecfbc068673acb"
+          },
+          "src/config.rs": {
+            "bytes": 11390,
+            "sha256": "9ab5a12cd868faf6dcb745fd67d9da1faca67d32871c64a3a62975653d51912c"
+          }
+        }
+      },
+      "cargo_lock": {
+        "version": 4,
+        "packages": 402,
+        "sources": [
+          "local",
+          "registry+https://github.com/rust-lang/crates.io-index"
+        ],
+        "git_packages": []
+      },
+      "build": {
+        "rust_version": "1.90",
+        "package": "tootles",
+        "installed_binaries": [
+          "tootles"
+        ],
+        "excluded_binaries": []
+      }
+    }
+  },
+  "selected": false,
+  "security_qualified": false,
+  "os_qualified": false,
+  "scope": "Exact source bytes and Cargo dependency identities for passive hosted intake; no extraction, build, execution, installation or release claim"
+}
