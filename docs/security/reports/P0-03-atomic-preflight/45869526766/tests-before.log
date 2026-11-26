@@ -1,0 +1,16 @@
+test_only_exact_locked_prefont_image_may_skip_native_font_scan (image.tests.test_font_install.FontDefaults.test_only_exact_locked_prefont_image_may_skip_native_font_scan) ... ERROR
+
+======================================================================
+ERROR: test_only_exact_locked_prefont_image_may_skip_native_font_scan (image.tests.test_font_install.FontDefaults.test_only_exact_locked_prefont_image_may_skip_native_font_scan)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/vmstore/repos2/symbi-os/.cache/p0-image-followup/image/tests/test_font_install.py", line 143, in test_only_exact_locked_prefont_image_may_skip_native_font_scan
+    from image.desktop.verify import LEGACY_FONTLESS_SOURCE, verify_font_payload
+  File "/vmstore/repos2/symbi-os/.cache/p0-image-followup/image/desktop/verify.py", line 8, in <module>
+    from font_verify import verify_installed_fonts
+ModuleNotFoundError: No module named 'font_verify'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.002s
+
+FAILED (errors=1)

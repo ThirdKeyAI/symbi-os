@@ -47,5 +47,43 @@
       "evidence": "repository-check.log"
     }
   },
-  "remaining_gate": "Hosted Nerd Font candidate intake rerun and consuming generic image run"
+  "remaining_gate": "Atomic preflight and real-disk boot of the retained font-bearing generic image; NVIDIA rebuild and physical desktop/rendering qualification",
+  "hosted_success": {
+    "run_id": 45870354806,
+    "source_commit": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+    "evidence_artifact": {
+      "id": 15143136081,
+      "bytes": 6722,
+      "sha256": "0f119914bcf934c46ef3e24cf7f0e7d2a7f5221c69da66df0455d633486ca5e0"
+    },
+    "candidate_artifact": {
+      "id": 15143375647,
+      "bytes": 9647668,
+      "sha256": "72cc2f75c123f2c1bea335e4f19a4f906edfc7824aebca76fbb11d93ca9fc09a",
+      "downloaded_locally": false
+    },
+    "authenticated_downloads": 3,
+    "passively_inventoried_members": 103,
+    "passively_inventoried_fonts": 98,
+    "font_parser_executed": false,
+    "archive_extracted": false,
+    "private_downloads_removed": true,
+    "memory_peak_bytes": 97013760,
+    "oom_or_kill": false,
+    "swap_enabled": false,
+    "selected": false,
+    "os_qualified": false,
+    "evidence": "45870354806/independent-check.json"
+  },
+  "consuming_generic_image": {
+    "run_id": 45870354828,
+    "source_commit": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+    "image_artifact_id": 15142163489,
+    "installed_fonts_natively_checked": 98,
+    "monospace_default": "JetBrainsMono Nerd Font",
+    "oom_or_kill": false,
+    "swap_enabled": false,
+    "os_qualified": false,
+    "evidence": "../../P0-03-desktop/45870354828/independent-check.json"
+  }
 }

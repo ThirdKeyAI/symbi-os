@@ -1,0 +1,151 @@
+{
+  "schema": 1,
+  "passed": false,
+  "os_qualified": false,
+  "guest_booted": false,
+  "installation_attempted": false,
+  "source_commit": "88c49ecb57fe8104c962c8a4e420bb87831dc1dd",
+  "image_source_commit": "23a6c721092ad77c3af33c11cab230ecaaa54cff",
+  "variant": "generic",
+  "phase": "inspect",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "load-image",
+      "exit_code": 0
+    },
+    {
+      "name": "inspect-image",
+      "exit_code": 0
+    },
+    {
+      "name": "create-kernel-copy",
+      "exit_code": 0
+    },
+    {
+      "name": "kernel-copy-before",
+      "exit_code": 0
+    },
+    {
+      "name": "copy-vmlinuz",
+      "exit_code": 0
+    },
+    {
+      "name": "copy-initramfs.img",
+      "exit_code": 0
+    },
+    {
+      "name": "kernel-copy-after",
+      "exit_code": 0
+    },
+    {
+      "name": "installed-files",
+      "exit_code": 1
+    },
+    {
+      "name": "cleanup-symbi-atomic-kernel-copy",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-symbi-atomic-kernel-copy",
+      "exit_code": 1
+    },
+    {
+      "name": "cleanup-symbi-atomic-installed-files",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-symbi-atomic-installed-files",
+      "exit_code": 1
+    },
+    {
+      "name": "remove-image",
+      "exit_code": 0
+    },
+    {
+      "name": "image-absent",
+      "exit_code": 1
+    }
+  ],
+  "lock_sha256": "dba718abbbf386d36eb6f8764846533f8aa9c3c9cc175d96d394399dcf2ceadf",
+  "scope": "Read-only saved development image preflight; no disk, installation, boot or release qualification",
+  "expected_inputs": {
+    "os": {
+      "ID": "secureblue",
+      "ID_LIKE": "fedora",
+      "VERSION_ID": "45",
+      "VARIANT_ID": "sericea-main-hardened",
+      "IMAGE_ID": "sericea-main-hardened"
+    },
+    "kernel": "7.3.4-300.secureblue.1.fc45.x86_64",
+    "bootc_version": "1.17.1",
+    "packages": [
+      "bootc\t0\t1.17.1\t1.fc45\tx86_64",
+      "kernel-core\t0\t7.3.4\t300.secureblue.1.fc45\tx86_64"
+    ],
+    "trust": {
+      "etc/containers/policy.json": "974d657b12acca4cd4db7ca6f4788f65b0f366d2193bdb6f0502d6c239c1a7a5",
+      "etc/containers/registries.d/symbiont.yaml": "336ad92f00b0f2fb6954fbcab7fc6541d4333a884f6038900eb94f7300104bfa"
+    }
+  },
+  "disk_free_before_load": 87365578752,
+  "loaded_image": {
+    "Id": "54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1",
+    "Digest": "sha256:9b6e8fdd9f6f98631895ccdfaaed6ffd88febd3ea6238d543935a524b572faf3",
+    "Architecture": "amd64",
+    "Os": "linux"
+  },
+  "kernel_copy": {
+    "source_container": "symbi-atomic-kernel-copy",
+    "never_started": true,
+    "kernel": {
+      "version": "7.3.4-300.secureblue.1.fc45.x86_64",
+      "vmlinuz": {
+        "bytes": 18959192,
+        "sha256": "e288ec04ebf69635d7eaadee86461f4d60576ea5aef7dcc77d1dc32fe6d301be",
+        "uid": 0,
+        "mode": 493
+      },
+      "initramfs.img": {
+        "bytes": 247246321,
+        "sha256": "da8ed415bf1aa7edca54ce2793a31dd7bf0c7064cbaf05c46f22cea0358ba0e0",
+        "uid": 0,
+        "mode": 384
+      }
+    },
+    "private_payload_removed": true,
+    "observation_sha256": "2ab9db85f1492ddb0628b0fd8b7552a94f63d228d30a8a94660776506d94cf96"
+  },
+  "probe_hashes": {
+    "probe.py": "8e55f4a9f355662699888fec3081f9965879bbfcb205e8ff2ccc4dfd3c863633",
+    "verify.py": "4a8e7ea58cc8fc6cf0a4bb8422415591ebb0d8bb6b6311470d40df98b6209a3a",
+    "expected.json": "812d10e9f86197b5f17a19083b47d42ad5d109db3454b67a5283e9030552cd31"
+  },
+  "failure": "CalledProcessError: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/atomic-image-storage/root', '--runroot', '/run/symbi-atomic-inspect-45869526766-1', 'run', '--rm', '--name=symbi-atomic-installed-files', '--pull=never', '--read-only', '--network=none', '--user=10001:10001', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--memory=512m', '--memory-swap=512m', '--cpus=1', '--pids-limit=64', '--cgroup-parent=/system.slice/symbi-atomic-inspect-45869526766-1.service', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/atomic-image-storage/qualification,dst=/qualification,ro', '--env=PATH=/usr/bin:/bin', '--env=LANG=C.UTF-8', '--env=PYTHONDONTWRITEBYTECODE=1', '--entrypoint=/usr/bin/python3', 'sha256:54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1', '/qualification/verify.py']' returned non-zero exit status 1.",
+  "cleanup": {
+    "symbi-atomic-kernel-copy": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-atomic-installed-files": {
+      "removed": true,
+      "absent": true
+    }
+  },
+  "image_removed": true,
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4294971392",
+    "memory.events": "low 0\nhigh 0\nmax 31453\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 201429999\nuser_usec 154231084\nsystem_usec 47198915\nnice_usec 147928000\ncore_sched.force_idle_usec 0\nnr_periods 1876\nnr_throttled 143\nthrottled_usec 3580474\nnr_bursts 0\nburst_usec 0"
+  }
+}

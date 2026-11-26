@@ -230,6 +230,9 @@ uses the base's own `fc-scan` and `fc-match` executables. It requires every
 expected path exactly once and JetBrainsMono Nerd Font as the monospace choice.
 The initial base preflight now fails before assembly when either executable is
 absent. Local exact-byte integration, all 277 image fixtures and the serial
-repository gate pass with one Cargo job and zero swap. The hosted
-generic and NVIDIA image jobs have not yet exercised this change. Booted
+repository gate pass with one Cargo job and zero swap. Hosted generic run
+[45870354828](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45870354828)
+now verifies all 98 installed fonts with native fontconfig and resolves
+JetBrainsMono Nerd Font as `monospace`; its exact artifact is retained in the
+generic image lock. The NVIDIA image still needs a font-bearing rebuild. Booted
 font rendering and desktop interaction remain later acceptance gates.

@@ -10,7 +10,19 @@ directory after the inspector exits.
 - `after.log` retains 12 passing focused font integration/intake tests.
 - `repository-check.log` retains 278 passing image tests and the complete serial
   Rust, Cedar and supply-chain gate.
-- `record.json` states the hosted failure, corrected lifecycle and remaining
-  native rerun requirement.
+- `45870354806/` retains and independently reconciles the corrected hosted
+  intake's four-file evidence artifact. Metadata for its separate candidate
+  payload is retained without downloading that payload locally.
+- `record.json` binds the failure, correction and successful hosted consumers.
 
-No font input or qualification state changes. The hosted rerun remains pending.
+Corrected [run 45870354806](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45870354806)
+passed at `d436c6e`: three exact assets were authenticated and 103 members,
+including 98 fonts, were passively inventoried. The intake extracted no archive
+and invoked no font parser. It recorded zero OOM/kill events and zero swap.
+The separate 9,647,668-byte candidate artifact remains hosted and unselected.
+
+Consuming generic image
+[run 45870354828](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45870354828)
+also passed. Its installed-image probe natively parsed all 98 fonts and selected
+JetBrainsMono Nerd Font as the monospace default. No font input changed, and
+release selection, security qualification and OS qualification remain false.

@@ -139,6 +139,25 @@ class FontPayload(unittest.TestCase):
 
 
 class FontDefaults(unittest.TestCase):
+    def test_only_exact_retained_prefont_image_may_skip_native_font_scan(self):
+        from image.desktop.verify import LEGACY_FONTLESS_SOURCE, verify_font_payload
+
+        lock = json.loads((ROOT / "image/desktop-images.lock.json").read_text())
+        generic = lock["images"]["generic"]
+        nvidia = lock["images"]["nvidia"]
+        self.assertEqual(nvidia["tested_commit"], LEGACY_FONTLESS_SOURCE)
+        self.assertEqual(nvidia["manifest"]["source_commit"], LEGACY_FONTLESS_SOURCE)
+        self.assertNotEqual(generic["tested_commit"], LEGACY_FONTLESS_SOURCE)
+        self.assertEqual(generic["manifest"]["source_commit"], generic["tested_commit"])
+        result = verify_font_payload({"source_commit": LEGACY_FONTLESS_SOURCE})
+        self.assertIs(result["checked"], False)
+        for source in (generic["tested_commit"], "0" * 40):
+            with self.subTest(source=source), self.assertRaises(ValueError):
+                verify_font_payload({"source_commit": source})
+        hosted = (ROOT / "image/boot/hosted.py").read_text()
+        self.assertIn("(root/'image/fonts/verify.py','font_verify.py')", hosted)
+        self.assertIn("'font_verify.py'", hosted[hosted.index("record['probe_hashes']"):])
+
     def test_system_defaults_match_the_observed_ombuntu_font_profile(self):
         path = ROOT / "image/overlay/etc/fonts/conf.d/49-symbi-fonts.conf"
         root = ET.fromstring(path.read_bytes())

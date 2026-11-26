@@ -63,3 +63,30 @@ selected secureblue variant and explicitly reports that a later installer must
 choose a filesystem. It does not silently pick or install one. The original failed
 run and complete 41-file evidence remain retained under `45802753036/`.
 All 219 local image tests pass; the corrected hosted result is pending.
+
+## Exact retained pre-font image compatibility
+
+[Preflight 45869526766](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45869526766)
+verified the locked 4.03 GB archive, loaded its exact image, copied and hashed the
+protected kernel files from a never-started container, then stopped before the
+installed-file comparison. The current desktop verifier imported the new font
+module, but this retained image and its preparation record predate the font
+payload. The failure is a verifier-generation mismatch; it is not a failed font
+parse or a changed image byte.
+
+The verifier now permits a missing font record only when the preparation source
+is exactly `23a6c721092ad77c3af33c11cab230ecaaa54cff`, the source bound to both
+locks when this failure occurred and still bound to the retained pre-font NVIDIA
+image. It reports `checked: false` and makes no native font claim. Any other
+fontless record is refused. The generic lock now selects the font-bearing
+`d436c6e` image. Atomic preflight stages and hashes `font_verify.py`, so that
+image must execute the native scan. The desktop builder requires fonts
+unconditionally.
+
+All 35 original evidence files and the original 53,710-byte artifact are retained
+and independently hash-reconciled under `P0-03-atomic-preflight/45869526766/`.
+Both temporary containers, the private kernel copy and the loaded image were
+removed; there were no OOM or kill events and swap remained disabled. A hosted
+rerun is required. Fourteen focused tests and the final 279-test serial repository
+gate pass; the latter took 4.13 seconds at 67,436 KiB peak RSS with zero swap.
+This correction adds no boot, installation or OS claim.

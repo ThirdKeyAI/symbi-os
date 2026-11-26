@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/qualification/verify.py", line 8, in <module>
+    from font_verify import verify_installed_fonts
+ModuleNotFoundError: No module named 'font_verify'

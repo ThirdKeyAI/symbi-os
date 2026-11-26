@@ -1,0 +1,32 @@
+{
+  "10-nerd-font-symbols.conf": {
+    "bytes": 52256,
+    "sha256": "c686f822818bd1c4c26ccb1314d16b277e77252f97a74483ca20b2165dbf7ec6",
+    "magic": "3c3f786d",
+    "mode": 420
+  },
+  "LICENSE": {
+    "bytes": 1082,
+    "sha256": "84a7a98c82140fb12c37fe42b93805baa16024cb3e5acc599b7ffe612c55d847",
+    "magic": "54686520",
+    "mode": 420
+  },
+  "README.md": {
+    "bytes": 4095,
+    "sha256": "a4463554f951c8153d0bdfcb6e03b382baf99dcdd3f99790014427687abdc55b",
+    "magic": "23204e65",
+    "mode": 420
+  },
+  "SymbolsNerdFont-Regular.ttf": {
+    "bytes": 2538772,
+    "sha256": "2839f0a572d4559f3f17a6fb74b8772e183f0c0a47150998ab194932cad55829",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "SymbolsNerdFontMono-Regular.ttf": {
+    "bytes": 2610012,
+    "sha256": "fe471e538392f51910faab985fa8e192a39dd3426125edd15b71b3680df0e749",
+    "magic": "00010000",
+    "mode": 420
+  }
+}

@@ -1,0 +1,590 @@
+{
+  "JetBrainsMonoNLNerdFont-Bold.ttf": {
+    "bytes": 2491512,
+    "sha256": "104897b8ff7f74674c8d6d81b6dbe9138e5c249b54d6c08c8b21600f75d3c5c1",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFont-BoldItalic.ttf": {
+    "bytes": 2494624,
+    "sha256": "8d5892b455cc166f8aac459182aa7a0d7df6cf2d70d61047deb8783fbd2b5d67",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFont-ExtraBold.ttf": {
+    "bytes": 2493984,
+    "sha256": "a30da5101038f9efa128c87c7508e262d79d9709feadf43cf69a201cfc13ac2f",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFont-ExtraBoldItalic.ttf": {
+    "bytes": 2495964,
+    "sha256": "4d79abe68d10d5013f15e3bf69efd643d8a163c4d7824d1e1d473c13f7ae56b5",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFont-ExtraLight.ttf": {
+    "bytes": 2489700,
+    "sha256": "cff82d2ede085403fbe6cef49848291b884559a329af6dd5c62b5a894c9e91d9",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFont-ExtraLightItalic.ttf": {
+    "bytes": 2490444,
+    "sha256": "54340639d79d1bd21132cda67ef092dd206f3a783f5168f8184b18b496db7cc8",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFont-Italic.ttf": {
+    "bytes": 2492084,
+    "sha256": "dd76e7fe83fd2b1ae8e416efb3af8348d975b004648eb28e9a836e1fc4dd72a0",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFont-Light.ttf": {
+    "bytes": 2491384,
+    "sha256": "f19b9cc0516482aea93ff3f526aead1cbf4376cf0835cad5824ee6ed97f2583c",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFont-LightItalic.ttf": {
+    "bytes": 2492804,
+    "sha256": "16386351d580fc3dd3e6b94d341e77cc8c04ed29821b5c4206c3f8396fb5a73a",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFont-Medium.ttf": {
+    "bytes": 2488856,
+    "sha256": "158ff61f4229aa13048715789222048dd54c25e2ccd9d0d860c96ab68f9baba9",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFont-MediumItalic.ttf": {
+    "bytes": 2492088,
+    "sha256": "3c58ca4df4cdfc2276b4090d99e98cc19af37a089634859a4a36c7b41484a705",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFont-Regular.ttf": {
+    "bytes": 2489128,
+    "sha256": "f726c0fb0db90a00920e8fa9ef281ccf9f5f848785ebcaca09bade9d15d38b58",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFont-SemiBold.ttf": {
+    "bytes": 2490436,
+    "sha256": "c6c436277646003b578a6c9ac2f4377dfb72f12cd24af9f760787ec241571bf9",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFont-SemiBoldItalic.ttf": {
+    "bytes": 2494540,
+    "sha256": "fd3271efe445c6b5e801a38ede34fd7b143c4668f8b9d63fb7263291e75e2e74",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFont-Thin.ttf": {
+    "bytes": 2486604,
+    "sha256": "4eb3d68ab21744deaa6cff1353b6df67013a83e04437d1fdf6ce90c1b4c7afa5",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFont-ThinItalic.ttf": {
+    "bytes": 2489640,
+    "sha256": "68620b30c95256b3a81dcd6ebad3545cc222ee146575175e7116b53520bb1548",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontMono-Bold.ttf": {
+    "bytes": 2493472,
+    "sha256": "f799fc4b215c7b7254bf6cee51c0bce122ac684b53b46fd3cb83d408a0ccf385",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontMono-BoldItalic.ttf": {
+    "bytes": 2496612,
+    "sha256": "28ce03bcaf808f7fa64dcce6facb00319083bdb04cc4f61d41b9f6ad8f20c3e8",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontMono-ExtraBold.ttf": {
+    "bytes": 2495944,
+    "sha256": "7027b92cbe1536d4bbe56eca416e64baa64b32fea4497fd4673cf1715cf7ae85",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontMono-ExtraBoldItalic.ttf": {
+    "bytes": 2497952,
+    "sha256": "844e2f7cf51d433fb44be420ecdf4d4ecf9fb4400fe8263db135708d034df526",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontMono-ExtraLight.ttf": {
+    "bytes": 2491664,
+    "sha256": "3f1abb0ab790ec72fcd25f340bfcc246357638b9d95f717293e634d6cb2ea405",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontMono-ExtraLightItalic.ttf": {
+    "bytes": 2492436,
+    "sha256": "0f814da728de434928b1acaf8144ee413c401224605ad4dfe0e4ce1c5cf6fac8",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontMono-Italic.ttf": {
+    "bytes": 2494072,
+    "sha256": "336a3cef8770dab01c0fc9c6bb0c0473bfa82f90a4033fde2cc52d8aa410528c",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontMono-Light.ttf": {
+    "bytes": 2493344,
+    "sha256": "17c9522cf593213aa99c3eb0fb706df2fe84332eea99e943c0df267a84274350",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontMono-LightItalic.ttf": {
+    "bytes": 2494792,
+    "sha256": "dd023898a54265068c77fff5aa71d9835ea394349c7c9a3e9ca381d5f704f02e",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontMono-Medium.ttf": {
+    "bytes": 2490820,
+    "sha256": "609259fa79a9e08721a2af1e71f7fa3009d374f890372c9d2816994cef683283",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontMono-MediumItalic.ttf": {
+    "bytes": 2494080,
+    "sha256": "7bc728ba1152a5f420055fc44ae286b51c39c89d74f96dfb017b00f46952979f",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontMono-Regular.ttf": {
+    "bytes": 2491088,
+    "sha256": "d9a80146bbf2ff23b187316a3e82ee2a2ceab8220267fe09ac150ca46ab2c3bd",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontMono-SemiBold.ttf": {
+    "bytes": 2492396,
+    "sha256": "1aa9684d0157dfad4bcfdcff6cde8f4c86b0929437502892dfa643901f8b878c",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontMono-SemiBoldItalic.ttf": {
+    "bytes": 2496528,
+    "sha256": "6326e5f936bc5aa5e7146007123a9d794fc72cd99cd2cb7c907f0b008b28f4c8",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontMono-Thin.ttf": {
+    "bytes": 2488564,
+    "sha256": "7fd38e32651ee24659497203f6912b4d7912488b760bb577d9142339e7e86ff0",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontMono-ThinItalic.ttf": {
+    "bytes": 2491628,
+    "sha256": "6133bfcb4e514e55437715e4b7ac750130d8f1c66a5308677115a9bdb4c78ae4",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontPropo-Bold.ttf": {
+    "bytes": 2491328,
+    "sha256": "f9480ead3e45a21f61a9a0bc25f7e20a7ac4782644414b91375e9fdb76fd2095",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontPropo-BoldItalic.ttf": {
+    "bytes": 2494440,
+    "sha256": "7ffde5e1dbb5b6b8484c6b129caf71959a6fca070612b215fdd54055d2c3889c",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontPropo-ExtraBold.ttf": {
+    "bytes": 2493800,
+    "sha256": "f059818f3fdd78e03af6a6070279ac19bf9fef348353b425cf8fd0300fbf9eb6",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontPropo-ExtraBoldItalic.ttf": {
+    "bytes": 2495780,
+    "sha256": "e11dbf74b5bcab87451550b5bec9395ce00da62e2ce0690853b4621ad64736e4",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontPropo-ExtraLight.ttf": {
+    "bytes": 2489516,
+    "sha256": "d217c1bd022c9755d8e7759d790e98f255669d17202c77a2bafc9d721db4b9ec",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontPropo-ExtraLightItalic.ttf": {
+    "bytes": 2490260,
+    "sha256": "41eccbbdd380c01ad418d105112f83b986ab84d399a21efee94bb1f7df984f42",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontPropo-Italic.ttf": {
+    "bytes": 2491900,
+    "sha256": "a75147d8354b7fc1a0b0c8dede8f8169014c8fc7263505d085419975e8e21404",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontPropo-Light.ttf": {
+    "bytes": 2491200,
+    "sha256": "fb9bf3749444db1da314af2f3ecefeb5d95cf09c5389f3be6a1aeb66659a81d7",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontPropo-LightItalic.ttf": {
+    "bytes": 2492620,
+    "sha256": "c91128f49e7a6f5cb8636e9834f2fcadb15a21bb1b2b82044cb10e6cb592ece4",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontPropo-Medium.ttf": {
+    "bytes": 2488672,
+    "sha256": "711599c10ccd331cc3f012a2b3978bf330ff64e2986195894c3e00437f0c373f",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontPropo-MediumItalic.ttf": {
+    "bytes": 2491904,
+    "sha256": "90c630b04b2042db73176918e2231176de03f3b96f2e077bd714ceeb45daef98",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontPropo-Regular.ttf": {
+    "bytes": 2488944,
+    "sha256": "a4588a46f132fbfd5c43a5f1e4184bda0101dfea7d86c2a0f8a0feb4b47f18da",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontPropo-SemiBold.ttf": {
+    "bytes": 2490252,
+    "sha256": "bcf68d438b7d99181bd67f94357fabf4405603dc03f4ad2f2d2e20a5b0c2b70a",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontPropo-SemiBoldItalic.ttf": {
+    "bytes": 2494356,
+    "sha256": "0255c14137cb95899dc44048f2b2c2324932b3d1a94020d88e505820e0878f6a",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontPropo-Thin.ttf": {
+    "bytes": 2486420,
+    "sha256": "4bf9ad031a77226d1e0fee0d6e1b035ba179105ad302f95d2b087e7391fd76f2",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNLNerdFontPropo-ThinItalic.ttf": {
+    "bytes": 2489456,
+    "sha256": "c1cad1d83247a48a4bf759f23a2628613af8bbaaf0b5359a8ffad2c5c3f50e71",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFont-Bold.ttf": {
+    "bytes": 2575364,
+    "sha256": "e490660ad75e0b152c93b1604c2ea1a4ea675f1b8a3fe0d005b1998568f99f1f",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFont-BoldItalic.ttf": {
+    "bytes": 2576592,
+    "sha256": "19a2e3af8ccf99954941ea07e0a29df27574500f12016d86d6c4c059b825ffe1",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFont-ExtraBold.ttf": {
+    "bytes": 2577128,
+    "sha256": "8af99acce860533a64926ebff131aa9f37806ffef9636798f36c3a4a526f9e32",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFont-ExtraBoldItalic.ttf": {
+    "bytes": 2578612,
+    "sha256": "75971b5b5eebb295298c4d1872e2a8906c3023cb98480c42ed4a9496ad16fd79",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFont-ExtraLight.ttf": {
+    "bytes": 2571732,
+    "sha256": "e5a2b97faa48e7597022f61da03d754f1f8be0cac290942781b27a4525307d75",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFont-ExtraLightItalic.ttf": {
+    "bytes": 2571028,
+    "sha256": "2789601fa34509d4d5991a3c8ae5afc8e28ac09147e8769d9578662a39dcf20f",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFont-Italic.ttf": {
+    "bytes": 2573684,
+    "sha256": "71d5466cc3ab31bee38b4e2c5cc99c2b41a749c4973ed4579b814ec992b0738e",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFont-Light.ttf": {
+    "bytes": 2574020,
+    "sha256": "c9f9fc2d79825d3cee9817e29b1a79ddcb30bfef5d8061120ee024d1f4a96228",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFont-LightItalic.ttf": {
+    "bytes": 2573912,
+    "sha256": "96d97618018ed4d7b27321904c0bed37c2df7b746c772a2a0515124c582e39c6",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFont-Medium.ttf": {
+    "bytes": 2571468,
+    "sha256": "c9405e11b36d071176e318263e7251e96e60f3804dfc5ac8b2806f1f8085b066",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFont-MediumItalic.ttf": {
+    "bytes": 2573632,
+    "sha256": "27693c0aa1c56ea46a8978d042772a81da184d3aae7fe7b6a2394b5dc51cd296",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFont-Regular.ttf": {
+    "bytes": 2571596,
+    "sha256": "1c680e8cde9fcf8b88a5605ce8d1fb94dd3fb15841f7ca7bf4c55664855e5611",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFont-SemiBold.ttf": {
+    "bytes": 2574704,
+    "sha256": "d987f2994fa3000512ea6442e4b3fa8c96e0724262e2c5c9646f1ee02cae675e",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFont-SemiBoldItalic.ttf": {
+    "bytes": 2576700,
+    "sha256": "60571c34def77959bff1b8661e1cbce1bc0dee8e006ea78358b2af9990fd8587",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFont-Thin.ttf": {
+    "bytes": 2567732,
+    "sha256": "87a846220f9470d78b66d3fdf2e108156c68ac89a2fa5f058a90ef5be9f0e322",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFont-ThinItalic.ttf": {
+    "bytes": 2569832,
+    "sha256": "5c5935377631c86646e6fef3b0a739d4ff3771f632dc48f6963a727ad1b21063",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontMono-Bold.ttf": {
+    "bytes": 2577016,
+    "sha256": "bfcf9a917276ffc058867d87cbc8a5b2f1ab0f4b710e9170dc02763ccb80bd4b",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontMono-BoldItalic.ttf": {
+    "bytes": 2578280,
+    "sha256": "9dba502e00e35209f6ed2a151c7376c051657b067cdebbc6e52d06cb9002cf31",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontMono-ExtraBold.ttf": {
+    "bytes": 2578780,
+    "sha256": "1c4ccf0d5fb2d45f04d3efd50f60951fb63281b0375ede992d2b4beb694d2daa",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontMono-ExtraBoldItalic.ttf": {
+    "bytes": 2580296,
+    "sha256": "0315f5729d19d7c4846ea06503850b0fed785263fc0d7f5bc636563782cbde42",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontMono-ExtraLight.ttf": {
+    "bytes": 2573384,
+    "sha256": "2ed4462e0332123bccd6d0e3ecfb92e9a9d9c02d7e7cacf2d272d5e4bae85e25",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontMono-ExtraLightItalic.ttf": {
+    "bytes": 2572712,
+    "sha256": "5a7bc5b7fa3005977be87a7171361e41ff999d65e79b2f47796e4f062dccd56a",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontMono-Italic.ttf": {
+    "bytes": 2575368,
+    "sha256": "31efd6ead98746f5b0afa1ee6dba60267ad48db36428360bee327bec10621f97",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontMono-Light.ttf": {
+    "bytes": 2575672,
+    "sha256": "d34f186f256c853a651d222bfad3afa942d4755b47eff70c13660cf94c24b20e",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontMono-LightItalic.ttf": {
+    "bytes": 2575596,
+    "sha256": "8711d3a15e10e7552bc62dfb8d99dac681eca80c9f4dd59142b27785117c9250",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontMono-Medium.ttf": {
+    "bytes": 2573120,
+    "sha256": "a736c04959f32b69487956c9ccffa90e71903d3c85952886d42ecead0ca6cb1d",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontMono-MediumItalic.ttf": {
+    "bytes": 2575316,
+    "sha256": "f21eb76516348ffa152a9727fe4e99fe8baedbb7359c38aeefd1f123d5f6d0fe",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontMono-Regular.ttf": {
+    "bytes": 2573248,
+    "sha256": "f2a5ea6cfab397445ffab00c0370927b66d61e560a05db5db271b42006381c1a",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontMono-SemiBold.ttf": {
+    "bytes": 2576360,
+    "sha256": "d3955c56fca699f37ebc153d0a6e331b8784f66fd8a3af5e20c30b90869201c4",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontMono-SemiBoldItalic.ttf": {
+    "bytes": 2578388,
+    "sha256": "0d2aa4c3955f612986e22d08f08b9c255b75107c07a6128ac24dc80281cc9d9c",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontMono-Thin.ttf": {
+    "bytes": 2569388,
+    "sha256": "734de2d7f2c70d2a02006ee219fbbe897b09fe83b15861f0f887c717a02695cf",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontMono-ThinItalic.ttf": {
+    "bytes": 2571520,
+    "sha256": "2c4e01f8eba50c6293a6c1084e807f5d33ef8b17e55e5d2c9bb677475c41da83",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontPropo-Bold.ttf": {
+    "bytes": 2575180,
+    "sha256": "a391d2887d63add54d87a715fe257e522120eb4f1df52d104fa17984fcb68021",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontPropo-BoldItalic.ttf": {
+    "bytes": 2576408,
+    "sha256": "2118f3a6119e8967b20b71b6b8a6072711ef76ae0d10c4522a06323ac8935d5d",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontPropo-ExtraBold.ttf": {
+    "bytes": 2576944,
+    "sha256": "80200df33ea31cd6185bde7c970fb86190b6670060475c1a1f069d0b2d8f0bb3",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontPropo-ExtraBoldItalic.ttf": {
+    "bytes": 2578428,
+    "sha256": "df117705e411fbe80bb7c2e4f25e350328aa255e65d8368fb04016afaeeca853",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontPropo-ExtraLight.ttf": {
+    "bytes": 2571548,
+    "sha256": "8cc4e91cb99b5e3bc96e5ffaecc38fc18232ed7687962644f212da2cf661f484",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontPropo-ExtraLightItalic.ttf": {
+    "bytes": 2570844,
+    "sha256": "4a03c9b8eb41004a164e668483edf08081b818f76f24f889b6b2c35f73f05b86",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontPropo-Italic.ttf": {
+    "bytes": 2573500,
+    "sha256": "904c69ce413b3c678b7762a94328b14077461db16b5d63b82c8370b9907387ff",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontPropo-Light.ttf": {
+    "bytes": 2573836,
+    "sha256": "134069560904365335981ab7332e655db816fb5298849bb0dbe9ed61e3f00610",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontPropo-LightItalic.ttf": {
+    "bytes": 2573728,
+    "sha256": "1e7070062baaa9327d666b7217bad601c2bc42b638b81e12f2e95baa81c78f30",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontPropo-Medium.ttf": {
+    "bytes": 2571284,
+    "sha256": "d60c8788140e939247f7af54a1ddc197d3099eecca77fff51880d678c029d98c",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontPropo-MediumItalic.ttf": {
+    "bytes": 2573448,
+    "sha256": "3b4fa1bc30e72a30fd7b2f6921d67f7c864b1d15be72ebec04821ad2709e8778",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontPropo-Regular.ttf": {
+    "bytes": 2571412,
+    "sha256": "8a2803de76ad18ed82f465dfd17130032c34c031b263179d3047a547c7caa460",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontPropo-SemiBold.ttf": {
+    "bytes": 2574520,
+    "sha256": "b0c766130c81e328e1b31c7d1036574d7ce91f503c9856a4ec73565a44a32899",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontPropo-SemiBoldItalic.ttf": {
+    "bytes": 2576516,
+    "sha256": "97d0da5da9a227398a1da7aa16214cf7146696b3b56fcb63ea7385e853fa45ba",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontPropo-Thin.ttf": {
+    "bytes": 2567548,
+    "sha256": "bb093be10f5406765ccea2a25d7adb4ce43840268e034e21dcd9d39c0bf76059",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "JetBrainsMonoNerdFontPropo-ThinItalic.ttf": {
+    "bytes": 2569648,
+    "sha256": "8889eb97cf2a4f39159a99a07ddcc38c7d2f60eb678fa9d4e99e72185ededf82",
+    "magic": "00010000",
+    "mode": 420
+  },
+  "OFL.txt": {
+    "bytes": 4399,
+    "sha256": "30f0c136e3c88e422d0791acd97238870f9054a9729bc34cf2ff0d4ed8cac4ad",
+    "magic": "436f7079",
+    "mode": 420
+  },
+  "README.md": {
+    "bytes": 4037,
+    "sha256": "7ced4e915272073713607cbc1646f625f4265cdf7aef964fdeebc030cc7a4440",
+    "magic": "23204e65",
+    "mode": 420
+  }
+}
