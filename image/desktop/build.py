@@ -149,6 +149,7 @@ def main():
         (outputs/'manifest.json').write_text(json.dumps({'schema':1,'built':True,'os_qualified':False,
             'source_commit':record['source_commit'],'base':base['image'],'variant':variant,'archive':record['image_archive'],
             'preparation_sha256':digest(evidence/'preparation.json')},indent=2)+'\n')
+        shutil.copyfile(outputs/'manifest.json', evidence/'image-manifest.json')
         qualification=storage/'qualification'
         qualification.mkdir(mode=0o755)
         for source, name in [(evidence/'preparation.json','preparation.json'),

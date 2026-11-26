@@ -13,3 +13,6 @@ docs/security/reports/P0-03-assembly-inputs/45749688344/runtime/install/compatib
 
 # Original component license bytes are retained without reformatting.
 image/desktop/licenses/*.LICENSE whitespace=-blank-at-eol,-space-before-tab
+
+# Retain the exact DNF stdout, including its terminal blank line.
+docs/security/reports/P0-03-desktop/45756829042/install/offline-install-stdout.log whitespace=-blank-at-eof

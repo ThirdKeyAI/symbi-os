@@ -4,9 +4,11 @@ P0-03 uses the owner-selected strategy **retain secureblue hardening and package
 maintained Hyprland**. The GitHub release environment and dedicated signing key
 are configured. Generic and NVIDIA base signatures have been verified at the
 digests in `base-images.json`. The development desktop binaries and runtime RPM
-inputs have retained compatibility results; desktop assembly and release acceptance
-remain incomplete.
-No Symbiont OS image has been built, signed, booted or qualified.
+inputs have retained compatibility results. A generic development OCI image
+[built successfully](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45756829042)
+with installed-file, additive-package, loader, CLI/provider, Lua and bootc lint
+checks. NVIDIA, actual OS boot, desktop interaction, Fedora sandbox/escape and
+release acceptance remain incomplete. No OS image has been signed or released.
 
 The original plan names secureblue's `wayblue-hyprland-main-userns-hardened`.
 [secureblue's pinned deprecation notice](https://github.com/secureblue/secureblue/blob/353366bb6d031e66fc565b0b101a8a069f32fcdb/files/system/usr/libexec/deprecated-images.json.md)
@@ -43,12 +45,17 @@ and OQ-07. A Sericea base does not make Sway the product's trusted compositor.
   binds the dedicated OS public key and two GHCR destinations; see
   [the trust-policy procedure](SIGNING.md). Symbiont's GitHub workflow signing
   identity remains an additional attestation identity, not the OS update key.
+  The desktop preparation now adds this policy and attachment configuration to
+  the actual payload; this integration follows the first development image and
+  needs its own installed-image result.
 
 Run `bash scripts/check-image.sh` for the small offline checks.
 `python3 image/recipe.py --variant generic` emits the recipe; `--variant nvidia`
 uses its separately verified base pin. The
-renderer is not a signature verifier. Do not build until the signature and all
-release prerequisites below are satisfied.
+renderer is not a signature verifier. Development assembly runs only through the
+bounded hosted desktop workflow after input authentication. Publishing remains
+gated on all release prerequisites below; development artifacts are not an OS
+installation or rebase route.
 
 ## Hosted validation scheduling
 

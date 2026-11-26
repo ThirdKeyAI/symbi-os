@@ -1,0 +1,102 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "crypto_policy_qualified": false,
+  "limits": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "max"
+  },
+  "commands": [
+    {
+      "name": "installed-before",
+      "exit_code": 0
+    },
+    {
+      "name": "import-key",
+      "exit_code": 0
+    },
+    {
+      "name": "keyring",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-0-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-0-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-1-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-1-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-2-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-2-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-3-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-3-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-4-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-4-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "offline-install",
+      "exit_code": 0
+    },
+    {
+      "name": "installed-after",
+      "exit_code": 0
+    }
+  ],
+  "target_base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "scope": "Actual image package installation; dynamic TLS and boot/containment acceptance remain separate",
+  "base_package_count": 2178,
+  "required_packages": [
+    "libeis\t0\t1.6.0\t3.fc45\tx86_64",
+    "muParser\t0\t2.3.5\t6.fc45\tx86_64",
+    "tomlplusplus\t0\t3.4.0\t8.fc45\tx86_64",
+    "gtk4-layer-shell\t0\t1.3.0\t3.fc45\tx86_64",
+    "openssl3-libs\t1\t3.5.9\t1.fc45\tx86_64"
+  ],
+  "added_packages": [
+    "gtk4-layer-shell\t0\t1.3.0\t3.fc45\tx86_64",
+    "libeis\t0\t1.6.0\t3.fc45\tx86_64",
+    "muParser\t0\t2.3.5\t6.fc45\tx86_64",
+    "openssl3-libs\t1\t3.5.9\t1.fc45\tx86_64",
+    "tomlplusplus\t0\t3.4.0\t8.fc45\tx86_64"
+  ],
+  "all_base_packages_unchanged": true,
+  "base_crypto_configuration_unchanged": true,
+  "compatibility_configuration_sha256": "34108f65c3c759083f6b2d8ff8c509e3504aa78e5180b197827d90827ddc663f",
+  "cgroup_final": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "max",
+    "memory.peak": "366981120",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 2436823\nuser_usec 1662430\nsystem_usec 774392\nnice_usec 1653000\ncore_sched.force_idle_usec 0\nnr_periods 27\nnr_throttled 3\nthrottled_usec 10674\nnr_bursts 0\nburst_usec 0"
+  }
+}

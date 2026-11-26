@@ -9,6 +9,7 @@ from image.assembly.inputs import unpack_runtime
 from image.assembly.runtime_install import require_runtime_rpms
 from image.desktop.inputs import select_prefix_files
 from image.desktop.recipe import render_desktop, review_containerfile
+from image.desktop.trust import prepare_trust
 from image.hyprland.build_inputs import require_current_requirements, unpack_rpms
 from image.hyprland.prefix_input import unpack_prefix
 from image.launcher.binary_inputs import require_bindings, unpack_binaries
@@ -220,6 +221,8 @@ def main():
                 raise ValueError('Original component license changed')
             if row['name'] != 'Symbiont':
                 copy_regular(source, payload/'usr/share/licenses/symbiont-os'/source.name)
+        checkpoint('prepare-image-trust')
+        record['image_trust'] = prepare_trust(root, payload)
         sources_doc = payload/'usr/share/doc/symbiont-os'
         sources_doc.mkdir(parents=True)
         (sources_doc/'development-inputs.json').write_text(json.dumps(record, indent=2)+'\n')

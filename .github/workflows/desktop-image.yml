@@ -6,6 +6,8 @@ on:
     paths:
       - "image/desktop/**"
       - "image/base-images.json"
+      - "image/release-trust.json"
+      - "image/signing.py"
       - "image/keys/**"
       - "image/recipe.py"
       - "image/harden-image.sh"
@@ -57,6 +59,8 @@ on:
     paths:
       - "image/desktop/**"
       - "image/base-images.json"
+      - "image/release-trust.json"
+      - "image/signing.py"
       - "image/keys/**"
       - "image/recipe.py"
       - "image/harden-image.sh"

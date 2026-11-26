@@ -1,0 +1,23 @@
+{
+  "release_trust_sha256": "1447ddf75aa552bc2344a033d5eacef8ecaf6e0ad259fc09d67ab03474d7f564",
+  "base_pins_sha256": "3c22f018716079a063c239f38c03b5a08017ec5d42f478b306a94adb23ce1dfb",
+  "release_repositories": {
+    "generic": "ghcr.io/thirdkeyai/symbiont-os",
+    "nvidia": "ghcr.io/thirdkeyai/symbiont-os-nvidia"
+  },
+  "files": {
+    "etc/containers/policy.json": {
+      "sha256": "974d657b12acca4cd4db7ca6f4788f65b0f366d2193bdb6f0502d6c239c1a7a5",
+      "bytes": 2376
+    },
+    "etc/containers/registries.d/symbiont.yaml": {
+      "sha256": "336ad92f00b0f2fb6954fbcab7fc6541d4333a884f6038900eb94f7300104bfa",
+      "bytes": 538
+    }
+  },
+  "signature_qualified": false,
+  "scope": "Installed enforcing policy preparation; actual signature/update/rollback controls remain required",
+  "approved_scope_count": 4,
+  "renderer_sha256": "76c3bc25d4287ef1d5675daeec8a5aae6c9bbda4a1347b0401a8c8a00298a605",
+  "packager_sha256": "ebe9b1bef62684f69a72554535c60ec742633e0ba742d77234b46c360c4a2977"
+}
