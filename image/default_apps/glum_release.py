@@ -314,16 +314,7 @@ def load_release_inputs(path=INPUTS):
     return value
 
 
-def inspect_release_archive(path, inputs):
-    """Passively verify every member of an exact Glum release archive."""
-    path = Path(path)
-    if (
-        inputs.get("selected") is not False
-        or inputs.get("security_qualified") is not False
-        or inputs.get("os_qualified") is not False
-    ):
-        raise ValueError("Glum release candidate is prematurely selected or qualified")
-    asset = inputs["asset"]
+def _require_archive_identity(path, asset):
     if (
         path.is_symlink()
         or not path.is_file()
@@ -332,6 +323,16 @@ def inspect_release_archive(path, inputs):
         or hashlib.sha256(path.read_bytes()).hexdigest() != asset["sha256"]
     ):
         raise ValueError("Glum release archive bytes changed")
+
+
+def inspect_release_archive(path, inputs):
+    """Passively verify every member of an exact Glum release archive."""
+    path = Path(path)
+    canonical = load_release_inputs()
+    if not _exact(inputs, canonical):
+        raise ValueError("Glum release inspector requires canonical hard-pinned inputs")
+    asset = canonical["asset"]
+    _require_archive_identity(path, asset)
     try:
         with tarfile.open(path, "r:gz") as archive:
             members = archive.getmembers()
@@ -351,7 +352,7 @@ def inspect_release_archive(path, inputs):
                     if name not in asset["files"]:
                         raise ValueError("Glum release member type changed")
                     expected = asset["files"][name]
-                    if member.mode & 0o777 != expected["mode"] or member.size != expected["bytes"]:
+                    if member.mode != expected["mode"] or member.size != expected["bytes"]:
                         raise ValueError("Glum release file metadata changed")
                     stream = archive.extractfile(member)
                     if stream is None:
@@ -365,7 +366,7 @@ def inspect_release_archive(path, inputs):
                     files += 1
                     expanded += len(raw)
                 elif member.isdir():
-                    if name not in asset["directories"] or member.mode & 0o777 != 0o755:
+                    if name not in asset["directories"] or member.mode != 0o755:
                         raise ValueError("Glum release directory metadata changed")
                     directories += 1
                 else:

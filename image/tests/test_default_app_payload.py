@@ -11,11 +11,11 @@ import zipfile
 
 from image.default_apps.glum_release import load_release_inputs as load_glum_release_inputs
 from image.default_apps.payload import (
+    _check_payload_tree_files,
     load_payload_contract,
     unpack_payload,
     verify_payload_tree,
 )
-from image.desktop.files import copy_regular as real_copy_regular
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -186,18 +186,19 @@ class DefaultApplicationPayload(unittest.TestCase):
             contents,
         )
 
-    def test_exact_payload_is_staged_offline_with_modes_and_source_assets_bound(self):
+    def test_self_reported_provenance_cannot_stage_or_touch_destination(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
-            archive, lock, contract, sources, release_path, release, contents = self.fixture(
-                root
-            )
+            archive, lock, contract, sources, release_path, release, _ = self.fixture(root)
             destination = root / "payload"
             destination.mkdir()
+            sentinel = destination / "keep"
+            sentinel.write_bytes(b"keep\n")
+            before = (sentinel.stat().st_ino, sentinel.read_bytes())
             with mock.patch(
                 "image.default_apps.payload.load_release_inputs", return_value=release
-            ):
-                manifest = unpack_payload(
+            ), self.assertRaisesRegex(ValueError, "staging is disabled"):
+                unpack_payload(
                     archive,
                     lock,
                     contract,
@@ -206,59 +207,25 @@ class DefaultApplicationPayload(unittest.TestCase):
                     "a" * 40,
                     release_path,
                 )
-            self.assertEqual(set(manifest["applications"]), {"yazi", "glum", "tootles"})
-            for app in manifest["applications"].values():
-                for row in app["files"]:
-                    target = destination / row["destination"]
-                    self.assertEqual(target.read_bytes(), contents[row["bundle"]])
-                    self.assertEqual(target.stat().st_mode & 0o777, row["mode"])
-            with mock.patch(
-                "image.default_apps.payload.load_release_inputs", return_value=release
-            ):
-                report = verify_payload_tree(
-                    destination, manifest, contract, sources, release_path
-                )
-            self.assertTrue(report["passed"])
-            self.assertFalse(report["os_qualified"])
-            self.assertFalse(report["native_desktop_qualified"])
-            self.assertFalse(report["real_accounts_qualified"])
+            self.assertEqual((sentinel.stat().st_ino, sentinel.read_bytes()), before)
+            self.assertEqual(list(destination.iterdir()), [sentinel])
 
-    def test_archive_manifest_source_and_qualification_mutations_are_refused(self):
-        mutations = (
-            "archive",
-            "manifest",
-            "revision",
-            "source",
-            "release",
-            "qualified",
-            "attestation",
-        )
+    def test_lock_manifest_source_and_claim_mutations_are_refused(self):
+        mutations = ("lock-commit", "manifest-commit", "source", "claim")
         for mutation in mutations:
             with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory).resolve()
-                (
-                    archive,
-                    lock,
-                    contract,
-                    sources,
-                    release_path,
-                    release,
-                    _,
-                ) = self.fixture(root)
-                if mutation == "archive":
-                    archive.write_bytes(archive.read_bytes() + b"changed")
-                elif mutation == "manifest":
-                    lock["manifest_sha256"] = "0" * 64
-                elif mutation == "revision":
-                    lock["manifest"]["applications"]["yazi"]["revision"] = "b" * 40
+                archive, lock, contract, sources, release_path, release, _ = self.fixture(root)
+                if mutation == "lock-commit":
+                    lock["tested_commit"] = "b" * 40
+                elif mutation == "manifest-commit":
+                    lock["manifest"]["source_commit"] = "b" * 40
                 elif mutation == "source":
-                    lock["manifest"]["applications"]["glum"]["source_archive_sha256"] = "0" * 64
-                elif mutation == "release":
-                    lock["selected_for_release"] = True
-                elif mutation == "qualified":
-                    lock["os_qualified"] = True
+                    lock["manifest"]["applications"]["yazi"][
+                        "source_archive_sha256"
+                    ] = "0" * 64
                 else:
-                    lock["attestation"]["verified"] = False
+                    lock["attestation"]["subject_sha256"] = "0" * 64
                 destination = root / "payload"
                 destination.mkdir()
                 with mock.patch(
@@ -275,145 +242,101 @@ class DefaultApplicationPayload(unittest.TestCase):
                     )
                 self.assertEqual(list(destination.iterdir()), [])
 
-    def test_extra_members_source_asset_changes_and_unsafe_destinations_are_refused(self):
-        for mutation in ("extra", "asset", "destination"):
-            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as directory:
-                root = Path(directory).resolve()
-                (
-                    archive,
-                    lock,
-                    contract_path,
-                    source_path,
-                    release_path,
-                    release,
-                    contents,
-                ) = self.fixture(root)
-                if mutation == "extra":
-                    with zipfile.ZipFile(archive, "a") as bundle:
-                        bundle.writestr("yazi/ya", b"runtime package manager")
-                    lock["artifact"]["bytes"] = archive.stat().st_size
-                    lock["artifact"]["sha256"] = sha(archive.read_bytes())
-                    lock["attestation"]["subject_sha256"] = lock["artifact"]["sha256"]
-                elif mutation == "asset":
-                    sources = json.loads(source_path.read_text())
-                    sources["applications"]["tootles"]["source"]["required_files"][
-                        "packaging/tootles.desktop"
-                    ]["sha256"] = "0" * 64
-                    source_path.write_text(json.dumps(sources, sort_keys=True) + "\n")
-                    contract = json.loads(contract_path.read_text())
-                    contract["source_inputs_sha256"] = sha(source_path.read_bytes())
-                    contract_path.write_text(json.dumps(contract, sort_keys=True) + "\n")
-                    lock["source_inputs_sha256"] = sha(source_path.read_bytes())
-                    lock["contract_sha256"] = sha(contract_path.read_bytes())
-                    lock["manifest"]["source_inputs_sha256"] = sha(source_path.read_bytes())
-                    raw = (json.dumps(lock["manifest"], sort_keys=True) + "\n").encode()
-                    lock["manifest_sha256"] = sha(raw)
-                    with zipfile.ZipFile(archive, "w") as bundle:
-                        bundle.writestr("manifest.json", raw)
-                        for member, body in contents.items():
-                            bundle.writestr(member, body)
-                    lock["artifact"]["bytes"] = archive.stat().st_size
-                    lock["artifact"]["sha256"] = sha(archive.read_bytes())
-                    lock["attestation"]["subject_sha256"] = lock["artifact"]["sha256"]
-                else:
-                    contract = json.loads(contract_path.read_text())
-                    contract["applications"]["glum"]["files"][0]["destination"] = "../bin/glum"
-                    contract_path.write_text(json.dumps(contract, sort_keys=True) + "\n")
-                    lock["contract_sha256"] = sha(contract_path.read_bytes())
-                destination = root / "payload"
-                destination.mkdir()
-                with mock.patch(
-                    "image.default_apps.payload.load_release_inputs", return_value=release
-                ), self.assertRaises(ValueError):
-                    unpack_payload(
-                        archive,
-                        lock,
-                        contract_path,
-                        source_path,
+    def test_tree_verification_requires_lock_commit_and_real_provenance(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            _, lock, contract, sources, release_path, release, _ = self.fixture(root)
+            destination = root / "payload"
+            destination.mkdir()
+            with self.assertRaisesRegex(ValueError, "source commit and payload lock"):
+                verify_payload_tree(
+                    destination, lock, contract, sources, release_path
+                )
+            with mock.patch(
+                "image.default_apps.payload.load_release_inputs", return_value=release
+            ):
+                with self.assertRaisesRegex(ValueError, "unexpected.*payload lock"):
+                    verify_payload_tree(
                         destination,
-                        "a" * 40,
+                        lock["manifest"],
+                        contract,
+                        sources,
                         release_path,
+                        "a" * 40,
+                    )
+                with self.assertRaisesRegex(ValueError, "staging is disabled"):
+                    verify_payload_tree(
+                        destination,
+                        lock,
+                        contract,
+                        sources,
+                        release_path,
+                        "a" * 40,
                     )
 
-    def test_overwrite_or_linked_parent_is_refused_without_partial_install(self):
-        for mutation in ("overwrite", "linked-parent"):
-            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as directory:
+    def populate_tree(self, destination, manifest, contents):
+        for app in manifest["applications"].values():
+            for row in app["files"]:
+                target = destination / row["destination"]
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(contents[row["bundle"]])
+                target.chmod(row["mode"])
+
+    def test_static_tree_check_refuses_suid_sgid_and_sticky_modes(self):
+        for special in (0o4000, 0o2000, 0o1000):
+            with self.subTest(special=oct(special)), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory).resolve()
-                (
+                _, lock, contract_path, _, _, _, contents = self.fixture(root)
+                destination = root / "payload"
+                destination.mkdir()
+                self.populate_tree(destination, lock["manifest"], contents)
+                target = destination / "usr/bin/yazi"
+                target.chmod(0o755 | special)
+                contract = json.loads(contract_path.read_text())
+                with self.assertRaisesRegex(
+                    ValueError, "staged default-application file changed"
+                ):
+                    _check_payload_tree_files(destination, lock["manifest"], contract)
+
+    def test_refused_staging_never_unlinks_a_racing_target(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            archive, lock, contract, sources, release_path, release, _ = self.fixture(root)
+            destination = root / "payload"
+            target = destination / "usr/bin/yazi"
+            target.parent.mkdir(parents=True)
+            target.write_bytes(b"created by another process\n")
+            target.chmod(0o600)
+            before = (
+                target.stat().st_dev,
+                target.stat().st_ino,
+                target.stat().st_mode,
+                target.read_bytes(),
+            )
+            with mock.patch(
+                "image.default_apps.payload.load_release_inputs", return_value=release
+            ), mock.patch("pathlib.Path.unlink") as unlink, self.assertRaisesRegex(
+                ValueError, "staging is disabled"
+            ):
+                unpack_payload(
                     archive,
                     lock,
                     contract,
                     sources,
+                    destination,
+                    "a" * 40,
                     release_path,
-                    release,
-                    _,
-                ) = self.fixture(root)
-                destination = root / "payload"
-                destination.mkdir()
-                if mutation == "overwrite":
-                    target = destination / "usr/bin/tootles"
-                    target.parent.mkdir(parents=True)
-                    target.write_text("keep\n")
-                else:
-                    (root / "outside").mkdir()
-                    (destination / "usr").symlink_to(root / "outside", target_is_directory=True)
-                before = sorted(str(path.relative_to(destination)) for path in destination.rglob("*"))
-                with mock.patch(
-                    "image.default_apps.payload.load_release_inputs", return_value=release
-                ), self.assertRaises(ValueError):
-                    unpack_payload(
-                        archive,
-                        lock,
-                        contract,
-                        sources,
-                        destination,
-                        "a" * 40,
-                        release_path,
-                    )
-                after = sorted(str(path.relative_to(destination)) for path in destination.rglob("*"))
-                self.assertEqual(after, before)
-
-    def test_failed_copy_removes_files_and_directories_from_that_attempt(self):
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory).resolve()
-            (
-                archive,
-                lock,
-                contract,
-                sources,
-                release_path,
-                release,
-                _,
-            ) = self.fixture(root)
-            destination = root / "payload"
-            destination.mkdir()
-            calls = 0
-
-            def fail_second(source, target, executable=False):
-                nonlocal calls
-                calls += 1
-                if calls == 1:
-                    return real_copy_regular(source, target, executable)
-                target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_bytes(b"partial")
-                raise OSError("injected copy failure")
-
-            with mock.patch(
-                "image.default_apps.payload.load_release_inputs", return_value=release
-            ), mock.patch(
-                "image.default_apps.payload.copy_regular", side_effect=fail_second
-            ):
-                with self.assertRaises(OSError):
-                    unpack_payload(
-                        archive,
-                        lock,
-                        contract,
-                        sources,
-                        destination,
-                        "a" * 40,
-                        release_path,
-                    )
-            self.assertEqual(list(destination.iterdir()), [])
+                )
+            unlink.assert_not_called()
+            self.assertEqual(
+                (
+                    target.stat().st_dev,
+                    target.stat().st_ino,
+                    target.stat().st_mode,
+                    target.read_bytes(),
+                ),
+                before,
+            )
 
 
 if __name__ == "__main__":

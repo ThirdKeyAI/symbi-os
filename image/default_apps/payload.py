@@ -1,22 +1,16 @@
-"""Admit and stage an exact offline Yazi, Glum and Tootles payload.
+"""Describe a closed offline Yazi, Glum and Tootles payload.
 
-This module has no downloader or build route.  A separate hosted build must
-produce an attested archive and a retained lock before desktop preparation can
-call :func:`unpack_payload`.
+Staging remains fail-closed until an offline verifier authenticates provenance
+bytes rather than trusting claims embedded in a payload lock.
 """
 import hashlib
 import json
 import os
 from pathlib import Path
-import re
-import shutil
 import stat
-import tempfile
-import zipfile
 
 from image.default_apps.inputs import digest, exact_hash, load_inputs
 from image.default_apps.glum_release import load_release_inputs
-from image.desktop.files import copy_regular
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -25,7 +19,6 @@ SOURCE_INPUTS = ROOT / "image/default_apps/source-inputs.json"
 GLUM_RELEASE_INPUTS = ROOT / "image/default_apps/glum-release-inputs.json"
 MAX_ARCHIVE = 768 * 1024**2
 MAX_FILE = 256 * 1024**2
-MAX_MANIFEST = 1024**2
 EXPECTED_IDENTITIES = {
     "yazi": (
         "https://github.com/sxyazi/yazi",
@@ -320,7 +313,11 @@ def _require_attestation(value, artifact):
         or not exact_hash(value["bundle_sha256"])
         or value["bundle_sha256"] == "0" * 64
     ):
-        raise ValueError("default-application payload lacks its exact build attestation")
+        raise ValueError("default-application payload lacks a bounded provenance claim")
+    raise ValueError(
+        "default-application staging is disabled until offline provenance "
+        "signature and bundle verification is implemented"
+    )
 
 
 def _require_manifest(manifest, contract, sources, glum_release, expected_commit):
@@ -465,68 +462,69 @@ def _require_lock(
         or not lock["scope"]
     ):
         raise ValueError("unexpected default-application payload lock")
-    _require_attestation(lock["attestation"], artifact)
     _require_manifest(
         lock["manifest"], contract, sources, glum_release, expected_commit
     )
+    _require_attestation(lock["attestation"], artifact)
     return contract, sources, glum_release
 
 
-def _validate_desktop(raw, name):
-    if len(raw) > 64 * 1024 or b"\0" in raw:
-        raise ValueError("unsafe application desktop entry")
-    try:
-        text = raw.decode("utf-8")
-    except UnicodeDecodeError as error:
-        raise ValueError("application desktop entry is not UTF-8") from error
-    lines = [line.strip() for line in text.splitlines() if line.strip() and not line.startswith("#")]
-    if not lines or lines[0] != "[Desktop Entry]":
-        raise ValueError("application desktop entry lacks its fixed group")
-    exec_rows = [line.split("=", 1)[1] for line in lines if line.startswith("Exec=")]
-    terminal_rows = [line.split("=", 1)[1].lower() for line in lines if line.startswith("Terminal=")]
-    if (
-        len(exec_rows) != 1
-        or len(terminal_rows) != 1
-        or terminal_rows[0] != "true"
-        or not re.fullmatch(r"(?:/usr/bin/)?" + re.escape(name) + r"(?:\s+%[fFuU])?", exec_rows[0])
-    ):
-        raise ValueError("application desktop entry may only launch its terminal binary")
-    lowered = text.lower()
-    if any(value in lowered for value in ("http://", "https://", "curl ", "wget ", "updater", "plugin")):
-        raise ValueError("application desktop entry exposes a download or extension route")
 
-
-def _copy_zip_member(bundle, info, target, expected):
-    target.parent.mkdir(parents=True, exist_ok=True)
-    size = 0
-    hasher = hashlib.sha256()
-    with bundle.open(info) as source, target.open("xb") as output:
-        while block := source.read(1024**2):
-            size += len(block)
-            if size > expected["bytes"]:
-                raise ValueError("application payload member exceeded its exact size")
-            hasher.update(block)
-            output.write(block)
-        output.flush()
-        os.fsync(output.fileno())
-        os.posix_fadvise(output.fileno(), 0, 0, os.POSIX_FADV_DONTNEED)
-    if size != expected["bytes"] or hasher.hexdigest() != expected["sha256"]:
-        raise ValueError("application payload member bytes changed")
-    target.chmod(expected["mode"])
-
-
-def _preflight_targets(payload, rows, forbidden):
-    for relative in [*(row["destination"] for row in rows), *forbidden]:
-        if not _safe_relative(relative):
-            raise ValueError("unsafe application install destination")
-        target = payload / relative
-        current = payload
-        for part in Path(relative).parts[:-1]:
-            current /= part
-            if current.is_symlink() or (current.exists() and not current.is_dir()):
-                raise ValueError("linked or non-directory application payload parent")
-        if target.exists() or target.is_symlink():
-            raise ValueError("application payload would overwrite or retain a forbidden path")
+def _check_payload_tree_files(payload, manifest, contract):
+    """Check untrusted staged bytes without granting installation status."""
+    payload = Path(payload)
+    if payload.is_symlink() or not payload.is_dir() or payload.resolve() != payload:
+        raise ValueError("invalid default-application payload tree")
+    count = 0
+    total = 0
+    for name in EXPECTED_IDENTITIES:
+        for row in manifest["applications"][name]["files"]:
+            path = payload / row["destination"]
+            try:
+                descriptor = os.open(
+                    path,
+                    os.O_RDONLY | os.O_CLOEXEC | getattr(os, "O_NOFOLLOW", 0),
+                )
+            except OSError as error:
+                raise ValueError("staged default-application file changed") from error
+            try:
+                before = os.fstat(descriptor)
+                with os.fdopen(os.dup(descriptor), "rb") as stream:
+                    actual_hash = hashlib.file_digest(stream, "sha256").hexdigest()
+                after = os.fstat(descriptor)
+            finally:
+                os.close(descriptor)
+            if (
+                not stat.S_ISREG(before.st_mode)
+                or before.st_nlink != 1
+                or stat.S_IMODE(before.st_mode) != row["mode"]
+                or before.st_size != row["bytes"]
+                or actual_hash != row["sha256"]
+                or (
+                    before.st_dev,
+                    before.st_ino,
+                    before.st_mode,
+                    before.st_nlink,
+                    before.st_size,
+                    before.st_mtime_ns,
+                )
+                != (
+                    after.st_dev,
+                    after.st_ino,
+                    after.st_mode,
+                    after.st_nlink,
+                    after.st_size,
+                    after.st_mtime_ns,
+                )
+            ):
+                raise ValueError("staged default-application file changed")
+            count += 1
+            total += row["bytes"]
+    for relative in contract["forbidden_destinations"]:
+        path = payload / relative
+        if path.exists() or path.is_symlink():
+            raise ValueError("a forbidden package, updater, plugin or theme path is present")
+    return count, total
 
 
 def unpack_payload(
@@ -538,151 +536,49 @@ def unpack_payload(
     expected_commit=None,
     glum_release_inputs_path=GLUM_RELEASE_INPUTS,
 ):
-    """Authenticate and copy only the fixed application payload allowlist."""
-    archive = Path(archive)
-    contract_path, source_inputs_path = Path(contract_path), Path(source_inputs_path)
-    glum_release_inputs_path = Path(glum_release_inputs_path)
-    destination = Path(destination) if destination is not None else None
+    """Refuse staging until provenance bytes have a real offline verifier.
+
+    This function deliberately performs no archive extraction, destination
+    creation, copying or cleanup.  A self-reported lock can never authorize a
+    filesystem mutation.
+    """
+    del archive
     if destination is None or expected_commit is None:
-        raise ValueError("payload destination and source commit are required")
-    contract, _, _ = _require_lock(
+        raise ValueError("payload destination and authenticated source commit are required")
+    _require_lock(
         lock,
-        contract_path,
-        source_inputs_path,
-        glum_release_inputs_path,
+        Path(contract_path),
+        Path(source_inputs_path),
+        Path(glum_release_inputs_path),
         expected_commit,
     )
-    _regular(archive, MAX_ARCHIVE)
-    if (
-        archive.name != lock["artifact"]["name"]
-        or archive.stat().st_size != lock["artifact"]["bytes"]
-        or digest(archive) != lock["artifact"]["sha256"]
-    ):
-        raise ValueError("default-application payload archive changed")
-    if (
-        destination.is_symlink()
-        or not destination.is_dir()
-        or destination.resolve() != destination
-        or not destination.parent.is_dir()
-        or destination.parent.resolve() != destination.parent
-    ):
-        raise ValueError("use a regular existing application payload root")
-    rows = [
-        row
-        for name in EXPECTED_IDENTITIES
-        for row in lock["manifest"]["applications"][name]["files"]
-    ]
-    expected = {row["bundle"]: row for row in rows}
-    stage = Path(tempfile.mkdtemp(prefix="symbi-default-apps-", dir=destination.parent))
-    created = []
-    created_directories = set()
-    try:
-        with zipfile.ZipFile(archive) as bundle:
-            entries = bundle.infolist()
-            names = [row.filename for row in entries]
-            if len(names) != len(expected) + 1 or set(names) != {*expected, "manifest.json"}:
-                raise ValueError("unexpected, missing or duplicate application payload member")
-            for info in entries:
-                mode = stat.S_IFMT(info.external_attr >> 16)
-                maximum = MAX_MANIFEST if info.filename == "manifest.json" else expected[info.filename]["bytes"]
-                if (
-                    info.flag_bits & 1
-                    or mode not in (0, stat.S_IFREG)
-                    or info.compress_type not in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED)
-                    or not 0 < info.file_size <= maximum
-                ):
-                    raise ValueError("unsafe application payload archive member")
-            raw_manifest = bundle.read("manifest.json")
-            if (
-                hashlib.sha256(raw_manifest).hexdigest() != lock["manifest_sha256"]
-                or _unique_json(raw_manifest, "application payload manifest") != lock["manifest"]
-            ):
-                raise ValueError("application payload manifest differs from retained bytes")
-            for member, row in expected.items():
-                info = bundle.getinfo(member)
-                if info.file_size != row["bytes"]:
-                    raise ValueError("application payload member size changed")
-                target = stage / member
-                _copy_zip_member(bundle, info, target, row)
-                if row["kind"] == "binary":
-                    with target.open("rb") as stream:
-                        if stream.read(4) != b"\x7fELF":
-                            raise ValueError("application executable is not an ELF binary")
-                if row["kind"] == "desktop":
-                    _validate_desktop(target.read_bytes(), member.split("/", 1)[0])
-        _preflight_targets(destination, rows, contract["forbidden_destinations"])
-        for row in rows:
-            target = destination / row["destination"]
-            missing = []
-            current = destination
-            for part in Path(row["destination"]).parts[:-1]:
-                current /= part
-                if not current.exists():
-                    missing.append(current)
-            created.append(target)
-            created_directories.update(missing)
-            copy_regular(stage / row["bundle"], target, row["mode"] == 0o755)
-        verify_payload_tree(
-            destination,
-            lock["manifest"],
-            contract_path,
-            source_inputs_path,
-            glum_release_inputs_path,
-        )
-        return lock["manifest"]
-    except BaseException:
-        for path in reversed(created):
-            path.unlink(missing_ok=True)
-        for path in sorted(created_directories, key=lambda item: len(item.parts), reverse=True):
-            try:
-                path.rmdir()
-            except (FileNotFoundError, OSError):
-                pass
-        raise
-    finally:
-        shutil.rmtree(stage)
-        if stage.exists():
-            raise RuntimeError("temporary application payload staging was not removed")
+    raise AssertionError("unreachable without an implemented provenance verifier")
 
 
 def verify_payload_tree(
     payload,
-    manifest,
+    lock,
     contract_path=CONTRACT,
     source_inputs_path=SOURCE_INPUTS,
     glum_release_inputs_path=GLUM_RELEASE_INPUTS,
+    expected_commit=None,
 ):
-    """Verify exact staged bytes while preserving all native-test blockers."""
-    payload = Path(payload)
-    contract = load_payload_contract(
-        contract_path, source_inputs_path, glum_release_inputs_path
+    """Require an authenticated lock before checking any installed tree.
+
+    The current provenance gate always refuses, so this function cannot return
+    a passing report until real offline signature and bundle verification is
+    implemented.
+    """
+    if expected_commit is None:
+        raise ValueError("an authenticated source commit and payload lock are required")
+    contract, _, _ = _require_lock(
+        lock,
+        Path(contract_path),
+        Path(source_inputs_path),
+        Path(glum_release_inputs_path),
+        expected_commit,
     )
-    sources = load_inputs(source_inputs_path)
-    glum_release = load_release_inputs(glum_release_inputs_path)
-    if payload.is_symlink() or not payload.is_dir() or payload.resolve() != payload:
-        raise ValueError("invalid default-application payload tree")
-    commit = manifest.get("source_commit") if isinstance(manifest, dict) else None
-    _require_manifest(manifest, contract, sources, glum_release, commit)
-    count = 0
-    total = 0
-    for name in EXPECTED_IDENTITIES:
-        for row in manifest["applications"][name]["files"]:
-            path = payload / row["destination"]
-            if (
-                path.is_symlink()
-                or not path.is_file()
-                or path.resolve() != path
-                or path.stat().st_size != row["bytes"]
-                or digest(path) != row["sha256"]
-                or path.stat().st_mode & 0o777 != row["mode"]
-            ):
-                raise ValueError("staged default-application file changed")
-            count += 1
-            total += row["bytes"]
-    for relative in contract["forbidden_destinations"]:
-        path = payload / relative
-        if path.exists() or path.is_symlink():
-            raise ValueError("a forbidden package, updater, plugin or theme path is present")
+    count, total = _check_payload_tree_files(payload, lock["manifest"], contract)
     return {
         "schema": 1,
         "passed": True,
@@ -698,5 +594,5 @@ def verify_payload_tree(
         "bytes": total,
         "source_inputs_sha256": contract["source_inputs_sha256"],
         "glum_release_inputs_sha256": contract["glum_release_inputs_sha256"],
-        "scope": "Offline payload bytes only; native launch, UI, file-operation, egress, secret-storage and real-account acceptance remain open",
+        "scope": "Offline payload bytes only; provenance and native acceptance remain open",
     }

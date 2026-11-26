@@ -1,21 +1,16 @@
 """Fault checks for the exact Glum v0.4.1 Linux release candidate."""
 import copy
-import hashlib
-import io
 import json
 from pathlib import Path
 import tarfile
 import tempfile
 import unittest
+from unittest import mock
 
 from image.default_apps.glum_release import inspect_release_archive, load_release_inputs
 
 
 ROOT = Path(__file__).resolve().parents[2]
-
-
-def sha(raw):
-    return hashlib.sha256(raw).hexdigest()
 
 
 class GlumReleaseInputs(unittest.TestCase):
@@ -47,39 +42,6 @@ class GlumReleaseInputs(unittest.TestCase):
         self.assertFalse(pins["security_qualified"])
         self.assertFalse(pins["os_qualified"])
 
-    def fixture(self, root):
-        pins = copy.deepcopy(load_release_inputs())
-        bodies = {}
-        for name, row in pins["asset"]["files"].items():
-            body = (b"\x7fELF" if name == "glum" else b"") + ("fixture:" + name + "\n").encode()
-            bodies[name] = body
-            row.update(bytes=len(body), sha256=sha(body))
-        archive = root / pins["asset"]["name"]
-        with tarfile.open(archive, "w:gz") as bundle:
-            for name in pins["asset"]["directories"]:
-                item = tarfile.TarInfo(name)
-                item.type = tarfile.DIRTYPE
-                item.mode = 0o755
-                bundle.addfile(item)
-            for name, row in pins["asset"]["files"].items():
-                item = tarfile.TarInfo(name)
-                item.size = len(bodies[name])
-                item.mode = row["mode"]
-                bundle.addfile(item, io.BytesIO(bodies[name]))
-        pins["asset"]["bytes"] = archive.stat().st_size
-        pins["asset"]["sha256"] = sha(archive.read_bytes())
-        pins["asset"]["expanded_bytes"] = sum(len(body) for body in bodies.values())
-        pins["signature"]["asset_sha256"] = pins["asset"]["sha256"]
-        return archive, pins, bodies
-
-    def test_exact_archive_inventory_is_passively_accepted(self):
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory).resolve()
-            archive, pins, bodies = self.fixture(root)
-            result = inspect_release_archive(archive, pins)
-            self.assertEqual(result["files"], len(bodies))
-            self.assertEqual(list(root.iterdir()), [archive])
-
     def test_substituted_asset_member_and_signature_metadata_are_refused(self):
         for mutation in (
             "asset-hash",
@@ -105,36 +67,59 @@ class GlumReleaseInputs(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     load_release_inputs(path)
 
-    def test_changed_bytes_extra_member_link_and_premature_qualification_fail(self):
-        for mutation in ("bytes", "extra", "link", "qualified"):
-            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as directory:
-                root = Path(directory).resolve()
-                archive, pins, _ = self.fixture(root)
-                if mutation == "bytes":
-                    archive.write_bytes(archive.read_bytes() + b"changed")
-                elif mutation in ("extra", "link"):
-                    changed = root / "changed.tar.gz"
-                    with tarfile.open(archive, "r:gz") as source, tarfile.open(changed, "w:gz") as target:
-                        for member in source.getmembers():
-                            data = source.extractfile(member) if member.isfile() else None
-                            target.addfile(member, data)
-                        item = tarfile.TarInfo("extra" if mutation == "extra" else "linked")
-                        if mutation == "link":
-                            item.type = tarfile.SYMTYPE
-                            item.linkname = "/etc/passwd"
-                        else:
-                            item.size = 1
-                            data = io.BytesIO(b"x")
-                        target.addfile(item, data if mutation == "extra" else None)
-                    archive = changed
-                    pins = copy.deepcopy(pins)
-                    pins["asset"]["bytes"] = archive.stat().st_size
-                    pins["asset"]["sha256"] = sha(archive.read_bytes())
+    def structural_archive(self, path, first_name, first_type, first_mode=0o644):
+        pins = load_release_inputs()
+        expected = [*pins["asset"]["directories"], *pins["asset"]["files"]]
+        remaining = [name for name in expected if name != first_name][:17]
+        with tarfile.open(path, "w:gz") as archive:
+            first = tarfile.TarInfo(first_name)
+            first.mode = first_mode
+            if first_type == "link":
+                first.type = tarfile.SYMTYPE
+                first.linkname = "/etc/passwd"
+            elif first_type == "directory":
+                first.type = tarfile.DIRTYPE
+            archive.addfile(first)
+            for name in remaining:
+                item = tarfile.TarInfo(name)
+                if name in pins["asset"]["directories"]:
+                    item.type = tarfile.DIRTYPE
+                    item.mode = 0o755
                 else:
-                    pins = copy.deepcopy(pins)
-                    pins["security_qualified"] = True
-                with self.assertRaises(ValueError):
-                    inspect_release_archive(archive, pins)
+                    item.mode = pins["asset"]["files"][name]["mode"]
+                archive.addfile(item)
+        return pins
+
+    def test_inspector_revalidates_canonical_inputs_before_archive_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory).resolve() / "candidate.tar.gz"
+            path.write_bytes(b"not an archive")
+            changed = copy.deepcopy(load_release_inputs())
+            changed["asset"]["sha256"] = "0" * 64
+            with mock.patch(
+                "image.default_apps.glum_release._require_archive_identity"
+            ) as identity:
+                with self.assertRaisesRegex(ValueError, "canonical hard-pinned"):
+                    inspect_release_archive(path, changed)
+            identity.assert_not_called()
+            with self.assertRaisesRegex(ValueError, "archive bytes changed"):
+                inspect_release_archive(path, load_release_inputs())
+
+    def test_extra_link_and_special_mode_cases_reach_structural_checks(self):
+        cases = (
+            ("unexpected", "file", 0o644, "unexpected or duplicate"),
+            ("glum", "link", 0o777, "link or special"),
+            ("glum", "file", 0o4755, "file metadata changed"),
+            ("share", "directory", 0o1755, "directory metadata changed"),
+        )
+        for name, kind, mode, message in cases:
+            with self.subTest(kind=kind, mode=oct(mode)), tempfile.TemporaryDirectory() as directory:
+                path = Path(directory).resolve() / "candidate.tar.gz"
+                pins = self.structural_archive(path, name, kind, mode)
+                with mock.patch(
+                    "image.default_apps.glum_release._require_archive_identity"
+                ), self.assertRaisesRegex(ValueError, message):
+                    inspect_release_archive(path, pins)
 
 
 if __name__ == "__main__":

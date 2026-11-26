@@ -158,8 +158,9 @@ build-provenance subject before staging. A raw detached-signature check was
 observed over that asset using the supplied certificate's public key. The
 certificate fields state the expected workflow, tag and commit, but the Fulcio
 chain and transparency-log entry are unverified, so full Sigstore publisher
-trust is not established. No such
-executable artifact or lock is retained yet, so desktop preparation remains
+trust is not established. Payload staging also has no offline verifier for its
+claimed build-provenance bundle. It therefore refuses even a self-consistent
+archive and lock without touching the destination. Desktop preparation remains
 deliberately disconnected and all release, security, native-desktop and
 real-account qualification flags stay false.
 

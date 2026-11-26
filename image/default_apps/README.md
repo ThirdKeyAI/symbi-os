@@ -53,20 +53,20 @@ contract is hash-bound to `source-inputs.json` and
 `glum-release-inputs.json`. Source-backed and Glum release-backed files must
 retain the exact size and digest recorded for their authenticated input.
 
-`payload.py` supplies the offline staging and verification path. It accepts
-only an exact, bounded ZIP with a retained manifest and artifact lock, plus a
-verified GitHub build-provenance record whose subject digest is the ZIP digest.
-The manifest must bind every executable to the exact application version,
-revision and source-archive digest, and bind Glum to the exact signed release
-asset. Archive members, install destinations and
-modes are a closed allowlist; links, special files, overwrites and extra members
-fail before any payload file is copied. A failed copy removes files created by
-that attempt.
+`payload.py` records the future lock and installed-file checks, but staging is
+explicitly disabled. A JSON field that calls itself verified is not provenance.
+No archive is extracted and no destination is created, copied or cleaned until
+an offline verifier checks the actual signature/bundle bytes, expected source
+repository, workflow and subject digest. Installed-tree verification now
+requires that authenticated lock and an external expected source commit; a
+manifest cannot authenticate its own commit. The static file check requires
+the exact full mode, including absence of setuid, setgid and sticky bits.
 
-No development-payload lock or executable artifact exists in this tree, so the
-desktop preparer does not call this path yet. Source intake is not executable
-payload authentication. The contract, security and OS qualification flags
-remain false until a separately attested build is retained, dependencies are
-reviewed, and native image tests cover launches, file operations, previews,
-desktop entries, media handoff, egress and Tootles credential storage. Real
-accounts remain disabled until that final secret-storage gate passes.
+The desktop preparer does not call this path. Even a self-consistent development
+payload, lock and self-reported attestation are refused. Source intake is not
+executable payload authentication. The contract, security and OS qualification
+flags remain false until the verifier exists, a separately attested build is
+retained, dependencies are reviewed, and native image tests cover launches,
+file operations, previews, desktop entries, media handoff, egress and Tootles
+credential storage. Real accounts remain disabled until that final
+secret-storage gate passes.
