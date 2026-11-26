@@ -1,0 +1,6 @@
+Getting image source signatures
+Checking if image destination supports signatures
+Copying blob sha256:8d4eadce51160c0e529828894ecdaabb844d71469b28674609f55bbff15fdc9a
+Copying config sha256:b7a1f162e385735c78073a0516312b718166d4f0c605fd11aaede61a433c379d
+Writing manifest to image destination
+Storing signatures

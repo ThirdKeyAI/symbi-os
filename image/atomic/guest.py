@@ -31,6 +31,20 @@ def read_bootc_status(path, properties):
                              'sha256':hashlib.sha256(raw).hexdigest()}
 
 
+def collect_status_diagnostic(run):
+    text=run(['/usr/bin/systemctl','show','s.service',
+              '--property=Result,ExecMainCode,ExecMainStatus,ActiveState,SubState'])
+    properties={}
+    for line in text.splitlines():
+        key,value=line.split('=',1)
+        if key in properties: raise ValueError('Duplicate collector service property')
+        properties[key]=value
+    journal=run(['/usr/bin/journalctl','--boot=0','--unit=s.service','--no-pager',
+                 '--output=short-monotonic','--lines=40'],check=False)
+    if len(journal.encode())>32768: raise ValueError('Collector journal exceeds observation bound')
+    return {'service':properties,'journal':journal}
+
+
 def main():
     product=Path('/sys/class/dmi/id/product_name').read_text().strip()
     if (os.geteuid()!=0 or product!='Symbi-Hosted-Atomic-Probe'
@@ -47,14 +61,14 @@ def main():
             'boot_id':Path('/proc/sys/kernel/random/boot_id').read_text().strip(),
             'nics':sorted(path.name for path in Path('/sys/class/net').iterdir()),
             'commands':[],'scope':'CI fixture-signed development artifact boot only; no release, desktop or containment qualification'}
-    def run(command):
+    def run(command,check=True):
         result=subprocess.run(command,stdin=subprocess.DEVNULL,capture_output=True,text=True,timeout=60,
                               env={'PATH':'/usr/sbin:/usr/bin:/sbin:/bin','LANG':'C.UTF-8'})
         if len(result.stdout.encode())>512*1024 or len(result.stderr.encode())>65536:
             raise ValueError('Oversized boot observation')
         record['commands'].append({'command':command,'exit_code':result.returncode,
                                    'stderr':result.stderr,'stdout_sha256':hashlib.sha256(result.stdout.encode()).hexdigest()})
-        result.check_returncode()
+        if check: result.check_returncode()
         return result.stdout
     try:
         process={k:v.strip() for k,v in (line.split(':',1) for line in Path('/proc/self/status').read_text().splitlines() if ':' in line)}
@@ -69,10 +83,9 @@ def main():
         record['sysroot_fstype']=run(['/usr/bin/findmnt','-n','-o','FSTYPE','--target','/sysroot']).strip()
         record['cmdline']=Path('/proc/cmdline').read_text().strip()
         record['bootc_version']=run(['/usr/bin/bootc','--version']).strip()
-        properties=dict(line.split('=',1) for line in run(['/usr/bin/systemctl','show','s.service',
-                        '--property=Result,ExecMainCode,ExecMainStatus,ActiveState,SubState']).splitlines())
+        record['bootc_status_diagnostic']=collect_status_diagnostic(run)
         record['bootc_status'],record['bootc_status_observation']=read_bootc_status(
-            Path('/run/symbi-atomic-status/status.json'),properties)
+            Path('/run/symbi-atomic-status/status.json'),record['bootc_status_diagnostic']['service'])
         fmt='%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n'
         inventory=run(['/usr/bin/rpm','-qa','--qf',fmt]).splitlines()
         if len(set(inventory))!=len(inventory): raise ValueError('Duplicate installed package identity')

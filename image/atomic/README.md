@@ -237,3 +237,41 @@ CPU limit. These fixtures do not qualify the native collector; that requires the
 next hosted run. No release key, signature exception, new dependency, agent
 authorization or journal event is introduced. INV-12 and human TCB review remain
 required, as do desktop, sandbox, release and rollback qualification.
+
+## Preserve failed collector diagnostics
+
+[Run 45822682886](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45822682886)
+at `3a2600a` completed installation and all five native source-policy controls.
+The fixed `s.service` then failed in the VM. Its failure prevented the dependent
+observer from starting and triggered immediate poweroff, leaving an empty
+structured guest report. The serial output does not identify the collector's
+underlying error. This run remains failed; earlier kernel/SELinux observations
+are not attributed to it. No additional capability is justified by this result.
+
+All 87 original files (193,041 expanded bytes) are retained with independent
+hash-bound reconciliation. Ephemeral signing keys, three containers, loop
+devices, image and private storage/runroot were removed. The hosted parent
+recorded 162,098 memory-ceiling events with no OOM/kill; the QEMU container peaked
+at 2,996,633,600 bytes with zero max/OOM/kill events. Host swap was prohibited.
+QEMU powered off with exit zero after 213.60 seconds; that is not boot acceptance.
+The corresponding workspace/formal runs
+[45822700443](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45822700443)
+and [45824324041](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45824324041)
+passed at `3a2600a` and the evidence-only `e8db3c7`, respectively.
+
+The diagnostic correction orders the zero-capability observer after the fixed
+collector with `Wants` rather than a success-dependent `Requires`. The collector
+no longer powers off on failure; the observer retains shutdown responsibility.
+Before accepting any output file, it records the collector's exact service
+result and at most 40 journal lines / 32 KiB. Duplicate service properties and
+oversized diagnostics fail closed. A failed collector still fails every accepted
+boot path. The fixed command, sole collector capability, private mount namespace,
+observer capability checks, report limits and all resource ceilings are unchanged.
+No capability, signature, SELinux or product policy is relaxed.
+
+New regression cases failed before implementation. All 248 offline image checks
+now pass under the local 128 MiB/10%-CPU cap: 35,900 KiB peak RSS, 0.79 CPU seconds,
+zero swap. They verify evidence retention and continued rejection, not native
+boot success. The next hosted attempt must supply the actual collector error or
+pass all existing acceptance checks. No dependency or journal event is added;
+INV-12 and human TCB review, desktop, containment and release gates remain open.

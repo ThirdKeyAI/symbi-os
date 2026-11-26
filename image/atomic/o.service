@@ -1,7 +1,7 @@
 [Unit]
 Description=Disposable hosted Atomic boot observation
 ConditionPathExists=!/etc/initrd-release
-Requires=s.service
+Wants=s.service
 After=local-fs.target systemd-udev-trigger.service s.service
 OnFailure=poweroff.target
 

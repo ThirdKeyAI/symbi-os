@@ -77,8 +77,37 @@ class AtomicStatus(unittest.TestCase):
         self.assertEqual(observer['CapabilityBoundingSet'], '')
         self.assertEqual(observer['AmbientCapabilities'], '')
         self.assertEqual(observer['NoNewPrivileges'], 'yes')
-        self.assertIn('s.service', observer['Requires'].split())
+        self.assertNotIn('Requires', observer)
+        self.assertIn('s.service', observer['Wants'].split())
         self.assertIn('s.service', observer['After'].split())
+        self.assertNotIn('OnFailure', collector)
+        self.assertEqual(observer['OnFailure'], 'poweroff.target')
+        self.assertEqual(observer['ExecStopPost'], '/usr/bin/systemctl --no-block poweroff')
+
+    def test_failed_collector_diagnostic_is_retained_without_accepting_its_output(self):
+        guest = self.guest()
+        properties = self.properties(); properties.update(Result='exit-code', ExecMainStatus='203',
+                                                          ActiveState='failed', SubState='failed')
+        calls = []
+        def run(command, check=True):
+            calls.append((command, check))
+            if command[0] == '/usr/bin/systemctl':
+                return '\n'.join(k+'='+v for k,v in properties.items())+'\n'
+            return 'Failed to execute the fixed collector\n'
+        observed = guest.collect_status_diagnostic(run)
+        self.assertEqual(observed['service'], properties)
+        self.assertIn('Failed to execute', observed['journal'])
+        self.assertTrue(calls[0][1]); self.assertFalse(calls[1][1])
+        with self.assertRaises(ValueError):
+            guest.read_bootc_status(Path('/unopened-failed-output'), observed['service'])
+
+    def test_collector_diagnostic_refuses_excessive_or_duplicate_property_output(self):
+        guest = self.guest()
+        properties='Result=success\nExecMainCode=1\nExecMainStatus=0\nActiveState=active\nSubState=exited\n'
+        for property_text, journal in [(properties+'Result=exit-code\n','log'), (properties,'x'*32769)]:
+            def run(command, check=True):
+                return property_text if command[0] == '/usr/bin/systemctl' else journal
+            with self.assertRaises(ValueError): guest.collect_status_diagnostic(run)
 
 
 if __name__ == '__main__':
