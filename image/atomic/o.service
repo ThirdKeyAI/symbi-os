@@ -1,0 +1,27 @@
+[Unit]
+Description=Disposable hosted Atomic boot observation
+ConditionPathExists=!/etc/initrd-release
+After=local-fs.target systemd-udev-trigger.service
+OnFailure=poweroff.target
+
+[Service]
+Type=oneshot
+ImportCredential=symbi-probe.py
+ImportCredential=symbi-expected.json
+ExecStart=/usr/bin/python3 %d/symbi-probe.py %d/symbi-expected.json
+ExecStopPost=/usr/bin/systemctl --no-block poweroff
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=LANG=C.UTF-8
+UMask=0077
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+PrivateTmp=yes
+MemoryMax=256M
+MemorySwapMax=0
+CPUQuota=50%
+TasksMax=32
+TimeoutStartSec=180
+TimeoutStopSec=15
+StandardOutput=journal+console
+StandardError=journal+console

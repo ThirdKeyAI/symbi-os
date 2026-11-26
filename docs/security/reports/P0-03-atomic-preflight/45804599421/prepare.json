@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "passed": true,
+  "os_qualified": false,
+  "guest_booted": false,
+  "installation_attempted": false,
+  "source_commit": "97e49d111d0d71b5393f4067e713ccd39b74f55f",
+  "image_source_commit": "23a6c721092ad77c3af33c11cab230ecaaa54cff",
+  "variant": "generic",
+  "phase": "prepare",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "limits": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "64"
+  },
+  "commands": [],
+  "lock_sha256": "dba718abbbf386d36eb6f8764846533f8aa9c3c9cc175d96d394399dcf2ceadf",
+  "scope": "Read-only saved development image preflight; no disk, installation, boot or release qualification",
+  "expected_inputs": {
+    "os": {
+      "ID": "secureblue",
+      "ID_LIKE": "fedora",
+      "VERSION_ID": "45",
+      "VARIANT_ID": "sericea-main-hardened",
+      "IMAGE_ID": "sericea-main-hardened"
+    },
+    "kernel": "7.3.4-300.secureblue.1.fc45.x86_64",
+    "bootc_version": "1.17.1",
+    "packages": [
+      "bootc\t0\t1.17.1\t1.fc45\tx86_64",
+      "kernel-core\t0\t7.3.4\t300.secureblue.1.fc45\tx86_64"
+    ],
+    "trust": {
+      "etc/containers/policy.json": "974d657b12acca4cd4db7ca6f4788f65b0f366d2193bdb6f0502d6c239c1a7a5",
+      "etc/containers/registries.d/symbiont.yaml": "336ad92f00b0f2fb6954fbcab7fc6541d4333a884f6038900eb94f7300104bfa"
+    }
+  },
+  "artifact": {
+    "id": 15104211166,
+    "node_id": "MDg6QXJ0aWZhY3QxNTEwNDIxMTE2Ng==",
+    "name": "desktop-development-image-generic",
+    "size_in_bytes": 4026641553,
+    "url": "https://api.github.com/repos/ThirdKeyAI/symbi-os/actions/artifacts/15104211166",
+    "archive_download_url": "https://api.github.com/repos/ThirdKeyAI/symbi-os/actions/artifacts/15104211166/zip",
+    "expired": false,
+    "digest": "sha256:5ec3b0fd3e60f5469fc627508a05f9b157244a0f2d5196905bdf9014c57ca3bb",
+    "created_at": "2026-11-26T09:35:21Z",
+    "updated_at": "2026-11-26T09:35:21Z",
+    "expires_at": "2026-11-29T09:35:02Z",
+    "workflow_run": {
+      "id": 45792057599,
+      "repository_id": 1472078858,
+      "head_repository_id": 1472078858,
+      "head_branch": "card/P0-03-image-foundation",
+      "head_sha": "23a6c721092ad77c3af33c11cab230ecaaa54cff"
+    }
+  },
+  "verified_archive": {
+    "name": "symbiont-os-generic.oci.tar.gz",
+    "bytes": 4026640633,
+    "sha256": "08b759cea64df1372683aa261da07f96e2ff51e57dc1b3535278445d5cac37af",
+    "image_id": "sha256:54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1"
+  },
+  "cgroup_final": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "64",
+    "memory.peak": "26894336",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 8097128\nuser_usec 5330627\nsystem_usec 2766500\nnice_usec 5320000\ncore_sched.force_idle_usec 0\nnr_periods 198\nnr_throttled 3\nthrottled_usec 1338\nnr_bursts 0\nburst_usec 0"
+  }
+}
