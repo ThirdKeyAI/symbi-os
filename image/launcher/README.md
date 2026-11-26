@@ -128,8 +128,8 @@ Both probes use read-only, no-network containers with all capabilities dropped,
 limited to 4 GiB/two CPUs/no swap and 25 minutes. No local executable or large
 artifact download is used. The reuse report retains `upstream_tests_passed: false`
 because it does not rerun that suite, and separately records the reviewed source
-build's passing suite. `os_qualified` stays false. The corrected independent
-reuse/startup run remains pending; the source-build controls have passed.
+build's passing suite. `os_qualified` stays false. The corrected independent reuse/startup run 45738767676 passed all 17
+provider controls and verified cleanup, without recompilation.
 
 The first independent run (45732324253) confirmed the missing `tesseract` CLI and
 passed the three baseline constructor controls. Its first patched case refused
@@ -207,3 +207,17 @@ output-overflow behavior. All guest isolation/resource limits, artifact bindings
 and the 17 acceptance expectations remain unchanged. No source recompilation is
 needed. A new hosted result must validate this lifecycle before claiming reuse
 success; the separate successful source-build suite remains valid.
+
+
+## Retained-binary acceptance result and Walker build
+
+Hosted run 45738767676 passed all 17 provider controls with the current reviewed
+artifact. Direct container startup loaded the real application provider; the
+hosted five-second observation finished and cleanup verified every diagnostic
+and probe container absent. Parent memory pressure is retained, with no OOM/kill.
+This establishes development provider reuse, not desktop or OS qualification.
+
+The [Walker source procedure](../walker/README.md) now prepares the separately
+pinned Rust/GTK build and original-base CLI controls. It reuses both authenticated
+RPM bundles and runs only on resource-limited hosted workers. Actual Walker
+compilation, tests, runtime acceptance and dependency review remain pending.
