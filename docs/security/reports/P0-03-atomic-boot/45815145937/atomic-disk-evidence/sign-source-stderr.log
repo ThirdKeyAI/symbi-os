@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/inputs/sign.py", line 129, in <module>
+    if __name__=='__main__': main()
+                             ~~~~^^
+  File "/inputs/sign.py", line 41, in main
+    raise ValueError('Unexpected image signature verifier')
+ValueError: Unexpected image signature verifier

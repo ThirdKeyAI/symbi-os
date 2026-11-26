@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "scope": "Initial requested terminal/media candidates. Full Ombuntu menus, fonts, compositor bindings and source-only tooling remain separate integration work.",
+  "packages": [
+    "kitty",
+    "mplayer",
+    "mpv",
+    "bat",
+    "fd-find",
+    "eza",
+    "zoxide",
+    "fzf",
+    "ripgrep",
+    "btop",
+    "fastfetch",
+    "lazygit",
+    "tmux",
+    "neovim",
+    "jq",
+    "bash-completion",
+    "wl-clipboard",
+    "grim",
+    "slurp",
+    "playerctl",
+    "pamixer",
+    "brightnessctl",
+    "imv",
+    "ffmpegthumbnailer"
+  ],
+  "packages_selected": false,
+  "security_review": {
+    "kitty": {
+      "minimum_upstream_version": "0.51.0",
+      "cves": [
+        "CVE-2026-134823",
+        "CVE-2026-95835"
+      ],
+      "fixed_package_verified": false,
+      "evidence": "docs/security/reports/P0-03-cve-bz/2026-11-26/desktop-profile/README.md",
+      "rule": "Signatures authenticate candidate origin only. Before selection inspect exact signed Fedora source/patches for both reviewed fixes and assess remaining advisories; upstream version alone does not establish backports or security clearance."
+    }
+  },
+  "unresolved_tooling": [
+    "starship",
+    "mise",
+    "gum"
+  ],
+  "not_installed_by_this_step": true
+}

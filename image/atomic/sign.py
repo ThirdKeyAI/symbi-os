@@ -1,5 +1,4 @@
 """Ephemeral offline CI signing and real image-policy negative controls."""
-import base64
 import gzip
 import hashlib
 import io
@@ -10,7 +9,7 @@ import shutil
 import tarfile
 
 from bounded_process import run_bounded
-from contract import digest_value, installer_policy, sha256, unique_json
+from contract import digest_value, installer_policy, require_verifier_identity, sha256, unique_json
 
 
 def main():
@@ -37,8 +36,11 @@ def main():
         return result
     homes=[]
     try:
-        if run('skopeo-version',['/usr/bin/skopeo','--version']).stdout.strip()!='skopeo version 1.25.1':
-            raise ValueError('Unexpected image signature verifier')
+        version=run('skopeo-version',['/usr/bin/skopeo','--version']).stdout
+        package=run('skopeo-package',['/usr/bin/rpm','-q','skopeo','--qf',
+                                    '%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n']).stdout
+        require_verifier_identity(version,package)
+        record['verifier']={'version':version.strip(),'rpm_identity':package.strip()}
         keys=[]
         for name in ('good','wrong'):
             home=private/name;home.mkdir(mode=0o700);homes.append(home)

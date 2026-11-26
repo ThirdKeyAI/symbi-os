@@ -174,6 +174,12 @@ def directory_source(oci,target,manifest_digest):
         raise
 
 
+def require_verifier_identity(version,package):
+    if (version.strip()!='skopeo version 1.25.1 commit: 849f8f0f9443e56435f4302f81ccadcf6a56da21'
+            or package.strip()!='skopeo\t1\t1.25.1\t2.fc45\tx86_64'):
+        raise ValueError('The pinned image signature verifier identity changed')
+
+
 def installer_policy(original,public_key,manifest_digest):
     """Authorize one ephemeral CI-signed local source, preserving release trust."""
     digest_value(manifest_digest)

@@ -220,6 +220,19 @@ class AtomicBoot(unittest.TestCase):
                 with self.assertRaises(ValueError): directory_source(root/'oci',root/'signed',manifest)
                 self.assertFalse((root/'signed').exists())
 
+    def test_packaged_verifier_identity_includes_exact_version_build_and_rpm(self):
+        from image.atomic.contract import require_verifier_identity
+        version='skopeo version 1.25.1 commit: 849f8f0f9443e56435f4302f81ccadcf6a56da21\n'
+        package='skopeo\t1\t1.25.1\t2.fc45\tx86_64\n'
+        require_verifier_identity(version,package)
+        for observed,identity in [(version.replace('849f8f','abcdef'),package),
+                                  ('skopeo version 1.25.1',package),
+                                  (version.replace('1.25.1','1.25.2'),package),
+                                  (version,package.replace('2.fc45','3.fc45')),
+                                  (version,package.replace('x86_64','aarch64'))]:
+            with self.subTest(observed=observed,identity=identity),self.assertRaises(ValueError):
+                require_verifier_identity(observed,identity)
+
     def boot(self):
         expected={'os':{'ID':'secureblue','ID_LIKE':'fedora','VERSION_ID':'45','IMAGE_ID':'sericea-main-hardened'},
                   'kernel':'7.3.4-300.secureblue.1.fc45.x86_64','bootc_version':'1.17.1',

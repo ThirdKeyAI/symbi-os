@@ -58,5 +58,20 @@
     "signedBy with GPGKeys and exactReference is supported for the directory transport; default reject and all original Docker release/base rules remain intact.",
     "standalone-sign emits a local OpenPGP image signature; actual policy positive and negative controls use skopeo copy on a tiny valid image; no native tools run locally.",
     "The production input bytes remain bound by the existing hosted artifact, OCI manifest and every blob; the ephemeral key is a test-harness identity, not independent release provenance."
-  ]
+  ],
+  "runtime_observation": {
+    "run": 45815145937,
+    "source": "ebb82d6ceea99f8e4280367343738ce8e3c5596b",
+    "skopeo_version": "skopeo version 1.25.1 commit: 849f8f0f9443e56435f4302f81ccadcf6a56da21",
+    "package_identity_from_retained_image_inventory": [
+      "skopeo",
+      "1",
+      "1.25.1",
+      "2.fc45",
+      "x86_64"
+    ],
+    "native_signing_executed": false,
+    "upstream_tag_equals_binary_build_commit": false,
+    "interpretation": "The earlier exact-string guard omitted Fedora build metadata. The next guard requires this full observed output and the exact RPM identity. Existing image digest binds the binary; upstream source review remains a reference, not reproducible binary-equivalence proof."
+  }
 }

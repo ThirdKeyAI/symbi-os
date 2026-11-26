@@ -162,3 +162,29 @@ Skopeo/library versions, local directory signature format and exact-reference
 policy semantics. This harness adds no production dependency, signing identity,
 policy bypass or release qualification. Actual registry update/rollback controls
 and human TCB/release approvals remain separate gates.
+
+## Packaged verifier identity correction
+
+[Run 45815145937](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45815145937)
+at `ebb82d6` passed image/blob/directory-source preparation. Its first signer
+check returned Skopeo 1.25.1 with Fedora's embedded build commit, while the
+guard expected only the version text. It correctly stopped there: no key was
+generated, no signature control ran, no disk was created and no installation or
+boot occurred. All 24 original files and independent reconciliation are kept.
+Signer/image/private storage cleanup passed with no OOM/kill/swap. The same
+commit's [workspace/formal run](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45815161057)
+passed.
+
+The corrected guard requires the complete observed output, including build
+`849f8f0f9443e56435f4302f81ccadcf6a56da21`, and independently queries the exact
+installed RPM identity `skopeo 1:1.25.1-2.fc45.x86_64`. It does not accept an
+arbitrary suffix or a changed version/build/package. The existing exact image
+digest binds the executable. This reported build commit differs from the
+reviewed upstream release tag; the source record does not claim reproducible
+binary equivalence. A new regression fails before this helper exists and
+rejects altered build/version/RPM/architecture values afterward.
+
+With the independent desktop package discovery additions, all 244 offline image
+tests pass at 37,656 KiB RSS, 0.83 CPU seconds and zero swap, under the same
+128 MiB/10%-CPU cap. Actual signature controls and installation/boot remain
+pending the corrected hosted attempt.

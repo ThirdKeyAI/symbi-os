@@ -130,3 +130,19 @@ apply to the curated menu/theme port.
   image. No shortcut is silently remapped or claimed complete because it parses.
 - [ ] Keep CPU/RAM bounded; perform image builds and VM checks on hosted runners.
   Installed font files and menu entries require no always-running extra service.
+
+
+## Candidate package preparation
+
+The [hosted package discovery](../image/desktop_packages/README.md) prepares
+signed candidates for MPlayer, mpv, Kitty and the requested terminal/media tools.
+It uses isolated pinned Fedora/RPM Fusion Free keys and stable repositories,
+records exact package/source/license/hash identities, tests missing/wrong keys
+and altered package bytes, and requires an unchanged installed base. This is a
+separate hosted download-only step; no candidate is installed or selected here.
+
+Kitty security requirements are bound to the retained cve.bz assessment, with
+fixed-package verification still false. Exact source/backport proof, remaining
+advisories, both-base additive compatibility, font/theme/menu/keybinding work
+and actual desktop acceptance remain required. Local verification uses only
+small inert fixtures; large candidates and native RPM tests stay hosted.
