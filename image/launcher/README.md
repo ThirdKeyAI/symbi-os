@@ -91,3 +91,18 @@ The actual compiler versions and native dependencies must be reviewed and locked
 after discovery, then compiled offline with the unchanged upstream Cargo.lock.
 Existing compositor, Elephant and launcher runtime locks are unchanged. No local
 Rust/GTK build, source-to-binary correspondence or Walker acceptance is claimed.
+
+Hosted Walker discovery45729431180 passed. `walker-build-rpms.lock.json` records
+91 signed candidate packages, including Rust/Cargo1.100.0, GTK development
+headers and protoc33.5. None shares a package name with the installed base.
+Discovery preserved the installed inventory and rejected a missing key and
+tampered payload. The bundle stays on hosted storage; installation, source
+compilation and runtime acceptance have not occurred.
+
+Elephant run45728665797 compiled all four planned binaries with the authenticated
+Fedora compiler, then failed upstream `TestRunOCR` because its result was empty.
+`development-binaries.lock.json` binds the retained bytes for later independent
+acceptance without recompilation. This does not turn the failed suite into a
+pass: native-provider controls have not run and upstream-test qualification
+remains incomplete. The source's OCR helper invokes `tesseract` and suppresses
+execution errors; the next test step must establish the actual tool failure.
