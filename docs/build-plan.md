@@ -103,6 +103,7 @@ The product image is Fedora Atomic (bootc), built with [BlueBuild](https://blue-
 
 - Symbiont runtime and the `symbi-*` services from this plan, as systemd units with SELinux policy modules.
 - Hyprland, Waybar and Walker configs adapted from Omarchy, plus an Agents section in the single Super + Alt + Space menu.
+- Owner-selected desktop profile: MPlayer, Ombuntu-style menus, Tokyo Night as the initial theme, Kitty as the default terminal, Nerd Fonts and the inspected local terminal customizations. Preserve the owner's existing keyboard shortcuts, including local overrides; the application launcher stays on Super + Space and the main menu on Super + Alt + Space. Exact requirements, local observations and the full shortcut reference are in [Desktop defaults and Ombuntu compatibility](desktop-profile.md). These additions remain pending in P0-03.
 - Managed browser policies (telemetry off, keyring-backed passwords) and developer-tool telemetry opt-outs, borrowed from Ombuntu.
 - Security by removal: `hyprpm` and all Hyprland plugins disabled, no menu extensions, no remote themes, no `curl | sh` installers anywhere.
 
