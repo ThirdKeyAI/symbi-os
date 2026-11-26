@@ -12,6 +12,8 @@ from pathlib import Path
 import platform
 import re
 import signal
+import socket
+import stat
 import subprocess
 import sys
 import tomllib
@@ -22,6 +24,8 @@ REQUIRED_CASES = ("onboarding", "files", "source", "git", "managed", "actions",
 DIGEST_REF = re.compile(r"[a-z0-9.-]+(?::[0-9]+)?/[a-z0-9_./-]+@sha256:[a-f0-9]{64}")
 EXPECTED_OS_RELEASE = {"ID": "secureblue", "ID_LIKE": "fedora", "VERSION_ID": "45",
                        "VARIANT_ID": "sericea-main-hardened", "IMAGE_ID": "sericea-main-hardened"}
+STATUS_SOCKET = Path("/run/symbi-qualification/status.sock")
+MAX_STATUS_BYTES = 128 * 1024
 
 
 def require(condition, message):
@@ -32,6 +36,19 @@ def require(condition, message):
 def digest(path):
     with Path(path).open("rb") as stream:
         return hashlib.file_digest(stream, "sha256").hexdigest()
+
+
+def unique_json(raw):
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("duplicate bootc status key")
+            result[key] = value
+        return result
+    result = json.loads(raw, object_pairs_hook=unique)
+    require(isinstance(result, dict), "bootc status must be a JSON object")
+    return result
 
 
 def command_output(command, cwd=None):
@@ -59,6 +76,38 @@ def validate_os_release(release):
     require(isinstance(release, dict), "OS release metadata must be a mapping")
     require(all(release.get(name) == value for name, value in EXPECTED_OS_RELEASE.items()),
             "selected secureblue Fedora 45 generic image required")
+
+
+def read_bootc_status(path):
+    """Read one output-only response from the fixed root status service."""
+    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    client.settimeout(120)
+    try:
+        client.connect(str(path))
+        client.shutdown(socket.SHUT_WR)
+        chunks = []
+        total = 0
+        while chunk := client.recv(16 * 1024):
+            total += len(chunk)
+            if total > MAX_STATUS_BYTES:
+                raise ValueError("bootc status response exceeded its bound")
+            chunks.append(chunk)
+    finally:
+        client.close()
+    if not chunks:
+        raise ConnectionError("fixed bootc status service returned no report")
+    return unique_json(b"".join(chunks))
+
+
+def validate_status_socket(path):
+    require(path == STATUS_SOCKET and path.parent.resolve(strict=True) == path.parent,
+            "fixed bootc status socket required")
+    parent = path.parent.stat()
+    info = path.lstat()
+    require(parent.st_uid == 0 and parent.st_gid == 0 and parent.st_mode & 0o777 == 0o755,
+            "unsafe bootc status parent")
+    require(stat.S_ISSOCK(info.st_mode) and info.st_uid == 0 and info.st_gid == 0
+            and stat.S_IMODE(info.st_mode) == 0o666, "unsafe bootc status socket")
 
 
 def host_details():
@@ -144,6 +193,7 @@ def main():
     parser.add_argument("--expected-binary-sha256")
     parser.add_argument("--image-ref")
     parser.add_argument("--expected-abi", type=int)
+    parser.add_argument("--bootc-status-socket", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     report = {"card": "P0-04", "passed": False, "qualified": False,
@@ -156,7 +206,8 @@ def main():
             print(json.dumps(report, indent=2))
             return 0
         require(all((args.source, args.binary, args.expected_binary_sha256, args.image_ref,
-                     args.expected_abi, args.output)), "all qualification inputs are required")
+                     args.expected_abi, args.bootc_status_socket, args.output)),
+                "all qualification inputs are required")
         require(re.fullmatch(r"[a-f0-9]{64}", args.expected_binary_sha256), "invalid binary digest")
         require(args.expected_abi >= 6, "Landlock ABI must be at least 6")
         with (ROOT / "upstream/symbiont.toml").open("rb") as stream:
@@ -165,13 +216,14 @@ def main():
         binary = args.binary.resolve(strict=True)
         validate_source(source, revision)
         require(digest(binary) == args.expected_binary_sha256, "binary does not match authenticated build digest")
-        bootc = json.loads(command_output(["bootc", "status", "--json"]))
-        validate_deployment(bootc, args.image_ref)
         candidate = args.output.resolve()
         require(not candidate.is_relative_to("/tmp"), "qualification output must be on guest disk, outside /tmp")
         require(not candidate.is_relative_to(source), "keep evidence outside the clean source checkout")
         candidate.mkdir(mode=0o700, parents=True, exist_ok=False)
         output = candidate
+        validate_status_socket(args.bootc_status_socket)
+        bootc = read_bootc_status(args.bootc_status_socket)
+        validate_deployment(bootc, args.image_ref)
         (output / "bootc-before.json").write_text(json.dumps(bootc, indent=2) + "\n")
         report.update(runtime_revision=revision, binary_sha256=args.expected_binary_sha256,
                       image_ref=args.image_ref, drivers={name: digest(source / "scripts" / name)
@@ -188,7 +240,7 @@ def main():
                          args.expected_binary_sha256, revision, args.expected_abi)
         validate_source(source, revision)
         require(digest(binary) == args.expected_binary_sha256, "binary changed during qualification")
-        after = json.loads(command_output(["bootc", "status", "--json"]))
+        after = read_bootc_status(args.bootc_status_socket)
         validate_deployment(after, args.image_ref)
         (output / "bootc-after.json").write_text(json.dumps(after, indent=2) + "\n")
         report.update(passed=True, qualified=True)
