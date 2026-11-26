@@ -14,7 +14,10 @@ hosted Fedora runner without installing them. Select it manually from the
 existing Fedora package discovery workflow; ordinary `main` and pull-request
 runs continue to use the `hyprland` profile. The workflow validates the selected
 choice before passing it as a quoted argument to the wrapper, which also checks
-its profile allowlist.
+its profile allowlist. Because the selected base already contains the three
+requested engine packages, this profile uses `dnf5 download --resolve --alldeps`
+with a private destination. That downloads the complete repository closure even
+when packages are installed and performs no RPM transaction.
 
 `gvisor-inputs.json` fixes release `release-20261123.1`, its commit and tag
 object, the complete x86_64 bzip2 archive, the publisher checksum list, license,

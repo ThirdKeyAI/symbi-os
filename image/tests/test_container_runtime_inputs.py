@@ -215,6 +215,24 @@ class ContainerRuntimeInputs(unittest.TestCase):
                             for name in artifact_names))
         self.assertEqual(document["permissions"], {"contents": "read"})
 
+        spec = importlib.util.spec_from_file_location(
+            "resolve_packages", ROOT / "image/hyprland/resolve_packages.py")
+        resolver = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(resolver)
+        command = resolver.resolve_command(requirements)
+        self.assertEqual(
+            command[-9:],
+            ["download", "--resolve", "--alldeps", "--destdir", "/output/rpms", "--",
+             *requirements["packages"]],
+        )
+        self.assertNotIn("install", command)
+        self.assertNotIn("--downloadonly", command)
+        hyprland = {"profile": "hyprland", "packages": ["cmake"]}
+        self.assertEqual(
+            resolver.resolve_command(hyprland)[-4:],
+            ["install", "--downloadonly", "--", "cmake"],
+        )
+
         intake_path = ROOT / ".github/workflows/gvisor-intake.yml"
         intake_workflow = intake_path.read_text()
         intake_document = yaml.safe_load(intake_workflow)

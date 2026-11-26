@@ -37,6 +37,25 @@ def require_verified_rpm(status, output, fingerprint):
             raise ValueError('Unexpected RPM signing key')
 
 
+def resolve_command(requirements):
+    """Return the fixed no-transaction command for one reviewed package profile."""
+    packages = requirements.get('packages')
+    if (not isinstance(packages, list) or not packages
+            or any(not isinstance(name, str) or not name or name.startswith('-')
+                   for name in packages)):
+        raise ValueError('Package requirements are invalid')
+    command = ['dnf5', '--config=/inputs/dnf.conf', '--releasever=45', '--assumeyes',
+               '--disable-plugin=*']
+    if requirements.get('profile') == 'container-runtime':
+        # The selected Secureblue base already contains the engine packages.
+        # `install --downloadonly` therefore resolves an empty transaction.
+        # DNF5's download command with --alldeps intentionally retains the
+        # complete repository closure even when those packages are installed.
+        return command + ['download', '--resolve', '--alldeps',
+                          '--destdir', '/output/rpms', '--', *packages]
+    return command + ['install', '--downloadonly', '--', *packages]
+
+
 def main():
     if not Path('/run/.containerenv').exists() or os.geteuid() != 0:
         raise SystemExit('Use the disposable hosted Fedora discovery container')
@@ -89,9 +108,8 @@ def main():
         run('import-key', rpmkeys + ['--import', str(key)])
         require_keyring(run('keyring', rpmkeys + ['--list']).stdout, fingerprint)
         # The root filesystem is read-only. DNF gets only the two reviewed Fedora
-        # repos and private cache/log/state paths. --downloadonly runs no RPM transaction.
-        command = ['dnf5', '--config=/inputs/dnf.conf', '--releasever=45', '--assumeyes',
-                   '--disable-plugin=*', 'install', '--downloadonly', '--', *requirements['packages']]
+        # repos and private cache/log/state paths. Both command forms only download.
+        command = resolve_command(requirements)
         run('resolve-download', command, timeout=1200)
         packages = sorted(rpms.glob('*.rpm'))
         if not packages or len(packages) > 512 or sum(p.stat().st_size for p in packages) > 2 * 1024**3:
