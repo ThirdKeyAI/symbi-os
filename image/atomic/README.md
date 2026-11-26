@@ -9,12 +9,16 @@ The ordinary Atomic workflow now extends that harness through an exact retained
 predecessor, signed switch and booted rollback. Passing it does not establish
 desktop, sandbox, release or NVIDIA qualification.
 
-The first prerequisite passed in [preflight 45804599421](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45804599421)
-at `97e49d111d0d71b5393f4067e713ccd39b74f55f`: complete saved-archive identity,
-102 installed files, 2,184 packages, protected kernel/initramfs hashes, bootc
-options, exact secureblue/Fedora identity and enforcing trust configuration.
-All 41 original small files are retained and independently reconciled. Earlier
-runs remain failed: protected-initramfs access in `45799924739`, then incorrect
+The current prerequisite passed in [preflight 45901694620](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45901694620)
+at `370ac0af566cd94d7452fd415c59d3def9619b85` against the exact generic image
+built at `d436c6ee8a7ed159afa59db9bd82377ae8ea2389`: complete saved-archive
+identity, 212 installed files, 2,184 packages, protected kernel/initramfs hashes,
+bootc options, exact secureblue/Fedora identity and enforcing trust
+configuration. The hosted artifact retains all 41 original small files. The repository
+retains the two decision reports and a reconciliation binding the complete
+artifact identity and hashes. The earlier accepted prerequisite `45804599421` describes the
+predecessor image and remains part of the rollback input. Older failed runs
+remain failed: protected-initramfs access in `45799924739`, then incorrect
 OS/default-filesystem assumptions in `45802753036`. The latter showed that
 bootc has no configured filesystem default; this disposable test explicitly
 chooses Btrfs. That choice does not silently define the product installer.
