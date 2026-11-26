@@ -1,0 +1,6016 @@
+{
+  "bin": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "bin/kitten": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 31564041,
+    "sha256": "cc4f58ab88cdb1b9adedc88fc12ac0287003fbd5b47d392564790cf8a7b57b01"
+  },
+  "bin/kitty": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 219944,
+    "sha256": "06622fd92cff6914c0d42a345679cde15207c7a9c8ffe198333bf6d349f29ce6"
+  },
+  "bin/slangc": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 170432,
+    "sha256": "78042b161a650bfed6be7eabc256e497929867e24900ddefc8fb27240ea40d23"
+  },
+  "lib": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "lib/cacert.pem": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 200116,
+    "sha256": "427c064216761a1e72a8b30f0d954d08cb6e4435a82091fb865afd20c8497285"
+  },
+  "lib/kitty": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "lib/kitty-extensions": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "lib/kitty-extensions/_asyncio.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 74000,
+    "sha256": "daf7b96a717af2312cd1cf0d7da794b2915133a5961866b9c0361e1533725b93"
+  },
+  "lib/kitty-extensions/_bisect.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 27680,
+    "sha256": "3c41a13921dd5fa8ab2426b1106253dca0e064d9d186c70b0309932d16041c19"
+  },
+  "lib/kitty-extensions/_blake2.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 93664,
+    "sha256": "ad84d0423d03352672e8ad8aa5fccd5c2d8a034d1943637979503ad0fad524c4"
+  },
+  "lib/kitty-extensions/_bz2.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 32128,
+    "sha256": "d1194e5c587b1d7c462a891d546dbca6dd94d21f759c72be8d2ad791d8172ed0"
+  },
+  "lib/kitty-extensions/_codecs_cn.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 158272,
+    "sha256": "fe8cbf3e82b5548f9106b3d7ec8535ff2568c6936572c4a40a0af87f6fd2fa73"
+  },
+  "lib/kitty-extensions/_codecs_hk.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 162400,
+    "sha256": "762de0e9c5ba3f07cb6542a3b72ebeca51f43979a881598540425ff478297adc"
+  },
+  "lib/kitty-extensions/_codecs_iso2022.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 31328,
+    "sha256": "745b0057da2e382bc55fc14f715fde9960d85e3bc47ace1aabec448b8e349c95"
+  },
+  "lib/kitty-extensions/_codecs_jp.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 272960,
+    "sha256": "18a5f18a8ff1191c32923bb6b8a01ebacbc79e85620a0cfa87a3a71df55cb015"
+  },
+  "lib/kitty-extensions/_codecs_kr.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 141888,
+    "sha256": "2a3b86ef348e68f212b1a27b92a2cb34a165c67509f12377aac8b6ef84c71d17"
+  },
+  "lib/kitty-extensions/_codecs_tw.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 117312,
+    "sha256": "ca071722311038782cde60852b620d32cfb345bfbc95474e7c41ae6eb5ae081f"
+  },
+  "lib/kitty-extensions/_csv.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 33576,
+    "sha256": "69c450295544345d999ec497279e1f41aadd8f165d08426f6540561961440a79"
+  },
+  "lib/kitty-extensions/_ctypes.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 146048,
+    "sha256": "a3c2fff5718d6ec247ad2b19bae5c41be251be4cbacf878306ea0ed376fb1ade"
+  },
+  "lib/kitty-extensions/_ctypes_test.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 150392,
+    "sha256": "a95b41bfdd68b6758f4ec8770ca0388a1ea6ee733c9d30b035de90635e953e7c"
+  },
+  "lib/kitty-extensions/_curses.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 148960,
+    "sha256": "b168774355e71502dc24255534c9c9901b7dba74fc2245be1f99819fe65d8b9e"
+  },
+  "lib/kitty-extensions/_curses_panel.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 28288,
+    "sha256": "77880e669787b04c5eeb3694ca49993b02404a4908dace9250d90c2b41772fe6"
+  },
+  "lib/kitty-extensions/_decimal.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 359680,
+    "sha256": "afc3830c88aa8bad868b5225b5a95ff71c35fd030205d2aacefcd119d8c221c3"
+  },
+  "lib/kitty-extensions/_elementtree.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 88960,
+    "sha256": "bac1f8d1ed8b6aa84738c43eee78baac28a0e781a80c2d4d13666533f20037cb"
+  },
+  "lib/kitty-extensions/_hashlib.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 72576,
+    "sha256": "5b1008633a56f51dede3b0579b291faca7ccd98c50d14a8c742b03191a8113f0"
+  },
+  "lib/kitty-extensions/_heapq.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 35384,
+    "sha256": "cc78621369487963b2e28264055d0b7ccc4e8ec0f8d4b827ea73ec3c075beef3"
+  },
+  "lib/kitty-extensions/_hmac.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 114656,
+    "sha256": "dc0ae92e235c29c403a64d825b45a28587f64917e5f791205e48e742cdce67e3"
+  },
+  "lib/kitty-extensions/_interpchannels.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 49624,
+    "sha256": "6946ece629ba3191f2026ac9509e33a75153154a5f0eaea13ae393872a4fd407"
+  },
+  "lib/kitty-extensions/_interpqueues.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 32088,
+    "sha256": "7179e27d36c4f9b225407f1eb8162afca56ef13392e4bc65f9e0f4faf5e4e2c3"
+  },
+  "lib/kitty-extensions/_interpreters.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 41272,
+    "sha256": "bfc65ebd23d1d034f6cf50c3199127141e40e4d67b657b3ae9c45f1755ab93cb"
+  },
+  "lib/kitty-extensions/_json.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 49112,
+    "sha256": "8c0daf928c5eff3a58da3bc42caaeae7dcd5aee7508021535fed337bc3b8b4d2"
+  },
+  "lib/kitty-extensions/_lsprof.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 28256,
+    "sha256": "04c0c8833c56111b299c21d90ddb7a4b7ae66e897aee53aa6a6f22adc9403685"
+  },
+  "lib/kitty-extensions/_lzma.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 49248,
+    "sha256": "02533eb0fec75130613c1fb0ecfaa198a8610ff4b1aacf389a9956c812e9e08d"
+  },
+  "lib/kitty-extensions/_md5.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 23744,
+    "sha256": "08629c53e4b8b22937d4791956a96be214b2bd6e0b2b37cac61ce575c64d618a"
+  },
+  "lib/kitty-extensions/_multibytecodec.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 54680,
+    "sha256": "ca6494f0b49514fb1f06797bba8190466648f7c70d1db914583ffc58bfba83e7"
+  },
+  "lib/kitty-extensions/_multiprocessing.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 24264,
+    "sha256": "bc7f2b70e2f4962c99ff403488f2669a485190ca98921c52c29caa61d7027f74"
+  },
+  "lib/kitty-extensions/_pickle.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 141504,
+    "sha256": "4cdebf3ed3a396260456bcc8ff8a6c563cbac9ef3df5aa5d5b5789b2fc57e479"
+  },
+  "lib/kitty-extensions/_posixshmem.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 14904,
+    "sha256": "6c0050c2cbbe1ab1732647cc296d6ed5cdc0e28dc6aaf1ce9a8e69b3ec022579"
+  },
+  "lib/kitty-extensions/_posixsubprocess.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 31608,
+    "sha256": "3b564e4b167eaecd1ee85529b8b0f07d9d760094a3492c90a4d8148db49347c8"
+  },
+  "lib/kitty-extensions/_queue.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 23936,
+    "sha256": "0d1e8a466a01db250705de95d60a28ba66734dfd63c0359ccf859e646d77ffd6"
+  },
+  "lib/kitty-extensions/_random.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 23440,
+    "sha256": "67e5c2f4d01f6721e2224d94fc3857fcfd136e90e3746d516bd4d192d68bc116"
+  },
+  "lib/kitty-extensions/_remote_debugging.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 73472,
+    "sha256": "09fd90243ede46053ccb8574a27b61770f078f1a506291ec4153ddbf0c456012"
+  },
+  "lib/kitty-extensions/_sha1.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 23744,
+    "sha256": "d5d482b187913554f0b6c691eecba3d681afecd3d39f8dc0f8540bd66887a30a"
+  },
+  "lib/kitty-extensions/_sha2.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 61504,
+    "sha256": "36a9f414c1e70b07dfc95c04f082f882dadee43194f52d406f459a536cd656d1"
+  },
+  "lib/kitty-extensions/_sha3.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 37632,
+    "sha256": "e8ca041f37bb5d5691e258d968b1b2a385e1983f627049fb91ad34f3e7cd4160"
+  },
+  "lib/kitty-extensions/_socket.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 112608,
+    "sha256": "c17468e0da87711feea3e56251933066ae13306d2fecfb08dfbcff2031893487"
+  },
+  "lib/kitty-extensions/_sqlite3.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 149120,
+    "sha256": "8b2d55187a816d5ef134fcb1ae6f1064b5fada0b11cd3ee879d849a25cddc51f"
+  },
+  "lib/kitty-extensions/_ssl.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 240896,
+    "sha256": "d6b9b61652236da1caab8d30e45990030884fd63e83c6231cd15a3e65e3d792b"
+  },
+  "lib/kitty-extensions/_statistics.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 14744,
+    "sha256": "51f8cc8483589d89f1ebe8acb4e5580a0380a4459e6bdaa7b93a4cabee922bcd"
+  },
+  "lib/kitty-extensions/_struct.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 59528,
+    "sha256": "6b9ad9468a3ae4d7cae84c47adb092654b7977c77795255f1112219bba9a688b"
+  },
+  "lib/kitty-extensions/_testbuffer.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 54264,
+    "sha256": "7ddb462a27dbead521327a200bfe71ae01068ad22fe6afdf20e6132bf42b35f7"
+  },
+  "lib/kitty-extensions/_testcapi.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 363968,
+    "sha256": "95e086b55908c674458aca2e0ee126a5e685de203ec9cdbd89d9be5575068afa"
+  },
+  "lib/kitty-extensions/_testclinic.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 109336,
+    "sha256": "7f12a1f566aca178aaf32930ee39bed221daa8f4880a9e18e1540fe3960fdaae"
+  },
+  "lib/kitty-extensions/_testclinic_limited.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 14680,
+    "sha256": "92f4254b47be5efa96a9e52f2e7de655f322096d384e2ff4fa60d482ac5ec1da"
+  },
+  "lib/kitty-extensions/_testimportmultiple.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 14712,
+    "sha256": "f641268df148345d571e37c053e52282fa1693fefcf4e61ac40eb60431419b27"
+  },
+  "lib/kitty-extensions/_testinternalcapi.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 90656,
+    "sha256": "806be607d1b95030623c4731c5c5feae29f02e5a30346a08341f8d127586d128"
+  },
+  "lib/kitty-extensions/_testlimitedcapi.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 206512,
+    "sha256": "76dcae9e07cbce4dc7d933fc02ef553c6c068638ccb825580e7ea706072fbe1d"
+  },
+  "lib/kitty-extensions/_testmultiphase.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 36192,
+    "sha256": "45a771891b5a4990c8d6343d5d2f36e9ef8211737fb762b73ba7c1c3147e9324"
+  },
+  "lib/kitty-extensions/_testsinglephase.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 20312,
+    "sha256": "f96dc83bbec53ca8979c653e98b2bce8a0cbfb2702bea6650592815a51bcd6b6"
+  },
+  "lib/kitty-extensions/_uuid.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 14712,
+    "sha256": "3107b0698af046306d695795d37da5d504ed973a4d0eae44b91baf5f179a816f"
+  },
+  "lib/kitty-extensions/_xxtestfuzz.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 23168,
+    "sha256": "ddc89fe90296c6a10ccbba861994027432df85374050b28ce2d26cc0e8b1d5d2"
+  },
+  "lib/kitty-extensions/_zoneinfo.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 37080,
+    "sha256": "aea813e1dfbc3eae6fb0978b7bd28bb1c346bd4c7fc3f89a5743b3a9072f74ac"
+  },
+  "lib/kitty-extensions/array.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 74968,
+    "sha256": "bb791aa1254b5168855c39acec3bf58941e76750c169728025a9dab2500cb6cb"
+  },
+  "lib/kitty-extensions/binascii.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 36512,
+    "sha256": "91cbd24e957d0943d6e5b92ea4f9c978aa4b6d2ae40fc630c803cec30fae60ea"
+  },
+  "lib/kitty-extensions/cmath.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 64992,
+    "sha256": "f6df808c4a1ef8039aeffa9226dc1772b16449090f1075736892bc84cc8800e2"
+  },
+  "lib/kitty-extensions/fcntl.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 27320,
+    "sha256": "43ae46b3a06c42e8e15fc9c2aaa9fdca0309de3451f409fbece498b9f58c9230"
+  },
+  "lib/kitty-extensions/grp.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 19488,
+    "sha256": "ad9a5eb54abdc4dd887369486a54362316f349b1fa852fbd806ef87f85c7cbc6"
+  },
+  "lib/kitty-extensions/kittens.transfer.rsync.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 41208,
+    "sha256": "7c554216772ebca75da27856bb8917a6307d2b28bba0108c2b23467bbcbeaaf9"
+  },
+  "lib/kitty-extensions/kitty.fast_data_types.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1816264,
+    "sha256": "dea2063475f8b790ef8837c9b3b1a5695d0892d6b09088f5eacf49337df17101"
+  },
+  "lib/kitty-extensions/kitty.glfw-wayland.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 493400,
+    "sha256": "f42a83aaad33b0f0908fc1c531889fac436f731baf80388f48ca793053d0a95a"
+  },
+  "lib/kitty-extensions/kitty.glfw-x11.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 397624,
+    "sha256": "e9795c30292782d701934b8b89ecacf3309eea499ad2fbbb732dc917abc1a7a8"
+  },
+  "lib/kitty-extensions/math.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 82912,
+    "sha256": "db26c6fa372fc34b51a6d9131e0e57342d87ea2176bea78ec8421cc0f9d2af21"
+  },
+  "lib/kitty-extensions/mmap.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 32688,
+    "sha256": "9586fd5d3c92bf03aa2ac1242049226e7373fde191ec88b04fe8916f8b628043"
+  },
+  "lib/kitty-extensions/pyexpat.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 78904,
+    "sha256": "55b341f652ae7be54c6e8ab0b49947d069eb4baf1c5db3169f2d0fa1412ff782"
+  },
+  "lib/kitty-extensions/python-lib.bypy.frozen": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 23856508,
+    "sha256": "eeb7943335841fe6e2dda6bc8707822624559a06a4ce29ddcaaefe0e766ecdf5"
+  },
+  "lib/kitty-extensions/readline.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 40824,
+    "sha256": "37ee4a4e3e7525aa592365edf114c267c5d7de0586ea9fc1f4848cf6d7ce8f27"
+  },
+  "lib/kitty-extensions/resource.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 23608,
+    "sha256": "b41c691aa2f010d6fd46adc352dd5b1f87a4ef93e942dc6463203e84f8463a5f"
+  },
+  "lib/kitty-extensions/select.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 37064,
+    "sha256": "130353bea701d5245d30ae0bdde313c36fa75530654135d8bc29b013aac20f70"
+  },
+  "lib/kitty-extensions/syslog.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 15232,
+    "sha256": "458f6a58785cf08fe20989ecc695172fc337792428306edbeff6d02ed5d12f12"
+  },
+  "lib/kitty-extensions/termios.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 35608,
+    "sha256": "1741904187d1ad66ccfff6d94cedffeaf2d8218e9f23b2828bb5e9578f6bb3bf"
+  },
+  "lib/kitty-extensions/unicodedata.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 747032,
+    "sha256": "2c8f0f51024bf1d7e76b848bd0d7534fd2dffbc15305592d13dd5a584b4c2fa3"
+  },
+  "lib/kitty-extensions/xxlimited.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 19448,
+    "sha256": "f408dcf2fb3a4eea498c2c5a70aa2d1c7f260b8e2d160c2999b7cf9b83e31679"
+  },
+  "lib/kitty-extensions/xxlimited_35.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 15256,
+    "sha256": "5184b4fba3a011e07f34591bf3ba7a7db3780254afdec871538f34892336e26c"
+  },
+  "lib/kitty-extensions/xxsubtype.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 16056,
+    "sha256": "f8754101bff34b8bb0c17d26b1040b1f63e3b5876e6709ba6940a54864e3528e"
+  },
+  "lib/kitty-extensions/zlib.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 50400,
+    "sha256": "5aefe6a6156089a50565759ed7071cb2583dfdeae239554c62068c8d6a804664"
+  },
+  "lib/kitty/fonts": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "lib/kitty/fonts/SymbolsNerdFontMono-Regular.ttf": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2610012,
+    "sha256": "fe471e538392f51910faab985fa8e192a39dd3426125edd15b71b3680df0e749"
+  },
+  "lib/kitty/logo": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "lib/kitty/logo/beam-cursor.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 193,
+    "sha256": "9f4d3fd84dbc4cf2181223371905f2f915fef84f1915f0c49624602fc1fb0114"
+  },
+  "lib/kitty/logo/beam-cursor@2x.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1212,
+    "sha256": "d116293e0c60d5732f8cc0c60ab9ebaf45a45f37c6c1c213fa70d28f7163caa2"
+  },
+  "lib/kitty/logo/kitty-128.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4096,
+    "sha256": "758a660e336b0f5437b5d41773a86ab38322e2c795b14a535149dec7513ea128"
+  },
+  "lib/kitty/logo/kitty.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 8352,
+    "sha256": "238d24e2730c94e9aaed76d25140bb3e2ade241ec313cc0b29d206e46cbfdabe"
+  },
+  "lib/kitty/shaders": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "lib/kitty/shaders/bgimage.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 738,
+    "sha256": "897d05eeb8310bba20b79cbd502dc590b73454acb397eb3beb84551b975303a1"
+  },
+  "lib/kitty/shaders/bgimage.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 252,
+    "sha256": "6c94079bf03f8f1de9b30f864bb47b751a34a475b4c98a79ab5693bc7bb92a01"
+  },
+  "lib/kitty/shaders/bgimage.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 316,
+    "sha256": "ca597ca04a9eced5cdf3d703a4096cfdf2612cdf7c5ba9618742605bd3446ab9"
+  },
+  "lib/kitty/shaders/bgimage.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 3176,
+    "sha256": "0a76bcdab14cca7c64dd82ae2aa6b936b46683ebe1256d0032fba72fd0c17d0a"
+  },
+  "lib/kitty/shaders/bgimage.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 7085,
+    "sha256": "72ecadbe28b1c9bd04ddfd1e28f76acd18aefa030470f08c418df8162be136be"
+  },
+  "lib/kitty/shaders/bgimage.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1529,
+    "sha256": "58eab5dda07985a947b299bc748bddbd8a0a9ecec7630ea43d25a410a879d204"
+  },
+  "lib/kitty/shaders/blit.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 732,
+    "sha256": "cdce7dc523b4043df44106c9e8087bc2bbc08642a855c47971840cbd865ef13a"
+  },
+  "lib/kitty/shaders/blit.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 208,
+    "sha256": "7e138d949ac6a8a4a9541a1a9c9c55430a3c2e797848eee408d1fac5d63f635a"
+  },
+  "lib/kitty/shaders/blit.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 364,
+    "sha256": "35ba9b409c7bc99341a9dafd9c46c886e6b97eb6f60cc12d13139c8c9afa7719"
+  },
+  "lib/kitty/shaders/blit.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2580,
+    "sha256": "aa0d513ea8641e8f4c9c2e75e4f95d7aeb77d6f2918284d739aaaefce267538f"
+  },
+  "lib/kitty/shaders/blit.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 6015,
+    "sha256": "16e4758be6ae6b073ef07b368bfd87fc2c68018c41b73f4664daa27c979907d3"
+  },
+  "lib/kitty/shaders/blit.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1531,
+    "sha256": "dff11bf988adfea657b467e7a06cff584d7cf27d84c45391664d2ac3ce72048f"
+  },
+  "lib/kitty/shaders/border.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 267,
+    "sha256": "6bca26f6a14c089bed4627c72041150f4c164183c79296802207d92d9b707f26"
+  },
+  "lib/kitty/shaders/border.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 302,
+    "sha256": "6a462844c0f2148d93300f3a92809aa4d3ed38da8b433735472b9431ab4b0dc3"
+  },
+  "lib/kitty/shaders/border.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 309,
+    "sha256": "62f6fd0c8f6c51266d6146b98a8e4f77c1b6c41de611457579d57f035f39f26c"
+  },
+  "lib/kitty/shaders/border.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 3972,
+    "sha256": "a68b32d7cc785fe08f2a00e4257764cbb7fba84dcba55c6671bc01ec8aca3742"
+  },
+  "lib/kitty/shaders/border.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 12473,
+    "sha256": "027f5834f37608953fa0f1d6400834ccac4f4004cbba1ea3bafe14fd58b7ea91"
+  },
+  "lib/kitty/shaders/border.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2485,
+    "sha256": "f885b0926fb847583f415131eb9492425a54e6e1105f46f715458937c413976e"
+  },
+  "lib/kitty/shaders/cell.08e57.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4620,
+    "sha256": "0b686d826ba1e86c73c16dc24de10fe99580b8f3b31c19b62f9581b75492aeeb"
+  },
+  "lib/kitty/shaders/cell.08e57.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2697,
+    "sha256": "fe3f6fd001c32bd1a4e83b0f452d164273fb3a590b942c3f93004c10921c7558"
+  },
+  "lib/kitty/shaders/cell.08e57.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 27872,
+    "sha256": "7bc77fe4005136a96cd0f36171eed4c346100e1a9aadd1d5ccfd746b023da67e"
+  },
+  "lib/kitty/shaders/cell.08e57.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.08e57.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 20415,
+    "sha256": "c73e52dd3d604cf4353467edb8178ff61975aabe66869bf52351184a2f3bc14e"
+  },
+  "lib/kitty/shaders/cell.0d8dc.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 303,
+    "sha256": "b05934ee9404a883ad00164077ba65d7a990913d0d1bc511117d44149e231ae2"
+  },
+  "lib/kitty/shaders/cell.0d8dc.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2300,
+    "sha256": "e583f0b40c5a94497015be830028d6a9fd9471ba3dd25b312e011204465c006a"
+  },
+  "lib/kitty/shaders/cell.0d8dc.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 17024,
+    "sha256": "45667412d6000bbc23dc068251d78356f384f7b75683e79fe6a712926a72ca4c"
+  },
+  "lib/kitty/shaders/cell.0d8dc.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.0d8dc.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 16638,
+    "sha256": "32841d702671fc678318fe3f64e07269f77c427a92ba003b2f8e9bfb762f0113"
+  },
+  "lib/kitty/shaders/cell.124ec.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 303,
+    "sha256": "b05934ee9404a883ad00164077ba65d7a990913d0d1bc511117d44149e231ae2"
+  },
+  "lib/kitty/shaders/cell.124ec.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2300,
+    "sha256": "e583f0b40c5a94497015be830028d6a9fd9471ba3dd25b312e011204465c006a"
+  },
+  "lib/kitty/shaders/cell.124ec.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 17024,
+    "sha256": "45667412d6000bbc23dc068251d78356f384f7b75683e79fe6a712926a72ca4c"
+  },
+  "lib/kitty/shaders/cell.124ec.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.124ec.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 16638,
+    "sha256": "32841d702671fc678318fe3f64e07269f77c427a92ba003b2f8e9bfb762f0113"
+  },
+  "lib/kitty/shaders/cell.13b11.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4132,
+    "sha256": "89c2b6643d07c8ef47a561bdd8caa8bb384f55292848f32ffd16dace6443855a"
+  },
+  "lib/kitty/shaders/cell.13b11.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2780,
+    "sha256": "56113b94680dc452a86b7f26735e828e2a9fca7159132690d3e28deb02d1e5ea"
+  },
+  "lib/kitty/shaders/cell.13b11.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 49844,
+    "sha256": "bbfe7d08584ebd45368b4a7c1915faeb2885d227613fc55358c732572494ac33"
+  },
+  "lib/kitty/shaders/cell.13b11.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.13b11.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 27111,
+    "sha256": "045a2d66c1e77216abdc770ad9fa752e027af6aa996bf755debc05c39ef39af4"
+  },
+  "lib/kitty/shaders/cell.1739b.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 303,
+    "sha256": "b05934ee9404a883ad00164077ba65d7a990913d0d1bc511117d44149e231ae2"
+  },
+  "lib/kitty/shaders/cell.1739b.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2300,
+    "sha256": "e583f0b40c5a94497015be830028d6a9fd9471ba3dd25b312e011204465c006a"
+  },
+  "lib/kitty/shaders/cell.1739b.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 17024,
+    "sha256": "45667412d6000bbc23dc068251d78356f384f7b75683e79fe6a712926a72ca4c"
+  },
+  "lib/kitty/shaders/cell.1739b.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.1739b.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 16638,
+    "sha256": "32841d702671fc678318fe3f64e07269f77c427a92ba003b2f8e9bfb762f0113"
+  },
+  "lib/kitty/shaders/cell.19d10.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 303,
+    "sha256": "b05934ee9404a883ad00164077ba65d7a990913d0d1bc511117d44149e231ae2"
+  },
+  "lib/kitty/shaders/cell.19d10.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2300,
+    "sha256": "e583f0b40c5a94497015be830028d6a9fd9471ba3dd25b312e011204465c006a"
+  },
+  "lib/kitty/shaders/cell.19d10.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 17024,
+    "sha256": "45667412d6000bbc23dc068251d78356f384f7b75683e79fe6a712926a72ca4c"
+  },
+  "lib/kitty/shaders/cell.19d10.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.19d10.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 16638,
+    "sha256": "32841d702671fc678318fe3f64e07269f77c427a92ba003b2f8e9bfb762f0113"
+  },
+  "lib/kitty/shaders/cell.2b0f9.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 303,
+    "sha256": "b05934ee9404a883ad00164077ba65d7a990913d0d1bc511117d44149e231ae2"
+  },
+  "lib/kitty/shaders/cell.2b0f9.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2300,
+    "sha256": "e583f0b40c5a94497015be830028d6a9fd9471ba3dd25b312e011204465c006a"
+  },
+  "lib/kitty/shaders/cell.2b0f9.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 17024,
+    "sha256": "45667412d6000bbc23dc068251d78356f384f7b75683e79fe6a712926a72ca4c"
+  },
+  "lib/kitty/shaders/cell.2b0f9.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.2b0f9.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 16638,
+    "sha256": "32841d702671fc678318fe3f64e07269f77c427a92ba003b2f8e9bfb762f0113"
+  },
+  "lib/kitty/shaders/cell.2b6b8.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4963,
+    "sha256": "f9ae81b14bd9035e22ff80455c19b9f282e7d3df7380125bbd4d058b9f621eea"
+  },
+  "lib/kitty/shaders/cell.2b6b8.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2780,
+    "sha256": "56113b94680dc452a86b7f26735e828e2a9fca7159132690d3e28deb02d1e5ea"
+  },
+  "lib/kitty/shaders/cell.2b6b8.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 50652,
+    "sha256": "e284f67e7056a4a24ff0003a665a8699c5c49cb8deb596919b565f19f72f6384"
+  },
+  "lib/kitty/shaders/cell.2b6b8.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.2b6b8.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 27111,
+    "sha256": "045a2d66c1e77216abdc770ad9fa752e027af6aa996bf755debc05c39ef39af4"
+  },
+  "lib/kitty/shaders/cell.3285d.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 3789,
+    "sha256": "141bf9f4ece2371da46938540656daf947dd211d9daced3b33d0d047e312bca8"
+  },
+  "lib/kitty/shaders/cell.3285d.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2697,
+    "sha256": "fe3f6fd001c32bd1a4e83b0f452d164273fb3a590b942c3f93004c10921c7558"
+  },
+  "lib/kitty/shaders/cell.3285d.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 46476,
+    "sha256": "87460edf6dac23db53daeaf861f1498723e383c428f7d80ea1e207f71d813605"
+  },
+  "lib/kitty/shaders/cell.3285d.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.3285d.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 26643,
+    "sha256": "b77fe586f6d216af8c07b6f3519bf83bc5785882e13e7347ae2d52fe724e45fe"
+  },
+  "lib/kitty/shaders/cell.36524.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4536,
+    "sha256": "577f64da210515b22c09210164818775d2e62c09a2a324fdfc9fd2cf26002201"
+  },
+  "lib/kitty/shaders/cell.36524.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2780,
+    "sha256": "56113b94680dc452a86b7f26735e828e2a9fca7159132690d3e28deb02d1e5ea"
+  },
+  "lib/kitty/shaders/cell.36524.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 31696,
+    "sha256": "b7c9b3ad1bba11be798f21419d2a8dd52c4cedacd72ec3e879d434be51f1c689"
+  },
+  "lib/kitty/shaders/cell.36524.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.36524.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 21777,
+    "sha256": "be3f61bf388bb579cf06e2ae328505f1cf2ef540b3c51a8c9e8f47df981603b6"
+  },
+  "lib/kitty/shaders/cell.3ceae.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4620,
+    "sha256": "0b686d826ba1e86c73c16dc24de10fe99580b8f3b31c19b62f9581b75492aeeb"
+  },
+  "lib/kitty/shaders/cell.3ceae.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2697,
+    "sha256": "fe3f6fd001c32bd1a4e83b0f452d164273fb3a590b942c3f93004c10921c7558"
+  },
+  "lib/kitty/shaders/cell.3ceae.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 28604,
+    "sha256": "15a798301addc1a05bc1f5b2c036afca316b0edfede3f9695ec67bd947c58144"
+  },
+  "lib/kitty/shaders/cell.3ceae.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.3ceae.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 21309,
+    "sha256": "fd9e235f995503447909af43ff15b0e142b6a464f6873790aa7227e344fe8e13"
+  },
+  "lib/kitty/shaders/cell.4d863.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 303,
+    "sha256": "b05934ee9404a883ad00164077ba65d7a990913d0d1bc511117d44149e231ae2"
+  },
+  "lib/kitty/shaders/cell.4d863.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2300,
+    "sha256": "e583f0b40c5a94497015be830028d6a9fd9471ba3dd25b312e011204465c006a"
+  },
+  "lib/kitty/shaders/cell.4d863.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 17024,
+    "sha256": "45667412d6000bbc23dc068251d78356f384f7b75683e79fe6a712926a72ca4c"
+  },
+  "lib/kitty/shaders/cell.4d863.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.4d863.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 16638,
+    "sha256": "32841d702671fc678318fe3f64e07269f77c427a92ba003b2f8e9bfb762f0113"
+  },
+  "lib/kitty/shaders/cell.506a7.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4536,
+    "sha256": "577f64da210515b22c09210164818775d2e62c09a2a324fdfc9fd2cf26002201"
+  },
+  "lib/kitty/shaders/cell.506a7.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2780,
+    "sha256": "56113b94680dc452a86b7f26735e828e2a9fca7159132690d3e28deb02d1e5ea"
+  },
+  "lib/kitty/shaders/cell.506a7.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 30964,
+    "sha256": "1f19796893f78730e9d2c31a78dd36b132d3dc61f983436f4936ff5cbcb98b08"
+  },
+  "lib/kitty/shaders/cell.506a7.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.506a7.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 20861,
+    "sha256": "4b77f32d329546eaad98d9da248e531c8bac173eed16aa3c405866b7b718b4e8"
+  },
+  "lib/kitty/shaders/cell.549b4.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 303,
+    "sha256": "b05934ee9404a883ad00164077ba65d7a990913d0d1bc511117d44149e231ae2"
+  },
+  "lib/kitty/shaders/cell.549b4.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2300,
+    "sha256": "e583f0b40c5a94497015be830028d6a9fd9471ba3dd25b312e011204465c006a"
+  },
+  "lib/kitty/shaders/cell.549b4.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 17024,
+    "sha256": "45667412d6000bbc23dc068251d78356f384f7b75683e79fe6a712926a72ca4c"
+  },
+  "lib/kitty/shaders/cell.549b4.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.549b4.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 16638,
+    "sha256": "32841d702671fc678318fe3f64e07269f77c427a92ba003b2f8e9bfb762f0113"
+  },
+  "lib/kitty/shaders/cell.5a8d5.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 3789,
+    "sha256": "141bf9f4ece2371da46938540656daf947dd211d9daced3b33d0d047e312bca8"
+  },
+  "lib/kitty/shaders/cell.5a8d5.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2697,
+    "sha256": "fe3f6fd001c32bd1a4e83b0f452d164273fb3a590b942c3f93004c10921c7558"
+  },
+  "lib/kitty/shaders/cell.5a8d5.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 26920,
+    "sha256": "0e5316681889856374c21e256552726dffe9d3bdfcaa16c18a445b50f0a82631"
+  },
+  "lib/kitty/shaders/cell.5a8d5.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.5a8d5.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 20415,
+    "sha256": "c73e52dd3d604cf4353467edb8178ff61975aabe66869bf52351184a2f3bc14e"
+  },
+  "lib/kitty/shaders/cell.731c5.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4193,
+    "sha256": "4476dac89d0d56567eb1c4be22712d7ee9d4e760ab1f9a8243b87e6b17dff538"
+  },
+  "lib/kitty/shaders/cell.731c5.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2697,
+    "sha256": "fe3f6fd001c32bd1a4e83b0f452d164273fb3a590b942c3f93004c10921c7558"
+  },
+  "lib/kitty/shaders/cell.731c5.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 28328,
+    "sha256": "cddf90cfedcd3256197c74eaf91101c0d923a5d296a1a09e0b68c760f883ab9a"
+  },
+  "lib/kitty/shaders/cell.731c5.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.731c5.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 21309,
+    "sha256": "fd9e235f995503447909af43ff15b0e142b6a464f6873790aa7227e344fe8e13"
+  },
+  "lib/kitty/shaders/cell.7b7cb.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 303,
+    "sha256": "b05934ee9404a883ad00164077ba65d7a990913d0d1bc511117d44149e231ae2"
+  },
+  "lib/kitty/shaders/cell.7b7cb.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2300,
+    "sha256": "e583f0b40c5a94497015be830028d6a9fd9471ba3dd25b312e011204465c006a"
+  },
+  "lib/kitty/shaders/cell.7b7cb.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 17024,
+    "sha256": "45667412d6000bbc23dc068251d78356f384f7b75683e79fe6a712926a72ca4c"
+  },
+  "lib/kitty/shaders/cell.7b7cb.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.7b7cb.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 16638,
+    "sha256": "32841d702671fc678318fe3f64e07269f77c427a92ba003b2f8e9bfb762f0113"
+  },
+  "lib/kitty/shaders/cell.7e80f.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4536,
+    "sha256": "577f64da210515b22c09210164818775d2e62c09a2a324fdfc9fd2cf26002201"
+  },
+  "lib/kitty/shaders/cell.7e80f.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2780,
+    "sha256": "56113b94680dc452a86b7f26735e828e2a9fca7159132690d3e28deb02d1e5ea"
+  },
+  "lib/kitty/shaders/cell.7e80f.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 50520,
+    "sha256": "b39ac01c1b9a4b7668f66af64e96fd310cbcc73ca413278522d5d9a40f098989"
+  },
+  "lib/kitty/shaders/cell.7e80f.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.7e80f.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 27111,
+    "sha256": "045a2d66c1e77216abdc770ad9fa752e027af6aa996bf755debc05c39ef39af4"
+  },
+  "lib/kitty/shaders/cell.853b0.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4193,
+    "sha256": "4476dac89d0d56567eb1c4be22712d7ee9d4e760ab1f9a8243b87e6b17dff538"
+  },
+  "lib/kitty/shaders/cell.853b0.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2697,
+    "sha256": "fe3f6fd001c32bd1a4e83b0f452d164273fb3a590b942c3f93004c10921c7558"
+  },
+  "lib/kitty/shaders/cell.853b0.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 47152,
+    "sha256": "8a7b2ca9132c75187d21f9136c2c839fab996ff93a4e1108bbf12958f52f8aab"
+  },
+  "lib/kitty/shaders/cell.853b0.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.853b0.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 26643,
+    "sha256": "b77fe586f6d216af8c07b6f3519bf83bc5785882e13e7347ae2d52fe724e45fe"
+  },
+  "lib/kitty/shaders/cell.85921.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4963,
+    "sha256": "f9ae81b14bd9035e22ff80455c19b9f282e7d3df7380125bbd4d058b9f621eea"
+  },
+  "lib/kitty/shaders/cell.85921.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2780,
+    "sha256": "56113b94680dc452a86b7f26735e828e2a9fca7159132690d3e28deb02d1e5ea"
+  },
+  "lib/kitty/shaders/cell.85921.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 31972,
+    "sha256": "79aed2a06901eb47e7c4908fae9b7123aafa6cd8dd7bbd134549d5cca90a0a6b"
+  },
+  "lib/kitty/shaders/cell.85921.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.85921.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 21777,
+    "sha256": "be3f61bf388bb579cf06e2ae328505f1cf2ef540b3c51a8c9e8f47df981603b6"
+  },
+  "lib/kitty/shaders/cell.a84f3.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4193,
+    "sha256": "4476dac89d0d56567eb1c4be22712d7ee9d4e760ab1f9a8243b87e6b17dff538"
+  },
+  "lib/kitty/shaders/cell.a84f3.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2697,
+    "sha256": "fe3f6fd001c32bd1a4e83b0f452d164273fb3a590b942c3f93004c10921c7558"
+  },
+  "lib/kitty/shaders/cell.a84f3.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 27596,
+    "sha256": "39004fad90e501c405ac3215ebd310498c0a512443c51617ade67b5e54e1897a"
+  },
+  "lib/kitty/shaders/cell.a84f3.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.a84f3.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 20415,
+    "sha256": "c73e52dd3d604cf4353467edb8178ff61975aabe66869bf52351184a2f3bc14e"
+  },
+  "lib/kitty/shaders/cell.b8216.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4620,
+    "sha256": "0b686d826ba1e86c73c16dc24de10fe99580b8f3b31c19b62f9581b75492aeeb"
+  },
+  "lib/kitty/shaders/cell.b8216.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2697,
+    "sha256": "fe3f6fd001c32bd1a4e83b0f452d164273fb3a590b942c3f93004c10921c7558"
+  },
+  "lib/kitty/shaders/cell.b8216.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 47284,
+    "sha256": "8c17c69e77f39ea21c46e220b65e687af2eeade098db58386d6875cfd8d462fe"
+  },
+  "lib/kitty/shaders/cell.b8216.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.b8216.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 26643,
+    "sha256": "b77fe586f6d216af8c07b6f3519bf83bc5785882e13e7347ae2d52fe724e45fe"
+  },
+  "lib/kitty/shaders/cell.ccca3.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4132,
+    "sha256": "89c2b6643d07c8ef47a561bdd8caa8bb384f55292848f32ffd16dace6443855a"
+  },
+  "lib/kitty/shaders/cell.ccca3.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2780,
+    "sha256": "56113b94680dc452a86b7f26735e828e2a9fca7159132690d3e28deb02d1e5ea"
+  },
+  "lib/kitty/shaders/cell.ccca3.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 31020,
+    "sha256": "6c0bcca29aec8c18978b2652fa7b5bbfe7900c7cbfe9f8c807f2a553c35ded33"
+  },
+  "lib/kitty/shaders/cell.ccca3.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.ccca3.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 21777,
+    "sha256": "be3f61bf388bb579cf06e2ae328505f1cf2ef540b3c51a8c9e8f47df981603b6"
+  },
+  "lib/kitty/shaders/cell.cebb9.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4963,
+    "sha256": "f9ae81b14bd9035e22ff80455c19b9f282e7d3df7380125bbd4d058b9f621eea"
+  },
+  "lib/kitty/shaders/cell.cebb9.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2780,
+    "sha256": "56113b94680dc452a86b7f26735e828e2a9fca7159132690d3e28deb02d1e5ea"
+  },
+  "lib/kitty/shaders/cell.cebb9.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 31240,
+    "sha256": "8bb744f9b40b49ba99a32cac52b0506062043d8ba8b4ee40f79283b9034f626c"
+  },
+  "lib/kitty/shaders/cell.cebb9.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.cebb9.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 20861,
+    "sha256": "4b77f32d329546eaad98d9da248e531c8bac173eed16aa3c405866b7b718b4e8"
+  },
+  "lib/kitty/shaders/cell.df922.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 3789,
+    "sha256": "141bf9f4ece2371da46938540656daf947dd211d9daced3b33d0d047e312bca8"
+  },
+  "lib/kitty/shaders/cell.df922.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2697,
+    "sha256": "fe3f6fd001c32bd1a4e83b0f452d164273fb3a590b942c3f93004c10921c7558"
+  },
+  "lib/kitty/shaders/cell.df922.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 27652,
+    "sha256": "ca78e961beac77a4039ae0796ce401015f5a26340300801b2d47832bccacb6a9"
+  },
+  "lib/kitty/shaders/cell.df922.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.df922.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 21309,
+    "sha256": "fd9e235f995503447909af43ff15b0e142b6a464f6873790aa7227e344fe8e13"
+  },
+  "lib/kitty/shaders/cell.ea152.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 303,
+    "sha256": "b05934ee9404a883ad00164077ba65d7a990913d0d1bc511117d44149e231ae2"
+  },
+  "lib/kitty/shaders/cell.ea152.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2300,
+    "sha256": "e583f0b40c5a94497015be830028d6a9fd9471ba3dd25b312e011204465c006a"
+  },
+  "lib/kitty/shaders/cell.ea152.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 17024,
+    "sha256": "45667412d6000bbc23dc068251d78356f384f7b75683e79fe6a712926a72ca4c"
+  },
+  "lib/kitty/shaders/cell.ea152.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.ea152.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 16638,
+    "sha256": "32841d702671fc678318fe3f64e07269f77c427a92ba003b2f8e9bfb762f0113"
+  },
+  "lib/kitty/shaders/cell.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4132,
+    "sha256": "89c2b6643d07c8ef47a561bdd8caa8bb384f55292848f32ffd16dace6443855a"
+  },
+  "lib/kitty/shaders/cell.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2780,
+    "sha256": "56113b94680dc452a86b7f26735e828e2a9fca7159132690d3e28deb02d1e5ea"
+  },
+  "lib/kitty/shaders/cell.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 671,
+    "sha256": "0d43367dd713ebae9a8e304c41080a9a17fee83b8f479ed24a36c15d4cd0ce7e"
+  },
+  "lib/kitty/shaders/cell.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 30288,
+    "sha256": "71bc8a833082e5ab8dfde1e691f4da66cdfeccaff2e843fee38ee09e459f7568"
+  },
+  "lib/kitty/shaders/cell.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 97123,
+    "sha256": "35009cfdffa2b5279e3f733c14cd7ef84b4b9ebb26ccd45f4910a6772e1290fd"
+  },
+  "lib/kitty/shaders/cell.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 20861,
+    "sha256": "4b77f32d329546eaad98d9da248e531c8bac173eed16aa3c405866b7b718b4e8"
+  },
+  "lib/kitty/shaders/glsl-uniforms.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 8895,
+    "sha256": "d551dd9bd3a96e8132ac20ed7fe5ac2f768c7294a9b5af94b55816ee969103ef"
+  },
+  "lib/kitty/shaders/graphics.alpha_mask.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1050,
+    "sha256": "e0815dc572b4ee8cdab17861a87d266089ab3cea14c05ffa6dbcb38136ac0e60"
+  },
+  "lib/kitty/shaders/graphics.alpha_mask.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 308,
+    "sha256": "54b6f3ad0bbe96c38939802d6225baf4fea25ee600b3e83829c1951243075f60"
+  },
+  "lib/kitty/shaders/graphics.alpha_mask.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2916,
+    "sha256": "6a3ed1fac976d0b7cd81a56e0f08d13d1133d0119b603acf61b008d90e29f001"
+  },
+  "lib/kitty/shaders/graphics.alpha_mask.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 7713,
+    "sha256": "e20b3c2575c8ee1b556f88e8dcbfcbe9400839cf756054c694a32e8485f6f405"
+  },
+  "lib/kitty/shaders/graphics.alpha_mask.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1531,
+    "sha256": "dff11bf988adfea657b467e7a06cff584d7cf27d84c45391664d2ac3ce72048f"
+  },
+  "lib/kitty/shaders/graphics.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 863,
+    "sha256": "b522523c9c0e2a5743541115ca39d7e21283b942fb7a8ea24662abb68878b146"
+  },
+  "lib/kitty/shaders/graphics.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 308,
+    "sha256": "54b6f3ad0bbe96c38939802d6225baf4fea25ee600b3e83829c1951243075f60"
+  },
+  "lib/kitty/shaders/graphics.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 524,
+    "sha256": "91c87c38e459c7703d68ec93c585e1267e47b0a5f36340c8a2cdeea1f22a54cc"
+  },
+  "lib/kitty/shaders/graphics.premult.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 706,
+    "sha256": "784725f661c53f47f9056ca143e7c769122e2bff89eeb2da94ea501e07643a5e"
+  },
+  "lib/kitty/shaders/graphics.premult.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 308,
+    "sha256": "54b6f3ad0bbe96c38939802d6225baf4fea25ee600b3e83829c1951243075f60"
+  },
+  "lib/kitty/shaders/graphics.premult.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2500,
+    "sha256": "264472a028c7aee4763a7b20a46cdb6e1e455ba77863162948878c917f32a8dd"
+  },
+  "lib/kitty/shaders/graphics.premult.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 7713,
+    "sha256": "e20b3c2575c8ee1b556f88e8dcbfcbe9400839cf756054c694a32e8485f6f405"
+  },
+  "lib/kitty/shaders/graphics.premult.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1531,
+    "sha256": "dff11bf988adfea657b467e7a06cff584d7cf27d84c45391664d2ac3ce72048f"
+  },
+  "lib/kitty/shaders/graphics.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2592,
+    "sha256": "71540a306053b05770ce6f2e8d1c4f71769124e69293ab7592916b90abc006ec"
+  },
+  "lib/kitty/shaders/graphics.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 7713,
+    "sha256": "e20b3c2575c8ee1b556f88e8dcbfcbe9400839cf756054c694a32e8485f6f405"
+  },
+  "lib/kitty/shaders/graphics.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1531,
+    "sha256": "dff11bf988adfea657b467e7a06cff584d7cf27d84c45391664d2ac3ce72048f"
+  },
+  "lib/kitty/shaders/indexed_graphics.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2390,
+    "sha256": "83bc62c008f2e3fd722c2b9540e489949d02d6e9f0196da2105c6707cd8cf5b0"
+  },
+  "lib/kitty/shaders/indexed_graphics.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 382,
+    "sha256": "cecbcab0452f84d337a53126c4b33c7a28c5ef519d6a86209ebfd948af1a4d06"
+  },
+  "lib/kitty/shaders/indexed_graphics.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 408,
+    "sha256": "5b34d8aee7052d714611b67faa51e94ba5b411a1970e349883bb27cee52b0d31"
+  },
+  "lib/kitty/shaders/indexed_graphics.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 7728,
+    "sha256": "a8e3804466af3e9fe4e0feed0f52401059c777988fff399951d7f74a711de66a"
+  },
+  "lib/kitty/shaders/indexed_graphics.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 77481,
+    "sha256": "827061a6c0a9bf16aaeae6b54ff56c21f2d8b1c0da44d784c4accc12621bf381"
+  },
+  "lib/kitty/shaders/indexed_graphics.unscaled.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1913,
+    "sha256": "7a1097fd6ad36cd6c2125eefec8317bec7ef09851dd14c809502c29cd2466878"
+  },
+  "lib/kitty/shaders/indexed_graphics.unscaled.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 382,
+    "sha256": "cecbcab0452f84d337a53126c4b33c7a28c5ef519d6a86209ebfd948af1a4d06"
+  },
+  "lib/kitty/shaders/indexed_graphics.unscaled.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4588,
+    "sha256": "876e46fb1c3b3a93ba01c7e118bc4704f4b1beab63e03b60da742b1607d0c25b"
+  },
+  "lib/kitty/shaders/indexed_graphics.unscaled.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 77481,
+    "sha256": "827061a6c0a9bf16aaeae6b54ff56c21f2d8b1c0da44d784c4accc12621bf381"
+  },
+  "lib/kitty/shaders/indexed_graphics.unscaled.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1531,
+    "sha256": "dff11bf988adfea657b467e7a06cff584d7cf27d84c45391664d2ac3ce72048f"
+  },
+  "lib/kitty/shaders/indexed_graphics.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1531,
+    "sha256": "dff11bf988adfea657b467e7a06cff584d7cf27d84c45391664d2ac3ce72048f"
+  },
+  "lib/kitty/shaders/padding.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 267,
+    "sha256": "6bca26f6a14c089bed4627c72041150f4c164183c79296802207d92d9b707f26"
+  },
+  "lib/kitty/shaders/padding.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2558,
+    "sha256": "14f95567f657159954c5cbde2b5a53be9658d5f247fb0d499638fa42d061f4ed"
+  },
+  "lib/kitty/shaders/padding.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 343,
+    "sha256": "7fc987724bd682f11555ebb33cafec26f961a53138883cfd46aeebf270ffe22f"
+  },
+  "lib/kitty/shaders/padding.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 16460,
+    "sha256": "344c6d79f61a2f3d840bab85d350049360fad47be3281d52f102fb3b78aa1eed"
+  },
+  "lib/kitty/shaders/padding.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 81351,
+    "sha256": "95646363b1675de5435e3e9927e87750b2e0a538da3bf4791fad831aafb93463"
+  },
+  "lib/kitty/shaders/padding.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 16149,
+    "sha256": "17a16e3289c16d0610dc6d0cf882e43f199e091231ac280f9605ee468726f756"
+  },
+  "lib/kitty/shaders/rounded_rect.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1403,
+    "sha256": "a89e5a9febc9ec743fc4f11fc75c395bfb0c647e5fbd1e2da40642940cedddb9"
+  },
+  "lib/kitty/shaders/rounded_rect.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 251,
+    "sha256": "6e014044423c7251d13218ea752f8513bbcf4532ccac29863463a791b46d2686"
+  },
+  "lib/kitty/shaders/rounded_rect.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 321,
+    "sha256": "851f979a22ca0c0b449f4114ad2e832746e97df08bf5f86f9e69be302210fa7d"
+  },
+  "lib/kitty/shaders/rounded_rect.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2924,
+    "sha256": "cafab1aba85babd8a9a9dfb585e5e0d1090a85864538fe0ce975c4492ec4c04d"
+  },
+  "lib/kitty/shaders/rounded_rect.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5326,
+    "sha256": "d657fc3e8e4d01bdfeb60a66ec8a8fc04f3d1ed21ba04f6f27b1e476c36468d5"
+  },
+  "lib/kitty/shaders/rounded_rect.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 389,
+    "sha256": "45e0882f421f0a1b51300a1af6426e998a242366fd5f63162d3810703bf63b9e"
+  },
+  "lib/kitty/shaders/screenshot.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1999,
+    "sha256": "02e388d296bb1e3a594fcf1d3f6f30c44464932f361606f0f25b6247f5c4edde"
+  },
+  "lib/kitty/shaders/screenshot.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 234,
+    "sha256": "dce0f2c8daae6226ca5a099637090ad3219133911c9ef3cffad01566fc90ccee"
+  },
+  "lib/kitty/shaders/screenshot.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 338,
+    "sha256": "3ff983788417c8b366508c04977fba1bf6d3f812217646d9c6da15bd7c813533"
+  },
+  "lib/kitty/shaders/screenshot.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 6796,
+    "sha256": "379e680e3380c0f45b360197944c6c2850089e3ce28f8ca3014a70fddbe17958"
+  },
+  "lib/kitty/shaders/screenshot.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 6628,
+    "sha256": "f5d15f16b460ba17ac039243f4bb16dc8907cc1ef9a095f399f096ecd52bbdcf"
+  },
+  "lib/kitty/shaders/screenshot.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1531,
+    "sha256": "dff11bf988adfea657b467e7a06cff584d7cf27d84c45391664d2ac3ce72048f"
+  },
+  "lib/kitty/shaders/slangc.version": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 10,
+    "sha256": "c83dc5ee5be097149117d57e05ba7a61ccd8a8d5b4d9dd07dd509aac4dd1e447"
+  },
+  "lib/kitty/shaders/slangpy.version": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 32,
+    "sha256": "0ec17423ce84d6ced014498d4ed860af67a4b02962cb2859552b49c74471c7a7"
+  },
+  "lib/kitty/shaders/tint.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 403,
+    "sha256": "681c21f119741190e2c761079f37359f1d5419c60a061f5454f59d36e789a5dd"
+  },
+  "lib/kitty/shaders/tint.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 167,
+    "sha256": "5bb5d835909a5807067279a6537b3d92f99bddb9280929621b6f4f65d034f7d5"
+  },
+  "lib/kitty/shaders/tint.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 292,
+    "sha256": "4041ccc188fb91c2034f0edcb8daf2c30f6f6ac647989f6c097c0f271564f17a"
+  },
+  "lib/kitty/shaders/tint.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1608,
+    "sha256": "cf2245ea01b54b56da8bc57bb744f9273707fe5c366286c346bfcccea67ee278"
+  },
+  "lib/kitty/shaders/tint.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2979,
+    "sha256": "314c2accfb43a61d07851901517d7ac4e567c3297749d480a1bd546c30308f8e"
+  },
+  "lib/kitty/shaders/tint.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 602,
+    "sha256": "46f639704f0709086b36855dfef80df2fb37c9a83f8ebbe13f91a6aeb1d84d7c"
+  },
+  "lib/kitty/shaders/trail.frag.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 863,
+    "sha256": "fbde6d51dbb186fed8473e3585a03ca0ab3afbc7f8ce5f5f34e6c248a1700484"
+  },
+  "lib/kitty/shaders/trail.glsl.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 326,
+    "sha256": "2033f75e6dec3ae989f9bc6d28ae7014120d98991dd34527442aa82f25c9ecff"
+  },
+  "lib/kitty/shaders/trail.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 293,
+    "sha256": "5d1c1574856ab97ffb1dd78a59ccba2d838ad59c0250a9604de1e9fc4f644eeb"
+  },
+  "lib/kitty/shaders/trail.spv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2640,
+    "sha256": "51ac0b02de1058e9c3c8cb942f17d55a79c0f31bf0c391296a3cbd670c63ad91"
+  },
+  "lib/kitty/shaders/trail.spv.json": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 7389,
+    "sha256": "dab9ed8dd9782073e306293f675f1238e1bbc163813fe6a4ec443f877c4c6577"
+  },
+  "lib/kitty/shaders/trail.vert.glsl": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 860,
+    "sha256": "0fd90ced5c4f8f66e893c6d36b8d9ed3653f6b900123af671da2de4f750287fe"
+  },
+  "lib/kitty/shell-integration": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "lib/kitty/shell-integration/bash": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "lib/kitty/shell-integration/bash/kitty.bash": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 19879,
+    "sha256": "12a5cc1e66b0b4e2bd69b3a87ccb5a92280dc399b1f1689c89d38868b07ab5c2"
+  },
+  "lib/kitty/shell-integration/fish": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "lib/kitty/shell-integration/fish/vendor_completions.d": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "lib/kitty/shell-integration/fish/vendor_completions.d/clone-in-kitty.fish": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 294,
+    "sha256": "58bedcb48dffbc1a99605b623e2c0204281a6c8288977b7e26d4939cc226bd32"
+  },
+  "lib/kitty/shell-integration/fish/vendor_completions.d/kitten.fish": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 286,
+    "sha256": "ee7fffcd6c49c859f99d9dc7cd15da1d1df4e969e715fa9e9a448497a5b8043a"
+  },
+  "lib/kitty/shell-integration/fish/vendor_completions.d/kitty.fish": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 285,
+    "sha256": "55c0fcd8d8debc59821e0d661d7e41df19b60e5d8e950e99268bf1b01bf2691d"
+  },
+  "lib/kitty/shell-integration/fish/vendor_conf.d": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "lib/kitty/shell-integration/fish/vendor_conf.d/kitty-shell-integration.fish": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 12607,
+    "sha256": "3a59665e1e1ad9b9b0d03d9db9d0d0b1c220dde212de40278d2c36f96eee01eb"
+  },
+  "lib/kitty/shell-integration/ssh": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "lib/kitty/shell-integration/ssh/bootstrap-utils.sh": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 9222,
+    "sha256": "d3f8724b3d6d510e41ceb325715e12ec2b1c8c9509ba8b8f394ab288a49c59d9"
+  },
+  "lib/kitty/shell-integration/ssh/bootstrap.py": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 11877,
+    "sha256": "7c471a4d444a7d1e7527d7c74174fe70a18044bd886cbac89a8a3f43f3e37944"
+  },
+  "lib/kitty/shell-integration/ssh/bootstrap.sh": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5500,
+    "sha256": "eda731bb6cc629256eba439f885e60f2b00312b5547649c20fda3ebe6278dad8"
+  },
+  "lib/kitty/shell-integration/ssh/kitten": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2949,
+    "sha256": "b1e6ad7d10b57b4aabd4a576cd51d8730d628eee7f8849e95988ceebfc998657"
+  },
+  "lib/kitty/shell-integration/ssh/kitty": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5000,
+    "sha256": "333d30706ccfc4cafabc36fedfb16003dd50bca3c531699211727a5c993c2353"
+  },
+  "lib/kitty/shell-integration/zsh": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "lib/kitty/shell-integration/zsh/.zshenv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1880,
+    "sha256": "1069cec3002a844b6b2d7fe413ddc6adf7df3f8084475fc8f6bddf5d5b359c89"
+  },
+  "lib/kitty/shell-integration/zsh/completions": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "lib/kitty/shell-integration/zsh/completions/_kitty": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 280,
+    "sha256": "2f68c1ccac24e389eae7109895646f6272ea5c8c505cf8442d4a6eff131f016f"
+  },
+  "lib/kitty/shell-integration/zsh/kitty-integration": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 24634,
+    "sha256": "3c0ba1e9b97f23b0585e131678a5aafd13e74f69bfc74015937a3fe7f6879277"
+  },
+  "lib/kitty/shell-integration/zsh/kitty.zsh": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 774,
+    "sha256": "e39cc6901199e991422594855655876d9565a6c75709bf4cf280a38773979663"
+  },
+  "lib/kitty/terminfo": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "lib/kitty/terminfo/kitty.termcap": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2077,
+    "sha256": "44f0503ba91f17799ed14e6c19e1e1ab2b1c1ab28116b64411a19827284757a6"
+  },
+  "lib/kitty/terminfo/kitty.terminfo": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4257,
+    "sha256": "b70ad67786fb711131506766e07b7f2eb180597ef94408a0f6849d45b369deed"
+  },
+  "lib/kitty/terminfo/x": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "lib/kitty/terminfo/x/xterm-kitty": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 3721,
+    "sha256": "75a5836628e596ab1c236aeff22a298558ed50e2301248f30b8e236e8e52aabd"
+  },
+  "lib/libbrotlicommon.so.1": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 141504,
+    "sha256": "a3942d3700ce7a7cc8345e9b52574b99f141778b6e3760fe1f51163aa9ab3c0b"
+  },
+  "lib/libbrotlidec.so.1": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 55480,
+    "sha256": "88021983535a8013a2ce1c7bc20a883c802795ee0891d521ae4646ec35e9c0d1"
+  },
+  "lib/libbrotlienc.so.1": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 707312,
+    "sha256": "11262dd7c373a9896474639175b8df8d31df04ff421295ce2638d203cf4e7ae2"
+  },
+  "lib/libbz2.so.1.0": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 75256,
+    "sha256": "b822ac09a187907c222e1af12efcdf529874b9e7f57166235df51cdc283a5381"
+  },
+  "lib/libcairo.so.2": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1332000,
+    "sha256": "8bcd5db9c7902fe61b6a4fdf73fe2f72edf2061be3dad04448d815f8a996fed9"
+  },
+  "lib/libcrypt.so.2": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 202744,
+    "sha256": "587da8f94ad078e14d89bfc45899366b0ceb8834e733131bacf8ea9c616368e8"
+  },
+  "lib/libcrypto.so.3": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 7442696,
+    "sha256": "06597be7aeadbbe7e4d09b4174057b3fd7f73e4f47de69cc2183f16d0642833d"
+  },
+  "lib/libexpat.so.1": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 207152,
+    "sha256": "f41a8b460d9f435b587e74d9fcd3a7e4c0ff61a86800993d8cd3b9868aaa6453"
+  },
+  "lib/libffi.so.8": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 60088,
+    "sha256": "a0972636890e76d687b0aa6fb580a5be8b376f8bad0c1190205111b5792e60d0"
+  },
+  "lib/libfreetype.so.6": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 814504,
+    "sha256": "a9bd14a72932ddff199aa032c4e06bafec584904cd7af8d91f6af258b254f0dd"
+  },
+  "lib/libglib-2.0.so.0": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1484136,
+    "sha256": "cf2649193ab0ecaba1c986dc1dd8293e4ab1af3a56264c7e19fab7680a34e0ad"
+  },
+  "lib/libgraphite2.so.3": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 166216,
+    "sha256": "3222721ffa93f6770662c81596eb0286d33880f509383aca285094c4206744c2"
+  },
+  "lib/libharfbuzz.so.0": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1931896,
+    "sha256": "05fe504a0bc7dbee514e059467fcaddef9ffa80ade0f69b33fea649e97616077"
+  },
+  "lib/libiconv.so.2": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 944384,
+    "sha256": "e3a32f63e7a1fc80bf7efa9eb417a8e95ff4172ad7db4d1e1dc37de6a90a97d4"
+  },
+  "lib/liblcms2.so.2": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 421560,
+    "sha256": "e8d249fdbbbb9186583dd0b0f80c4a21862890224ac3172e9c43a31f41ee4089"
+  },
+  "lib/liblzma.so.5": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 199816,
+    "sha256": "e122256639233668b64637ccf17da2833b8d51e0b53d6dfe8731eb862b5087e6"
+  },
+  "lib/libncursesw.so.6": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 494616,
+    "sha256": "f6874faa0736eea3a7f168ba6581053e962d0bfea0c5cc87044a6dd4390dae87"
+  },
+  "lib/libpcre2-8.so.0": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 399736,
+    "sha256": "f131df26bce5846f875b54af1e9d3cfecd1084d293fb60d151f6ad758d6dd2aa"
+  },
+  "lib/libpixman-1.so.0": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 994216,
+    "sha256": "322dcf5067a4c7928b45e7bbcb65326dd52c98451392956d1c3b29171ddff7c4"
+  },
+  "lib/libpng16.so.16": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 224608,
+    "sha256": "0fc6341b1860c8793bf9a43d0f8cddab2c8ae84527d90f511f521c09535aa4bd"
+  },
+  "lib/libpython3.14.so.1.0": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 6855832,
+    "sha256": "911eee3b93f71f9422444cfad9954f5e8bbf5dcdf3cc6227318356f62017db67"
+  },
+  "lib/libreadline.so.8": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 362904,
+    "sha256": "89bc5dee4d6766c73803163cf02f8f16da8e09e55c1e4e84694cf48d39e6ef4e"
+  },
+  "lib/libslang-compiler.so": {
+    "mode": 511,
+    "uid": 0,
+    "gid": 0,
+    "kind": "symlink",
+    "link": "libslang-compiler.so.0.0.0.0",
+    "target": "lib/libslang-compiler.so.0.0.0.0"
+  },
+  "lib/libslang-compiler.so.0.0.0.0": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 30786416,
+    "sha256": "56c5209a7c015df57d5f1e08334b7fed6f61ac24823ff461ce5e2b3ab6c8ec24"
+  },
+  "lib/libslang-glsl-module-0.0.0.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1362520,
+    "sha256": "191ff083eab36ed5efabf3d32c3fbc8fbec5cc3e8cea0c925a4868dce8d37053"
+  },
+  "lib/libslang-glslang-0.0.0.so": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 8676952,
+    "sha256": "5cd8dd879c6772233e14d257e0347a6581fbe2e274ef74aab9c68451dd620024"
+  },
+  "lib/libsqlite3.so.0": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1622480,
+    "sha256": "ba9e31022f32c2b0662c68a8230e5cf82ce7b31f3e20a514863292dd7f6585dd"
+  },
+  "lib/libssl.so.3": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1479264,
+    "sha256": "a3a30d7802b1e6a599533819d749177bce514c3ca7ed1fe9522e8784a5b0bab9"
+  },
+  "lib/libwayland-client.so.0": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 81536,
+    "sha256": "48ad7bc929fb54e610b1991f8334f2a34282cf46805c5376a1378673fdda5c77"
+  },
+  "lib/libwayland-cursor.so.0": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 39888,
+    "sha256": "d9a582b120aaa6e4ce43c83d3c17d126d1a6ea65a9defee8d381518890a84c08"
+  },
+  "lib/libxkbcommon-x11.so.0": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 43904,
+    "sha256": "5871cfadcbc185241cee5ebfb89c780b5eb08f8fc080f120c36bb2e25e181c6b"
+  },
+  "lib/libxkbcommon.so.0": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 363288,
+    "sha256": "044fa91b838e141e4db1bb4df49c33429b7eab32e0cf6d77e408728d1f76f74c"
+  },
+  "lib/libxxhash.so.0": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 55424,
+    "sha256": "3b9a7fa0caaf71d0d45533069ce7b8b30886c3d9d0c782739099dba9c6c3d141"
+  },
+  "lib/libz.so.1": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 105112,
+    "sha256": "d799a42fc65e2e4fd2ce9cd3d4476ad1a40f9287a6ea4ba708d4b2954d524237"
+  },
+  "share": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/applications": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/applications/kitty-open.desktop": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 371,
+    "sha256": "fe9334bbf589f7fefd6028c891da294ae329812c2a5590f7d07d10972f3f64a5"
+  },
+  "share/applications/kitty.desktop": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 361,
+    "sha256": "432adfb4a1a9acdac4c90e23115df2c6e8867c46e8db6e4c373a70bc30c234fc"
+  },
+  "share/doc": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/doc/kitty": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/doc/kitty/html": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/doc/kitty/html/.buildinfo": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 231,
+    "sha256": "3f1d59e10af5a89db2f084b800232ae5432535e44fdf82067589b7dad976605c"
+  },
+  "share/doc/kitty/html/.nojekyll": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "share/doc/kitty/html/_downloads": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/doc/kitty/html/_downloads/055e3591463099e42785a872ce39996a": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/doc/kitty/html/_downloads/055e3591463099e42785a872ce39996a/quick_access_terminal.conf": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5282,
+    "sha256": "3b3b8f5d3c4a33fb12e17815ccde01cdeff10491234b74ad75e5c9b401e08e5e"
+  },
+  "share/doc/kitty/html/_downloads/433dadebd0bf504f8b008985378086ce": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/doc/kitty/html/_downloads/433dadebd0bf504f8b008985378086ce/kitty.conf": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 144052,
+    "sha256": "b7fb1b6fe4d240c2f57190f22b334f210f9bd869b5f235d9278eafc28da66b4f"
+  },
+  "share/doc/kitty/html/_downloads/a489ebbb52d84eeb19a12b2fda7debda": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/doc/kitty/html/_downloads/a489ebbb52d84eeb19a12b2fda7debda/diff.conf": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 7584,
+    "sha256": "0d1d18eb7530a62a51e46e0c8bbc000399bc11489e5dead3027e35b83b58f39e"
+  },
+  "share/doc/kitty/html/_downloads/f0a0de9ec8d9ff4456206db8e0814937": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/doc/kitty/html/_downloads/f0a0de9ec8d9ff4456206db8e0814937/rowcolumn-diacritics.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 18056,
+    "sha256": "a80368b3272c41d8b50f3f640cf4305b6423e5a1aae6b72a405129bc29425f2c"
+  },
+  "share/doc/kitty/html/_images": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/doc/kitty/html/_images/choose-files.webp": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 96704,
+    "sha256": "5686f70fe055425a7b660ceb3e2ec8eb2996a473efb6968ae2f1a157ec5f971f"
+  },
+  "share/doc/kitty/html/_images/command-palette.webp": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 112942,
+    "sha256": "8cfe3d61e38e421cf24ab7fdc4d9595990d13ef10f32cd5bba47f373d15230a9"
+  },
+  "share/doc/kitty/html/_images/diff.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 107646,
+    "sha256": "8639041bb5d29978cbfc5fa6b37b94ef49bb5973625540115627552cf9864398"
+  },
+  "share/doc/kitty/html/_images/family-selection.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 176719,
+    "sha256": "5b0ac318920b99783dad2ac90306a120138e727c18ff98ed5213cd06bd96aa83"
+  },
+  "share/doc/kitty/html/_images/font-fine-tune.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 197376,
+    "sha256": "c42221bd3fe201610cca9bf381972ad8c82469488f93595f1a171beb8ab71316"
+  },
+  "share/doc/kitty/html/_images/hints_mode.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 45058,
+    "sha256": "2c6e298af8fb35b56c9d259b0f858cd2428ca1bf875e57c7ba3a07c1e80b556b"
+  },
+  "share/doc/kitty/html/_images/panel.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 8788,
+    "sha256": "49560d32d3e6250c6ef5d4419f1f886e7aff88cc5dca82b4a69abcc101fd3eda"
+  },
+  "share/doc/kitty/html/_images/quake-hypr.webp": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 311608,
+    "sha256": "760d100fe9189d6e849109fd7a794e15fb0d66d2d9b2da35b1d1087bf500d595"
+  },
+  "share/doc/kitty/html/_images/quake-macos.webp": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 297102,
+    "sha256": "1dac014b03d55d33340dfb83616c9738a3ee18486e271de2fd037cb6b096efe0"
+  },
+  "share/doc/kitty/html/_images/remote_file.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 39813,
+    "sha256": "6485a22dc979dc2582bab3c3679b367543b822b1b67948aec380ad87b46cf97e"
+  },
+  "share/doc/kitty/html/_images/resize-edge-move.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 63375,
+    "sha256": "a24c8ad0011586855386a759fcf3fce2c7c5b13cf06021421950045e71d4c3fc"
+  },
+  "share/doc/kitty/html/_images/resize-edge-select.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 65493,
+    "sha256": "1b2f5cef56d5046456b728468f95cc259f53e789e7990aa79b45d8889ed88101"
+  },
+  "share/doc/kitty/html/_images/resize-fraction-settings.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 38308,
+    "sha256": "81681d0086ecc18260877b7b12e6c8324f6b4b9215b3bd2a6ab2840c3e18bd44"
+  },
+  "share/doc/kitty/html/_images/screenshot.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 890523,
+    "sha256": "3e1229fa968f7f8513282ac9bb3866e9190a4e28b77e4079b5f0a920c23f994a"
+  },
+  "share/doc/kitty/html/_images/social_previews": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_actions_1745a1bd.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 66838,
+    "sha256": "53e3c44290b53cab09df820055779487d919c7688aeb824e0d2e93a9629ac35d"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_binary_478594b0.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 61811,
+    "sha256": "1825c28a9701200ee0e8a784a1f675d4320804c33093e829cef6dc3bc5c26527"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_build_e554a463.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 65736,
+    "sha256": "6d3f91b83bcd716cf5f121f5e7943f61c74a367fb6058d426fb80445fa31276e"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_changelog_3a0c7623.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 66064,
+    "sha256": "36af1e88af8dc54a7eddde5172f7e537fec49b102159a250f26a64538d4caa73"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_clipboard_673291d1.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 82745,
+    "sha256": "391bc84686390284b4084b016edc190d8ef9a62811f5cfc0dc7c69829a746d6f"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_color-stack_b2e66ffc.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 62367,
+    "sha256": "a5350f808800ebef6e9fd7b432d51daf53a7c373a7887b901734550d52e81c0f"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_conf_6d817f14.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 64070,
+    "sha256": "fb0fa270537275af05aa5bdb1608fcb20db8c1fbe2db52aa9ad645fa7186de8e"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_custom-shaders_69b092c7.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 66069,
+    "sha256": "8d3bcbdeb99fcef67b34f884e0c12a180ce3ec860d124db33929525a3bf6ed6a"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_deccara_77e64daf.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 87961,
+    "sha256": "8df88d621a2f538cefebb9f30e0d932da722ff067858d9d584e090b4d2d4be89"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_desktop-notifications_9e55697a.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 67731,
+    "sha256": "6dc204d30c882380f7a27f32f1e710b17bc24e54d4775287d1cbf6c7d58ebb5a"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_dnd-protocol_bbf3df2d.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 70626,
+    "sha256": "93532d2e4c8e1d613ebbb28abdefb65e5502d9ba0ad5e8f9d6607d80b93b8346"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_faq_6acfb156.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 75409,
+    "sha256": "56b10f1de95e805c0ac5a693039682c6d3c657a1c03a983edb61ebf780002823"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_file-transfer-protocol_67d60cd4.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 64250,
+    "sha256": "2642dd7361207f82d35106523377a727d08069ee6d0936c479cbc3d7fc307f33"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_generated_color-names_a1b155fe.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 61405,
+    "sha256": "70c48fa673572f0240dfff02f17ec23fa786ff1c046a29b98535802883387610"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_generated_launch_2c8ae1a7.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 64469,
+    "sha256": "4c1ca9a0b1a8426baef61d0ffb87a3470b5f5db5865dcfe88c05d0d2cd6c3f8a"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_generated_matching_f5ed7c14.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 66233,
+    "sha256": "44765da0a4a9e5f5507b19226392b760ec91c5f22a170cc17ee3cc551b068715"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_generated_rc_4121b4bb.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 60016,
+    "sha256": "acc53c197c1132a43bbe65c23ac1c03afc9c1cf9c60cc11045c1395205ea79ea"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_generated_save-as-session_b77c65fc.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 58791,
+    "sha256": "6329aaf43da26daf4e4b40eea52dd0e192e375545452a1231142275578cc1880"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_generated_ssh-copy_26aa9e71.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 66879,
+    "sha256": "095a520770aed2245149ae81bafedb00c7ea4d4de8c4b585814804acd9696a84"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_glossary_e93f6fff.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 66190,
+    "sha256": "083f086c12bd543c0e56c5274fcf2a27a19da532eb2267ecc7ca29f4bf1727b5"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_graphics-protocol_96eb2627.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 67292,
+    "sha256": "a8731ea559761f4b4493961be6f3ec260b535ea4188cdb7acb35c5d3f5f6f8ff"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_index_f767dd9c.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 60440,
+    "sha256": "eef65949a3f0c8af78ed7b9fa0147ed7e77380d3420ccd09da37f8c3b91c6b04"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_integrations_89a2636c.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 70909,
+    "sha256": "1e605f80478a93156933386c28571e647f886af8b7a9708de8d288edcbf66639"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_intro_vid_14889341.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 63052,
+    "sha256": "57912dc31c9750922371022289ee0869a458712e15158d0a1d502c146e003f43"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_invocation_05c40da8.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 71056,
+    "sha256": "222658a50a3ef392ce3612b790155e4218bf3f5f964dd75e6b3be619ac9414e0"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_keyboard-protocol_37967379.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 83815,
+    "sha256": "ddc34aaa5cd0c730f2d9d4d102593be7244d0fd2c89917d3a2e8f7011d0d7c95"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_broadcast_4dfe59be.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 59571,
+    "sha256": "29afba6260b22049ded7da4f61348d90736453b1360367ede54969be8ee07365"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_choose-files_eb203c8f.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 65421,
+    "sha256": "fa1d9d5be2b4b4ebbd9bca3f3332a03313d24ae47d665c8ab2ca9bfcdd624b9b"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_choose-fonts_14869f23.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 66971,
+    "sha256": "995b62e93e186ce72f6c3cdfbdda2c5188612b74c1b0a4762398838c9e40e968"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_clipboard_af529e2d.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 64012,
+    "sha256": "b00eec217a0c42181df723d4c1f5b4a58ef1f6e5803e1b962dbc1e1a3353bef1"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_command-palette_ec8e68ff.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 68372,
+    "sha256": "97ded425784253d17b9b29943a7e5264ce6dd663d7a22b40e15efb68937cb394"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_custom_264d6309.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 66949,
+    "sha256": "23e58db8f34f294bd26cc493fb0ac800f58fa3ff8369bb7b3100e4b35aaeeef5"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_desktop-ui_4b8fd2af.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 90508,
+    "sha256": "58983d0161c215cd9101a84c8a2ff9218bb88c927abea5b66e1e30eb71b3bdc4"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_developing-builtin-kittens_70cf5f2d.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 65819,
+    "sha256": "18bab92b3486d699049e5f934befcedc990b39420c220655304a9593a6250584"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_diff_56ec1326.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 59374,
+    "sha256": "442ea6011f25126a673ad499e64bdc5443aaa2a858f6932a9ce5f56fe86bb59f"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_dnd_a8e5aa91.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 65420,
+    "sha256": "87e64ae48434e854a4903b38cd9a0e8d5f2cdbc656fcf55c84c77b4974e71e47"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_hints_cf0d0da9.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 60274,
+    "sha256": "c8a8882636ec8059300fff4fb47d246daa71ad2ce0041c3da5a0db6f298d2274"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_hyperlinked_grep_bce050dc.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 65365,
+    "sha256": "735e25b4cf89e7a5a30257a020e05a8879c47c974dd12dfa27db5f93d4b69afa"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_icat_8f870112.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 57572,
+    "sha256": "4bab1e78cda67238725bb54a22155e9f5e07a3254b4105ec647f294c8862742c"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_intro_2aa247aa.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 68664,
+    "sha256": "6702ff339715d8ac457c94f199dee6b7e3e73394d8ea88e8dcfc9d0e3227c931"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_notify_4b21ed12.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 61604,
+    "sha256": "c7bc6f9f5369a83badd786c9bf651a8a6fc46ff17ab3f12cdb59bd923659937d"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_panel_f0055a23.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 87864,
+    "sha256": "9dea8952c4b72c4dc0b9bd80fce62074be384cb88fea5e2c585d11d86bc86a4f"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_query_terminal_bcf6bdb9.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 67078,
+    "sha256": "1301ccb0424f18134d0cc814ba55204781ec619388ee327fef6799ca7ac5e987"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_quick-access-terminal_cdc578f3.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 80319,
+    "sha256": "f3b264db10e7781155017a3dd4b3d4b2bb29e1672d4cd8ee45d7fdbc294d8657"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_remote_file_c5782e6e.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 64476,
+    "sha256": "5ada77c5884a08f05146fcc1b98f53c3fdf89fb08a861bea400c2ff12f6c1dda"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_ssh_d0cb65fa.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 66210,
+    "sha256": "2d00a11587ac61faef375fa26ee10ea7d5234d8c96708d0955b66ead42146839"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_themes_72ee7bcd.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 67521,
+    "sha256": "1faa5bb1872da247c193d030dff6e565beec9480b4d45f542cbb38081e4cd6de"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_transfer_009949a9.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 63316,
+    "sha256": "7b76c26f890b6d45d84be65130f1c7308edebe079e0d93e377fd0aa53a0ea4da"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_kittens_unicode_input_f1ba948b.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 64369,
+    "sha256": "14088677ca27d0cb1262d81f453ed2d6b804fc9087e5ed017edb36e9a2358e6d"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_launch_717c78bb.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 63497,
+    "sha256": "0f2d276e0ce1d0becdf208da16131ba7a260da7e1e6b24396263638c4807d38b"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_layouts_49b07683.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 64366,
+    "sha256": "c96722a79d818849b80fa5c2fcb57151f0fc0190e366271e8604dba68f848fbd"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_mapping_aea5afa6.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 75591,
+    "sha256": "f72632209968af72fdce54df0ab7556b4e2ebbfa75c1871f8b6de12a9df4ffc3"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_marks_66066db1.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 69139,
+    "sha256": "2eed5b209c4b17ea45e1c47b77dee7ab07392b4fecffd96bac205c63c8323fee"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_misc-protocol_baba0cc2.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 75952,
+    "sha256": "392165c97f648fb7ddde3ed5e61752c5e1277b6d8d2cb7cb71e9f36b72cb3d90"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_multiple-cursors-protocol_49ab6a61.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 67464,
+    "sha256": "651df27c84203fc8f8c83d9307e3e5e6a9579b17f4eb6939ed71e4be1509d215"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_open_actions_b5f13270.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 70801,
+    "sha256": "f4ad560e1dc88b0decdbb1e9095ce95269a337147d687a4d1da9399d53728b4f"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_overview_249bd848.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 63795,
+    "sha256": "fe7b852bbc7627a9388f2b624ffcc7c1cda7cf8926205cc6f4224846efafa583"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_performance_76c80d2e.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 65961,
+    "sha256": "a6c5bea342deacf558bf861d5e75d2dd319d14a58146cd96e495bc944c6425a1"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_pipe_168d77ad.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 86405,
+    "sha256": "4d106e234f855ba4142075a684eb89f1f0e01550f3ae409ecdd9b15a179c3323"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_pointer-shapes_96e448ee.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 64055,
+    "sha256": "e4bf6ef938804b974f8ba82398a50d4758442262006479e2eeb53d93daf1e716"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_press-mentions_3ce20e22.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 70293,
+    "sha256": "c125532108e33bbb0fd53191fce217a89515f5c67d634ecc564475d086c825c9"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_protocol-extensions_ea5204ed.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 70163,
+    "sha256": "0b9dd8d0177cbe732b538eda4f2ae3c41befb30f2535e593374983ed39766f7c"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_quake-screenshots_d232c5bb.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 63709,
+    "sha256": "d3e9b5f543306d991554b4686ce5334c66101d93290dacd30821fb74b93a9fa6"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_quickstart_9d1a56df.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 65180,
+    "sha256": "29790876a0c8f5ee675bde31e8f6ecd24566e80dca0394cbfc36ead1c4119cbf"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_rc_protocol_ea1138ef.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 70639,
+    "sha256": "cf5198077a736bc8d3fb457725a2c0bff2bdef9803e4ea2cec691c27190ce77a"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_remote-control_7371e6b3.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 69197,
+    "sha256": "2eb2b26ccd96ed1fe7b4a0789c729061c592767e5565398a27c85bfe33a48339"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_sessions_7cc12e6e.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 60935,
+    "sha256": "1117c131b21eb7c9be457b5a7b74727cb089ad60092f5579fb78c93b66e50610"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_shell-integration_4b2a7549.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 63849,
+    "sha256": "3e313e661ad6314d75eb1ce3a4df5e10910f29a8456c78462ade55a2da3e20da"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_support_daeae705.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 79104,
+    "sha256": "a617506dfffc822e71c9e629adead5579ff814c7676af993ccf449718ab80e5c"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_text-sizing-protocol_974e580e.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 67181,
+    "sha256": "7560e54bf795394d0f50c7d0f7ff14b6d4a803d7011fd7e82d44da4458b33c3d"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_underlines_c33f785f.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 73424,
+    "sha256": "e645c17e1248510d00b401334a01c019e874666fa9292187c3403b93b4f4f3f1"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_unscroll_98a1c6ca.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 69029,
+    "sha256": "3c81b8db5be8c0d32ae94ae1859f3823709ebe8576ebf67f016094809d5ab92e"
+  },
+  "share/doc/kitty/html/_images/social_previews/summary_wide-gamut-colors_93c46a12.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 67974,
+    "sha256": "d29ef6587ebd3f13248c9cd71fb021879c7a5aad7975fbeaf23c1a44d5fc78f8"
+  },
+  "share/doc/kitty/html/_images/splits.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 36802,
+    "sha256": "a55e04d3c7d80fbb8b2e827cf772b650953b516024824fd0507aa8f37d8bd564"
+  },
+  "share/doc/kitty/html/_images/themes.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 101956,
+    "sha256": "ca8066e230af8b5d273e4d454c5146ad676092c91312eeba61c1604076266a24"
+  },
+  "share/doc/kitty/html/_images/transfer.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 20543,
+    "sha256": "92629101eee83ea2148d9012605c9b07581624edbe87b6e41401625b892cefbf"
+  },
+  "share/doc/kitty/html/_images/unicode.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 67114,
+    "sha256": "fbb7e900134265a8128d4cd4b4632dfa3f261bfac32ff810f25adf7479170701"
+  },
+  "share/doc/kitty/html/_sources": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/doc/kitty/html/_sources/actions.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 513,
+    "sha256": "7bec5fd9cee195e0da7f1a3040243f101e8eca07e7bf91b938c160b67a2f3716"
+  },
+  "share/doc/kitty/html/_sources/binary.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4979,
+    "sha256": "3a20127337eca216373aa16810ef0cc282ade34b398b8e22634b1a4d34c10163"
+  },
+  "share/doc/kitty/html/_sources/build.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 7947,
+    "sha256": "d9e043c38b41b39d12151b2f414acc4de6ad7c3d4a3a69c85996552e2fc0fb68"
+  },
+  "share/doc/kitty/html/_sources/changelog.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 263161,
+    "sha256": "9b156713fa2e85f0b5e2e744c404718efbdcefd35bd5b6f2ab5624ba6647f1c9"
+  },
+  "share/doc/kitty/html/_sources/clipboard.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 12096,
+    "sha256": "a39c5000237a51b35bde98b07b0c335547013c9df92c290ab28598500b29afa9"
+  },
+  "share/doc/kitty/html/_sources/color-stack.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 9834,
+    "sha256": "8563284e275c4e98535bcbfbfee2bad034cd51a8f68f027d448a4e05c8f13cd2"
+  },
+  "share/doc/kitty/html/_sources/conf.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 3912,
+    "sha256": "9fc7a1deff96510be9cd459e08fa249442bc2a1db3403e0a71c2d375ce732870"
+  },
+  "share/doc/kitty/html/_sources/custom-shaders.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 30101,
+    "sha256": "3c06ba99a0648e05981e0baf4cdf2322ced460bf2febf322aa2c802df16eb4bb"
+  },
+  "share/doc/kitty/html/_sources/deccara.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1018,
+    "sha256": "700d97077b7ff209f35a17651d4534ff2281669b4d70248a21083acf7218d605"
+  },
+  "share/doc/kitty/html/_sources/desktop-notifications.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 26451,
+    "sha256": "43c7e525c78f2375c57598eb1d58a9a5f59dd747f58b6556b1bcf97e0a3a6657"
+  },
+  "share/doc/kitty/html/_sources/dnd-protocol.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 29068,
+    "sha256": "62e79ac9ef3e47cca624765182ce4dd57bc8b78b6e6f8b59167d104f9e8d9596"
+  },
+  "share/doc/kitty/html/_sources/faq.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 26886,
+    "sha256": "300a283929cd2c5620afc27cffe9af28f39e1af8a295ff76c587369db6cd982e"
+  },
+  "share/doc/kitty/html/_sources/file-transfer-protocol.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 26856,
+    "sha256": "c5162c17d27c17f4273edfc1be2c4ee69d6c8d88ca51fe4fbfe6b7548bdd33bb"
+  },
+  "share/doc/kitty/html/_sources/generated": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/doc/kitty/html/_sources/generated/color-names.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 45457,
+    "sha256": "f056ee7fbfb57a46b608c63cd08ec4b21c9b864039aa472de6f2c45eea705eaf"
+  },
+  "share/doc/kitty/html/_sources/generated/launch.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 21993,
+    "sha256": "f2e5eafc46c4a45e16e7634f92ef9d03dee54bc416852424487b3bb6978f4ebf"
+  },
+  "share/doc/kitty/html/_sources/generated/matching.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5810,
+    "sha256": "077d043d09b0b13e919497c4d7d5a2c71467d74d26f14927cb2f89af6e51360d"
+  },
+  "share/doc/kitty/html/_sources/generated/rc.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 22384,
+    "sha256": "e64cff3724f7cc41579d27003502ce9b593e51e48883b6bc0df1c15f9c807f0c"
+  },
+  "share/doc/kitty/html/_sources/generated/save-as-session.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2845,
+    "sha256": "bb3ae74936a497c264f4cd2b0c417c4724999ad52e514bd2636ca1d0db614293"
+  },
+  "share/doc/kitty/html/_sources/generated/ssh-copy.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2338,
+    "sha256": "5f588d91872c2bb487fbfcf0f1b47c0816c88b0d0bc606edfc7af2f41895d0d5"
+  },
+  "share/doc/kitty/html/_sources/glossary.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 10806,
+    "sha256": "30f458b2b0883540c6f634d96f3e740e9fc221fb04a72603b49416ed81139d58"
+  },
+  "share/doc/kitty/html/_sources/graphics-protocol.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 69062,
+    "sha256": "c51470cc0bd16c804ff2d1652507f6fc6966271ab1164359012b8bbdb0375dbb"
+  },
+  "share/doc/kitty/html/_sources/index.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2067,
+    "sha256": "53f865ada60da3e20ffab4a84aafccde5319ddd774ea4aba10c0c9ea5cb3f150"
+  },
+  "share/doc/kitty/html/_sources/integrations.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 15463,
+    "sha256": "826fec59ccdb16091972500f42dc6e5e8997e58f202cba59b6f7891c66e28bcd"
+  },
+  "share/doc/kitty/html/_sources/intro_vid.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2164,
+    "sha256": "d7e3a7161427eba04447ea3f17c30629f85871bcc0200be9a526f26ec2ed93ec"
+  },
+  "share/doc/kitty/html/_sources/invocation.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 203,
+    "sha256": "59ad7f02dd369ba76db11840228005ff78bcd1391a306ddadadf96e2a9e79caa"
+  },
+  "share/doc/kitty/html/_sources/keyboard-protocol.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 36869,
+    "sha256": "e133a61a46cc31a0a667dc389597eec72a3371849221f0126ecf5aaf4b14b4ab"
+  },
+  "share/doc/kitty/html/_sources/kittens": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/doc/kitty/html/_sources/kittens/broadcast.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 851,
+    "sha256": "ec1472f64ba32a26169d23101fcb891707a1a93156136897b4a88c529cd94d6e"
+  },
+  "share/doc/kitty/html/_sources/kittens/choose-files.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 9125,
+    "sha256": "8affe18ffe32d784fbc805b6e6d84eac37559ea9d7b3357c8faefa034e820221"
+  },
+  "share/doc/kitty/html/_sources/kittens/choose-fonts.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 6007,
+    "sha256": "3deb67538b8964468b027fd8c7769ad8e5018586fc56faf203ed7d394a00f5c6"
+  },
+  "share/doc/kitty/html/_sources/kittens/clipboard.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1897,
+    "sha256": "9b1aa08d18bcf8a337e61430fe6ef10ef02c999aca7df63cec64801baac13e61"
+  },
+  "share/doc/kitty/html/_sources/kittens/command-palette.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5610,
+    "sha256": "a2540d1848e7bf44b7e09b56a7f3b40c3363298341a279e72357c7d4fb2536d1"
+  },
+  "share/doc/kitty/html/_sources/kittens/custom.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 14047,
+    "sha256": "bd2bd23ea0978093933ebd73c8122306bfdd26c1a96246104a7614c168a9939c"
+  },
+  "share/doc/kitty/html/_sources/kittens/desktop-ui.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5723,
+    "sha256": "6cc50381d9fc3dc809fae79443230a8f8cfab98f08699f6365c856a91d35a302"
+  },
+  "share/doc/kitty/html/_sources/kittens/developing-builtin-kittens.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 3392,
+    "sha256": "c70fbdf01e1172c369d7123a9cd2319cd3ca3fd914ea01b349fd0507220b742c"
+  },
+  "share/doc/kitty/html/_sources/kittens/diff.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4590,
+    "sha256": "5680174f1336764abb4fd4df770afad1c274c5db17e5e52b280e1ddd910ec077"
+  },
+  "share/doc/kitty/html/_sources/kittens/dnd.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1660,
+    "sha256": "7617d9c5bce6e9335b54d0eaa2b9b78cb9d5d2dbc6fef3437557f445bdbeb2fc"
+  },
+  "share/doc/kitty/html/_sources/kittens/hints.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5264,
+    "sha256": "3764b394a1e52a8f613d6fa932390b3043ae0daa3d626619caadd2f2dbb05393"
+  },
+  "share/doc/kitty/html/_sources/kittens/hyperlinked_grep.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 3213,
+    "sha256": "95a6b1a882bac3dee61b00f4d78a8991763d59fe9cc1ada1b79b75cb5423a419"
+  },
+  "share/doc/kitty/html/_sources/kittens/icat.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2756,
+    "sha256": "1d721a412d9b4925883ea976ad2fe12b0d40e4f0568c812c614b4f8e20cf4e8b"
+  },
+  "share/doc/kitty/html/_sources/kittens/notify.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1296,
+    "sha256": "880b1b4419a71818afd071f0fe7d522db7126c2ae196e43822aba259e08f396c"
+  },
+  "share/doc/kitty/html/_sources/kittens/panel.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 7584,
+    "sha256": "c7ebd112dc7598cc3c2524026d397677b24b9c017e59f6412be409ce4f78fd03"
+  },
+  "share/doc/kitty/html/_sources/kittens/query_terminal.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 915,
+    "sha256": "6c431c76fb9a117abfc70de7313267f4981175421cb14548c239bc845ca47e4b"
+  },
+  "share/doc/kitty/html/_sources/kittens/quick-access-terminal.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 3295,
+    "sha256": "9506b349ed5614893d441aa4a3f819c3ac768f298115b7149f71f92a7a7d6cb9"
+  },
+  "share/doc/kitty/html/_sources/kittens/remote_file.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1731,
+    "sha256": "e3c45bc99a507e0faaa26e64e1d3009a880509aa4748a716fae57afa41715940"
+  },
+  "share/doc/kitty/html/_sources/kittens/ssh.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 8319,
+    "sha256": "011c3e0084715413da4463350db2c2731ff051165998fdd69db56b8bfac83987"
+  },
+  "share/doc/kitty/html/_sources/kittens/themes.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5464,
+    "sha256": "d230a9acec8b3ae3605649719ba3f177ae738d780d11e5b4d9dd60c03a09c7e3"
+  },
+  "share/doc/kitty/html/_sources/kittens/transfer.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 3374,
+    "sha256": "808c054116b372b578f8c173c0e19e1471a9b3c9a49c07ffa8b7fc45e004b8fd"
+  },
+  "share/doc/kitty/html/_sources/kittens/unicode_input.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1471,
+    "sha256": "19fc2c0f3251c0d3611534191ea3a1ef07e6466c6660b4581c9baf981c4af8ad"
+  },
+  "share/doc/kitty/html/_sources/kittens_intro.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 3229,
+    "sha256": "cf66b62f728d551f1cb186eba39585f27aea2eaa8d722e929af537da7f058d55"
+  },
+  "share/doc/kitty/html/_sources/launch.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 17264,
+    "sha256": "795f27fe46b9cb4542904d1b21cf34d9fa2d1dce31285d6ab79b238e2efdccf6"
+  },
+  "share/doc/kitty/html/_sources/layouts.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 22275,
+    "sha256": "702dc137a59dc94eea7a82fc16ce7af5a5ff6bd8aeed018e8f9986bf426f8f1b"
+  },
+  "share/doc/kitty/html/_sources/mapping.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 17747,
+    "sha256": "482bc24b1ff2e7ea930849e0a59e4d7d15b7f8ca827cf8bbce79223ea6fbda86"
+  },
+  "share/doc/kitty/html/_sources/marks.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4034,
+    "sha256": "6d395e47edd5fe1a30f27429430cac322a4c839b9065106fc351cbbd2cf48f58"
+  },
+  "share/doc/kitty/html/_sources/misc-protocol.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4100,
+    "sha256": "84f77ce36be99a433c240927b9a2339718d8d21e977e73823af44b50e7b1678f"
+  },
+  "share/doc/kitty/html/_sources/multiple-cursors-protocol.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 10359,
+    "sha256": "5cf45d0ddc8a1b891469d037e9a287891692c91c7a9efc269013e1ee8f9617e3"
+  },
+  "share/doc/kitty/html/_sources/open_actions.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 6449,
+    "sha256": "636ea67df36a03937e9100b5d4bbb89ef7b028efc2b28e10844ed12f0d58fb22"
+  },
+  "share/doc/kitty/html/_sources/overview.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 11964,
+    "sha256": "35b083c7ba46ddefb0b50e6ebfd6ef4a2ba19f01c12493a58d852ac4e28753e0"
+  },
+  "share/doc/kitty/html/_sources/performance.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 6611,
+    "sha256": "fec97b9d4b1d70eed958301606464eab854ff2343d01429f8b658faa4682ea98"
+  },
+  "share/doc/kitty/html/_sources/pipe.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2874,
+    "sha256": "2e2127f45b13b096a4b6ff467f647496564fa09426e19a225ed13e555bac1dec"
+  },
+  "share/doc/kitty/html/_sources/pointer-shapes.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 6084,
+    "sha256": "0e41d3c1239b1ddee47ea3be51eaa71441ac4a9568ca6a139aa307bcdf496ec3"
+  },
+  "share/doc/kitty/html/_sources/press-mentions.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 516,
+    "sha256": "6e2e5fa2279288ecfdf8f53b1a6f2292c932747d074545db6f30fc0b6aab778b"
+  },
+  "share/doc/kitty/html/_sources/protocol-extensions.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1462,
+    "sha256": "3a37da0e2a36a247878867e39340c4473adbb44f498bc2edb1382fe668b50d22"
+  },
+  "share/doc/kitty/html/_sources/quake-screenshots.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 883,
+    "sha256": "ca9b5e6bb742f5f4afd6d9f5d1d504daf6af6b2c5045b7941c7cdc349adb571f"
+  },
+  "share/doc/kitty/html/_sources/quickstart.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 911,
+    "sha256": "73b1276d4232c523c13d48f5ec823931cfb791c23869bac0fa9665ea739f5eba"
+  },
+  "share/doc/kitty/html/_sources/rc_protocol.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4910,
+    "sha256": "72594091d77338544710b8e9f8a557bd0e9a1d3225dc07a1fa8115022ea87eee"
+  },
+  "share/doc/kitty/html/_sources/remote-control.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 14553,
+    "sha256": "fb0c80c3e07dc3eeeac6efeeffbe080f802449ccdb2ffb129fe00c4dfce15ee4"
+  },
+  "share/doc/kitty/html/_sources/sessions.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 19313,
+    "sha256": "ffda99c41c8289b69baeea4c04113be2aa4c87d2260ebc2ab190c69d02a2d79e"
+  },
+  "share/doc/kitty/html/_sources/shell-integration.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 19130,
+    "sha256": "5a08659b89d58c58e77f5ea5d390e617a1a1a633e4519621875eee3e791a00a4"
+  },
+  "share/doc/kitty/html/_sources/support.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 966,
+    "sha256": "3b9692662222d203eb89ea9cd72a9b7b15cf88406b7ef188fd44fdff6663b3d1"
+  },
+  "share/doc/kitty/html/_sources/text-sizing-protocol.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 26618,
+    "sha256": "499f84a5992d565f89eb8b22c982179624d39b0f954af69f0571bb76221c7fb0"
+  },
+  "share/doc/kitty/html/_sources/underlines.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1421,
+    "sha256": "7355e01cbfd176f2ea75687bf87573e889cbafb882c3a8214ec4737352c9b1ad"
+  },
+  "share/doc/kitty/html/_sources/unscroll.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1657,
+    "sha256": "551039ed9198cbf73bf3de1bd4c26a5369afe4f20ce872e1991aa75483da35d9"
+  },
+  "share/doc/kitty/html/_sources/wide-gamut-colors.rst.txt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2752,
+    "sha256": "004cca0509a052dabf73a0d8a230daec8380ca8160030189b421d78a53c10037"
+  },
+  "share/doc/kitty/html/_sphinx_design_static": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/doc/kitty/html/_sphinx_design_static/design-tabs.js": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2780,
+    "sha256": "de2467cfca5bb555043369f1eea82c9cd794e70fa0444f216aa4ebb18cefc9f0"
+  },
+  "share/doc/kitty/html/_sphinx_design_static/sphinx-design.min.css": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 49351,
+    "sha256": "eb53d5c272ecc4d93a04605b3d42aa6942858e634bb9686d32d576203a0033ba"
+  },
+  "share/doc/kitty/html/_static": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/doc/kitty/html/_static/base-stemmer.js": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 12250,
+    "sha256": "eb67bedbfa264bd8a2201ebe07c861abbcbc56d7eaa28c53ff8b84f65ccd450f"
+  },
+  "share/doc/kitty/html/_static/basic.css": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 14685,
+    "sha256": "656ff1bacd6f260fc7d71b97f9c2f1fcbf692dc84bf469cd952034efcb9eefed"
+  },
+  "share/doc/kitty/html/_static/check-solid.svg": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 313,
+    "sha256": "edfc4de8b5af9662c19d74d0ef059deb00283f6b1ae21dfcc8e052d5617a1c7f"
+  },
+  "share/doc/kitty/html/_static/clipboard.min.js": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 9031,
+    "sha256": "261ffa06f381039cf7d18984d1364c59f3c2b9b60b1fa05d5f9c8c152e4d5be5"
+  },
+  "share/doc/kitty/html/_static/copy-button.svg": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 411,
+    "sha256": "8cf972ac6d0873154c8245eab96a509026ee132f03bf68ec79fdfe3fa7b03a05"
+  },
+  "share/doc/kitty/html/_static/copybutton.css": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2060,
+    "sha256": "0f7c9f303bd3058bdc9db7263fe560c0a41f3526729ce1f00ccab527724c5476"
+  },
+  "share/doc/kitty/html/_static/copybutton.js": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 8467,
+    "sha256": "89ee4163ba2fdd47404883ebc81bf93f696f6ab02aa5795331a8ff7161e9e256"
+  },
+  "share/doc/kitty/html/_static/copybutton_funcs.js": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2698,
+    "sha256": "4a178ecff5d986b5612029299ac6f4d08c401fe162af30176b501d318b25b753"
+  },
+  "share/doc/kitty/html/_static/custom.css": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1623,
+    "sha256": "f7180df03279c6f13bc0f844be039046f10c84d4db868674fe716b5a44ac79ad"
+  },
+  "share/doc/kitty/html/_static/custom.js": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4184,
+    "sha256": "9c8a0aa5a0d9ade74491825e2941b1f5cebc6c7bc50092f2c3e5eac23018f3a1"
+  },
+  "share/doc/kitty/html/_static/debug.css": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1266,
+    "sha256": "0d05cd9e79d53234304667c08f02971de6196c0ffca593c3903b3667b4055ad6"
+  },
+  "share/doc/kitty/html/_static/design-tabs.js": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2780,
+    "sha256": "de2467cfca5bb555043369f1eea82c9cd794e70fa0444f216aa4ebb18cefc9f0"
+  },
+  "share/doc/kitty/html/_static/doctools.js": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4332,
+    "sha256": "6b2524c2723cc6e06cbf056e0b2861d50ba8fdd082ece13378bfb45d7a090528"
+  },
+  "share/doc/kitty/html/_static/documentation_options.js": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 328,
+    "sha256": "ca7b85e7a92e290b40361b6ac851a4d779a47588974c7871f8c90bdbeb9a49c9"
+  },
+  "share/doc/kitty/html/_static/english-stemmer.js": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 30599,
+    "sha256": "1f995807fde5a820390fb9046e4813a7eb8f20a4684650f14fbdeb4c2ad7ffc5"
+  },
+  "share/doc/kitty/html/_static/file.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 286,
+    "sha256": "5c4bc9a16aebf38c4b950f59b8e501ca36495328cb9eb622218bce9064a35e3e"
+  },
+  "share/doc/kitty/html/_static/kitty.en.vtt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 19539,
+    "sha256": "82b89e095945b3d997f3b8626678111243e2bffa11e27c0c6acf6e1abfa41e13"
+  },
+  "share/doc/kitty/html/_static/kitty.es.vtt": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 21220,
+    "sha256": "423b0251f61c8c4da90aebf25798316c13f6d00ca9e7fcaa4922ebecb1d19a8a"
+  },
+  "share/doc/kitty/html/_static/kitty.svg": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 3834,
+    "sha256": "b937ae4fea91793b992a59ed39c1f472741a2bdbcf5175bdcb78bdceb4c03aac"
+  },
+  "share/doc/kitty/html/_static/language_data.js": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 13589,
+    "sha256": "af1c48fc5b0e0e9423cac068d55cdf22f541648709ae4b9190ee8aa9c2b08150"
+  },
+  "share/doc/kitty/html/_static/minus.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 90,
+    "sha256": "47e7fc50db3699f1ca41ce9a2ffa202c00c5d1d5180c55f62ba859b1bd6cc008"
+  },
+  "share/doc/kitty/html/_static/plus.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 90,
+    "sha256": "54115199b96a130cba02147c47c0deb43dcc9b9f08b5162bba8642b34980ac63"
+  },
+  "share/doc/kitty/html/_static/poster.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 77753,
+    "sha256": "f5f4047bbea1925780cc4f5ac5b3e01d2ea9f5b3dc5abced3247954b047f950d"
+  },
+  "share/doc/kitty/html/_static/pygments.css": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 20190,
+    "sha256": "175552429a0952117a332f75fd6cb601f11e7d88dbf80083afcb8482f963f7e1"
+  },
+  "share/doc/kitty/html/_static/scripts": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/doc/kitty/html/_static/scripts/furo.js": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5221,
+    "sha256": "0df6012bf9183882fc314d1eeaa66fe7705e8694cf27351c4be1f5dc32e9fe6f"
+  },
+  "share/doc/kitty/html/_static/scripts/furo.js.map": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 28571,
+    "sha256": "049d8e3c297854c9e7defecbf64bc92c375b4d94c7bef119ba11c8e8fc723ca2"
+  },
+  "share/doc/kitty/html/_static/searchtools.js": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 22464,
+    "sha256": "954625d140412a9d3d954d67e2e3aec8f8bd18018cf7600b894298fb157c7780"
+  },
+  "share/doc/kitty/html/_static/skeleton.css": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 6034,
+    "sha256": "e7702bcb03d3eb02e63681f753d88a28bee8f8ed13e50e58ac84a2bc31a5c71d"
+  },
+  "share/doc/kitty/html/_static/sphinx-design.min.css": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 49351,
+    "sha256": "eb53d5c272ecc4d93a04605b3d42aa6942858e634bb9686d32d576203a0033ba"
+  },
+  "share/doc/kitty/html/_static/sphinx_highlight.js": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5325,
+    "sha256": "c551409f6bae30d602d5b47676696803554e7ceaa458c1c6eb8367b9d2c4dd31"
+  },
+  "share/doc/kitty/html/_static/styles": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/doc/kitty/html/_static/styles/furo-extensions.css": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5518,
+    "sha256": "3d2b0207711a07313dfb6c8b272295f5f931169e4b2b784c61d00be9d871f8fd"
+  },
+  "share/doc/kitty/html/_static/styles/furo-extensions.css.map": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 7762,
+    "sha256": "0b35b6ebb81f2aa1fcaee325c096d683e32c1808a9220670a1a3f88300c6915c"
+  },
+  "share/doc/kitty/html/_static/styles/furo.css": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 50789,
+    "sha256": "177f1163121440086f701bf6cb9d2b2ab8fc29fcb754466465edf7b9f60b5aa0"
+  },
+  "share/doc/kitty/html/_static/styles/furo.css.map": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 76029,
+    "sha256": "b7d40df8a2d2c5cc7727929dce7a482be4506f905ec42588fdbd0571bb1e9a45"
+  },
+  "share/doc/kitty/html/_static/timestamps.css": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 230,
+    "sha256": "9ea109417c443cef8a79bf3f9dd12d7676f66a75ec876f1be736a7ffb98551e4"
+  },
+  "share/doc/kitty/html/_static/timestamps.js": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1344,
+    "sha256": "24861ca7ac5df3e29d4bc8933f68fef0e197a198f590859bb56a7ada8a2dcd93"
+  },
+  "share/doc/kitty/html/actions.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 261452,
+    "sha256": "59bfe6c15fc222bcc5ffc9eb7af27dae8e6cd62698b932f181ea2773d475f0b9"
+  },
+  "share/doc/kitty/html/binary.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 173090,
+    "sha256": "ed17a8d5aab7ce7845d23af0cf7f997f208eb1fe5387fb073e4c7ea11f50a172"
+  },
+  "share/doc/kitty/html/build.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 179542,
+    "sha256": "f861ef734cd8a107dbaa713168acdbd06428ea8601f8602c94d0113385d86105"
+  },
+  "share/doc/kitty/html/changelog.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 741648,
+    "sha256": "34277d6b773637dc7f43dc46c47054383674c907231ba899b124e3e47aff3fca"
+  },
+  "share/doc/kitty/html/clipboard.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 187728,
+    "sha256": "ccfc550eda566ba539b989a91c45572bb4a570a47352ff69d19d2f1aef943c47"
+  },
+  "share/doc/kitty/html/color-stack.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 237701,
+    "sha256": "48d2b3cd96b682c4282f710f228b79ef1c8c71ac3c810ea5d83f24ddf0a2d49e"
+  },
+  "share/doc/kitty/html/conf.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 594504,
+    "sha256": "59b6ea8bac817da4120643011e8bb368b55999fe61cae9e2b00027ca2bdf16ad"
+  },
+  "share/doc/kitty/html/custom-shaders.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 274252,
+    "sha256": "07e0de2a5b9402c971f1ad21f53772f2694972588f283073cb489be653ec70ba"
+  },
+  "share/doc/kitty/html/deccara.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 162704,
+    "sha256": "4d7f8669b5041beb491d67450a94ff5179e38f20e42db751c72d61feeb515a26"
+  },
+  "share/doc/kitty/html/desktop-notifications.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 215158,
+    "sha256": "183c137ca694a5f15836ebc0a7dd9c26d7f4b48ffd235985b44d35b184c74f64"
+  },
+  "share/doc/kitty/html/dnd-protocol.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 228827,
+    "sha256": "65caa3a83eb7d3dad452c830ef36502fb62aadff0642ca54a8a9ba0eed30b862"
+  },
+  "share/doc/kitty/html/faq.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 217386,
+    "sha256": "807b5aba62f905fa975523083010d5735e7cbbfcf406f8980f57ad1ff5e12816"
+  },
+  "share/doc/kitty/html/file-transfer-protocol.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 210187,
+    "sha256": "a1961e7ee3947275fce6d3ec8f0814a9e0b4f0959d8aa87ea9cdc9695224e9be"
+  },
+  "share/doc/kitty/html/generated": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/doc/kitty/html/generated/color-names.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 220895,
+    "sha256": "9e18eb923f0d04454c035c73863cb9727e6e56cdd1dec812244ba14bfb454eec"
+  },
+  "share/doc/kitty/html/generated/launch.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 220547,
+    "sha256": "e0f0bae03d97360830b607b61fa61f40cf2b3de524a6aa250bc7a11187f32f95"
+  },
+  "share/doc/kitty/html/generated/matching.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 175723,
+    "sha256": "99c0f7dc78a6083fd93272414d79a1cee7a521daff5521784ccc735e9999a277"
+  },
+  "share/doc/kitty/html/generated/rc.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 217938,
+    "sha256": "9f5948dde0bd0693757f8f517994b7fba52b990772f62b41e2ac209f1bfaaab9"
+  },
+  "share/doc/kitty/html/generated/save-as-session.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 168218,
+    "sha256": "8652ec79ef6a4e18aa4ab3830f3797298d3e867d213fb22e821f0dfa6ce4614d"
+  },
+  "share/doc/kitty/html/generated/ssh-copy.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 167180,
+    "sha256": "0d5f4289a4a0520365cf99435e3586f5ba250aa7bf91ef329b9fbc808b318245"
+  },
+  "share/doc/kitty/html/genindex.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 497788,
+    "sha256": "22f5970b71bf11befbe78a1ce64ba017c54d0f41aa446ade4fe20e8143b3157a"
+  },
+  "share/doc/kitty/html/glossary.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 189386,
+    "sha256": "62451db93e3dc18dab5d9cc554bd9fd85ab53acd3b8bc5dc4e40bfe2b540f1f0"
+  },
+  "share/doc/kitty/html/graphics-protocol.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 322082,
+    "sha256": "dfbd9e3219853749526b1609afab42b2b138acb672b611b11337866094b9c86c"
+  },
+  "share/doc/kitty/html/index.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 165470,
+    "sha256": "dc28197d2901556479085c58b0c7a6b33af0fda76a76d912def46b2d8ec7dd6b"
+  },
+  "share/doc/kitty/html/integrations.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 185696,
+    "sha256": "dc1dc6092ec3b6d9e8a94565cb6c07c1fd893b106d98919438a5edec798ed050"
+  },
+  "share/doc/kitty/html/intro_vid.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 164263,
+    "sha256": "915188e3f6cddef4ecaa1df97fbad52643c9e983adcf7b522db361686a224622"
+  },
+  "share/doc/kitty/html/invocation.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 218022,
+    "sha256": "bb66ac1c6dd61fa0b49b9c88d1b7b5fd5898c8a311bb8230a1f5b7a36b3b3c07"
+  },
+  "share/doc/kitty/html/keyboard-protocol.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 248744,
+    "sha256": "84778e3687bf817e0c6246747a0f0c7d92ff9373ef4843d05d93f4c035662e10"
+  },
+  "share/doc/kitty/html/kittens": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/doc/kitty/html/kittens/broadcast.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 181355,
+    "sha256": "dca8339441c1cc3ae839f05f1f5d2789678fb5d09933644fd4ba275c784162dc"
+  },
+  "share/doc/kitty/html/kittens/choose-files.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 223874,
+    "sha256": "1cb32825e58134c1677271b23c5fabda30d79b7555d12acc25a78472e6f49e6b"
+  },
+  "share/doc/kitty/html/kittens/choose-fonts.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 172141,
+    "sha256": "9d23ca89fa7d665de7efeec59a5c90612d0ee81763349ea1e74ad537b2bacb79"
+  },
+  "share/doc/kitty/html/kittens/clipboard.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 176898,
+    "sha256": "0f63bbbf87e4e8ee90cf343f7971dab050dbe4f0b4544f34ed5faad1558c2092"
+  },
+  "share/doc/kitty/html/kittens/command-palette.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 174424,
+    "sha256": "19fa5f015a6ae64fa1f43332ca6de9ab7bea3d2f94b82b94c4b84258c17ed453"
+  },
+  "share/doc/kitty/html/kittens/custom.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 199742,
+    "sha256": "8f71ccff6ed71a5830da02b4c1bce523539c5ba2221db9bdb23dca559a1c60e2"
+  },
+  "share/doc/kitty/html/kittens/desktop-ui.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 180187,
+    "sha256": "e98861d203929ea875b473105b2520db65a53acf2c976047c458583e655c55f3"
+  },
+  "share/doc/kitty/html/kittens/developing-builtin-kittens.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 172910,
+    "sha256": "d724b4ef45cc99122a4801e6525fcc01435b162568fd3bb50d3c5e868d944a8a"
+  },
+  "share/doc/kitty/html/kittens/diff.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 223673,
+    "sha256": "ef9add46f0f8c83bb8717276366710b426f701c32ff9daf00030a04ee5d681b9"
+  },
+  "share/doc/kitty/html/kittens/dnd.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 174265,
+    "sha256": "e769f39f950d0333d502d55ed3632c4e1d4de145c1ee53c80b736a810e2b52f7"
+  },
+  "share/doc/kitty/html/kittens/hints.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 200284,
+    "sha256": "392d416bf5b392140fd310709be69430eacfe0766fa1927d15de3f9bf75c6b04"
+  },
+  "share/doc/kitty/html/kittens/hyperlinked_grep.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 168585,
+    "sha256": "67b5b47ff43bc5d43fc2d90c1635dd29a74bc22bfded6698cb73afcd7e27dd46"
+  },
+  "share/doc/kitty/html/kittens/icat.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 189202,
+    "sha256": "66e9109de1eeac21471dc682f3c7e157d72377ee96003a8ca96357b06df9ee8c"
+  },
+  "share/doc/kitty/html/kittens/notify.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 180907,
+    "sha256": "ed1962558a6964c0b6c85e95c81680ceaf45ee52bcdda8d779a3d698e29f7ec9"
+  },
+  "share/doc/kitty/html/kittens/panel.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 212346,
+    "sha256": "1b1fdc19051d9a6efaecb0fd203b95a5ad3ec69dce8853450137153209bb4401"
+  },
+  "share/doc/kitty/html/kittens/query_terminal.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 169739,
+    "sha256": "7e55e66d6c1f4b3e2f0904393c6c39acb826e53cd2865467f798485793fad50a"
+  },
+  "share/doc/kitty/html/kittens/quick-access-terminal.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 196214,
+    "sha256": "ced859901ca7c70169ae06ed8570941b46b4e4028314ceddd035a0a50731f133"
+  },
+  "share/doc/kitty/html/kittens/remote_file.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 165388,
+    "sha256": "a73f62309367d681811d3ea959e0b0e3eb1362a9ab6e1a387515c630978a0dd6"
+  },
+  "share/doc/kitty/html/kittens/ssh.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 206965,
+    "sha256": "a8bce7cce7c2d06318c70f17c191be48b0a6604fadf4f1ce12fa76acd53d0a84"
+  },
+  "share/doc/kitty/html/kittens/themes.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 177721,
+    "sha256": "4a3bf52f07c74d0a1de2d97946fd17a7d189b7ccee1414753c17469f88cf178f"
+  },
+  "share/doc/kitty/html/kittens/transfer.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 180856,
+    "sha256": "19314970954d1c2d90c6cee4f6598cb90992cf2092b32526822d343043964000"
+  },
+  "share/doc/kitty/html/kittens/unicode_input.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 168703,
+    "sha256": "2698dec89ac5498244c5c1c4c134c94c47ec15e2e6d0df174f5cc4286855eb71"
+  },
+  "share/doc/kitty/html/kittens_intro.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 165868,
+    "sha256": "7e00419ebef1de5c3bc4a13f8add760fc3d0e96dea0130fd8bc7a6456d972d56"
+  },
+  "share/doc/kitty/html/launch.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 262033,
+    "sha256": "61bad2191a449a4335e0fb7d894dc66b2b3087ccf8b48559e23dd1126d8babfa"
+  },
+  "share/doc/kitty/html/layouts.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 205300,
+    "sha256": "21c0f0f4efbaf21fe6b62cc72400d8d56388cf8d1ef665474ad8ef6db98807e7"
+  },
+  "share/doc/kitty/html/mapping.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 206874,
+    "sha256": "2c6a7c37098b9618192c366ae9151439a73f616ee8d031243357f2cf78dc0a04"
+  },
+  "share/doc/kitty/html/marks.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 172495,
+    "sha256": "3e24603a640ee434d729cf64124da5fb83af74ee4ae8cce127dbf8fc0839f075"
+  },
+  "share/doc/kitty/html/misc-protocol.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 169509,
+    "sha256": "6404bca42daa2c724870ca292040153803441077f342897ae60cf873b76ed2ff"
+  },
+  "share/doc/kitty/html/multiple-cursors-protocol.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 182980,
+    "sha256": "3a17bf511c60f60d0b662aed23fdc2de2d56cd7cfea5e294a1f70368af8975d7"
+  },
+  "share/doc/kitty/html/objects.inv": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 17544,
+    "sha256": "7824865bf9bf0cb1b581360cc3cc1904f784386548179639fb90006c790d2f51"
+  },
+  "share/doc/kitty/html/open_actions.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 177637,
+    "sha256": "4f3c2f296527f191753322f9c62a67bf9ad4eec3160c1c275227db63450eeb45"
+  },
+  "share/doc/kitty/html/overview.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 215039,
+    "sha256": "a3042707aaa6449bf79728fc45f9eaefa431840b6788efb6b71ceeb1e2756111"
+  },
+  "share/doc/kitty/html/performance.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 173932,
+    "sha256": "03fc24b8de61af5e3a2809604d2ef90f7d7dccaa9febd52fb3ebe838a3835d6c"
+  },
+  "share/doc/kitty/html/pipe.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 167750,
+    "sha256": "0b48534d4327507619a3591a276171de0f73bf5a9bfb21bd8b86291d13acaf94"
+  },
+  "share/doc/kitty/html/pointer-shapes.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 172987,
+    "sha256": "9dafd36e24d6d687719d5ca93355f62c59c7a7784fc6f02bd6d73a8988a5a5f7"
+  },
+  "share/doc/kitty/html/press-mentions.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 162130,
+    "sha256": "8142a8db0c1fdccf2d922f3cb58816ecda474295774c7379193eec40b1c74314"
+  },
+  "share/doc/kitty/html/protocol-extensions.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 164242,
+    "sha256": "7f2d81e917aff186898644cf7663dff554f3865e7528e8177cd32d3322e30285"
+  },
+  "share/doc/kitty/html/quake-screenshots.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 161686,
+    "sha256": "05f3c78e54ed82f42c83c2ac5e604a6a262dd05e47345791e3d362b3c94f7f0e"
+  },
+  "share/doc/kitty/html/quickstart.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 162444,
+    "sha256": "19a1afb65a896614d098536c44dddfd94fce9a56a4a09736c2e17ad03cf063bf"
+  },
+  "share/doc/kitty/html/rc_protocol.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 231040,
+    "sha256": "e207927ba8ab076897eae948f2a5f3f3a8235c9762532aa3009ed7ab56eaa693"
+  },
+  "share/doc/kitty/html/remote-control.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 733589,
+    "sha256": "a1c9ca054fd3a0a12a4017feb4e7de5f10553173fa4436c46dedccfbf843990d"
+  },
+  "share/doc/kitty/html/search.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 159141,
+    "sha256": "bfde283d0224cece24aa2493417ada0b4e50c24fe932d5ba5d97f15ed2cf1b87"
+  },
+  "share/doc/kitty/html/searchindex.js": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 403159,
+    "sha256": "0ce8244d3565cdd2619bf991d4a3f5e996796a046d12289a63d26c3ac42db123"
+  },
+  "share/doc/kitty/html/sessions.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 206117,
+    "sha256": "2a7e6c6b35412bbf51cfa506091d788ae15975919458309138161fc2fb4783f2"
+  },
+  "share/doc/kitty/html/shell-integration.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 420896,
+    "sha256": "2308a150560d5bbeb1d5e3b09003177956f7da33769a9255d5f2ff285aa2901e"
+  },
+  "share/doc/kitty/html/support.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 164467,
+    "sha256": "89d22d9e6fab27055f3e39b2846dd5ebf4a01621ae4dddcb1159c81884bac8e4"
+  },
+  "share/doc/kitty/html/text-sizing-protocol.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 213369,
+    "sha256": "f3182d1db7bb27390e3d4d61a5c10157b7396177c4a007276030110ba9ad0fba"
+  },
+  "share/doc/kitty/html/underlines.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 165234,
+    "sha256": "f74fc691b421ec672554dc5834b756b8891d9b2db658fb41319f23dd1eb25649"
+  },
+  "share/doc/kitty/html/unscroll.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 163662,
+    "sha256": "42baf6d3154cc65ddab7cfde79a07f6a92a1734ba62651f3cfc5f869ea625005"
+  },
+  "share/doc/kitty/html/wide-gamut-colors.html": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 168551,
+    "sha256": "875ccb73f54b70f4da23252b5f8a2a7506314cc2c59b1107cad1cca98ccca1e5"
+  },
+  "share/icons": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/icons/hicolor": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/icons/hicolor/256x256": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/icons/hicolor/256x256/apps": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/icons/hicolor/256x256/apps/kitty.png": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 8352,
+    "sha256": "238d24e2730c94e9aaed76d25140bb3e2ade241ec313cc0b29d206e46cbfdabe"
+  },
+  "share/icons/hicolor/scalable": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/icons/hicolor/scalable/apps": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/icons/hicolor/scalable/apps/kitty.svg": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 3834,
+    "sha256": "b937ae4fea91793b992a59ed39c1f472741a2bdbcf5175bdcb78bdceb4c03aac"
+  },
+  "share/man": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/man/man1": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/man/man1/kitten-@-action.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5200,
+    "sha256": "1053df3d4708e8eb946dae6531c6ab1fad56a71711333cdc898a09af74e49bd8"
+  },
+  "share/man/man1/kitten-@-close-tab.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4949,
+    "sha256": "c8e2b9ecdcc7ce7f733ff4f2fc3e5e6c86b776a41331d30718fb60ac1c0032e3"
+  },
+  "share/man/man1/kitten-@-close-window.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4960,
+    "sha256": "c8ac67134489cb57f858fcf6c9e4dab3d110a3d3d11526311ca3b66f4ebe7a56"
+  },
+  "share/man/man1/kitten-@-create-marker.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4842,
+    "sha256": "df464906397694b226333700743edb2b34bfcaf52cc3274d850262103b03b7ef"
+  },
+  "share/man/man1/kitten-@-detach-tab.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 6907,
+    "sha256": "f239ea030bd20fd855a06e8e72905d032b39a51384235379691c27da04eb394d"
+  },
+  "share/man/man1/kitten-@-detach-window.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 8521,
+    "sha256": "09104c6ca0c78abbe4efdca54229ecb053283d4b914caed3c475e92e2e4489ac"
+  },
+  "share/man/man1/kitten-@-disable-ligatures.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 7201,
+    "sha256": "7d9761e548a6ed46e2b47fa17e75f42c523e50819ac4c10934c76c39aa0ad0fa"
+  },
+  "share/man/man1/kitten-@-env.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2230,
+    "sha256": "dcf5c2fa9cbbc943869350183d1d7d9d644853e5f0817621f22aba3d9541325b"
+  },
+  "share/man/man1/kitten-@-focus-tab.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4519,
+    "sha256": "60ba9c0a1ed280f522e450e5fe84e33353c9bfc448a70068dad932522f63cdb1"
+  },
+  "share/man/man1/kitten-@-focus-window.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4826,
+    "sha256": "da77f9c8289bb33a08e029f02a3bc5c68b4d624083a6aee3150521558ffe0782"
+  },
+  "share/man/man1/kitten-@-get-colors.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5010,
+    "sha256": "a1d6839e1b1b29c8245b9c4d7470e634e731fa2581063ca6efd74d8fb135a4e2"
+  },
+  "share/man/man1/kitten-@-get-text.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 6263,
+    "sha256": "9bc9dbfab9dc6e4f3d8c933cf755de0cdda55299e32d5aecb6c7402990a0e73d"
+  },
+  "share/man/man1/kitten-@-goto-layout.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4605,
+    "sha256": "44764a092477d4c34b84c1ecbef7ca650debf8b109567c7f2eab933a170d58f9"
+  },
+  "share/man/man1/kitten-@-kitten.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4919,
+    "sha256": "e7831798775a8db01c87a506f867ed737dfd65ceaa80357e496f709b78688633"
+  },
+  "share/man/man1/kitten-@-last-used-layout.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4639,
+    "sha256": "3e35b3c57c03cd63e0fb4aa20504bf0f5e876f6f5e5427e7975eaac2f6243bf8"
+  },
+  "share/man/man1/kitten-@-launch.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 23897,
+    "sha256": "7917e1a7a11493888e9124f7804c07b6bc68d55364780f792ba38eb14697f423"
+  },
+  "share/man/man1/kitten-@-load-config.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2894,
+    "sha256": "5f4f91f22804c2162b4bda1fa493b73577ef04f367d556fabf06c86ec49ab23c"
+  },
+  "share/man/man1/kitten-@-ls.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 7769,
+    "sha256": "54486b761b73045e66b7a33d0c0b0b8151ab9170d33699cff6de6275c672814b"
+  },
+  "share/man/man1/kitten-@-new-window.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5659,
+    "sha256": "5d9fef95a4914bd9201b92f256f1c54efba2d8c582bfc109713ee609a7bc96f9"
+  },
+  "share/man/man1/kitten-@-remove-marker.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4721,
+    "sha256": "2035634663a318d2c976e548232d038371ba1674ce2b3c8e07a3a31a618d2259"
+  },
+  "share/man/man1/kitten-@-resize-os-window.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 6172,
+    "sha256": "188b14328afc53d1102a7b7a8672565f57a1af1bbf9f8a317c7e2438ae4f049d"
+  },
+  "share/man/man1/kitten-@-resize-window-edge.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5909,
+    "sha256": "abd54eb7768c632ea21f41f952977c2f2ebaca01936c2eccec3cba5ca78f6942"
+  },
+  "share/man/man1/kitten-@-resize-window.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5752,
+    "sha256": "40456475382aeeec52f3845597d204e60b28948cc2de622d47a317db8a4c8c77"
+  },
+  "share/man/man1/kitten-@-run.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 3655,
+    "sha256": "c94387fc6794227607aa29ce4039a85feed7df5c5368afd4372221c61f51a12a"
+  },
+  "share/man/man1/kitten-@-screenshot.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 7643,
+    "sha256": "258b8a912b86a492dec206923381a3546f576e9cdff0717c95ed3bdb2f0e545e"
+  },
+  "share/man/man1/kitten-@-scroll-window.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5448,
+    "sha256": "c6eb684b59ebf26d409f22fc82235c2ecbf082dba336c7e1734d786b163bad4e"
+  },
+  "share/man/man1/kitten-@-select-window.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5065,
+    "sha256": "89aa44645dcfc797196894b9944f97570024274968006f58b3a521cb496b144c"
+  },
+  "share/man/man1/kitten-@-send-key.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 7530,
+    "sha256": "c98f4d6a4db34860d664c1a6e279f1eacb508d8f25c656e681c9f55853abf2ce"
+  },
+  "share/man/man1/kitten-@-send-text.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 8305,
+    "sha256": "4716292233c39ba6f65c1e62db2b198743e7bbf5a4623f51b45dc9b9cfd08ad3"
+  },
+  "share/man/man1/kitten-@-set-background-image.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 6027,
+    "sha256": "afcd0480cc49a62dc357213d9a093ca37c80aa5c1cb2f13da1956c6198cb1280"
+  },
+  "share/man/man1/kitten-@-set-background-opacity.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 7602,
+    "sha256": "bc82dc6da32a4102eb9fab4b8e3daea2b0a00d6a309a6720b70e9aa0bbebcc04"
+  },
+  "share/man/man1/kitten-@-set-colors.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 7699,
+    "sha256": "86f7b7c223e45fbc74a93da9c23c8d69b4f26b951a927f359cbc516a71912ad4"
+  },
+  "share/man/man1/kitten-@-set-enabled-layouts.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4761,
+    "sha256": "4582b710d6925a2178bd4cd257d05c0d527b725ce1f3360ccce4e17d64bb0cbb"
+  },
+  "share/man/man1/kitten-@-set-font-size.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2628,
+    "sha256": "c8c18b5b3b9e338ca504e0bedb449e92e6730d1f70f5b877736b87ac79b3d55a"
+  },
+  "share/man/man1/kitten-@-set-os-window-title.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4909,
+    "sha256": "ed9645f42fa363732b4a9097a9de1f90f6740709742c4639e7be163aa1c0743d"
+  },
+  "share/man/man1/kitten-@-set-spacing.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 7640,
+    "sha256": "e0fa457dd3f958dd5cbcef74992ad6b8c296e47a4bba6a8b857cc7425f985a8b"
+  },
+  "share/man/man1/kitten-@-set-tab-color.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4816,
+    "sha256": "b0275bdf07f0ce5e3b356a115ee47e55692b975e388a8d1feeee25cb59ff86ce"
+  },
+  "share/man/man1/kitten-@-set-tab-title.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4577,
+    "sha256": "5fd17c8333e770c89905f6fc4f328981b9e17abfc7780ba73fa063948b8f8b83"
+  },
+  "share/man/man1/kitten-@-set-user-vars.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 4914,
+    "sha256": "18282fa66c4c4ff664af370a1bbe6762c5ef6c718d76b3ad6ee93e8afe995309"
+  },
+  "share/man/man1/kitten-@-set-window-logo.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5304,
+    "sha256": "8e18279ca2b67fcb3c315fd14d22413051dde82b24b58691406c1a585de95925"
+  },
+  "share/man/man1/kitten-@-set-window-title.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5104,
+    "sha256": "86d7d2c8b331d60365ab2dd252d6c12def98dc91af8af167acd823037fcd63a9"
+  },
+  "share/man/man1/kitten-@-signal-child.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 5172,
+    "sha256": "2d1ec2b2e9b0ecc64644385287f6a88877759b384606327fea189ce77ac4d484"
+  },
+  "share/man/man1/kitten-@.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 6063,
+    "sha256": "149bda0d7676d86e78f2b016afc058120b7fc41b1d36e799af280a12f8d718ce"
+  },
+  "share/man/man1/kitten-ask.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1771,
+    "sha256": "59f8fa3ac68da24c953e580f38ca04a1438a3910249395e7e917b59d2f976cc1"
+  },
+  "share/man/man1/kitten-broadcast.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 8308,
+    "sha256": "c22f3afc49f04a7b88c029e439ac1736c92f4704eeff7826e0eb35f0d0e3101a"
+  },
+  "share/man/man1/kitten-choose-files.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 23011,
+    "sha256": "d0df2db820dfaba3b18a0160f2a2409c0d49fa9993ba1e49cccf94510d5a84e9"
+  },
+  "share/man/man1/kitten-choose-fonts.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 6802,
+    "sha256": "490874cf385ece711efd35a23d3d686bcbdd2150cd0673d82a5df5a8a6116800"
+  },
+  "share/man/man1/kitten-clipboard.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 6990,
+    "sha256": "8b4f515719466aed419133075f435cae2bfbb369024d76fcee6e16ee66a2f7eb"
+  },
+  "share/man/man1/kitten-command-palette.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 6648,
+    "sha256": "361e125d08a6a9f2c59b06e28d483fa86c6b68266d4d9b0e5b33dcd810232503"
+  },
+  "share/man/man1/kitten-desktop-ui.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 8483,
+    "sha256": "6a3c809f3acd46278ac843de3d1ff1b90cb3b8dacab472044f920b53ffec8044"
+  },
+  "share/man/man1/kitten-diff.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 19019,
+    "sha256": "9bf37e95b48a2a26bb3fb1a4cb6f2ad0b01559f7bb74e814e064824ecb48d621"
+  },
+  "share/man/man1/kitten-dnd.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 6766,
+    "sha256": "1e9efd1ad1913d98313c3870fce0d669228ffc948dc4e0c480b1cfa4300792d4"
+  },
+  "share/man/man1/kitten-edit-in-kitty.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 8810,
+    "sha256": "ef32bfd3a065941f7a4f3a928512383ad124b5331d865447ae8d2e158c9c1110"
+  },
+  "share/man/man1/kitten-hints.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 15615,
+    "sha256": "53c4163cc368fcece65388fdf4ae8f7598f640afc96b55f750705d7ec38c37cd"
+  },
+  "share/man/man1/kitten-hyperlinked-grep.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 576,
+    "sha256": "65f326a3af573ebf3c3bd08be274f42095c6477965b2c032ea5c77c517d1dec0"
+  },
+  "share/man/man1/kitten-icat.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 11180,
+    "sha256": "0f8ed1006755e77fde48bab44604710153f676370ece125ea17b3f3bd2bb1ae8"
+  },
+  "share/man/man1/kitten-mouse-demo.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 269,
+    "sha256": "b5c854209e10aa1d5319591ec013231aaf3beb6fe1c81c26c606bb7799730165"
+  },
+  "share/man/man1/kitten-notify.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 7416,
+    "sha256": "690649ccd29019ebc4a9f644c2b8e95963389d371a2903bcf8a825bbdc7cc632"
+  },
+  "share/man/man1/kitten-panel.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 17020,
+    "sha256": "4bfb9be098e5ebc0a53a1345a1fb5ae1c4fc4c1c085265d47ffc4ecb1482468f"
+  },
+  "share/man/man1/kitten-query-terminal.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 2124,
+    "sha256": "842591c0486b9547fd8db0e2aa59eab4456f19a3df234576e7c6b0c2190a50ed"
+  },
+  "share/man/man1/kitten-quick-access-terminal.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 13661,
+    "sha256": "a6f1c09820ac383c029a79a73fd2aeae72169c5f2c77a6ab18dc56a5458c85d9"
+  },
+  "share/man/man1/kitten-remote-file.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 585,
+    "sha256": "ef51aa82b8aff8c3ee232f41dfb7c3207400271268e4e5311578665a413b5ca7"
+  },
+  "share/man/man1/kitten-resize-window.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1573,
+    "sha256": "afabfe2033c276cacb75d70c6a7938a26dffa86767757bb0d9ae35df7dfcd860"
+  },
+  "share/man/man1/kitten-run-shell.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 1223,
+    "sha256": "c849d102e1f31606bec8d5b6a4ca5903b30edff19b7700f8e3b5d1ff699f256f"
+  },
+  "share/man/man1/kitten-show-key.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 638,
+    "sha256": "fe2653df5d3571ebabfa4b8451ef7b51b35fbde4f4a82fde4c8b990ec11e9d3e"
+  },
+  "share/man/man1/kitten-ssh.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 22728,
+    "sha256": "8f97cce3c8ce45f50764aa8422ac391a87b7bb016ed3dbc366f27906325082ad"
+  },
+  "share/man/man1/kitten-themes.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 8151,
+    "sha256": "db9dd1f2e7ce2d615c1e7d9b6a9544f2e3147dbc4f90d70ba177e3b8391f54e5"
+  },
+  "share/man/man1/kitten-transfer.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 9519,
+    "sha256": "3005cb4447a81e5fa8792c9295498d4a37b2da1846a366485fef5711511713d0"
+  },
+  "share/man/man1/kitten-unicode-input.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 692,
+    "sha256": "f90248acbbfbdb4f1a3b27266ac375497b02b85553570ea8f45c8dafd5ca986b"
+  },
+  "share/man/man1/kitten-update-self.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 526,
+    "sha256": "187c4d43d4b8e06c62a4ae5b0d4fc6eb01cc8a38f45c61e91c543e2178c22bdf"
+  },
+  "share/man/man1/kitten.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 3171,
+    "sha256": "609cb9f4f5d7199733ce1a409ae31faaf0495fa12ef1cfbccd455b59b1a078f9"
+  },
+  "share/man/man1/kitty.1": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 21225,
+    "sha256": "d6df7a3d6b068bbd2f7089f5434cac2450b7f92d9b8d43183583683f5afc36a7"
+  },
+  "share/man/man5": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/man/man5/kitty.conf.5": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 223320,
+    "sha256": "5bbd13781061230b0ed26a0da376afced9c61a34a301caec62936643ffebb494"
+  },
+  "share/terminfo": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/terminfo/x": {
+    "mode": 493,
+    "uid": 0,
+    "gid": 0,
+    "kind": "directory"
+  },
+  "share/terminfo/x/xterm-kitty": {
+    "mode": 420,
+    "uid": 0,
+    "gid": 0,
+    "kind": "regular",
+    "bytes": 3721,
+    "sha256": "75a5836628e596ab1c236aeff22a298558ed50e2301248f30b8e236e8e52aabd"
+  }
+}

@@ -1,8 +1,9 @@
 """Authenticate and inventory a public Kitty bundle without extracting or running it."""
+from collections import deque
 import hashlib
 import json
 import os
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 import re
 import shutil
 import stat
@@ -56,27 +57,44 @@ def inspect_archive(path, max_bytes=512*1024**2, max_members=8192):
             elif item.isdir():row.update(kind='directory')
             elif item.issym():
                 link=item.linkname
-                if not link or link.startswith('/') or any(ord(x)<32 or ord(x)==127 for x in link):
+                if not link or len(link)>1024 or link.startswith('/') or any(ord(x)<32 or ord(x)==127 for x in link):
                     raise ValueError('Unsafe symlink target')
-                target=list(PurePosixPath(name).parent.parts)
-                for part in link.split('/'):
-                    if part in ('','.'):continue
-                    if part=='..':
-                        if not target:raise ValueError('Symlink escapes the archive root')
-                        target.pop()
-                    else:target.append(part)
-                row.update(kind='symlink',link=link,target='/'.join(target))
+                row.update(kind='symlink',link=link)
             else:raise ValueError('Special or hard-linked archive member')
             rows[name]=row
+    directories={''}
+    for name,row in rows.items():
+        parts=name.split('/')
+        for end in range(1,len(parts)):
+            parent='/'.join(parts[:end])
+            if parent in rows and rows[parent]['kind']!='directory':
+                raise ValueError('Archive member has a non-directory parent')
+            directories.add(parent)
+        if row['kind']=='directory':directories.add(name)
     for name,row in rows.items():
         if row['kind']!='symlink':continue
-        target=row['target'];seen={name}
-        for _ in range(32):
-            if target not in rows or target in seen:raise ValueError('Dangling or cyclic archive link')
-            seen.add(target);next_row=rows[target]
-            if next_row['kind']!='symlink':break
-            target=next_row['target']
-        else:raise ValueError('Excessive archive link chain')
+        # Resolve each component before consuming a later '..'. Lexical path
+        # normalization would miss escapes through an intermediate symlink.
+        pending=deque(name.split('/'));resolved=[];links=0
+        while pending:
+            if '/'.join(resolved) not in directories:
+                raise ValueError('Archive link traverses a non-directory')
+            part=pending.popleft()
+            if part in ('','.'):continue
+            if part=='..':
+                if not resolved:raise ValueError('Symlink escapes the archive root')
+                resolved.pop();continue
+            resolved.append(part);target='/'.join(resolved)
+            next_row=rows.get(target)
+            if next_row is None and target not in directories:
+                raise ValueError('Dangling archive link')
+            if next_row is not None and next_row['kind']=='symlink':
+                links+=1
+                if links>32:raise ValueError('Cyclic or excessive archive link chain')
+                resolved.pop()
+                pending.extendleft(reversed(next_row['link'].split('/')))
+        if not resolved:raise ValueError('Archive link resolves to the root')
+        row['target']='/'.join(resolved)
     for required in ('bin/kitty','bin/kitten'):
         row=rows.get(required,{})
         if row.get('kind')!='regular' or not row.get('mode',0)&0o111:

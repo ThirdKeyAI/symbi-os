@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "independent_reconciliation_passed": true,
+  "source_commit": "2c70e383f22de290b1fe0fc6c6f3b1509699f4b6",
+  "run": 45833636460,
+  "job": 139956618247,
+  "artifact_id": 15122994173,
+  "artifact_bytes": 35893,
+  "artifact_sha256": "caf3e52d180534657b6b79c284b2eed0194bbdbfac3646f64d9ff98cb5d4d2c1",
+  "original_files": 11,
+  "expanded_bytes": 169964,
+  "signature_and_inventory_passed": true,
+  "selected": false,
+  "security_qualified": false,
+  "candidate_executed": false,
+  "archive_extracted": false,
+  "members": 764,
+  "regular_bytes": 169261985,
+  "memory_peak": 182231040,
+  "private_downloads_removed": true,
+  "scope": "Publisher signature and passive archive inventory only; observed older link validator must be rerun after the component-wise resolution correction. Binary/source correspondence, runtime compatibility, bundled dependency versions and licenses remain unqualified.",
+  "original": {
+    "altered-bundle-stderr.log": {
+      "bytes": 205,
+      "sha256": "d59058b04d2c75807a755b4a728ad4390c0719ef24eb328ebe358e801c053c2b"
+    },
+    "altered-bundle-stdout.log": {
+      "bytes": 168,
+      "sha256": "6e1e12f0a30e2d91404e7628aa04fa4ac43838be832c699c17e241958c2748ca"
+    },
+    "gpgv-version-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "gpgv-version-stdout.log": {
+      "bytes": 255,
+      "sha256": "757d7f2aa9ecf8a64ae85e872227cc8fcf11def914bcfe35f3a17d6affdaf5bb"
+    },
+    "hosted-inspection.log": {
+      "bytes": 230,
+      "sha256": "7b210ce8e744525e9daf1fbbc24fb0d7f0157f8bd318166d9585e900a6a480c7"
+    },
+    "inventory.json": {
+      "bytes": 165700,
+      "sha256": "b2cb029cf974c1f899cb882331c38c715ca61e411f6175f19197e38bcc6e30f0"
+    },
+    "missing-key-stderr.log": {
+      "bytes": 169,
+      "sha256": "63d0ae57a9cf43d13292df8060f44ede6a679db2343f775fc244d623538519e5"
+    },
+    "missing-key-stdout.log": {
+      "bytes": 147,
+      "sha256": "93521d93b55abeb3f9db5a4110e144d69ed2032af69b545c381d62a2c3db603c"
+    },
+    "result.json": {
+      "bytes": 2513,
+      "sha256": "715efcf4c064f6be30986c035768d0ddbc2603a2ddb9f379ce735eeca7b1e132"
+    },
+    "valid-bundle-stderr.log": {
+      "bytes": 206,
+      "sha256": "df68b0ca5536b54d97ceebcd205d2ac9131d99db56496cf4575757b77da6d171"
+    },
+    "valid-bundle-stdout.log": {
+      "bytes": 371,
+      "sha256": "b372ee2170827aa14925dc2604f0f6783f5f3c1504651087ea19dfbd5f246c09"
+    }
+  }
+}

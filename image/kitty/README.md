@@ -46,3 +46,42 @@ bind source/package evidence, and complete the Ombuntu profile checks. The final
 image still requires its independent signature/provenance and human TCB review.
 INV-12 remains in force. No product runtime, permission, dependency or journal
 event is added by this passive intake workflow.
+
+## Authenticated bundle inventory and link validation
+
+[Hosted run 45833636460](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45833636460)
+at `2c70e38` passed the pinned publisher signature, missing-key and altered-data
+controls. It inventoried 764 entries and 169,261,985 regular-file bytes without
+extracting or executing the candidate. Its 47,103,100-byte archive remained on
+the hosted runner and was removed. The inspector peaked at 182,231,040 bytes
+with no memory-ceiling or OOM events and no host swap. Eleven original evidence
+files and their independent reconciliation are retained under
+`docs/security/reports/P0-03-kitty-bundle/45833636460/`.
+
+Two regression fixtures exposed limitations in the initial passive validator:
+lexical link normalization could miss an escape through an intermediate directory
+link, and an archive could list a payload beneath a non-directory member.
+The validator now resolves components in archive order of traversal, expanding
+links before later `..` components; it rejects non-directory member parents,
+dangling/cyclic/excessive chains and root escapes. Valid relative links still
+resolve. All 255 offline image fixtures pass under 128 MiB/10%-CPU caps, using
+36,524 KiB peak RSS, 0.82 CPU seconds and zero swap. The hosted signed bundle
+must pass the corrected validator before this step can be accepted.
+
+The inventory includes private Python, OpenSSL, graphics and shader libraries.
+The upstream SPDX metadata is a separate public publisher claim, not proof of
+binary/source correspondence or a Symbi OS attestation. Its 80 package entries
+include build/test dependencies as well as runtime candidates. The bundle has
+no entry named as a license, copyright, SBOM or SPDX document in the inspected
+inventory; license texts and corresponding source obligations require explicit
+review and packaging. The candidate remains unselected and uninstalled pending
+that work, cve.bz/primary-source dependency assessment and native compatibility.
+
+The cve.bz follow-up recognized 47 of the publisher SPDX document's 80 entries
+and returned no OSV matches for that subset. Separate native-library searches
+identified Expat 2.6.2 / CVE-2024-45490 and PCRE2 10.43 / CVE-2026-103111 as
+metadata-based review candidates, checked against maintainer fixes. Actual
+bundled versions, backports and exposure are not yet proven. The candidate
+remains unselected; this is not a clean security result. Full responses,
+coverage limits and primary references are retained under
+`docs/security/reports/P0-03-cve-bz/2026-11-26/desktop-profile/kitty-bundle-dependencies/`.

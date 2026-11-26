@@ -60,6 +60,28 @@ class KittyBundle(unittest.TestCase):
             with tarfile.open(path,'w'):pass
             with self.assertRaises(ValueError):mod.inspect_archive(path)
 
+    def test_link_resolution_cannot_escape_via_an_intermediate_directory_link(self):
+        mod=self.module()
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'bundle.tar'
+            self.tar(path,[('share',tarfile.DIRTYPE,''),('lib/alias',tarfile.SYMTYPE,'../share'),
+                           ('bin/link',tarfile.SYMTYPE,'../lib/alias/../../bin/kitty')])
+            with self.assertRaises(ValueError):mod.inspect_archive(path)
+            self.tar(path,[('share',tarfile.DIRTYPE,''),('lib/alias',tarfile.SYMTYPE,'../share'),
+                           ('bin/link',tarfile.SYMTYPE,'../lib/alias/../bin/kitty')])
+            self.assertEqual(mod.inspect_archive(path)['bin/link']['target'],'bin/kitty')
+            self.tar(path,[('bin/link',tarfile.SYMTYPE,'other'),('bin/other',tarfile.SYMTYPE,'link')])
+            with self.assertRaises(ValueError):mod.inspect_archive(path)
+
+    def test_payload_cannot_have_a_link_or_regular_file_as_its_parent(self):
+        mod=self.module()
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'bundle.tar'
+            for kind,target in [(tarfile.SYMTYPE,'../share'),(tarfile.REGTYPE,'')]:
+                self.tar(path,[('share',tarfile.DIRTYPE,''),('lib/alias',kind,target),
+                               ('lib/alias/payload',tarfile.REGTYPE,'')])
+                with self.subTest(kind=kind),self.assertRaises(ValueError):mod.inspect_archive(path)
+
     def test_signature_requires_full_identity_and_modern_hash_without_failure_status(self):
         mod=self.module();fp='3CE1780F78DD88DF45194FD706BC317B515ACE7C'
         status='[GNUPG:] VALIDSIG '+fp+' 2026-11-18 1795017600 0 4 0 1 10 00 '+fp+'\n'

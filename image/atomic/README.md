@@ -318,3 +318,32 @@ prohibited; base guest zram is separate. Workspace/formal
 [45827669193](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45827669193)
 passed at the same source. No dependency or journal event is added. INV-12,
 human TCB review, desktop, containment and release gates remain outstanding.
+
+## Native bootc mount-namespace access failure
+
+[Atomic run 45831330164](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45831330164)
+at `ba700f2` completed installation and the positive/four negative native source
+signature controls. The output-creation correction let the fixed collector
+start bootc. Its retained diagnostic now reports exit 1 while reading
+`/proc/1/ns/mnt`: permission denied (errno 13). Bootc's pinned 1.17.1 source
+calls its mount-namespace preparation from status and reads PID 1's namespace
+before comparing it to the collector's private namespace. This explains the
+failing operation; the evidence does not distinguish every kernel/LSM denial
+path. No extra capability, SELinux change or weaker acceptance was introduced.
+
+The nonce/hash-bound partial report records the exact product kernel 7.3.4,
+SELinux enforcing, read-only `/usr` and `/sysroot`, Btrfs, loopback only and a
+zero-capability observer. Full payload, package, trust and deployment checks
+were not reached. QEMU powered off normally after 329.65 seconds, with a
+3,130,916,864-byte container peak and zero memory-ceiling/OOM events. The parent
+recorded 163,072 memory-ceiling events, no OOM/kill, and zero allowed host swap.
+Private signing keys, all three containers, loop devices, image and private
+storage/runroot were removed. All 87 original files (222,005 bytes) and their
+independent reconciliation are retained under
+`docs/security/reports/P0-03-atomic-boot/45831330164/`.
+
+The collector design remains open; adding debugging authority simply to make
+the test pass is not an accepted correction. Installed image bytes and
+qualification gates remain unchanged. Workspace/formal checks passed for
+`ba700f2` (run 45831349883) and `2c70e38` (run 45833657032); those passes do not
+qualify the failed boot test or a desktop session.
