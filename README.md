@@ -9,10 +9,11 @@ and the human is the only source of authority. The target platform is a signed
 Fedora Atomic image with Hyprland and the upstream Symbiont runtime.
 
 **Current state: P0 image development.** The scaffold and five TLA+ design models
-are complete. A generic development OCI image now builds with maintained
+are complete. Generic and NVIDIA development OCI images now build with maintained
 Hyprland, Walker, the restricted Elephant application provider, Symbiont 3.0
-and its sandbox supervisor. Its installed-file, package, loader, CLI and
-configuration checks pass; see [the retained image evidence](docs/security/reports/P0-03-desktop/45758278776/independent-check.json).
+and its sandbox supervisor. Their installed-file, package, loader, CLI and
+configuration checks pass; see the retained [generic evidence](docs/security/reports/P0-03-desktop/45758278776/independent-check.json)
+and [NVIDIA evidence](docs/security/reports/P0-03-desktop/45760174895/independent-check.json).
 Actual image boot, desktop interaction, Fedora sandbox qualification and signed
 updates/rollback remain open. No OS release has been published. The desktop
 trusted approval surface and OS agent services are planned in later phases.

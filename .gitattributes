@@ -17,3 +17,4 @@ image/desktop/licenses/*.LICENSE whitespace=-blank-at-eol,-space-before-tab
 # Retain the exact DNF stdout, including its terminal blank line.
 docs/security/reports/P0-03-desktop/45756829042/install/offline-install-stdout.log whitespace=-blank-at-eof
 docs/security/reports/P0-03-desktop/45758278776/install/offline-install-stdout.log whitespace=-blank-at-eof
+docs/security/reports/P0-03-desktop/45760174895/install/offline-install-stdout.log whitespace=-blank-at-eof

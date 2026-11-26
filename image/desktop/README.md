@@ -130,3 +130,18 @@ occurred. Evidence is under
 `docs/security/reports/P0-03-desktop/45758278776/`. The large image remains
 hosted and requires verification by its consumer before use. The installed
 policy check does not qualify real signature rejection, boot or rollback.
+
+## NVIDIA image result
+
+[Run 45760174895](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45760174895)
+passed real NVIDIA image assembly and installed checks at the same `1e171d1`
+source revision. It preserves all 2,324 original packages and all 40 crypto
+configuration slots. Four runtime packages are added, yielding 2,328 packages;
+the identical pinned OpenSSL 3 package was already present. All five RPMs were
+checked for publisher signatures and identities. The 88 installed files, both
+public trust files, six loaders, CLI/provider/Lua controls and all 13 container
+removals pass independent reconciliation. The original warning and skip remain
+visible; there was no OOM or kill. See
+`docs/security/reports/P0-03-desktop/45760174895/`. The 5.03 GB archive stays
+hosted. This is packaging acceptance; actual Atomic boot and physical NVIDIA
+driver/display acceptance remain separate, incomplete gates.
