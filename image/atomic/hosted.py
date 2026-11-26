@@ -8,7 +8,8 @@ import shutil
 import re
 
 from image.atomic.contract import (create_disk,require_disk,sha256,unique_json,
-                                   unpack_oci,validate_report,installer_mounts)
+                                   unpack_oci,validate_report,installer_mounts,
+                                   directory_source,installer_policy)
 from image.boot.inputs import require_desktop_image
 from image.boot.preflight import expected_inputs,validate_loaded_image,validate_report as validate_preflight
 from image.launcher.probes.bounded_process import run_bounded
@@ -39,7 +40,7 @@ def main():
     record={'schema':1,'passed':False,'installation_attempted':False,'guest_booted':False,
             'os_qualified':False,'release_qualified':False,'source_commit':os.environ['GITHUB_SHA'],
             'image_source_commit':selected['tested_commit'],'image_id':manifest['archive']['image_id'],
-            'limits':limits,'commands':[],'scope':'Offline unsigned development artifact on a new virtual disk; no product/release qualification'}
+            'limits':limits,'commands':[],'scope':'Offline development artifact authenticated with an ephemeral CI fixture key; no product/release qualification'}
     def save(): (evidence/'result.json').write_text(json.dumps(record,indent=2)+'\n')
     def run(name,command,timeout=60,check=True):
         record['active_command']={'name':name,'command':command};save()
@@ -47,7 +48,7 @@ def main():
         record['commands'].append({'name':name,'exit_code':result.returncode});del record['active_command'];save()
         if check: result.check_returncode()
         return result
-    podman=None;containers=[];storage=None;disk=None;identity=None;boot_output=None;runroot=None;disk_readonly=False
+    podman=None;containers=[];storage=None;disk=None;identity=None;boot_output=None;runroot=None;disk_readonly=False;signing_output=None
     try:
         readiness=unique_json((root/'image/atomic/preflight.lock.json').read_bytes())
         if readiness['schema']!=1 or readiness['variant']!='generic' or type(readiness['preflight_run']) is not int:
@@ -95,20 +96,57 @@ def main():
         record['loaded_image']={k:loaded[k] for k in ('Id','Digest','Architecture','Os')}
         print('Atomic install: verifying opaque OCI layout blobs',flush=True)
         record['oci']=unpack_oci(archive,storage/'oci',readiness['manifest_digest'],image_id)
+        record['directory_source']=directory_source(storage/'oci',storage/'signed',readiness['manifest_digest'])
+        signer_input=storage/'signer-input';signer_input.mkdir(mode=0o755)
+        for name in ('sign.py','contract.py'):
+            shutil.copyfile(root/'image/atomic'/name,signer_input/name);(signer_input/name).chmod(0o644)
+        shutil.copyfile(root/'image/launcher/probes/bounded_process.py',signer_input/'bounded_process.py')
+        shutil.copyfile(storage/'signed/manifest.json',signer_input/'manifest.json')
+        (signer_input/'sign.json').write_text(json.dumps({'manifest_digest':readiness['manifest_digest']})+'\n')
+        signing_output=storage/'signer-output';signing_output.mkdir(mode=0o700);os.chown(signing_output,10001,10001)
+        container='symbi-atomic-signer';containers.append(container)
+        common=['--pull=never','--network=none','--pid=private',
+                '--cgroup-parent=/'+str(group.relative_to('/sys/fs/cgroup')),
+                '--env=LANG=C.UTF-8','--env=PYTHONDONTWRITEBYTECODE=1']
+        print('Atomic install: authenticating a local source with an ephemeral offline CI test key',flush=True)
+        run('sign-source',podman+['run','--rm','--name='+container,*common,'--read-only','--user=10001:10001',
+            '--cap-drop=ALL','--security-opt=no-new-privileges','--memory=1g','--memory-swap=1g','--cpus=1','--pids-limit=64',
+            '--mount',f'type=bind,src={signer_input},dst=/inputs,ro',
+            '--mount',f'type=bind,src={signing_output},dst=/output',
+            '--env=HOME=/output','--entrypoint=/usr/bin/python3',image_id,'/inputs/sign.py'],480)
+        signed=unique_json((signing_output/'evidence/result.json').read_bytes())
+        if (signed.get('passed') is not True or signed.get('release_qualified') is not False
+                or signed.get('source_manifest_digest')!=readiness['manifest_digest']
+                or signed.get('private_keys_removed') is not True or signed.get('positive_policy_control') is not True
+                or signed.get('negative_controls')!={case:True for case in ('unsigned','wrong-key','wrong-reference','altered-signature')}
+                or sha256(signing_output/'good-public.asc')!=signed.get('public_key_sha256')
+                or sha256(signing_output/'signature-1')!=signed.get('signature_sha256')):
+            raise ValueError('Ephemeral source authentication acceptance incomplete')
+        shutil.copyfile(signing_output/'signature-1',storage/'signed/signature-1')
+        record['source_authentication']=signed
+        from image.signing import render as render_trust
+        policy=render_trust(unique_json((root/'image/release-trust.json').read_bytes()),pins,root)['policy']
+        policy_bytes=(json.dumps(policy,indent=2)+'\n').encode()
+        if hashlib.sha256(policy_bytes).hexdigest()!=expected['trust']['etc/containers/policy.json']:
+            raise ValueError('The immutable release policy binding changed')
+        local_policy=installer_policy(policy,(signing_output/'good-public.asc').read_bytes(),readiness['manifest_digest'])
         disk_dir=storage/'disk';disk_dir.mkdir(mode=0o700)
         identity=create_disk(disk_dir,24*1024**3);disk=disk_dir/'atomic.raw'
         record['disk']=identity
         installer_input=storage/'installer-input';installer_input.mkdir(mode=0o700)
-        (installer_input/'oci').mkdir(mode=0o700)
+        (installer_input/'signed').mkdir(mode=0o700)
         for name in ('install.py','contract.py'):
             shutil.copyfile(root/'image/atomic'/name,installer_input/name)
-        (installer_input/'install.json').write_text(json.dumps({'disk':identity,'manifest_digest':readiness['manifest_digest']})+'\n')
+        (installer_input/'original-policy.json').write_bytes(policy_bytes)
+        shutil.copyfile(signing_output/'good-public.asc',installer_input/'test-public.asc')
+        (installer_input/'install-policy.json').write_text(json.dumps(local_policy,indent=2)+'\n')
+        (installer_input/'install.json').write_text(json.dumps({'disk':identity,'manifest_digest':readiness['manifest_digest'],
+            'original_policy_sha256':expected['trust']['etc/containers/policy.json'],
+            'installer_policy_sha256':sha256(installer_input/'install-policy.json'),
+            'test_public_key_sha256':signed['public_key_sha256'],'signature_sha256':signed['signature_sha256']})+'\n')
         temporary=storage/'installer-tmp';temporary.mkdir(mode=0o700)
         if not Path('/run/udev').is_dir(): raise ValueError('Hosted udev state is unavailable')
         container='symbi-atomic-installer';containers.append(container)
-        common=['--pull=never','--network=none','--pid=private',
-                '--cgroup-parent=/'+str(group.relative_to('/sys/fs/cgroup')),
-                '--env=LANG=C.UTF-8','--env=PYTHONDONTWRITEBYTECODE=1']
         command=podman+['run','--rm','--name='+container,*common,'--privileged',
                        '--memory=2g','--memory-swap=2g','--cpus=1','--pids-limit=128',
                        *installer_mounts(storage),
@@ -174,6 +212,15 @@ def main():
                 path=boot_output/name
                 if path.is_file() and not path.is_symlink() and path.stat().st_size<=2*1024**2:
                     shutil.copyfile(path,evidence/('guest-'+name))
+        if signing_output is not None:
+            # Only public evidence is retained. The generated private keyring is
+            # deleted inside the stopped signer and is never an upload input.
+            if (signing_output/'evidence').is_dir():
+                shutil.copytree(signing_output/'evidence',evidence/'source-authentication')
+            for name in ('good-public.asc','signature-1'):
+                path=signing_output/name
+                if path.is_file() and not path.is_symlink() and path.stat().st_size<=65536:
+                    shutil.copyfile(path,evidence/('source-'+name))
         stopped=all(v['removed'] and v['absent'] for v in record['cleanup'].values())
         if disk is not None and stopped:
             # Cleanup may detach only devices still associated with this exact new

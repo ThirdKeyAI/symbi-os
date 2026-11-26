@@ -1,5 +1,7 @@
 """Validation primitives for a disposable, offline development-image boot."""
 import hashlib
+import base64
+import copy
 import json
 import os
 from pathlib import Path
@@ -145,9 +147,50 @@ def unpack_oci(archive,target,manifest_digest,image_id,*,max_bytes=32*1024**3):
         raise
 
 
+def directory_source(oci,target,manifest_digest):
+    """Re-layout verified opaque OCI blobs without recompression or copying layers."""
+    private_directory(oci);private_directory(target.parent)
+    hex_digest=digest_value(manifest_digest)
+    manifest_path=oci/'blobs/sha256'/hex_digest
+    if manifest_path.resolve()!=manifest_path or sha256(manifest_path)!=hex_digest:
+        raise ValueError('OCI manifest bytes changed before source preparation')
+    manifest=unique_json(manifest_path.read_bytes())
+    blobs={}
+    for item in [manifest['config'],*manifest['layers']]:
+        name=digest_value(item['digest']);path=oci/'blobs/sha256'/name
+        if (path.resolve()!=path or not path.is_file() or path.stat().st_size!=item['size']
+                or sha256(path)!=name):
+            raise ValueError('OCI blob bytes changed before source preparation')
+        blobs[name]=path
+    try: target.mkdir(mode=0o700)
+    except FileExistsError as error: raise ValueError('Never replace an existing source directory') from error
+    try:
+        shutil.copyfile(manifest_path,target/'manifest.json')
+        for name,path in blobs.items(): os.link(path,target/name,follow_symlinks=False)
+        (target/'version').write_text('Directory Transport Version: 1.1\n')
+        return {'manifest_digest':manifest_digest,'blobs':sorted(blobs),'recompressed':False,'root_filesystem_extracted':False}
+    except Exception:
+        shutil.rmtree(target)
+        raise
+
+
+def installer_policy(original,public_key,manifest_digest):
+    """Authorize one ephemeral CI-signed local source, preserving release trust."""
+    digest_value(manifest_digest)
+    if (original.get('default')!=[{'type':'reject'}] or set(original.get('transports',{}))!={'docker'}
+            or not isinstance(public_key,bytes) or not 1<=len(public_key)<=65536
+            or 'insecureAcceptAnything' in json.dumps(original)):
+        raise ValueError('Unexpected enforcing source policy or public test key')
+    policy=copy.deepcopy(original)
+    policy['transports']['dir']={'/inputs/signed':[{
+        'type':'signedBy','keyType':'GPGKeys','keyData':base64.b64encode(public_key).decode('ascii'),
+        'signedIdentity':{'type':'exactReference','dockerReference':'localhost/symbi-ci/development@'+manifest_digest}}]}
+    return policy
+
+
 def installer_arguments(manifest_digest):
     digest_value(manifest_digest)
-    return ['/usr/bin/bootc','install','to-disk','--source-imgref=oci:/inputs/oci',
+    return ['/usr/bin/bootc','install','to-disk','--source-imgref=dir:/inputs/signed',
             '--target-imgref=ghcr.io/thirdkeyai/symbiont-os@'+manifest_digest,
             '--enforce-container-sigpolicy','--filesystem=btrfs','--generic-image','--via-loopback',
             '--karg=console=ttyS0,115200n8','--karg=selinux=1','--karg=enforcing=1',
@@ -161,10 +204,14 @@ def installer_mounts(storage):
     if any(character in str(storage) for character in (',','\n','\r')):
         raise ValueError('Unsafe container mount specification')
     result=[]
-    for name,destination,readonly in [('installer-input','/inputs',True),('oci','/inputs/oci',True),
+    for name,destination,readonly in [('installer-input','/inputs',True),('signed','/inputs/signed',True),
                                       ('disk','/output',False),('installer-tmp','/var/tmp',False)]:
         source=storage/name;private_directory(source)
         result+=['--mount',f'type=bind,src={source},dst={destination}'+(',ro' if readonly else '')]
+    policy=storage/'installer-input/install-policy.json'
+    if policy.resolve()!=policy or not policy.is_file() or policy.stat().st_size>128*1024:
+        raise ValueError('Expected a bounded, unlinked installer-only policy')
+    result+=['--mount',f'type=bind,src={policy},dst=/etc/containers/policy.json,ro']
     # A privileged container's initial /dev is a snapshot of device nodes. The
     # host udev daemon creates partition nodes after bootc attaches/partitions
     # its loop file. A live read-only bind makes those nodes visible, while

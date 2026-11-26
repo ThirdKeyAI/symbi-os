@@ -126,7 +126,7 @@ class AtomicBoot(unittest.TestCase):
         self.assertEqual(command[-1],'/output/atomic.raw')
         for flag in ('--via-loopback','--generic-image','--enforce-container-sigpolicy','--filesystem=btrfs'):
             self.assertIn(flag,command)
-        self.assertIn('--source-imgref=oci:/inputs/oci',command)
+        self.assertIn('--source-imgref=dir:/inputs/signed',command)
         for forbidden in ('--wipe','--disable-selinux','--target-no-signature-verification','--allow-missing-verity'):
             self.assertFalse(any(v.split('=')[0]==forbidden for v in command))
         for bad in ('latest','sha256:'+'x'*64,'sha256:'+'a'*64+' --wipe'):
@@ -144,8 +144,9 @@ class AtomicBoot(unittest.TestCase):
         from image.atomic.contract import installer_mounts
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp)
-            for name in ('installer-input','oci','disk','installer-tmp'):
+            for name in ('installer-input','signed','disk','installer-tmp'):
                 (root/name).mkdir(mode=0o700)
+            (root/'installer-input/install-policy.json').write_text('{}')
             args=installer_mounts(root)
             mounts=[dict(field.split('=',1) if '=' in field else (field,True)
                          for field in args[n].split(',')) for n in range(1,len(args),2)]
@@ -155,18 +156,69 @@ class AtomicBoot(unittest.TestCase):
             self.assertEqual({p for p,row in by_target.items() if not row.get('ro')},{'/output','/var/tmp'})
             for target in ('/output','/var/tmp'):
                 self.assertTrue(Path(by_target[target]['src']).is_relative_to(root))
-            self.assertTrue(by_target['/inputs']['ro']);self.assertTrue(by_target['/inputs/oci']['ro'])
+            self.assertTrue(by_target['/inputs']['ro']);self.assertTrue(by_target['/inputs/signed']['ro'])
 
     def test_installer_rejects_shared_or_linked_host_input_directories(self):
         from image.atomic.contract import installer_mounts
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp)
-            for name in ('installer-input','oci','disk','installer-tmp'):
+            for name in ('installer-input','signed','disk','installer-tmp'):
                 (root/name).mkdir(mode=0o700)
             (root/'disk').chmod(0o755)
             with self.assertRaises(ValueError): installer_mounts(root)
             (root/'disk').rmdir();(root/'disk').symlink_to('/dev')
             with self.assertRaises(ValueError): installer_mounts(root)
+
+    def test_source_policy_requires_a_signature_and_preserves_all_release_rules(self):
+        from image.atomic.contract import installer_policy
+        original={'default':[{'type':'reject'}], 'transports':{'docker':{'ghcr.io/thirdkeyai/symbiont-os':
+                    [{'type':'sigstoreSigned','keyData':'public-release-key','signedIdentity':{'type':'exactRepository','dockerRepository':'ghcr.io/thirdkeyai/symbiont-os'}}]}}}
+        before=copy.deepcopy(original)
+        policy=installer_policy(original, b'public test fixture key', 'sha256:'+'a'*64)
+        self.assertEqual(original,before)
+        self.assertEqual(policy['default'],before['default'])
+        self.assertEqual(policy['transports']['docker'],before['transports']['docker'])
+        self.assertEqual(set(policy['transports']),{'docker','dir'})
+        self.assertEqual(set(policy['transports']['dir']),{'/inputs/signed'})
+        rule=policy['transports']['dir']['/inputs/signed'][0]
+        self.assertEqual(rule['type'],'signedBy')
+        self.assertEqual(rule['keyType'],'GPGKeys')
+        self.assertEqual(rule['signedIdentity'],{'type':'exactReference','dockerReference':'localhost/symbi-ci/development@sha256:'+'a'*64})
+        self.assertNotIn('insecureAcceptAnything',json.dumps(policy))
+        for bad in ({'default':[{'type':'insecureAcceptAnything'}],'transports':before['transports']},
+                    {**before,'transports':{**before['transports'],'dir':{}}}):
+            with self.assertRaises(ValueError): installer_policy(bad,b'public fixture','sha256:'+'a'*64)
+
+    def test_directory_source_keeps_exact_manifest_and_opaque_blob_bytes(self):
+        from image.atomic.contract import directory_source
+        files,manifest,config=self.fixture()
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp);self.archive(root/'image.gz',files)
+            unpack_oci(root/'image.gz',root/'oci',manifest,config)
+            result=directory_source(root/'oci',root/'signed',manifest)
+            self.assertEqual(result['manifest_digest'],manifest)
+            self.assertEqual((root/'signed/manifest.json').read_bytes(),files['blobs/sha256/'+manifest.split(':')[1]])
+            for item in result['blobs']:
+                self.assertEqual((root/'signed'/item).read_bytes(),files['blobs/sha256/'+item])
+                self.assertEqual((root/'signed'/item).stat().st_ino,(root/'oci/blobs/sha256'/item).stat().st_ino)
+            self.assertEqual((root/'signed/version').read_text(),'Directory Transport Version: 1.1\n')
+            with self.assertRaises(ValueError): directory_source(root/'oci',root/'signed',manifest)
+
+    def test_directory_source_refuses_tampered_manifest_and_blob_paths(self):
+        from image.atomic.contract import directory_source
+        files,manifest,config=self.fixture()
+        for change in ('manifest','blob','symlink'):
+            with self.subTest(change=change), tempfile.TemporaryDirectory() as tmp:
+                root=Path(tmp);self.archive(root/'image.gz',files)
+                unpack_oci(root/'image.gz',root/'oci',manifest,config)
+                path=root/'oci/blobs/sha256'/manifest.split(':')[1]
+                if change=='manifest': path.write_bytes(b'{}')
+                else:
+                    value=json.loads(path.read_bytes());blob=root/'oci/blobs/sha256'/value['layers'][0]['digest'].split(':')[1]
+                    if change=='blob': blob.write_bytes(b'corrupt')
+                    else: blob.unlink();blob.symlink_to('/etc/passwd')
+                with self.assertRaises(ValueError): directory_source(root/'oci',root/'signed',manifest)
+                self.assertFalse((root/'signed').exists())
 
     def boot(self):
         expected={'os':{'ID':'secureblue','ID_LIKE':'fedora','VERSION_ID':'45','IMAGE_ID':'sericea-main-hardened'},

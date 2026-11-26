@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 import sys
 
-from contract import installer_arguments, require_disk
+from contract import installer_arguments, installer_policy, require_disk, sha256
 
 
 def main():
@@ -17,11 +17,22 @@ def main():
         raise ValueError('Installer resource limits changed')
     config=json.loads(Path('/inputs/install.json').read_bytes())
     require_disk(Path('/output/atomic.raw'),config['disk'])
-    if not os.statvfs('/inputs/oci').f_flag & os.ST_RDONLY:
-        raise ValueError('OCI source mount must be read-only')
+    for path in ('/inputs/signed','/etc/containers/policy.json'):
+        if not os.statvfs(path).f_flag & os.ST_RDONLY:
+            raise ValueError('Authenticated source and installer policy mounts must be read-only')
+    for path,expected in [('/inputs/signed/manifest.json',config['manifest_digest'].removeprefix('sha256:')),
+                          ('/inputs/signed/signature-1',config['signature_sha256']),
+                          ('/inputs/original-policy.json',config['original_policy_sha256']),
+                          ('/inputs/test-public.asc',config['test_public_key_sha256']),
+                          ('/etc/containers/policy.json',config['installer_policy_sha256'])]:
+        if sha256(Path(path))!=expected: raise ValueError('Authenticated source input changed: '+path)
+    policy=installer_policy(json.loads(Path('/inputs/original-policy.json').read_bytes()),
+                            Path('/inputs/test-public.asc').read_bytes(),config['manifest_digest'])
+    if json.loads(Path('/etc/containers/policy.json').read_bytes())!=policy:
+        raise ValueError('Installer policy changed release trust or the exact signed local source')
     command=installer_arguments(config['manifest_digest'])
     print(json.dumps({'disk':config['disk'],'limits':limits,'command':command,
-                      'scope':'Unsigned offline development artifact; enforce signature policy for later registry updates'}),flush=True)
+                      'scope':'Ephemeral CI-signed local development input; original ThirdKey policy remains inside the installed image'}),flush=True)
     os.execve(command[0],command,{'PATH':'/usr/sbin:/usr/bin:/sbin:/bin','LANG':'C.UTF-8',
                                  'HOME':'/root','TMPDIR':'/var/tmp','RUST_BACKTRACE':'1'})
 

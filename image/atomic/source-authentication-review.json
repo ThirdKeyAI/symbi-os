@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "scope": "Read-only upstream source review for existing image Skopeo 1.25.1 and its image v5.42.1 library; no new binary/package selection",
+  "sources": [
+    {
+      "repository": "podman-container-tools/container-libs",
+      "revision": "b84f98ed7c960897cec6c0746175f0bd1250ce55",
+      "path": "image/directory/directory_src.go",
+      "git_blob": "e2953b4233ce8d0cd6ef2193794805794842e4bd",
+      "url": "https://github.com/podman-container-tools/container-libs/blob/b84f98ed7c960897cec6c0746175f0bd1250ce55/image/directory/directory_src.go"
+    },
+    {
+      "repository": "podman-container-tools/container-libs",
+      "revision": "b84f98ed7c960897cec6c0746175f0bd1250ce55",
+      "path": "image/directory/directory_transport.go",
+      "git_blob": "6275c9cebe7aeb9116881749b0e14f36bdb07661",
+      "url": "https://github.com/podman-container-tools/container-libs/blob/b84f98ed7c960897cec6c0746175f0bd1250ce55/image/directory/directory_transport.go"
+    },
+    {
+      "repository": "podman-container-tools/container-libs",
+      "revision": "b84f98ed7c960897cec6c0746175f0bd1250ce55",
+      "path": "image/directory/directory_dest.go",
+      "git_blob": "c9a593d085bf90b862d9af9fec5761e1bae321d5",
+      "url": "https://github.com/podman-container-tools/container-libs/blob/b84f98ed7c960897cec6c0746175f0bd1250ce55/image/directory/directory_dest.go"
+    },
+    {
+      "repository": "podman-container-tools/container-libs",
+      "revision": "b84f98ed7c960897cec6c0746175f0bd1250ce55",
+      "path": "image/docs/containers-policy.json.5.md",
+      "git_blob": "a0aea1b700604db5b5e8fe62e60a2b07d52ead0e",
+      "url": "https://github.com/podman-container-tools/container-libs/blob/b84f98ed7c960897cec6c0746175f0bd1250ce55/image/docs/containers-policy.json.5.md"
+    },
+    {
+      "repository": "podman-container-tools/skopeo",
+      "revision": "1fb351f23dbde474416ba33c3786a8d04304429b",
+      "path": "go.mod",
+      "git_blob": "17f81f692d3e2c88988f119e5996236b7bd42dab",
+      "url": "https://github.com/podman-container-tools/skopeo/blob/v1.25.1/go.mod"
+    },
+    {
+      "repository": "podman-container-tools/skopeo",
+      "revision": "1fb351f23dbde474416ba33c3786a8d04304429b",
+      "path": "docs/skopeo-standalone-sign.1.md",
+      "git_blob": "4da532c8db7de2250db16f251f563fe077069016",
+      "url": "https://github.com/podman-container-tools/skopeo/blob/v1.25.1/docs/skopeo-standalone-sign.1.md"
+    },
+    {
+      "repository": "podman-container-tools/skopeo",
+      "revision": "1fb351f23dbde474416ba33c3786a8d04304429b",
+      "path": "docs/skopeo-standalone-verify.1.md",
+      "git_blob": "cfed4de8644b26e3df3c03d6afaf0e1c36ac73a3",
+      "url": "https://github.com/podman-container-tools/skopeo/blob/v1.25.1/docs/skopeo-standalone-verify.1.md"
+    }
+  ],
+  "findings": [
+    "Directory sources store the exact manifest as manifest.json, SHA-256 config/layer blobs under their hex digest, and signatures as signature-1 etc.",
+    "Version 1.1 is the reviewed SHA-256-only directory format.",
+    "signedBy with GPGKeys and exactReference is supported for the directory transport; default reject and all original Docker release/base rules remain intact.",
+    "standalone-sign emits a local OpenPGP image signature; actual policy positive and negative controls use skopeo copy on a tiny valid image; no native tools run locally.",
+    "The production input bytes remain bound by the existing hosted artifact, OCI manifest and every blob; the ephemeral key is a test-harness identity, not independent release provenance."
+  ]
+}

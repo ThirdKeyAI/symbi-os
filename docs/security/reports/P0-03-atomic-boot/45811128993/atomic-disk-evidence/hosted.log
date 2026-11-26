@@ -1,0 +1,24 @@
+Running as unit: symbi-atomic-disk-45811128993-1.service
+Atomic install: loading the exact saved image into private CI storage
+Atomic install: verifying opaque OCI layout blobs
+Atomic install: bootc is writing only the new private 24 GiB regular file
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/runner/work/symbi-os/symbi-os/image/atomic/hosted.py", line 212, in <module>
+    if __name__=='__main__': main()
+                             ^^^^^^
+  File "/home/runner/work/symbi-os/symbi-os/image/atomic/hosted.py", line 118, in main
+    run('install',command,2400)
+  File "/home/runner/work/symbi-os/symbi-os/image/atomic/hosted.py", line 48, in run
+    if check: result.check_returncode()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 502, in check_returncode
+    raise CalledProcessError(self.returncode, self.args, self.stdout,
+subprocess.CalledProcessError: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/atomic-disk-storage/root', '--runroot', '/run/symbi-atomic-disk-45811128993-1', 'run', '--rm', '--name=symbi-atomic-installer', '--pull=never', '--network=none', '--pid=private', '--cgroup-parent=/system.slice/symbi-atomic-disk-45811128993-1.service', '--env=LANG=C.UTF-8', '--env=PYTHONDONTWRITEBYTECODE=1', '--privileged', '--memory=2g', '--memory-swap=2g', '--cpus=1', '--pids-limit=128', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/atomic-disk-storage/installer-input,dst=/inputs,ro', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/atomic-disk-storage/oci,dst=/inputs/oci,ro', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/atomic-disk-storage/disk,dst=/output', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/atomic-disk-storage/installer-tmp,dst=/var/tmp', '--mount', 'type=bind,src=/dev,dst=/dev,ro,bind-nonrecursive', '--mount', 'type=bind,src=/run/udev,dst=/run/udev,ro,bind-nonrecursive', '--entrypoint=/usr/bin/python3', 'sha256:54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1', '/inputs/install.py']' returned non-zero exit status 1.
+Finished with result: exit-code
+Main processes terminated with: code=exited/status=1
+Service runtime: 5min 11.452s
+CPU time consumed: 2min 55.945s
+Memory peak: 2.6M
+Memory swap peak: 0B

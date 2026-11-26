@@ -1,8 +1,10 @@
 # Hosted Atomic development boot
 
-This harness installs the exact retained **generic unsigned development image**
-on a new virtual disk and boots it on disposable GitHub infrastructure. It has
-no signing or publication authority and is not a user installation route.
+This harness test-signs and installs the exact retained **generic development
+image** on a new virtual disk and boots it on disposable GitHub infrastructure.
+It generates a temporary offline CI fixture key, destroys its private material,
+and has no ThirdKey release-signing or publication authority. This is not a user
+installation route.
 Passing it does not establish desktop, sandbox, release, NVIDIA or rollback
 qualification.
 
@@ -23,8 +25,8 @@ saved archive; it never extracts filesystem paths from a layer. Every blob,
 descriptor, manifest and configuration identity is checked, including rejection
 of links, path escapes, duplicate/unreferenced entries and size violations.
 
-The installer runs the image's own bootc 1.17.1, with a read-only OCI directory
-as the explicit source. The fixed target is a new, private, singly linked
+The installer runs the image's own bootc 1.17.1, with a read-only signed `dir:`
+source containing the unchanged manifest and opaque OCI blobs. The fixed target is a new, private, singly linked
 24 GiB regular file, opened exclusively. Its device/inode/owner/mode/size are
 checked before and after installation. `--via-loopback` is mandatory; neither
 existing disk replacement nor host block-device installation is offered.
@@ -35,8 +37,9 @@ the disposable hosted runner. Cleanup targets only loop devices still bound
 to this exact new file after the containers stop.
 
 Future update metadata uses the approved OS repository, exact manifest digest
-and `--enforce-container-sigpolicy`. The local artifact has **not** acquired a
-release signature: bootc's local-source import is an offline development step.
+and `--enforce-container-sigpolicy`. The source has an ephemeral CI fixture
+signature, **not a ThirdKey release signature**. The key attests the checked
+input inside this test run; it is not independent release provenance.
 The digest need not be published in GHCR. Installed default-reject policy bytes
 remain unchanged; signature acceptance and negative registry-update controls
 remain separate required tests.
@@ -59,7 +62,8 @@ The service has a 256 MiB/half-CPU/32-task/zero-swap ceiling and powers off afte
 the probe. A stale, incomplete or permissive report fails validation.
 
 Resource limits: current artifact preparation 1 GiB/one CPU; controller
-4 GiB/two CPUs/256 tasks; installer 2 GiB/one CPU/128 tasks; QEMU container
+4 GiB/two CPUs/256 tasks; temporary signer 1 GiB/one CPU/64 tasks; installer
+2 GiB/one CPU/128 tasks; QEMU container
 3 GiB/two CPUs/64 tasks. All use zero swap. Large inputs, virtual disks and OCI
 storage stay hosted and are removed after the attempt. Only bounded original
 logs and JSON observations are uploaded. The new workflow has one concurrency
@@ -116,3 +120,45 @@ The device bind uses Podman's documented `bind-nonrecursive` option so host
 `/dev/shm`, `/dev/pts` and other submounts are not imported. The new regression
 failed on the initial recursive mount before this correction. See
 [Podman bind options](https://docs.podman.io/en/latest/markdown/podman-run.1.html).
+
+## Local-source signature refusal and authenticated test input
+
+[Run 45811128993](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45811128993)
+at `5c5b4fb` confirms the device correction works: bootc created Btrfs and ESP
+filesystems and initialized OSTree. It then correctly rejected the unsigned
+`oci:/inputs/oci` source under the shipped default-reject policy. All 25 original
+small files and independent reconciliation are retained. The installer, loop
+devices, image and private storage/runroot were removed with zero OOM/kill/swap.
+Installation did not finish and no VM started. The same commit's full
+[workspace/formal check](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45811149524)
+passed.
+
+The corrected test source uses the existing image's Skopeo 1.25.1 and GnuPG in a
+read-only, offline, unprivileged container. A new test key signs the exact pinned
+manifest; no image layer is recompressed or filesystem extracted. A tiny valid
+OCI fixture first passes actual `skopeo copy` policy verification, then must
+fail with a missing signature, another key, a different signed identity, and an
+altered signature. The real development manifest is signed and independently
+checked with `standalone-verify`. No native signing test runs locally.
+
+The installer-only policy retains default reject and every original Docker
+release/base rule. It adds one `signedBy`/`GPGKeys` rule for `/inputs/signed`,
+requiring the ephemeral public key and the exact test identity plus manifest
+digest. This policy is mounted read-only only in the installer. Source layers
+retain the original ThirdKey release policy; the boot probe still requires its
+exact original bytes and enforcing future-update metadata. No test key/rule is
+installed in the OS. Private GPG material is deleted before signing acceptance;
+only the public key, signature and bounded observations are retained.
+
+Three additional inert regression tests cover unchanged manifest/blob layout,
+tamper/path rejection and preservation of release trust. The updated existing
+tests require the signed source and read-only policy mount. All 235 image tests
+pass locally at 36,872 KiB RSS, 0.79 CPU seconds and zero swap under 128 MiB/10%
+CPU limits. The native signature controls and corrected installation/boot still
+need hosted execution; they are not claimed by those fixture tests.
+
+The [source review](source-authentication-review.json) binds the upstream
+Skopeo/library versions, local directory signature format and exact-reference
+policy semantics. This harness adds no production dependency, signing identity,
+policy bypass or release qualification. Actual registry update/rollback controls
+and human TCB/release approvals remain separate gates.
