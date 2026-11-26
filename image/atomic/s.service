@@ -8,10 +8,8 @@ Before=o.service
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/usr/bin/bootc status --json
-StandardOutput=truncate:/run/symbi-atomic-status/status.json
+StandardOutput=truncate:/run/symbi-atomic-status.json
 StandardError=journal+console
-RuntimeDirectory=symbi-atomic-status
-RuntimeDirectoryMode=0700
 Environment=LANG=C.UTF-8
 UMask=0077
 NoNewPrivileges=yes

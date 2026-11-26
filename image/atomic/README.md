@@ -275,3 +275,46 @@ zero swap. They verify evidence retention and continued rejection, not native
 boot success. The next hosted attempt must supply the actual collector error or
 pass all existing acceptance checks. No dependency or journal event is added;
 INV-12 and human TCB review, desktop, containment and release gates remain open.
+
+## Correct the status output creation order
+
+[Run 45827646015](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45827646015)
+at `0203139` completed installation and all native source-policy controls. The
+new observer retained the fixed collector's exit status **209/STDOUT**, which
+occurs before its `bootc` command starts. The original errno is not retained.
+The nonce/hash-bound partial report also records kernel 7.3.4, enforcing SELinux,
+read-only `/usr` and `/sysroot`, Btrfs, loopback only, empty observer capability
+sets and no-new-privileges. Complete boot acceptance still failed before the
+payload/inventory/deployment checks. All 87 original files (216,619 expanded
+bytes) and independent reconciliation are retained.
+
+The [upstream systemd v262 source review](status-output-source-review.json)
+shows `setup_output` opening stdout before `setup_exec_directory` creates the
+service's `RuntimeDirectory`. The original path therefore depends on a parent
+that does not yet exist at the required point. A new regression fixture
+reproduced that missing-parent failure before the correction. This upstream
+source review does not claim exact Fedora binary/source equivalence.
+
+The fixed collector now writes `/run/symbi-atomic-status.json`, directly under
+the already-existing root-controlled runtime directory. The service umask makes
+this a root-only 0600 file. The reader opens the parent with `O_DIRECTORY` and
+`O_NOFOLLOW`, requires root ownership and no group/other write permission, then
+opens the file relative to that descriptor. Its original no-follow, regular,
+root-owned, single-link, size, JSON and successful-service checks remain in force.
+The unused service runtime directory is removed. No shell, extra program,
+capability, SELinux exception or weaker boot acceptance is introduced.
+
+All 249 offline image fixtures pass at 35,956 KiB peak RSS, 0.80 CPU seconds and
+zero swap under 128 MiB/10%-CPU limits. The creation-order and directory controls
+failed before implementation. Native acceptance still requires the next hosted
+attempt. The collector retains only `CAP_SYS_ADMIN`; the observer and host QEMU
+retain empty capability sets. Existing private mount and resource limits remain.
+
+The failed hosted run removed private signing keys, all three containers, loop
+devices, the image and private storage/runroot. Its parent recorded 163,416
+memory-ceiling events and no OOM/kill; QEMU peaked at 3,183,915,008 bytes with
+zero max/OOM/kill events and powered off after 312.64 seconds. Host swap was
+prohibited; base guest zram is separate. Workspace/formal
+[45827669193](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45827669193)
+passed at the same source. No dependency or journal event is added. INV-12,
+human TCB review, desktop, containment and release gates remain outstanding.

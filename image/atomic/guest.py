@@ -19,7 +19,14 @@ def read_bootc_status(path, properties):
     required={'Result':'success','ExecMainCode':'1','ExecMainStatus':'0',
               'ActiveState':'active','SubState':'exited'}
     if properties!=required: raise ValueError('Fixed bootc status collector did not complete')
-    fd=os.open(path,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK)
+    parent=os.open(path.parent,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+    try:
+        directory=os.fstat(parent)
+        if not stat.S_ISDIR(directory.st_mode) or directory.st_uid!=0 or directory.st_mode & 0o022:
+            raise ValueError('Status parent is not a root-controlled directory')
+        fd=os.open(path.name,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK,dir_fd=parent)
+    finally:
+        os.close(parent)
     with os.fdopen(fd,'rb') as source:
         info=os.fstat(source.fileno())
         if (not stat.S_ISREG(info.st_mode) or info.st_uid!=0 or info.st_nlink!=1
@@ -85,7 +92,7 @@ def main():
         record['bootc_version']=run(['/usr/bin/bootc','--version']).strip()
         record['bootc_status_diagnostic']=collect_status_diagnostic(run)
         record['bootc_status'],record['bootc_status_observation']=read_bootc_status(
-            Path('/run/symbi-atomic-status/status.json'),record['bootc_status_diagnostic']['service'])
+            Path('/run/symbi-atomic-status.json'),record['bootc_status_diagnostic']['service'])
         fmt='%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n'
         inventory=run(['/usr/bin/rpm','-qa','--qf',fmt]).splitlines()
         if len(set(inventory))!=len(inventory): raise ValueError('Duplicate installed package identity')

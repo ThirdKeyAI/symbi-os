@@ -35,6 +35,13 @@ class AtomicStatus(unittest.TestCase):
                 self.assertEqual(status, {'kind':'BootcHost'})
                 self.assertEqual(observation['service'], self.properties())
                 self.assertEqual(observation['bytes'], path.stat().st_size)
+                parent = Path(directory)
+                parent.chmod(0o777)
+                with self.assertRaises(ValueError): guest.read_bootc_status(path, self.properties())
+                parent.chmod(0o700)
+                linked_parent = parent/'alias'; linked_parent.symlink_to(parent, target_is_directory=True)
+                with self.assertRaises(OSError): guest.read_bootc_status(linked_parent/'status.json', self.properties())
+                linked_parent.unlink()
                 for key, value in [('Result','exit-code'), ('ExecMainStatus','1'),
                                    ('ExecMainCode','2'), ('ActiveState','inactive'), ('SubState','dead')]:
                     changed = self.properties(); changed[key] = value
@@ -65,9 +72,8 @@ class AtomicStatus(unittest.TestCase):
         self.assertEqual(collector['AmbientCapabilities'], '')
         self.assertEqual(collector['PrivateMounts'], 'yes')
         self.assertEqual(collector['NoNewPrivileges'], 'yes')
-        self.assertEqual(collector['RuntimeDirectory'], 'symbi-atomic-status')
-        self.assertEqual(collector['RuntimeDirectoryMode'], '0700')
-        self.assertEqual(collector['StandardOutput'], 'truncate:/run/symbi-atomic-status/status.json')
+        self.assertNotIn('RuntimeDirectory', collector)
+        self.assertEqual(collector['StandardOutput'], 'truncate:/run/symbi-atomic-status.json')
         self.assertEqual(collector['UMask'], '0077')
         self.assertEqual(collector['MemoryMax'], '256M')
         self.assertEqual(collector['MemorySwapMax'], '0')
@@ -83,6 +89,21 @@ class AtomicStatus(unittest.TestCase):
         self.assertNotIn('OnFailure', collector)
         self.assertEqual(observer['OnFailure'], 'poweroff.target')
         self.assertEqual(observer['ExecStopPost'], '/usr/bin/systemctl --no-block poweroff')
+
+    def test_status_output_opens_before_runtime_directories_are_created(self):
+        settings = dict(line.split('=',1) for line in (ROOT/'image/atomic/s.service').read_text().splitlines()
+                        if '=' in line and not line.startswith('#'))
+        kind, output = settings['StandardOutput'].split(':',1)
+        self.assertEqual(kind, 'truncate')
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory); (root/'run').mkdir(mode=0o755)
+            # systemd v262 opens stdio before creating RuntimeDirectory entries.
+            # The fixture has only the already-existing root-owned runtime parent.
+            path = root/Path(output).relative_to('/')
+            fd = os.open(path, os.O_WRONLY|os.O_CREAT|os.O_TRUNC,
+                         0o666 & ~int(settings['UMask'],8))
+            with os.fdopen(fd,'wb') as stream: stream.write(b'{}\n')
+            self.assertEqual(path.stat().st_mode & 0o777, 0o600)
 
     def test_failed_collector_diagnostic_is_retained_without_accepting_its_output(self):
         guest = self.guest()
