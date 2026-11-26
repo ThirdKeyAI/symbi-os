@@ -120,6 +120,10 @@ checks: authored JSON can satisfy their schema and therefore cannot establish
 authentic execution by itself. The `release-candidate.yml` workflow has no
 upload step and fails explicitly until the real native and signing producers
 are bound by run path, source SHA/ref, conclusion, artifact ID, digest and name.
+Once artifact metadata is supplied, the provenance invocation URL must identify
+that exact authenticated producer run. An upstream candidate must also use
+`upstream-check-<producer-run-id>` as its identifier, so records from separate
+runs cannot be mixed into one candidate.
 
 The protected `release-images.yml` currently has read-only permissions and
 performs only this reconciliation; it cannot sign, attest, push or promote an
@@ -129,7 +133,9 @@ candidate workflow at the same tag and source commit.
 The manual `upstream-check.yml` applies the same evidence gate to candidate
 base digests, preserves the existing repositories and trust roots, reruns the
 serial repository checks and opens a review PR only after independent artifact
-revalidation. The candidate workflow deliberately cannot create either expected
+revalidation. Its two source checkouts pin and verify the dispatch SHA, do not
+persist credentials, and expose the write token only inside the final push/PR
+step. The candidate workflow deliberately cannot create either expected
 artifact while actual image builds, native qualification, signing and
 publication remain outstanding. Therefore both paths fail before an upload or
 Git write today; authored success flags do not qualify a release. Its planned

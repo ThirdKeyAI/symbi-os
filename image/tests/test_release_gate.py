@@ -334,6 +334,53 @@ class ReleaseEvidenceTests(unittest.TestCase):
                 expected_source_commit=HEX40,
             )
 
+    def test_authenticated_run_id_binds_invocation_and_candidate_identifier(self):
+        result = validate_bundle(
+            self.bundle.path, self.root, release_trust=self.trust,
+            base_images=self.bases, expected_purpose="release",
+            expected_source_commit=HEX40,
+            expected_workflow_ref=BUILDER_WORKFLOW,
+            expected_gate_workflow_ref=GATE_WORKFLOW,
+            expected_producer_run_id=123,
+        )
+        self.assertTrue(result["evidence_contract_satisfied"])
+
+        provenance = json.loads(
+            self.bundle.document("generic", "provenance").read_text()
+        )
+        provenance["predicate"]["runDetails"]["metadata"]["invocationId"] = (
+            "https://github.com/ThirdKeyAI/symbi-os/actions/runs/124"
+        )
+        self.bundle.rewrite("generic", "provenance", provenance)
+        attestation = json.loads(
+            self.bundle.document("generic", "cosign_attestation").read_text()
+        )
+        attestation["predicate_sha256"] = sha256(
+            self.bundle.document("generic", "provenance")
+        )
+        self.bundle.rewrite("generic", "cosign_attestation", attestation)
+        with self.assertRaisesRegex(ValueError, "invocation"):
+            validate_bundle(
+                self.bundle.path, self.root, release_trust=self.trust,
+                base_images=self.bases, expected_purpose="release",
+                expected_source_commit=HEX40,
+                expected_producer_run_id=123,
+            )
+
+        self.bundle = Bundle(self.root / "upstream-run-binding")
+        workflow = self.bundle.make_upstream()
+        self.bundle.manifest["release_tag"] = "upstream-check-124"
+        self.bundle.save()
+        with self.assertRaisesRegex(ValueError, "candidate identifier"):
+            validate_bundle(
+                self.bundle.path, self.bundle.root,
+                release_trust=self.trust, base_images=self.bases,
+                expected_purpose="upstream-candidate",
+                expected_source_commit=HEX40,
+                expected_workflow_ref=workflow,
+                expected_producer_run_id=123,
+            )
+
     def test_candidate_builder_and_consumer_gate_are_distinct_and_exact(self):
         self.bundle.manifest["gate_workflow_ref"] = BUILDER_WORKFLOW
         self.bundle.save()
@@ -610,6 +657,30 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("needs: qualify-candidate", text)
         self.assertIn("gh pr create", text)
         self.assertNotIn("pull_request_target", text)
+
+    def test_upstream_checkouts_are_exact_and_write_token_is_final_step_only(self):
+        document = self.load("upstream-check.yml")
+        checkout_steps = []
+        for job in document["jobs"].values():
+            for step in job.get("steps", []):
+                if str(step.get("uses", "")).startswith("actions/checkout@"):
+                    checkout_steps.append(step)
+        self.assertEqual(len(checkout_steps), 2)
+        for step in checkout_steps:
+            with self.subTest(step=step["name"]):
+                self.assertEqual(step["with"]["ref"], "${{ github.sha }}")
+                self.assertIs(step["with"]["persist-credentials"], False)
+
+        text = (ROOT / ".github/workflows/upstream-check.yml").read_text()
+        self.assertEqual(
+            text.count('test "$(git rev-parse HEAD)" = "$GITHUB_SHA"'), 2
+        )
+        propose = document["jobs"]["propose-bump"]
+        self.assertNotIn("GH_TOKEN", propose.get("env", {}))
+        final_step = propose["steps"][-1]
+        self.assertEqual(final_step["env"], {"GH_TOKEN": "${{ github.token }}"})
+        for step in propose["steps"][:-1]:
+            self.assertNotIn("GH_TOKEN", step.get("env", {}))
 
     def test_candidate_workflow_is_an_explicit_nonpublishing_blocker(self):
         candidate = self.load("release-candidate.yml")

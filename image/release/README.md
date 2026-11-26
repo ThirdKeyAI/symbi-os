@@ -25,8 +25,12 @@ report can satisfy their shape, so those bytes alone are not authentic release
 evidence. `release-candidate.yml` therefore contains no artifact upload. It
 checks the contract and then fails explicitly until real native and signing
 workflows bind their run path, source SHA/ref, conclusion and exact artifact
-identity and digest. The manifest still separates the future builder identity
-from the consumer identity so a consumer cannot bless its own earlier output.
+identity and digest. When authenticated artifact metadata is supplied, each
+provenance invocation URL must name that exact producer run. Upstream candidate
+identifiers must also be `upstream-check-<producer-run-id>`, preventing evidence
+from two otherwise valid runs from being combined. The manifest still separates
+the future builder identity from the consumer identity so a consumer cannot
+bless its own earlier output.
 
 `release-images.yml` is currently a protected, read-only evidence consumer. It
 can run only for a selected `v*` tag and has neither registry write nor OIDC
@@ -39,8 +43,11 @@ stay disabled until the actual image, signing and P0 producers are integrated.
 artifact contains `base-images.json` plus a complete `release-evidence/` bundle
 with purpose `upstream-candidate`. The manual job preserves repositories and
 trust roots, permits digest changes only, reruns the serial repository gate and
-revalidates the artifact in a separate job before opening a review PR. Missing,
-stale or incomplete evidence stops before any Git write. The configured
+revalidates the artifact in a separate job before opening a review PR. Both
+jobs check out and verify the dispatch SHA without persisting credentials. The
+write token is exposed only to the final push/PR step; validation and tests do
+not receive it. Missing, stale or incomplete evidence stops before any Git
+write. The configured
 `SYMBI_UPSTREAM_EVIDENCE_RUN_ID` must identify the qualifying
 `release-candidate.yml` run. That workflow currently refuses every candidate
 before upload. The weekly trigger remains disabled until the authentic producer

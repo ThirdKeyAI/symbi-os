@@ -31,8 +31,10 @@ jobs:
       - name: Check out current main without persisted credentials
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          ref: main
+          ref: ${{ github.sha }}
           persist-credentials: false
+      - name: Verify the checked-out upstream gate revision
+        run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
       - name: Require a configured candidate evidence run
         # upstream.py accepts artifacts only from the reviewed
         # .github/workflows/release-candidate.yml producer at this exact commit.
@@ -99,12 +101,14 @@ jobs:
       EXPECTED_WORKFLOW_REF: https://github.com/ThirdKeyAI/symbi-os/.github/workflows/release-candidate.yml@refs/heads/main
       EXPECTED_GATE_REF: https://github.com/ThirdKeyAI/symbi-os/.github/workflows/upstream-check.yml@refs/heads/main
       BRANCH: automation/upstream-base-${{ github.run_id }}
-      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Check out current main for the reviewed proposal
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          ref: main
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verify the checked-out proposal revision
+        run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
       - name: Download the independently retained candidate
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -128,6 +132,8 @@ jobs:
             .cache/proposal-input/verified-upstream/base-images.json \
             .cache/reverified-upstream/base-images.json
       - name: Open a review PR for the exact qualified digest change
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           cp -- .cache/reverified-upstream/base-images.json image/base-images.json
           git diff --exit-code -- image/keys image/release-trust.json
@@ -135,6 +141,7 @@ jobs:
           git switch -c "$BRANCH"
           git config user.name thirdkey-release-bot
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          gh auth setup-git
           git add -- image/base-images.json
           git commit -m 'P0-03: propose authenticated base digest update'
           git push origin "HEAD:refs/heads/$BRANCH"

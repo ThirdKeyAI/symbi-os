@@ -53,6 +53,7 @@ def stage(candidate_path, current_path, manifest_path, evidence_root, output,
         expected_source_commit=source_commit,
         expected_workflow_ref=workflow_ref,
         expected_gate_workflow_ref=gate_workflow_ref,
+        expected_producer_run_id=origin["producer_run_id"],
     )
     output = Path(output)
     output.mkdir(mode=0o700, parents=True, exist_ok=False)

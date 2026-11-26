@@ -189,7 +189,8 @@ def validate_spdx(document, repository, image_digest, subject):
 
 
 def validate_provenance(document, *, variant, repository, image_digest, base,
-                        source_commit, release_tag, workflow_ref):
+                        source_commit, release_tag, workflow_ref,
+                        producer_run_id=None):
     require(document.get("_type") == STATEMENT_TYPE
             and document.get("predicateType") == PROVENANCE_TYPE,
             "SLSA provenance statement type required")
@@ -220,8 +221,12 @@ def validate_provenance(document, *, variant, repository, image_digest, base,
     require((details.get("builder") or {}).get("id") == workflow_ref,
             "provenance builder identity differs from the protected workflow")
     invocation = (details.get("metadata") or {}).get("invocationId")
-    require(isinstance(invocation, str) and INVOCATION.fullmatch(invocation),
-            "provenance invocation must identify one repository workflow run")
+    expected_invocation = None
+    if producer_run_id is not None:
+        expected_invocation = SOURCE_REPOSITORY + f"/actions/runs/{producer_run_id}"
+    require(isinstance(invocation, str) and INVOCATION.fullmatch(invocation)
+            and (expected_invocation is None or invocation == expected_invocation),
+            "provenance invocation must identify the authenticated producer run")
 
 
 def validate_cosign_tool(report, pins):
@@ -308,7 +313,8 @@ def validate_bundle(manifest_path, evidence_root, *, release_trust=None,
                     base_images=None, expected_purpose=None,
                     expected_source_commit=None, expected_tag=None,
                     expected_workflow_ref=None,
-                    expected_gate_workflow_ref=None, cosign_pins=None):
+                    expected_gate_workflow_ref=None,
+                    expected_producer_run_id=None, cosign_pins=None):
     evidence_root = Path(evidence_root)
     root = evidence_root.resolve(strict=True)
     require(root.is_dir(), "release evidence root must be a directory")
@@ -347,6 +353,13 @@ def validate_bundle(manifest_path, evidence_root, *, release_trust=None,
                 "bounded upstream candidate identifier required")
     require(expected_tag is None or release_tag == expected_tag,
             "release evidence tag differs from the workflow ref")
+    if expected_producer_run_id is not None:
+        require(type(expected_producer_run_id) is int
+                and expected_producer_run_id > 0,
+                "positive authenticated producer run ID required")
+        if purpose == "upstream-candidate":
+            require(release_tag == f"upstream-check-{expected_producer_run_id}",
+                    "upstream candidate identifier differs from the authenticated run")
     source = manifest.get("source") or {}
     source_commit = commit_value(source.get("commit"))
     require(source.get("repository") == SOURCE_REPOSITORY
@@ -413,6 +426,7 @@ def validate_bundle(manifest_path, evidence_root, *, release_trust=None,
             documents["provenance"], variant=variant, repository=repository,
             image_digest=image_digest, base=base, source_commit=source_commit,
             release_tag=release_tag, workflow_ref=workflow_ref,
+            producer_run_id=expected_producer_run_id,
         )
         validate_signature(
             documents["cosign_signature"], subject=subject, repository=repository,
@@ -439,6 +453,7 @@ def validate_bundle(manifest_path, evidence_root, *, release_trust=None,
         "source_commit": source_commit,
         "workflow_ref": workflow_ref,
         "gate_workflow_ref": gate_workflow_ref,
+        "producer_run_id": expected_producer_run_id,
         "subjects": subjects,
         "evidence_files": len(seen) - 1,
         "evidence_contract_satisfied": True,
@@ -602,6 +617,7 @@ def main():
             expected_tag=args.expected_tag,
             expected_workflow_ref=args.expected_workflow_ref,
             expected_gate_workflow_ref=args.expected_gate_workflow_ref,
+            expected_producer_run_id=(origin or {}).get("producer_run_id"),
         )
         if origin:
             result["artifact_origin"] = origin
