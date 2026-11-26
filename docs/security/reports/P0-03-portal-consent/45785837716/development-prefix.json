@@ -1,0 +1,568 @@
+{
+  "schema": 1,
+  "compiled": true,
+  "os_qualified": false,
+  "consent_qualified": false,
+  "selected_base_qualified": false,
+  "source_commit": "1e93208bb190e7d041aab11bdcf063cad5028a30",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "source_inputs": {
+    "schema": 1,
+    "scope": "Candidate portal and share-picker toolkit selected by the pinned compositor; source metadata only, no build or OS qualification",
+    "qualified": false,
+    "hyprland_revision": "11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947",
+    "hyprland_flake_lock": {
+      "path": "image/portal/reviewed/Hyprland-flake.lock",
+      "sha256": "db45c25bd98a86c5c5cb2494ff6994d39db7f2d0eb05fc98d27d30b6c833cabe",
+      "git_blob": "d84c3724fcbad32a2082c566292dd7815c3f08e4"
+    },
+    "reused_input_bindings": {
+      "image/hyprland/candidate-inputs.json": "d5c64bd34e52e4c61a14fde19ad429c31dcf3862d8c051bd029c4c73deca2ecb",
+      "image/hyprland/development-prefix.lock.json": "484cf1c675b20c8e603ef6094ecd1e07c7e8fd58047bdba1e8f7eabfb26b0650",
+      "image/hyprland/build-rpms.lock.json": "fe160b4ed81b2e4910df098f6648b499264e8d989eea07feb59a841ecc9131a4",
+      "image/hyprland/patches/0001-disable-native-loading.patch": "068d061f29c6ccbef25d402972a14c72195811e40888027b71760f6656f6eeff"
+    },
+    "components": [
+      {
+        "name": "hyprtoolkit",
+        "lock_node": "hyprtoolkit",
+        "revision": "92646e15fb295285b10de626f2d9597216465f7b",
+        "version": "0.6.0",
+        "repository": "https://github.com/hyprwm/hyprtoolkit.git",
+        "license": "BSD-3-Clause",
+        "reviewed_files": {
+          "VERSION": {
+            "path": "image/portal/reviewed/hyprtoolkit/VERSION",
+            "bytes": 6,
+            "sha256": "97a5d6e540a6120d09c39ddb667e0e8e2bac7fcc2ffef813b82e08fd60365bce",
+            "git_blob": "a918a2aa18d5bec6a8bb93891a7a63c243111796"
+          },
+          "CMakeLists.txt": {
+            "path": "image/portal/reviewed/hyprtoolkit/CMakeLists.txt",
+            "bytes": 8506,
+            "sha256": "053653a92c0b7f6936e4a9c745d4281c6f5ac87be12d684503aba72ab3452195",
+            "git_blob": "540b8e6d7d3a0ba6fa8f66c46bd59ac6d83021df"
+          },
+          "LICENSE": {
+            "path": "image/portal/reviewed/hyprtoolkit/LICENSE",
+            "bytes": 1503,
+            "sha256": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143",
+            "git_blob": "daf5abfc33b687ea2368b58e8dd58e8180b00c47"
+          },
+          "scripts/generateShaderIncludes.sh": {
+            "path": "image/portal/reviewed/hyprtoolkit/scripts/generateShaderIncludes.sh",
+            "bytes": 829,
+            "sha256": "208b260558dd3de4519361b0ab6fb841f6736456ea430750ae8edbc43a24c17e",
+            "git_blob": "58594c9cd86873cfbb98bce29e28f7f111891c68"
+          }
+        }
+      },
+      {
+        "name": "xdg-desktop-portal-hyprland",
+        "lock_node": "xdph",
+        "revision": "85450448ea40a54ec4f10bd607e68019d8f5cc41",
+        "version": "1.5.0",
+        "repository": "https://github.com/hyprwm/xdg-desktop-portal-hyprland.git",
+        "license": "BSD-3-Clause",
+        "reviewed_files": {
+          "VERSION": {
+            "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/VERSION",
+            "bytes": 6,
+            "sha256": "acb57a7135b2d7d6e665f67f056e21353023b93835f54def1ae523bf76f1bfb3",
+            "git_blob": "bc80560fad66ca670bdfbd1e5c973a024d4d0325"
+          },
+          "CMakeLists.txt": {
+            "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/CMakeLists.txt",
+            "bytes": 6138,
+            "sha256": "b5d66bb400772968346edf61b6b568fba623bdf355bb8af8c2aa4c2a6354c450",
+            "git_blob": "51af533f24de44d4785164755f4412d3a716535b"
+          },
+          "LICENSE": {
+            "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/LICENSE",
+            "bytes": 1515,
+            "sha256": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+            "git_blob": "f18025f342e9c7043902f8dd22549d88bd6facf8"
+          },
+          "hyprland-share-picker/CMakeLists.txt": {
+            "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/hyprland-share-picker/CMakeLists.txt",
+            "bytes": 904,
+            "sha256": "3f0439e00661d676cd370c496b8f9b473ef4dc362b9a40d3513f6a9e9c305c58",
+            "git_blob": "2fe614800afa9f20f34dea0ee85cd4ecb61080ef"
+          }
+        }
+      }
+    ]
+  },
+  "consent_inputs": {
+    "schema": 1,
+    "qualified": false,
+    "consent_qualified": false,
+    "product_installation": false,
+    "upstream_revision": "85450448ea40a54ec4f10bd607e68019d8f5cc41",
+    "source_inputs_sha256": "759e7e4e4cbe63cb5c0ef39963e4f95b39a68b803e6d9100d10f3a40cc722514",
+    "rpm_lock_sha256": "81fb8788e0acb25ee15bcb6d38c7438c4cba102e1fd616d944ddc03f99375ab8",
+    "parent_prefix_lock_sha256": "abc80998ff1ec66160f0738a7e5fc0865b39c6a2e65fe7f7870633dde02a1240",
+    "reviewed_files": {
+      "LICENSE": {
+        "path": "image/portal/consent-reviewed/LICENSE",
+        "bytes": 1515,
+        "sha256": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+        "git_blob": "f18025f342e9c7043902f8dd22549d88bd6facf8"
+      },
+      "contrib/systemd/xdg-desktop-portal-hyprland.service.in": {
+        "path": "image/portal/consent-reviewed/contrib/systemd/xdg-desktop-portal-hyprland.service.in",
+        "bytes": 324,
+        "sha256": "ba6b2c223f6d674ac7b04d42b25af818ac0df8ab58fa424023d14b51f9f00db2",
+        "git_blob": "a2e376083420042ba3bbde9beb49207d22fedc99"
+      },
+      "hyprland-share-picker/Picker.cpp": {
+        "path": "image/portal/consent-reviewed/hyprland-share-picker/Picker.cpp",
+        "bytes": 15080,
+        "sha256": "7f2e8895e528b07ee8f12769d3dcc675b0e8a4d9e8e39001c13139ca4ccd917b",
+        "git_blob": "7368798ccc901b67fbed9bd43a8bccebea3afa15"
+      },
+      "hyprland-share-picker/Picker.hpp": {
+        "path": "image/portal/consent-reviewed/hyprland-share-picker/Picker.hpp",
+        "bytes": 3926,
+        "sha256": "708bf45cedc93962822a625ba06ef21fcf89cbccc7bd54344caec1f34369df40",
+        "git_blob": "5f9ba5289a4d7773ba47f92c8b4e78fb164dd9f9"
+      },
+      "hyprland-share-picker/PickerData.cpp": {
+        "path": "image/portal/consent-reviewed/hyprland-share-picker/PickerData.cpp",
+        "bytes": 9049,
+        "sha256": "04c61402c60de8881c125df1b8348a8322833c3523af3676a9409c16932d677b",
+        "git_blob": "3e74b0500d4e2795b7bc84a9655785508c35e5cc"
+      },
+      "hyprland-share-picker/PickerData.hpp": {
+        "path": "image/portal/consent-reviewed/hyprland-share-picker/PickerData.hpp",
+        "bytes": 1878,
+        "sha256": "c5dfd40a9e47ddd97b5e5905673e913e87ebcde07a9e9b0682bb9897643c78a8",
+        "git_blob": "152399dabd91bb993bc154ef71521d39d03f0fb4"
+      },
+      "hyprland-share-picker/PickerDataTest.cpp": {
+        "path": "image/portal/consent-reviewed/hyprland-share-picker/PickerDataTest.cpp",
+        "bytes": 13365,
+        "sha256": "f872f91bd7de1817f9a463baf6e28f85f6db6c06f2b919b466c720698abbdbd7",
+        "git_blob": "61c509c10f139bf018431430adf5624f437172ba"
+      },
+      "hyprland-share-picker/main.cpp": {
+        "path": "image/portal/consent-reviewed/hyprland-share-picker/main.cpp",
+        "bytes": 1526,
+        "sha256": "aacad7a0605cedd26a72029eff3fca20ee5bca1c52940561593ebdf066b3bac2",
+        "git_blob": "36c102c05c2f1eca2fc97017b4d769ffa4440c95"
+      },
+      "org.freedesktop.impl.portal.desktop.hyprland.service.in": {
+        "path": "image/portal/consent-reviewed/org.freedesktop.impl.portal.desktop.hyprland.service.in",
+        "bytes": 163,
+        "sha256": "0e3b4ffcff6b6e626974309165aa782ac996274eb03f446422fcd8df8561b2e0",
+        "git_blob": "6f1c8598cc17fc429fd11a3463e7a35625a9c3fb"
+      },
+      "src/core/PortalManager.cpp": {
+        "path": "image/portal/consent-reviewed/src/core/PortalManager.cpp",
+        "bytes": 26238,
+        "sha256": "aa990965d36d1c5a248ff6046ec0fddadeb2e7a5916b6dac9b6947ff5f95ad67",
+        "git_blob": "7c8cc25858fa1329fea40aaada8bebf47fe01e6e"
+      },
+      "src/portals/Screencopy.cpp": {
+        "path": "image/portal/consent-reviewed/src/portals/Screencopy.cpp",
+        "bytes": 80565,
+        "sha256": "c6c9f3a222411715190b17641618e63067cafa4d097a423aa186a2af0d4bdf98",
+        "git_blob": "c5b0bafe83bb9e28208041e7a17bc016ae779e5a"
+      },
+      "src/portals/Screencopy.hpp": {
+        "path": "image/portal/consent-reviewed/src/portals/Screencopy.hpp",
+        "bytes": 8558,
+        "sha256": "53b47796fe837aaf8dccee6b1717e76d4c053e5e8601eb9679021ceaf47071f8",
+        "git_blob": "f57e83a5ffab9970202e60930fd2dee79806187d"
+      },
+      "src/shared/ScreencopyShared.cpp": {
+        "path": "image/portal/consent-reviewed/src/shared/ScreencopyShared.cpp",
+        "bytes": 21423,
+        "sha256": "fae2f5bb0188a1dafabafc47737bada52867ad7475a051409fbd06a17738b646",
+        "git_blob": "84195cd18b70f72e60e2a5f7adfc71403b7eda61"
+      },
+      "src/shared/ScreencopyShared.hpp": {
+        "path": "image/portal/consent-reviewed/src/shared/ScreencopyShared.hpp",
+        "bytes": 2061,
+        "sha256": "80dc2c048c9c183eb1d973ee0e950483bb5ec919b21fe242c06f24a92ab92356",
+        "git_blob": "8d7f2c29eb6e294d7d584cf74ece4070d58300d1"
+      }
+    },
+    "patches": [
+      {
+        "role": "tests",
+        "path": "image/portal/patches/0001-no-restore-tests.patch",
+        "bytes": 3953,
+        "sha256": "7b2ddb34ee84ecc54d0b50ea4acd6529f7841ccd0ef97844c2f72c5a478f6b4b",
+        "files": {
+          "hyprland-share-picker/PickerDataTest.cpp": {
+            "before": "f872f91bd7de1817f9a463baf6e28f85f6db6c06f2b919b466c720698abbdbd7",
+            "after": "f1f6765287dfd7cb3ea2adc84c9e3a248ff743dc47eae7547aacfa4046de6efb"
+          }
+        }
+      },
+      {
+        "role": "implementation",
+        "path": "image/portal/patches/0002-require-fresh-screen-sharing-consent.patch",
+        "bytes": 20855,
+        "sha256": "ff242489a3f0a904f33e98c39db3eee23d836740649f0120032100c4b9a5629b",
+        "files": {
+          "hyprland-share-picker/Picker.cpp": {
+            "before": "7f2e8895e528b07ee8f12769d3dcc675b0e8a4d9e8e39001c13139ca4ccd917b",
+            "after": "86c3108adaea52cccc595c9100c601d4102e2cf697b357e9320ad908dc4845bd"
+          },
+          "hyprland-share-picker/Picker.hpp": {
+            "before": "708bf45cedc93962822a625ba06ef21fcf89cbccc7bd54344caec1f34369df40",
+            "after": "4972fbe827fcd8da703b8ed412fca586c62bfa6076ced173a34241afee6e275e"
+          },
+          "hyprland-share-picker/PickerData.cpp": {
+            "before": "04c61402c60de8881c125df1b8348a8322833c3523af3676a9409c16932d677b",
+            "after": "014a9bfc7ec5810324e7b1604baa1bf3542c9bfa6fcdfe9ec762639e82d6a16e"
+          },
+          "hyprland-share-picker/main.cpp": {
+            "before": "aacad7a0605cedd26a72029eff3fca20ee5bca1c52940561593ebdf066b3bac2",
+            "after": "42b8b54b1710d5d3d35941cadeccbebe649c9a8684da1a1e8191d83aebc8a6ca"
+          },
+          "src/portals/Screencopy.cpp": {
+            "before": "c6c9f3a222411715190b17641618e63067cafa4d097a423aa186a2af0d4bdf98",
+            "after": "f279424f02c1626f80c88ee85bc2541689d2aaeb9bdf36ea1f64a90ce1370bbb"
+          },
+          "src/portals/Screencopy.hpp": {
+            "before": "53b47796fe837aaf8dccee6b1717e76d4c053e5e8601eb9679021ceaf47071f8",
+            "after": "a2e682a080dc20c5dd0e3fe3bb2478014624fb6d26b45eac924ec41ff5dbd63b"
+          },
+          "src/shared/ScreencopyShared.cpp": {
+            "before": "fae2f5bb0188a1dafabafc47737bada52867ad7475a051409fbd06a17738b646",
+            "after": "df11e1896356f183a94cdde7b32878725e722962fd0ba8741750d24b7351e582"
+          },
+          "src/shared/ScreencopyShared.hpp": {
+            "before": "80dc2c048c9c183eb1d973ee0e950483bb5ec919b21fe242c06f24a92ab92356",
+            "after": "e186c705fea236a0f935426cef7060c7b4b2c6f65f27aaca7656f8ee5559e234"
+          }
+        }
+      }
+    ],
+    "patch_license": {
+      "source": "LICENSE",
+      "path": "image/portal/consent-reviewed/LICENSE.symbi-os",
+      "license": "Apache-2.0",
+      "sha256": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+      "bytes": 10784,
+      "installed_path": "share/licenses/symbi-os-portal-patch/LICENSE"
+    },
+    "protocol_reference": "https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.impl.portal.ScreenCast.html",
+    "protocol_note": "Return explicit persist_mode=0; omission inherits the requested mode. Ignore restore data and never return it.",
+    "scope": "Downstream source and test inputs only; native tests, actual D-Bus/GUI/capture behavior and human TCB review are still required."
+  },
+  "rpm_lock_sha256": "81fb8788e0acb25ee15bcb6d38c7438c4cba102e1fd616d944ddc03f99375ab8",
+  "parent_prefix_manifest_sha256": "fbb337e28befd8a65f0c49a47eb7201cf7048062df0ea9b212b607df07e2e3d8",
+  "reused_compositor_manifest_sha256": "d158ab5e6948abc59084bf60b771fa0abf92f8c39d47fb77c40b2c6e5e5bee08",
+  "compile_report_sha256": "20e1682dab00b3b3f6251f19de677c39fffadcceb69e47525f5ab7b795a4177f",
+  "test_suites": {
+    "portal-tests": {
+      "cases": [
+        "hyprland-share-picker-data.hyprland-share-picker-data"
+      ],
+      "sha256": "a02e366a7387a1575a69102913136af6214dd726754dda61e3210fd9e634cbd9"
+    }
+  },
+  "native_negative_controls": {
+    "original_native_test_failed": true,
+    "allow-token_rejected": true,
+    "unknown-option_rejected": true
+  },
+  "unchanged_retained_files": [
+    "include/hyprtoolkit/core/Animation.hpp",
+    "include/hyprtoolkit/core/Backend.hpp",
+    "include/hyprtoolkit/core/BackendServices.hpp",
+    "include/hyprtoolkit/core/CoreMacros.hpp",
+    "include/hyprtoolkit/core/EmbeddedBackend.hpp",
+    "include/hyprtoolkit/core/Input.hpp",
+    "include/hyprtoolkit/core/LogTypes.hpp",
+    "include/hyprtoolkit/core/Output.hpp",
+    "include/hyprtoolkit/core/SessionLock.hpp",
+    "include/hyprtoolkit/core/Timer.hpp",
+    "include/hyprtoolkit/element/Button.hpp",
+    "include/hyprtoolkit/element/Checkbox.hpp",
+    "include/hyprtoolkit/element/ColumnLayout.hpp",
+    "include/hyprtoolkit/element/Combobox.hpp",
+    "include/hyprtoolkit/element/Element.hpp",
+    "include/hyprtoolkit/element/Image.hpp",
+    "include/hyprtoolkit/element/Line.hpp",
+    "include/hyprtoolkit/element/Null.hpp",
+    "include/hyprtoolkit/element/ProgressBar.hpp",
+    "include/hyprtoolkit/element/RadioGroup.hpp",
+    "include/hyprtoolkit/element/Rectangle.hpp",
+    "include/hyprtoolkit/element/RowLayout.hpp",
+    "include/hyprtoolkit/element/ScrollArea.hpp",
+    "include/hyprtoolkit/element/Slider.hpp",
+    "include/hyprtoolkit/element/Spinbox.hpp",
+    "include/hyprtoolkit/element/Text.hpp",
+    "include/hyprtoolkit/element/Textbox.hpp",
+    "include/hyprtoolkit/palette/Color.hpp",
+    "include/hyprtoolkit/palette/Gradient.hpp",
+    "include/hyprtoolkit/palette/Palette.hpp",
+    "include/hyprtoolkit/system/Icons.hpp",
+    "include/hyprtoolkit/types/FontTypes.hpp",
+    "include/hyprtoolkit/types/ImageTypes.hpp",
+    "include/hyprtoolkit/types/PointerShape.hpp",
+    "include/hyprtoolkit/types/SizeType.hpp",
+    "include/hyprtoolkit/window/EmbeddedSurface.hpp",
+    "include/hyprtoolkit/window/Window.hpp",
+    "lib/libhyprtoolkit.so",
+    "lib/libhyprtoolkit.so.0.6.0",
+    "lib/libhyprtoolkit.so.6",
+    "lib/pkgconfig/hyprtoolkit.pc",
+    "lib/systemd/user/xdg-desktop-portal-hyprland.service",
+    "share/dbus-1/services/org.freedesktop.impl.portal.desktop.hyprland.service",
+    "share/licenses/hyprtoolkit/LICENSE",
+    "share/licenses/xdg-desktop-portal-hyprland/LICENSE",
+    "share/xdg-desktop-portal/portals/hyprland.portal"
+  ],
+  "files": {
+    "bin/hyprland-share-picker": {
+      "sha256": "5431d5f38487e4339a9052f493aadd7d08454603c0f5089a068f706538def843",
+      "bytes": 295808,
+      "mode": 493
+    },
+    "include/hyprtoolkit/core/Animation.hpp": {
+      "sha256": "50ff13d3cf21ab6a19bf5c0c742b5c9f107c5dcfc6c8b8766dfe90d06e468207",
+      "bytes": 1568,
+      "mode": 420
+    },
+    "include/hyprtoolkit/core/Backend.hpp": {
+      "sha256": "22e93f10f1b2ecc6155824d36156925b7f181d650b903508a0205bf0bdde34ec",
+      "bytes": 3496,
+      "mode": 420
+    },
+    "include/hyprtoolkit/core/BackendServices.hpp": {
+      "sha256": "b7e88da6508d7775a65ae30c6d9e32d3b616b3eedf0b1adac19cd56c0bc5d29d",
+      "bytes": 3068,
+      "mode": 420
+    },
+    "include/hyprtoolkit/core/CoreMacros.hpp": {
+      "sha256": "138f3137a48ee6005c91c3d3c35fa26a7f4bd4b345cfbcebb4b5a13ce5288ab6",
+      "bytes": 65,
+      "mode": 420
+    },
+    "include/hyprtoolkit/core/EmbeddedBackend.hpp": {
+      "sha256": "fe7528e13e844e3256e6d8cd2a431b4a46082f347def846d70b744b6a242fbc1",
+      "bytes": 1332,
+      "mode": 420
+    },
+    "include/hyprtoolkit/core/Input.hpp": {
+      "sha256": "3b87dfa4d008472cefdbf986710b2873a5e038bf493347b26b663196eefe286a",
+      "bytes": 1205,
+      "mode": 420
+    },
+    "include/hyprtoolkit/core/LogTypes.hpp": {
+      "sha256": "976a7466195a905d8c4fcbbdeca442778fb3f18d415efbae8169399ec5aec6fd",
+      "bytes": 217,
+      "mode": 420
+    },
+    "include/hyprtoolkit/core/Output.hpp": {
+      "sha256": "fa6154c7f17145b49303cb3e6547fe78933b2436349642dadce36e7a014ea330",
+      "bytes": 498,
+      "mode": 420
+    },
+    "include/hyprtoolkit/core/SessionLock.hpp": {
+      "sha256": "85adfff30ed8c8156f80ba058c89e7d2f04fd7924d0d320f09b26c40312e3916",
+      "bytes": 574,
+      "mode": 420
+    },
+    "include/hyprtoolkit/core/Timer.hpp": {
+      "sha256": "d2353d2d9aaef41e338017421db2de344aa4fc89627049b57b2c9b8ac58bcd27",
+      "bytes": 1196,
+      "mode": 420
+    },
+    "include/hyprtoolkit/element/Button.hpp": {
+      "sha256": "b9b03e986170d0712f278cf983f4f4b89ecb262383c5453ded610ece2e3fe41e",
+      "bytes": 3824,
+      "mode": 420
+    },
+    "include/hyprtoolkit/element/Checkbox.hpp": {
+      "sha256": "d44b6b9a4f89f012354710e3fba024b980cdb38d6e5b6997319b237364ef0ef3",
+      "bytes": 3096,
+      "mode": 420
+    },
+    "include/hyprtoolkit/element/ColumnLayout.hpp": {
+      "sha256": "28a12a1cae51be816233bbf833b60c99c5369e48c3d93c2034bfca172e6956b1",
+      "bytes": 2405,
+      "mode": 420
+    },
+    "include/hyprtoolkit/element/Combobox.hpp": {
+      "sha256": "79e5dcb97afd89c092c342896dd66103cc4999f2d008fca39f952cf209d56ee4",
+      "bytes": 3472,
+      "mode": 420
+    },
+    "include/hyprtoolkit/element/Element.hpp": {
+      "sha256": "e4c8d8384fe75c5f4b49ea581cd3918b4118ea27c58d8af8d7edb880d0b65439",
+      "bytes": 5188,
+      "mode": 420
+    },
+    "include/hyprtoolkit/element/Image.hpp": {
+      "sha256": "5ee8de82e93d342b6fb27e09ae60d4219a422b6f591daf94df5b5d6e17bc0f06",
+      "bytes": 2979,
+      "mode": 420
+    },
+    "include/hyprtoolkit/element/Line.hpp": {
+      "sha256": "486dd49c83f0c406f1af2c4ee643bf66ec1f70200277c2ba76dc3c0f3b7de9d7",
+      "bytes": 2448,
+      "mode": 420
+    },
+    "include/hyprtoolkit/element/Null.hpp": {
+      "sha256": "279257e034fa8bcb99465e10a81f68a13871b5f5e6dad0325c5fe82ccbb612f9",
+      "bytes": 2135,
+      "mode": 420
+    },
+    "include/hyprtoolkit/element/ProgressBar.hpp": {
+      "sha256": "e9c4273b6db562e784aa3a16afcb4cc31d9d8ce501b0517e5d8f4643691a106f",
+      "bytes": 2863,
+      "mode": 420
+    },
+    "include/hyprtoolkit/element/RadioGroup.hpp": {
+      "sha256": "2ac292d47df93d268917eff0b43784728261eeae635dba3d3990ab61152aed10",
+      "bytes": 1389,
+      "mode": 420
+    },
+    "include/hyprtoolkit/element/Rectangle.hpp": {
+      "sha256": "41e4bee493c2b0a00145240b66e657ec70d1a1379087515002094357bf73b6c1",
+      "bytes": 3053,
+      "mode": 420
+    },
+    "include/hyprtoolkit/element/RowLayout.hpp": {
+      "sha256": "9c712607a6f969c29fa0807bf2a8fbab9c2b325f57a2bf1c63d7e43368d1460f",
+      "bytes": 2575,
+      "mode": 420
+    },
+    "include/hyprtoolkit/element/ScrollArea.hpp": {
+      "sha256": "0c635a872bb196f684f35549a1907c55af5b280976c8530a82448d1e6da2417a",
+      "bytes": 3565,
+      "mode": 420
+    },
+    "include/hyprtoolkit/element/Slider.hpp": {
+      "sha256": "3f8e1f9ca08fcca6c4449d2513ee6ed4a9a61710dbf941eb1799c3648b030535",
+      "bytes": 3050,
+      "mode": 420
+    },
+    "include/hyprtoolkit/element/Spinbox.hpp": {
+      "sha256": "8b20e2adc578d8944cf67d61b8f7fb8c169c6db743f771c2862e049411790b76",
+      "bytes": 3230,
+      "mode": 420
+    },
+    "include/hyprtoolkit/element/Text.hpp": {
+      "sha256": "5323ed7928298924127834713ee228420fd721640bc3b6fda98a81caa56cfd43",
+      "bytes": 3746,
+      "mode": 420
+    },
+    "include/hyprtoolkit/element/Textbox.hpp": {
+      "sha256": "799ebf4fd3afd68f2bd57a1b1b17d4fe08722348c9faaf716bc1551f07419db3",
+      "bytes": 3776,
+      "mode": 420
+    },
+    "include/hyprtoolkit/palette/Color.hpp": {
+      "sha256": "a23426ec76fa12b30b9f12b8fb5d140ad11a27f9ef4ad96dd7b43b2d64542670",
+      "bytes": 1237,
+      "mode": 420
+    },
+    "include/hyprtoolkit/palette/Gradient.hpp": {
+      "sha256": "469bc5a2048112520c25d3e07addd369a74875608187abeef4061f9cd75aaf08",
+      "bytes": 469,
+      "mode": 420
+    },
+    "include/hyprtoolkit/palette/Palette.hpp": {
+      "sha256": "c2e9818e32556c1f58073330d8355bf502959351b6f31f48f16c23853d791bae",
+      "bytes": 1507,
+      "mode": 420
+    },
+    "include/hyprtoolkit/system/Icons.hpp": {
+      "sha256": "76bd60abac4ff4768161966896370bcc8c411860c112f3d164f8a52cd85178a2",
+      "bytes": 773,
+      "mode": 420
+    },
+    "include/hyprtoolkit/types/FontTypes.hpp": {
+      "sha256": "6926bc602e5de8c23f2dfc213df1eb4e9d47470b067fe99fec9f92ce80d1e29f",
+      "bytes": 729,
+      "mode": 420
+    },
+    "include/hyprtoolkit/types/ImageTypes.hpp": {
+      "sha256": "e1ce347b0782656d350615a7fa01bc3bca106061294ee4a9f2c5061a20dc48f2",
+      "bytes": 230,
+      "mode": 420
+    },
+    "include/hyprtoolkit/types/PointerShape.hpp": {
+      "sha256": "2b666c7d4fae29f2233464ef4c7e4dac56dfaf72a31cdc2c3942c139f66d2819",
+      "bytes": 308,
+      "mode": 420
+    },
+    "include/hyprtoolkit/types/SizeType.hpp": {
+      "sha256": "68771a6b7a545cb7ac273236429f5cb253fbe46b3f290400fa1d49170ec16585",
+      "bytes": 750,
+      "mode": 420
+    },
+    "include/hyprtoolkit/window/EmbeddedSurface.hpp": {
+      "sha256": "9ca07f0df03c32d59ebb1137a1edb9740214f66d3304ca1726bd4fd646ec10eb",
+      "bytes": 2961,
+      "mode": 420
+    },
+    "include/hyprtoolkit/window/Window.hpp": {
+      "sha256": "0a0db8462458390429f73602610aac17d299293e227a497b347e8ec77ebce8fd",
+      "bytes": 5445,
+      "mode": 420
+    },
+    "lib/libhyprtoolkit.so": {
+      "link": "libhyprtoolkit.so.6"
+    },
+    "lib/libhyprtoolkit.so.0.6.0": {
+      "sha256": "1a554314e525e93b3e63dc6db6429bb4d64d4c43dda3f0db0aa26a66bc148f90",
+      "bytes": 2650064,
+      "mode": 493
+    },
+    "lib/libhyprtoolkit.so.6": {
+      "link": "libhyprtoolkit.so.0.6.0"
+    },
+    "lib/pkgconfig/hyprtoolkit.pc": {
+      "sha256": "707d1177f73a32bbbad6bf5ffdd320febdad908fa8aa4733dda7b58eee776241",
+      "bytes": 531,
+      "mode": 420
+    },
+    "lib/systemd/user/xdg-desktop-portal-hyprland.service": {
+      "sha256": "0b94927fbc13c5d53b171e37679a13608d773e9f96906eb492722db06ef8b82b",
+      "bytes": 341,
+      "mode": 420
+    },
+    "libexec/xdg-desktop-portal-hyprland": {
+      "sha256": "26b9e1ccddf6ab5c1c398b37154d10946d16d58ac55cfd16fa13be36f567ce9a",
+      "bytes": 1341224,
+      "mode": 493
+    },
+    "share/dbus-1/services/org.freedesktop.impl.portal.desktop.hyprland.service": {
+      "sha256": "b230f1ce2f898291a73ad2cb719aa9a5fe54c51a53bda378c8f805ec71b08c65",
+      "bytes": 180,
+      "mode": 420
+    },
+    "share/licenses/hyprtoolkit/LICENSE": {
+      "sha256": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "share/licenses/symbi-os-portal-patch/LICENSE": {
+      "sha256": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+      "bytes": 10784,
+      "mode": 420
+    },
+    "share/licenses/xdg-desktop-portal-hyprland/LICENSE": {
+      "sha256": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+      "bytes": 1515,
+      "mode": 420
+    },
+    "share/xdg-desktop-portal/portals/hyprland.portal": {
+      "sha256": "43b2fe354c2d4cc51bd237be8b6586cc6b6f5681451a4079adf2a97909d73431",
+      "bytes": 281,
+      "mode": 420
+    }
+  },
+  "payload_sha256": "85369038a98ffbffea16d3d2e6e7a1b77584c8ff903429869dc32e63b30d07e9",
+  "payload_bytes": 1436878,
+  "scope": "Patched development prefix with native formatter/CLI controls; full backend/GUI consent acceptance and human review pending"
+}

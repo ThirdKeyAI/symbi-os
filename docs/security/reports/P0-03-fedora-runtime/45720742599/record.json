@@ -1,0 +1,84 @@
+{
+  "run_id": 45720742599,
+  "head": "5822e713f5960e803f753fc353dafb36dcd7470e",
+  "tested_merge": "943be8905da5dc1e3dace4b5bf5f9f5f648dd88b",
+  "conclusion": "success",
+  "artifact": {
+    "id": 15072850082,
+    "bytes": 58181,
+    "sha256": "fb85e8cf0393288928c45499ddbc38eca7498fd8ffc0f944d991805d26189a12"
+  },
+  "files": {
+    "result.json": {
+      "original_sha256": "1fc0dc9ea966d8e2298ebe09735dd7147c254d0f0ece8a70f81891d74fca5a20",
+      "retained_sha256": "1fc0dc9ea966d8e2298ebe09735dd7147c254d0f0ece8a70f81891d74fca5a20",
+      "bytes": 449
+    },
+    "base-signature.json": {
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "bytes": 1281
+    },
+    "cgroup-limits.json": {
+      "original_sha256": "6cdde054006eddd51cc1d0b45e8318f559734e17478b5ebba7d0aaae069b276f",
+      "retained_sha256": "6cdde054006eddd51cc1d0b45e8318f559734e17478b5ebba7d0aaae069b276f",
+      "bytes": 110
+    },
+    "cgroup-final.json": {
+      "original_sha256": "d039fad375e1d14cc26360413ea0b9308ff3e6079c276a1a6088911624f66330",
+      "retained_sha256": "d039fad375e1d14cc26360413ea0b9308ff3e6079c276a1a6088911624f66330",
+      "bytes": 460
+    },
+    "input-bindings.json": {
+      "original_sha256": "4200900378406f95fd225ebf731f21710096ac6ba16798b35fb733b69d8c6429",
+      "retained_sha256": "4200900378406f95fd225ebf731f21710096ac6ba16798b35fb733b69d8c6429",
+      "bytes": 854
+    },
+    "guest/result.json": {
+      "original_sha256": "ad904c3228b7c784df92a82f84ebe73806bdc0af1bcfb2611c17466c34f3f6ff",
+      "retained_sha256": "ad904c3228b7c784df92a82f84ebe73806bdc0af1bcfb2611c17466c34f3f6ff",
+      "bytes": 7422
+    },
+    "guest/cgroup-final.json": {
+      "original_sha256": "1a426655cd91e5275006bf9614ca943ba2d720699b94e8de65097bf5bab67b19",
+      "retained_sha256": "1a426655cd91e5275006bf9614ca943ba2d720699b94e8de65097bf5bab67b19",
+      "bytes": 446
+    },
+    "guest/missing-key-control.log": {
+      "original_sha256": "5f2f69b7d007212d576ef7471f43a92dcd44b9a6135f26366b392dfc27c3eb8d",
+      "retained_sha256": "5f2f69b7d007212d576ef7471f43a92dcd44b9a6135f26366b392dfc27c3eb8d",
+      "bytes": 349
+    },
+    "guest/tampered-package-control.log": {
+      "original_sha256": "a6618054727428fc4cef7f1541df3ffcae8a471a7ec7bb417406da6894b98920",
+      "retained_sha256": "a6618054727428fc4cef7f1541df3ffcae8a471a7ec7bb417406da6894b98920",
+      "bytes": 753
+    },
+    "guest/resolve-download.log": {
+      "original_sha256": "0bb27da9a16729c19d8b14bff2e8d75e095ec3541acf17c34a37509006357ab1",
+      "retained_sha256": "0bb27da9a16729c19d8b14bff2e8d75e095ec3541acf17c34a37509006357ab1",
+      "bytes": 1235
+    },
+    "guest/keyring.log": {
+      "original_sha256": "a2d9592731d4369c4308a823327e3b02417006bb5fb3db6e29805dc59438274d",
+      "retained_sha256": "a2d9592731d4369c4308a823327e3b02417006bb5fb3db6e29805dc59438274d",
+      "bytes": 102
+    },
+    "guest/rpm-001-signature.log": {
+      "original_sha256": "2cd0afd24876e28a7d4ec68ef25238b299d207a7680312d5e28c1935ce3bd7e4",
+      "retained_sha256": "2cd0afd24876e28a7d4ec68ef25238b299d207a7680312d5e28c1935ce3bd7e4",
+      "bytes": 212
+    },
+    "guest/rpm-002-signature.log": {
+      "original_sha256": "87705117ad40e087910ff330a4ef4e4a76046e79127ea4a29f43846930ac624e",
+      "retained_sha256": "87705117ad40e087910ff330a4ef4e4a76046e79127ea4a29f43846930ac624e",
+      "bytes": 216
+    },
+    "guest/rpm-000-signature.log": {
+      "original_sha256": "8a74fdfb7a9c60dab669de8f93bd0ceffea195da5fdb430dde614f1bf8c9a180",
+      "retained_sha256": "8a74fdfb7a9c60dab669de8f93bd0ceffea195da5fdb430dde614f1bf8c9a180",
+      "bytes": 210
+    }
+  },
+  "os_qualified": false
+}

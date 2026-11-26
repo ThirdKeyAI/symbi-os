@@ -8,6 +8,7 @@ import subprocess
 import sys
 
 from bootstrap_cosign import bootstrap
+from artifact import retain_compiled_tool
 
 
 def main():
@@ -51,6 +52,7 @@ def run_build(root, evidence):
               "cargo_lock_sha256": hashlib.sha256(lock).hexdigest(), "rust": config["rust"],
               "features": config["features"], "profile": config["profile"], "build_passed": False,
               "cli_acceptance_passed": False, "upstream_unit_tests_passed": False}
+    record["license_sha256"] = hashlib.sha256((source / "LICENSE").read_bytes()).hexdigest()
     path = evidence / "source-build.json"
     record["patches"] = []
     for patch in config.get("patches", []):
@@ -80,6 +82,14 @@ def run_build(root, evidence):
     record["build_passed"] = True
     path.write_text(json.dumps(record, indent=2) + "\n")
     binary = root / ".cache/bluebuild-target/debug/bluebuild"
+    # Preserve the compiled executable before later acceptance. Its immutable
+    # manifest deliberately carries no CLI, upstream-suite or OS qualification.
+    payload = root / ".cache/image-tool-payload"
+    manifest = retain_compiled_tool(binary, source / "LICENSE", root / "image/toolchain/bluebuild.json",
+                                    record, os.environ["GITHUB_SHA"], payload)
+    (evidence / "compiled-manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+    record["compiled_manifest_sha256"] = hashlib.sha256((payload / "manifest.json").read_bytes()).hexdigest()
+    path.write_text(json.dumps(record, indent=2) + "\n")
     env = dict(os.environ, BLUEBUILD_REVISION=config["revision"])
     subprocess.run([sys.executable, "image/toolchain/qualify.py", "--binary", str(binary),
                     "--root", str(root), "--evidence", str(evidence)], env=env, check=True)

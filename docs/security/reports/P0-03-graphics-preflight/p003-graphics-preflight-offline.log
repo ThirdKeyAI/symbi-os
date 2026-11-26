@@ -1,0 +1,32 @@
+test_local_guest_invocation_refused (test_graphics_probe.GraphicsProbe.test_local_guest_invocation_refused) ... ok
+test_matching_response_survives_an_asynchronous_event (test_graphics_probe.GraphicsProbe.test_matching_response_survives_an_asynchronous_event) ... ok
+test_oversized_malformed_or_event_flood_is_bounded (test_graphics_probe.GraphicsProbe.test_oversized_malformed_or_event_flood_is_bounded) ... ok
+test_wrong_command_or_failed_response_is_not_evidence (test_graphics_probe.GraphicsProbe.test_wrong_command_or_failed_response_is_not_evidence) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.295s
+
+OK
+	Command being timed: "env PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s image/tests -p test_graphics_probe.py -v"
+	User time (seconds): 0.05
+	System time (seconds): 0.01
+	Percent of CPU this job got: 9%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.66
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 21360
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 7
+	Minor (reclaiming a frame) page faults: 5712
+	Voluntary context switches: 30
+	Involuntary context switches: 18
+	Swaps: 0
+	File system inputs: 1248
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

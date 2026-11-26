@@ -1,0 +1,102 @@
+{
+  "passed": false,
+  "os_qualified": false,
+  "upstream_tests_passed": false,
+  "source_commit": "e6a8659036da7ea8f0d58888a925e9779df379b8",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "pull-base",
+      "exit_code": 0
+    },
+    {
+      "name": "ocr-diagnostic",
+      "exit_code": 0
+    }
+  ],
+  "scope": "Retained-binary provider controls and separate OCR diagnostics; no upstream-suite or OS qualification",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "source_build_upstream_tests_passed": true,
+  "artifact": {
+    "id": 15079141579,
+    "bytes": 108468738,
+    "sha256": "dda8b3df435305f45928907b5631d6ab5547b943c65fb254df08a8d0d897df38"
+  },
+  "current_bindings": {
+    "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+    "source": {
+      "schema": 1,
+      "repository": "https://github.com/abenz1267/elephant",
+      "revision": "8f1e21d6efe40b8b3953f95b9574f99f717caf91",
+      "go_minimum": "1.27.1",
+      "go_mod_sha256": "c5fe5f8c609ed14dae2fea900a0cbdc00875352a1b3b1bf6bfa9f84f430288b9",
+      "go_sum_sha256": "c307c62070ecdac44a964fe304b1325b74d859bb851bd9a807faf52091a0f8d0",
+      "scope": "Pinned development source inputs; source build and provider refusal acceptance remain unexecuted",
+      "os_qualified": false
+    },
+    "rpm_lock_sha256": "de512abc36da31002b6045bf675cabdf8263276c9e43985dfb26fabeaad2d7d0",
+    "patch_sha256": "9d46941a0540df0162772b04055bf306298e48f3bdcae2c5f3ec97ebb51a7204",
+    "marker_sha256": "212af59b974dc27ce79d338860aeff7b84aa302c28118329448f47dd2bc6864c"
+  },
+  "original_build_run": 45735855057,
+  "ocr_container_absent": true,
+  "ocr_missing_executables": [
+    "tesseract"
+  ],
+  "active_command": {
+    "name": "loader-diagnostic",
+    "command": [
+      "podman",
+      "--cgroup-manager=cgroupfs",
+      "--root",
+      "/home/runner/work/symbi-os/symbi-os/.cache/elephant-runtime-storage/root",
+      "--runroot",
+      "/run/symbi-ele-runtime-45737671979-1",
+      "run",
+      "--rm",
+      "--name=symbi-elephant-loader-diagnostic",
+      "--pull=never",
+      "--read-only",
+      "--network=none",
+      "--user=10001:10001",
+      "--cap-drop=ALL",
+      "--security-opt=no-new-privileges",
+      "--memory=256m",
+      "--memory-swap=256m",
+      "--cpus=1",
+      "--pids-limit=64",
+      "--cgroup-parent=/system.slice/symbi-ele-runtime-45737671979-1.service",
+      "--mount",
+      "type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/elephant-runtime-storage/inputs,dst=/inputs,ro",
+      "--mount",
+      "type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/elephant-runtime-storage/ocr-output,dst=/output",
+      "--env=GITHUB_ACTIONS=true",
+      "--env=RUNNER_ENVIRONMENT=github-hosted",
+      "--env=PYTHONDONTWRITEBYTECODE=1",
+      "--env=HOME=/output",
+      "--env=PATH=/usr/bin:/bin",
+      "--env=LANG=C.UTF-8",
+      "--entrypoint=/usr/bin/python3",
+      "--mount",
+      "type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/elephant-runtime-storage/inputs/packaged,dst=/usr/lib/symbi,ro",
+      "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+      "/inputs/loader_diagnostic.py"
+    ]
+  },
+  "loader_container_absent": true,
+  "failure": "TimeoutExpired: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/elephant-runtime-storage/root', '--runroot', '/run/symbi-ele-runtime-45737671979-1', 'run', '--rm', '--name=symbi-elephant-loader-diagnostic', '--pull=never', '--read-only', '--network=none', '--user=10001:10001', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--memory=256m', '--memory-swap=256m', '--cpus=1', '--pids-limit=64', '--cgroup-parent=/system.slice/symbi-ele-runtime-45737671979-1.service', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/elephant-runtime-storage/inputs,dst=/inputs,ro', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/elephant-runtime-storage/ocr-output,dst=/output', '--env=GITHUB_ACTIONS=true', '--env=RUNNER_ENVIRONMENT=github-hosted', '--env=PYTHONDONTWRITEBYTECODE=1', '--env=HOME=/output', '--env=PATH=/usr/bin:/bin', '--env=LANG=C.UTF-8', '--entrypoint=/usr/bin/python3', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/elephant-runtime-storage/inputs/packaged,dst=/usr/lib/symbi,ro', 'ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f', '/inputs/loader_diagnostic.py']' timed out after 44.9999887890001 seconds",
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4362887168",
+    "memory.events": "low 0\nhigh 0\nmax 46649\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 118840334\nuser_usec 100905092\nsystem_usec 17935241\nnice_usec 99744640\ncore_sched.force_idle_usec 0\nnr_periods 1115\nnr_throttled 399\nthrottled_usec 47718193\nnr_bursts 0\nburst_usec 0"
+  }
+}

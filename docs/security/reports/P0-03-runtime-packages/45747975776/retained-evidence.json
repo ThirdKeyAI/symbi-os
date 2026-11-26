@@ -1,0 +1,93 @@
+{
+  "run_id": 45747975776,
+  "head": "0ac654be99676004a68d965c51fe4b1b91794c69",
+  "artifact": {
+    "id": 15083992731,
+    "bytes": 15952,
+    "sha256": "696289c12027d095354ea2d683ddf47c9652499adcfe892240794da20f2a98e3"
+  },
+  "discovery_passed": false,
+  "guest_started": false,
+  "failure": "Ubuntu 24.04 Podman could not find netavark; bridge setup failed before the Fedora resolver started",
+  "container_absent": true,
+  "os_qualified": false,
+  "retention": "JSON retained verbatim; log/text trailing whitespace and empty trailing lines normalized, with both hashes recorded",
+  "files": {
+    "exists-stderr.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pull-stderr.log": {
+      "original_sha256": "48e8f4afdecac6712fc45c6869dc832be7cda502db1d9dcd44d31c9d82c3a999",
+      "retained_sha256": "48e8f4afdecac6712fc45c6869dc832be7cda502db1d9dcd44d31c9d82c3a999"
+    },
+    "base-signature-stderr.log": {
+      "original_sha256": "b941cd0137db303b01ea68883a3c7198a62418ad62ea1e9189530126d024897d",
+      "retained_sha256": "b941cd0137db303b01ea68883a3c7198a62418ad62ea1e9189530126d024897d"
+    },
+    "hosted-discovery.log": {
+      "original_sha256": "9384cf48357252e8996ccf26e422f10da365a8a9b86ac95ff0016949fc858e81",
+      "retained_sha256": "9384cf48357252e8996ccf26e422f10da365a8a9b86ac95ff0016949fc858e81"
+    },
+    "base-signature-stdout.log": {
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    "pull-stdout.log": {
+      "original_sha256": "74d886e69e348ce2c052da0398dffd0eb34ab5a76844a230d3e8fc02c85bac1e",
+      "retained_sha256": "74d886e69e348ce2c052da0398dffd0eb34ab5a76844a230d3e8fc02c85bac1e"
+    },
+    "exists-stdout.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "discovery-stderr.log": {
+      "original_sha256": "dfbeb015a8abe94121f8ddabdb2c6189c7b41635bd9cafd0a0b36f45fc065d02",
+      "retained_sha256": "dfbeb015a8abe94121f8ddabdb2c6189c7b41635bd9cafd0a0b36f45fc065d02"
+    },
+    "discovery-stdout.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "result.json": {
+      "original_sha256": "8486ef5a674915d7d736487bb705cf9bdf3729dc9a62100b277cd4e4d187adf2",
+      "retained_sha256": "8486ef5a674915d7d736487bb705cf9bdf3729dc9a62100b277cd4e4d187adf2"
+    },
+    "cleanup-stderr.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "cleanup-stdout.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "cosign-bootstrap/pins.json": {
+      "original_sha256": "c74acffb1d898498582110862650a81960afacd8f2e60916ea3cacee292591cc",
+      "retained_sha256": "c74acffb1d898498582110862650a81960afacd8f2e60916ea3cacee292591cc"
+    },
+    "cosign-bootstrap/openssl-verification.txt": {
+      "original_sha256": "80a53f76c7ed6969dade3b6ee47cdb753162db7c00be625448999d08bae77ed8",
+      "retained_sha256": "80a53f76c7ed6969dade3b6ee47cdb753162db7c00be625448999d08bae77ed8"
+    },
+    "cosign-bootstrap/verification.json": {
+      "original_sha256": "822329e8d7bf8c27b1a527c931c9bbab901db2f6fce88cb5f53d7dc33e547e35",
+      "retained_sha256": "822329e8d7bf8c27b1a527c931c9bbab901db2f6fce88cb5f53d7dc33e547e35"
+    },
+    "cosign-bootstrap/release-cosign.pub": {
+      "original_sha256": "f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126",
+      "retained_sha256": "f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126"
+    },
+    "cosign-bootstrap/release-kms.sig": {
+      "original_sha256": "f3070066acae000e6d65060ac17903d2547fd65d26c0a4207d3809e7031ad088",
+      "retained_sha256": "f3070066acae000e6d65060ac17903d2547fd65d26c0a4207d3809e7031ad088"
+    },
+    "cosign-bootstrap/version.json": {
+      "original_sha256": "9bf60bbeb52675a2074a4c4066bcb0710f861555e9fb5391fb6d65ce7014b3af",
+      "retained_sha256": "9bf60bbeb52675a2074a4c4066bcb0710f861555e9fb5391fb6d65ce7014b3af"
+    },
+    "cosign-bootstrap/cosign-linux-amd64-kms.sigstore.json": {
+      "original_sha256": "9640eb9b9f1236bbb145197cc6cf098ed1fb5f7613c6c731647a2431d0dac518",
+      "retained_sha256": "9640eb9b9f1236bbb145197cc6cf098ed1fb5f7613c6c731647a2431d0dac518"
+    }
+  }
+}

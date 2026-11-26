@@ -1,0 +1,42 @@
+-- The C compiler identification is GNU 16.2.1
+-- The CXX compiler identification is GNU 16.2.1
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring XDPH in Release with CMake
+-- Checking deps...
+-- Found PkgConfig: /usr/bin/pkg-config (found version "2.5.1")
+-- Checking for modules 'hyprtoolkit>=0.6.0;hyprutils>=0.2.6;libdrm'
+--   Found hyprtoolkit, version 0.6.0
+--   Found hyprutils, version 0.14.3
+--   Found libdrm, version 2.4.134
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Checking for modules 'wayland-client;wayland-protocols>=1.39;libpipewire-0.3>=1.1.82;libspa-0.2;libdrm;uuid;gbm;hyprlang>=0.2.0;hyprutils>=0.2.6;hyprwayland-scanner>=0.4.2'
+--   Found wayland-client, version 1.26.0
+--   Found wayland-protocols, version 1.50
+--   Found libpipewire-0.3, version 1.6.11
+--   Found libspa-0.2, version 0.2
+--   Found libdrm, version 2.4.134
+--   Found uuid, version 2.42.4
+--   Found gbm, version 26.2.7
+--   Found hyprlang, version 0.6.8
+--   Found hyprutils, version 0.14.3
+--   Found hyprwayland-scanner, version 0.4.6
+-- Checking for module 'sdbus-c++>=2.0.0'
+--   Found sdbus-c++, version 2.3.1
+-- Checking for module 'hyprland-protocols>=0.8.0'
+--   Found hyprland-protocols, version 0.8.0
+-- Found wayland-protocols at //usr/share/wayland-protocols
+-- Found wayland-scanner at //usr/share/wayland
+-- Configuring done (4.8s)
+-- Generating done (0.0s)
+-- Build files have been written to: /output/build/portal

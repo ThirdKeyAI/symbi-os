@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "scope": "Publisher-authenticated Linux bundle inspection only; no candidate execution, installation or image selection",
+  "selected": false,
+  "security_qualified": false,
+  "version": "0.51.0",
+  "revision": "c83027daa9b031541193c19dbc518a4a42a5c9f5",
+  "release_id": 450207072,
+  "publisher_fingerprint": "3CE1780F78DD88DF45194FD706BC317B515ACE7C",
+  "public_key": {
+    "file": "image/kitty/kovid.gpg",
+    "sha256": "46b6b81f4cf237010916cf3324140fe0ed5a1da98eb73051578f01be6237c8bf",
+    "source": "https://src.fedoraproject.org/rpms/kitty/raw/c1c6c7da2d2be7b5672439b8af59f033e40cf839/f/kovid.gpg"
+  },
+  "assets": [
+    {
+      "name": "kitty-0.51.0-x86_64.txz",
+      "id": 763989527,
+      "url": "https://github.com/kovidgoyal/kitty/releases/download/v0.51.0/kitty-0.51.0-x86_64.txz",
+      "bytes": 47103100,
+      "sha256": "c285daaf1b699997614939c8d1cd92dd8b99302ff12f18efcc3f69382aa72b1d"
+    },
+    {
+      "name": "kitty-0.51.0-x86_64.txz.sig",
+      "id": 763993726,
+      "url": "https://github.com/kovidgoyal/kitty/releases/download/v0.51.0/kitty-0.51.0-x86_64.txz.sig",
+      "bytes": 566,
+      "sha256": "9131a2df2f75ed8860d2f0479eee4b68f8df4b913fbeb336d8a1cca71c353624"
+    }
+  ]
+}

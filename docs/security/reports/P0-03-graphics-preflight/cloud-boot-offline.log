@@ -1,0 +1,34 @@
+test_filename_alone_or_inaccessible_device_is_not_gpu_evidence (test_cloud_boot.CloudBoot.test_filename_alone_or_inaccessible_device_is_not_gpu_evidence) ... ok
+test_local_invocation_is_refused_before_using_qemu (test_cloud_boot.CloudBoot.test_local_invocation_is_refused_before_using_qemu) ... ok
+test_non_json_oversized_and_duplicate_keys_are_not_reports (test_cloud_boot.CloudBoot.test_non_json_oversized_and_duplicate_keys_are_not_reports) ... ok
+test_real_positive_and_no_gpu_control_have_distinct_requirements (test_cloud_boot.CloudBoot.test_real_positive_and_no_gpu_control_have_distinct_requirements) ... ok
+test_replay_wrong_source_wrong_platform_and_partial_boot_fail (test_cloud_boot.CloudBoot.test_replay_wrong_source_wrong_platform_and_partial_boot_fail) ... ok
+test_streamed_payload_must_match_both_size_and_hash (test_cloud_boot.CloudBoot.test_streamed_payload_must_match_both_size_and_hash) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.306s
+
+OK
+	Command being timed: "env PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s p003-cloud-boot-stage/image/tests -v"
+	User time (seconds): 0.06
+	System time (seconds): 0.02
+	Percent of CPU this job got: 10%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.84
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 25448
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 7587
+	Voluntary context switches: 5
+	Involuntary context switches: 19
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

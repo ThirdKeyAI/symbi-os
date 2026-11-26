@@ -16,17 +16,23 @@ are not a qualification of Symbiont, Fedora or any sandbox.
    Disconnect external networking after verified artifacts are staged. A localhost
    control connection may remain; the upstream providers are synthetic. Do not
    run an image build or another guest alongside it on this workstation.
-3. Boot the exact image digest with enforcing containers signature policy and
-   SELinux. Provision a separate non-root runtime/test user with a systemd user
+3. Boot the exact generic image digest with enforcing containers signature
+   policy and SELinux. The driver requires the selected secureblue Fedora 45
+   identity (`ID=secureblue`, `ID_LIKE=fedora`, and the exact generic
+   variant/image IDs); an arbitrary derivative that merely advertises Fedora
+   lineage is rejected. Provision a separate non-root runtime/test user with a systemd user
    manager and cgroup v2 delegation. Do not relax user-namespace, SELinux, seccomp
    or host security settings to make a test pass. A default-policy refusal is a
    failure to qualify this image and must be retained separately.
 4. `python3 image/qualification/landlock.py --check-host` performs only the guest
-   prerequisite check. It always leaves `qualified: false`. `bootc status --json`
-   must also be readable by the collector; resolve privileges in the isolated
-   runner's setup, never with desktop passwordless sudo or by running the runtime
-   as root. The current collector accepts OSTree; composefs needs separate digest
-   semantics qualification before support is added.
+   prerequisite check. It always leaves `qualified: false`. The non-root driver
+   reads bootc status before and after through the fixed output-only
+   `/run/symbi-qualification/status.sock`. The root `q.service` accepts exactly
+   two connections and can execute only `/usr/bin/bootc status --json`; it has a
+   private PID/mount/network namespace, only `CAP_SYS_ADMIN`, bounded output and
+   no request protocol. It never grants sudo or root execution to the runtime.
+   The collector accepts OSTree; composefs needs separate digest semantics
+   qualification before support is added.
 5. Run the driver below using the authenticated binary digest and expected ABI
    for that guest. The output directory must not exist and must live on guest
    disk outside the source checkout and `/tmp`.
@@ -38,6 +44,7 @@ python3 image/qualification/landlock.py \
   --expected-binary-sha256 "$VERIFIED_BINARY_SHA256" \
   --image-ref "$VERIFIED_IMAGE_REFERENCE_WITH_DIGEST" \
   --expected-abi "$GUEST_LANDLOCK_ABI" \
+  --bootc-status-socket /run/symbi-qualification/status.sock \
   --output "$NEW_PRIVATE_EVIDENCE_DIRECTORY"
 ```
 

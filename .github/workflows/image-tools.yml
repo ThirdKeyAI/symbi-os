@@ -1,11 +1,27 @@
 name: Image tool compatibility
 
 on:
+  push:
+    branches: ["**"]
+    paths:
+      - "image/toolchain/**"
+      - "image/recipe.py"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "scripts/check-image-tools.sh"
+      - ".github/workflows/image-tools.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
   pull_request:
     paths:
-      - image/**
-      - scripts/check-image-tools.sh
-      - .github/workflows/image-tools.yml
+      - "image/toolchain/**"
+      - "image/recipe.py"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "scripts/check-image-tools.sh"
+      - ".github/workflows/image-tools.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
   workflow_dispatch:
 
 permissions:
@@ -17,7 +33,9 @@ concurrency:
 
 jobs:
   bluebuild:
-    runs-on: ubuntu-latest
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-24.04
     timeout-minutes: 55
     steps:
       - name: Check out proposed OS revision
@@ -40,4 +58,13 @@ jobs:
           name: image-tool-evidence
           path: .cache/image-tool-evidence/
           retention-days: 14
+          if-no-files-found: error
+      - name: Retain exact development builder and original license for later reuse
+        if: ${{ always() && hashFiles('.cache/image-tool-payload/manifest.json') != '' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: bluebuild-development-tool
+          path: .cache/image-tool-payload/
+          retention-days: 14
+          compression-level: 0
           if-no-files-found: error

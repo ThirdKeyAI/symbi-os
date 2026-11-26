@@ -1,0 +1,473 @@
+{
+  "passed": true,
+  "image_built": true,
+  "os_qualified": false,
+  "source_commit": "1e171d1820b473141df4c300dd657056a171b98a",
+  "variant": "generic",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "base-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "pull-base",
+      "exit_code": 0
+    },
+    {
+      "name": "podman-version",
+      "exit_code": 0
+    },
+    {
+      "name": "base-prerequisites",
+      "exit_code": 0
+    },
+    {
+      "name": "base-check-cleanup",
+      "exit_code": 0
+    },
+    {
+      "name": "base-check-absent",
+      "exit_code": 1
+    },
+    {
+      "name": "build-image",
+      "exit_code": 0
+    },
+    {
+      "name": "save-image",
+      "exit_code": 0
+    },
+    {
+      "name": "compress-image",
+      "exit_code": 0
+    },
+    {
+      "name": "installed-files",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-installed-files",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-installed-files",
+      "exit_code": 1
+    },
+    {
+      "name": "ldd-Hyprland",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-ldd-Hyprland",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-ldd-Hyprland",
+      "exit_code": 1
+    },
+    {
+      "name": "ldd-hyprctl",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-ldd-hyprctl",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-ldd-hyprctl",
+      "exit_code": 1
+    },
+    {
+      "name": "ldd-elephant",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-ldd-elephant",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-ldd-elephant",
+      "exit_code": 1
+    },
+    {
+      "name": "ldd-walker",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-ldd-walker",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-ldd-walker",
+      "exit_code": 1
+    },
+    {
+      "name": "ldd-symbi",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-ldd-symbi",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-ldd-symbi",
+      "exit_code": 1
+    },
+    {
+      "name": "ldd-symbi-sandbox-supervisor",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-ldd-symbi-sandbox-supervisor",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-ldd-symbi-sandbox-supervisor",
+      "exit_code": 1
+    },
+    {
+      "name": "symbi-version",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-symbi-version",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-symbi-version",
+      "exit_code": 1
+    },
+    {
+      "name": "walker-version",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-walker-version",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-walker-version",
+      "exit_code": 1
+    },
+    {
+      "name": "elephant-provider",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-elephant-provider",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-elephant-provider",
+      "exit_code": 1
+    },
+    {
+      "name": "session-defaults",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-session-defaults",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-session-defaults",
+      "exit_code": 1
+    },
+    {
+      "name": "bootc-lint",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-bootc-lint",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-bootc-lint",
+      "exit_code": 1
+    },
+    {
+      "name": "remaining-build-containers",
+      "exit_code": 0
+    },
+    {
+      "name": "all-containers-absent",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "name": "ldd-Hyprland",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "ldd-hyprctl",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "ldd-elephant",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "ldd-walker",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "ldd-symbi",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "ldd-symbi-sandbox-supervisor",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "symbi-version",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "walker-version",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "elephant-provider",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "session-defaults",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "bootc-lint",
+      "passed": true,
+      "exit_code": 0
+    }
+  ],
+  "containers": {
+    "symbi-desktop-base-check": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-installed-files": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-ldd-Hyprland": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-ldd-hyprctl": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-ldd-elephant": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-ldd-walker": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-ldd-symbi": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-ldd-symbi-sandbox-supervisor": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-symbi-version": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-walker-version": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-elephant-provider": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-session-defaults": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-bootc-lint": {
+      "removed": true,
+      "absent": true
+    }
+  },
+  "scope": "Actual desktop OCI assembly and installed-input checks; boot, graphics, TLS, containment and signed-release acceptance remain open",
+  "parent_controllers_before": {
+    "cgroup.controllers": "cpuset cpu io memory pids",
+    "cgroup.subtree_control": "",
+    "cgroup.procs": ""
+  },
+  "image_build_limits_verified": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128"
+  },
+  "disk_free_before_pull": 91989852160,
+  "signature_verified_before_pull": true,
+  "image_run_cgroup": "/system.slice/symbi-desktop-build-45758278776-1.service/image-build/run",
+  "image_build_cgroup_final": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128",
+    "memory.peak": "2147483648",
+    "memory.events": "low 0\nhigh 0\nmax 917\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 10548906\nuser_usec 6175606\nsystem_usec 4373300\nnice_usec 5639990\ncore_sched.force_idle_usec 0\nnr_periods 154\nnr_throttled 85\nthrottled_usec 3345629\nnr_bursts 0\nburst_usec 0"
+  },
+  "image_id": "sha256:68a9d7bcdbf15413a897821de45c2c20a76a9197bea1fdbcf2aeec56edcb483c",
+  "installation": {
+    "passed": true,
+    "os_qualified": false,
+    "crypto_policy_qualified": false,
+    "limits": {
+      "memory.max": "2147483648",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "max"
+    },
+    "commands": [
+      {
+        "name": "installed-before",
+        "exit_code": 0
+      },
+      {
+        "name": "import-key",
+        "exit_code": 0
+      },
+      {
+        "name": "keyring",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-0-signature",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-0-identity",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-1-signature",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-1-identity",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-2-signature",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-2-identity",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-3-signature",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-3-identity",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-4-signature",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-4-identity",
+        "exit_code": 0
+      },
+      {
+        "name": "offline-install",
+        "exit_code": 0
+      },
+      {
+        "name": "installed-after",
+        "exit_code": 0
+      }
+    ],
+    "target_base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+    "scope": "Actual image package installation; dynamic TLS and boot/containment acceptance remain separate",
+    "base_package_count": 2178,
+    "required_packages": [
+      "libeis\t0\t1.6.0\t3.fc45\tx86_64",
+      "muParser\t0\t2.3.5\t6.fc45\tx86_64",
+      "tomlplusplus\t0\t3.4.0\t8.fc45\tx86_64",
+      "gtk4-layer-shell\t0\t1.3.0\t3.fc45\tx86_64",
+      "openssl3-libs\t1\t3.5.9\t1.fc45\tx86_64"
+    ],
+    "added_packages": [
+      "gtk4-layer-shell\t0\t1.3.0\t3.fc45\tx86_64",
+      "libeis\t0\t1.6.0\t3.fc45\tx86_64",
+      "muParser\t0\t2.3.5\t6.fc45\tx86_64",
+      "openssl3-libs\t1\t3.5.9\t1.fc45\tx86_64",
+      "tomlplusplus\t0\t3.4.0\t8.fc45\tx86_64"
+    ],
+    "all_base_packages_unchanged": true,
+    "base_crypto_configuration_unchanged": true,
+    "compatibility_configuration_sha256": "34108f65c3c759083f6b2d8ff8c509e3504aa78e5180b197827d90827ddc663f",
+    "cgroup_final": {
+      "memory.max": "2147483648",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "max",
+      "memory.peak": "365920256",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "cpu.stat": "usage_usec 2373373\nuser_usec 1618483\nsystem_usec 754889\nnice_usec 1608000\ncore_sched.force_idle_usec 0\nnr_periods 25\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+    }
+  },
+  "image_archive": {
+    "name": "symbiont-os-generic.oci.tar.gz",
+    "bytes": 4034269486,
+    "sha256": "7c1f6a7896c22ff70bc9fca7a1822d1144ad755c18bc032583081c6e71ce8156",
+    "image_id": "sha256:68a9d7bcdbf15413a897821de45c2c20a76a9197bea1fdbcf2aeec56edcb483c"
+  },
+  "installed_files": {
+    "passed": true,
+    "os_qualified": false,
+    "installed_files_checked": 88,
+    "installed_package_count": 2183,
+    "all_package_identities_preserved_after_build": true,
+    "uid": 10001,
+    "limits": {
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "64"
+    },
+    "scope": "Installed bytes and packaging only; no boot or containment qualification"
+  },
+  "all_containers_absent": true,
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4332498944",
+    "memory.events": "low 0\nhigh 0\nmax 49526\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 371244072\nuser_usec 326672321\nsystem_usec 44571751\nnice_usec 323315526\ncore_sched.force_idle_usec 0\nnr_periods 2916\nnr_throttled 894\nthrottled_usec 123685340\nnr_bursts 0\nburst_usec 0"
+  }
+}

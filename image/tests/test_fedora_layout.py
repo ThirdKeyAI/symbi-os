@@ -15,6 +15,17 @@ HOST_SPEC.loader.exec_module(host)
 
 
 class PackageInputDiscovery(unittest.TestCase):
+    def test_distribution_owned_dnf5_paths(self):
+        owned = ["/usr/share/dnf5/repos.d/fedora.repo",
+                 "/usr/share/pki/rpm-gpg/RPM-GPG-KEY-fedora-45-primary",
+                 "/usr/share/pki/rpm-gpg/RPM-GPG-KEY-fedora-44-primary",
+                 "/etc/shadow", "/home/private.repo"]
+        selected = guest.package_metadata_paths(owned, "45")
+        self.assertEqual(selected, [Path(name) for name in owned[:2]])
+        result = guest.require_package_inputs({str(p): {} for p in selected}, "45")
+        self.assertEqual(result["repository_files"], [owned[0]])
+        self.assertFalse(result["rpm_signatures_verified"])
+
     def test_empty_configuration_is_incomplete(self):
         with self.assertRaises(ValueError):
             guest.require_package_inputs({}, "45")

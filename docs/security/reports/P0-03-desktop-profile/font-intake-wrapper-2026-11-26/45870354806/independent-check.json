@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "independent_evidence_recheck_passed": true,
+  "run_id": 45870354806,
+  "source_commit": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+  "evidence_artifact": {
+    "id": 15143136081,
+    "bytes": 6722,
+    "sha256": "0f119914bcf934c46ef3e24cf7f0e7d2a7f5221c69da66df0455d633486ca5e0"
+  },
+  "candidate_artifact": {
+    "id": 15143375647,
+    "bytes": 9647668,
+    "sha256": "72cc2f75c123f2c1bea335e4f19a4f906edfc7824aebca76fbb11d93ca9fc09a"
+  },
+  "authenticated_downloads": 3,
+  "passively_inventoried_members": 103,
+  "passively_inventoried_fonts": 98,
+  "font_parser_executed": false,
+  "archive_extracted": false,
+  "oom_or_kill": false,
+  "swap_enabled": false,
+  "selected": false,
+  "os_qualified": false,
+  "limitations": "Candidate payload remains hosted. This is intake and passive inventory evidence, not release selection, native font parsing, security clearance, or OS qualification."
+}

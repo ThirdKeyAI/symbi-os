@@ -1,0 +1,1 @@
+time="2026-11-26T01:46:34Z" level=warning msg="StopSignal SIGTERM failed to stop container symbi-elephant-loader-diagnostic in 10 seconds, resorting to SIGKILL"

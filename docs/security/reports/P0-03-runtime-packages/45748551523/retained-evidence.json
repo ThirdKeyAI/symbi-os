@@ -1,0 +1,147 @@
+{
+  "run_id": 45748551523,
+  "head": "0bf564108838e6f00be69942892e6fba9822b64b",
+  "evidence_artifact": {
+    "id": 15084532727,
+    "bytes": 58266,
+    "sha256": "e5de705feeea1c6458be4b9e9d779ed44b692327e607c7d2dcd2818e70f3f7f7"
+  },
+  "rpm_artifact": {
+    "id": 15084582682,
+    "bytes": 2896586,
+    "sha256": "bea530216afb23f6c370fe4027e76740287a588d917b1ff7c09a4c9081061fa0"
+  },
+  "signed_discovery_passed": true,
+  "packages": 1,
+  "all_original_package_identities_unchanged": 2178,
+  "missing_key_and_tampered_package_rejected": true,
+  "container_absent": true,
+  "os_qualified": false,
+  "retention": "JSON retained verbatim; log/text line trailing whitespace and empty trailing lines normalized with both hashes recorded. RPM payload remains hosted.",
+  "files": {
+    "exists-stderr.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "pull-stderr.log": {
+      "original_sha256": "ab3cad9cc549e0cb11db6034ad328008db23d2fdf8e4a200a552ad18537b76cf",
+      "retained_sha256": "ab3cad9cc549e0cb11db6034ad328008db23d2fdf8e4a200a552ad18537b76cf"
+    },
+    "base-signature-stderr.log": {
+      "original_sha256": "b941cd0137db303b01ea68883a3c7198a62418ad62ea1e9189530126d024897d",
+      "retained_sha256": "b941cd0137db303b01ea68883a3c7198a62418ad62ea1e9189530126d024897d"
+    },
+    "hosted-discovery.log": {
+      "original_sha256": "399f501e152e51a8a942a31fa0bdf2354fcd9750c2d6e843cdefdd678b482767",
+      "retained_sha256": "399f501e152e51a8a942a31fa0bdf2354fcd9750c2d6e843cdefdd678b482767"
+    },
+    "base-signature-stdout.log": {
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    "pull-stdout.log": {
+      "original_sha256": "74d886e69e348ce2c052da0398dffd0eb34ab5a76844a230d3e8fc02c85bac1e",
+      "retained_sha256": "74d886e69e348ce2c052da0398dffd0eb34ab5a76844a230d3e8fc02c85bac1e"
+    },
+    "exists-stdout.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "discovery-stderr.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "discovery-stdout.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "result.json": {
+      "original_sha256": "7879be5b336ac9e85221f99b1541aa3dfe53a656430f9c9a9a9445a5b3e21e8b",
+      "retained_sha256": "7879be5b336ac9e85221f99b1541aa3dfe53a656430f9c9a9a9445a5b3e21e8b"
+    },
+    "cleanup-stderr.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "cleanup-stdout.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "cosign-bootstrap/pins.json": {
+      "original_sha256": "c74acffb1d898498582110862650a81960afacd8f2e60916ea3cacee292591cc",
+      "retained_sha256": "c74acffb1d898498582110862650a81960afacd8f2e60916ea3cacee292591cc"
+    },
+    "cosign-bootstrap/openssl-verification.txt": {
+      "original_sha256": "80a53f76c7ed6969dade3b6ee47cdb753162db7c00be625448999d08bae77ed8",
+      "retained_sha256": "80a53f76c7ed6969dade3b6ee47cdb753162db7c00be625448999d08bae77ed8"
+    },
+    "cosign-bootstrap/verification.json": {
+      "original_sha256": "822329e8d7bf8c27b1a527c931c9bbab901db2f6fce88cb5f53d7dc33e547e35",
+      "retained_sha256": "822329e8d7bf8c27b1a527c931c9bbab901db2f6fce88cb5f53d7dc33e547e35"
+    },
+    "cosign-bootstrap/release-cosign.pub": {
+      "original_sha256": "f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126",
+      "retained_sha256": "f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126"
+    },
+    "cosign-bootstrap/release-kms.sig": {
+      "original_sha256": "f3070066acae000e6d65060ac17903d2547fd65d26c0a4207d3809e7031ad088",
+      "retained_sha256": "f3070066acae000e6d65060ac17903d2547fd65d26c0a4207d3809e7031ad088"
+    },
+    "cosign-bootstrap/version.json": {
+      "original_sha256": "9bf60bbeb52675a2074a4c4066bcb0710f861555e9fb5391fb6d65ce7014b3af",
+      "retained_sha256": "9bf60bbeb52675a2074a4c4066bcb0710f861555e9fb5391fb6d65ce7014b3af"
+    },
+    "cosign-bootstrap/cosign-linux-amd64-kms.sigstore.json": {
+      "original_sha256": "9640eb9b9f1236bbb145197cc6cf098ed1fb5f7613c6c731647a2431d0dac518",
+      "retained_sha256": "9640eb9b9f1236bbb145197cc6cf098ed1fb5f7613c6c731647a2431d0dac518"
+    },
+    "guest/import-key.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "guest/installed-after.log": {
+      "original_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759",
+      "retained_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759"
+    },
+    "guest/keyring.log": {
+      "original_sha256": "a2d9592731d4369c4308a823327e3b02417006bb5fb3db6e29805dc59438274d",
+      "retained_sha256": "a2d9592731d4369c4308a823327e3b02417006bb5fb3db6e29805dc59438274d"
+    },
+    "guest/resolve-download.log": {
+      "original_sha256": "ee8dc2315b5aac2260cd1adf863c603c046c4ebd20627a2962351e4a2361d6d5",
+      "retained_sha256": "ee8dc2315b5aac2260cd1adf863c603c046c4ebd20627a2962351e4a2361d6d5"
+    },
+    "guest/rpm-000-identity.log": {
+      "original_sha256": "c1a314f10256d00d0f6c656dcb312e2458220efd341141ccc7a4a32a8f989698",
+      "retained_sha256": "c1a314f10256d00d0f6c656dcb312e2458220efd341141ccc7a4a32a8f989698"
+    },
+    "guest/tampered-package-control.log": {
+      "original_sha256": "409832580c6619a174d613da13549930fcb25eda7f7cf3538424fb64ebabfa37",
+      "retained_sha256": "409832580c6619a174d613da13549930fcb25eda7f7cf3538424fb64ebabfa37"
+    },
+    "guest/result.json": {
+      "original_sha256": "11b6f2eb0cca6c72d53859690fc908387b7d80ad06b65462695548f00a25ed19",
+      "retained_sha256": "11b6f2eb0cca6c72d53859690fc908387b7d80ad06b65462695548f00a25ed19"
+    },
+    "guest/rpm-000-signature.log": {
+      "original_sha256": "236867c4d44c71068b306bc070b0d27aee8072bae551cff80ec441279f08d785",
+      "retained_sha256": "236867c4d44c71068b306bc070b0d27aee8072bae551cff80ec441279f08d785"
+    },
+    "guest/public-key.log": {
+      "original_sha256": "a247b96b84cd715056b2913d10ba1248701dfbc3ac1161fd1bb9319ad28828c3",
+      "retained_sha256": "a247b96b84cd715056b2913d10ba1248701dfbc3ac1161fd1bb9319ad28828c3"
+    },
+    "guest/missing-key-control.log": {
+      "original_sha256": "3911b3d1a86190cb17446e07a9b6f8ebcd79dce5d19b1b6431b39b0e606cb65e",
+      "retained_sha256": "3911b3d1a86190cb17446e07a9b6f8ebcd79dce5d19b1b6431b39b0e606cb65e"
+    },
+    "guest/cgroup-final.json": {
+      "original_sha256": "edb61f035b278a88b61ee5d97b722f2c36ebbe4e3950573100f90e4c7c10f3a0",
+      "retained_sha256": "edb61f035b278a88b61ee5d97b722f2c36ebbe4e3950573100f90e4c7c10f3a0"
+    },
+    "guest/installed-before.log": {
+      "original_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759",
+      "retained_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759"
+    }
+  }
+}

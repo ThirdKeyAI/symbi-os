@@ -1,0 +1,6 @@
+Running as unit: symbi-portal-rpms-45766212374-1.service; invocation ID: 590441d04bed4ee193aa4b6204d8c849
+          Finished with result: success
+Main processes terminated with: code=exited, status=0/SUCCESS
+               Service runtime: 3min 37.541s
+             CPU time consumed: 3min 33.260s
+                   Memory peak: 3G (swap: 0B)

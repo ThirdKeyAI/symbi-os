@@ -1,0 +1,7 @@
+Result=exit-code
+ExecMainCode=1
+ExecMainStatus=1
+MemoryPeak=2760704
+MemorySwapPeak=0
+CPUUsageNSec=158488160000
+LoadState=loaded

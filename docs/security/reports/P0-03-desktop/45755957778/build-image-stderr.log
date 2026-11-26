@@ -1,0 +1,3 @@
+error running container: from /usr/bin/crun creating container for [/bin/sh -c /scripts/pre_build.sh]: writing file `/sys/fs/cgroup/system.slice/symbi-desktop-build-45755957778-1.service/image-build/cgroup.procs`: Device or resource busy
+: exit status 1
+Error: building at STEP "RUN --mount=type=bind,src=.bluebuild-scripts_a654ee88,dst=/scripts/,ro /scripts/pre_build.sh": while running runtime: exit status 1

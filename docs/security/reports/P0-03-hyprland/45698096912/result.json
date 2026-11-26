@@ -1,0 +1,599 @@
+{
+  "passed": false,
+  "os_qualified": false,
+  "commands": [
+    {
+      "name": "source-0-init",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/Hyprland",
+        "init"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-0-fetch",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/Hyprland",
+        "fetch",
+        "--depth=1",
+        "--no-tags",
+        "https://github.com/hyprwm/Hyprland.git",
+        "11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-0-checkout",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/Hyprland",
+        "checkout",
+        "--detach",
+        "FETCH_HEAD"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-1-init",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/aquamarine",
+        "init"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-1-fetch",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/aquamarine",
+        "fetch",
+        "--depth=1",
+        "--no-tags",
+        "https://github.com/hyprwm/aquamarine.git",
+        "9887f39574f2afeae3aeb6687db6cd0c030ccf94"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-1-checkout",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/aquamarine",
+        "checkout",
+        "--detach",
+        "FETCH_HEAD"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-2-init",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/hyprutils",
+        "init"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-2-fetch",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/hyprutils",
+        "fetch",
+        "--depth=1",
+        "--no-tags",
+        "https://github.com/hyprwm/hyprutils.git",
+        "7e1f69209cd910615d0573a93fa970408f643539"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-2-checkout",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/hyprutils",
+        "checkout",
+        "--detach",
+        "FETCH_HEAD"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-3-init",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/hyprlang",
+        "init"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-3-fetch",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/hyprlang",
+        "fetch",
+        "--depth=1",
+        "--no-tags",
+        "https://github.com/hyprwm/hyprlang.git",
+        "9508458be316a0d70d37ebed1ab725ccd10411ff"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-3-checkout",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/hyprlang",
+        "checkout",
+        "--detach",
+        "FETCH_HEAD"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-4-init",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/hyprcursor",
+        "init"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-4-fetch",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/hyprcursor",
+        "fetch",
+        "--depth=1",
+        "--no-tags",
+        "https://github.com/hyprwm/hyprcursor.git",
+        "2dda8586322cfc7c03532687de248ee851a49738"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-4-checkout",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/hyprcursor",
+        "checkout",
+        "--detach",
+        "FETCH_HEAD"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-5-init",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/hyprgraphics",
+        "init"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-5-fetch",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/hyprgraphics",
+        "fetch",
+        "--depth=1",
+        "--no-tags",
+        "https://github.com/hyprwm/hyprgraphics.git",
+        "ade4ef0a887d2740efb9c9af2ddb175633365e1b"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-5-checkout",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/hyprgraphics",
+        "checkout",
+        "--detach",
+        "FETCH_HEAD"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-6-init",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/hyprwayland-scanner",
+        "init"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-6-fetch",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/hyprwayland-scanner",
+        "fetch",
+        "--depth=1",
+        "--no-tags",
+        "https://github.com/hyprwm/hyprwayland-scanner.git",
+        "62e62c1ca23da17612c6890d4ad2064f575643db"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-6-checkout",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/hyprwayland-scanner",
+        "checkout",
+        "--detach",
+        "FETCH_HEAD"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-7-init",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/hyprland-protocols",
+        "init"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-7-fetch",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/hyprland-protocols",
+        "fetch",
+        "--depth=1",
+        "--no-tags",
+        "https://github.com/hyprwm/hyprland-protocols.git",
+        "cd1aba6bd78775825eb230b3a4274c48b6705eb7"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-7-checkout",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/hyprland-protocols",
+        "checkout",
+        "--detach",
+        "FETCH_HEAD"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-8-init",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/glaze",
+        "init"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-8-fetch",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/glaze",
+        "fetch",
+        "--depth=1",
+        "--no-tags",
+        "https://github.com/stephenberry/glaze.git",
+        "b518eec7a22e56ffa238b072c07f47efa7cea97f"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-8-checkout",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/glaze",
+        "checkout",
+        "--detach",
+        "FETCH_HEAD"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-9-init",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/Hyprland/subprojects/udis86",
+        "init"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-9-fetch",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/Hyprland/subprojects/udis86",
+        "fetch",
+        "--depth=1",
+        "--no-tags",
+        "https://github.com/canihavesomecoffee/udis86.git",
+        "5336633af70f3917760a6d441ff02d93477b0c86"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "source-9-checkout",
+      "command": [
+        "git",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "protocol.file.allow=never",
+        "-c",
+        "protocol.ext.allow=never",
+        "-C",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs/sources/Hyprland/subprojects/udis86",
+        "checkout",
+        "--detach",
+        "FETCH_HEAD"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "pull",
+      "command": [
+        "podman",
+        "--cgroup-manager=cgroupfs",
+        "--root",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-storage/root",
+        "--runroot",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-storage/run",
+        "pull",
+        "--authfile",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-storage/auth.json",
+        "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "offline-build",
+      "command": [
+        "podman",
+        "--cgroup-manager=cgroupfs",
+        "--root",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-storage/root",
+        "--runroot",
+        "/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-storage/run",
+        "run",
+        "--name=symbi-hyprland-build",
+        "--user=0",
+        "--cap-drop=ALL",
+        "--cap-add=CHOWN,DAC_OVERRIDE,FOWNER,FSETID,SETGID,SETUID,SETFCAP",
+        "--memory=6g",
+        "--memory-swap=6g",
+        "--cpus=2",
+        "--pids-limit=128",
+        "--pull=never",
+        "--network=none",
+        "--security-opt=no-new-privileges",
+        "--cgroup-parent=/system.slice/symbi-hyprland-build-45698096912-1.service",
+        "--mount",
+        "type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs,dst=/inputs,ro",
+        "--mount",
+        "type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-output,dst=/output",
+        "--env=PYTHONDONTWRITEBYTECODE=1",
+        "--env=LANG=C.UTF-8",
+        "--entrypoint=/usr/bin/python3",
+        "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+        "/inputs/build_guest.py"
+      ],
+      "exit_code": 1
+    }
+  ],
+  "source_commit": "f106dba31559b79c707b45e3ec0d814bd66c34ec",
+  "scope": "Offline compilation and headless native-loading probe in a disposable Fedora build stage",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f"
+}

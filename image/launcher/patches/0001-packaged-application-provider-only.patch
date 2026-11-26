@@ -1,0 +1,101 @@
+--- a/internal/providers/load.go
++++ b/internal/providers/load.go
+@@ -39,14 +39,6 @@
+ var (
+ 	Providers      map[string]Provider
+ 	QueryProviders map[uint32][]string
+-	libDirs        = []string{
+-		"/usr/lib/elephant",
+-		"/usr/lib64/elephant",
+-		"/usr/local/lib/elephant",
+-		"/usr/local/lib64/elephant",
+-		"/lib/elephant",
+-		"/lib64/elephant",
+-	}
+ )
+ 
+ func Load(setup bool) {
+@@ -56,21 +48,10 @@
+ 
+ 	var mut sync.Mutex
+ 	have := make(map[string]struct{})
+-	dirs := libDirs
+-	env := os.Getenv("ELEPHANT_PROVIDER_DIR")
+-
+-	if env != "" {
+-		dirs = []string{env}
+-	} else {
+-		dirs = append(dirs, common.ConfigDirs()...)
+-	}
++	dirs := []string{symbiProviderDirectory}
+ 
+ 	Providers = make(map[string]Provider)
+ 	QueryProviders = make(map[uint32][]string)
+-
+-	if os.Getenv("ELEPHANT_DEV") == "true" {
+-		dirs = []string{"/tmp/elephant/providers"}
+-	}
+ 
+ 	for _, v := range dirs {
+ 		if !common.FileExists(v) {
+@@ -78,7 +59,7 @@
+ 		}
+ 
+ 		conf := fastwalk.Config{
+-			Follow: true,
++			Follow: false,
+ 		}
+ 
+ 		walkFn := func(path string, d fs.DirEntry, err error) error {
+@@ -104,6 +85,10 @@
+ 			}
+ 
+ 			if !done && filepath.Ext(path) == ".so" {
++				if err := symbiProviderAllowed(path); err != nil {
++					slog.Warn("providers", "refused", path, "reason", err)
++					return nil
++				}
+ 				p, err := plugin.Open(path)
+ 				if err != nil {
+ 					slog.Error("providers", "load", path, "err", err)
+--- /dev/null
++++ b/internal/providers/symbi_provider_linux.go
+@@ -0,0 +1,38 @@
++package providers
++
++import (
++	"fmt"
++	"os"
++	"path/filepath"
++	"syscall"
++)
++
++// This OS ships one built-in application provider. User configuration and
++// ELEPHANT_PROVIDER_DIR/ELEPHANT_DEV cannot introduce native menu extensions.
++const symbiProviderDirectory = "/usr/lib/symbi/elephant/providers"
++
++func symbiProviderAllowed(path string) error {
++	if path != symbiProviderDirectory+"/desktopapplications.so" {
++		return fmt.Errorf("only the packaged desktopapplications provider is enabled")
++	}
++	for current := path; ; current = filepath.Dir(current) {
++		info, err := os.Lstat(current)
++		if err != nil {
++			return err
++		}
++		owner, ok := info.Sys().(*syscall.Stat_t)
++		if !ok || owner.Uid != 0 || info.Mode().Perm()&0022 != 0 || info.Mode()&os.ModeSymlink != 0 {
++			return fmt.Errorf("provider path must be root-owned, non-writable by others and contain no links: %s", current)
++		}
++		if current == path {
++			if !info.Mode().IsRegular() {
++				return fmt.Errorf("provider must be a regular file")
++			}
++		} else if !info.IsDir() {
++			return fmt.Errorf("provider parent must be a directory")
++		}
++		if current == "/" {
++			return nil
++		}
++	}
++}

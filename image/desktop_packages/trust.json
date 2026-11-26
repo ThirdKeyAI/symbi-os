@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "release": "45",
+  "architecture": "x86_64",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "keys": [
+    {
+      "file": "fedora-45-primary.asc",
+      "fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E",
+      "sha256": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425",
+      "identity": "Fedora (45) <fedora-45-primary@fedoraproject.org>"
+    },
+    {
+      "file": "rpmfusion-free-2020.asc",
+      "fingerprint": "E9A491A3DE247814E7E067EAE06F8ECDD651FF2E",
+      "sha256": "10fc0a3e1a0307e8088357a31a9c5e4e3d9f9e0b01db2b03b5790d949a47f3b3",
+      "identity": "RPM Fusion free repository for Fedora (2020) <rpmfusion-buildsys@lists.rpmfusion.org>",
+      "source": "https://github.com/rpmfusion/rpmfusion-free-release/blob/455da393b8e1d3bad80a7d3c8617ef343ebb2c1a/RPM-GPG-KEY-rpmfusion-free-fedora-2020",
+      "second_source": "https://github.com/rpm-software-management/distribution-gpg-keys/blob/b7cc71f1c253f12a5b9e9172258b5e52ab281a81/keys/rpmfusion/RPM-GPG-KEY-rpmfusion-free-fedora-2020"
+    }
+  ],
+  "scope": "Public keys used only in isolated disposable discovery keyrings; no new installed OS/release trust; no private key; no package selection"
+}

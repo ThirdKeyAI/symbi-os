@@ -1,0 +1,15 @@
+test_binary_source_and_cleanup_must_match (test_landlock.Qualification.test_binary_source_and_cleanup_must_match) ... ok
+test_complete_synthetic_reports_validate (test_landlock.Qualification.test_complete_synthetic_reports_validate) ... ok
+test_evidence_only_is_not_full_release_qualification (test_landlock.Qualification.test_evidence_only_is_not_full_release_qualification) ... ok
+test_failed_independent_verifier_is_not_hidden_by_pass (test_landlock.Qualification.test_failed_independent_verifier_is_not_hidden_by_pass) ... ok
+test_host_identity_requires_the_selected_secureblue_fedora_image (test_landlock.Qualification.test_host_identity_requires_the_selected_secureblue_fedora_image) ... ok
+test_missing_and_duplicate_suites_fail (test_landlock.Qualification.test_missing_and_duplicate_suites_fail) ... ok
+test_private_action_files_are_never_selected_for_publication (test_landlock.Qualification.test_private_action_files_are_never_selected_for_publication) ... ok
+test_successful_namespace_refusal_is_not_qualification (test_landlock.Qualification.test_successful_namespace_refusal_is_not_qualification) ... ok
+test_top_level_pass_does_not_hide_failed_case (test_landlock.Qualification.test_top_level_pass_does_not_hide_failed_case) ... ok
+test_unsigned_wrong_or_mutable_deployment_fails (test_landlock.Qualification.test_unsigned_wrong_or_mutable_deployment_fails) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.007s
+
+OK

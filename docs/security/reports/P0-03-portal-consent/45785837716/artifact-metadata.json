@@ -1,0 +1,45 @@
+{
+  "total_count": 2,
+  "artifacts": [
+    {
+      "id": 15100886169,
+      "node_id": "MDg6QXJ0aWZhY3QxNTEwMDg4NjE2OQ==",
+      "name": "portal-consent-prefix",
+      "size_in_bytes": 1461777,
+      "url": "https://api.github.com/repos/ThirdKeyAI/symbi-os/actions/artifacts/15100886169",
+      "archive_download_url": "https://api.github.com/repos/ThirdKeyAI/symbi-os/actions/artifacts/15100886169/zip",
+      "expired": false,
+      "digest": "sha256:d96d07ce422a3de7f12bb75f32a77f7df3f40e6386ee4ada644b7a5d7f92aa40",
+      "created_at": "2026-11-26T08:50:00Z",
+      "updated_at": "2026-11-26T08:50:00Z",
+      "expires_at": "2026-12-10T08:49:59Z",
+      "workflow_run": {
+        "id": 45785837716,
+        "repository_id": 1472078858,
+        "head_repository_id": 1472078858,
+        "head_branch": "card/P0-03-image-foundation",
+        "head_sha": "1e93208bb190e7d041aab11bdcf063cad5028a30"
+      }
+    },
+    {
+      "id": 15100328364,
+      "node_id": "MDg6QXJ0aWZhY3QxNTEwMDMyODM2NA==",
+      "name": "portal-consent-evidence",
+      "size_in_bytes": 234311,
+      "url": "https://api.github.com/repos/ThirdKeyAI/symbi-os/actions/artifacts/15100328364",
+      "archive_download_url": "https://api.github.com/repos/ThirdKeyAI/symbi-os/actions/artifacts/15100328364/zip",
+      "expired": false,
+      "digest": "sha256:c6f42144e332fb4c3a3c24337412f8c66d94ed26e0c2a1d75af39538bcc4f74c",
+      "created_at": "2026-11-26T08:49:58Z",
+      "updated_at": "2026-11-26T08:49:58Z",
+      "expires_at": "2026-12-10T08:49:57Z",
+      "workflow_run": {
+        "id": 45785837716,
+        "repository_id": 1472078858,
+        "head_repository_id": 1472078858,
+        "head_branch": "card/P0-03-image-foundation",
+        "head_sha": "1e93208bb190e7d041aab11bdcf063cad5028a30"
+      }
+    }
+  ]
+}

@@ -107,7 +107,9 @@ claimed; no blanket exemptions are introduced.
 Public evidence upload uses
 [`actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02`](https://github.com/actions/upload-artifact/commit/ea165f8d65b6e75b540449e92b4886f43607fa02)
 (v4.6.2, MIT), the pin used by Symbiont. GitHub reports its merge signature
-verified. Only `.cache/image-tool-evidence/` is uploaded for fourteen days;
+verified. Public `.cache/image-tool-evidence/` is retained for fourteen days.
+The current workflow also retains the bounded compiled CLI, original upstream
+license and source/compiler-bound manifest as a separate development artifact;
 no signing environment, private material or compiler target directory is attached.
 
 The first hosted attempt on Rust 1.95.0 failed with E0658 at three upstream
@@ -154,3 +156,131 @@ and its exact version is retained; source auditing and release qualification are
 not implied. No Cargo dependency or fabricated audit is added. The complete
 fixtures and runtime resource-membership probes must actually pass before any
 container-route execution claim is made.
+
+## P0-03 Fedora compositor development inputs
+
+`image/hyprland/build-rpms.lock.json` records 162 exact Fedora 45 RPMs and their
+Fedora signing fingerprint, bytes, hashes, NEVRAs and RPM license metadata.
+The authenticated hosted bundle is used only in a disposable offline build
+container. It includes Mesa versions older than the selected secureblue base;
+that transaction is not approved for the product. Runtime compatibility and
+final-package license/SBOM review remain separate gates.
+
+The compositor and seven native libraries use the full Git commits already
+recorded in `image/hyprland/candidate-inputs.json`, plus pinned Glaze and udis86.
+The selected CMake dependency requirements and build entry points were inspected.
+Network-free compilation uses a private prefix and RPATH; it cannot fetch a
+replacement for a missing dependency. Exact Git object checks establish source
+selection, not publisher-signature evidence or a full source audit. This is a
+development build, with no release publication or new Cargo dependencies.
+
+P0-03's offline build exposed missing hyprctl inputs. Its own CMake file requires
+hyprwire and readline. The candidate source set now includes hyprwire at
+`a546e42d45e161682f729ebf52375bd4800d7041`, from the selected Hyprland flake lock
+(version file 0.3.1; BSD-3-Clause, original notice retained). It requires already
+selected hyprutils/pugixml plus `pkgconfig(libffi)`; the RPM request now explicitly
+includes libffi and readline. Signed Fedora resolution must finish and its exact
+artifact be reviewed before updating the build lock. Existing verified RPMs
+remain immutable; the guard refuses compilation with stale requirements. This
+is candidate input discovery, not a completed dependency/security audit.
+
+The expanded P0-03 Fedora discovery (45702843932) verified 165 candidate build
+RPMs. The unchanged prior 162 records are supplemented by readline-devel
+8.3-6.fc45 (Fedora license field: GPL-3.0-or-later AND GPL-2.0-or-later AND
+GFDL-1.3-no-invariants-or-later), ncurses-devel and ncurses-c++-libs 6.6-3.fc45
+(MIT-open-group). Exact bytes, licenses and signatures are in the build lock and
+retained report. These are development-stage inputs, not a completed audit or
+permission to overwrite the product base libraries.
+
+
+Walker source/runtime run 45741018580 passed the exact v2.17.2 build with the
+unchanged 284-entry Cargo.lock, all 14 upstream tests and four real CLI controls
+on the original secureblue base. Source, compiler/RPM inputs, executable bytes
+and the original GPL-3.0 license file are bound in
+`image/launcher/walker-development-binary.lock.json`. Compilation and tests are
+compatibility evidence, not an audit of the 283 registry dependencies. No Cargo
+vet audits/exemptions are added; final source/dependency/license/SBOM review and
+actual desktop/image acceptance remain open.
+
+## Symbiont runtime compatibility RPM discovery
+
+The retained default-feature development runtime at `deddb9e` needs the OpenSSL
+3 ABI. Actual loader controls on the authenticated Fedora 45 base failed because
+it provides OpenSSL 4. Fedora's maintained `openssl3-libs` compatibility package
+provides both missing SONAMEs (Apache-2.0); see the linked package source in
+`image/runtime_packages/requirements.json`. This is candidate discovery, not an
+installed dependency or a completed audit. Only signed Fedora release/updates
+inputs may be selected; exact RPM/manifest hashes and full signature/identity
+evidence must precede an offline additive installation. Existing OpenSSL 4 and
+all other base package identities must remain unchanged. No Ubuntu libraries,
+source edits, new Cargo dependency/feature, audit exemption or release claim.
+
+Signed runtime compatibility discovery 45748551523 selected only
+`openssl3-libs-1:3.5.9-1.fc45.x86_64`, Apache-2.0, 2,890,302 bytes, SHA-256
+`60fdefdada231053ca4da86e69ecd2706fd09bab7690cf978c7f0b24d41c17fc`.
+The complete Fedora 45 signature and real missing-key/tamper refusals passed.
+`image/assembly/runtime-rpms.lock.json` binds the exact archive, manifest, base,
+key and requirements. The isolated offline acceptance must preserve original
+packages and crypto configuration; actual TLS policy compatibility and final
+release review remain open. This is not a cargo-vet audit or exemption.
+
+## P0-03 portal and share-picker candidate inputs
+
+The already pinned Hyprland 0.57.2 flake selects
+`xdg-desktop-portal-hyprland` 1.5.0 at
+`85450448ea40a54ec4f10bd607e68019d8f5cc41` and `hyprtoolkit` 0.6.0 at
+`92646e15fb295285b10de626f2d9597216465f7b`. Both are BSD-3-Clause; original
+license bytes and the selected CMake/version inputs are retained under
+`image/portal/reviewed/`, with Git object IDs, lengths and SHA-256 hashes in
+`source-inputs.json`. These are primary-source identity and build-scope checks,
+not publisher signatures or complete source/dependency audits.
+
+The portal needs PipeWire, SPA and sdbus-c++; the toolkit additionally needs
+iniparser and abseil's flat-hash-map provider. The discovery profile reuses the
+existing compositor build requirement list plus these five explicit providers,
+so the retained prefix's transitive pkg-config dependencies remain available.
+All RPMs must come from the existing reviewed Fedora release/update inputs and
+pass full signature, identity and negative controls before a build lock can be
+adopted. The discovery does not install packages or rebuild native components.
+Later compilation must reuse the exact retained compositor prefix, enforce
+the upstream version requirements offline and refuse subproject fetching.
+No Cargo dependencies, audit records or exemptions are added. Actual portal
+build, license/SBOM review, consent/token behavior and desktop qualification
+remain open. See [portal preparation](../image/portal/README.md).
+
+
+## cve.bz security-information source
+
+The owner selected cve.bz for security information via its API or MCP. The
+[public API](https://cve.bz/cve/api) supplies advisory records, a filtered feed
+and lockfile/SBOM stack checks; the optional MCP endpoint is
+`https://cve.bz/mcp`. This adds an information source, not a runtime dependency
+or a source-audit exemption. No MCP client, skill, plugin or credential was
+installed. Future governed-service use requires the reviewed Phase 4 manifest.
+
+The first real query on 26 Nov 2026 checked the public Symbiont `deddb9e` lockfile:
+1,108 packages, 48 advisory matches across 27 packages, including 13 packages
+with maintenance-only warnings. All matches remain open pending applicability
+review. Six priority advisory records were fetched separately. Exact raw
+responses retain all attribution and upstream update times; request/response
+hashes and a static reverse-dependency map are in
+[the retained report](security/reports/P0-03-cve-bz/2026-11-26/README.md).
+No private source or project inventory was sent. Cargo.lock covers more than
+the shipped feature set, so match counts are not confirmed exploit counts.
+The actual runtime, image, source and tool pins are unchanged. A fix must be
+reviewed upstream first and the OS must rebuild/requalify the resulting pin.
+
+## Portal build closure review
+
+Hosted discovery 45766212374 authenticated 173 Fedora build RPMs. Compared with
+the earlier compositor closure, 161 records are identical, four development
+packages moved to newer signed Fedora versions (at-spi2-atk-devel,
+at-spi2-core-devel and atk-devel 2.62.1 to 2.62.2; libdav1d-devel 1.5.4 to
+1.5.5), and eight packages were added: their four runtime counterparts,
+iniparser/iniparser-devel 4.2.6, pipewire-devel 1.6.11 and sdbus-cpp-devel 2.3.1.
+Exact releases, bytes, licenses and signature fingerprints are in
+`image/portal/build-rpms.lock.json`. The prior compositor lock and compiled
+prefix remain unchanged. This explicitly reviewed delta is confined to the
+disposable compiler container; it does not authorize replacing product base
+libraries. Runtime ABI compatibility and additive package preservation remain
+independent acceptance gates. No audit or license approval is inferred.

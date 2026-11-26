@@ -1,0 +1,64 @@
+{
+  "run_id": 45713989735,
+  "head_sha": "ec11ceca5ef177010dbd20ea906b69223b0b483e",
+  "checked_merge_sha": "0240c3e0d2764ff0a1f5a1af670ebd7f4bfb6100",
+  "artifact": {
+    "id": 15069840351,
+    "bytes": 56811,
+    "sha256": "4aaa1490ab5da24ce04aa7790dea6ebf71ec1876a8a71beae9a5bf0f75f516a3"
+  },
+  "observations": [
+    "gtk4-layer-shell 1.3.0-3.fc45 x86_64 signed by the pinned Fedora45 primary key",
+    "Exactly one RPM, 37039 bytes; no system-library downgrade selected",
+    "Missing-key and changed-payload controls rejected; installed package database unchanged",
+    "Package not installed; launcher execution, provider/extension refusal and release review pending"
+  ],
+  "os_qualified": false,
+  "retention": "Public JSON verbatim; log trailing whitespace normalized, both hashes retained",
+  "files": {
+    "result.json": {
+      "original_sha256": "62c0aebacce30ddadbf60f3b3fa1a6a814db19b396cf43498c43eeffb5cc93fe",
+      "retained_sha256": "62c0aebacce30ddadbf60f3b3fa1a6a814db19b396cf43498c43eeffb5cc93fe"
+    },
+    "input-bindings.json": {
+      "original_sha256": "5ea36aae69e0db2f9bd8386e111c526da2b3f1fed5632aabc9f0cc68dd8af66a",
+      "retained_sha256": "5ea36aae69e0db2f9bd8386e111c526da2b3f1fed5632aabc9f0cc68dd8af66a"
+    },
+    "base-signature.json": {
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    "cgroup-limits.json": {
+      "original_sha256": "6cdde054006eddd51cc1d0b45e8318f559734e17478b5ebba7d0aaae069b276f",
+      "retained_sha256": "6cdde054006eddd51cc1d0b45e8318f559734e17478b5ebba7d0aaae069b276f"
+    },
+    "cgroup-final.json": {
+      "original_sha256": "f09067b7a40c72b52ad02627575f41e526edbf2951e6d3f9ee4dd86ad860af74",
+      "retained_sha256": "f09067b7a40c72b52ad02627575f41e526edbf2951e6d3f9ee4dd86ad860af74"
+    },
+    "guest/result.json": {
+      "original_sha256": "03f465512511eee7ac8636068d75b79384dc17db1c9c3610d4dc234f448fa49b",
+      "retained_sha256": "03f465512511eee7ac8636068d75b79384dc17db1c9c3610d4dc234f448fa49b"
+    },
+    "guest/cgroup-final.json": {
+      "original_sha256": "115bf2e4136990b018297cfdbb0108114383d810e1129769091a7989adb4aae8",
+      "retained_sha256": "115bf2e4136990b018297cfdbb0108114383d810e1129769091a7989adb4aae8"
+    },
+    "guest/rpm-000-signature.log": {
+      "original_sha256": "aba571cd65953100371206d1f27435ccb696fb9b3209f1aa60d1904affc9ea11",
+      "retained_sha256": "aba571cd65953100371206d1f27435ccb696fb9b3209f1aa60d1904affc9ea11"
+    },
+    "guest/rpm-000-identity.log": {
+      "original_sha256": "e7d254661d459a2149fc80cd617cab9442832587c31853a27801c532a8427f9f",
+      "retained_sha256": "e7d254661d459a2149fc80cd617cab9442832587c31853a27801c532a8427f9f"
+    },
+    "guest/missing-key-control.log": {
+      "original_sha256": "4c338d69ce7ccbbe6ad03e2e3f9a06aa35355c99469fa7ec42f4d4370db271ec",
+      "retained_sha256": "4c338d69ce7ccbbe6ad03e2e3f9a06aa35355c99469fa7ec42f4d4370db271ec"
+    },
+    "guest/tampered-package-control.log": {
+      "original_sha256": "afc1cc7ce99ac8a5912db6dbfdd82bd4f75846e80a6d193996f553b9e0a77ad4",
+      "retained_sha256": "afc1cc7ce99ac8a5912db6dbfdd82bd4f75846e80a6d193996f553b9e0a77ad4"
+    }
+  }
+}

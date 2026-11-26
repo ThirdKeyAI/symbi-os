@@ -1,0 +1,20 @@
+{
+  "id": 15108736611,
+  "node_id": "MDg6QXJ0aWZhY3QxNTEwODczNjYxMQ==",
+  "name": "atomic-image-preflight-generic",
+  "size_in_bytes": 58248,
+  "url": "https://api.github.com/repos/ThirdKeyAI/symbi-os/actions/artifacts/15108736611",
+  "archive_download_url": "https://api.github.com/repos/ThirdKeyAI/symbi-os/actions/artifacts/15108736611/zip",
+  "expired": false,
+  "digest": "sha256:4b055dd7037dc81f1c536fe55d2b7c57f047e1993b81a0a39d31e5f0e386683d",
+  "created_at": "2026-11-26T10:41:41Z",
+  "updated_at": "2026-11-26T10:41:41Z",
+  "expires_at": "2026-12-10T10:41:40Z",
+  "workflow_run": {
+    "id": 45802753036,
+    "repository_id": 1472078858,
+    "head_repository_id": 1472078858,
+    "head_branch": "card/P0-03-image-foundation",
+    "head_sha": "027291a17d525a17418dd64afe71ddf9bb2781bc"
+  }
+}

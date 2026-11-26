@@ -1,0 +1,22 @@
+Package        Arch   Version         Repository        Size
+Installing:
+ go-filesystem x86_64 0:3.8.0-3.fc45  @commandline   0.0   B
+ golang        x86_64 0:1.27.4-2.fc45 @commandline  10.3 MiB
+ golang-bin    x86_64 0:1.27.4-2.fc45 @commandline  88.6 MiB
+ golang-src    noarch 0:1.27.4-2.fc45 @commandline  90.9 MiB
+
+Transaction Summary:
+ Installing:         4 packages
+
+Updating and loading repositories:
+Repositories loaded.
+Total size of inbound packages is 41 MiB. Need to download 0 B.
+After this operation, 190 MiB extra will be used (install 190 MiB, remove 0 B).
+Running transaction
+[1/6] Verify package files              100% |  32.0   B/s |   4.0   B |  00m00s
+[2/6] Prepare transaction               100% |  26.0   B/s |   4.0   B |  00m00s
+[3/6] Installing golang-src-0:1.27.4-2. 100% | 219.0 MiB/s |  92.0 MiB |  00m00s
+[4/6] Installing go-filesystem-0:3.8.0- 100% | 382.8 KiB/s | 392.0   B |  00m00s
+[5/6] Installing golang-0:1.27.4-2.fc45 100% | 571.5 MiB/s |  10.3 MiB |  00m00s
+[6/6] Installing golang-bin-0:1.27.4-2. 100% | 127.4 MiB/s |  88.6 MiB |  00m01s
+Complete!

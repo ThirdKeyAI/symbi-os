@@ -1,7 +1,12 @@
 # Adapted from the pinned Omarchy configuration; local applications only.
 force_keyboard_focus = true
 selection_wrap = true
+theme = "symbi-tokyo-night"
+additional_theme_location = "~/.config/walker/themes/"
 hide_action_hints = true
+
+[placeholders]
+"default" = { input = "Search applications...", list = "No applications found" }
 
 [keybinds]
 quick_activate = []

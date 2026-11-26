@@ -1,0 +1,6 @@
+Running as unit: symbi-portal-runtime-45777761262-1.service
+          Finished with result: success
+Main processes terminated with: code=exited, status=0/SUCCESS
+               Service runtime: 2min 56.115s
+             CPU time consumed: 2min 38.144s
+                   Memory peak: 4G (swap: 0B)

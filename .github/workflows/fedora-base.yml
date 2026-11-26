@@ -1,16 +1,35 @@
 name: Fedora base inventory
 
 on:
+  push:
+    branches: ["**"]
+    paths:
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/guest_inventory.py"
+      - "scripts/check-fedora-base.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/fedora-base.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
   pull_request:
     paths:
-      - image/hyprland/inventory.py
-      - image/hyprland/guest_inventory.py
-      - image/base-images.json
-      - image/toolchain/bootstrap_cosign.py
-      - image/toolchain/cosign.json
-      - image/toolchain/keys/**
-      - scripts/check-fedora-base.sh
-      - .github/workflows/fedora-base.yml
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/guest_inventory.py"
+      - "scripts/check-fedora-base.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/fedora-base.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
   workflow_dispatch:
 
 permissions:
@@ -22,6 +41,8 @@ concurrency:
 
 jobs:
   inventory:
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:

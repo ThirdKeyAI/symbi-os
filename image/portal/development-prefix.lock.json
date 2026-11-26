@@ -1,0 +1,466 @@
+{
+  "schema": 1,
+  "qualified": false,
+  "product_installation": false,
+  "consent_qualified": false,
+  "tested_commit": "6f719685d0eaaac0ff66378d9b117244e21a8283",
+  "run_id": 45773194827,
+  "artifact": {
+    "id": 15096125599,
+    "name": "portal-development-prefix",
+    "bytes": 1460632,
+    "sha256": "c3afcb37358a45120cc4e5e05d7dcc520d888613f45710ef4a996b0e7b2ec362"
+  },
+  "manifest_sha256": "fbb337e28befd8a65f0c49a47eb7201cf7048062df0ea9b212b607df07e2e3d8",
+  "manifest": {
+    "schema": 1,
+    "compiled": true,
+    "os_qualified": false,
+    "selected_base_qualified": false,
+    "consent_qualified": false,
+    "source_commit": "6f719685d0eaaac0ff66378d9b117244e21a8283",
+    "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+    "source_inputs": {
+      "schema": 1,
+      "scope": "Candidate portal and share-picker toolkit selected by the pinned compositor; source metadata only, no build or OS qualification",
+      "qualified": false,
+      "hyprland_revision": "11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947",
+      "hyprland_flake_lock": {
+        "path": "image/portal/reviewed/Hyprland-flake.lock",
+        "sha256": "db45c25bd98a86c5c5cb2494ff6994d39db7f2d0eb05fc98d27d30b6c833cabe",
+        "git_blob": "d84c3724fcbad32a2082c566292dd7815c3f08e4"
+      },
+      "reused_input_bindings": {
+        "image/hyprland/candidate-inputs.json": "d5c64bd34e52e4c61a14fde19ad429c31dcf3862d8c051bd029c4c73deca2ecb",
+        "image/hyprland/development-prefix.lock.json": "484cf1c675b20c8e603ef6094ecd1e07c7e8fd58047bdba1e8f7eabfb26b0650",
+        "image/hyprland/build-rpms.lock.json": "fe160b4ed81b2e4910df098f6648b499264e8d989eea07feb59a841ecc9131a4",
+        "image/hyprland/patches/0001-disable-native-loading.patch": "068d061f29c6ccbef25d402972a14c72195811e40888027b71760f6656f6eeff"
+      },
+      "components": [
+        {
+          "name": "hyprtoolkit",
+          "lock_node": "hyprtoolkit",
+          "revision": "92646e15fb295285b10de626f2d9597216465f7b",
+          "version": "0.6.0",
+          "repository": "https://github.com/hyprwm/hyprtoolkit.git",
+          "license": "BSD-3-Clause",
+          "reviewed_files": {
+            "VERSION": {
+              "path": "image/portal/reviewed/hyprtoolkit/VERSION",
+              "bytes": 6,
+              "sha256": "97a5d6e540a6120d09c39ddb667e0e8e2bac7fcc2ffef813b82e08fd60365bce",
+              "git_blob": "a918a2aa18d5bec6a8bb93891a7a63c243111796"
+            },
+            "CMakeLists.txt": {
+              "path": "image/portal/reviewed/hyprtoolkit/CMakeLists.txt",
+              "bytes": 8506,
+              "sha256": "053653a92c0b7f6936e4a9c745d4281c6f5ac87be12d684503aba72ab3452195",
+              "git_blob": "540b8e6d7d3a0ba6fa8f66c46bd59ac6d83021df"
+            },
+            "LICENSE": {
+              "path": "image/portal/reviewed/hyprtoolkit/LICENSE",
+              "bytes": 1503,
+              "sha256": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143",
+              "git_blob": "daf5abfc33b687ea2368b58e8dd58e8180b00c47"
+            },
+            "scripts/generateShaderIncludes.sh": {
+              "path": "image/portal/reviewed/hyprtoolkit/scripts/generateShaderIncludes.sh",
+              "bytes": 829,
+              "sha256": "208b260558dd3de4519361b0ab6fb841f6736456ea430750ae8edbc43a24c17e",
+              "git_blob": "58594c9cd86873cfbb98bce29e28f7f111891c68"
+            }
+          }
+        },
+        {
+          "name": "xdg-desktop-portal-hyprland",
+          "lock_node": "xdph",
+          "revision": "85450448ea40a54ec4f10bd607e68019d8f5cc41",
+          "version": "1.5.0",
+          "repository": "https://github.com/hyprwm/xdg-desktop-portal-hyprland.git",
+          "license": "BSD-3-Clause",
+          "reviewed_files": {
+            "VERSION": {
+              "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/VERSION",
+              "bytes": 6,
+              "sha256": "acb57a7135b2d7d6e665f67f056e21353023b93835f54def1ae523bf76f1bfb3",
+              "git_blob": "bc80560fad66ca670bdfbd1e5c973a024d4d0325"
+            },
+            "CMakeLists.txt": {
+              "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/CMakeLists.txt",
+              "bytes": 6138,
+              "sha256": "b5d66bb400772968346edf61b6b568fba623bdf355bb8af8c2aa4c2a6354c450",
+              "git_blob": "51af533f24de44d4785164755f4412d3a716535b"
+            },
+            "LICENSE": {
+              "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/LICENSE",
+              "bytes": 1515,
+              "sha256": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+              "git_blob": "f18025f342e9c7043902f8dd22549d88bd6facf8"
+            },
+            "hyprland-share-picker/CMakeLists.txt": {
+              "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/hyprland-share-picker/CMakeLists.txt",
+              "bytes": 904,
+              "sha256": "3f0439e00661d676cd370c496b8f9b473ef4dc362b9a40d3513f6a9e9c305c58",
+              "git_blob": "2fe614800afa9f20f34dea0ee85cd4ecb61080ef"
+            }
+          }
+        }
+      ]
+    },
+    "rpm_lock_sha256": "81fb8788e0acb25ee15bcb6d38c7438c4cba102e1fd616d944ddc03f99375ab8",
+    "reused_compositor_manifest_sha256": "d158ab5e6948abc59084bf60b771fa0abf92f8c39d47fb77c40b2c6e5e5bee08",
+    "compile_report_sha256": "025833661bd0ec536c111f1ed869e7b0a435c8b3f21a1b4576871c3938030c48",
+    "test_suites": {
+      "toolkit-unit": {
+        "cases": [
+          "Animation.opacityPolicyAppliesToFutureChanges",
+          "Animation.geometryUsesFinalLayoutAndPreviousPresentation",
+          "Animation.unconfiguredGeometryChangesImmediately",
+          "Animation.nestedGeometryUsesNearestConfiguredElement",
+          "Animation.configuredChildComposesWithParentGeometry",
+          "Animation.replacingPolicyOnlyAffectsNextChange",
+          "Animation.noAnimationRestoresImmediateOpacityChanges",
+          "Animation.noAnimationRemovesPresentationGeometry",
+          "Animation.geometryIgnoresLayoutsBeforeFirstPresentation",
+          "WaylandPlatform.keyboardEnterReplacesPressedKeys",
+          "WaylandPlatform.keyboardLeaveClearsKeyboardState",
+          "Element.buttonRebuildAppliesLabelLayout",
+          "Element.checkboxRebuildAppliesStyle",
+          "Element.radioGroupSurvivesCallbackRebuild",
+          "Element.comboboxNormalizesSelection",
+          "Element.comboboxSupportsEmptyItems",
+          "Element.imageCacheStringEncodesFitMode",
+          "Element.imageSourcesAreExclusive",
+          "Element.imageCacheEntryReportsFailure",
+          "Element.imageRecognizesScalablePaths",
+          "Element.progressBarRebuildSizesIndeterminatePulse",
+          "Element.rowLayoutRebuild",
+          "Element.scrollAreaClampsToContentOverflow",
+          "Element.scrollAreaRebuild",
+          "Element.scrollAreaRebuildClampsDisabledAxis",
+          "Element.scrollAreaRepositionClampsNewOverflow",
+          "Element.scrollAreaThumbTracksScroll",
+          "Element.scrollAreaTinyViewportDoesNotCrash",
+          "Element.scrollAreaThumbDragScrolls",
+          "Element.scrollAreaMaxScrollIsStableAcrossContentRelayout",
+          "Element.scrollAreaContentKeepsOffsetAcrossStrayRelayout",
+          "Element.sliderUsesConfiguredRange",
+          "Element.sliderReportsRangeValue",
+          "Element.sliderDegenerateRangeIsFinite",
+          "Element.spinboxArrowsMoveAndNotify",
+          "Element.spinboxRebuildNormalizesSelection",
+          "Element.spinboxRebuildAppliesFill",
+          "Element.text",
+          "Element.synchronousTextRebuildSchedulesTextureRefresh",
+          "Element.textClampRebuildSchedulesTextureRefresh",
+          "Element.textPreferredSize",
+          "Element.textGrowsAgainstNeighbor",
+          "Element.textSideBySide",
+          "Element.textShrinkingThenGrowing",
+          "Element.textChangingSize",
+          "Element.textChangingContent",
+          "Element.textClampSize",
+          "Element.textCharPosition",
+          "Element.textboxNavigation",
+          "Element.textboxEditing",
+          "Element.textBoxNewLines",
+          "Element.textboxRebuildUpdatesEyeIcon",
+          "Element.textboxRebuildClampsEditingState",
+          "Element.textboxCallbackOnlyReportsUserEdits",
+          "Element.textboxSingleLineSelectionVCentered",
+          "SliderLabel.threeDigitMaxIsThreeChars",
+          "SliderLabel.twoDigitMaxIsTwoChars",
+          "SliderLabel.snapFloatAddsTwoForFraction",
+          "SliderLabel.negativeMinAddsSign",
+          "SliderLabel.smallRangeDoesNotUnderflow",
+          "SliderLabel.zeroMaxDoesNotCrash",
+          "SliderLabel.negativeMaxDoesNotCrash",
+          "Env.enabled",
+          "UTF8.codepointLen",
+          "UTF8.codepointLenBefore",
+          "UTF8.length",
+          "UTF8.substr",
+          "UTF8.utf8ToOffset",
+          "UTF8.offsetToUTF8Len",
+          "UTF8.findFirstOf",
+          "UTF8.findLastOf",
+          "UTF8.findFirstNotOf",
+          "UTF8.findLastNotOf",
+          "Positioner.main",
+          "Positioner.align",
+          "Positioner.columnLayoutGrowFillsRemaining",
+          "Positioner.rowLayoutGrowFillsRemaining",
+          "Positioner.rowLayoutOverflowShrinkDoesNotUnderflow",
+          "CEmbeddedSurfaceTest.frameRequestsAreCoalesced",
+          "CEmbeddedSurfaceTest.mouseInputCanBeDisabled",
+          "CEmbeddedSurfaceTest.mouseAxisPreservesDelta",
+          "CEmbeddedSurfaceTest.alwaysHoveredElementReceivesPointerEventsOnce",
+          "CEmbeddedSurfaceTest.textboxFocusCanBeCleared",
+          "CEmbeddedSurfaceTest.clearingTextboxFocusDoesNotAffectAnotherTextbox",
+          "CEmbeddedSurfaceTest.textboxCallbackWaitsForIMCommit",
+          "CEmbeddedSurfaceTest.touchIsCapturedByInitialTarget",
+          "CEmbeddedSurfaceTest.cancelledPrimaryTouchDoesNotClick",
+          "CEmbeddedSurfaceTest.primaryTouchTapKeepsInitialPointerTarget",
+          "CEmbeddedSurfaceTest.invalidatedSurfaceIgnoresHostCalls",
+          "CEmbeddedSurfaceTest.repositionScheduledDuringPreRenderIsKept",
+          "CEmbeddedSurfaceTest.detachedElementDoesNotDropRootReposition"
+        ],
+        "sha256": "a2b7a3db7c3b58cb3a3a02064f217f1da644168218b54b5ac25629650e70230a"
+      },
+      "toolkit-renderer": {
+        "cases": [
+          "CEmbeddedRendererTest.rendersAndRestoresHostState"
+        ],
+        "sha256": "f2d8bfa1522cfc9566a6cc333917a6bbfb8d5cd3eb30873dde2d7ba4b0dfca75"
+      },
+      "portal-tests": {
+        "cases": [
+          "hyprland-share-picker-data.hyprland-share-picker-data"
+        ],
+        "sha256": "a4c0c7d1c54b20d10f07ec5c87bc9079b63219c5dc9dc9f4661acd088f5bd7fb"
+      }
+    },
+    "files": {
+      "bin/hyprland-share-picker": {
+        "sha256": "345f3a92f60d5edf748ebb258b8d72701366b04d2bdae13d18c4f9201c61254f",
+        "bytes": 301024,
+        "mode": 493
+      },
+      "include/hyprtoolkit/core/Animation.hpp": {
+        "sha256": "50ff13d3cf21ab6a19bf5c0c742b5c9f107c5dcfc6c8b8766dfe90d06e468207",
+        "bytes": 1568,
+        "mode": 420
+      },
+      "include/hyprtoolkit/core/Backend.hpp": {
+        "sha256": "22e93f10f1b2ecc6155824d36156925b7f181d650b903508a0205bf0bdde34ec",
+        "bytes": 3496,
+        "mode": 420
+      },
+      "include/hyprtoolkit/core/BackendServices.hpp": {
+        "sha256": "b7e88da6508d7775a65ae30c6d9e32d3b616b3eedf0b1adac19cd56c0bc5d29d",
+        "bytes": 3068,
+        "mode": 420
+      },
+      "include/hyprtoolkit/core/CoreMacros.hpp": {
+        "sha256": "138f3137a48ee6005c91c3d3c35fa26a7f4bd4b345cfbcebb4b5a13ce5288ab6",
+        "bytes": 65,
+        "mode": 420
+      },
+      "include/hyprtoolkit/core/EmbeddedBackend.hpp": {
+        "sha256": "fe7528e13e844e3256e6d8cd2a431b4a46082f347def846d70b744b6a242fbc1",
+        "bytes": 1332,
+        "mode": 420
+      },
+      "include/hyprtoolkit/core/Input.hpp": {
+        "sha256": "3b87dfa4d008472cefdbf986710b2873a5e038bf493347b26b663196eefe286a",
+        "bytes": 1205,
+        "mode": 420
+      },
+      "include/hyprtoolkit/core/LogTypes.hpp": {
+        "sha256": "976a7466195a905d8c4fcbbdeca442778fb3f18d415efbae8169399ec5aec6fd",
+        "bytes": 217,
+        "mode": 420
+      },
+      "include/hyprtoolkit/core/Output.hpp": {
+        "sha256": "fa6154c7f17145b49303cb3e6547fe78933b2436349642dadce36e7a014ea330",
+        "bytes": 498,
+        "mode": 420
+      },
+      "include/hyprtoolkit/core/SessionLock.hpp": {
+        "sha256": "85adfff30ed8c8156f80ba058c89e7d2f04fd7924d0d320f09b26c40312e3916",
+        "bytes": 574,
+        "mode": 420
+      },
+      "include/hyprtoolkit/core/Timer.hpp": {
+        "sha256": "d2353d2d9aaef41e338017421db2de344aa4fc89627049b57b2c9b8ac58bcd27",
+        "bytes": 1196,
+        "mode": 420
+      },
+      "include/hyprtoolkit/element/Button.hpp": {
+        "sha256": "b9b03e986170d0712f278cf983f4f4b89ecb262383c5453ded610ece2e3fe41e",
+        "bytes": 3824,
+        "mode": 420
+      },
+      "include/hyprtoolkit/element/Checkbox.hpp": {
+        "sha256": "d44b6b9a4f89f012354710e3fba024b980cdb38d6e5b6997319b237364ef0ef3",
+        "bytes": 3096,
+        "mode": 420
+      },
+      "include/hyprtoolkit/element/ColumnLayout.hpp": {
+        "sha256": "28a12a1cae51be816233bbf833b60c99c5369e48c3d93c2034bfca172e6956b1",
+        "bytes": 2405,
+        "mode": 420
+      },
+      "include/hyprtoolkit/element/Combobox.hpp": {
+        "sha256": "79e5dcb97afd89c092c342896dd66103cc4999f2d008fca39f952cf209d56ee4",
+        "bytes": 3472,
+        "mode": 420
+      },
+      "include/hyprtoolkit/element/Element.hpp": {
+        "sha256": "e4c8d8384fe75c5f4b49ea581cd3918b4118ea27c58d8af8d7edb880d0b65439",
+        "bytes": 5188,
+        "mode": 420
+      },
+      "include/hyprtoolkit/element/Image.hpp": {
+        "sha256": "5ee8de82e93d342b6fb27e09ae60d4219a422b6f591daf94df5b5d6e17bc0f06",
+        "bytes": 2979,
+        "mode": 420
+      },
+      "include/hyprtoolkit/element/Line.hpp": {
+        "sha256": "486dd49c83f0c406f1af2c4ee643bf66ec1f70200277c2ba76dc3c0f3b7de9d7",
+        "bytes": 2448,
+        "mode": 420
+      },
+      "include/hyprtoolkit/element/Null.hpp": {
+        "sha256": "279257e034fa8bcb99465e10a81f68a13871b5f5e6dad0325c5fe82ccbb612f9",
+        "bytes": 2135,
+        "mode": 420
+      },
+      "include/hyprtoolkit/element/ProgressBar.hpp": {
+        "sha256": "e9c4273b6db562e784aa3a16afcb4cc31d9d8ce501b0517e5d8f4643691a106f",
+        "bytes": 2863,
+        "mode": 420
+      },
+      "include/hyprtoolkit/element/RadioGroup.hpp": {
+        "sha256": "2ac292d47df93d268917eff0b43784728261eeae635dba3d3990ab61152aed10",
+        "bytes": 1389,
+        "mode": 420
+      },
+      "include/hyprtoolkit/element/Rectangle.hpp": {
+        "sha256": "41e4bee493c2b0a00145240b66e657ec70d1a1379087515002094357bf73b6c1",
+        "bytes": 3053,
+        "mode": 420
+      },
+      "include/hyprtoolkit/element/RowLayout.hpp": {
+        "sha256": "9c712607a6f969c29fa0807bf2a8fbab9c2b325f57a2bf1c63d7e43368d1460f",
+        "bytes": 2575,
+        "mode": 420
+      },
+      "include/hyprtoolkit/element/ScrollArea.hpp": {
+        "sha256": "0c635a872bb196f684f35549a1907c55af5b280976c8530a82448d1e6da2417a",
+        "bytes": 3565,
+        "mode": 420
+      },
+      "include/hyprtoolkit/element/Slider.hpp": {
+        "sha256": "3f8e1f9ca08fcca6c4449d2513ee6ed4a9a61710dbf941eb1799c3648b030535",
+        "bytes": 3050,
+        "mode": 420
+      },
+      "include/hyprtoolkit/element/Spinbox.hpp": {
+        "sha256": "8b20e2adc578d8944cf67d61b8f7fb8c169c6db743f771c2862e049411790b76",
+        "bytes": 3230,
+        "mode": 420
+      },
+      "include/hyprtoolkit/element/Text.hpp": {
+        "sha256": "5323ed7928298924127834713ee228420fd721640bc3b6fda98a81caa56cfd43",
+        "bytes": 3746,
+        "mode": 420
+      },
+      "include/hyprtoolkit/element/Textbox.hpp": {
+        "sha256": "799ebf4fd3afd68f2bd57a1b1b17d4fe08722348c9faaf716bc1551f07419db3",
+        "bytes": 3776,
+        "mode": 420
+      },
+      "include/hyprtoolkit/palette/Color.hpp": {
+        "sha256": "a23426ec76fa12b30b9f12b8fb5d140ad11a27f9ef4ad96dd7b43b2d64542670",
+        "bytes": 1237,
+        "mode": 420
+      },
+      "include/hyprtoolkit/palette/Gradient.hpp": {
+        "sha256": "469bc5a2048112520c25d3e07addd369a74875608187abeef4061f9cd75aaf08",
+        "bytes": 469,
+        "mode": 420
+      },
+      "include/hyprtoolkit/palette/Palette.hpp": {
+        "sha256": "c2e9818e32556c1f58073330d8355bf502959351b6f31f48f16c23853d791bae",
+        "bytes": 1507,
+        "mode": 420
+      },
+      "include/hyprtoolkit/system/Icons.hpp": {
+        "sha256": "76bd60abac4ff4768161966896370bcc8c411860c112f3d164f8a52cd85178a2",
+        "bytes": 773,
+        "mode": 420
+      },
+      "include/hyprtoolkit/types/FontTypes.hpp": {
+        "sha256": "6926bc602e5de8c23f2dfc213df1eb4e9d47470b067fe99fec9f92ce80d1e29f",
+        "bytes": 729,
+        "mode": 420
+      },
+      "include/hyprtoolkit/types/ImageTypes.hpp": {
+        "sha256": "e1ce347b0782656d350615a7fa01bc3bca106061294ee4a9f2c5061a20dc48f2",
+        "bytes": 230,
+        "mode": 420
+      },
+      "include/hyprtoolkit/types/PointerShape.hpp": {
+        "sha256": "2b666c7d4fae29f2233464ef4c7e4dac56dfaf72a31cdc2c3942c139f66d2819",
+        "bytes": 308,
+        "mode": 420
+      },
+      "include/hyprtoolkit/types/SizeType.hpp": {
+        "sha256": "68771a6b7a545cb7ac273236429f5cb253fbe46b3f290400fa1d49170ec16585",
+        "bytes": 750,
+        "mode": 420
+      },
+      "include/hyprtoolkit/window/EmbeddedSurface.hpp": {
+        "sha256": "9ca07f0df03c32d59ebb1137a1edb9740214f66d3304ca1726bd4fd646ec10eb",
+        "bytes": 2961,
+        "mode": 420
+      },
+      "include/hyprtoolkit/window/Window.hpp": {
+        "sha256": "0a0db8462458390429f73602610aac17d299293e227a497b347e8ec77ebce8fd",
+        "bytes": 5445,
+        "mode": 420
+      },
+      "lib/libhyprtoolkit.so": {
+        "link": "libhyprtoolkit.so.6"
+      },
+      "lib/libhyprtoolkit.so.0.6.0": {
+        "sha256": "1a554314e525e93b3e63dc6db6429bb4d64d4c43dda3f0db0aa26a66bc148f90",
+        "bytes": 2650064,
+        "mode": 493
+      },
+      "lib/libhyprtoolkit.so.6": {
+        "link": "libhyprtoolkit.so.0.6.0"
+      },
+      "lib/pkgconfig/hyprtoolkit.pc": {
+        "sha256": "707d1177f73a32bbbad6bf5ffdd320febdad908fa8aa4733dda7b58eee776241",
+        "bytes": 531,
+        "mode": 420
+      },
+      "lib/systemd/user/xdg-desktop-portal-hyprland.service": {
+        "sha256": "0b94927fbc13c5d53b171e37679a13608d773e9f96906eb492722db06ef8b82b",
+        "bytes": 341,
+        "mode": 420
+      },
+      "libexec/xdg-desktop-portal-hyprland": {
+        "sha256": "51b7ecacacc72a93170f381e5136521a6cb34407cff6044578a51f5dd582dcc4",
+        "bytes": 1358632,
+        "mode": 493
+      },
+      "share/dbus-1/services/org.freedesktop.impl.portal.desktop.hyprland.service": {
+        "sha256": "b230f1ce2f898291a73ad2cb719aa9a5fe54c51a53bda378c8f805ec71b08c65",
+        "bytes": 180,
+        "mode": 420
+      },
+      "share/licenses/hyprtoolkit/LICENSE": {
+        "sha256": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143",
+        "bytes": 1503,
+        "mode": 420
+      },
+      "share/licenses/xdg-desktop-portal-hyprland/LICENSE": {
+        "sha256": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+        "bytes": 1515,
+        "mode": 420
+      },
+      "share/xdg-desktop-portal/portals/hyprland.portal": {
+        "sha256": "43b2fe354c2d4cc51bd237be8b6586cc6b6f5681451a4079adf2a97909d73431",
+        "bytes": 281,
+        "mode": 420
+      }
+    },
+    "payload_sha256": "3c7a2049d8add2e0d6e4ce6544ca3748f83dd392557fc932c2e784a94e6cedc0",
+    "payload_bytes": 1441871,
+    "scope": "Unqualified development prefix; Debug toolkit tests do not certify the separate Release toolkit binary"
+  },
+  "scope": "Compiled upstream portal/toolkit prefix only; 93 native tests passed, unchanged-base loader failed for iniparser. Consent enforcement and actual desktop qualification remain pending."
+}

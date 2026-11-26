@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "scope": "Original license bytes from pinned component sources; no dependency audit claim",
+  "files": [
+    {
+      "name": "Hyprland",
+      "repository": "https://github.com/hyprwm/Hyprland",
+      "revision": "11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947",
+      "path": "LICENSE",
+      "retained_path": "image/desktop/licenses/Hyprland.LICENSE",
+      "bytes": 1521,
+      "sha256": "e01df754903af0ab26babb317b5f5a62dd95f770b733c5275414dd3245d00ae7"
+    },
+    {
+      "name": "aquamarine",
+      "repository": "https://github.com/hyprwm/aquamarine",
+      "revision": "9887f39574f2afeae3aeb6687db6cd0c030ccf94",
+      "path": "LICENSE",
+      "retained_path": "image/desktop/licenses/aquamarine.LICENSE",
+      "bytes": 1503,
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5"
+    },
+    {
+      "name": "hyprutils",
+      "repository": "https://github.com/hyprwm/hyprutils",
+      "revision": "7e1f69209cd910615d0573a93fa970408f643539",
+      "path": "LICENSE",
+      "retained_path": "image/desktop/licenses/hyprutils.LICENSE",
+      "bytes": 1503,
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5"
+    },
+    {
+      "name": "hyprlang",
+      "repository": "https://github.com/hyprwm/hyprlang",
+      "revision": "9508458be316a0d70d37ebed1ab725ccd10411ff",
+      "path": "LICENSE",
+      "retained_path": "image/desktop/licenses/hyprlang.LICENSE",
+      "bytes": 7651,
+      "sha256": "a5681bf9b05db14d86776930017c647ad9e6e56ff6bbcfdf21e5848288dfaf1b"
+    },
+    {
+      "name": "hyprcursor",
+      "repository": "https://github.com/hyprwm/hyprcursor",
+      "revision": "2dda8586322cfc7c03532687de248ee851a49738",
+      "path": "LICENSE",
+      "retained_path": "image/desktop/licenses/hyprcursor.LICENSE",
+      "bytes": 1503,
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5"
+    },
+    {
+      "name": "hyprgraphics",
+      "repository": "https://github.com/hyprwm/hyprgraphics",
+      "revision": "ade4ef0a887d2740efb9c9af2ddb175633365e1b",
+      "path": "LICENSE",
+      "retained_path": "image/desktop/licenses/hyprgraphics.LICENSE",
+      "bytes": 1503,
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5"
+    },
+    {
+      "name": "hyprwayland-scanner",
+      "repository": "https://github.com/hyprwm/hyprwayland-scanner",
+      "revision": "62e62c1ca23da17612c6890d4ad2064f575643db",
+      "path": "LICENSE",
+      "retained_path": "image/desktop/licenses/hyprwayland-scanner.LICENSE",
+      "bytes": 1503,
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5"
+    },
+    {
+      "name": "hyprland-protocols",
+      "repository": "https://github.com/hyprwm/hyprland-protocols",
+      "revision": "cd1aba6bd78775825eb230b3a4274c48b6705eb7",
+      "path": "LICENSE",
+      "retained_path": "image/desktop/licenses/hyprland-protocols.LICENSE",
+      "bytes": 1524,
+      "sha256": "ea36a60a50dfa150ca3c5816cb6b0ad5b559da380e9f5b2babd4abbf7962a35a"
+    },
+    {
+      "name": "glaze",
+      "repository": "https://github.com/stephenberry/glaze",
+      "revision": "b518eec7a22e56ffa238b072c07f47efa7cea97f",
+      "path": "LICENSE",
+      "retained_path": "image/desktop/licenses/glaze.LICENSE",
+      "bytes": 1080,
+      "sha256": "5d49e66411a0807a7c8d6b911b9a26b59e940c71aebe561a3ad8b0b80ac4b7b6"
+    },
+    {
+      "name": "udis86",
+      "repository": "https://github.com/canihavesomecoffee/udis86",
+      "revision": "5336633af70f3917760a6d441ff02d93477b0c86",
+      "path": "LICENSE",
+      "retained_path": "image/desktop/licenses/udis86.LICENSE",
+      "bytes": 1337,
+      "sha256": "1070640aab24327354da44507627d1db6c67482a6facc8375a758796a05e3dff"
+    },
+    {
+      "name": "Symbiont",
+      "repository": "https://github.com/ThirdKeyAI/Symbiont",
+      "revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+      "path": "LICENSE",
+      "retained_path": "image/desktop/licenses/Symbiont.LICENSE",
+      "bytes": 10784,
+      "sha256": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c"
+    }
+  ]
+}

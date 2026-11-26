@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "scope": "Signed OpenSSL 3 compatibility library for isolated runtime acceptance; no product or crypto-policy qualification",
+  "run_id": 45748551523,
+  "head_sha": "0bf564108838e6f00be69942892e6fba9822b64b",
+  "tested_commit": "0bf564108838e6f00be69942892e6fba9822b64b",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "artifact": {
+    "id": 15084582682,
+    "bytes": 2896586,
+    "sha256": "bea530216afb23f6c370fe4027e76740287a588d917b1ff7c09a4c9081061fa0"
+  },
+  "manifest_sha256": "11b6f2eb0cca6c72d53859690fc908387b7d80ad06b65462695548f00a25ed19",
+  "key": {
+    "path": "image/hyprland/keys/fedora-45-primary.asc",
+    "sha256": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425",
+    "fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E",
+    "identity": "Fedora (45) <fedora-45-primary@fedoraproject.org>"
+  },
+  "requirements": {
+    "schema": 1,
+    "scope": "Candidate Fedora compatibility libraries for the pinned Symbiont runtime; signed discovery only, no installation or OS qualification",
+    "source_inputs": "image/assembly/runtime-development.lock.json",
+    "observed_failure": "docs/security/reports/P0-03-assembly-inputs/45747059051/runtime/result.json",
+    "observed_failure_sha256": "87679468fe29d6a652c2771a6919fa5240c8dd6ed59d957f3bfde2c7b3f0abde",
+    "packages": [
+      "libssl.so.3()(64bit)",
+      "libcrypto.so.3()(64bit)"
+    ],
+    "expected_provider": "openssl3-libs",
+    "notes": [
+      "Actual original-base ldd and CLI loading found missing libssl.so.3 and libcrypto.so.3; all eight probe containers were removed",
+      "Fedora lists openssl3-libs as the OpenSSL 3 compatibility provider: https://packages.fedoraproject.org/pkgs/openssl3/openssl3-libs/fedora-45-updates.html",
+      "Resolve only the already-reviewed Fedora 45 release/updates repositories, then verify every candidate signature and pin exact bytes before a separate offline installation",
+      "Preserve the base OpenSSL 4 libraries and every installed package identity; no Ubuntu libraries, source change or new Cargo feature"
+    ],
+    "loader_output": "docs/security/reports/P0-03-assembly-inputs/45747059051/runtime/ldd-symbi-stdout.log",
+    "loader_output_sha256": "d644f5c1831dc6c2e7c16303005fff4ab8649dab11ea1afc06d1b7c1faa2898c"
+  },
+  "packages": [
+    {
+      "filename": "openssl3-libs-3.5.9-1.fc45.x86_64.rpm",
+      "bytes": 2890302,
+      "sha256": "60fdefdada231053ca4da86e69ecd2706fd09bab7690cf978c7f0b24d41c17fc",
+      "nevra": "openssl3-libs-1:3.5.9-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    }
+  ],
+  "qualified": false,
+  "product_installation": false
+}

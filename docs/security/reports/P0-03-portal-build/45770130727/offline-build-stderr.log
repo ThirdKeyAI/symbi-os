@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/inputs/build_guest.py", line 93, in <module>
+    main()
+    ~~~~^^
+  File "/inputs/build_guest.py", line 81, in main
+    run('compile-driver', command, 3600)
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/inputs/build_guest.py", line 41, in run
+    result.check_returncode()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib64/python3.15/subprocess.py", line 623, in check_returncode
+    raise CalledProcessError(self.returncode, self.args, self.stdout,
+                             self.stderr)
+subprocess.CalledProcessError: Command ['runuser', '-u', 'symbi-build', '--', 'env', '-i', 'HOME=/output/home', 'PATH=/usr/lib/symbi/portal/bin:/usr/lib/symbi/hyprland/bin:/usr/bin:/bin', 'LANG=C.UTF-8', 'PYTHONDONTWRITEBYTECODE=1', 'CMAKE_BUILD_PARALLEL_LEVEL=1', 'PKG_CONFIG_PATH=/usr/lib/symbi/portal/lib/pkgconfig:/usr/lib/symbi/hyprland/lib/pkgconfig:/usr/lib/symbi/hyprland/share/pkgconfig', 'OMP_NUM_THREADS=1', 'LP_NUM_THREADS=1', 'LIBGL_ALWAYS_SOFTWARE=1', 'EGL_PLATFORM=surfaceless', 'XDG_RUNTIME_DIR=/output/runtime', 'GIT_CONFIG_NOSYSTEM=1', 'GIT_CONFIG_GLOBAL=/dev/null', 'python3', '/inputs/compile.py'] returned non-zero exit status 1.

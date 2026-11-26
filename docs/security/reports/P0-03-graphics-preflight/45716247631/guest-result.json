@@ -1,0 +1,76 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "guest_booted": false,
+  "scope": "QEMU GL device and private X11 display initialization only; guest rendering remains untested",
+  "qemu_sha256": "c4f7078e00d65df738e446945417e44a1a7ed9d90e644c5298446581485fa508",
+  "limits": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000"
+  },
+  "commands": [
+    [
+      "/usr/bin/qemu-system-x86_64",
+      "-machine",
+      "q35,accel=tcg",
+      "-m",
+      "256M",
+      "-smp",
+      "1",
+      "-nodefaults",
+      "-no-user-config",
+      "-S",
+      "-device",
+      "virtio-vga-gl,id=symbi-gpu",
+      "-monitor",
+      "none",
+      "-serial",
+      "none",
+      "-net",
+      "none",
+      "-display",
+      "sdl,gl=on",
+      "-qmp",
+      "unix:/output/qmp.sock,server=on,wait=off"
+    ]
+  ],
+  "qemu_version": "QEMU emulator version 11.1.3 (qemu-11.1.3-1.fc45)\nCopyright (c) 2003-2026 Fabrice Bellard and the QEMU Project developers\n",
+  "graphics_packages": [
+    "qemu-system-x86-core-11.1.3-1.fc45.x86_64",
+    "qemu-ui-sdl-11.1.3-1.fc45.x86_64",
+    "qemu-ui-opengl-11.1.3-1.fc45.x86_64",
+    "qemu-device-display-virtio-vga-gl-11.1.3-1.fc45.x86_64",
+    "virglrenderer-1.3.0-2.fc45.x86_64",
+    "mesa-dri-drivers-26.2.7-2.fc45.x86_64"
+  ],
+  "negative_control": {
+    "exit_code": 1,
+    "passed": true
+  },
+  "greeting": {
+    "QMP": {
+      "version": {
+        "qemu": {
+          "micro": 3,
+          "minor": 1,
+          "major": 11
+        },
+        "package": "qemu-11.1.3-1.fc45"
+      },
+      "capabilities": [
+        "oob"
+      ]
+    }
+  },
+  "status": {
+    "status": "prelaunch",
+    "running": false
+  },
+  "device_realized": true,
+  "cgroup_final": {
+    "memory.peak": "252592128",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 452827\nuser_usec 235137\nsystem_usec 217689\nnice_usec 230980\ncore_sched.force_idle_usec 0\nnr_periods 7\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+  }
+}

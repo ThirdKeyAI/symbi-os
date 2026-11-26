@@ -1,0 +1,118 @@
+{
+  "passed": true,
+  "release_qualified": false,
+  "source_manifest_digest": "sha256:9b6e8fdd9f6f98631895ccdfaaed6ffd88febd3ea6238d543935a524b572faf3",
+  "scope": "Ephemeral local CI fixture key; never the ThirdKey release identity",
+  "limits": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "64"
+  },
+  "commands": [
+    {
+      "name": "skopeo-version",
+      "exit_code": 0
+    },
+    {
+      "name": "skopeo-package",
+      "exit_code": 0
+    },
+    {
+      "name": "generate-good",
+      "exit_code": 0
+    },
+    {
+      "name": "fingerprint-good",
+      "exit_code": 0
+    },
+    {
+      "name": "export-public-good",
+      "exit_code": 0
+    },
+    {
+      "name": "generate-wrong",
+      "exit_code": 0
+    },
+    {
+      "name": "fingerprint-wrong",
+      "exit_code": 0
+    },
+    {
+      "name": "export-public-wrong",
+      "exit_code": 0
+    },
+    {
+      "name": "sign-control",
+      "exit_code": 0
+    },
+    {
+      "name": "policy-valid",
+      "exit_code": 0
+    },
+    {
+      "name": "policy-unsigned",
+      "exit_code": 1
+    },
+    {
+      "name": "sign-wrong-key",
+      "exit_code": 0
+    },
+    {
+      "name": "policy-wrong-key",
+      "exit_code": 1
+    },
+    {
+      "name": "sign-wrong-reference",
+      "exit_code": 0
+    },
+    {
+      "name": "policy-wrong-reference",
+      "exit_code": 1
+    },
+    {
+      "name": "policy-altered-signature",
+      "exit_code": 1
+    },
+    {
+      "name": "sign-development",
+      "exit_code": 0
+    },
+    {
+      "name": "verify-development",
+      "exit_code": 0
+    },
+    {
+      "name": "stop-agent-0",
+      "exit_code": 0
+    },
+    {
+      "name": "stop-agent-1",
+      "exit_code": 0
+    }
+  ],
+  "negative_controls": {
+    "unsigned": true,
+    "wrong-key": true,
+    "wrong-reference": true,
+    "altered-signature": true
+  },
+  "verifier": {
+    "version": "skopeo version 1.25.1 commit: 849f8f0f9443e56435f4302f81ccadcf6a56da21",
+    "rpm_identity": "skopeo\t1\t1.25.1\t2.fc45\tx86_64"
+  },
+  "public_key_fingerprint": "B2C4A1407CC42164F249DD4FCF6CA72ED71022B9",
+  "public_key_sha256": "9981e06c0b4f8fae574ae145c82f357f8dcae621028eb0a69283ceb700f1be8d",
+  "signature_sha256": "6bffb3777fb1e6a325297b0ef1dc8a79a20387416dc6f13ba93bf2514465d649",
+  "positive_policy_control": true,
+  "private_keys_removed": true,
+  "cgroup_final": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "64",
+    "memory.peak": "96313344",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 676409\nuser_usec 219018\nsystem_usec 457391\nnice_usec 215000\ncore_sched.force_idle_usec 0\nnr_periods 8\nnr_throttled 4\nthrottled_usec 39279\nnr_bursts 0\nburst_usec 0"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "passed": false,
+  "os_qualified": false,
+  "source_commit": "57b1ad738843dff714d3968654716ee201a8d99f",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "source-init",
+      "exit_code": 0
+    },
+    {
+      "name": "source-fetch",
+      "exit_code": 0
+    },
+    {
+      "name": "source-checkout",
+      "exit_code": 0
+    },
+    {
+      "name": "pull-base",
+      "exit_code": 0
+    },
+    {
+      "name": "install-signed-compiler",
+      "exit_code": 0
+    },
+    {
+      "name": "download",
+      "exit_code": 0
+    },
+    {
+      "name": "compile",
+      "exit_code": 1
+    }
+  ],
+  "scope": "Source-built Elephant and actual provider refusal on the selected base; no OS qualification",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "upstream_revision": "8f1e21d6efe40b8b3953f95b9574f99f717caf91",
+  "compiler_image_id": "sha256:146fa24418d6e2d10fc8a60cfe0fb4a89ed8f9644321c050a7852fa7683ddb3f",
+  "failure": "CalledProcessError: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/elephant-build-storage/root', '--runroot', '/run/symbi-elephant-45728665797-1', 'run', '--rm', '--name=symbi-elephant-compile', '--read-only', '--user=10001:10001', '--network=none', '--memory=3g', '--memory-swap=3g', '--cpus=2', '--pids-limit=128', '--pull=never', '--security-opt=no-new-privileges', '--cap-drop=ALL', '--cgroup-parent=/system.slice/symbi-elephant-45728665797-1.service', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/elephant-build-storage/inputs,dst=/inputs,ro', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/elephant-build-storage/output,dst=/output', '--env=PYTHONDONTWRITEBYTECODE=1', '--entrypoint=/usr/bin/python3', 'sha256:146fa24418d6e2d10fc8a60cfe0fb4a89ed8f9644321c050a7852fa7683ddb3f', '/inputs/build_guest.py', 'compile']' returned non-zero exit status 1.",
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4324646912",
+    "memory.events": "low 0\nhigh 0\nmax 42132\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 349738845\nuser_usec 302979433\nsystem_usec 46759411\nnice_usec 300109154\ncore_sched.force_idle_usec 0\nnr_periods 3457\nnr_throttled 411\nthrottled_usec 52602756\nnr_bursts 0\nburst_usec 0"
+  }
+}

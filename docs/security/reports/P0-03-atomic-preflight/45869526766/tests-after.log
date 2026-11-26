@@ -1,0 +1,19 @@
+test_desktop_job_prepares_fonts_before_the_image_context (image.tests.test_font_install.FontDefaults.test_desktop_job_prepares_fonts_before_the_image_context) ... ok
+test_native_font_scan_requires_every_file_and_the_default_family (image.tests.test_font_install.FontDefaults.test_native_font_scan_requires_every_file_and_the_default_family) ... ok
+test_only_exact_retained_prefont_image_may_skip_native_font_scan (image.tests.test_font_install.FontDefaults.test_only_exact_retained_prefont_image_may_skip_native_font_scan) ... ok
+test_system_defaults_match_the_observed_ombuntu_font_profile (image.tests.test_font_install.FontDefaults.test_system_defaults_match_the_observed_ombuntu_font_profile) ... ok
+test_extracts_only_fonts_config_and_reviewed_notices (image.tests.test_font_install.FontPayload.test_extracts_only_fonts_config_and_reviewed_notices) ... ok
+test_rejects_changed_inputs_wrong_commit_unsafe_config_and_linked_target_without_partial_files (image.tests.test_font_install.FontPayload.test_rejects_changed_inputs_wrong_commit_unsafe_config_and_linked_target_without_partial_files) ... ok
+test_exact_secureblue_variant_and_fedora_lineage_are_required (image.tests.test_atomic_preflight.AtomicPreflight.test_exact_secureblue_variant_and_fedora_lineage_are_required) ... ok
+test_hosted_controller_and_probe_refuse_local_execution (image.tests.test_atomic_preflight.AtomicPreflight.test_hosted_controller_and_probe_refuse_local_execution) ... ok
+test_missing_or_malformed_observations_fail_closed (image.tests.test_atomic_preflight.AtomicPreflight.test_missing_or_malformed_observations_fail_closed) ... ok
+test_no_installer_default_requires_explicit_filesystem_choice (image.tests.test_atomic_preflight.AtomicPreflight.test_no_installer_default_requires_explicit_filesystem_choice) ... ok
+test_only_one_exact_loaded_image_is_selected (image.tests.test_atomic_preflight.AtomicPreflight.test_only_one_exact_loaded_image_is_selected) ... ok
+test_policy_package_kernel_or_selinux_drift_is_refused (image.tests.test_atomic_preflight.AtomicPreflight.test_policy_package_kernel_or_selinux_drift_is_refused) ... ok
+test_unsafe_execution_or_false_qualification_is_refused (image.tests.test_atomic_preflight.AtomicPreflight.test_unsafe_execution_or_false_qualification_is_refused) ... ok
+test_valid_observation_remains_unqualified (image.tests.test_atomic_preflight.AtomicPreflight.test_valid_observation_remains_unqualified) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.093s
+
+OK

@@ -1,0 +1,71 @@
+{
+  "passed": false,
+  "os_qualified": false,
+  "gui_qualified": false,
+  "upstream_tests_passed": false,
+  "source_commit": "701e618e8f5d63262c5ed37dca297a1977075daa",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "source-init",
+      "exit_code": 0
+    },
+    {
+      "name": "source-fetch",
+      "exit_code": 0
+    },
+    {
+      "name": "source-checkout",
+      "exit_code": 0
+    },
+    {
+      "name": "pull-base",
+      "exit_code": 0
+    },
+    {
+      "name": "compiler",
+      "exit_code": 0
+    },
+    {
+      "name": "compiler-commit",
+      "exit_code": 0
+    },
+    {
+      "name": "compiler-cleanup",
+      "exit_code": 0
+    },
+    {
+      "name": "compiler-exists",
+      "exit_code": 1
+    }
+  ],
+  "containers": {
+    "compiler": {
+      "remove_exit": 0,
+      "exists_exit": 1,
+      "absent": true
+    }
+  },
+  "scope": "Exact Walker source build, upstream tests and original-base CLI compatibility only",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "source_graph": {
+    "packages": 284,
+    "registry_dependencies": 283
+  },
+  "upstream_revision": "a515085fd39fae80acc086c8fbfd9b7771a9a11d",
+  "failure": "ValueError: Unexpected committed image identity",
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4303454208",
+    "memory.events": "low 0\nhigh 0\nmax 26642\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 129100600\nuser_usec 107329471\nsystem_usec 21771128\nnice_usec 105351298\ncore_sched.force_idle_usec 0\nnr_periods 1153\nnr_throttled 392\nthrottled_usec 50468238\nnr_bursts 0\nburst_usec 0"
+  }
+}

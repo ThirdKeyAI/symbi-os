@@ -1,0 +1,3 @@
+PASS: stale compiler bundle refused: RPM resolution does not match the current build requirements
+PASS: existing compiler requirements preserved; only the tesseract test prerequisite added.
+PASS: exact source revision and module hashes bound; no package installed or binary executed.

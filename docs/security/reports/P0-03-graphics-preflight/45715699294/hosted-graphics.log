@@ -1,0 +1,21 @@
+Running as unit: symbi-graphics-45715699294-1.service
+
+Verification for ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f --
+The following checks were performed on each of these signatures:
+  - The cosign claims were validated
+  - Existence of the claims in the transparency log was verified offline
+  - The signatures were verified against the specified public key
+Traceback (most recent call last):
+  File "/home/runner/work/symbi-os/symbi-os/image/hyprland/graphics/hosted.py", line 122, in <module>
+    main()
+  File "/home/runner/work/symbi-os/symbi-os/image/hyprland/graphics/hosted.py", line 96, in main
+    subprocess.run(podman + ['pull', '--authfile', str(auth), base['image']],
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/hyprland-graphics-storage/root', '--runroot', '/home/runner/work/symbi-os/symbi-os/.cache/hyprland-graphics-storage/run', 'pull', '--authfile', '/home/runner/work/symbi-os/symbi-os/.cache/hyprland-graphics-storage/auth.json', 'ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f']' returned non-zero exit status 125.
+Finished with result: exit-code
+Main processes terminated with: code=exited/status=1
+Service runtime: 30.096s
+CPU time consumed: 997ms
+Memory peak: 2.6M
+Memory swap peak: 0B

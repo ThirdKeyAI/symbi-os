@@ -1,0 +1,18 @@
+test_fixed_status_socket_supplies_two_bounded_unique_reports (image.qualification.tests.test_landlock.Qualification.test_fixed_status_socket_supplies_two_bounded_unique_reports) ... ERROR
+
+======================================================================
+ERROR: test_fixed_status_socket_supplies_two_bounded_unique_reports (image.qualification.tests.test_landlock.Qualification.test_fixed_status_socket_supplies_two_bounded_unique_reports)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/vmstore/repos2/symbi-os/.cache/p0-landlock-followup/image/qualification/tests/test_landlock.py", line 24, in setUp
+    status_spec.loader.exec_module(self.status)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap_external>", line 755, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 892, in get_code
+  File "<frozen importlib._bootstrap_external>", line 950, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: '/vmstore/repos2/symbi-os/.cache/p0-landlock-followup/image/qualification/status_server.py'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.005s
+
+FAILED (errors=1)

@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "repository": "https://github.com/abenz1267/walker",
+  "revision": "a515085fd39fae80acc086c8fbfd9b7771a9a11d",
+  "version": "2.17.2",
+  "rust_minimum": "1.92.0",
+  "cargo_toml_sha256": "d1676045d1101a2d92c5669e54e36e63363d3e79dbc10c561662039ae2453a90",
+  "cargo_lock_sha256": "3448367c28c769e29f681ea2de84d4a822f08569bbef6628f03535c61fec2315",
+  "build_rs_sha256": "87ecaa8f156b6ea8133674c9d647d10273711523a0696e344dbd12d66f7f0db5",
+  "scope": "Pinned development source; exact compiler, locked dependencies, source build and base runtime acceptance remain separate gates",
+  "os_qualified": false
+}

@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/inputs/compile.py", line 112, in <module>
+    main()
+    ~~~~^^
+  File "/inputs/compile.py", line 89, in main
+    raise ValueError('Unexpected portal test selection')
+ValueError: Unexpected portal test selection

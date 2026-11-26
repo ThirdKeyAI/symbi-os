@@ -1,0 +1,194 @@
+Package                            Arch   Version             Repository        Size
+Downgrading:
+ mesa-dri-drivers                  x86_64 0:26.2.7-1.fc45     @commandline  53.3 MiB
+   replacing mesa-dri-drivers      x86_64 1:26.2.7-2.fc45     <unknown>     53.4 MiB
+ mesa-filesystem                   x86_64 0:26.2.7-1.fc45     @commandline   3.6 KiB
+   replacing mesa-filesystem       x86_64 1:26.2.7-2.fc45     <unknown>      3.6 KiB
+ mesa-libEGL                       x86_64 0:26.2.7-1.fc45     @commandline 398.5 KiB
+   replacing mesa-libEGL           x86_64 1:26.2.7-2.fc45     <unknown>    398.5 KiB
+ mesa-libGL                        x86_64 0:26.2.7-1.fc45     @commandline 378.3 KiB
+   replacing mesa-libGL            x86_64 1:26.2.7-2.fc45     <unknown>    378.3 KiB
+ mesa-libgbm                       x86_64 0:26.2.7-1.fc45     @commandline  19.5 KiB
+   replacing mesa-libgbm           x86_64 1:26.2.7-2.fc45     <unknown>     19.5 KiB
+ mesa-vulkan-drivers               x86_64 0:26.2.7-1.fc45     @commandline 174.0 MiB
+   replacing mesa-vulkan-drivers   x86_64 1:26.2.7-2.fc45     <unknown>    176.3 MiB
+Upgrading:
+ at-spi2-atk                       x86_64 0:2.62.2-1.fc45     @commandline 288.2 KiB
+   replacing at-spi2-atk           x86_64 0:2.62.1-1.fc45     <unknown>    288.2 KiB
+ at-spi2-core                      x86_64 0:2.62.2-1.fc45     @commandline   1.6 MiB
+   replacing at-spi2-core          x86_64 0:2.62.1-1.fc45     <unknown>      1.6 MiB
+ atk                               x86_64 0:2.62.2-1.fc45     @commandline 252.6 KiB
+   replacing atk                   x86_64 0:2.62.1-1.fc45     <unknown>    252.6 KiB
+ libdav1d                          x86_64 0:1.5.5-1.fc45      @commandline   1.8 MiB
+   replacing libdav1d              x86_64 0:1.5.4-1.fc45      <unknown>      1.8 MiB
+Installing:
+ R-srpm-macros                     noarch 0:1.3.7-3.fc45      @commandline   3.5 KiB
+ abseil-cpp-devel                  x86_64 0:20260526.0-3.fc45 @commandline   4.1 MiB
+ abseil-cpp-testing                x86_64 0:20260526.0-3.fc45 @commandline 582.0 KiB
+ add-determinism                   x86_64 0:0.7.3-3.fc45      @commandline   2.2 MiB
+ annobin-docs                      noarch 0:13.28-1.fc45      @commandline  99.7 KiB
+ annobin-plugin-gcc                x86_64 0:13.28-1.fc45      @commandline 709.4 KiB
+ ansible-srpm-macros               noarch 0:1-22.fc45         @commandline  35.7 KiB
+ at-spi2-atk-devel                 x86_64 0:2.62.2-1.fc45     @commandline   1.6 KiB
+ at-spi2-core-devel                x86_64 0:2.62.2-1.fc45     @commandline   4.5 MiB
+ atk-devel                         x86_64 0:2.62.2-1.fc45     @commandline   6.0 MiB
+ brotli                            x86_64 0:1.2.1-1.fc45      @commandline  33.5 KiB
+ brotli-devel                      x86_64 0:1.2.1-1.fc45      @commandline  65.8 KiB
+ build-reproducibility-srpm-macros noarch 0:0.7.3-3.fc45      @commandline   1.2 KiB
+ bzip2-devel                       x86_64 0:1.0.8-24.fc45     @commandline 309.8 KiB
+ cairo-devel                       x86_64 0:1.18.6-1.fc45     @commandline   2.3 MiB
+ cairo-gobject-devel               x86_64 0:1.18.6-1.fc45     @commandline   7.0 KiB
+ cmake                             x86_64 0:4.3.0-7.fc45      @commandline  40.4 MiB
+ cmake-data                        noarch 0:4.3.0-7.fc45      @commandline   9.4 MiB
+ cmake-rpm-macros                  noarch 0:4.3.0-7.fc45      @commandline   8.4 KiB
+ cmake-srpm-macros                 noarch 0:4.3.0-7.fc45      @commandline 524.0   B
+ dbus-devel                        x86_64 1:1.16.4-2.fc45     @commandline 131.7 KiB
+ debugedit                         x86_64 0:5.4-1.fc45        @commandline 228.8 KiB
+ dwz                               x86_64 0:0.17-3.fc45       @commandline 291.1 KiB
+ efi-srpm-macros                   noarch 0:6-9.fc45          @commandline  40.3 KiB
+ elfutils                          x86_64 0:0.197-1.fc45      @commandline   3.1 MiB
+ erlang-srpm-macros                noarch 0:0.4.2-1.fc45      @commandline   2.0 KiB
+ file-devel                        x86_64 0:5.48-3.fc45       @commandline  10.3 KiB
+ filesystem-srpm-macros            noarch 0:3.18-59.fc45      @commandline  38.2 KiB
+ fontconfig-devel                  x86_64 0:2.18.3-2.fc45     @commandline 127.7 KiB
+ fonts-srpm-macros                 noarch 1:5.0.0-4.fc45      @commandline  55.8 KiB
+ forge-srpm-macros                 noarch 0:0.4.0-5.fc45      @commandline  38.9 KiB
+ fpc-srpm-macros                   noarch 0:1.3-17.fc45       @commandline 144.0   B
+ freetype-devel                    x86_64 0:2.14.3-3.fc45     @commandline   8.6 MiB
+ fribidi-devel                     x86_64 0:1.0.18-1.fc45     @commandline  78.3 KiB
+ gap-srpm-macros                   noarch 0:2-3.fc45          @commandline   2.1 KiB
+ gcc-c++                           x86_64 0:16.2.1-3.fc45     @commandline  46.8 MiB
+ gcc-plugin-annobin                x86_64 0:16.2.1-3.fc45     @commandline  57.0 KiB
+ gdb-minimal                       x86_64 0:18.1-1.fc45       @commandline  14.4 MiB
+ gdk-pixbuf2-devel                 x86_64 0:2.44.8-3.fc45     @commandline   2.2 MiB
+ ghc-srpm-macros                   noarch 0:1.10-2.fc45       @commandline 792.0   B
+ glib2-devel                       x86_64 0:2.90.1-1.fc45     @commandline  15.8 MiB
+ glslang                           x86_64 0:16.3.0-2.fc45     @commandline   3.6 MiB
+ glslang-devel                     x86_64 0:16.3.0-2.fc45     @commandline 156.1 MiB
+ glycin-devel                      x86_64 0:2.2.6-1.fc45      @commandline 151.6 KiB
+ gmock                             x86_64 0:1.17.0-3.fc45     @commandline 142.8 KiB
+ gnat-srpm-macros                  noarch 0:7-3.fc45          @commandline   1.0 KiB
+ gnome-srpm-macros                 noarch 0:1.0-2.fc45        @commandline   3.5 KiB
+ go-srpm-macros                    noarch 0:3.8.0-3.fc45      @commandline  61.9 KiB
+ gpgverify                         noarch 0:2.2-5.fc45        @commandline   8.7 KiB
+ graphite2-devel                   x86_64 0:1.3.14-22.fc45    @commandline  49.3 KiB
+ gtest                             x86_64 0:1.17.0-3.fc45     @commandline 513.3 KiB
+ gtest-devel                       x86_64 0:1.17.0-3.fc45     @commandline   1.1 MiB
+ gtk2                              x86_64 0:2.24.33-28.fc45   @commandline  13.0 MiB
+ gtk2-devel                        x86_64 0:2.24.33-28.fc45   @commandline  23.8 MiB
+ gtk3-devel                        x86_64 0:3.24.52-6.fc45    @commandline  34.5 MiB
+ harfbuzz-cairo                    x86_64 0:15.0.0-2.fc45     @commandline  52.1 KiB
+ harfbuzz-devel                    x86_64 0:15.0.0-2.fc45     @commandline   6.6 MiB
+ harfbuzz-gpu                      x86_64 0:15.0.0-2.fc45     @commandline 176.2 KiB
+ harfbuzz-raster                   x86_64 0:15.0.0-2.fc45     @commandline 120.5 KiB
+ harfbuzz-vector                   x86_64 0:15.0.0-2.fc45     @commandline 117.3 KiB
+ hwdata-devel                      noarch 0:0.413-1.fc45      @commandline 210.0   B
+ ibus-gtk2                         x86_64 0:1.5.35-2.fc45     @commandline  43.9 KiB
+ iniparser                         x86_64 0:4.2.6-5.fc45      @commandline  37.5 KiB
+ iniparser-devel                   x86_64 0:4.2.6-5.fc45      @commandline 128.9 KiB
+ java-srpm-macros                  noarch 0:1-9.fc45          @commandline 870.0   B
+ kernel-srpm-macros                noarch 0:1.0-30.fc45       @commandline   1.9 KiB
+ lcms2-devel                       x86_64 0:2.16-8.fc45       @commandline 135.7 KiB
+ libGLEW                           x86_64 0:2.2.0-13.fc45     @commandline 760.3 KiB
+ libX11-devel                      x86_64 0:1.8.13-3.fc45     @commandline   1.0 MiB
+ libXau-devel                      x86_64 0:1.0.12-5.fc45     @commandline   7.3 KiB
+ libXcomposite-devel               x86_64 0:0.4.6-8.fc45      @commandline   7.6 KiB
+ libXcursor-devel                  x86_64 0:1.2.3-5.fc45      @commandline  20.5 KiB
+ libXdamage-devel                  x86_64 0:1.1.6-8.fc45      @commandline   2.5 KiB
+ libXext-devel                     x86_64 0:1.3.6-6.fc45      @commandline  97.7 KiB
+ libXfixes-devel                   x86_64 0:6.0.1-8.fc45      @commandline   9.2 KiB
+ libXft-devel                      x86_64 0:2.3.8-11.fc45     @commandline  29.1 KiB
+ libXi-devel                       x86_64 0:1.8.4-1.fc45      @commandline 131.9 KiB
+ libXinerama-devel                 x86_64 0:1.1.5-11.fc45     @commandline   6.9 KiB
+ libXrandr-devel                   x86_64 0:1.5.4-8.fc45      @commandline  21.3 KiB
+ libXrender-devel                  x86_64 0:0.9.12-5.fc45     @commandline  50.1 KiB
+ libXtst-devel                     x86_64 0:1.2.5-5.fc45      @commandline  11.2 KiB
+ libblkid-devel                    x86_64 0:2.42.4-1.fc45     @commandline  45.0 KiB
+ libcanberra-devel                 x86_64 0:0.30-52.fc45      @commandline 145.0 KiB
+ libcanberra-gtk2                  x86_64 0:0.30-52.fc45      @commandline  54.0 KiB
+ libcloudproviders-devel           x86_64 0:0.4.1-1.fc45      @commandline   1.3 MiB
+ libdatrie-devel                   x86_64 0:0.2.14-3.fc45     @commandline 411.3 KiB
+ libdav1d-devel                    x86_64 0:1.5.5-1.fc45      @commandline  41.9 KiB
+ libdisplay-info-devel             x86_64 0:0.3.0-2.fc45      @commandline 102.4 KiB
+ libdrm-devel                      x86_64 0:2.4.134-2.fc45    @commandline 743.6 KiB
+ libeis                            x86_64 0:1.6.0-3.fc45      @commandline 127.4 KiB
+ libeis-devel                      x86_64 0:1.6.0-3.fc45      @commandline  51.9 KiB
+ libepoxy-devel                    x86_64 0:1.5.10-13.fc45    @commandline   1.6 MiB
+ libffi-devel                      x86_64 0:3.5.2-3.fc45      @commandline  33.9 KiB
+ libglvnd-core-devel               x86_64 1:1.7.0-10.fc45     @commandline  40.3 KiB
+ libglvnd-devel                    x86_64 1:1.7.0-10.fc45     @commandline   2.1 MiB
+ libicu-devel                      x86_64 0:78.3-9.fc45       @commandline   5.2 MiB
+ libinput-devel                    x86_64 0:1.32.0-1.fc45     @commandline 239.6 KiB
+ libjpeg-turbo-devel               x86_64 0:3.1.4.1-2.fc45    @commandline 354.2 KiB
+ libmount-devel                    x86_64 0:2.42.4-1.fc45     @commandline  66.5 KiB
+ libpciaccess-devel                x86_64 0:0.16-18.fc45      @commandline  15.3 KiB
+ libpng-devel                      x86_64 2:1.6.59-1.fc45     @commandline 906.6 KiB
+ librsvg2-devel                    x86_64 0:2.63.2-2.fc45     @commandline   1.0 MiB
+ libseat-devel                     x86_64 0:0.9.3-2.fc45      @commandline   5.9 KiB
+ libseccomp-devel                  x86_64 0:2.6.1-3.fc45      @commandline 115.6 KiB
+ libselinux-devel                  x86_64 0:3.11-5.fc45       @commandline 121.9 KiB
+ libsepol-devel                    x86_64 0:3.11-2.fc45       @commandline 120.7 KiB
+ libstdc++-devel                   x86_64 0:16.2.1-3.fc45     @commandline  41.3 MiB
+ libthai-devel                     x86_64 0:0.1.30-3.fc45     @commandline 510.5 KiB
+ libuuid-devel                     x86_64 0:2.42.4-1.fc45     @commandline  41.0 KiB
+ libwebp-devel                     x86_64 0:1.6.0-4.fc45      @commandline 121.7 KiB
+ libxcb-devel                      x86_64 0:1.17.0-8.fc45     @commandline   2.6 MiB
+ libxkbcommon-devel                x86_64 0:1.13.1-4.fc45     @commandline 393.4 KiB
+ libxml2-devel                     x86_64 0:2.15.4-1.fc45     @commandline   6.7 MiB
+ libzip-devel                      x86_64 0:1.12.1-1.fc45     @commandline 257.5 KiB
+ linkdupes                         x86_64 0:0.7.3-3.fc45      @commandline 782.1 KiB
+ lua                               x86_64 0:5.5.1-2.fc45      @commandline 636.1 KiB
+ lua-devel                         x86_64 0:5.5.1-2.fc45      @commandline  48.4 KiB
+ lua-rpm-macros                    noarch 0:1-18.fc45         @commandline   1.8 KiB
+ lua-srpm-macros                   noarch 0:1-18.fc45         @commandline   1.3 KiB
+ lzo-devel                         x86_64 0:2.10-17.fc45      @commandline 212.2 KiB
+ lzo-minilzo                       x86_64 0:2.10-17.fc45      @commandline  36.5 KiB
+ mesa-libgbm-devel                 x86_64 0:26.2.7-1.fc45     @commandline  30.1 KiB
+ meson                             noarch 0:1.12.1-3.fc45     @commandline  14.9 MiB
+ meson-srpm-macros                 noarch 0:1.12.1-3.fc45     @commandline   1.7 KiB
+ muParser                          x86_64 0:2.3.5-6.fc45      @commandline 563.4 KiB
+ muParser-devel                    x86_64 0:2.3.5-6.fc45      @commandline 127.3 KiB
+ ncurses-c++-libs                  x86_64 0:6.6-3.fc45        @commandline 153.4 KiB
+ ncurses-devel                     x86_64 0:6.6-3.fc45        @commandline 895.6 KiB
+ ninja-build                       x86_64 0:1.13.2-6.fc45     @commandline 497.5 KiB
+ ocaml-srpm-macros                 noarch 0:11-4.fc45         @commandline   1.9 KiB
+ openblas-srpm-macros              noarch 0:2-22.fc45         @commandline 112.0   B
+ package-notes-srpm-macros         noarch 0:0.20-2.fc45       @commandline   1.6 KiB
+ pango-devel                       x86_64 0:1.58.2-1.fc45     @commandline   1.5 MiB
+ pcre2-devel                       x86_64 0:10.49-1.fc45      @commandline   2.1 MiB
+ perl-srpm-macros                  noarch 0:1-65.fc45         @commandline 861.0   B
+ pipewire-devel                    x86_64 0:1.6.11-1.fc45     @commandline 994.4 KiB
+ pixman-devel                      x86_64 0:0.46.2-4.fc45     @commandline  56.1 KiB
+ pugixml-devel                     x86_64 0:1.16-2.fc45       @commandline  68.5 KiB
+ pyproject-srpm-macros             noarch 0:1.24.0-1.fc45     @commandline   3.4 KiB
+ python-srpm-macros                noarch 0:3.15-2.fc45       @commandline  51.6 KiB
+ qt5-srpm-macros                   noarch 0:5.15.18-3.fc45    @commandline 500.0   B
+ qt6-srpm-macros                   noarch 0:6.11.2-1.fc45     @commandline 472.0   B
+ re2-devel                         x86_64 2:20251105-19.fc45  @commandline 102.5 KiB
+ readline-devel                    x86_64 0:8.3-6.fc45        @commandline 595.7 KiB
+ redhat-rpm-config                 noarch 0:345-5.fc45        @commandline 184.2 KiB
+ rhash                             x86_64 0:1.4.5-5.fc45      @commandline 354.8 KiB
+ rpm-build                         x86_64 0:6.1.0-1.fc45      @commandline 312.2 KiB
+ rust-srpm-macros                  noarch 0:28.5-2.fc45       @commandline   5.5 KiB
+ sdbus-cpp-devel                   x86_64 0:2.3.1-3.fc45      @commandline 315.6 KiB
+ sysprof-capture-devel             x86_64 0:51.0-1.fc45       @commandline 852.8 KiB
+ systemd-devel                     x86_64 0:262.1-1.fc45      @commandline 653.8 KiB
+ systemd-rpm-macros                noarch 0:262.1-1.fc45      @commandline   8.5 KiB
+ tomlplusplus                      x86_64 0:3.4.0-8.fc45      @commandline 262.1 KiB
+ tomlplusplus-devel                x86_64 0:3.4.0-8.fc45      @commandline 637.5 KiB
+ tree-sitter-srpm-macros           noarch 0:0.4.6-2.fc45      @commandline   8.6 KiB
+ wayland-devel                     x86_64 0:1.26.0-3.fc45     @commandline 724.6 KiB
+ wayland-protocols-devel           noarch 0:1.50-1.fc45       @commandline   1.0 MiB
+ xcb-util-errors-devel             x86_64 0:1.0.1-8.fc45      @commandline   6.6 KiB
+ xcb-util-wm-devel                 x86_64 0:0.4.2-10.fc45     @commandline 141.1 KiB
+ xorg-x11-proto-devel              noarch 0:2025.1-3.fc45     @commandline   1.8 MiB
+ xz-devel                          x86_64 1:5.8.3-2.fc45      @commandline 258.8 KiB
+ zig-srpm-macros                   noarch 0:1-9.fc45          @commandline   1.3 KiB
+ zlib-ng-compat-devel              x86_64 0:2.3.3-6.fc45      @commandline 107.0 KiB
+
+Transaction Summary:
+ Installing:       163 packages
+ Upgrading:          4 packages
+ Replacing:         10 packages
+ Downgrading:        6 packages
+

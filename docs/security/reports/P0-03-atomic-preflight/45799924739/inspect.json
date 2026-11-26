@@ -1,0 +1,122 @@
+{
+  "schema": 1,
+  "passed": false,
+  "os_qualified": false,
+  "guest_booted": false,
+  "installation_attempted": false,
+  "source_commit": "4c6d3c51a91a56c790378899c6710372ae26dbc0",
+  "image_source_commit": "23a6c721092ad77c3af33c11cab230ecaaa54cff",
+  "variant": "generic",
+  "phase": "inspect",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "load-image",
+      "exit_code": 0
+    },
+    {
+      "name": "inspect-image",
+      "exit_code": 0
+    },
+    {
+      "name": "installed-files",
+      "exit_code": 0
+    },
+    {
+      "name": "boot-inputs",
+      "exit_code": 1
+    },
+    {
+      "name": "cleanup-symbi-atomic-installed-files",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-symbi-atomic-installed-files",
+      "exit_code": 1
+    },
+    {
+      "name": "cleanup-symbi-atomic-boot-inputs",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-symbi-atomic-boot-inputs",
+      "exit_code": 1
+    },
+    {
+      "name": "remove-image",
+      "exit_code": 0
+    },
+    {
+      "name": "image-absent",
+      "exit_code": 1
+    }
+  ],
+  "lock_sha256": "dba718abbbf386d36eb6f8764846533f8aa9c3c9cc175d96d394399dcf2ceadf",
+  "scope": "Read-only saved development image preflight; no disk, installation, boot or release qualification",
+  "expected_inputs": {
+    "kernel": "7.3.4-300.secureblue.1.fc45.x86_64",
+    "bootc_version": "1.17.1",
+    "packages": [
+      "bootc\t0\t1.17.1\t1.fc45\tx86_64",
+      "kernel-core\t0\t7.3.4\t300.secureblue.1.fc45\tx86_64"
+    ],
+    "trust": {
+      "etc/containers/policy.json": "974d657b12acca4cd4db7ca6f4788f65b0f366d2193bdb6f0502d6c239c1a7a5",
+      "etc/containers/registries.d/symbiont.yaml": "336ad92f00b0f2fb6954fbcab7fc6541d4333a884f6038900eb94f7300104bfa"
+    }
+  },
+  "disk_free_before_load": 90828709888,
+  "loaded_image": {
+    "Id": "54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1",
+    "Digest": "sha256:9b6e8fdd9f6f98631895ccdfaaed6ffd88febd3ea6238d543935a524b572faf3",
+    "Architecture": "amd64",
+    "Os": "linux"
+  },
+  "probe_hashes": {
+    "probe.py": "9f83f3b4b2959cecb5c09343703e35eff5da68556cf70157e74a930ccacf4b84",
+    "verify.py": "af7254352c30796263481c81b2aa693d477981a3b373196e8ea3b577401278c4",
+    "expected.json": "2a8abbf5c95d0a50c96a3cd69192e9d443a2deb173e77e498fba400ccaf59f78"
+  },
+  "installed_files": {
+    "passed": true,
+    "os_qualified": false,
+    "installed_files_checked": 102,
+    "installed_package_count": 2184,
+    "all_package_identities_preserved_after_build": true,
+    "uid": 10001,
+    "limits": {
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "64"
+    },
+    "scope": "Installed bytes and packaging only; no boot or containment qualification"
+  },
+  "failure": "CalledProcessError: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/atomic-image-storage/root', '--runroot', '/run/symbi-atomic-inspect-45799924739-1', 'run', '--rm', '--name=symbi-atomic-boot-inputs', '--pull=never', '--read-only', '--network=none', '--user=10001:10001', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--memory=512m', '--memory-swap=512m', '--cpus=1', '--pids-limit=64', '--cgroup-parent=/system.slice/symbi-atomic-inspect-45799924739-1.service', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/atomic-image-storage/qualification,dst=/qualification,ro', '--env=PATH=/usr/bin:/bin', '--env=LANG=C.UTF-8', '--env=PYTHONDONTWRITEBYTECODE=1', '--entrypoint=/usr/bin/python3', 'sha256:54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1', '/qualification/probe.py']' returned non-zero exit status 1.",
+  "cleanup": {
+    "symbi-atomic-installed-files": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-atomic-boot-inputs": {
+      "removed": true,
+      "absent": true
+    }
+  },
+  "image_removed": true,
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4294971392",
+    "memory.events": "low 0\nhigh 0\nmax 31844\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 142162365\nuser_usec 118128508\nsystem_usec 24033857\nnice_usec 115292361\ncore_sched.force_idle_usec 0\nnr_periods 1306\nnr_throttled 59\nthrottled_usec 1031862\nnr_bursts 0\nburst_usec 0"
+  }
+}

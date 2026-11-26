@@ -1,0 +1,46 @@
+{
+  "passed": false,
+  "os_qualified": false,
+  "source_commit": "80474784484193a01c02c8eb72b5a050e6436534",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "source-init",
+      "exit_code": 0
+    },
+    {
+      "name": "source-fetch",
+      "exit_code": 0
+    },
+    {
+      "name": "source-checkout",
+      "exit_code": 0
+    },
+    {
+      "name": "pull-base",
+      "exit_code": 0
+    },
+    {
+      "name": "install-signed-compiler",
+      "exit_code": 1
+    }
+  ],
+  "scope": "Source-built Elephant and actual provider refusal on the selected base; no OS qualification",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "upstream_revision": "8f1e21d6efe40b8b3953f95b9574f99f717caf91",
+  "failure": "CalledProcessError: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/elephant-build-storage/root', '--runroot', '/run/symbi-elephant-45726113225-1', 'run', '--name=symbi-elephant-compiler', '--user=0', '--network=none', '--cap-add=CHOWN,DAC_OVERRIDE,FOWNER,FSETID,SETGID,SETUID,SETFCAP', '--memory=2g', '--memory-swap=2g', '--cpus=1', '--pids-limit=128', '--pull=never', '--security-opt=no-new-privileges', '--cap-drop=ALL', '--cgroup-parent=/system.slice/symbi-elephant-45726113225-1.service', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/elephant-build-storage/inputs,dst=/inputs,ro', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/elephant-build-storage/output,dst=/output', '--env=PYTHONDONTWRITEBYTECODE=1', '--entrypoint=/usr/bin/python3', 'ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f', '/inputs/toolchain_guest.py']' returned non-zero exit status 1.",
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4328423424",
+    "memory.events": "low 0\nhigh 0\nmax 39466\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 140503297\nuser_usec 115740497\nsystem_usec 24762799\nnice_usec 113755000\ncore_sched.force_idle_usec 0\nnr_periods 1334\nnr_throttled 391\nthrottled_usec 50082668\nnr_bursts 0\nburst_usec 0"
+  }
+}

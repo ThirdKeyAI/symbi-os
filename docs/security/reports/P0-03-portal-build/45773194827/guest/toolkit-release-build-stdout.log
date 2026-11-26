@@ -1,0 +1,109 @@
+[0/2] Re-checking globbed directories...
+[1/106] Generating /output/sources/hyprtoolkit/protocols/wayland.cpp, /output/sources/hyprtoolkit/protocols/wayland.hpp
+[2/106] Generating /output/sources/hyprtoolkit/protocols/xdg-shell.cpp, /output/sources/hyprtoolkit/protocols/xdg-shell.hpp
+[3/106] Generating /output/sources/hyprtoolkit/protocols/linux-dmabuf-v1.cpp, /output/sources/hyprtoolkit/protocols/linux-dmabuf-v1.hpp
+[4/106] Generating /output/sources/hyprtoolkit/protocols/fractional-scale-v1.cpp, /output/sources/hyprtoolkit/protocols/fractional-scale-v1.hpp
+[5/106] Generating /output/sources/hyprtoolkit/protocols/viewporter.cpp, /output/sources/hyprtoolkit/protocols/viewporter.hpp
+[6/106] Generating /output/sources/hyprtoolkit/protocols/cursor-shape-v1.cpp, /output/sources/hyprtoolkit/protocols/cursor-shape-v1.hpp
+[7/106] Generating /output/sources/hyprtoolkit/protocols/ext-session-lock-v1.cpp, /output/sources/hyprtoolkit/protocols/ext-session-lock-v1.hpp
+[8/106] Generating /output/sources/hyprtoolkit/protocols/tablet-v2.cpp, /output/sources/hyprtoolkit/protocols/tablet-v2.hpp
+[9/106] Generating /output/sources/hyprtoolkit/protocols/text-input-unstable-v3.cpp, /output/sources/hyprtoolkit/protocols/text-input-unstable-v3.hpp
+[10/106] Generating /output/sources/hyprtoolkit/protocols/linux-drm-syncobj-v1.cpp, /output/sources/hyprtoolkit/protocols/linux-drm-syncobj-v1.hpp
+[11/106] Generating /output/sources/hyprtoolkit/protocols/wlr-layer-shell-unstable-v1.cpp, /output/sources/hyprtoolkit/protocols/wlr-layer-shell-unstable-v1.hpp
+[12/106] Generating /output/sources/hyprtoolkit/protocols/keyboard-shortcuts-inhibit-unstable-v1.cpp, /output/sources/hyprtoolkit/protocols/keyboard-shortcuts-inhibit-unstable-v1.hpp
+[13/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/core/AnimationManager.cpp.o
+[14/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/core/Backend.cpp.o
+[15/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/core/BackendContext.cpp.o
+[16/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/core/EmbeddedBackend.cpp.o
+[17/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/core/Input.cpp.o
+[18/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/core/InternalBackend.cpp.o
+[19/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/core/Logger.cpp.o
+[20/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/core/platforms/WaylandPlatform.cpp.o
+[21/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/Element.cpp.o
+[22/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/button/Builder.cpp.o
+[23/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/button/Button.cpp.o
+[24/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/checkbox/Builder.cpp.o
+[25/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/checkbox/Checkbox.cpp.o
+[26/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/checkbox/Checkmark.cpp.o
+[27/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/columnLayout/Builder.cpp.o
+[28/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/columnLayout/ColumnLayout.cpp.o
+[29/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/combobox/Builder.cpp.o
+[30/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/combobox/Combobox.cpp.o
+[31/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/combobox/DropdownHandle.cpp.o
+[32/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/image/Builder.cpp.o
+[33/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/image/Image.cpp.o
+[34/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/line/Builder.cpp.o
+[35/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/line/Line.cpp.o
+[36/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/null/Builder.cpp.o
+[37/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/null/Null.cpp.o
+[38/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/progressBar/Builder.cpp.o
+[39/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/progressBar/ProgressBar.cpp.o
+[40/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/radioGroup/RadioGroup.cpp.o
+[41/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/rectangle/Builder.cpp.o
+[42/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/rectangle/Rectangle.cpp.o
+[43/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/rowLayout/Builder.cpp.o
+[44/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/rowLayout/RowLayout.cpp.o
+[45/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/scrollArea/Builder.cpp.o
+[46/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/scrollArea/ScrollArea.cpp.o
+[47/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/slider/Builder.cpp.o
+[48/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/slider/Slider.cpp.o
+[49/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/spinbox/Builder.cpp.o
+[50/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/spinbox/Spinbox.cpp.o
+[51/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/spinbox/SpinboxAngle.cpp.o
+[52/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/spinbox/SpinboxSpinner.cpp.o
+[53/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/text/Builder.cpp.o
+[54/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/text/Text.cpp.o
+[55/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/textbox/Builder.cpp.o
+[56/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/element/textbox/Textbox.cpp.o
+[57/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/helpers/DamageRing.cpp.o
+[58/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/helpers/Env.cpp.o
+[59/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/helpers/Format.cpp.o
+[60/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/helpers/Timer.cpp.o
+[61/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/helpers/UTF8.cpp.o
+[62/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/layout/Positioner.cpp.o
+[63/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/output/WaylandOutput.cpp.o
+[64/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/palette/Color.cpp.o
+[65/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/palette/ConfigManager.cpp.o
+[66/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/palette/Gradient.cpp.o
+[67/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/palette/Palette.cpp.o
+[68/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/renderer/Polygon.cpp.o
+[69/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/renderer/gl/Framebuffer.cpp.o
+[70/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/renderer/gl/GLTexture.cpp.o
+[71/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/renderer/gl/OpenGL.cpp.o
+/output/sources/hyprtoolkit/src/renderer/gl/OpenGL.cpp:113:13: warning: ‘void glMessageCallbackA(GLenum, GLenum, GLuint, GLenum, GLsizei, const GLchar*, const void*)’ defined but not used [-Wunused-function]
+  113 | static void glMessageCallbackA(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+      |             ^~~~~~~~~~~~~~~~~~
+[72/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/renderer/gl/Renderbuffer.cpp.o
+[73/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/renderer/gl/Shader.cpp.o
+[74/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/renderer/gl/Sync.cpp.o
+[75/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/renderer/sync/SyncTimeline.cpp.o
+[76/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/resource/assetCache/AssetCache.cpp.o
+[77/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/resource/assetCache/AssetCacheEntry.cpp.o
+[78/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/sessionLock/WaylandSessionLock.cpp.o
+[79/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/system/DesktopMethods.cpp.o
+[80/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/system/Icons.cpp.o
+[81/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/system/SystemIcon.cpp.o
+[82/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/types/FontSizeType.cpp.o
+[83/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/types/SizeType.cpp.o
+[84/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/window/Builder.cpp.o
+[85/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/window/EmbeddedSurface.cpp.o
+[86/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/window/IWaylandWindow.cpp.o
+[87/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/window/ToolkitWindow.cpp.o
+[88/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/window/WaylandLayer.cpp.o
+[89/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/window/WaylandLockSurface.cpp.o
+[90/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/window/WaylandPopup.cpp.o
+[91/106] Building CXX object CMakeFiles/hyprtoolkit.dir/src/window/WaylandWindow.cpp.o
+[92/106] Building CXX object CMakeFiles/hyprtoolkit.dir/protocols/wayland.cpp.o
+[93/106] Building CXX object CMakeFiles/hyprtoolkit.dir/protocols/xdg-shell.cpp.o
+[94/106] Building CXX object CMakeFiles/hyprtoolkit.dir/protocols/linux-dmabuf-v1.cpp.o
+[95/106] Building CXX object CMakeFiles/hyprtoolkit.dir/protocols/fractional-scale-v1.cpp.o
+[96/106] Building CXX object CMakeFiles/hyprtoolkit.dir/protocols/viewporter.cpp.o
+[97/106] Building CXX object CMakeFiles/hyprtoolkit.dir/protocols/cursor-shape-v1.cpp.o
+[98/106] Building CXX object CMakeFiles/hyprtoolkit.dir/protocols/ext-session-lock-v1.cpp.o
+[99/106] Building CXX object CMakeFiles/hyprtoolkit.dir/protocols/tablet-v2.cpp.o
+[100/106] Building CXX object CMakeFiles/hyprtoolkit.dir/protocols/text-input-unstable-v3.cpp.o
+[101/106] Building CXX object CMakeFiles/hyprtoolkit.dir/protocols/linux-drm-syncobj-v1.cpp.o
+[102/106] Building CXX object CMakeFiles/hyprtoolkit.dir/protocols/wlr-layer-shell-unstable-v1.cpp.o
+[103/106] Building CXX object CMakeFiles/hyprtoolkit.dir/protocols/keyboard-shortcuts-inhibit-unstable-v1.cpp.o
+[104/106] Linking CXX shared library libhyprtoolkit.so.0.6.0
+[105/106] Creating library symlink libhyprtoolkit.so.6 libhyprtoolkit.so

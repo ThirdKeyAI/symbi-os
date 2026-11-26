@@ -1,0 +1,8 @@
+cargo 1.100.0 (3acc79c0c 2026-11-05) (Fedora 1.100.0-1.fc45)
+release: 1.100.0
+commit-hash: 3acc79c0c841844675bc53a605922dbfc441e750
+commit-date: 2026-11-05
+host: x86_64-unknown-linux-gnu
+libgit2: 1.9.7 (sys:0.21.0 system)
+libcurl: 8.21.0 (sys:0.4.90+curl-8.21.0 system ssl:OpenSSL/4.0.3)
+os: Fedora 45.0.0 [64-bit]

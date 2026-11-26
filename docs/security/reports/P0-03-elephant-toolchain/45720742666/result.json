@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "source_commit": "943be8905da5dc1e3dace4b5bf5f9f5f648dd88b",
+  "profile": "elephant-build",
+  "packages": 4,
+  "rpm_manifest_sha256": "33db1759391634ccc71675aeea3ce505a8cb576d72d5e564ee136790f8c4f3ef",
+  "os_qualified": false,
+  "scope": "Candidate signed build inputs, not installed or compiled"
+}

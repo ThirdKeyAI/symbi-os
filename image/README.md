@@ -3,8 +3,13 @@
 P0-03 uses the owner-selected strategy **retain secureblue hardening and package
 maintained Hyprland**. The GitHub release environment and dedicated signing key
 are configured. Generic and NVIDIA base signatures have been verified at the
-digests in `base-images.json`. Hyprland/RPM inputs and release execution remain incomplete.
-No Symbiont OS image has been built, signed, booted or qualified.
+digests in `base-images.json`. The development desktop binaries and runtime RPM
+inputs have retained compatibility results. Both [generic](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45758278776)
+and [NVIDIA](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45760174895)
+development OCI images built successfully at `1e171d1`, with installed-file,
+public trust-policy, additive-package, loader, CLI/provider, Lua and bootc lint
+checks. Actual OS boot, physical GPU/desktop interaction, Fedora sandbox/escape
+and release acceptance remain incomplete. No OS image has been signed or released.
 
 The original plan names secureblue's `wayblue-hyprland-main-userns-hardened`.
 [secureblue's pinned deprecation notice](https://github.com/secureblue/secureblue/blob/353366bb6d031e66fc565b0b101a8a069f32fcdb/files/system/usr/libexec/deprecated-images.json.md)
@@ -41,12 +46,34 @@ and OQ-07. A Sericea base does not make Sway the product's trusted compositor.
   binds the dedicated OS public key and two GHCR destinations; see
   [the trust-policy procedure](SIGNING.md). Symbiont's GitHub workflow signing
   identity remains an additional attestation identity, not the OS update key.
+  The desktop preparation now adds this policy and attachment configuration to
+  the actual payload; this integration follows the first development image and
+  needs its own installed-image result.
 
 Run `bash scripts/check-image.sh` for the small offline checks.
 `python3 image/recipe.py --variant generic` emits the recipe; `--variant nvidia`
 uses its separately verified base pin. The
-renderer is not a signature verifier. Do not build until the signature and all
-release prerequisites below are satisfied.
+renderer is not a signature verifier. Development assembly runs only through the
+bounded hosted desktop workflow after input authentication. Publishing remains
+gated on all release prerequisites below; development artifacts are not an OS
+installation or rebase route.
+
+## Hosted validation scheduling
+
+Workspace, policy and formal checks still run on every pull-request update.
+The heavier input/build/VM workflows use component-specific push paths
+for branches in this repository. GitHub compares each push's old and new heads,
+so an unrelated launcher or documentation edit does not rebuild the compositor.
+Their same-repository pull-request jobs are skipped before runner allocation;
+fork contributions retain pull-request validation, and manual dispatch remains
+available. A newer relevant run supersedes the same workflow/ref's older run.
+
+The workflow bodies, pinned actions, resource ceilings, permissions and acceptance
+checks are unchanged. Skipped or cancelled jobs are not passing qualification
+evidence. Retained results remain bound to their source/input hashes; changed
+inputs require their actual tests before adoption or release. Hyprland default
+changes run the retained-binary runtime checks without repeating compilation.
+See [GitHub's path comparison rules](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow).
 
 ## Required build and release sequence
 
@@ -103,7 +130,7 @@ upstream lockfile and the explicit `v1_0_0` feature. The separate
 `Image tool compatibility` workflow compiles it only on a GitHub-hosted runner,
 under a verified 4 GiB memory limit, no swap, two CPUs, one Cargo job and a
 45-minute deadline. These hosted tool limits do not change the workstation's
-existing VM limits or the image-container limits above.
+local resource limits or the image-container limits above. The local VM remains off.
 
 The acceptance script invokes the actual CLI with validation enabled for both
 OS recipes, then malformed/unpinned recipe cases, then Containerfile generation.
@@ -115,10 +142,35 @@ through its v1 validator. That result is retained before the downstream fix.
 No validation bypass is available in this workflow.
 
 The workflow has read-only repository permission, no release environment, no
-OIDC permission and no registry write permission. It uploads public logs, pins
-and generated text as evidence, not a compiler binary or image. Even a passing
-CLI check does not establish source audit coverage, authenticate an OS build,
-or qualify generated external image references; those remain separate gates.
+OIDC permission and no registry write permission. Earlier passing runs retained
+public logs, pins and generated text, but not the compiled executable.
+[Run 45743071275](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45743071275)
+now retains the exact development CLI and original upstream license as
+`bluebuild-development-tool`, pinned in `development-builder.lock.json` for reuse.
+The runner is Ubuntu 24.04, matching the planned assembly host. The binary is
+bounded to 128 MiB; its immutable manifest binds the OS commit, upstream source,
+configuration, unchanged Cargo.lock, applied patch, compiler, features, profile,
+license and executable hashes. Retention occurs after compilation and before
+later acceptance, so a retained artifact alone never means those later checks
+passed. Reuse must verify the artifact/manifest digests and the same run's 17
+CLI cases and complete upstream suite before execution. No image is uploaded by
+this workflow. Source/dependency review, external-reference authentication and
+actual OS qualification remain separate gates.
+
+`toolchain/reuse.py` prepares that artifact-consumption boundary. It requires
+reviewed passing CLI/upstream flags, a byte-identical current tool configuration,
+matching source/compiler/patch bindings and exact archive/manifest/file hashes.
+Only the executable, original license and manifest are accepted; duplicate,
+escaping, linked, special, encrypted, oversized or ambiguous JSON inputs fail
+before execution, and partial extracted output is removed. Seven fixture tests
+exercise this boundary with non-executable bytes. The real artifact lock
+records the successful run: all 17 CLI cases and all 151 upstream tests passed,
+and the retained executable hash matches that exercised by the CLI cases. The
+4 GiB hosted unit peaked at 4,138,663,936 bytes with zero limit/OOM events.
+Generated Containerfiles match the previous reviewed output except build UUID,
+timestamp and final newline. The 68 MB executable stays hosted; only its small
+public evidence was downloaded locally. Actual cross-job reuse and image assembly
+remain next.
 
 The downstream patch in `toolchain/patches/` adds a closed, embedded schema for
 this OS's v2 recipe profile, then requires successful upstream typed parsing and
@@ -164,3 +216,13 @@ audits. The initial and final cgroup counters are collected inside the unit;
 a post-exit systemd query labels a garbage-collected unit instead of showing
 default limits as measured values. The first success predates the final-counter
 fix and records that evidence limitation explicitly.
+
+## Hyprland portal preparation
+
+The built development images currently have GTK and wlroots portal backends;
+the Hyprland backend and its matching native share picker are still missing.
+[Portal preparation](portal/README.md) pins the pair selected by the existing
+compositor lockfile and provides hosted signed-RPM discovery. Its source/input
+guards and negative tests do not establish portal compilation, screen-share
+consent or restore-token behavior. Existing image and native compiler artifacts
+remain unchanged and are reused for subsequent work.

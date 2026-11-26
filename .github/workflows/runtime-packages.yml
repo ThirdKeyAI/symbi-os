@@ -1,0 +1,96 @@
+name: Runtime signed compatibility package discovery
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "image/runtime_packages/**"
+      - "image/assembly/runtime-development.lock.json"
+      - "image/assembly/runtime-build-result.json"
+      - "image/assembly/inputs.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/fedora-package-trust.json"
+      - "image/hyprland/fedora-build.repo"
+      - "image/hyprland/package-dnf.conf"
+      - "image/hyprland/package-repository-inputs.json"
+      - "image/hyprland/keys/**"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/reuse.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - "image/launcher/probes/bounded_process.py"
+      - "upstream/symbiont.toml"
+      - "scripts/check-runtime-packages.sh"
+      - ".github/workflows/runtime-packages.yml"
+      - "!image/runtime_packages/README.md"
+  pull_request:
+    paths:
+      - "image/runtime_packages/**"
+      - "image/assembly/runtime-development.lock.json"
+      - "image/assembly/runtime-build-result.json"
+      - "image/assembly/inputs.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/fedora-package-trust.json"
+      - "image/hyprland/fedora-build.repo"
+      - "image/hyprland/package-dnf.conf"
+      - "image/hyprland/package-repository-inputs.json"
+      - "image/hyprland/keys/**"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/reuse.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - "image/launcher/probes/bounded_process.py"
+      - "upstream/symbiont.toml"
+      - "scripts/check-runtime-packages.sh"
+      - ".github/workflows/runtime-packages.yml"
+      - "!image/runtime_packages/README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: runtime-packages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  packages:
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-26.04
+    timeout-minutes: 50
+    steps:
+      - name: Check out proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Resolve and verify runtime compatibility RPMs without installation
+        run: bash scripts/check-runtime-packages.sh
+      - name: Retain public discovery evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: runtime-package-evidence
+          path: .cache/runtime-package-evidence/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Retain authenticated candidates for separate package review
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: symbiont-runtime-rpm-candidates
+          path: |
+            .cache/runtime-package-output/rpms/
+            .cache/runtime-package-output/evidence/result.json
+          retention-days: 14
+          compression-level: 0
+          if-no-files-found: error

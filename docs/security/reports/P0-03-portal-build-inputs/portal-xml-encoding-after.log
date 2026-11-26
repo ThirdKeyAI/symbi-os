@@ -1,0 +1,37 @@
+test_changed_source_origin_duplicate_base_patch_or_build_is_refused (test_portal_build_inputs.PrefixBindings.test_changed_source_origin_duplicate_base_patch_or_build_is_refused) ... ok
+test_exact_prefix_sources_base_and_patch_are_reused (test_portal_build_inputs.PrefixBindings.test_exact_prefix_sources_base_and_patch_are_reused) ... ok
+test_exact_signed_build_profile_is_accepted (test_portal_build_inputs.RpmBindings.test_exact_signed_build_profile_is_accepted) ... ok
+test_stale_profile_key_base_or_product_claim_is_refused (test_portal_build_inputs.RpmBindings.test_stale_profile_key_base_or_product_claim_is_refused) ... ok
+test_actual_checkout_files_match_reviewed_sources (test_portal_build_inputs.SourceTree.test_actual_checkout_files_match_reviewed_sources) ... ok
+test_changed_checkout_revision_bytes_links_and_path_escape_are_refused (test_portal_build_inputs.SourceTree.test_changed_checkout_revision_bytes_links_and_path_escape_are_refused) ... ok
+test_complete_upstream_test_result_is_accepted (test_portal_build_inputs.TestReports.test_complete_upstream_test_result_is_accepted) ... ok
+test_encoded_declaration_cannot_bypass_entity_refusal (test_portal_build_inputs.TestReports.test_encoded_declaration_cannot_bypass_entity_refusal) ... ok
+test_skipped_empty_failed_disabled_malformed_and_incomplete_results_are_refused (test_portal_build_inputs.TestReports.test_skipped_empty_failed_disabled_malformed_and_incomplete_results_are_refused) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.004s
+
+OK
+	Command being timed: "/usr/bin/env PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=p003-portal-build-stage:/vmstore/repos2/symbi-os/.cache/p0-image-followup python3 -m unittest discover -s p003-portal-build-stage/image/tests -p test_portal_build_inputs.py -v"
+	User time (seconds): 0.03
+	System time (seconds): 0.01
+	Percent of CPU this job got: 10%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.48
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 22228
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 112
+	Minor (reclaiming a frame) page faults: 3798
+	Voluntary context switches: 292
+	Involuntary context switches: 9
+	Swaps: 0
+	File system inputs: 22128
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

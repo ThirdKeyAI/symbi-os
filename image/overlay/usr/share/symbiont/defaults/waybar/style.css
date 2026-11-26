@@ -1,5 +1,7 @@
-* { font-family: sans-serif; font-size: 12px; min-height: 0; }
-window#waybar { background: #19212b; color: #e7edf2; }
-#workspaces button { color: #e7edf2; padding: 0 8px; }
-#workspaces button.active { background: #35465b; }
+* { font-family: "JetBrainsMono Nerd Font", sans-serif; font-size: 12px; min-height: 0; }
+window#waybar { background: #1a1b26; color: #a9b1d6; }
+#workspaces button { color: #a9b1d6; padding: 0 8px; }
+#workspaces button:hover { background: #414868; }
+#workspaces button.active { background: #7aa2f7; color: #1a1b26; }
 #clock, #network, #pulseaudio, #battery { padding: 0 10px; }
+#battery.critical { color: #f7768e; }

@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "source_commit": "943be8905da5dc1e3dace4b5bf5f9f5f648dd88b",
+  "profile": "hyprland-runtime",
+  "packages": 3,
+  "rpm_manifest_sha256": "ad904c3228b7c784df92a82f84ebe73806bdc0af1bcfb2611c17466c34f3f6ff",
+  "os_qualified": false,
+  "scope": "Candidate signed build inputs, not installed or compiled"
+}

@@ -1,0 +1,40 @@
+test_archive_rejects_escaping_duplicate_special_and_dangling_members (test_kitty_bundle.KittyBundle.test_archive_rejects_escaping_duplicate_special_and_dangling_members) ... ok
+test_archive_rejects_limits_and_missing_programs (test_kitty_bundle.KittyBundle.test_archive_rejects_limits_and_missing_programs) ... ok
+test_inspection_hashes_regular_files_without_extracting_or_executing (test_kitty_bundle.KittyBundle.test_inspection_hashes_regular_files_without_extracting_or_executing) ... ok
+test_link_resolution_cannot_escape_via_an_intermediate_directory_link (test_kitty_bundle.KittyBundle.test_link_resolution_cannot_escape_via_an_intermediate_directory_link) ... FAIL
+test_payload_cannot_have_a_link_or_regular_file_as_its_parent (test_kitty_bundle.KittyBundle.test_payload_cannot_have_a_link_or_regular_file_as_its_parent) ... 
+  test_payload_cannot_have_a_link_or_regular_file_as_its_parent (test_kitty_bundle.KittyBundle.test_payload_cannot_have_a_link_or_regular_file_as_its_parent) (kind=b'2') ... FAIL
+  test_payload_cannot_have_a_link_or_regular_file_as_its_parent (test_kitty_bundle.KittyBundle.test_payload_cannot_have_a_link_or_regular_file_as_its_parent) (kind=b'0') ... FAIL
+test_signature_requires_full_identity_and_modern_hash_without_failure_status (test_kitty_bundle.KittyBundle.test_signature_requires_full_identity_and_modern_hash_without_failure_status) ... ok
+
+======================================================================
+FAIL: test_link_resolution_cannot_escape_via_an_intermediate_directory_link (test_kitty_bundle.KittyBundle.test_link_resolution_cannot_escape_via_an_intermediate_directory_link)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-kitty-bundle-links-stage/image/tests/test_kitty_bundle.py", line 69, in test_link_resolution_cannot_escape_via_an_intermediate_directory_link
+    with self.assertRaises(ValueError):mod.inspect_archive(path)
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_payload_cannot_have_a_link_or_regular_file_as_its_parent (test_kitty_bundle.KittyBundle.test_payload_cannot_have_a_link_or_regular_file_as_its_parent) (kind=b'2')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-kitty-bundle-links-stage/image/tests/test_kitty_bundle.py", line 78, in test_payload_cannot_have_a_link_or_regular_file_as_its_parent
+    with self.subTest(kind=kind),self.assertRaises(ValueError):mod.inspect_archive(path)
+                                 ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_payload_cannot_have_a_link_or_regular_file_as_its_parent (test_kitty_bundle.KittyBundle.test_payload_cannot_have_a_link_or_regular_file_as_its_parent) (kind=b'0')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-kitty-bundle-links-stage/image/tests/test_kitty_bundle.py", line 78, in test_payload_cannot_have_a_link_or_regular_file_as_its_parent
+    with self.subTest(kind=kind),self.assertRaises(ValueError):mod.inspect_archive(path)
+                                 ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.296s
+
+FAILED (failures=3)

@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "scope": "Static upstream systemd v262 source review; the booted Fedora package is 262.1. This does not establish distro binary/source equivalence.",
+  "repository": "https://github.com/systemd/systemd",
+  "revision": "8cc40e0c5e9234bf45084751ac53b1fbfe70b492",
+  "path": "src/core/exec-invoke.c",
+  "git_blob": "c706e017a49bdcef310c66ad83e3afa2fbdcc416",
+  "url": "https://github.com/systemd/systemd/blob/8cc40e0c5e9234bf45084751ac53b1fbfe70b492/src/core/exec-invoke.c",
+  "observations": [
+    {
+      "line": 649,
+      "behavior": "File-backed standard output opens with permissions 0666 masked by the configured service umask."
+    },
+    {
+      "line": 5576,
+      "behavior": "setup_output opens standard output before execution directories are created."
+    },
+    {
+      "line": 5578,
+      "behavior": "Failure here maps to EXIT_STDOUT (209), matching the native report."
+    },
+    {
+      "line": 5858,
+      "behavior": "setup_exec_directory for RuntimeDirectory and related settings runs later."
+    }
+  ],
+  "native_run": 45827646015,
+  "native_exit_status": 209,
+  "native_errno": "not retained",
+  "correction": "Use one fixed root-owned 0600 file directly under the already-existing /run directory; refuse linked or non-root-controlled parent directories and output files.",
+  "limits": "No new command, capability, SELinux rule, credential, dependency or acceptance exception."
+}

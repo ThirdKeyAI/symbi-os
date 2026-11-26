@@ -1,0 +1,22 @@
+{
+  "nvr": "bootc-1.17.1-1.fc45",
+  "koji_build_id": 3116347,
+  "packaging_revision": "c63d3bb9ae5451d1339e673dd13b6d71850287e0",
+  "upstream_tag": "v1.17.1",
+  "upstream_revision": "d01e723ae9480fa53aa9db09a7eff0439548e9f6",
+  "observed_packaging": [
+    {
+      "url": "https://src.fedoraproject.org/rpms/bootc/raw/c63d3bb9ae5451d1339e673dd13b6d71850287e0/f/bootc.spec",
+      "bytes": 7379,
+      "sha256": "cac924ceac98f3978de27817fc77b405fbeb4a56b9af2716836ca67d94a42eb8",
+      "local_cache_file": "fedora-built-bootc.spec"
+    },
+    {
+      "url": "https://src.fedoraproject.org/rpms/bootc/raw/c63d3bb9ae5451d1339e673dd13b6d71850287e0/f/sources",
+      "bytes": 331,
+      "sha256": "13d988d444b1c415bde5a80a7cfa4d5767ca387dde7055390108b7d360e9d66a",
+      "local_cache_file": "fedora-built-sources"
+    }
+  ],
+  "note": "Current f45 branch selects1.17.5 and is not evidence for installed1.17.1. Exact build spec selects1.17.1 source/vendor release archives with no explicit Patch entries; prep adjusts Cargo vendor configuration. Archive/SRPM/binary equivalence remains unverified. No code executed or installer run."
+}

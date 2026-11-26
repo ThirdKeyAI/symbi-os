@@ -1,0 +1,90 @@
+name: Hyprland runtime package input discovery
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "image/hyprland/runtime-requirements.json"
+      - "image/hyprland/development-prefix.lock.json"
+      - "image/hyprland/package_inventory.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/fedora-package-trust.json"
+      - "image/hyprland/fedora-build.repo"
+      - "image/hyprland/package-dnf.conf"
+      - "image/hyprland/package-repository-inputs.json"
+      - "image/hyprland/keys/**"
+      - "scripts/check-fedora-packages.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/hyprland-runtime-packages.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
+  pull_request:
+    paths:
+      - "image/hyprland/runtime-requirements.json"
+      - "image/hyprland/development-prefix.lock.json"
+      - "image/hyprland/package_inventory.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/fedora-package-trust.json"
+      - "image/hyprland/fedora-build.repo"
+      - "image/hyprland/package-dnf.conf"
+      - "image/hyprland/package-repository-inputs.json"
+      - "image/hyprland/keys/**"
+      - "scripts/check-fedora-packages.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/hyprland-runtime-packages.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hyprland-runtime-packages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  packages:
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - name: Check out proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Authenticate and resolve Hyprland runtime RPM inputs without installation
+        run: bash scripts/check-fedora-packages.sh hyprland-runtime
+      - name: Retain public discovery evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hyprland-runtime-package-evidence
+          path: .cache/fedora-package-evidence/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Retain authenticated candidates for separate package review
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hyprland-runtime-rpm-candidates
+          path: |
+            .cache/fedora-package-output/rpms/
+            .cache/fedora-package-output/evidence/result.json
+          retention-days: 14
+          compression-level: 0
+          if-no-files-found: error

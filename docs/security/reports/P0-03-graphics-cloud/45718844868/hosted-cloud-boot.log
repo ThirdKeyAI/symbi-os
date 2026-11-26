@@ -1,0 +1,21 @@
+Running as unit: symbi-graphics-cloud-45718844868-1.service
+
+Verification for ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f --
+The following checks were performed on each of these signatures:
+  - The cosign claims were validated
+  - Existence of the claims in the transparency log was verified offline
+  - The signatures were verified against the specified public key
+Traceback (most recent call last):
+  File "/home/runner/work/symbi-os/symbi-os/image/hyprland/graphics/hosted.py", line 158, in <module>
+    main()
+  File "/home/runner/work/symbi-os/symbi-os/image/hyprland/graphics/hosted.py", line 119, in main
+    subprocess.run(['xvfb-run', '--auto-servernum', '--error-file=' + str(evidence / 'xvfb.log'),
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['xvfb-run', '--auto-servernum', '--error-file=/home/runner/work/symbi-os/symbi-os/.cache/hyprland-cloud-evidence/xvfb.log', '--server-args=-screen 0 640x480x24 -nolisten tcp', '/usr/bin/python3', '/home/runner/work/symbi-os/symbi-os/image/hyprland/graphics/hosted.py', '--boot-cloud', '--inside-xvfb']' returned non-zero exit status 1.
+Finished with result: exit-code
+Main processes terminated with: code=exited/status=1
+Service runtime: 6min 8.898s
+CPU time consumed: 6min 24.908s
+Memory peak: 2.6M
+Memory swap peak: 0B

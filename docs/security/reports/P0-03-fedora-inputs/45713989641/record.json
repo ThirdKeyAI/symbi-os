@@ -1,0 +1,41 @@
+{
+  "run_id": 45713989641,
+  "head_sha": "ec11ceca5ef177010dbd20ea906b69223b0b483e",
+  "checked_merge_sha": "0240c3e0d2764ff0a1f5a1af670ebd7f4bfb6100",
+  "artifact": {
+    "id": 15068957446,
+    "bytes": 64098,
+    "sha256": "bdf30a5a085de1d7d5a2802be02563d67500ca4c7c0ec2a249d6a9fd71804d49"
+  },
+  "observations": [
+    "Authenticated original base; fixed executable lookup includes sbin",
+    "sudo, visudo and pkexec are absent; run0 is present",
+    "SDDM selected via display-manager symlink; observed SDDM autologin user/session fields are commented",
+    "Selected public config only; not complete effective polkit/PAM/boot policy or authentication acceptance",
+    "Parent memory pressure recorded without OOM or OOM kill"
+  ],
+  "os_qualified": false,
+  "retention": "Public JSON verbatim; log trailing whitespace normalized, both hashes retained",
+  "files": {
+    "inventory.json": {
+      "original_sha256": "5d7f1c073fd2608159cf97953239424887082c0c7aaa96c4adde7c32b9b8355b",
+      "retained_sha256": "5d7f1c073fd2608159cf97953239424887082c0c7aaa96c4adde7c32b9b8355b"
+    },
+    "result.json": {
+      "original_sha256": "f7749a1c1f2ab275ac71a8becbc773a6704e32d03f1cbbf1b8dd9829eb920a7e",
+      "retained_sha256": "f7749a1c1f2ab275ac71a8becbc773a6704e32d03f1cbbf1b8dd9829eb920a7e"
+    },
+    "base-signature.json": {
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    "cgroup-limits.json": {
+      "original_sha256": "8bd076d24f6839602a9c7787589223b61fc161814a0f952af1c54e7ebdbbff38",
+      "retained_sha256": "8bd076d24f6839602a9c7787589223b61fc161814a0f952af1c54e7ebdbbff38"
+    },
+    "cgroup-final.json": {
+      "original_sha256": "64531a33811b98d4211deb844f490289d59606d6fd7e399927908deab8916621",
+      "retained_sha256": "64531a33811b98d4211deb844f490289d59606d6fd7e399927908deab8916621"
+    }
+  }
+}

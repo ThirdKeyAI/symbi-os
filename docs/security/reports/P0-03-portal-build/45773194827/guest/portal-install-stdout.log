@@ -1,0 +1,6 @@
+-- Install configuration: "Release"
+-- Installing: /usr/lib/symbi/portal/bin/hyprland-share-picker
+-- Installing: /usr/lib/symbi/portal/libexec/xdg-desktop-portal-hyprland
+-- Installing: /usr/lib/symbi/portal/share/xdg-desktop-portal/portals/hyprland.portal
+-- Installing: /usr/lib/symbi/portal/share/dbus-1/services/org.freedesktop.impl.portal.desktop.hyprland.service
+-- Installing: /usr/lib/symbi/portal/lib/systemd/user/xdg-desktop-portal-hyprland.service

@@ -1,0 +1,105 @@
+name: Source-built Elephant provider acceptance
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "image/launcher/hosted_build.py"
+      - "image/launcher/toolchain_guest.py"
+      - "image/launcher/build_guest.py"
+      - "image/launcher/go_identity.py"
+      - "image/launcher/elephant-source.json"
+      - "image/launcher/elephant-build-requirements.json"
+      - "image/launcher/build-rpms.lock.json"
+      - "image/launcher/provider-patch.json"
+      - "image/launcher/patches/**"
+      - "image/launcher/probes/**"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/keys/**"
+      - "scripts/check-elephant-build.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/elephant-build.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
+  pull_request:
+    paths:
+      - "image/launcher/hosted_build.py"
+      - "image/launcher/toolchain_guest.py"
+      - "image/launcher/build_guest.py"
+      - "image/launcher/go_identity.py"
+      - "image/launcher/elephant-source.json"
+      - "image/launcher/elephant-build-requirements.json"
+      - "image/launcher/build-rpms.lock.json"
+      - "image/launcher/provider-patch.json"
+      - "image/launcher/patches/**"
+      - "image/launcher/probes/**"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/keys/**"
+      - "scripts/check-elephant-build.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/elephant-build.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: elephant-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  launcher:
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Check out the proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Download exact signed Fedora compiler and OCR test bundle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache
+          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15078925262/zip > .cache/elephant-build-rpms.zip
+          echo '7a612d68f1cd5bde65d8f542f6da236751b5555e05d46137e14a9dbd0b2a41aa  .cache/elephant-build-rpms.zip' | sha256sum --check --strict
+      - name: Build actual executables and probe native-provider refusal
+        run: bash scripts/check-elephant-build.sh
+      - name: Retain public source-build and acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: elephant-build-evidence
+          path: .cache/elephant-build-evidence/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Retain unqualified compiled inputs before any later reuse
+        if: ${{ always() && hashFiles('.cache/elephant-build-payload/manifest.json') != '' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: elephant-development-binaries
+          path: .cache/elephant-build-payload/
+          retention-days: 14
+          compression-level: 0
+          if-no-files-found: error

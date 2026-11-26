@@ -1,0 +1,366 @@
+{
+  "schema": 1,
+  "scope": "Candidate RPM download and signature verification; no package install or build",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "key": {
+    "path": "image/hyprland/keys/fedora-45-primary.asc",
+    "sha256": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425",
+    "fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E",
+    "identity": "Fedora (45) <fedora-45-primary@fedoraproject.org>"
+  },
+  "requirements": {
+    "schema": 1,
+    "scope": "Candidate signed Fedora toolchain for source-built application-only Elephant; review and pin before installation",
+    "source_inputs": "image/launcher/elephant-source.json",
+    "packages": [
+      "golang >= 1.27.1",
+      "gcc",
+      "glibc-devel",
+      "tesseract"
+    ],
+    "notes": [
+      "The pinned Elephant go.mod requires Go1.27.1; the selected base has no Go compiler",
+      "Go plugin and executable must be built with the same authenticated compiler and compatible flags",
+      "GCC and glibc development inputs support Go CGO/plugin builds; existing base packages remain pinned by its image digest",
+      "Discovery does not install packages or build/execute Elephant",
+      "This separate profile must not change either the compositor build lock or the launcher runtime lock",
+      "The actual upstream TestRunOCR needs the tesseract executable: hosted45732324253 confirmed convert creates its image but tesseract is absent. This package is a development test prerequisite only, not a product runtime selection."
+    ],
+    "source_revision": "8f1e21d6efe40b8b3953f95b9574f99f717caf91",
+    "go_mod_sha256": "c5fe5f8c609ed14dae2fea900a0cbdc00875352a1b3b1bf6bfa9f84f430288b9",
+    "go_sum_sha256": "c307c62070ecdac44a964fe304b1325b74d859bb851bd9a807faf52091a0f8d0"
+  },
+  "limits": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128"
+  },
+  "commands": [
+    {
+      "name": "installed-before",
+      "command": [
+        "rpm",
+        "-qa",
+        "--qf",
+        "%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "public-key",
+      "command": [
+        "gpg",
+        "--homedir",
+        "/output/gnupg",
+        "--batch",
+        "--no-options",
+        "--with-colons",
+        "--show-keys",
+        "/inputs/fedora-45-primary.asc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "import-key",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--import",
+        "/inputs/fedora-45-primary.asc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "keyring",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--list"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "resolve-download",
+      "command": [
+        "dnf5",
+        "--config=/inputs/dnf.conf",
+        "--releasever=45",
+        "--assumeyes",
+        "--disable-plugin=*",
+        "install",
+        "--downloadonly",
+        "--",
+        "golang >= 1.27.1",
+        "gcc",
+        "glibc-devel",
+        "tesseract"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-000-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/go-filesystem-3.8.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-000-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/go-filesystem-3.8.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-001-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/golang-1.27.4-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-001-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/golang-1.27.4-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-002-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/golang-bin-1.27.4-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-002-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/golang-bin-1.27.4-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-003-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/golang-src-1.27.4-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-003-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/golang-src-1.27.4-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-004-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/tesseract-5.5.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-004-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n",
+        "/output/rpms/tesseract-5.5.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "missing-key-control",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/empty-keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/rpms/golang-bin-1.27.4-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 1
+    },
+    {
+      "name": "tampered-package-control",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/output/tampered.rpm"
+      ],
+      "exit_code": 1
+    },
+    {
+      "name": "installed-after",
+      "command": [
+        "rpm",
+        "-qa",
+        "--qf",
+        "%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "packages": [
+    {
+      "filename": "go-filesystem-3.8.0-3.fc45.x86_64.rpm",
+      "bytes": 8536,
+      "sha256": "d6b7be15db822c933a20166f849051743016546a8c1d9fbbb460bf135f28f852",
+      "nevra": "go-filesystem-3.8.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LicenseRef-Fedora-Public-Domain",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "golang-1.27.4-2.fc45.x86_64.rpm",
+      "bytes": 1502055,
+      "sha256": "7818d61212b5d4975e41de6470a76d62a79d0bcc3bbd960bf939df6d0f422e10",
+      "nevra": "golang-1.27.4-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause AND LicenseRef-Fedora-Public-Domain",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "golang-bin-1.27.4-2.fc45.x86_64.rpm",
+      "bytes": 24876179,
+      "sha256": "aabab6cebc01e5830af7b41abbe6aa860d1b19add676f6da0e6116f687392622",
+      "nevra": "golang-bin-1.27.4-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause AND LicenseRef-Fedora-Public-Domain",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "golang-src-1.27.4-2.fc45.noarch.rpm",
+      "bytes": 16163788,
+      "sha256": "006f379434db96daba41d8dea7e8504003433679e7e36de3047b9234c4d81363",
+      "nevra": "golang-src-1.27.4-2.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause AND LicenseRef-Fedora-Public-Domain",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "tesseract-5.5.4-1.fc45.x86_64.rpm",
+      "bytes": 51018,
+      "sha256": "558356be76de1a70656bc7fc3037f8c98a39a5b80c900d931259776440b6fe4b",
+      "nevra": "tesseract-5.5.4-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    }
+  ],
+  "passed": true,
+  "os_qualified": false,
+  "installed_packages_unchanged": true,
+  "negative_controls": {
+    "missing_key_rejected": true,
+    "tampered_package_rejected": true
+  }
+}

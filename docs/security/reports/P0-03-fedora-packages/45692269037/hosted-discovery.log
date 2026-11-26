@@ -1,0 +1,33 @@
+Running as unit: symbi-fedora-packages-45692269037-1.service
+
+Verification for ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f --
+The following checks were performed on each of these signatures:
+  - The cosign claims were validated
+  - Existence of the claims in the transparency log was verified offline
+  - The signatures were verified against the specified public key
+Traceback (most recent call last):
+  File "/inputs/resolve_packages.py", line 142, in <module>
+    main()
+    ~~~~^^
+  File "/inputs/resolve_packages.py", line 102, in main
+    require_verified_rpm(verified.returncode, verified.stdout, fingerprint)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/inputs/resolve_packages.py", line 33, in require_verified_rpm
+    raise ValueError('RPM needs a verified signature and payload digest, not digest-only success')
+ValueError: RPM needs a verified signature and payload digest, not digest-only success
+Traceback (most recent call last):
+  File "/home/runner/work/symbi-os/symbi-os/image/hyprland/package_inventory.py", line 108, in <module>
+    main()
+    ~~~~^^
+  File "/home/runner/work/symbi-os/symbi-os/image/hyprland/package_inventory.py", line 88, in main
+    subprocess.run(command, check=True, timeout=1500)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/fedora-package-storage/root', '--runroot', '/home/runner/work/symbi-os/symbi-os/.cache/fedora-package-storage/run', 'run', '--rm', '--pull=never', '--user=0', '--read-only', '--network=bridge', '--cgroup-parent=/system.slice/symbi-fedora-packages-45692269037-1.service', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--pids-limit=128', '--memory=2g', '--memory-swap=2g', '--cpus=1', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/fedora-package-inputs,dst=/inputs,ro', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/fedora-package-output,dst=/output', '--env=PYTHONDONTWRITEBYTECODE=1', '--env=LANG=C.UTF-8', '--entrypoint=/usr/bin/python3', 'ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f', '/inputs/resolve_packages.py']' returned non-zero exit status 1.
+          Finished with result: exit-code
+Main processes terminated with: code=exited, status=1/FAILURE
+               Service runtime: 4min 57.905s
+             CPU time consumed: 3min 8.216s
+                   Memory peak: 3G (swap: 0B)

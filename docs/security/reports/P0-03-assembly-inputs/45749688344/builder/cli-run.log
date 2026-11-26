@@ -1,0 +1,18 @@
+version: PASS
+generic-validate: PASS
+nvidia-validate: PASS
+tag-only-base: PASS
+missing-public-key: PASS
+unknown-version: PASS
+malformed-digest: PASS
+wrong-snippet-type: PASS
+unknown-field: PASS
+missing-version: PASS
+external-module-include: PASS
+moving-tool-image: PASS
+zero-digest: PASS
+remote-public-key: PASS
+escaping-public-key: PASS
+generic-generate: PASS
+nvidia-generate: PASS
+CLI acceptance passed; generated image references still require review. No OS built or qualified.

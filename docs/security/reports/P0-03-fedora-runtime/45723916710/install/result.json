@@ -1,0 +1,206 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "limits": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128"
+  },
+  "commands": [
+    {
+      "name": "installed-before",
+      "command": [
+        "rpm",
+        "-qa",
+        "--qf",
+        "%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "import-key",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--import",
+        "/inputs/fedora-45-primary.asc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "keyring",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--list"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-000-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libeis-1.6.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-000-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n",
+        "/inputs/packages/rpms/libeis-1.6.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-001-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/muParser-2.3.5-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-001-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n",
+        "/inputs/packages/rpms/muParser-2.3.5-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-002-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/tomlplusplus-3.4.0-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-002-identity",
+      "command": [
+        "rpm",
+        "-qp",
+        "--qf",
+        "%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n",
+        "/inputs/packages/rpms/tomlplusplus-3.4.0-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "offline-runtime-install",
+      "command": [
+        "dnf5",
+        "--assumeyes",
+        "--disable-plugin=*",
+        "--setopt=reposdir=/output/empty-repos",
+        "--setopt=localpkg_gpgcheck=True",
+        "--setopt=install_weak_deps=False",
+        "--setopt=tsflags=nodocs",
+        "install",
+        "--",
+        "/inputs/packages/rpms/libeis-1.6.0-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/muParser-2.3.5-6.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/tomlplusplus-3.4.0-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "installed-after",
+      "command": [
+        "rpm",
+        "-qa",
+        "--qf",
+        "%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "Hyprland-needed-libraries",
+      "command": [
+        "ldd",
+        "/usr/lib/symbi/hyprland/bin/Hyprland"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "hyprctl-needed-libraries",
+      "command": [
+        "ldd",
+        "/usr/lib/symbi/hyprland/bin/hyprctl"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "scope": "Additive runtime packaging and library resolution; no boot or native-loading acceptance",
+  "added_packages": [
+    "libeis\t0\t1.6.0\t3.fc45\tx86_64",
+    "muParser\t0\t2.3.5\t6.fc45\tx86_64",
+    "tomlplusplus\t0\t3.4.0\t8.fc45\tx86_64"
+  ],
+  "all_base_packages_unchanged": true,
+  "binary_hashes": {
+    "Hyprland": "0f5dc9a3bb14265516a1a7c16a90ff0ad54fda94c7caed5defb4b234ecb7f34a",
+    "hyprctl": "683ed4ff31f059a018ea745f20bad543fa0ba7b655eabfcba4ed47755d1df028"
+  },
+  "cgroup_final": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128",
+    "memory.peak": "554577920",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 4281401\nuser_usec 2475311\nsystem_usec 1806090\nnice_usec 2456000\ncore_sched.force_idle_usec 0\nnr_periods 57\nnr_throttled 15\nthrottled_usec 78561\nnr_bursts 0\nburst_usec 0"
+  }
+}

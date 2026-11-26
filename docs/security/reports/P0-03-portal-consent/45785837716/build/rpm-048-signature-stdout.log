@@ -1,0 +1,4 @@
+/inputs/packages/rpms/gnat-srpm-macros-7-3.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK

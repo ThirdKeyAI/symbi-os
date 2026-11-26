@@ -1,0 +1,55 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "source_commit": "c518707ad0c072ca0dd14f10c2b8afbc9aa3df3a",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "source-init",
+      "exit_code": 0
+    },
+    {
+      "name": "source-fetch",
+      "exit_code": 0
+    },
+    {
+      "name": "source-checkout",
+      "exit_code": 0
+    },
+    {
+      "name": "pull-base",
+      "exit_code": 0
+    },
+    {
+      "name": "install-signed-compiler",
+      "exit_code": 0
+    },
+    {
+      "name": "download",
+      "exit_code": 0
+    },
+    {
+      "name": "compile",
+      "exit_code": 0
+    }
+  ],
+  "upstream_tests_passed": true,
+  "scope": "Source-built Elephant and actual provider refusal on the selected base; no OS qualification",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "upstream_revision": "8f1e21d6efe40b8b3953f95b9574f99f717caf91",
+  "compiler_image_id": "sha256:a07720d74b6ebb553f23aefbbe81d98a92e79fbb38287b641a8c5c6564b177f5",
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4360552448",
+    "memory.events": "low 0\nhigh 0\nmax 54465\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 339767235\nuser_usec 294021662\nsystem_usec 45745572\nnice_usec 291201901\ncore_sched.force_idle_usec 0\nnr_periods 3305\nnr_throttled 410\nthrottled_usec 49157476\nnr_bursts 0\nburst_usec 0"
+  }
+}

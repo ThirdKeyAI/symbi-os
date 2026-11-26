@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/inputs/boot.py", line 84, in <module>
+    if __name__=='__main__': main()
+                             ~~~~^^
+  File "/inputs/boot.py", line 64, in main
+    raise ValueError('Missing bounded guest observation')
+ValueError: Missing bounded guest observation

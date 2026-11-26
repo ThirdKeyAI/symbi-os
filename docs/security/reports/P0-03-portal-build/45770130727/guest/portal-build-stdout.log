@@ -1,0 +1,60 @@
+[0/2] Re-checking globbed directories...
+[1/54] Generating /output/sources/xdg-desktop-portal-hyprland/protocols/wayland.cpp, /output/sources/xdg-desktop-portal-hyprland/protocols/wayland.hpp
+[2/54] Generating /output/sources/xdg-desktop-portal-hyprland/protocols/wlr-foreign-toplevel-management-unstable-v1.cpp, /output/sources/xdg-desktop-portal-hyprland/protocols/wlr-foreign-toplevel-management-unstable-v1.hpp
+[3/54] Generating /output/sources/xdg-desktop-portal-hyprland/protocols/wlr-screencopy-unstable-v1.cpp, /output/sources/xdg-desktop-portal-hyprland/protocols/wlr-screencopy-unstable-v1.hpp
+[4/54] Generating /output/sources/xdg-desktop-portal-hyprland/protocols/hyprland-global-shortcuts-v1.cpp, /output/sources/xdg-desktop-portal-hyprland/protocols/hyprland-global-shortcuts-v1.hpp
+[5/54] Generating /output/sources/xdg-desktop-portal-hyprland/protocols/hyprland-toplevel-export-v1.cpp, /output/sources/xdg-desktop-portal-hyprland/protocols/hyprland-toplevel-export-v1.hpp
+[6/54] Generating /output/sources/xdg-desktop-portal-hyprland/protocols/hyprland-toplevel-mapping-v1.cpp, /output/sources/xdg-desktop-portal-hyprland/protocols/hyprland-toplevel-mapping-v1.hpp
+[7/54] Generating /output/sources/xdg-desktop-portal-hyprland/protocols/hyprland-input-capture-v1.cpp, /output/sources/xdg-desktop-portal-hyprland/protocols/hyprland-input-capture-v1.hpp
+[8/54] Generating /output/sources/xdg-desktop-portal-hyprland/protocols/hyprland-workspace-image-capture-source-v1.cpp, /output/sources/xdg-desktop-portal-hyprland/protocols/hyprland-workspace-image-capture-source-v1.hpp
+[9/54] Generating /output/sources/xdg-desktop-portal-hyprland/protocols/linux-dmabuf-v1.cpp, /output/sources/xdg-desktop-portal-hyprland/protocols/linux-dmabuf-v1.hpp
+[10/54] Generating /output/sources/xdg-desktop-portal-hyprland/protocols/xdg-output-unstable-v1.cpp, /output/sources/xdg-desktop-portal-hyprland/protocols/xdg-output-unstable-v1.hpp
+[11/54] Generating /output/sources/xdg-desktop-portal-hyprland/protocols/ext-foreign-toplevel-list-v1.cpp, /output/sources/xdg-desktop-portal-hyprland/protocols/ext-foreign-toplevel-list-v1.hpp
+[12/54] Generating /output/sources/xdg-desktop-portal-hyprland/protocols/ext-image-copy-capture-v1.cpp, /output/sources/xdg-desktop-portal-hyprland/protocols/ext-image-copy-capture-v1.hpp
+[13/54] Generating /output/sources/xdg-desktop-portal-hyprland/protocols/ext-image-capture-source-v1.cpp, /output/sources/xdg-desktop-portal-hyprland/protocols/ext-image-capture-source-v1.hpp
+[14/54] Generating /output/sources/xdg-desktop-portal-hyprland/protocols/ext-workspace-v1.cpp, /output/sources/xdg-desktop-portal-hyprland/protocols/ext-workspace-v1.hpp
+[15/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/src/core/PortalManager.cpp.o
+[16/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/src/helpers/Log.cpp.o
+[17/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/src/helpers/MiscFunctions.cpp.o
+[18/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/src/helpers/Timer.cpp.o
+[19/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/src/main.cpp.o
+[20/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/src/portals/GlobalShortcuts.cpp.o
+[21/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/src/portals/InputCapture.cpp.o
+[22/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/src/portals/Screencopy.cpp.o
+[23/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/src/portals/Screenshot.cpp.o
+[24/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/src/portals/WorkspaceCapture.cpp.o
+[25/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/src/shared/ImageCopyCapture.cpp.o
+[26/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/src/shared/ScreencopyShared.cpp.o
+/output/sources/xdg-desktop-portal-hyprland/src/shared/ScreencopyShared.cpp: In function ‘SSelectionData promptForScreencopySelection()’:
+/output/sources/xdg-desktop-portal-hyprland/src/shared/ScreencopyShared.cpp:248:41: warning: type qualifiers ignored on cast result type [-Wignored-qualifiers]
+  248 |     static auto* const* PCUSTOMPICKER = (Hyprlang::STRING* const)g_pPortalManager->m_sConfig.config->getConfigValuePtr("screencopy:custom_picker_binary")->getDataStaticPtr();
+      |                                         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+At global scope:
+cc1plus: note: unrecognized command-line option ‘-Wno-address-of-temporary’ may have been intended to silence earlier diagnostics
+[27/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/src/shared/Session.cpp.o
+[28/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/src/shared/ToplevelManager.cpp.o
+[29/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/src/shared/ToplevelMappingManager.cpp.o
+[30/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/src/shared/WorkspaceTracker.cpp.o
+[31/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/protocols/wayland.cpp.o
+[32/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/protocols/wlr-foreign-toplevel-management-unstable-v1.cpp.o
+[33/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/protocols/wlr-screencopy-unstable-v1.cpp.o
+[34/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/protocols/hyprland-global-shortcuts-v1.cpp.o
+[35/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/protocols/hyprland-toplevel-export-v1.cpp.o
+[36/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/protocols/hyprland-toplevel-mapping-v1.cpp.o
+[37/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/protocols/hyprland-input-capture-v1.cpp.o
+[38/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/protocols/hyprland-workspace-image-capture-source-v1.cpp.o
+[39/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/protocols/linux-dmabuf-v1.cpp.o
+[40/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/protocols/xdg-output-unstable-v1.cpp.o
+[41/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/protocols/ext-foreign-toplevel-list-v1.cpp.o
+[42/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/protocols/ext-image-copy-capture-v1.cpp.o
+[43/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/protocols/ext-image-capture-source-v1.cpp.o
+[44/54] Building CXX object CMakeFiles/xdg-desktop-portal-hyprland.dir/protocols/ext-workspace-v1.cpp.o
+[45/54] Building CXX object hyprland-share-picker/CMakeFiles/hyprland-share-picker.dir/main.cpp.o
+[46/54] Building CXX object hyprland-share-picker/CMakeFiles/hyprland-share-picker.dir/Picker.cpp.o
+[47/54] Building CXX object hyprland-share-picker/CMakeFiles/hyprland-share-picker.dir/PickerData.cpp.o
+[48/54] Building CXX object hyprland-share-picker/CMakeFiles/hyprland-share-picker.dir/RegionPicker.cpp.o
+[49/54] Building CXX object hyprland-share-picker/CMakeFiles/hyprland-share-picker-data-test.dir/PickerDataTest.cpp.o
+[50/54] Building CXX object hyprland-share-picker/CMakeFiles/hyprland-share-picker-data-test.dir/PickerData.cpp.o
+[51/54] Linking CXX executable xdg-desktop-portal-hyprland
+[52/54] Linking CXX executable hyprland-share-picker/hyprland-share-picker
+[53/54] Linking CXX executable hyprland-share-picker/hyprland-share-picker-data-test

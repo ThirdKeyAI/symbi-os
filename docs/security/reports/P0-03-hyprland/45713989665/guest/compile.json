@@ -1,0 +1,570 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "checks": [
+    {
+      "name": "apply-check",
+      "command": [
+        "git",
+        "apply",
+        "--check",
+        "/inputs/native-loading.patch"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.01200958199999036
+    },
+    {
+      "name": "apply-patch",
+      "command": [
+        "git",
+        "apply",
+        "/inputs/native-loading.patch"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.00403511700000081
+    },
+    {
+      "name": "glaze-configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/output/sources/glaze",
+        "-B",
+        "/output/build/glaze",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_INSTALL_PREFIX=/usr/lib/symbi/hyprland",
+        "-DCMAKE_INSTALL_LIBDIR=lib",
+        "-DCMAKE_INSTALL_RPATH=/usr/lib/symbi/hyprland/lib",
+        "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON",
+        "-DCMAKE_PREFIX_PATH=/usr/lib/symbi/hyprland",
+        "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
+        "-DFETCHCONTENT_UPDATES_DISCONNECTED=ON",
+        "-DCMAKE_C_FLAGS_RELEASE=-O2 -DNDEBUG -g0",
+        "-DCMAKE_CXX_FLAGS_RELEASE=-O2 -DNDEBUG -g0",
+        "-Dglaze_DEVELOPER_MODE=OFF",
+        "-Dglaze_BUILD_EXAMPLES=OFF"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.385004385000002
+    },
+    {
+      "name": "glaze-build",
+      "command": [
+        "cmake",
+        "--build",
+        "/output/build/glaze",
+        "--parallel",
+        "1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.015751298999987284
+    },
+    {
+      "name": "glaze-install",
+      "command": [
+        "cmake",
+        "--install",
+        "/output/build/glaze"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.055233083999979726
+    },
+    {
+      "name": "hyprutils-configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/output/sources/hyprutils",
+        "-B",
+        "/output/build/hyprutils",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_INSTALL_PREFIX=/usr/lib/symbi/hyprland",
+        "-DCMAKE_INSTALL_LIBDIR=lib",
+        "-DCMAKE_INSTALL_RPATH=/usr/lib/symbi/hyprland/lib",
+        "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON",
+        "-DCMAKE_PREFIX_PATH=/usr/lib/symbi/hyprland",
+        "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
+        "-DFETCHCONTENT_UPDATES_DISCONNECTED=ON",
+        "-DCMAKE_C_FLAGS_RELEASE=-O2 -DNDEBUG -g0",
+        "-DCMAKE_CXX_FLAGS_RELEASE=-O2 -DNDEBUG -g0"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.3848968609999872
+    },
+    {
+      "name": "hyprutils-build",
+      "command": [
+        "cmake",
+        "--build",
+        "/output/build/hyprutils",
+        "--parallel",
+        "1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 47.48632354899996
+    },
+    {
+      "name": "hyprutils-install",
+      "command": [
+        "cmake",
+        "--install",
+        "/output/build/hyprutils"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.01917605800002775
+    },
+    {
+      "name": "hyprwire-configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/output/sources/hyprwire",
+        "-B",
+        "/output/build/hyprwire",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_INSTALL_PREFIX=/usr/lib/symbi/hyprland",
+        "-DCMAKE_INSTALL_LIBDIR=lib",
+        "-DCMAKE_INSTALL_RPATH=/usr/lib/symbi/hyprland/lib",
+        "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON",
+        "-DCMAKE_PREFIX_PATH=/usr/lib/symbi/hyprland",
+        "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
+        "-DFETCHCONTENT_UPDATES_DISCONNECTED=ON",
+        "-DCMAKE_C_FLAGS_RELEASE=-O2 -DNDEBUG -g0",
+        "-DCMAKE_CXX_FLAGS_RELEASE=-O2 -DNDEBUG -g0"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.4434743160000494
+    },
+    {
+      "name": "hyprwire-build",
+      "command": [
+        "cmake",
+        "--build",
+        "/output/build/hyprwire",
+        "--parallel",
+        "1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 47.602980532000004
+    },
+    {
+      "name": "hyprwire-install",
+      "command": [
+        "cmake",
+        "--install",
+        "/output/build/hyprwire"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.015246973999978763
+    },
+    {
+      "name": "hyprwayland-scanner-configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/output/sources/hyprwayland-scanner",
+        "-B",
+        "/output/build/hyprwayland-scanner",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_INSTALL_PREFIX=/usr/lib/symbi/hyprland",
+        "-DCMAKE_INSTALL_LIBDIR=lib",
+        "-DCMAKE_INSTALL_RPATH=/usr/lib/symbi/hyprland/lib",
+        "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON",
+        "-DCMAKE_PREFIX_PATH=/usr/lib/symbi/hyprland",
+        "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
+        "-DFETCHCONTENT_UPDATES_DISCONNECTED=ON",
+        "-DCMAKE_C_FLAGS_RELEASE=-O2 -DNDEBUG -g0",
+        "-DCMAKE_CXX_FLAGS_RELEASE=-O2 -DNDEBUG -g0"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.3857786990000136
+    },
+    {
+      "name": "hyprwayland-scanner-build",
+      "command": [
+        "cmake",
+        "--build",
+        "/output/build/hyprwayland-scanner",
+        "--parallel",
+        "1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 5.220646877999968
+    },
+    {
+      "name": "hyprwayland-scanner-install",
+      "command": [
+        "cmake",
+        "--install",
+        "/output/build/hyprwayland-scanner"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.010567435000041314
+    },
+    {
+      "name": "hyprland-protocols-configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/output/sources/hyprland-protocols",
+        "-B",
+        "/output/build/hyprland-protocols",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_INSTALL_PREFIX=/usr/lib/symbi/hyprland",
+        "-DCMAKE_INSTALL_LIBDIR=lib",
+        "-DCMAKE_INSTALL_RPATH=/usr/lib/symbi/hyprland/lib",
+        "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON",
+        "-DCMAKE_PREFIX_PATH=/usr/lib/symbi/hyprland",
+        "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
+        "-DFETCHCONTENT_UPDATES_DISCONNECTED=ON",
+        "-DCMAKE_C_FLAGS_RELEASE=-O2 -DNDEBUG -g0",
+        "-DCMAKE_CXX_FLAGS_RELEASE=-O2 -DNDEBUG -g0"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.25905550000004496
+    },
+    {
+      "name": "hyprland-protocols-build",
+      "command": [
+        "cmake",
+        "--build",
+        "/output/build/hyprland-protocols",
+        "--parallel",
+        "1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.014021983000020555
+    },
+    {
+      "name": "hyprland-protocols-install",
+      "command": [
+        "cmake",
+        "--install",
+        "/output/build/hyprland-protocols"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.011284740000007787
+    },
+    {
+      "name": "hyprlang-configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/output/sources/hyprlang",
+        "-B",
+        "/output/build/hyprlang",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_INSTALL_PREFIX=/usr/lib/symbi/hyprland",
+        "-DCMAKE_INSTALL_LIBDIR=lib",
+        "-DCMAKE_INSTALL_RPATH=/usr/lib/symbi/hyprland/lib",
+        "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON",
+        "-DCMAKE_PREFIX_PATH=/usr/lib/symbi/hyprland",
+        "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
+        "-DFETCHCONTENT_UPDATES_DISCONNECTED=ON",
+        "-DCMAKE_C_FLAGS_RELEASE=-O2 -DNDEBUG -g0",
+        "-DCMAKE_CXX_FLAGS_RELEASE=-O2 -DNDEBUG -g0"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.236644919000014
+    },
+    {
+      "name": "hyprlang-build",
+      "command": [
+        "cmake",
+        "--build",
+        "/output/build/hyprlang",
+        "--parallel",
+        "1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 12.632759757999963
+    },
+    {
+      "name": "hyprlang-install",
+      "command": [
+        "cmake",
+        "--install",
+        "/output/build/hyprlang"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.01192523499997833
+    },
+    {
+      "name": "hyprcursor-configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/output/sources/hyprcursor",
+        "-B",
+        "/output/build/hyprcursor",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_INSTALL_PREFIX=/usr/lib/symbi/hyprland",
+        "-DCMAKE_INSTALL_LIBDIR=lib",
+        "-DCMAKE_INSTALL_RPATH=/usr/lib/symbi/hyprland/lib",
+        "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON",
+        "-DCMAKE_PREFIX_PATH=/usr/lib/symbi/hyprland",
+        "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
+        "-DFETCHCONTENT_UPDATES_DISCONNECTED=ON",
+        "-DCMAKE_C_FLAGS_RELEASE=-O2 -DNDEBUG -g0",
+        "-DCMAKE_CXX_FLAGS_RELEASE=-O2 -DNDEBUG -g0"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 2.060715540999979
+    },
+    {
+      "name": "hyprcursor-build",
+      "command": [
+        "cmake",
+        "--build",
+        "/output/build/hyprcursor",
+        "--parallel",
+        "1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 20.286626204000015
+    },
+    {
+      "name": "hyprcursor-install",
+      "command": [
+        "cmake",
+        "--install",
+        "/output/build/hyprcursor"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.011837922999973216
+    },
+    {
+      "name": "hyprgraphics-configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/output/sources/hyprgraphics",
+        "-B",
+        "/output/build/hyprgraphics",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_INSTALL_PREFIX=/usr/lib/symbi/hyprland",
+        "-DCMAKE_INSTALL_LIBDIR=lib",
+        "-DCMAKE_INSTALL_RPATH=/usr/lib/symbi/hyprland/lib",
+        "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON",
+        "-DCMAKE_PREFIX_PATH=/usr/lib/symbi/hyprland",
+        "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
+        "-DFETCHCONTENT_UPDATES_DISCONNECTED=ON",
+        "-DCMAKE_C_FLAGS_RELEASE=-O2 -DNDEBUG -g0",
+        "-DCMAKE_CXX_FLAGS_RELEASE=-O2 -DNDEBUG -g0"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 3.1441355530000124
+    },
+    {
+      "name": "hyprgraphics-build",
+      "command": [
+        "cmake",
+        "--build",
+        "/output/build/hyprgraphics",
+        "--parallel",
+        "1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 21.616777590000027
+    },
+    {
+      "name": "hyprgraphics-install",
+      "command": [
+        "cmake",
+        "--install",
+        "/output/build/hyprgraphics"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.014223987000036686
+    },
+    {
+      "name": "aquamarine-configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/output/sources/aquamarine",
+        "-B",
+        "/output/build/aquamarine",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_INSTALL_PREFIX=/usr/lib/symbi/hyprland",
+        "-DCMAKE_INSTALL_LIBDIR=lib",
+        "-DCMAKE_INSTALL_RPATH=/usr/lib/symbi/hyprland/lib",
+        "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON",
+        "-DCMAKE_PREFIX_PATH=/usr/lib/symbi/hyprland",
+        "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
+        "-DFETCHCONTENT_UPDATES_DISCONNECTED=ON",
+        "-DCMAKE_C_FLAGS_RELEASE=-O2 -DNDEBUG -g0",
+        "-DCMAKE_CXX_FLAGS_RELEASE=-O2 -DNDEBUG -g0"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 3.5067657270000154
+    },
+    {
+      "name": "aquamarine-build",
+      "command": [
+        "cmake",
+        "--build",
+        "/output/build/aquamarine",
+        "--parallel",
+        "1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 84.130929831
+    },
+    {
+      "name": "aquamarine-install",
+      "command": [
+        "cmake",
+        "--install",
+        "/output/build/aquamarine"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.017764660000011645
+    },
+    {
+      "name": "Hyprland-configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/output/sources/Hyprland",
+        "-B",
+        "/output/build/Hyprland",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_INSTALL_PREFIX=/usr/lib/symbi/hyprland",
+        "-DCMAKE_INSTALL_LIBDIR=lib",
+        "-DCMAKE_INSTALL_RPATH=/usr/lib/symbi/hyprland/lib",
+        "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON",
+        "-DCMAKE_PREFIX_PATH=/usr/lib/symbi/hyprland",
+        "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
+        "-DFETCHCONTENT_UPDATES_DISCONNECTED=ON",
+        "-DCMAKE_C_FLAGS_RELEASE=-O2 -DNDEBUG -g0",
+        "-DCMAKE_CXX_FLAGS_RELEASE=-O2 -DNDEBUG -g0",
+        "-DNO_HYPRPM=ON",
+        "-DUSE_TRACY=OFF",
+        "-DNO_UWSM=ON",
+        "-Dglaze_DIR=/usr/lib/symbi/hyprland/lib/cmake/glaze"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 15.882070699999986
+    },
+    {
+      "name": "Hyprland-build",
+      "command": [
+        "cmake",
+        "--build",
+        "/output/build/Hyprland",
+        "--parallel",
+        "1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1865.1396143929996
+    },
+    {
+      "name": "Hyprland-install",
+      "command": [
+        "cmake",
+        "--install",
+        "/output/build/Hyprland"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.2755729020000217
+    },
+    {
+      "name": "Hyprland-needed-libraries",
+      "command": [
+        "ldd",
+        "/usr/lib/symbi/hyprland/bin/Hyprland"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.018677660999856016
+    },
+    {
+      "name": "hyprctl-needed-libraries",
+      "command": [
+        "ldd",
+        "/usr/lib/symbi/hyprland/bin/hyprctl"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.013396116999956575
+    }
+  ],
+  "scope": "Offline source compilation in a disposable Fedora development stage",
+  "prefix": "/usr/lib/symbi/hyprland",
+  "source_revisions": [
+    {
+      "name": "Hyprland",
+      "url": "https://github.com/hyprwm/Hyprland.git",
+      "rev": "11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947"
+    },
+    {
+      "name": "aquamarine",
+      "url": "https://github.com/hyprwm/aquamarine.git",
+      "rev": "9887f39574f2afeae3aeb6687db6cd0c030ccf94"
+    },
+    {
+      "name": "hyprutils",
+      "url": "https://github.com/hyprwm/hyprutils.git",
+      "rev": "7e1f69209cd910615d0573a93fa970408f643539"
+    },
+    {
+      "name": "hyprlang",
+      "url": "https://github.com/hyprwm/hyprlang.git",
+      "rev": "9508458be316a0d70d37ebed1ab725ccd10411ff"
+    },
+    {
+      "name": "hyprcursor",
+      "url": "https://github.com/hyprwm/hyprcursor.git",
+      "rev": "2dda8586322cfc7c03532687de248ee851a49738"
+    },
+    {
+      "name": "hyprgraphics",
+      "url": "https://github.com/hyprwm/hyprgraphics.git",
+      "rev": "ade4ef0a887d2740efb9c9af2ddb175633365e1b"
+    },
+    {
+      "name": "hyprwayland-scanner",
+      "url": "https://github.com/hyprwm/hyprwayland-scanner.git",
+      "rev": "62e62c1ca23da17612c6890d4ad2064f575643db"
+    },
+    {
+      "name": "hyprland-protocols",
+      "url": "https://github.com/hyprwm/hyprland-protocols.git",
+      "rev": "cd1aba6bd78775825eb230b3a4274c48b6705eb7"
+    },
+    {
+      "name": "hyprwire",
+      "url": "https://github.com/hyprwm/hyprwire.git",
+      "rev": "a546e42d45e161682f729ebf52375bd4800d7041"
+    },
+    {
+      "name": "glaze",
+      "url": "https://github.com/stephenberry/glaze.git",
+      "rev": "b518eec7a22e56ffa238b072c07f47efa7cea97f"
+    },
+    {
+      "name": "Hyprland/subprojects/udis86",
+      "url": "https://github.com/canihavesomecoffee/udis86.git",
+      "rev": "5336633af70f3917760a6d441ff02d93477b0c86"
+    }
+  ]
+}

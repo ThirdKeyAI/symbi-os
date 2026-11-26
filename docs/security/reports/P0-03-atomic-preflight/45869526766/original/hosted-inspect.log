@@ -1,0 +1,23 @@
+Running as unit: symbi-atomic-inspect-45869526766-1.service; invocation ID: 13b36da767ca46898fc6e3bb3d24d3f6
+Atomic preflight: loading the exact retained OCI image into private storage
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/runner/work/symbi-os/symbi-os/image/boot/hosted.py", line 183, in <module>
+    if __name__=='__main__': main()
+                             ^^^^^^
+  File "/home/runner/work/symbi-os/symbi-os/image/boot/hosted.py", line 146, in main
+    result=unique_json(run(name,command,300).stdout)
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/symbi-os/symbi-os/image/boot/hosted.py", line 54, in run
+    if check: result.check_returncode()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 502, in check_returncode
+    raise CalledProcessError(self.returncode, self.args, self.stdout,
+subprocess.CalledProcessError: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/atomic-image-storage/root', '--runroot', '/run/symbi-atomic-inspect-45869526766-1', 'run', '--rm', '--name=symbi-atomic-installed-files', '--pull=never', '--read-only', '--network=none', '--user=10001:10001', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--memory=512m', '--memory-swap=512m', '--cpus=1', '--pids-limit=64', '--cgroup-parent=/system.slice/symbi-atomic-inspect-45869526766-1.service', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/atomic-image-storage/qualification,dst=/qualification,ro', '--env=PATH=/usr/bin:/bin', '--env=LANG=C.UTF-8', '--env=PYTHONDONTWRITEBYTECODE=1', '--entrypoint=/usr/bin/python3', 'sha256:54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1', '/qualification/verify.py']' returned non-zero exit status 1.
+Finished with result: exit-code
+Main processes terminated with: code=exited/status=1
+Service runtime: 3min 15.512s
+CPU time consumed: 3min 21.503s
+Memory peak: 256.0K
+Memory swap peak: 0B

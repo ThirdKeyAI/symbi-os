@@ -1,0 +1,51 @@
+{
+  "default": [
+    {
+      "type": "reject"
+    }
+  ],
+  "transports": {
+    "docker": {
+      "ghcr.io/thirdkeyai/symbiont-os": [
+        {
+          "type": "sigstoreSigned",
+          "keyData": "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFSTlmNTloVzlzbENVVjNsMERJU3lJdlZiU2F1VApvZ3JpRG1pRVhaSm5DTnlHM2V2alpzaEpBbjRlQWhqSmdkUTBtOC93dTdCdjdBTzkrelR0WjZqdG93PT0KLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==",
+          "signedIdentity": {
+            "type": "exactRepository",
+            "dockerRepository": "ghcr.io/thirdkeyai/symbiont-os"
+          }
+        }
+      ],
+      "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f": [
+        {
+          "type": "sigstoreSigned",
+          "keyData": "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFZHJ1S3NPaFVrZ2RkMGxOREhOQnltRTJXeWIvcApHVm54NTlRYk5vR0ZiSW1xWkxSVnQ2dVFuTzlNZmlIVTlJWmlKbDlhTmV0ZkFxRHNnc2x0QVVRblhRPT0KLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==",
+          "signedIdentity": {
+            "type": "exactRepository",
+            "dockerRepository": "ghcr.io/secureblue/sericea-main-hardened"
+          }
+        }
+      ],
+      "ghcr.io/thirdkeyai/symbiont-os-nvidia": [
+        {
+          "type": "sigstoreSigned",
+          "keyData": "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFSTlmNTloVzlzbENVVjNsMERJU3lJdlZiU2F1VApvZ3JpRG1pRVhaSm5DTnlHM2V2alpzaEpBbjRlQWhqSmdkUTBtOC93dTdCdjdBTzkrelR0WjZqdG93PT0KLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==",
+          "signedIdentity": {
+            "type": "exactRepository",
+            "dockerRepository": "ghcr.io/thirdkeyai/symbiont-os-nvidia"
+          }
+        }
+      ],
+      "ghcr.io/secureblue/sericea-nvidia-hardened@sha256:9b8053d581db16d47b1df18698ffe8cc3f70c45a3758363fdc8d85c1b0fcaf5e": [
+        {
+          "type": "sigstoreSigned",
+          "keyData": "LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFZHJ1S3NPaFVrZ2RkMGxOREhOQnltRTJXeWIvcApHVm54NTlRYk5vR0ZiSW1xWkxSVnQ2dVFuTzlNZmlIVTlJWmlKbDlhTmV0ZkFxRHNnc2x0QVVRblhRPT0KLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==",
+          "signedIdentity": {
+            "type": "exactRepository",
+            "dockerRepository": "ghcr.io/secureblue/sericea-nvidia-hardened"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,178 @@
+{
+  "schema": 1,
+  "repository": "ThirdKeyAI/symbi-os",
+  "workflow_run": 45755957778,
+  "job_id": 139694500150,
+  "source_commit": "ea04aa3e0fb10eae3ce5752ed0ce4bee2558fef7",
+  "artifact": {
+    "id": 15086694775,
+    "bytes": 30424,
+    "sha256": "386142701c1b7cb95f6251b909b43c07f174c03c90b3a51f92a47794d170369e",
+    "downloaded_and_verified": true
+  },
+  "original_files": {
+    "Containerfile": {
+      "bytes": 2519,
+      "sha256": "1b6b2fb2a84b74d4db4207137294f8ce2987ba842e94c66ca8c144f31b862cde"
+    },
+    "all-containers-absent-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "all-containers-absent-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "base-check-absent-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "base-check-absent-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "base-check-cleanup-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "base-check-cleanup-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "base-prerequisites-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "base-prerequisites-stdout.log": {
+      "bytes": 134,
+      "sha256": "11e9e6678521ec72e7214d2442a59802b7bbb9436546ac65ff98f5c1dc3e4419"
+    },
+    "base-signature-stderr.log": {
+      "bytes": 375,
+      "sha256": "b941cd0137db303b01ea68883a3c7198a62418ad62ea1e9189530126d024897d"
+    },
+    "base-signature-stdout.log": {
+      "bytes": 1281,
+      "sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    "build-image-stderr.log": {
+      "bytes": 411,
+      "sha256": "82acc1cc04386581944b7785c58d7a2e81c1c1e008507d77d9fbaffa222db602"
+    },
+    "build-image-stdout.log": {
+      "bytes": 837,
+      "sha256": "ed7d158d01cd15174a478389962d3d30bbac7a5a89d5a22ecc4e8d7991551878"
+    },
+    "build.json": {
+      "bytes": 3906,
+      "sha256": "e244b8dc5db167f67fb42e7b4f27332b882953ee6e5e0a7272715e63474d4466"
+    },
+    "cosign-bootstrap/cosign-linux-amd64-kms.sigstore.json": {
+      "bytes": 3789,
+      "sha256": "9640eb9b9f1236bbb145197cc6cf098ed1fb5f7613c6c731647a2431d0dac518"
+    },
+    "cosign-bootstrap/openssl-verification.txt": {
+      "bytes": 12,
+      "sha256": "80a53f76c7ed6969dade3b6ee47cdb753162db7c00be625448999d08bae77ed8"
+    },
+    "cosign-bootstrap/pins.json": {
+      "bytes": 967,
+      "sha256": "c74acffb1d898498582110862650a81960afacd8f2e60916ea3cacee292591cc"
+    },
+    "cosign-bootstrap/release-cosign.pub": {
+      "bytes": 178,
+      "sha256": "f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126"
+    },
+    "cosign-bootstrap/release-kms.sig": {
+      "bytes": 71,
+      "sha256": "f3070066acae000e6d65060ac17903d2547fd65d26c0a4207d3809e7031ad088"
+    },
+    "cosign-bootstrap/verification.json": {
+      "bytes": 620,
+      "sha256": "822329e8d7bf8c27b1a527c931c9bbab901db2f6fce88cb5f53d7dc33e547e35"
+    },
+    "cosign-bootstrap/version.json": {
+      "bytes": 230,
+      "sha256": "9bf60bbeb52675a2074a4c4066bcb0710f861555e9fb5391fb6d65ce7014b3af"
+    },
+    "generate.log": {
+      "bytes": 449,
+      "sha256": "4b2579328ca0cfa11ee5d3eda6939c44eb01e8b1217ce89d04ae881bfc3cea1b"
+    },
+    "hosted-build.log": {
+      "bytes": 2221,
+      "sha256": "7778ef0adbf7c6d7d2b6628f798142e869be63fc80a8f6163a6e610a489a70d7"
+    },
+    "hosted-prepare.log": {
+      "bytes": 655,
+      "sha256": "94e28b3578067fea5952cb8a697ad68269a0be5a2bb875a8d2da689a67d82b41"
+    },
+    "podman-version-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "podman-version-stdout.log": {
+      "bytes": 175,
+      "sha256": "c765e26e19d8245c94f6775789b7d5ad960013a8a5a1fbb1e41f168517e316b2"
+    },
+    "preparation.json": {
+      "bytes": 57246,
+      "sha256": "19c668d7a833fe58d85a85e8a18b4f21d180570ba063cff46dc41ae42cad2696"
+    },
+    "prepare-systemd-result.txt": {
+      "bytes": 136,
+      "sha256": "191736fbd1ce15a9936252e53bb6f69f6274360f883f1d1896bda86d58b2109c"
+    },
+    "pull-base-stderr.log": {
+      "bytes": 11808,
+      "sha256": "b232a3e266323d2d1eb423f772d63fb294433e8d2d0c43ec1c84f681e7933f18"
+    },
+    "pull-base-stdout.log": {
+      "bytes": 65,
+      "sha256": "74d886e69e348ce2c052da0398dffd0eb34ab5a76844a230d3e8fc02c85bac1e"
+    },
+    "recipe.json": {
+      "bytes": 1342,
+      "sha256": "167e0e01cd18d041518c8540f21fb52557ced1bca4d072c846383ee9e316ed33"
+    },
+    "remaining-build-containers-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "remaining-build-containers-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "validate.log": {
+      "bytes": 131,
+      "sha256": "c842db9330cf614ebfc189e0f7b815d36a569a4572e735d209ab72f7dd6c60de"
+    }
+  },
+  "preparation_passed": true,
+  "controllers_verified": true,
+  "base_signature_verified_before_pull": true,
+  "base_prerequisites_passed": true,
+  "image_built": false,
+  "os_qualified": false,
+  "failure": "The selected Buildah assigns cgroup-parent directly as OCI CgroupsPath; the RUN process cannot enter image-build because that parent has domain controllers enabled.",
+  "all_containers_absent": true,
+  "measurement_source": "in-job cgroup counters; no post-exit systemd defaults",
+  "image_build_cgroup": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128",
+    "memory.peak": "23216128",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 410716\nuser_usec 218536\nsystem_usec 192180\nnice_usec 199000\ncore_sched.force_idle_usec 0\nnr_periods 6\nnr_throttled 3\nthrottled_usec 62630\nnr_bursts 0\nburst_usec 0"
+  },
+  "parent_cgroup": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4317097984",
+    "memory.events": "low 0\nhigh 0\nmax 31021\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 175000233\nuser_usec 138254469\nsystem_usec 36745764\nnice_usec 135204000\ncore_sched.force_idle_usec 0\nnr_periods 1143\nnr_throttled 655\nthrottled_usec 79131288\nnr_bursts 0\nburst_usec 0"
+  }
+}

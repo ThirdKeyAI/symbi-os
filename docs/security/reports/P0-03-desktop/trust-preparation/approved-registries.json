@@ -1,0 +1,16 @@
+{
+  "docker": {
+    "ghcr.io/thirdkeyai/symbiont-os": {
+      "use-sigstore-attachments": true
+    },
+    "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f": {
+      "use-sigstore-attachments": true
+    },
+    "ghcr.io/thirdkeyai/symbiont-os-nvidia": {
+      "use-sigstore-attachments": true
+    },
+    "ghcr.io/secureblue/sericea-nvidia-hardened@sha256:9b8053d581db16d47b1df18698ffe8cc3f70c45a3758363fdc8d85c1b0fcaf5e": {
+      "use-sigstore-attachments": true
+    }
+  }
+}

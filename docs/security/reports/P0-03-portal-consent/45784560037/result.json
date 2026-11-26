@@ -1,0 +1,386 @@
+{
+  "passed": false,
+  "os_qualified": false,
+  "consent_qualified": false,
+  "product_installation": false,
+  "source_commit": "bcc91ed1e549693c1b0f5a428b7d6561430be256",
+  "limits": {
+    "memory.max": "8589934592",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "source-init",
+      "exit_code": 0
+    },
+    {
+      "name": "source-fetch",
+      "exit_code": 0
+    },
+    {
+      "name": "source-checkout",
+      "exit_code": 0
+    },
+    {
+      "name": "source-revision",
+      "exit_code": 0
+    },
+    {
+      "name": "base-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "pull",
+      "exit_code": 0
+    },
+    {
+      "name": "offline-build",
+      "exit_code": 1
+    },
+    {
+      "name": "symbi-consent-build-cleanup",
+      "exit_code": 0
+    },
+    {
+      "name": "symbi-consent-build-exists",
+      "exit_code": 1
+    }
+  ],
+  "compositor_recompiled": false,
+  "toolkit_recompiled": false,
+  "scope": "Portal-only build, native regression/CLI controls and additive runtime checks; full D-Bus/GUI consent qualification remains pending",
+  "prefix_link_rewrites": [
+    {
+      "name": "hyprland/bin/hyprland",
+      "original_target": "/usr/lib/symbi/hyprland/bin/Hyprland",
+      "relative_target": "Hyprland"
+    }
+  ],
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "source_inputs": {
+    "schema": 1,
+    "scope": "Candidate portal and share-picker toolkit selected by the pinned compositor; source metadata only, no build or OS qualification",
+    "qualified": false,
+    "hyprland_revision": "11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947",
+    "hyprland_flake_lock": {
+      "path": "image/portal/reviewed/Hyprland-flake.lock",
+      "sha256": "db45c25bd98a86c5c5cb2494ff6994d39db7f2d0eb05fc98d27d30b6c833cabe",
+      "git_blob": "d84c3724fcbad32a2082c566292dd7815c3f08e4"
+    },
+    "reused_input_bindings": {
+      "image/hyprland/candidate-inputs.json": "d5c64bd34e52e4c61a14fde19ad429c31dcf3862d8c051bd029c4c73deca2ecb",
+      "image/hyprland/development-prefix.lock.json": "484cf1c675b20c8e603ef6094ecd1e07c7e8fd58047bdba1e8f7eabfb26b0650",
+      "image/hyprland/build-rpms.lock.json": "fe160b4ed81b2e4910df098f6648b499264e8d989eea07feb59a841ecc9131a4",
+      "image/hyprland/patches/0001-disable-native-loading.patch": "068d061f29c6ccbef25d402972a14c72195811e40888027b71760f6656f6eeff"
+    },
+    "components": [
+      {
+        "name": "hyprtoolkit",
+        "lock_node": "hyprtoolkit",
+        "revision": "92646e15fb295285b10de626f2d9597216465f7b",
+        "version": "0.6.0",
+        "repository": "https://github.com/hyprwm/hyprtoolkit.git",
+        "license": "BSD-3-Clause",
+        "reviewed_files": {
+          "VERSION": {
+            "path": "image/portal/reviewed/hyprtoolkit/VERSION",
+            "bytes": 6,
+            "sha256": "97a5d6e540a6120d09c39ddb667e0e8e2bac7fcc2ffef813b82e08fd60365bce",
+            "git_blob": "a918a2aa18d5bec6a8bb93891a7a63c243111796"
+          },
+          "CMakeLists.txt": {
+            "path": "image/portal/reviewed/hyprtoolkit/CMakeLists.txt",
+            "bytes": 8506,
+            "sha256": "053653a92c0b7f6936e4a9c745d4281c6f5ac87be12d684503aba72ab3452195",
+            "git_blob": "540b8e6d7d3a0ba6fa8f66c46bd59ac6d83021df"
+          },
+          "LICENSE": {
+            "path": "image/portal/reviewed/hyprtoolkit/LICENSE",
+            "bytes": 1503,
+            "sha256": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143",
+            "git_blob": "daf5abfc33b687ea2368b58e8dd58e8180b00c47"
+          },
+          "scripts/generateShaderIncludes.sh": {
+            "path": "image/portal/reviewed/hyprtoolkit/scripts/generateShaderIncludes.sh",
+            "bytes": 829,
+            "sha256": "208b260558dd3de4519361b0ab6fb841f6736456ea430750ae8edbc43a24c17e",
+            "git_blob": "58594c9cd86873cfbb98bce29e28f7f111891c68"
+          }
+        }
+      },
+      {
+        "name": "xdg-desktop-portal-hyprland",
+        "lock_node": "xdph",
+        "revision": "85450448ea40a54ec4f10bd607e68019d8f5cc41",
+        "version": "1.5.0",
+        "repository": "https://github.com/hyprwm/xdg-desktop-portal-hyprland.git",
+        "license": "BSD-3-Clause",
+        "reviewed_files": {
+          "VERSION": {
+            "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/VERSION",
+            "bytes": 6,
+            "sha256": "acb57a7135b2d7d6e665f67f056e21353023b93835f54def1ae523bf76f1bfb3",
+            "git_blob": "bc80560fad66ca670bdfbd1e5c973a024d4d0325"
+          },
+          "CMakeLists.txt": {
+            "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/CMakeLists.txt",
+            "bytes": 6138,
+            "sha256": "b5d66bb400772968346edf61b6b568fba623bdf355bb8af8c2aa4c2a6354c450",
+            "git_blob": "51af533f24de44d4785164755f4412d3a716535b"
+          },
+          "LICENSE": {
+            "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/LICENSE",
+            "bytes": 1515,
+            "sha256": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+            "git_blob": "f18025f342e9c7043902f8dd22549d88bd6facf8"
+          },
+          "hyprland-share-picker/CMakeLists.txt": {
+            "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/hyprland-share-picker/CMakeLists.txt",
+            "bytes": 904,
+            "sha256": "3f0439e00661d676cd370c496b8f9b473ef4dc362b9a40d3513f6a9e9c305c58",
+            "git_blob": "2fe614800afa9f20f34dea0ee85cd4ecb61080ef"
+          }
+        }
+      }
+    ]
+  },
+  "reviewed_source_bindings": {
+    "image/portal/source-inputs.json": "759e7e4e4cbe63cb5c0ef39963e4f95b39a68b803e6d9100d10f3a40cc722514",
+    "image/hyprland/candidate-inputs.json": "d5c64bd34e52e4c61a14fde19ad429c31dcf3862d8c051bd029c4c73deca2ecb",
+    "image/hyprland/development-prefix.lock.json": "484cf1c675b20c8e603ef6094ecd1e07c7e8fd58047bdba1e8f7eabfb26b0650",
+    "image/hyprland/build-rpms.lock.json": "fe160b4ed81b2e4910df098f6648b499264e8d989eea07feb59a841ecc9131a4",
+    "image/hyprland/patches/0001-disable-native-loading.patch": "068d061f29c6ccbef25d402972a14c72195811e40888027b71760f6656f6eeff",
+    "image/portal/reviewed/hyprtoolkit/VERSION": "97a5d6e540a6120d09c39ddb667e0e8e2bac7fcc2ffef813b82e08fd60365bce",
+    "image/portal/reviewed/hyprtoolkit/CMakeLists.txt": "053653a92c0b7f6936e4a9c745d4281c6f5ac87be12d684503aba72ab3452195",
+    "image/portal/reviewed/hyprtoolkit/LICENSE": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143",
+    "image/portal/reviewed/hyprtoolkit/scripts/generateShaderIncludes.sh": "208b260558dd3de4519361b0ab6fb841f6736456ea430750ae8edbc43a24c17e",
+    "image/portal/reviewed/xdg-desktop-portal-hyprland/VERSION": "acb57a7135b2d7d6e665f67f056e21353023b93835f54def1ae523bf76f1bfb3",
+    "image/portal/reviewed/xdg-desktop-portal-hyprland/CMakeLists.txt": "b5d66bb400772968346edf61b6b568fba623bdf355bb8af8c2aa4c2a6354c450",
+    "image/portal/reviewed/xdg-desktop-portal-hyprland/LICENSE": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+    "image/portal/reviewed/xdg-desktop-portal-hyprland/hyprland-share-picker/CMakeLists.txt": "3f0439e00661d676cd370c496b8f9b473ef4dc362b9a40d3513f6a9e9c305c58",
+    "image/portal/reviewed/Hyprland-flake.lock": "db45c25bd98a86c5c5cb2494ff6994d39db7f2d0eb05fc98d27d30b6c833cabe",
+    "image/hyprland/build-requirements.json": "fa610060ebed142edc072cea832945da3da3e0d58bdf14cd1d35089f1302b92a"
+  },
+  "consent_inputs": {
+    "schema": 1,
+    "qualified": false,
+    "consent_qualified": false,
+    "product_installation": false,
+    "upstream_revision": "85450448ea40a54ec4f10bd607e68019d8f5cc41",
+    "source_inputs_sha256": "759e7e4e4cbe63cb5c0ef39963e4f95b39a68b803e6d9100d10f3a40cc722514",
+    "rpm_lock_sha256": "81fb8788e0acb25ee15bcb6d38c7438c4cba102e1fd616d944ddc03f99375ab8",
+    "parent_prefix_lock_sha256": "abc80998ff1ec66160f0738a7e5fc0865b39c6a2e65fe7f7870633dde02a1240",
+    "reviewed_files": {
+      "LICENSE": {
+        "path": "image/portal/consent-reviewed/LICENSE",
+        "bytes": 1515,
+        "sha256": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+        "git_blob": "f18025f342e9c7043902f8dd22549d88bd6facf8"
+      },
+      "contrib/systemd/xdg-desktop-portal-hyprland.service.in": {
+        "path": "image/portal/consent-reviewed/contrib/systemd/xdg-desktop-portal-hyprland.service.in",
+        "bytes": 324,
+        "sha256": "ba6b2c223f6d674ac7b04d42b25af818ac0df8ab58fa424023d14b51f9f00db2",
+        "git_blob": "a2e376083420042ba3bbde9beb49207d22fedc99"
+      },
+      "hyprland-share-picker/Picker.cpp": {
+        "path": "image/portal/consent-reviewed/hyprland-share-picker/Picker.cpp",
+        "bytes": 15080,
+        "sha256": "7f2e8895e528b07ee8f12769d3dcc675b0e8a4d9e8e39001c13139ca4ccd917b",
+        "git_blob": "7368798ccc901b67fbed9bd43a8bccebea3afa15"
+      },
+      "hyprland-share-picker/Picker.hpp": {
+        "path": "image/portal/consent-reviewed/hyprland-share-picker/Picker.hpp",
+        "bytes": 3926,
+        "sha256": "708bf45cedc93962822a625ba06ef21fcf89cbccc7bd54344caec1f34369df40",
+        "git_blob": "5f9ba5289a4d7773ba47f92c8b4e78fb164dd9f9"
+      },
+      "hyprland-share-picker/PickerData.cpp": {
+        "path": "image/portal/consent-reviewed/hyprland-share-picker/PickerData.cpp",
+        "bytes": 9049,
+        "sha256": "04c61402c60de8881c125df1b8348a8322833c3523af3676a9409c16932d677b",
+        "git_blob": "3e74b0500d4e2795b7bc84a9655785508c35e5cc"
+      },
+      "hyprland-share-picker/PickerData.hpp": {
+        "path": "image/portal/consent-reviewed/hyprland-share-picker/PickerData.hpp",
+        "bytes": 1878,
+        "sha256": "c5dfd40a9e47ddd97b5e5905673e913e87ebcde07a9e9b0682bb9897643c78a8",
+        "git_blob": "152399dabd91bb993bc154ef71521d39d03f0fb4"
+      },
+      "hyprland-share-picker/PickerDataTest.cpp": {
+        "path": "image/portal/consent-reviewed/hyprland-share-picker/PickerDataTest.cpp",
+        "bytes": 13365,
+        "sha256": "f872f91bd7de1817f9a463baf6e28f85f6db6c06f2b919b466c720698abbdbd7",
+        "git_blob": "61c509c10f139bf018431430adf5624f437172ba"
+      },
+      "hyprland-share-picker/main.cpp": {
+        "path": "image/portal/consent-reviewed/hyprland-share-picker/main.cpp",
+        "bytes": 1526,
+        "sha256": "aacad7a0605cedd26a72029eff3fca20ee5bca1c52940561593ebdf066b3bac2",
+        "git_blob": "36c102c05c2f1eca2fc97017b4d769ffa4440c95"
+      },
+      "org.freedesktop.impl.portal.desktop.hyprland.service.in": {
+        "path": "image/portal/consent-reviewed/org.freedesktop.impl.portal.desktop.hyprland.service.in",
+        "bytes": 163,
+        "sha256": "0e3b4ffcff6b6e626974309165aa782ac996274eb03f446422fcd8df8561b2e0",
+        "git_blob": "6f1c8598cc17fc429fd11a3463e7a35625a9c3fb"
+      },
+      "src/core/PortalManager.cpp": {
+        "path": "image/portal/consent-reviewed/src/core/PortalManager.cpp",
+        "bytes": 26238,
+        "sha256": "aa990965d36d1c5a248ff6046ec0fddadeb2e7a5916b6dac9b6947ff5f95ad67",
+        "git_blob": "7c8cc25858fa1329fea40aaada8bebf47fe01e6e"
+      },
+      "src/portals/Screencopy.cpp": {
+        "path": "image/portal/consent-reviewed/src/portals/Screencopy.cpp",
+        "bytes": 80565,
+        "sha256": "c6c9f3a222411715190b17641618e63067cafa4d097a423aa186a2af0d4bdf98",
+        "git_blob": "c5b0bafe83bb9e28208041e7a17bc016ae779e5a"
+      },
+      "src/portals/Screencopy.hpp": {
+        "path": "image/portal/consent-reviewed/src/portals/Screencopy.hpp",
+        "bytes": 8558,
+        "sha256": "53b47796fe837aaf8dccee6b1717e76d4c053e5e8601eb9679021ceaf47071f8",
+        "git_blob": "f57e83a5ffab9970202e60930fd2dee79806187d"
+      },
+      "src/shared/ScreencopyShared.cpp": {
+        "path": "image/portal/consent-reviewed/src/shared/ScreencopyShared.cpp",
+        "bytes": 21423,
+        "sha256": "fae2f5bb0188a1dafabafc47737bada52867ad7475a051409fbd06a17738b646",
+        "git_blob": "84195cd18b70f72e60e2a5f7adfc71403b7eda61"
+      },
+      "src/shared/ScreencopyShared.hpp": {
+        "path": "image/portal/consent-reviewed/src/shared/ScreencopyShared.hpp",
+        "bytes": 2061,
+        "sha256": "80dc2c048c9c183eb1d973ee0e950483bb5ec919b21fe242c06f24a92ab92356",
+        "git_blob": "8d7f2c29eb6e294d7d584cf74ece4070d58300d1"
+      }
+    },
+    "patches": [
+      {
+        "role": "tests",
+        "path": "image/portal/patches/0001-no-restore-tests.patch",
+        "bytes": 3953,
+        "sha256": "7b2ddb34ee84ecc54d0b50ea4acd6529f7841ccd0ef97844c2f72c5a478f6b4b",
+        "files": {
+          "hyprland-share-picker/PickerDataTest.cpp": {
+            "before": "f872f91bd7de1817f9a463baf6e28f85f6db6c06f2b919b466c720698abbdbd7",
+            "after": "f1f6765287dfd7cb3ea2adc84c9e3a248ff743dc47eae7547aacfa4046de6efb"
+          }
+        }
+      },
+      {
+        "role": "implementation",
+        "path": "image/portal/patches/0002-require-fresh-screen-sharing-consent.patch",
+        "bytes": 20855,
+        "sha256": "ff242489a3f0a904f33e98c39db3eee23d836740649f0120032100c4b9a5629b",
+        "files": {
+          "hyprland-share-picker/Picker.cpp": {
+            "before": "7f2e8895e528b07ee8f12769d3dcc675b0e8a4d9e8e39001c13139ca4ccd917b",
+            "after": "86c3108adaea52cccc595c9100c601d4102e2cf697b357e9320ad908dc4845bd"
+          },
+          "hyprland-share-picker/Picker.hpp": {
+            "before": "708bf45cedc93962822a625ba06ef21fcf89cbccc7bd54344caec1f34369df40",
+            "after": "4972fbe827fcd8da703b8ed412fca586c62bfa6076ced173a34241afee6e275e"
+          },
+          "hyprland-share-picker/PickerData.cpp": {
+            "before": "04c61402c60de8881c125df1b8348a8322833c3523af3676a9409c16932d677b",
+            "after": "014a9bfc7ec5810324e7b1604baa1bf3542c9bfa6fcdfe9ec762639e82d6a16e"
+          },
+          "hyprland-share-picker/main.cpp": {
+            "before": "aacad7a0605cedd26a72029eff3fca20ee5bca1c52940561593ebdf066b3bac2",
+            "after": "42b8b54b1710d5d3d35941cadeccbebe649c9a8684da1a1e8191d83aebc8a6ca"
+          },
+          "src/portals/Screencopy.cpp": {
+            "before": "c6c9f3a222411715190b17641618e63067cafa4d097a423aa186a2af0d4bdf98",
+            "after": "f279424f02c1626f80c88ee85bc2541689d2aaeb9bdf36ea1f64a90ce1370bbb"
+          },
+          "src/portals/Screencopy.hpp": {
+            "before": "53b47796fe837aaf8dccee6b1717e76d4c053e5e8601eb9679021ceaf47071f8",
+            "after": "a2e682a080dc20c5dd0e3fe3bb2478014624fb6d26b45eac924ec41ff5dbd63b"
+          },
+          "src/shared/ScreencopyShared.cpp": {
+            "before": "fae2f5bb0188a1dafabafc47737bada52867ad7475a051409fbd06a17738b646",
+            "after": "df11e1896356f183a94cdde7b32878725e722962fd0ba8741750d24b7351e582"
+          },
+          "src/shared/ScreencopyShared.hpp": {
+            "before": "80dc2c048c9c183eb1d973ee0e950483bb5ec919b21fe242c06f24a92ab92356",
+            "after": "e186c705fea236a0f935426cef7060c7b4b2c6f65f27aaca7656f8ee5559e234"
+          }
+        }
+      }
+    ],
+    "patch_license": {
+      "source": "LICENSE",
+      "path": "image/portal/consent-reviewed/LICENSE.symbi-os",
+      "license": "Apache-2.0",
+      "sha256": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+      "bytes": 10784,
+      "installed_path": "share/licenses/symbi-os-portal-patch/LICENSE"
+    },
+    "protocol_reference": "https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.impl.portal.ScreenCast.html",
+    "protocol_note": "Return explicit persist_mode=0; omission inherits the requested mode. Ignore restore data and never return it.",
+    "scope": "Downstream source and test inputs only; native tests, actual D-Bus/GUI/capture behavior and human TCB review are still required."
+  },
+  "consent_bindings": {
+    "image/portal/source-inputs.json": "759e7e4e4cbe63cb5c0ef39963e4f95b39a68b803e6d9100d10f3a40cc722514",
+    "image/portal/build-rpms.lock.json": "81fb8788e0acb25ee15bcb6d38c7438c4cba102e1fd616d944ddc03f99375ab8",
+    "image/portal/development-prefix.lock.json": "abc80998ff1ec66160f0738a7e5fc0865b39c6a2e65fe7f7870633dde02a1240",
+    "image/portal/consent-inputs.json": "600eb0bc6f853ffcea25be529af0e28e2283d4ec6901805ae5f558b784d44be4",
+    "LICENSE": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+    "image/portal/consent-reviewed/LICENSE": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+    "image/portal/consent-reviewed/contrib/systemd/xdg-desktop-portal-hyprland.service.in": "ba6b2c223f6d674ac7b04d42b25af818ac0df8ab58fa424023d14b51f9f00db2",
+    "image/portal/consent-reviewed/hyprland-share-picker/Picker.cpp": "7f2e8895e528b07ee8f12769d3dcc675b0e8a4d9e8e39001c13139ca4ccd917b",
+    "image/portal/consent-reviewed/hyprland-share-picker/Picker.hpp": "708bf45cedc93962822a625ba06ef21fcf89cbccc7bd54344caec1f34369df40",
+    "image/portal/consent-reviewed/hyprland-share-picker/PickerData.cpp": "04c61402c60de8881c125df1b8348a8322833c3523af3676a9409c16932d677b",
+    "image/portal/consent-reviewed/hyprland-share-picker/PickerData.hpp": "c5dfd40a9e47ddd97b5e5905673e913e87ebcde07a9e9b0682bb9897643c78a8",
+    "image/portal/consent-reviewed/hyprland-share-picker/PickerDataTest.cpp": "f872f91bd7de1817f9a463baf6e28f85f6db6c06f2b919b466c720698abbdbd7",
+    "image/portal/consent-reviewed/hyprland-share-picker/main.cpp": "aacad7a0605cedd26a72029eff3fca20ee5bca1c52940561593ebdf066b3bac2",
+    "image/portal/consent-reviewed/org.freedesktop.impl.portal.desktop.hyprland.service.in": "0e3b4ffcff6b6e626974309165aa782ac996274eb03f446422fcd8df8561b2e0",
+    "image/portal/consent-reviewed/src/core/PortalManager.cpp": "aa990965d36d1c5a248ff6046ec0fddadeb2e7a5916b6dac9b6947ff5f95ad67",
+    "image/portal/consent-reviewed/src/portals/Screencopy.cpp": "c6c9f3a222411715190b17641618e63067cafa4d097a423aa186a2af0d4bdf98",
+    "image/portal/consent-reviewed/src/portals/Screencopy.hpp": "53b47796fe837aaf8dccee6b1717e76d4c053e5e8601eb9679021ceaf47071f8",
+    "image/portal/consent-reviewed/src/shared/ScreencopyShared.cpp": "fae2f5bb0188a1dafabafc47737bada52867ad7475a051409fbd06a17738b646",
+    "image/portal/consent-reviewed/src/shared/ScreencopyShared.hpp": "80dc2c048c9c183eb1d973ee0e950483bb5ec919b21fe242c06f24a92ab92356",
+    "image/portal/patches/0001-no-restore-tests.patch": "7b2ddb34ee84ecc54d0b50ea4acd6529f7841ccd0ef97844c2f72c5a478f6b4b",
+    "image/portal/patches/0002-require-fresh-screen-sharing-consent.patch": "ff242489a3f0a904f33e98c39db3eee23d836740649f0120032100c4b9a5629b",
+    "image/portal/consent-reviewed/LICENSE.symbi-os": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c"
+  },
+  "rpm_lock_sha256": "81fb8788e0acb25ee15bcb6d38c7438c4cba102e1fd616d944ddc03f99375ab8",
+  "parent_prefix_manifest_sha256": "fbb337e28befd8a65f0c49a47eb7201cf7048062df0ea9b212b607df07e2e3d8",
+  "reused_compositor_manifest_sha256": "d158ab5e6948abc59084bf60b771fa0abf92f8c39d47fb77c40b2c6e5e5bee08",
+  "input_bindings": {
+    "build-rpms.lock.json": "81fb8788e0acb25ee15bcb6d38c7438c4cba102e1fd616d944ddc03f99375ab8",
+    "LICENSE.symbi-os": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+    "source-inputs.json": "759e7e4e4cbe63cb5c0ef39963e4f95b39a68b803e6d9100d10f3a40cc722514",
+    "consent-inputs.json": "600eb0bc6f853ffcea25be529af0e28e2283d4ec6901805ae5f558b784d44be4",
+    "build_guest.py": "4e999ced58408f8569608788e982eb89577d917fca8d8f366ab4a81521d89530",
+    "compile.py": "d2d97fb686a8a11023d3b2b1b6220b1e608b46a44bbd5c27869f30814ce539f9",
+    "consent_inputs.py": "64ef944e2993bbb892bd5ae114a0c8c296b99a3b29e09fe2d645719bf0327584",
+    "build_inputs.py": "3588b6bb99ec463d00c2fee5b20584bf4e3ca68a9ceac97c8faca44a76b642b4",
+    "runtime_guest.py": "4896517301f2efbfb01d6f144f2fdaed683817d050fed22be0a7930825bc37c6",
+    "runtime_inputs.py": "13979f98eb7baea68da61f00906af3741fdc70ab5d575f74855a6c2171ce7f3c",
+    "desktop_inputs.py": "cc2672b17e2916d82adf1cc0de6b530c79c2da5441d2b01d88f27583ebf7f115",
+    "runtime_install.py": "d7d36d7a056861cafe058d3a31ae609d372257cbff6f0cfd77b6dc3bdd62e884",
+    "package_identity.py": "b745e4b72be4404bfe7291a11fd9c5378487fc4158ef957d2221f792e9fe90ab",
+    "bounded_process.py": "31353489fcf05bb3a6e7ddd423e6737ccd366e9ba3b328c04339dc96f3224788",
+    "resolve_packages.py": "9cde06bf10749202d5248b66dd0c50bf214edd08e37c12e48527b31ec2356bcd",
+    "guest_inventory.py": "c214e843b92b0bb2c7ecdef047e35162165fa30a8381e88f22fcc17aefbbd9d8",
+    "reuse.py": "7cb0fc01cb19e93f300bcd9c46b8a80d30b58d2e2c1f9f86024731ff1597e73d",
+    "fedora-45-primary.asc": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425",
+    "patches/0001-no-restore-tests.patch": "7b2ddb34ee84ecc54d0b50ea4acd6529f7841ccd0ef97844c2f72c5a478f6b4b",
+    "patches/0002-require-fresh-screen-sharing-consent.patch": "ff242489a3f0a904f33e98c39db3eee23d836740649f0120032100c4b9a5629b"
+  },
+  "failure": "CalledProcessError: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/portal-consent-storage/root', '--runroot', '/run/symbi-portal-consent-45784560037-1', 'run', '--name=symbi-consent-build', '--memory=6g', '--memory-swap=6g', '--cpus=2', '--pull=never', '--network=none', '--security-opt=no-new-privileges', '--user=0', '--cap-drop=ALL', '--cap-add=CHOWN,DAC_OVERRIDE,FOWNER,FSETID,SETGID,SETUID,SETFCAP', '--pids-limit=128', '--cgroup-parent=/system.slice/symbi-portal-consent-45784560037-1.service', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/portal-consent-inputs,dst=/inputs,ro', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/portal-consent-inputs/hyprland-prefix/hyprland,dst=/usr/lib/symbi/hyprland,ro', '--env=PYTHONDONTWRITEBYTECODE=1', '--env=LANG=C.UTF-8', '--env=GITHUB_ACTIONS=true', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/portal-consent-output,dst=/output', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/portal-consent-output/portal,dst=/usr/lib/symbi/portal', '--entrypoint=/usr/bin/python3', 'ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f', '/inputs/build_guest.py']' returned non-zero exit status 1.",
+  "cgroup_final": {
+    "memory.max": "8589934592",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "8601964544",
+    "memory.events": "low 0\nhigh 0\nmax 5255\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 193759473\nuser_usec 135524342\nsystem_usec 58235130\nnice_usec 131368000\ncore_sched.force_idle_usec 0\nnr_periods 1581\nnr_throttled 690\nthrottled_usec 37924549\nnr_bursts 0\nburst_usec 0"
+  }
+}

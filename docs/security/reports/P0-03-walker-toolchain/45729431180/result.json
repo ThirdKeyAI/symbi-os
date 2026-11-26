@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "source_commit": "b7a3535fba9d1637a1c70daccd05f224a0b445f5",
+  "profile": "walker-build",
+  "packages": 91,
+  "rpm_manifest_sha256": "4c683e047239faa345e7ec12369c94a88be98fc623bac9ab58d87e0d8637566b",
+  "os_qualified": false,
+  "scope": "Candidate signed build inputs, not installed or compiled"
+}
