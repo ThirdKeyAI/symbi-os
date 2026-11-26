@@ -24,7 +24,7 @@ def main():
     component = next(row for row in pins['components'] if row['name'] == 'xdg-desktop-portal-hyprland')
     source = output/'sources'/component['name']
     shutil.copytree(inputs/'sources'/component['name'], source, symlinks=True)
-    shutil.copytree(inputs/'portal-prefix/portal', PREFIX, symlinks=True, dirs_exist_ok=True)
+    shutil.copytree(Path('/retained-portal'), PREFIX, symlinks=True, dirs_exist_ok=True)
     if prefix_inventory(PREFIX) != parent['files']: raise ValueError('Retained native prefix changed during copying')
     record = {'passed': False, 'os_qualified': False, 'consent_qualified': False,
               'checks': [], 'test_suites': {}, 'negative_controls': {},

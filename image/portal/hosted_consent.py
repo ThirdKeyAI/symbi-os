@@ -136,6 +136,10 @@ def main():
         try:
             run('offline-build', podman+['run', '--name='+container, '--memory=6g', '--memory-swap=6g', '--cpus=2', *common,
                 '--mount', f'type=bind,src={output},dst=/output', '--mount', f'type=bind,src={output / "portal"},dst=/usr/lib/symbi/portal',
+                # The archive staging parent stays mode 0700. Mount its validated
+                # public prefix directly so UID 10001 can read it without widening
+                # permissions on the staging directory or any existing artifact.
+                '--mount', f'type=bind,src={inputs / "portal-prefix/portal"},dst=/retained-portal,ro',
                 '--entrypoint=/usr/bin/python3', base['image'], '/inputs/build_guest.py'], 2400)
         finally: remove(container)
         compiled = unique_json((output/'evidence/compile.json').read_bytes())

@@ -136,3 +136,12 @@ Every retained file except the two executables must remain unchanged; only the
 exact downstream license is added. All 191 offline checks pass. Native results,
 complete backend/GUI consent acceptance, image integration and human review are
 pending; qualification flags remain false.
+
+
+The first fresh-consent run, `45784560037`, failed before compilation because
+the unprivileged account could not traverse the extractor's private staging
+parent. The compiler now mounts the validated child prefix read-only at
+`/retained-portal`; staging permissions and every artifact check stay intact.
+Original failure logs and independent reconciliation are retained under
+`docs/security/reports/P0-03-portal-consent/45784560037/`. Native acceptance of
+this correction remains pending; 191 offline checks pass.

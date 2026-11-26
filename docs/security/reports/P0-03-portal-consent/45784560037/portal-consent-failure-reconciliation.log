@@ -1,0 +1,53 @@
+Retained 391 original files, 313636 expanded bytes
+result.json {"passed": false, "failure": "CalledProcessError: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/portal-consent-storage/root', '--runroot', '/run/symbi-portal-consent-45784560037-1', 'run', '--name=symbi-consent-build', '--memory=6g', '--memory-swap=6g', '--cpus=2', '--pull=never', '--network=none', '--security-opt=no-new-privileges', '--user=0', '--cap-drop=ALL', '--cap-add=CHOWN,DAC_OVERRIDE,FOWNER,FSETID,SETGID,SETUID,SETFCAP', '--pids-limit=128', '--cgroup-parent=/system.slice/symbi-portal-consent-45784560037-1.service', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/portal-consent-inputs,dst=/inputs,ro', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/portal-consent-inputs/hyprland-prefix/hyprland,dst=/usr/lib/symbi/hyprland,ro', '--env=PYTHONDONTWRITEBYTECODE=1', '--env=LANG=C.UTF-8', '--env=GITHUB_ACTIONS=true', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/portal-consent-output,dst=/output', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/portal-consent-output/portal,dst=/usr/lib/symbi/portal', '--entrypoint=/usr/bin/python3', 'ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f', '/inputs/build_guest.py']' returned non-zero exit status 1.", "active_check": null, "active_command": null, "negative_controls": null, "test_suites": null}
+build/install.json {"passed": false, "failure": "CalledProcessError: Command ['runuser', '-u', 'symbi-build', '--', 'env', '-i', 'HOME=/output/home', 'PATH=/usr/lib/symbi/portal/bin:/usr/lib/symbi/hyprland/bin:/usr/bin:/bin', 'LANG=C.UTF-8', 'PYTHONDONTWRITEBYTECODE=1', 'CMAKE_BUILD_PARALLEL_LEVEL=1', 'PKG_CONFIG_PATH=/usr/lib/symbi/portal/lib/pkgconfig:/usr/lib/symbi/hyprland/lib/pkgconfig:/usr/lib/symbi/hyprland/share/pkgconfig', 'OMP_NUM_THREADS=1', 'LP_NUM_THREADS=1', 'LIBGL_ALWAYS_SOFTWARE=1', 'EGL_PLATFORM=surfaceless', 'XDG_RUNTIME_DIR=/output/runtime', 'GIT_CONFIG_NOSYSTEM=1', 'GIT_CONFIG_GLOBAL=/dev/null', 'python3', '/inputs/compile.py'] returned non-zero exit status 1.", "active_check": null, "active_command": null, "negative_controls": null, "test_suites": null}
+offline-build-stderr.log Traceback (most recent call last):
+  File "/inputs/build_guest.py", line 93, in <module>
+    main()
+    ~~~~^^
+  File "/inputs/build_guest.py", line 81, in main
+    run('compile-driver', command, 3600)
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/inputs/build_guest.py", line 41, in run
+    result.check_returncode()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib64/python3.15/subprocess.py", line 623, in check_returncode
+    raise CalledProcessError(self.returncode, self.args, self.stdout,
+                             self.stderr)
+subprocess.CalledProcessError: Command ['runuser', '-u', 'symbi-build', '--', 'env', '-i', 'HOME=/output/home', 'PATH=/usr/lib/symbi/portal/bin:/usr/lib/symbi/hyprland/bin:/usr/bin:/bin', 'LANG=C.UTF-8', 'PYTHONDONTWRITEBYTECODE=1', 'CMAKE_BUILD_PARALLEL_LEVEL=1', 'PKG_CONFIG_PATH=/usr/lib/symbi/portal/lib/pkgconfig:/usr/lib/symbi/hyprland/lib/pkgconfig:/usr/lib/symbi/hyprland/share/pkgconfig', 'OMP_NUM_THREADS=1', 'LP_NUM_THREADS=1', 'LIBGL_ALWAYS_SOFTWARE=1', 'EGL_PLATFORM=surfaceless', 'XDG_RUNTIME_DIR=/output/runtime', 'GIT_CONFIG_NOSYSTEM=1', 'GIT_CONFIG_GLOBAL=/dev/null', 'python3', '/inputs/compile.py'] returned non-zero exit status 1.
+
+build/compile-driver-stderr.log Traceback (most recent call last):
+  File "/inputs/compile.py", line 129, in <module>
+    if __name__ == '__main__': main()
+                               ~~~~^^
+  File "/inputs/compile.py", line 27, in main
+    shutil.copytree(inputs/'portal-prefix/portal', PREFIX, symlinks=True, dirs_exist_ok=True)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib64/python3.15/shutil.py", line 652, in copytree
+    with os.scandir(src) as itr:
+         ~~~~~~~~~~^^^^^
+PermissionError: [Errno 13] Permission denied: '/inputs/portal-prefix/portal'
+
+	Command being timed: "/usr/bin/env PYTHONDONTWRITEBYTECODE=1 python3 retain-portal-consent-evidence.py 45784560037 p003-portal-consent-followup-stage"
+	User time (seconds): 0.02
+	System time (seconds): 0.02
+	Percent of CPU this job got: 11%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.41
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 19320
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 2844
+	Voluntary context switches: 15
+	Involuntary context switches: 8
+	Swaps: 0
+	File system inputs: 456
+	File system outputs: 2240
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
