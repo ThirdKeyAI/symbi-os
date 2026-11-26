@@ -1,0 +1,6 @@
+Running as unit: symbi-desktop-rpms-45818341284-1.service
+          Finished with result: success
+Main processes terminated with: code=exited, status=0/SUCCESS
+               Service runtime: 3min 56.239s
+             CPU time consumed: 2min 52.509s
+                   Memory peak: 3G (swap: 0B)

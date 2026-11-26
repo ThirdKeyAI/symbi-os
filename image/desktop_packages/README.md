@@ -69,3 +69,35 @@ Night, menus and all 190 reference shortcuts remain separate required work.
 
 Affected invariant: INV-12. This step introduces no agent authorization gate,
 production dependency selection, audit exemption, release key or journal event.
+
+## Retained signed candidates and Kitty selection blocker
+
+[Discovery 45818341284](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45818341284)
+passed at `30d4ab7`. All 218 original small evidence files are retained and
+independently reconciled: 39 RPMs totaling 46,606,537 bytes, 37 verified against
+the Fedora key and two against RPM Fusion Free. Both signers' missing-key,
+wrong-key and modified-RPM controls failed as required (six native controls).
+The installed base inventory stayed byte-identical; container/image/private
+storage cleanup passed. The parent had 60,246 memory-limit events with no OOM,
+kill or swap; the discovery container peaked at 412,282,880 bytes with zero
+memory-limit/OOM/kill events. The large candidate archive remains hosted.
+
+Candidates include MPlayer `1.5.1-0.26.r38531.20260727.f401198.fc45`, mpv
+`0.41.0-10.fc45`, and Kitty `0.48.2-1.fc45`. The separately queried gum version
+was `2.0.2-1.fc45`; the stable repositories returned no Starship or mise rows.
+These are discovered inputs, not installed additions or release pins. The
+MPlayer spec reviewed earlier was release 0.27 and is not source proof for the
+actual 0.26 candidate; that exact source review remains required.
+
+The [exact Kitty source review](../../docs/security/reports/P0-03-cve-bz/2026-11-26/desktop-profile/fedora-kitty/README.md)
+rejects the candidate for integration: three reviewed cve.bz fixes are absent
+from the checksum-bound source and are not backported by its three Fedora
+patches. Kitty remains absent from the built image. Select an authenticated
+maintained fixed package/source, assess the remaining advisories and run native
+tests before enabling it as the default. No blanket audit exemption, security
+clearance or claim about the owner's current workstation is made.
+
+Both-base additive installation, remaining dependency/security/license review,
+fonts, Tokyo Night, menus, all 190 shortcuts and actual desktop acceptance are
+still pending. No production dependency or trust selection changes in this
+evidence-only follow-up; INV-12 remains a release requirement.
