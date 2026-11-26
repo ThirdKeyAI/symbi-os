@@ -1,0 +1,24 @@
+{
+  "passed": false,
+  "os_qualified": false,
+  "source_commit": "d3a4cc32d7a8100477be974adbdffa2aff8d5f61",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [],
+  "scope": "Source-built Elephant and actual provider refusal on the selected base; no OS qualification",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "failure": "ValueError: RPM resolution does not match the current build requirements",
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "178065408",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 585063\nuser_usec 385067\nsystem_usec 199996\nnice_usec 387000\ncore_sched.force_idle_usec 0\nnr_periods 159\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+  }
+}

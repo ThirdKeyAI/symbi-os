@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="1" failures="0" disabled="0" errors="0" time="0.255" timestamp="2026-11-26T06:50:11.949" name="AllTests">
+  <testsuite name="CEmbeddedRendererTest" tests="1" failures="0" disabled="0" skipped="0" errors="0" time="0.255" timestamp="2026-11-26T06:50:11.949">
+    <testcase name="rendersAndRestoresHostState" file="/output/sources/hyprtoolkit/tests/EmbeddedRenderer.cpp" line="91" status="run" result="completed" time="0.255" timestamp="2026-11-26T06:50:11.949" classname="CEmbeddedRendererTest" />
+  </testsuite>
+</testsuites>

@@ -1,0 +1,39 @@
+{"disk": {"device": 66305, "inode": 10255222, "bytes": 25769803776, "uid": 0, "mode": 384, "links": 1}, "limits": {"memory.max": "2147483648", "memory.swap.max": "0", "cpu.max": "100000 100000", "pids.max": "128"}, "command": ["/usr/bin/bootc", "install", "to-disk", "--source-imgref=oci:/inputs/oci", "--target-imgref=ghcr.io/thirdkeyai/symbiont-os@sha256:9b6e8fdd9f6f98631895ccdfaaed6ffd88febd3ea6238d543935a524b572faf3", "--enforce-container-sigpolicy", "--filesystem=btrfs", "--generic-image", "--via-loopback", "--karg=console=ttyS0,115200n8", "--karg=selinux=1", "--karg=enforcing=1", "--karg=systemd.unit=multi-user.target", "--karg=systemd.wants=o.service", "/output/atomic.raw"], "scope": "Unsigned offline development artifact; enforce signature policy for later registry updates"}
+Installing image: ostree-image-signed:docker://ghcr.io/thirdkeyai/symbiont-os@sha256:9b6e8fdd9f6f98631895ccdfaaed6ffd88febd3ea6238d543935a524b572faf3
+Block setup: direct
+       Size: 25769803776
+     Serial: <unknown>
+      Model: <unknown>
+ Partitions: UUID
+Checking that no-one is using this disk right now ... OK
+
+Disk /dev/loop0: 24 GiB, 25769803776 bytes, 50331648 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+>>> Script header accepted.
+>>> Script header accepted.
+>>> Created a new GPT disklabel (GUID: B50933FB-39A7-4B4F-B08A-0AE62EA0C670).
+/dev/loop0p1: Created a new partition 1 of type 'BIOS boot' and of size 1 MiB.
+/dev/loop0p2: Created a new partition 2 of type 'EFI System' and of size 512 MiB.
+/dev/loop0p3: Created a new partition 3 of type 'Linux root (x86-64)' and of size 23.5 GiB.
+/dev/loop0p4: Done.
+
+New situation:
+Disklabel type: gpt
+Disk identifier: B50933FB-39A7-4B4F-B08A-0AE62EA0C670
+
+Device         Start      End  Sectors  Size Type
+/dev/loop0p1    2048     4095     2048    1M BIOS boot
+/dev/loop0p2    4096  1052671  1048576  512M EFI System
+/dev/loop0p3 1052672 50329599 49276928 23.5G Linux root (x86-64)
+
+The partition table has been altered.
+Calling ioctl() to re-read partition table.
+Syncing disks.
+Creating root filesystem (btrfs) on device /dev/loop0p3 (size=25.2 GB)
+> mkfs.btrfs -U 6edb8f6b-df2b-4500-b7a6-ff46da59350f -L root /dev/loop0p3
+Creating ESP filesystem
+> mkfs.fat /dev/loop0p2 -n EFI-SYSTEM
+Initializing ostree layout

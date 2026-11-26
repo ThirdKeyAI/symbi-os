@@ -1,0 +1,8 @@
+4	11	hyprland-share-picker/Picker.cpp
+1	4	hyprland-share-picker/Picker.hpp
+3	2	hyprland-share-picker/PickerData.cpp
+5	7	hyprland-share-picker/main.cpp
+9	177	src/portals/Screencopy.cpp
+0	1	src/portals/Screencopy.hpp
+6	26	src/shared/ScreencopyShared.cpp
+0	1	src/shared/ScreencopyShared.hpp

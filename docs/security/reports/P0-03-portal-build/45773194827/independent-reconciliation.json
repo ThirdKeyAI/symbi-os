@@ -1,0 +1,60 @@
+{
+  "evidence_reconciled": true,
+  "workflow_passed": false,
+  "os_qualified": false,
+  "source_commit": "6f719685d0eaaac0ff66378d9b117244e21a8283",
+  "run_id": 45773194827,
+  "original_evidence_files": 452,
+  "original_expanded_bytes": 455533,
+  "cause": "ValueError: Selected base lacks a portal runtime dependency",
+  "native_test_counts": {
+    "toolkit-unit": 91,
+    "toolkit-renderer": 1,
+    "portal-tests": 1
+  },
+  "native_prefix_retained": true,
+  "portal_installed_in_compiler_filesystem": true,
+  "native_version_and_compiler_loader_probes_passed": true,
+  "unchanged_base_loaders_attempted": 1,
+  "unchanged_base_missing_libraries": [
+    "libiniparser.so.4 => not found"
+  ],
+  "remaining_base_loaders_run": false,
+  "portal_prefix_files": 48,
+  "original_licenses_bound_to_manifest": true,
+  "base_signature_subject_verified": true,
+  "rpm_signatures_rechecked": 173,
+  "both_containers_removed_and_absent": true,
+  "compositor_recompiled": false,
+  "host_counters": {
+    "memory.max": "8589934592",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "8601284608",
+    "memory.events": "low 0\nhigh 0\nmax 11558\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 723538333\nuser_usec 571045474\nsystem_usec 152492859\nnice_usec 565177000\ncore_sched.force_idle_usec 0\nnr_periods 7051\nnr_throttled 572\nthrottled_usec 27622734\nnr_bursts 0\nburst_usec 0"
+  },
+  "guest_counters": {
+    "memory.max": "6442450944",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "128",
+    "memory.peak": "2298773504",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 568945897\nuser_usec 476306207\nsystem_usec 92639690\nnice_usec 476097000\ncore_sched.force_idle_usec 0\nnr_periods 5810\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+  },
+  "proposed_runtime_package": {
+    "filename": "iniparser-4.2.6-5.fc45.x86_64.rpm",
+    "bytes": 26470,
+    "sha256": "8774475752a94ae62e9958819c03fa3977677d53c93b3b981a82f480b1767743",
+    "nevra": "iniparser-4.2.6-5.fc45.x86_64",
+    "vendor": "Fedora Project",
+    "license": "MIT",
+    "signature_verified": true,
+    "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+  },
+  "local_native_execution": false,
+  "local_image_download": false,
+  "local_prefix_download": false
+}

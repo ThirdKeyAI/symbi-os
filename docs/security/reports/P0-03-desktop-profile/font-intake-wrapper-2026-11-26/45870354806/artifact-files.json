@@ -1,0 +1,30 @@
+{
+  "archive_sha256": "0f119914bcf934c46ef3e24cf7f0e7d2a7f5221c69da66df0455d633486ca5e0",
+  "archive_size": 6722,
+  "artifact_id": 15143136081,
+  "artifact_name": "nerd-font-intake-evidence",
+  "expanded_file_count": 4,
+  "expanded_size": 22703,
+  "files": [
+    {
+      "path": "NerdFontsSymbolsOnly.tar.xz.inventory.json",
+      "sha256": "3d12ba9d80ad4eaaf608e2a72fd1d6fb3d5e036151d88bdbd366418d374140d5",
+      "size": 884
+    },
+    {
+      "path": "hosted-intake.log",
+      "sha256": "4818754a48b163518239b44ae37177244d1dcc88c463db01e63b7c20d414350a",
+      "size": 229
+    },
+    {
+      "path": "result.json",
+      "sha256": "b81b7d26e90d12767e35633e32657e77521be59cf1c1cfdca12b2952d587480e",
+      "size": 2331
+    },
+    {
+      "path": "JetBrainsMono.tar.xz.inventory.json",
+      "sha256": "935da0eb2e17ba99e514ab81df3c816c20927f522ecdbe560b057e50527b45ab",
+      "size": 19259
+    }
+  ]
+}

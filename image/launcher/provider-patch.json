@@ -1,0 +1,12 @@
+{
+  "upstream_revision": "8f1e21d6efe40b8b3953f95b9574f99f717caf91",
+  "load_go_blob_sha": "9258cb41e05acd1652426d576a884f079c3be909",
+  "preimage_sha256": "0b1da69e807b900aa73801d9cdb13578d207ecc26d96ac883ee14a789ebfe287",
+  "patch_sha256": "9d46941a0540df0162772b04055bf306298e48f3bdcae2c5f3ec97ebb51a7204",
+  "scope": "Development-only candidate; requires baseline constructors and actual packaged-provider refusal acceptance",
+  "pending": [
+    "Acceptance test before adopting patch",
+    "Pinned hosted Go build",
+    "Real constructor/override/refusal tests on selected base"
+  ]
+}

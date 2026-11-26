@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "/inputs/boot.py", line 83, in <module>
+    if __name__=='__main__': main()
+                             ~~~~^^
+  File "/inputs/boot.py", line 65, in main
+    validate_report(report,expected,expected['nonce'],record['probe_sha256'],record['expected_sha256'])
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/inputs/contract.py", line 249, in validate_report
+    require(report['probe_completed'] is True and report['guest_booted'] is True
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            and report['os_qualified'] is False and report['release_qualified'] is False
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            and 'failure' not in report,'Incomplete boot observation or false release claim')
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/inputs/contract.py", line 244, in require
+    if not condition: raise ValueError(reason)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Incomplete boot observation or false release claim

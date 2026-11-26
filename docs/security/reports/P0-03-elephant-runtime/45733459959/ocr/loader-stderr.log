@@ -1,0 +1,5 @@
+2026/11/26 01:09:01 INFO elephant config="using default config"
+time=2026-11-26T01:09:01.400Z level=INFO msg=config "runprefix autodetect"=<empty>
+time=2026-11-26T01:09:01.413Z level=ERROR msg=providers load=/usr/lib/symbi/elephant/providers/desktopapplications.so err="plugin.Open(\"/usr/lib/symbi/elephant/providers/desktopapplications\"): plugin was built with a different version of package github.com/abenz1267/elephant/v2/internal/providers"
+time=2026-11-26T01:09:01.413Z level=INFO msg=elephant startup=15.48091ms
+time=2026-11-26T01:09:01.413Z level=INFO msg=comm listen=starting

@@ -1,0 +1,52 @@
+{
+  "source": {
+    "schema": 1,
+    "variant": "generic",
+    "preflight_run": 45804599421,
+    "source_commit": "97e49d111d0d71b5393f4067e713ccd39b74f55f",
+    "inspect_sha256": "98553a5e85f29abfed5f7e24ced0c4db082b2c589221967787dcab917c9e7e28",
+    "prepare_sha256": "ed98a2f5eaba232a87ca5ec57821bdce344f93203e4e30c4b76699342ac89390",
+    "manifest_digest": "sha256:9b6e8fdd9f6f98631895ccdfaaed6ffd88febd3ea6238d543935a524b572faf3"
+  },
+  "original_files": 41,
+  "expanded_bytes": 197195,
+  "artifact_id": 15110070506,
+  "artifact_bytes": 61861,
+  "artifact_sha256": "f75dfc400b6af66e994c5e282e157a4297ef0a13cb7072c9aaac16e3b5bec993",
+  "passed": true,
+  "installation_attempted": false,
+  "guest_booted": false,
+  "os_qualified": false,
+  "resource_peaks": {
+    "prepare": "26894336",
+    "inspect": "4294971392"
+  },
+  "install_requirements": {
+    "filesystem_default": null,
+    "filesystem_argument_required": true
+  },
+  "cleanup_verified": true
+}
+	Command being timed: "/usr/bin/env PYTHONDONTWRITEBYTECODE=1 python3 prepare-atomic-boot-stage.py"
+	User time (seconds): 0.02
+	System time (seconds): 0.00
+	Percent of CPU this job got: 6%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.56
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 20684
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 3048
+	Voluntary context switches: 12
+	Involuntary context switches: 2
+	Swaps: 0
+	File system inputs: 232
+	File system outputs: 504
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

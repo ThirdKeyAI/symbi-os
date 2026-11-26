@@ -1,0 +1,83 @@
+{
+  "offline_tests": 191,
+  "exact_reviewed_source_files": 14,
+  "actual_git_patch_scopes": {
+    "tests": [
+      [
+        "30",
+        "3",
+        "hyprland-share-picker/PickerDataTest.cpp"
+      ]
+    ],
+    "implementation": [
+      [
+        "4",
+        "11",
+        "hyprland-share-picker/Picker.cpp"
+      ],
+      [
+        "1",
+        "4",
+        "hyprland-share-picker/Picker.hpp"
+      ],
+      [
+        "3",
+        "2",
+        "hyprland-share-picker/PickerData.cpp"
+      ],
+      [
+        "5",
+        "7",
+        "hyprland-share-picker/main.cpp"
+      ],
+      [
+        "9",
+        "177",
+        "src/portals/Screencopy.cpp"
+      ],
+      [
+        "0",
+        "1",
+        "src/portals/Screencopy.hpp"
+      ],
+      [
+        "6",
+        "26",
+        "src/shared/ScreencopyShared.cpp"
+      ],
+      [
+        "0",
+        "1",
+        "src/shared/ScreencopyShared.hpp"
+      ]
+    ]
+  },
+  "patch_dry_run_and_postimage_hashes_passed": true,
+  "real_input_bindings": {
+    "image/portal/source-inputs.json": "759e7e4e4cbe63cb5c0ef39963e4f95b39a68b803e6d9100d10f3a40cc722514",
+    "image/portal/build-rpms.lock.json": "81fb8788e0acb25ee15bcb6d38c7438c4cba102e1fd616d944ddc03f99375ab8",
+    "image/portal/development-prefix.lock.json": "abc80998ff1ec66160f0738a7e5fc0865b39c6a2e65fe7f7870633dde02a1240",
+    "image/portal/consent-inputs.json": "600eb0bc6f853ffcea25be529af0e28e2283d4ec6901805ae5f558b784d44be4",
+    "LICENSE": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+    "image/portal/consent-reviewed/LICENSE": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+    "image/portal/consent-reviewed/contrib/systemd/xdg-desktop-portal-hyprland.service.in": "ba6b2c223f6d674ac7b04d42b25af818ac0df8ab58fa424023d14b51f9f00db2",
+    "image/portal/consent-reviewed/hyprland-share-picker/Picker.cpp": "7f2e8895e528b07ee8f12769d3dcc675b0e8a4d9e8e39001c13139ca4ccd917b",
+    "image/portal/consent-reviewed/hyprland-share-picker/Picker.hpp": "708bf45cedc93962822a625ba06ef21fcf89cbccc7bd54344caec1f34369df40",
+    "image/portal/consent-reviewed/hyprland-share-picker/PickerData.cpp": "04c61402c60de8881c125df1b8348a8322833c3523af3676a9409c16932d677b",
+    "image/portal/consent-reviewed/hyprland-share-picker/PickerData.hpp": "c5dfd40a9e47ddd97b5e5905673e913e87ebcde07a9e9b0682bb9897643c78a8",
+    "image/portal/consent-reviewed/hyprland-share-picker/PickerDataTest.cpp": "f872f91bd7de1817f9a463baf6e28f85f6db6c06f2b919b466c720698abbdbd7",
+    "image/portal/consent-reviewed/hyprland-share-picker/main.cpp": "aacad7a0605cedd26a72029eff3fca20ee5bca1c52940561593ebdf066b3bac2",
+    "image/portal/consent-reviewed/org.freedesktop.impl.portal.desktop.hyprland.service.in": "0e3b4ffcff6b6e626974309165aa782ac996274eb03f446422fcd8df8561b2e0",
+    "image/portal/consent-reviewed/src/core/PortalManager.cpp": "aa990965d36d1c5a248ff6046ec0fddadeb2e7a5916b6dac9b6947ff5f95ad67",
+    "image/portal/consent-reviewed/src/portals/Screencopy.cpp": "c6c9f3a222411715190b17641618e63067cafa4d097a423aa186a2af0d4bdf98",
+    "image/portal/consent-reviewed/src/portals/Screencopy.hpp": "53b47796fe837aaf8dccee6b1717e76d4c053e5e8601eb9679021ceaf47071f8",
+    "image/portal/consent-reviewed/src/shared/ScreencopyShared.cpp": "fae2f5bb0188a1dafabafc47737bada52867ad7475a051409fbd06a17738b646",
+    "image/portal/consent-reviewed/src/shared/ScreencopyShared.hpp": "80dc2c048c9c183eb1d973ee0e950483bb5ec919b21fe242c06f24a92ab92356",
+    "image/portal/patches/0001-no-restore-tests.patch": "7b2ddb34ee84ecc54d0b50ea4acd6529f7841ccd0ef97844c2f72c5a478f6b4b",
+    "image/portal/patches/0002-require-fresh-screen-sharing-consent.patch": "ff242489a3f0a904f33e98c39db3eee23d836740649f0120032100c4b9a5629b",
+    "image/portal/consent-reviewed/LICENSE.symbi-os": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c"
+  },
+  "native_execution": false,
+  "consent_qualified": false,
+  "scope": "Small offline input/transformation checks only; native before/after, complete backend/GUI tests and human TCB review still required"
+}

@@ -1,0 +1,24 @@
+{
+  "passed": false,
+  "os_qualified": false,
+  "source_commit": "9902120a10e2d4c98c17c2f5c6ddd890b1caa92b",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [],
+  "scope": "Original base plus only reviewed runtime libraries and retained compiler prefix; no boot/native acceptance",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "failure": "ValueError: Library link escapes the private prefix",
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "239104000",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 1054887\nuser_usec 731920\nsystem_usec 322967\nnice_usec 698000\ncore_sched.force_idle_usec 0\nnr_periods 102\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+  }
+}

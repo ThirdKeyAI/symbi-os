@@ -1,0 +1,24 @@
+{
+  "run_id": 45734717223,
+  "job_id": 139625045633,
+  "head": "d3a4cc32d7a8100477be974adbdffa2aff8d5f61",
+  "artifact": {
+    "id": 15077982732,
+    "bytes": 7575,
+    "sha256": "dcbe0fb921bbde3b0e4162b9845b520c8fadb0d38f88bfa4da574be69b2c3e50"
+  },
+  "scope": "Expected stale compiler-lock refusal before image pull, package install or compilation",
+  "os_qualified": false,
+  "selected_files": [
+    {
+      "path": "result.json",
+      "original_sha256": "62399d811f20ac0f904bb923f24e846032fd7baf7351b8772ecaf7d12038c22f",
+      "retained_sha256": "62399d811f20ac0f904bb923f24e846032fd7baf7351b8772ecaf7d12038c22f"
+    },
+    {
+      "path": "base-signature.json",
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    }
+  ]
+}

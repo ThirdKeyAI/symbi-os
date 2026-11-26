@@ -1,0 +1,17 @@
+Running as unit: symbi-desktop-prep-45756829042-1.service
+Desktop preparation: validate-target-and-builder
+Desktop preparation: extract-compositor
+Desktop preparation: select-compositor-runtime
+Desktop preparation: extract-elephant
+Desktop preparation: extract-walker
+Desktop preparation: extract-symbiont
+Desktop preparation: copy-symbiont
+Desktop preparation: prepare-signed-rpms-and-licenses
+Desktop preparation: validate-and-generate-containerfile
+Desktop preparation: complete
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 15.028s
+CPU time consumed: 5.107s
+Memory peak: 2.6M
+Memory swap peak: 0B

@@ -1,0 +1,16 @@
+{
+  "os_qualified": false,
+  "comparison_run": 45678504884,
+  "references": [
+    {
+      "variant": "generic",
+      "same_after_normalizing_build_id_timestamp_and_final_newlines": true,
+      "containerfile_sha256": "143249839644c3f81be92af7cb6efc839307bf17d2d59fd18ce3168f7d61178a"
+    },
+    {
+      "variant": "nvidia",
+      "same_after_normalizing_build_id_timestamp_and_final_newlines": true,
+      "containerfile_sha256": "310fe54986a88dd0ab2b42b28c5d6ffc53c41fbd8f68804ffa7b8391ac7844f8"
+    }
+  ]
+}

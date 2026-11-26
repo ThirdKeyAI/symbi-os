@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "independent_evidence_recheck_passed": true,
+  "source_commit": "1e171d1820b473141df4c300dd657056a171b98a",
+  "base_signature_subject_verified": true,
+  "rpm_signatures_and_identities_rechecked": 5,
+  "base_packages_preserved": 2324,
+  "installed_packages": 2328,
+  "new_runtime_packages": 4,
+  "matching_existing_runtime_package": "openssl3-libs-1:3.5.9-1.fc45.x86_64",
+  "original_crypto_slots_preserved": 40,
+  "installed_files_checked": 88,
+  "dynamic_loaders_checked": 6,
+  "cli_provider_controls": 3,
+  "lua_controls": 3,
+  "bootc_lint": "Lint warning: nonempty-boot: Found non-empty /boot:\n  symvers-7.3.4-300.secureblue.1.fc45.x86_64.xz\n\nChecks passed: 13\nChecks skipped: 1\nWarnings: 1\n",
+  "temporary_containers_removed_and_absent": 13,
+  "oom_or_kill": false,
+  "image_archive": {
+    "name": "symbiont-os-nvidia.oci.tar.gz",
+    "bytes": 5031007344,
+    "sha256": "01185f94811c5e698c79c13500b63b93eb096f9c6a13e9f37850881b526b1d2a",
+    "image_id": "sha256:781527898178f6d073920132c97cf45bd2989c4dfd6d6dd7f58781b1ca5079ac"
+  },
+  "os_qualified": false,
+  "installed_approved_trust_files": {
+    "etc/containers/policy.json": {
+      "sha256": "974d657b12acca4cd4db7ca6f4788f65b0f366d2193bdb6f0502d6c239c1a7a5",
+      "bytes": 2376
+    },
+    "etc/containers/registries.d/symbiont.yaml": {
+      "sha256": "336ad92f00b0f2fb6954fbcab7fc6541d4333a884f6038900eb94f7300104bfa",
+      "bytes": 538
+    }
+  },
+  "image_manifest_sha256": "36ef0b9d11693046cd20befd4fa9b00e0000b4b89f16d46499ec991e4bddc308",
+  "signature_qualified": false,
+  "limitations": "Evidence reconciliation only; large OCI archive stays hosted. No VM boot, desktop interaction, TLS-policy equivalence, Fedora sandbox/escape, OS signature/update or rollback qualification."
+}
+	Command being timed: "python3 verify-desktop-evidence-45760174895.py"
+	User time (seconds): 0.03
+	System time (seconds): 0.01
+	Percent of CPU this job got: 9%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.43
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 21384
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 34
+	Minor (reclaiming a frame) page faults: 2940
+	Voluntary context switches: 91
+	Involuntary context switches: 6
+	Swaps: 0
+	File system inputs: 5536
+	File system outputs: 32
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

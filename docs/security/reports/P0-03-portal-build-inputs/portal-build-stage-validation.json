@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "tests_run": 170,
+  "native_compilation": false,
+  "local_large_download": false,
+  "cve_bz_matched_packages": 27,
+  "scope": "Offline input and orchestration checks only; native workflow result pending"
+}

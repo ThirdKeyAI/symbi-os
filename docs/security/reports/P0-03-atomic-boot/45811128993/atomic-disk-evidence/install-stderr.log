@@ -1,0 +1,1 @@
+error: Installing to disk: Creating ostree deployment: Preparing import: Fetching manifest: failed to invoke method OpenImage: Running image oci:/inputs/oci: is rejected by policy.

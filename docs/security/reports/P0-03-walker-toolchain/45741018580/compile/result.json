@@ -1,0 +1,92 @@
+{
+  "passed": true,
+  "compiled": true,
+  "os_qualified": false,
+  "mode": "compile",
+  "limits": {
+    "memory.max": "3221225472",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "128"
+  },
+  "source_revision": "a515085fd39fae80acc086c8fbfd9b7771a9a11d",
+  "commands": [
+    {
+      "name": "rustc-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "cargo-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "source-build",
+      "exit_code": 0
+    },
+    {
+      "name": "upstream-tests",
+      "exit_code": 0
+    },
+    {
+      "name": "needed-libraries",
+      "exit_code": 0
+    }
+  ],
+  "environment": {
+    "PATH": "/usr/bin:/bin",
+    "HOME": "/output/home",
+    "LANG": "C.UTF-8",
+    "TMPDIR": "/output/tmp",
+    "RUSTC": "/usr/bin/rustc",
+    "RUSTDOC": "/usr/bin/rustdoc",
+    "PROTOC": "/usr/bin/protoc",
+    "CARGO_HOME": "/output/cargo-home",
+    "CARGO_TARGET_DIR": "/output/target",
+    "CARGO_BUILD_JOBS": "1",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_PROFILE_RELEASE_DEBUG": "0",
+    "CARGO_PROFILE_RELEASE_CODEGEN_UNITS": "1",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_REGISTRIES_CRATES_IO_PROTOCOL": "sparse",
+    "CARGO_REGISTRIES_CRATES_IO_INDEX": "sparse+https://index.crates.io/",
+    "CARGO_NET_OFFLINE": "true",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_GLOBAL": "/dev/null"
+  },
+  "locked_graph": {
+    "packages": 284,
+    "registry_dependencies": 283
+  },
+  "toolchain": {
+    "rustc": {
+      "binary": "rustc",
+      "commit-hash": "0ef1bc386059596dada8fb65b50425aab2ea637a",
+      "commit-date": "2026-11-09",
+      "host": "x86_64-unknown-linux-gnu",
+      "release": "1.100.0",
+      "LLVM version": "23.1.5"
+    },
+    "cargo": {
+      "release": "1.100.0",
+      "commit-hash": "3acc79c0c841844675bc53a605922dbfc441e750",
+      "commit-date": "2026-11-05",
+      "host": "x86_64-unknown-linux-gnu",
+      "libgit2": "1.9.7 (sys:0.21.0 system)",
+      "libcurl": "8.21.0 (sys:0.4.90+curl-8.21.0 system ssl:OpenSSL/4.0.3)",
+      "os": "Fedora 45.0.0 [64-bit]"
+    }
+  },
+  "binary_sha256": "4566e3710ef9c04752e5268b472a88325ed813cd8846318315496bbd422ab31f",
+  "binary_bytes": 7363968,
+  "source_locks_unchanged": true,
+  "cgroup_final": {
+    "memory.max": "3221225472",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "128",
+    "memory.peak": "2451918848",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 392589253\nuser_usec 349597036\nsystem_usec 42992216\nnice_usec 349269475\ncore_sched.force_idle_usec 0\nnr_periods 6055\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "scope": "Uninstalled candidate artifacts for static dependency inspection only; no executable or signature qualification",
+  "executed": false,
+  "qualified": false,
+  "components": [
+    {
+      "name": "walker",
+      "source_revision": "a515085fd39fae80acc086c8fbfd9b7771a9a11d",
+      "archives": [
+        {
+          "name": "walker-v2.17.2-x86_64-unknown-linux-gnu.tar.gz",
+          "bytes": 2772997,
+          "sha256": "57e68d1f9f14782f1ae0f1c704509749a545a92531b8788b76b16bc29fcc5c19",
+          "url": "https://github.com/abenz1267/walker/releases/download/v2.17.2/walker-v2.17.2-x86_64-unknown-linux-gnu.tar.gz",
+          "published_digest_matched": true,
+          "members": [
+            {
+              "name": "walker",
+              "bytes": 7194632,
+              "sha256": "b8f0b72dabb503b16606bcd38ce76e994d2a6cbf811902561278a5f3910aac6e",
+              "dependencies": [
+                "0x0000000000000001 (NEEDED)             Shared library: [libgdk_pixbuf-2.0.so.0]",
+                "0x0000000000000001 (NEEDED)             Shared library: [libgobject-2.0.so.0]",
+                "0x0000000000000001 (NEEDED)             Shared library: [libglib-2.0.so.0]",
+                "0x0000000000000001 (NEEDED)             Shared library: [libgtk-4.so.1]",
+                "0x0000000000000001 (NEEDED)             Shared library: [libcairo.so.2]",
+                "0x0000000000000001 (NEEDED)             Shared library: [libgraphene-1.0.so.0]",
+                "0x0000000000000001 (NEEDED)             Shared library: [libgio-2.0.so.0]",
+                "0x0000000000000001 (NEEDED)             Shared library: [libgtk4-layer-shell.so.0]",
+                "0x0000000000000001 (NEEDED)             Shared library: [libpoppler-glib.so.8]",
+                "0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]",
+                "0x0000000000000001 (NEEDED)             Shared library: [libm.so.6]",
+                "0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]",
+                "0x0000000000000001 (NEEDED)             Shared library: [ld-linux-x86-64.so.2]",
+                "0x0070:   Name: GLIBC_2.2.5  Flags: none  Version: 7",
+                "0x0080:   Name: GLIBC_2.29  Flags: none  Version: 8",
+                "0x0090:   Name: GLIBC_2.2.5  Flags: none  Version: 3",
+                "0x00a0:   Name: GLIBC_2.3  Flags: none  Version: 19",
+                "0x00b0:   Name: GLIBC_2.3.2  Flags: none  Version: 26",
+                "0x00c0:   Name: GLIBC_2.3.4  Flags: none  Version: 9",
+                "0x00d0:   Name: GLIBC_2.9  Flags: none  Version: 21",
+                "0x00e0:   Name: GLIBC_2.10  Flags: none  Version: 16",
+                "0x00f0:   Name: GLIBC_2.14  Flags: none  Version: 5",
+                "0x0100:   Name: GLIBC_2.15  Flags: none  Version: 15",
+                "0x0110:   Name: GLIBC_2.16  Flags: none  Version: 24",
+                "0x0120:   Name: GLIBC_2.17  Flags: none  Version: 12",
+                "0x0130:   Name: GLIBC_2.18  Flags: WEAK  Version: 23",
+                "0x0140:   Name: GLIBC_2.25  Flags: WEAK  Version: 22",
+                "0x0150:   Name: GLIBC_2.28  Flags: WEAK  Version: 20",
+                "0x0160:   Name: GLIBC_2.29  Flags: WEAK  Version: 14",
+                "0x0170:   Name: GLIBC_2.30  Flags: WEAK  Version: 11",
+                "0x0180:   Name: GLIBC_2.32  Flags: none  Version: 18",
+                "0x0190:   Name: GLIBC_2.33  Flags: none  Version: 10",
+                "0x01a0:   Name: GLIBC_2.34  Flags: none  Version: 2",
+                "0x01b0:   Name: GLIBC_2.39  Flags: WEAK  Version: 13",
+                "0x01c0:   Name: GLIBC_2.3  Flags: none  Version: 6"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "elephant",
+      "source_revision": "8f1e21d6efe40b8b3953f95b9574f99f717caf91",
+      "archives": [
+        {
+          "name": "desktopapplications-linux-amd64.tar.gz",
+          "bytes": 9012972,
+          "sha256": "a185897cae065c036a2b2a5beac08201e0a233ad51587b9a553428434225c75a",
+          "url": "https://github.com/abenz1267/elephant/releases/download/v2.22.1/desktopapplications-linux-amd64.tar.gz",
+          "published_digest_matched": true,
+          "members": [
+            {
+              "name": "desktopapplications-linux-amd64.so",
+              "bytes": 25275272,
+              "sha256": "c08b7f98e85a40a29d8a85fbe8c06a3c3bec5348749e15eec43324d565b845e6",
+              "dependencies": [
+                "0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]",
+                "0x0010:   Name: GLIBC_2.3  Flags: none  Version: 7",
+                "0x0020:   Name: GLIBC_2.3.2  Flags: none  Version: 6",
+                "0x0030:   Name: GLIBC_2.3.4  Flags: none  Version: 5",
+                "0x0040:   Name: GLIBC_2.32  Flags: none  Version: 4",
+                "0x0050:   Name: GLIBC_2.2.5  Flags: none  Version: 3",
+                "0x0060:   Name: GLIBC_2.34  Flags: none  Version: 2"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "elephant-linux-amd64.tar.gz",
+          "bytes": 9216345,
+          "sha256": "53098cd67fbd0eb256d02594b06ef6817031ed93e93911126bea9904b33ad775",
+          "url": "https://github.com/abenz1267/elephant/releases/download/v2.22.1/elephant-linux-amd64.tar.gz",
+          "published_digest_matched": true,
+          "members": [
+            {
+              "name": "elephant-linux-amd64",
+              "bytes": 23538208,
+              "sha256": "2252a84784c33c7ca43534982ab1935e5bb22d9c07af61257fbef2f4e439b53c",
+              "dependencies": [
+                "0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]",
+                "0x0010:   Name: GLIBC_2.3  Flags: none  Version: 7",
+                "0x0020:   Name: GLIBC_2.3.2  Flags: none  Version: 6",
+                "0x0030:   Name: GLIBC_2.3.4  Flags: none  Version: 5",
+                "0x0040:   Name: GLIBC_2.32  Flags: none  Version: 4",
+                "0x0050:   Name: GLIBC_2.2.5  Flags: none  Version: 3",
+                "0x0060:   Name: GLIBC_2.34  Flags: none  Version: 2"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

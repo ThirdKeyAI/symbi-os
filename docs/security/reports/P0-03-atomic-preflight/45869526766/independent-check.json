@@ -1,0 +1,173 @@
+{
+  "schema": 1,
+  "run_id": 45869526766,
+  "artifact": {
+    "id": 15142042431,
+    "name": "atomic-image-preflight-generic",
+    "bytes": 53710,
+    "sha256": "03d930e66884b5a6b0bf3f978561dc989a97c0e675d925d9d6f215978f5e45e2"
+  },
+  "checks": {
+    "original_file_count": 35,
+    "original_expanded_bytes": 172780,
+    "preparation_passed": true,
+    "inspection_passed": false,
+    "source_commit": "88c49ecb57fe8104c962c8a4e420bb87831dc1dd",
+    "image_source_commit": "23a6c721092ad77c3af33c11cab230ecaaa54cff",
+    "loaded_image_id": "54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1",
+    "kernel_copy_never_started": true,
+    "private_kernel_payload_removed": true,
+    "verifier_module_missing": true,
+    "all_containers_removed": true,
+    "image_removed": true,
+    "oom_events": {
+      "oom": "0",
+      "oom_kill": "0",
+      "oom_group_kill": "0"
+    },
+    "os_qualified": false
+  },
+  "files": {
+    "absent-symbi-atomic-installed-files-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "absent-symbi-atomic-installed-files-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "absent-symbi-atomic-kernel-copy-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "absent-symbi-atomic-kernel-copy-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cleanup-symbi-atomic-installed-files-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cleanup-symbi-atomic-installed-files-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cleanup-symbi-atomic-kernel-copy-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cleanup-symbi-atomic-kernel-copy-stdout.log": {
+      "bytes": 25,
+      "sha256": "690dd98140101c90cc468e5471df6264ac3bf13640693ac49d6fc4ced29ec6dc"
+    },
+    "copy-initramfs.img-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "copy-initramfs.img-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "copy-vmlinuz-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "copy-vmlinuz-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "create-kernel-copy-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "create-kernel-copy-stdout.log": {
+      "bytes": 65,
+      "sha256": "236e46bfc825e210d28c7ec72246cb842070847d80217cb37a3aba6d3c59a0bb"
+    },
+    "hosted-inspect.log": {
+      "bytes": 2090,
+      "sha256": "233fef8fbee51e8d007223bbf79f525ebe90f38d0f7fd6495f07a56ffc466b08"
+    },
+    "hosted-prepare.log": {
+      "bytes": 282,
+      "sha256": "1db0f05f3904c73102d829bec1a7543cc091a8f984eb3bf611f9164d424301c0"
+    },
+    "image-absent-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "image-absent-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "image-manifest.json": {
+      "bytes": 628,
+      "sha256": "fceae70fae08092a44acf5775b11f0da859fed19f6a53b4193f112961a526c34"
+    },
+    "inspect-image-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "inspect-image-stdout.log": {
+      "bytes": 88810,
+      "sha256": "d80fbe24913d0e954b1fae9abba061d570cf4f12f616656ae37c4644e2b5f8f2"
+    },
+    "inspect-systemd-result.txt": {
+      "bytes": 127,
+      "sha256": "d6d8183ab364fb5e1e048f401797d45ea7f4ec77bfd96a7c8edf69dd458d770f"
+    },
+    "inspect.json": {
+      "bytes": 5331,
+      "sha256": "8085d926386cab59c0233ddf46157c931fd028f1fa21feb610506709e2c2c707"
+    },
+    "installed-files-stderr.log": {
+      "bytes": 192,
+      "sha256": "9324f83ff09b2606f2fe9c76c92b9fa35b432e229a5d595cc332524d46d9de54"
+    },
+    "installed-files-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "kernel-copy-after-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "kernel-copy-after-stdout.log": {
+      "bytes": 30012,
+      "sha256": "d08e585420c597e4676e4659734470729eb6c9b83ff655865e28b525ee3c9af2"
+    },
+    "kernel-copy-before-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "kernel-copy-before-stdout.log": {
+      "bytes": 30012,
+      "sha256": "d08e585420c597e4676e4659734470729eb6c9b83ff655865e28b525ee3c9af2"
+    },
+    "load-image-stderr.log": {
+      "bytes": 11762,
+      "sha256": "c0ed7c459e59cdb6796995a987f47dae792f9b333baaa577f0bc9f108ebc5317"
+    },
+    "load-image-stdout.log": {
+      "bytes": 96,
+      "sha256": "448e4698723c2b8f37aebcf36f171065561cfaa000cf9e6273628116b539d2c0"
+    },
+    "prepare-systemd-result.txt": {
+      "bytes": 136,
+      "sha256": "191736fbd1ce15a9936252e53bb6f69f6274360f883f1d1896bda86d58b2109c"
+    },
+    "prepare.json": {
+      "bytes": 3046,
+      "sha256": "61436ba5bc93024599071d03b362520e0e3c1522d6f424c73fe10e6e9774ee54"
+    },
+    "remove-image-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "remove-image-stdout.log": {
+      "bytes": 166,
+      "sha256": "f76f4f14811d5187ce6d25c4459e496d0d5eb2fe3254ac24c5f4d75f25ae533b"
+    }
+  },
+  "scope": "Independent reconciliation of failed read-only Atomic preflight; no boot or qualification claim"
+}

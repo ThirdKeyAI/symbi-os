@@ -1,0 +1,8 @@
+Running as unit: symbi-desktop-build-45793771499-1.service
+Desktop build: delegated controllers and limits verified
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 6min 51.694s
+CPU time consumed: 7min 34.830s
+Memory peak: 2.6M
+Memory swap peak: 0B

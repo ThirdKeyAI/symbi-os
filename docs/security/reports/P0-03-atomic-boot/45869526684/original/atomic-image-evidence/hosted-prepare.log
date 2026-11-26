@@ -1,0 +1,7 @@
+Running as unit: symbi-atomic-prepare-45869526684-1.service
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 29.648s
+CPU time consumed: 7.864s
+Memory peak: 2.6M
+Memory swap peak: 0B

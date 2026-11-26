@@ -1,0 +1,45 @@
+{
+  "total_count": 2,
+  "artifacts": [
+    {
+      "id": 15104527705,
+      "node_id": "MDg6QXJ0aWZhY3QxNTEwNDUyNzcwNQ==",
+      "name": "desktop-development-image-nvidia",
+      "size_in_bytes": 5032547001,
+      "url": "https://api.github.com/repos/ThirdKeyAI/symbi-os/actions/artifacts/15104527705",
+      "archive_download_url": "https://api.github.com/repos/ThirdKeyAI/symbi-os/actions/artifacts/15104527705/zip",
+      "expired": false,
+      "digest": "sha256:704d0bf0bf5cbad9659cf16257320ca85eb0962c3bf89f3b266a07f7e797b3c2",
+      "created_at": "2026-11-26T09:47:43Z",
+      "updated_at": "2026-11-26T09:47:43Z",
+      "expires_at": "2026-11-29T09:46:31Z",
+      "workflow_run": {
+        "id": 45793771499,
+        "repository_id": 1472078858,
+        "head_repository_id": 1472078858,
+        "head_branch": "card/P0-03-image-foundation",
+        "head_sha": "23a6c721092ad77c3af33c11cab230ecaaa54cff"
+      }
+    },
+    {
+      "id": 15104327926,
+      "node_id": "MDg6QXJ0aWZhY3QxNTEwNDMyNzkyNg==",
+      "name": "desktop-image-evidence-nvidia",
+      "size_in_bytes": 132486,
+      "url": "https://api.github.com/repos/ThirdKeyAI/symbi-os/actions/artifacts/15104327926",
+      "archive_download_url": "https://api.github.com/repos/ThirdKeyAI/symbi-os/actions/artifacts/15104327926/zip",
+      "expired": false,
+      "digest": "sha256:7ae64dc7f48d74447cbe0a8ec5c44b122bf1ec263efa272391793675c1d81d95",
+      "created_at": "2026-11-26T09:46:31Z",
+      "updated_at": "2026-11-26T09:46:31Z",
+      "expires_at": "2026-12-10T09:46:29Z",
+      "workflow_run": {
+        "id": 45793771499,
+        "repository_id": 1472078858,
+        "head_repository_id": 1472078858,
+        "head_branch": "card/P0-03-image-foundation",
+        "head_sha": "23a6c721092ad77c3af33c11cab230ecaaa54cff"
+      }
+    }
+  ]
+}

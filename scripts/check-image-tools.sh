@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Intentionally no local fallback: the workstation is already running a capped VM.
+# Intentionally no local fallback: keep native compilation off the workstation.
 [[ "${GITHUB_ACTIONS:-}" == true && "${RUNNER_ENVIRONMENT:-}" == github-hosted ]] || {
   echo 'Image tool compilation requires a GitHub-hosted runner.' >&2
   exit 1

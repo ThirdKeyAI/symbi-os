@@ -4,3 +4,21 @@
 image/toolchain/patches/*.patch whitespace=-blank-at-eol
 docs/security/reports/P0-03-bluebuild/*/applied-source.patch whitespace=-blank-at-eol
 image/hyprland/patches/*.patch whitespace=-blank-at-eol
+
+# Go patch context has a diff space before source indentation tabs.
+image/launcher/patches/*.patch whitespace=-blank-at-eol,-space-before-tab
+
+# Preserve the exact package-owned configuration as captured evidence.
+docs/security/reports/P0-03-assembly-inputs/45749688344/runtime/install/compatibility-configs/etc/pki/tls/openssl3.cnf whitespace=-blank-at-eol,-space-before-tab
+
+# Original component license bytes are retained without reformatting.
+image/desktop/licenses/*.LICENSE whitespace=-blank-at-eol,-space-before-tab
+image/fonts/licenses/* whitespace=-blank-at-eol,-space-before-tab
+
+# Preserve raw local acceptance output exactly, including unittest spacing.
+docs/security/reports/P0-03-desktop-profile/local-defaults-2026-11-26/*.log whitespace=-blank-at-eol,-blank-at-eof
+
+# Retain the exact DNF stdout, including its terminal blank line.
+docs/security/reports/P0-03-desktop/45756829042/install/offline-install-stdout.log whitespace=-blank-at-eof
+docs/security/reports/P0-03-desktop/45758278776/install/offline-install-stdout.log whitespace=-blank-at-eof
+docs/security/reports/P0-03-desktop/45760174895/install/offline-install-stdout.log whitespace=-blank-at-eof

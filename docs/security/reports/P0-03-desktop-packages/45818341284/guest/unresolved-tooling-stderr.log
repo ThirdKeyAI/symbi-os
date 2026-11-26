@@ -1,0 +1,7 @@
+No matches were found for the following plugin name patterns while disabling libdnf plugins: *
+Updating and loading repositories:
+ Fedora 45 - x86_64 - Updates           100% |   5.5 MiB/s |  19.3 MiB |  00m03s
+ RPM Fusion Free Fedora 45 x86_64 candi 100% |  14.5 KiB/s |  46.9 KiB |  00m03s
+ RPM Fusion Free Fedora 45 x86_64 candi 100% |  44.0 KiB/s | 145.1 KiB |  00m03s
+ Fedora 45 - x86_64                     100% |   6.0 MiB/s |  71.8 MiB |  00m12s
+Repositories loaded.

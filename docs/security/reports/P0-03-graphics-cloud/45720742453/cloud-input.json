@@ -1,0 +1,13 @@
+{
+  "image": {
+    "url": "https://dl.fedoraproject.org/pub/fedora/linux/releases/45/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-45-1.4.x86_64.qcow2",
+    "bytes": 606732288,
+    "sha256": "50bdc5e70f6a24f540932d15411c1c6ae9fcfa40fb990d876d83c5cc823b2ad0"
+  },
+  "checksum_sha256": "8c897c38df16817db8834882bebb81597808779cdde5b691e8e3aa620327aed2",
+  "signing_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E",
+  "signature_verified": true,
+  "negative_controls_passed": true,
+  "payload_verified": true,
+  "os_qualified": false
+}

@@ -1,0 +1,135 @@
+{
+  "run_id": 45698096912,
+  "head": "0bb5c7c589b660d72c112930c9b18836afba97ea",
+  "checked_merge": "f106dba31559b79c707b45e3ec0d814bd66c34ec",
+  "artifact": {
+    "id": 15060489376,
+    "bytes": 147588,
+    "sha256": "3cf4686fca9caa868f2853094aa060c72356e158f6a53aba3c2a26e0fb9e0bd5"
+  },
+  "passed": false,
+  "os_qualified": false,
+  "native_loading_probe_started": false,
+  "failure": "hyprctl configuration requires missing hyprwire and readline",
+  "files": {
+    "result.json": {
+      "original_sha256": "d74f199815a0639542fd6801c4b1d16443ee2046df5a9774d0e7b3b00c4879a2",
+      "retained_sha256": "d74f199815a0639542fd6801c4b1d16443ee2046df5a9774d0e7b3b00c4879a2",
+      "retained_file": "result.json"
+    },
+    "source-revisions.json": {
+      "original_sha256": "4a42c09b67b08d63552c42a7c4265e1bad9e73e2c95b9f1892b689cdcf082194",
+      "retained_sha256": "4a42c09b67b08d63552c42a7c4265e1bad9e73e2c95b9f1892b689cdcf082194",
+      "retained_file": "source-revisions.json"
+    },
+    "cgroup-limits.json": {
+      "original_sha256": "56c5eb8cc68a3a4706310eba89ecfa9f3f64a75081207f23fdea66c1f9ae5bc5",
+      "retained_sha256": "56c5eb8cc68a3a4706310eba89ecfa9f3f64a75081207f23fdea66c1f9ae5bc5",
+      "retained_file": "cgroup-limits.json"
+    },
+    "cgroup-final.json": {
+      "original_sha256": "8098a2884f4a6585b70bbfaccda9eee1d0df7e1723a5238a65950627a8c3b82b",
+      "retained_sha256": "8098a2884f4a6585b70bbfaccda9eee1d0df7e1723a5238a65950627a8c3b82b",
+      "retained_file": "cgroup-final.json"
+    },
+    "systemd-result.txt": {
+      "original_sha256": "1ee56b7f4262f5ab44569173ca2449f883ea43597d41f9c354616232729cc328",
+      "retained_sha256": "1ee56b7f4262f5ab44569173ca2449f883ea43597d41f9c354616232729cc328",
+      "retained_file": "systemd-result.txt"
+    },
+    "guest/compile.json": {
+      "original_sha256": "387a95de043f30c479341379a764e4fa0635798d6fd0075a0e999950fe7616a0",
+      "retained_sha256": "387a95de043f30c479341379a764e4fa0635798d6fd0075a0e999950fe7616a0",
+      "retained_file": "guest-compile.json"
+    },
+    "guest/build-cgroup-final.json": {
+      "original_sha256": "4867a46660cb06107e51797aadc8c3fac444fe220089ba9b13f668f5e8be89a5",
+      "retained_sha256": "4867a46660cb06107e51797aadc8c3fac444fe220089ba9b13f668f5e8be89a5",
+      "retained_file": "guest-build-cgroup-final.json"
+    },
+    "guest/Hyprland-configure.log": {
+      "original_sha256": "de8d5c62e3ffa621c574de6a2316b761fd8362806a4d6271e5d4fd252aa91da3",
+      "retained_sha256": "de8d5c62e3ffa621c574de6a2316b761fd8362806a4d6271e5d4fd252aa91da3",
+      "retained_file": "guest-Hyprland-configure.log"
+    },
+    "guest/compile-driver.log": {
+      "original_sha256": "667962a7856df73e465b4cfdbafa27be19cf649dbc68912f7e56207b3f02b0ef",
+      "retained_sha256": "667962a7856df73e465b4cfdbafa27be19cf649dbc68912f7e56207b3f02b0ef",
+      "retained_file": "guest-compile-driver.log"
+    },
+    "guest/offline-install.log": {
+      "original_sha256": "ce42593624d79254fd7c41f4ad7e5b79cfd9ca42b59f1b62af518ee155148205",
+      "retained_sha256": "ce42593624d79254fd7c41f4ad7e5b79cfd9ca42b59f1b62af518ee155148205",
+      "retained_file": "guest-offline-install.log"
+    },
+    "guest/glaze-build.log": {
+      "original_sha256": "8c35b1682f73592d30612d7b0fabdb384fcfff35cb5a076cb48b85b1368aa794",
+      "retained_sha256": "8c35b1682f73592d30612d7b0fabdb384fcfff35cb5a076cb48b85b1368aa794",
+      "retained_file": "guest-glaze-build.log"
+    },
+    "guest/hyprutils-build.log": {
+      "original_sha256": "fb470c4bc440b2baa9b37c07f9d15ee6966b39b3cb7dc0de76feb7b942ac9336",
+      "retained_sha256": "fb470c4bc440b2baa9b37c07f9d15ee6966b39b3cb7dc0de76feb7b942ac9336",
+      "retained_file": "guest-hyprutils-build.log"
+    },
+    "guest/hyprwayland-scanner-build.log": {
+      "original_sha256": "4c6fd07eaf830e4959d0e8323d2716c98f7793a4a5cc25d430f2d362ce99dbb9",
+      "retained_sha256": "4c6fd07eaf830e4959d0e8323d2716c98f7793a4a5cc25d430f2d362ce99dbb9",
+      "retained_file": "guest-hyprwayland-scanner-build.log"
+    },
+    "guest/hyprland-protocols-build.log": {
+      "original_sha256": "8c35b1682f73592d30612d7b0fabdb384fcfff35cb5a076cb48b85b1368aa794",
+      "retained_sha256": "8c35b1682f73592d30612d7b0fabdb384fcfff35cb5a076cb48b85b1368aa794",
+      "retained_file": "guest-hyprland-protocols-build.log"
+    },
+    "guest/hyprlang-build.log": {
+      "original_sha256": "4bf27918898cce5f14171de890259d08f067d23e724c1107bf415ca22a539201",
+      "retained_sha256": "4bf27918898cce5f14171de890259d08f067d23e724c1107bf415ca22a539201",
+      "retained_file": "guest-hyprlang-build.log"
+    },
+    "guest/hyprcursor-build.log": {
+      "original_sha256": "b695ff560835f82e606e388aa7ccc5cabb2955ce7cc73a0bf59d2520d30bdbc3",
+      "retained_sha256": "b695ff560835f82e606e388aa7ccc5cabb2955ce7cc73a0bf59d2520d30bdbc3",
+      "retained_file": "guest-hyprcursor-build.log"
+    },
+    "guest/hyprgraphics-build.log": {
+      "original_sha256": "2801aa744d1d7cbda539cf84b8a8e38e2658bba3e6d0e5465fa1181c46684873",
+      "retained_sha256": "2801aa744d1d7cbda539cf84b8a8e38e2658bba3e6d0e5465fa1181c46684873",
+      "retained_file": "guest-hyprgraphics-build.log"
+    },
+    "guest/aquamarine-build.log": {
+      "original_sha256": "3abba4301558759af46417ae22f44ef6941f39eb459dfca0a857ab2c62436822",
+      "retained_sha256": "3abba4301558759af46417ae22f44ef6941f39eb459dfca0a857ab2c62436822",
+      "retained_file": "guest-aquamarine-build.log"
+    }
+  },
+  "hyprwire_review": {
+    "selected_by": "https://github.com/hyprwm/Hyprland/blob/11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947/flake.lock",
+    "revision": "a546e42d45e161682f729ebf52375bd4800d7041",
+    "version_file": "0.3.1",
+    "license": "BSD-3-Clause",
+    "required_pkgconfig": [
+      "hyprutils>=0.9.0",
+      "libffi",
+      "pugixml"
+    ],
+    "files": {
+      "CMakeLists.txt": {
+        "url": "https://raw.githubusercontent.com/hyprwm/hyprwire/a546e42d45e161682f729ebf52375bd4800d7041/CMakeLists.txt",
+        "sha256": "ce1288e0b2987148fbd47b209350a506b6f46cccab0d40c981a70496805480e8"
+      },
+      "scanner/CMakeLists.txt": {
+        "url": "https://raw.githubusercontent.com/hyprwm/hyprwire/a546e42d45e161682f729ebf52375bd4800d7041/scanner/CMakeLists.txt",
+        "sha256": "0e737f32358c7fefe4962eefe129ca5a6d84a7376bc89ee60f915f2f408dff69"
+      },
+      "LICENSE": {
+        "url": "https://raw.githubusercontent.com/hyprwm/hyprwire/a546e42d45e161682f729ebf52375bd4800d7041/LICENSE",
+        "sha256": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143"
+      },
+      "VERSION": {
+        "url": "https://raw.githubusercontent.com/hyprwm/hyprwire/a546e42d45e161682f729ebf52375bd4800d7041/VERSION",
+        "sha256": "f4fc956ec61b187cd18790c0b0a6fa5d1d3a30de4a5493e3277460485ed188f2"
+      }
+    }
+  }
+}

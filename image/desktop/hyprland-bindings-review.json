@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "source_revision": "11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947",
+  "repository": "https://github.com/hyprwm/Hyprland",
+  "files": {
+    "src/keybinds/Key.cpp": "b1bb5a28f11169ad7729d556e39807b0284eb96a",
+    "src/keybinds/Resolver.cpp": "3263acd2b836b889e1bcdba9b0988fa9dccb05e1",
+    "src/config/lua/bindings/LuaBindingsToplevel.cpp": "c925998d09ae330d6f56b07cd5b2edd6db52f044",
+    "src/config/lua/bindings/LuaBindingsDispatchers.cpp": "c2777164682d448817987ebb6e9fa17ac3b5072e",
+    "example/hyprland.lua": "e09032d58c0ef32a1f1216556cfb73512554c89e"
+  },
+  "reviewed_properties": [
+    "code:<number> is parsed as a physical keycode",
+    "bind options include descriptions and locked/repeating flags",
+    "focus accepts directions and workspace selectors",
+    "window move accepts workspace selectors and follow=false for a silent move",
+    "window close, float, fullscreen and directional swap dispatchers are registered",
+    "no_op is a registered dispatcher for reserved chords"
+  ],
+  "scope": "Primary-source API compatibility review for defaults; hosted parsing and booted interaction remain required",
+  "qualified": false
+}

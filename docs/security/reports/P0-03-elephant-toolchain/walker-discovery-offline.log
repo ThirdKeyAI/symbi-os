@@ -1,0 +1,129 @@
+image/vendor/omarchy/LICENSE: OK
+image/vendor/omarchy/config/hypr/input.conf: OK
+image/vendor/omarchy/config/walker/config.toml: OK
+image/vendor/omarchy/config/waybar/config.jsonc: OK
+image/vendor/ombuntu/LICENSE: OK
+image/vendor/ombuntu/privacy/chromium-policies.json: OK
+image/vendor/ombuntu/privacy/firefox-policies.json: OK
+test_admin_executable_is_found_outside_bin_and_environment_path (test_base_controls.BaseControlDiscovery.test_admin_executable_is_found_outside_bin_and_environment_path) ... ok
+test_linked_configuration_directory_is_not_read (test_base_controls.BaseControlDiscovery.test_linked_configuration_directory_is_not_read) ... ok
+test_oversized_control_refuses_without_unbounded_read (test_base_controls.BaseControlDiscovery.test_oversized_control_refuses_without_unbounded_read) ... ok
+test_public_control_selection_records_links_without_reading_targets (test_base_controls.BaseControlDiscovery.test_public_control_selection_records_links_without_reading_targets) ... ok
+test_accept_exact_verified_subject (test_base_inventory.BaseSignature.test_accept_exact_verified_subject) ... ok
+test_reject_different_digest (test_base_inventory.BaseSignature.test_reject_different_digest) ... ok
+test_reject_different_repository (test_base_inventory.BaseSignature.test_reject_different_repository) ... ok
+test_reject_malformed_evidence (test_base_inventory.BaseSignature.test_reject_malformed_evidence) ... ok
+test_reject_no_verified_signatures (test_base_inventory.BaseSignature.test_reject_no_verified_signatures) ... ok
+test_filename_alone_or_inaccessible_device_is_not_gpu_evidence (test_cloud_boot.CloudBoot.test_filename_alone_or_inaccessible_device_is_not_gpu_evidence) ... ok
+test_local_invocation_is_refused_before_using_qemu (test_cloud_boot.CloudBoot.test_local_invocation_is_refused_before_using_qemu) ... ok
+test_non_json_oversized_and_duplicate_keys_are_not_reports (test_cloud_boot.CloudBoot.test_non_json_oversized_and_duplicate_keys_are_not_reports) ... ok
+test_pci_transport_is_not_a_drm_driver_identity (test_cloud_boot.CloudBoot.test_pci_transport_is_not_a_drm_driver_identity) ... ok
+test_real_positive_and_no_gpu_control_have_distinct_requirements (test_cloud_boot.CloudBoot.test_real_positive_and_no_gpu_control_have_distinct_requirements) ... ok
+test_replay_wrong_source_wrong_platform_and_partial_boot_fail (test_cloud_boot.CloudBoot.test_replay_wrong_source_wrong_platform_and_partial_boot_fail) ... ok
+test_streamed_payload_must_match_both_size_and_hash (test_cloud_boot.CloudBoot.test_streamed_payload_must_match_both_size_and_hash) ... ok
+test_authenticates_signature_without_executing_payload (test_cosign_bootstrap.CosignBootstrap.test_authenticates_signature_without_executing_payload) ... ok
+test_changed_key_and_changed_signature_rejected (test_cosign_bootstrap.CosignBootstrap.test_changed_key_and_changed_signature_rejected) ... ok
+test_changed_payload_rejected_even_if_bundle_digest_is_rewritten (test_cosign_bootstrap.CosignBootstrap.test_changed_payload_rejected_even_if_bundle_digest_is_rewritten) ... ok
+test_download_hash_and_size_must_match (test_cosign_bootstrap.CosignBootstrap.test_download_hash_and_size_must_match) ... ok
+test_local_bootstrap_refused_before_any_download (test_cosign_bootstrap.CosignBootstrap.test_local_bootstrap_refused_before_any_download) ... ok
+test_a_regular_file_is_not_a_drm_device (test_drm_identity.DrmIdentity.test_a_regular_file_is_not_a_drm_device) ... ok
+test_uses_the_version_ioctl_name_and_bounds_the_reply (test_drm_identity.DrmIdentity.test_uses_the_version_ioctl_name_and_bounds_the_reply) ... ok
+test_accept_fedora (test_fedora_identity.FedoraIdentity.test_accept_fedora) ... ok
+test_accept_selected_secureblue_family (test_fedora_identity.FedoraIdentity.test_accept_selected_secureblue_family) ... ok
+test_reject_secureblue_without_fedora_base (test_fedora_identity.FedoraIdentity.test_reject_secureblue_without_fedora_base) ... ok
+test_reject_unknown_derivative (test_fedora_identity.FedoraIdentity.test_reject_unknown_derivative) ... ok
+test_distribution_owned_dnf5_paths (test_fedora_layout.PackageInputDiscovery.test_distribution_owned_dnf5_paths) ... ok
+test_empty_configuration_is_incomplete (test_fedora_layout.PackageInputDiscovery.test_empty_configuration_is_incomplete) ... ok
+test_record_bootc_and_backup_paths_without_claiming_authentication (test_fedora_layout.PackageInputDiscovery.test_record_bootc_and_backup_paths_without_claiming_authentication) ... ok
+test_wrong_release_key_is_incomplete (test_fedora_layout.PackageInputDiscovery.test_wrong_release_key_is_incomplete) ... ok
+test_failure_retains_child_output_and_is_not_success (test_fedora_layout.PartialInventoryEvidence.test_failure_retains_child_output_and_is_not_success) ... ok
+test_success_must_have_valid_json (test_fedora_layout.PartialInventoryEvidence.test_success_must_have_valid_json) ... ok
+test_exact_authenticated_fedora_compiler_identity (test_go_identity.GoIdentity.test_exact_authenticated_fedora_compiler_identity) ... ok
+test_other_version_target_auto_download_or_missing_field_is_refused (test_go_identity.GoIdentity.test_other_version_target_auto_download_or_missing_field_is_refused) ... ok
+test_local_guest_invocation_refused (test_graphics_probe.GraphicsProbe.test_local_guest_invocation_refused) ... ok
+test_matching_response_survives_an_asynchronous_event (test_graphics_probe.GraphicsProbe.test_matching_response_survives_an_asynchronous_event) ... ok
+test_oversized_malformed_or_event_flood_is_bounded (test_graphics_probe.GraphicsProbe.test_oversized_malformed_or_event_flood_is_bounded) ... ok
+test_wrong_command_or_failed_response_is_not_evidence (test_graphics_probe.GraphicsProbe.test_wrong_command_or_failed_response_is_not_evidence) ... ok
+test_changed_requirements_refuse_stale_package_resolution (test_hyprland_build_inputs.PackageBundle.test_changed_requirements_refuse_stale_package_resolution) ... ok
+test_exact_bundle_is_extracted (test_hyprland_build_inputs.PackageBundle.test_exact_bundle_is_extracted) ... ok
+test_manifest_cannot_weaken_signature_requirement (test_hyprland_build_inputs.PackageBundle.test_manifest_cannot_weaken_signature_requirement) ... ok
+test_manifest_must_resolve_the_locked_requirements (test_hyprland_build_inputs.PackageBundle.test_manifest_must_resolve_the_locked_requirements) ... ok
+test_missing_extra_traversal_and_duplicate_members_refused (test_hyprland_build_inputs.PackageBundle.test_missing_extra_traversal_and_duplicate_members_refused) ... ok
+test_modified_archive_refused_before_extraction (test_hyprland_build_inputs.PackageBundle.test_modified_archive_refused_before_extraction) ... ok
+test_package_bytes_must_match_manifest_even_with_matching_zip_hash (test_hyprland_build_inputs.PackageBundle.test_package_bytes_must_match_manifest_even_with_matching_zip_hash) ... ok
+test_real_negative_controls_are_required_even_for_pinned_archive (test_hyprland_build_inputs.PackageBundle.test_real_negative_controls_are_required_even_for_pinned_archive) ... ok
+test_symlink_member_refused (test_hyprland_build_inputs.PackageBundle.test_symlink_member_refused) ... ok
+test_existing_file_symlink_is_preserved (test_image.Defaults.test_existing_file_symlink_is_preserved) ... ok
+test_existing_symlink_is_neither_replaced_nor_followed (test_image.Defaults.test_existing_symlink_is_neither_replaced_nor_followed) ... ok
+test_first_login_and_repeat_preserve_user_edits (test_image.Defaults.test_first_login_and_repeat_preserve_user_edits) ... ok
+test_root_symlink_is_rejected (test_image.Defaults.test_root_symlink_is_rejected) ... ok
+test_source_symlinks_are_rejected (test_image.Defaults.test_source_symlinks_are_rejected) ... ok
+test_portal_and_connectivity_defaults (test_image.PrivacyDefaults.test_portal_and_connectivity_defaults) ... ok
+test_shipped_config_does_not_invoke_omarchy_installers_or_plugins (test_image.PrivacyDefaults.test_shipped_config_does_not_invoke_omarchy_installers_or_plugins) ... ok
+test_telemetry_off_without_turning_off_browser_security_updates (test_image.PrivacyDefaults.test_telemetry_off_without_turning_off_browser_security_updates) ... ok
+test_changed_or_outside_trust_key_is_rejected (test_image.RecipePins.test_changed_or_outside_trust_key_is_rejected) ... ok
+test_committed_configuration_has_no_fabricated_base (test_image.RecipePins.test_committed_configuration_has_no_fabricated_base) ... ok
+test_mutable_or_malformed_base_is_rejected (test_image.RecipePins.test_mutable_or_malformed_base_is_rejected) ... ok
+test_recipe_uses_digest_and_local_public_key (test_image.RecipePins.test_recipe_uses_digest_and_local_public_key) ... ok
+test_symlinked_trust_directory_cannot_escape (test_image.RecipePins.test_symlinked_trust_directory_cannot_escape) ... ok
+test_oversized_child_output_is_stopped_at_the_evidence_bound (test_launcher_process.LauncherProcess.test_oversized_child_output_is_stopped_at_the_evidence_bound) ... ok
+test_separate_bounded_channels_and_nonzero_status_are_retained (test_launcher_process.LauncherProcess.test_separate_bounded_channels_and_nonzero_status_are_retained) ... ok
+test_timed_out_child_is_reaped_and_partial_output_is_retained (test_launcher_process.LauncherProcess.test_timed_out_child_is_reaped_and_partial_output_is_retained) ... ok
+test_denied_cleanup_is_reported_without_masking_startup_error (test_native_probe_diagnostics.NativeProbeDiagnostics.test_denied_cleanup_is_reported_without_masking_startup_error) ... ok
+test_exited_child_cleanup_does_not_send_signals (test_native_probe_diagnostics.NativeProbeDiagnostics.test_exited_child_cleanup_does_not_send_signals) ... ok
+test_instance_query_requires_valid_json_and_exact_child (test_native_probe_diagnostics.NativeProbeDiagnostics.test_instance_query_requires_valid_json_and_exact_child) ... ok
+test_original_runtime_path_is_rejected_before_startup (test_native_probe_diagnostics.NativeProbeDiagnostics.test_original_runtime_path_is_rejected_before_startup) ... ok
+test_socket_budget_matches_real_unix_bind (test_native_probe_diagnostics.NativeProbeDiagnostics.test_socket_budget_matches_real_unix_bind) ... ok
+test_profiles_select_separate_fixed_inputs (test_package_profile.PackageProfiles.test_profiles_select_separate_fixed_inputs) ... ok
+test_selected_input_cannot_follow_a_symlink (test_package_profile.PackageProfiles.test_selected_input_cannot_follow_a_symlink) ... ok
+test_unknown_or_path_profile_is_refused (test_package_profile.PackageProfiles.test_unknown_or_path_profile_is_refused) ... ok
+test_changed_payload_or_binary_does_not_leave_a_reusable_prefix (test_prefix_input.PrefixInput.test_changed_payload_or_binary_does_not_leave_a_reusable_prefix) ... ok
+test_development_artifact_cannot_self_assert_qualification (test_prefix_input.PrefixInput.test_development_artifact_cannot_self_assert_qualification) ... ok
+test_exact_prefix_preserves_internal_library_links_and_normalizes_modes (test_prefix_input.PrefixInput.test_exact_prefix_preserves_internal_library_links_and_normalizes_modes) ... ok
+test_only_reviewed_absolute_executable_alias_is_relocated (test_prefix_input.PrefixInput.test_only_reviewed_absolute_executable_alias_is_relocated) ... ok
+test_other_absolute_aliases_keep_failing_with_bounded_diagnostics (test_prefix_input.PrefixInput.test_other_absolute_aliases_keep_failing_with_bounded_diagnostics) ... ok
+test_tar_path_escape_special_files_duplicate_and_link_parent_are_refused (test_prefix_input.PrefixInput.test_tar_path_escape_special_files_duplicate_and_link_parent_are_refused) ... ok
+test_failure_bad_missing_or_wrong_key_is_refused (test_rpm_verification.SignatureOutput.test_failure_bad_missing_or_wrong_key_is_refused) ... ok
+test_keyring_contains_exactly_one_expected_key (test_rpm_verification.SignatureOutput.test_keyring_contains_exactly_one_expected_key) ... ok
+test_requires_signature_and_payload_digest (test_rpm_verification.SignatureOutput.test_requires_signature_and_payload_digest) ... ok
+test_short_key_id_is_insufficient_for_pinned_rpm6 (test_rpm_verification.SignatureOutput.test_short_key_id_is_insufficient_for_pinned_rpm6) ... ok
+test_unsigned_digest_success_is_refused (test_rpm_verification.SignatureOutput.test_unsigned_digest_success_is_refused) ... ok
+test_exact_addition_keeps_every_base_package (test_runtime_packages.RuntimePackages.test_exact_addition_keeps_every_base_package) ... ok
+test_replacement_removal_extra_or_missing_package_is_refused (test_runtime_packages.RuntimePackages.test_replacement_removal_extra_or_missing_package_is_refused) ... ok
+test_bad_repository_scopes_are_refused (test_signing.SigningPolicy.test_bad_repository_scopes_are_refused) ... ok
+test_changed_key_or_key_outside_trust_directory_is_refused (test_signing.SigningPolicy.test_changed_key_or_key_outside_trust_directory_is_refused) ... ok
+test_committed_trust_refuses_partial_configuration (test_signing.SigningPolicy.test_committed_trust_refuses_partial_configuration) ... ok
+test_default_reject_and_explicit_key_repository_bindings (test_signing.SigningPolicy.test_default_reject_and_explicit_key_repository_bindings) ... ok
+test_missing_variant_and_base_release_collision_fail (test_signing.SigningPolicy.test_missing_variant_and_base_release_collision_fail) ... ok
+test_only_approved_digest_rebases_are_emitted (test_signing.SigningPolicy.test_only_approved_digest_rebases_are_emitted) ... ok
+test_policy_bundle_cannot_overwrite_existing_output (test_signing.SigningPolicy.test_policy_bundle_cannot_overwrite_existing_output) ... ok
+test_private_key_material_is_never_embedded (test_signing.SigningPolicy.test_private_key_material_is_never_embedded) ... ok
+test_symlinked_trust_directory_cannot_escape (test_signing.SigningPolicy.test_symlinked_trust_directory_cannot_escape) ... ok
+
+----------------------------------------------------------------------
+Ran 94 tests in 2.698s
+
+OK
+	Command being timed: "bash /vmstore/repos2/symbi-os/.cache/p0-image-followup/scripts/check-image.sh"
+	User time (seconds): 0.21
+	System time (seconds): 0.13
+	Percent of CPU this job got: 9%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:03.66
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 32100
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 27
+	Minor (reclaiming a frame) page faults: 32997
+	Voluntary context switches: 349
+	Involuntary context switches: 74
+	Swaps: 0
+	File system inputs: 9216
+	File system outputs: 32
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

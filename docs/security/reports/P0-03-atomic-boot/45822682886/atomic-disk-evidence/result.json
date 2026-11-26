@@ -1,0 +1,409 @@
+{
+  "schema": 1,
+  "passed": false,
+  "installation_attempted": true,
+  "guest_booted": false,
+  "os_qualified": false,
+  "release_qualified": false,
+  "source_commit": "3a2600af847a3438c81aaf0b5cf284265cbaa011",
+  "image_source_commit": "23a6c721092ad77c3af33c11cab230ecaaa54cff",
+  "image_id": "sha256:54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "load-image",
+      "exit_code": 0
+    },
+    {
+      "name": "inspect-image",
+      "exit_code": 0
+    },
+    {
+      "name": "sign-source",
+      "exit_code": 0
+    },
+    {
+      "name": "install",
+      "exit_code": 0
+    },
+    {
+      "name": "disk-loops-after-install",
+      "exit_code": 0
+    },
+    {
+      "name": "boot",
+      "exit_code": 1
+    },
+    {
+      "name": "cleanup-symbi-atomic-signer",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-symbi-atomic-signer",
+      "exit_code": 1
+    },
+    {
+      "name": "cleanup-symbi-atomic-installer",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-symbi-atomic-installer",
+      "exit_code": 1
+    },
+    {
+      "name": "cleanup-symbi-atomic-qemu",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-symbi-atomic-qemu",
+      "exit_code": 1
+    },
+    {
+      "name": "disk-loops-cleanup",
+      "exit_code": 0
+    },
+    {
+      "name": "disk-loops-absent",
+      "exit_code": 0
+    },
+    {
+      "name": "remove-image",
+      "exit_code": 0
+    },
+    {
+      "name": "image-absent",
+      "exit_code": 1
+    }
+  ],
+  "scope": "Offline development artifact authenticated with an ephemeral CI fixture key; no product/release qualification",
+  "preflight": {
+    "schema": 1,
+    "variant": "generic",
+    "preflight_run": 45804599421,
+    "source_commit": "97e49d111d0d71b5393f4067e713ccd39b74f55f",
+    "inspect_sha256": "98553a5e85f29abfed5f7e24ced0c4db082b2c589221967787dcab917c9e7e28",
+    "prepare_sha256": "ed98a2f5eaba232a87ca5ec57821bdce344f93203e4e30c4b76699342ac89390",
+    "manifest_digest": "sha256:9b6e8fdd9f6f98631895ccdfaaed6ffd88febd3ea6238d543935a524b572faf3"
+  },
+  "disk_free_before_load": 87379525632,
+  "loaded_image": {
+    "Id": "54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1",
+    "Digest": "sha256:9b6e8fdd9f6f98631895ccdfaaed6ffd88febd3ea6238d543935a524b572faf3",
+    "Architecture": "amd64",
+    "Os": "linux"
+  },
+  "oci": {
+    "manifest_digest": "sha256:9b6e8fdd9f6f98631895ccdfaaed6ffd88febd3ea6238d543935a524b572faf3",
+    "config_digest": "sha256:54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1",
+    "blobs": 131,
+    "layers": 129,
+    "bytes": 4088888273,
+    "root_filesystem_extracted": false
+  },
+  "directory_source": {
+    "manifest_digest": "sha256:9b6e8fdd9f6f98631895ccdfaaed6ffd88febd3ea6238d543935a524b572faf3",
+    "blobs": [
+      "00284ec96613ecb9a22243246d2541da925c4de8b5574b045775c4b25d43c564",
+      "00556a83b3a77f0705611308c29542dbb9d47092c41e1f830676119e0d234f17",
+      "032865f4a02e923d420627acd34a5f7734367473fabacf6460bf0976887b3a35",
+      "03431e668c337563684de018c708687631e719f4e818a8814ab87e729635dee7",
+      "06703bad9386cadf0b635b2dc8fdb95ae36602fea33d9c878cbeb55cf7292375",
+      "08be663fffeb17678cfbafb6f6157206b5cbf0b4947cf878796e8193ac4bc807",
+      "09975baf315a01b246a9f6347b3a6adc61a2c3556d5aaf2f4954616426903a29",
+      "0af6092722dec89ffa003a93d5b3a6a31828735fc249b007464267748b2d7bfd",
+      "0ef87eb40c0e8cfc2765bc215450051ffdd1663b9566e84d3dac8fb91098b502",
+      "129e710e79941e2f505f48311ebf24e39365e2e36889ef66e08d7810300f1c5e",
+      "132b603276c1bd323bef666a0a93204b8fa74411bba55699029b022835c898a0",
+      "1485c0d2a861410bca0ce7d24e4b60163b5eb066912ed41de856ff591577299e",
+      "16d98229e3a2def2a0f175ef82415ded5f0789c8f0c88e50e5d437daba8dc63e",
+      "185e685c44c9904e5c58d573efd3695085fdaf4b27535ce50267e1f80194418c",
+      "19e371c152241fdf4f1b0b5b8ecde3998e252ef11dbd08f004576243b6ff3cdb",
+      "1b53fd7a9f800afc97b947a237a40accd1f48b354ef22828fde708d8d5a45e8a",
+      "1bbad77aeeee0c95269231834dcac017a053f70238b0e74aeb7712ee712c317c",
+      "1f16868fa0527bf200b538f8ab02eba68979514b1804742bda3ba39c7a4beeaf",
+      "1f82d60d0e6286ed8fa4d98c2c2b7b8f6440a49fa5ef2d418f8df8892778fbc3",
+      "203370b173568d655ff40f45390492b6e7c53a473219f65bd07615a8e04439b7",
+      "22d391bfd15287495b95d5f40193f7e0f93739423af3ca30a573cf62f58f891d",
+      "232ca146cdd8a90704e8190b7ed6625546090404b4897ecea475396344a11349",
+      "2673d68221d67a197aafd1743117a8eede547988ebe5498523be297fd7b15ac9",
+      "278c7ae9aa354b7cf1e0487a19abeeb38e3a82448492577eb9495bbfb5e59c57",
+      "287a2754ad172b809e06bca2ce06fc041bfb43ceb4d6165029d0954066e9ed28",
+      "2ee2f6e71206bfb91402afc7f17cb9e35f16d0e356e26f89fd3d98508b53784a",
+      "2ee8103260bdee7a1264b22c5334cf2ddbc43059f12346bb2d3b291465c6281a",
+      "2f67b7a0f9ae88c6f83ef5c52554fd7c825f028cbcc3b892c7be3ff78e9394a6",
+      "33fa3f8e05e8cd7f9a430d6013fbbb77dd21aa97de1b80d217094aa6159f88c2",
+      "35d09f2348214139301e3aa90295f4a887d917acfed7a716939c32a9fbac2cb8",
+      "388a487ccab06a08d79b92e0c380a608b9f9832d9e3781b0ad3afba32e77aa13",
+      "38e06371f76592f70a2a52066eb41522125627f4ecebcd0c4bdfeb55fbd1e47b",
+      "39c5253c8a7f6f115241800a65825105efe3a201b0d29e0e6c93d653f1122c4c",
+      "3d370b3195946583330ef3aae5c262ca7f1e03a9d08f616c4d32e2f58133dc6f",
+      "4004a8863c2f1ce0e09c52aa2342f3a22c39241a12c26c783e09a9bad8afc738",
+      "458e59d92e85b4c3aad4e179f3b787c8f387d2bc674147a3d0ec90c51f76471c",
+      "47a22d6b1cf124316ac4470dcd5e3a8f2de92bff2e64d8cbc13d0e2a38011a56",
+      "4929583659357173d0b5efc09a1e8dce76a415289ec47a29a8a2a85eeca96c02",
+      "4ff9fed95ca7438305435ec2486f8aa505cb83379c818b62a7f3d5788b9872f2",
+      "504c7fcb3dca86318d99e8f88ca4b64ab1d956917644ae4cb0adb9b9e01b39c6",
+      "5064d622f099b94f76f91ad73d88d20c39a1e881aca00bd9f97cec95d42feb9a",
+      "54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1",
+      "5470232c61245edddf52a4f0b9f44b6fc1c93abf89a928c5036d8f5f580d8ff2",
+      "54e99c47cadd63df87736c800af51643dfa98498743360b149bdbfa7fe410c5a",
+      "556fba5591bd7c7c70dd8146ad3bd8712af46b3c670e4104e55968ba7d19193b",
+      "5588a50b8a0ead23e32f02af6e72c44a3e95f7fff1e74485ac99193f5cb5d047",
+      "55b39bd03e5d86ef7f5838e12caca7e994b85a72c354f63965600e6e803016d7",
+      "591eee8f7401e8b53dcc30d3a95a77548ad74eba0641026863d25f41e3d7cd49",
+      "5e390a790b34f13fbb1bcd22e699428422b9c2f7cb4648d1eb61731210e6c0f3",
+      "5f8afd92c1a761b9aee1b4fa56fc3fce8d98158b42b41c8e5ee0032d5d2506cd",
+      "604bfe31747484bbd9f533544474a60dd4f0538028ac85523b44f7cf4ffc2a7c",
+      "62539f1ba850ab7d3d0ddc7565f3b97b59b53c1e842624968f4e33c936408054",
+      "631f5577f3efe992612b928e6cf28362224e1b1f87bed0b443a5b5bd452edc64",
+      "658b6984f1373cbd3034b2f3c726e74759fbb90126328bf6cc3939cb8a4fbfd1",
+      "69867bc48be35829d2a86b8b1aaf7c1a8ac53b84df98a9f1e7d6ebf8b14b618e",
+      "6a0528f3551e62e5d5f474529c84f13bf7125a9c82ef3beb55bdc802ea604e47",
+      "6c8e07f42a9db91d88e53d53ab252ed4bfd0c39c349220a9f0a37b8d634eabb0",
+      "6dc6803d737934060655a4b881272468969912dc9227490e5c7a9d2f5fd78b2a",
+      "6ec6590dcfb72eaab48d8c9546e33b2ba96ce897bb71a4738bca69ad0269c21c",
+      "72688b2b470b5a46f5059dd08d238d87c7f674069cc2a3a02c37745d8a560c8c",
+      "742534f6a6068b81222a5572b1756a0b370470c0cd29b0d632e6de41def09122",
+      "759e41cc8d67c2554bdac3a1d29f005c62aaa40a73ee0705cf645f1fe4e152f5",
+      "77c69d72a814015de7623e4d411dc0bd9df4056b956139a9399ebc0ba9775eba",
+      "77f377b039b6e618454b00974c049160da172ecdb746efb4a931971be390fb97",
+      "782600672f89dbf422f3da806524d2f601dfc7ca77599ed98b503f59a0a1adf0",
+      "7855a83a44daf19e64fb85c00c8fd22c19754f75f81b05627b56d22b291c1183",
+      "7892ae112f6f4b124f76ddf82f089dc224cda8bfc7fe8ddd4029703d08d43dcd",
+      "7cacdded0b1a159add273e63c16a5fabdfd43dd0cd4dbc2395e0f6e61712a82c",
+      "7cd515391595d924ebf268ea6c48b622644596363bc73989e5c731fb8ecbd0fa",
+      "8067111c8a0878f5bbd6b02ae49190cfdc24b03b329af6a69d45f2fb17f47143",
+      "808427e6288d1c85a7ab2cf6695ae26e2f0a1a9990e62e6e801429e93bf15932",
+      "825adb3e63e14b1d99b54902166b3176c9c2ed3ab0f57069a7251c76dba95f67",
+      "85f1ab9809b54336243f52fab96cbd4b154027a7146f67753ea5c0788370c6c1",
+      "86d6d042ef01c71bececaf2c4214e635e3edb425eb2fa6c73c25f4646da27a11",
+      "890810a52103b171864ac2b23f7b8232059e986701d3bd93e4e009e31992a88d",
+      "89b055fe3525050e5eab313a93c070a3595fcc8826ab8df1cd309df0dfbf3ae4",
+      "8a005072275811f03c518b175a0463ae8e33570fdac198a28d6e9ad34760db4b",
+      "8c7fc1d1df890ad8f0ee321b31dec128856b3614beb2ae64a3fcdbdaeea5f1e8",
+      "8d3ac4f8713cffd4492e5e6a61ccc9cf3daca49394a44b228eef9ec198199932",
+      "8e187bb589da8241e7c81074e2d91db0222afc917edf235c4b320a29e2b80f82",
+      "8fd2470ead93cb5328186a544322048eaede80423873b2fb9cc0510b9d43900e",
+      "929655f286c4a78a978002b273253238f9b2ff47f32c0da90e92f39981757d3a",
+      "92f64e51424d7a5d904aaab38f9f0df6fcabf53904dfcd101f2c540744939cf3",
+      "9365bb4456bd44aaf451bab430948b5c787944b33e424599bd0808cf3fc40f57",
+      "96ef3bfa08e3bb4217038931968dc80a0f957d7583502e5306907a25333c5072",
+      "970080879ce7a1e74984cf774489974ecd1d5c1c9b9816f4d8cc3010ca19fc01",
+      "9b39cf8fd5ec32946542337b6d1b3959ae555ef607d64f89d9eedae9f5445b45",
+      "9b70929f22917c98dae848915eb00d768bffaeb9cf7f255035d5a175e2abfffe",
+      "9be178a25484ba4e6e370ff5bda2a782a3b30687d852559a112508458dc74b21",
+      "9d1b3b36125342f6c89bd3a9933a64e7b34d9693421ad204fc7fdc1679dfcf59",
+      "9d9cfb1c2d902776233fe4fac55d81f6f843de01cebd45b8119e4db4525a3716",
+      "9dc155c8c7b3307da69e510a72f29b43c69b53849e86e307d2cd8e925b591bb3",
+      "a231a4e57723f2948593448467fe4aeb0a27285de8a8ae759a78505c35e15f65",
+      "a399ffe0224a72ab08bc864cb1e390eeabfa4f4618567f74777cf3fa55246db1",
+      "a601963c58eccf08a658206b6509fbdcbd5450895de8a2d8e144aba2a949566f",
+      "ab46165dfd3df1f8e12179d6f33f50673c14c95bb3a6db48a384c435202c9db5",
+      "abd0bbc7b752efda419eb283029ff142b7027e294161ba86e885ec7be234b9e6",
+      "ac86f9042eaefc957e331b745db493de1e2d574751dec6ecc1f7dbd1599e52a1",
+      "ad7d353a7615869ab515749eea8c7681b6dc319c56e417eb631657023365bf70",
+      "adc1834e23a0b8df4c8e53b0ac1a7b50747d375a153bd8c8dd293799082fc18b",
+      "adc7e133c7a62bad507d2e63f0aab69c2f1d040ec60ca783470fd46dd5da364d",
+      "ae3b05222e529813239fed70214bb9ef7fd284b1924d05adbf54d27245a67406",
+      "aed9a0b22f534d688253a74da83f75adbc8420b6a2368ad6d959550850afa230",
+      "b0334a988e11f23031b500bb1f8de1f285a62a1e185b2aa274165308341483d7",
+      "b05061bfcf1e8cefad2c0f43ac67bdd6db0f37a58c151ac22b8b88c249036253",
+      "b67609c2f9b3eee19f9b2268e516d2d8472f817687cda477b92f9068d4db94d0",
+      "bafc9dc0946c9d597de75726d14b3a18093ca14f5295f9b96e47bedd24e9e6a5",
+      "bbeccfeff2b74252176f8e05ef68ebd1e00af04021216a929fd873f2f8c90542",
+      "bcf5f88e54859cb03d078c687f7d173c16c4fec6145cb2a0bdcef75e1227d17c",
+      "ca5fcae3be191921a931d144383a5586193412c9dd252be0ebabd3bf89e78824",
+      "cc0d9ec3d707ad384e61c7b0dc9e0195d4ef4769fb9e8fe633c67fc59e590131",
+      "cf4906d062df8fc28b4aeff997eb9f3aadba58f79405c22058ebb492dcb7f12c",
+      "d00fa3b205014745f06108034a9a3808edd26a99e34099028695060b3b5879d5",
+      "d454086e197779be8b2ae993fa3c5b8ab708d23bb3b9b51024ad91964f82d06d",
+      "d5659050fb868b6769d207eaeaa513386c01ea07e450f0ad3ac91ebbace916b0",
+      "d8a5836d00d757063630469cab9a1a3373051837b05cf394ea72024c8aaa311b",
+      "e12616273516f5e49f755eaf036706590cb274515f6f7c7a1fa764abede6ee69",
+      "e9c66cad9a219533fb7f08d27cdaac6f63cfe67639be3e2d3f7c40cb002945cc",
+      "ea4047d5213d9bfeb6a8a85c19675c1a470f7269febceb370ee0c248c37a014c",
+      "efcdfc5b3424309fc705153188169684ddb80c28dbf9b888e2440d07d7497de3",
+      "f0d57af2006e29af710a92846e87f160033c827f910e88aca4bf367101a6dc8b",
+      "f18238a852d9052d9e56f2ea6fcb7b96c1a7c769f4b54de6c234d6b3eff8396c",
+      "f33b6107a406bc3aa428860c1e4412ec61632071787f9ad7e8be0df4cc7105ad",
+      "f4f35a128bcbff5367711bce685f7cb36427443a3a755198d63020296f3940e2",
+      "f61b680ffb2e960c02128fd5391162044f6eef848734794e2959e2b450f21b5a",
+      "f79c2e637a161bb06159f85177e845d6c20274e5633bc7782faeebf6790636ac",
+      "f9a79a45b79f075ca4fbb75d68795e9586b5b0a29d779816041e8458627da47a",
+      "fb061c8f92d863f8375b145ad6c99607d570850c859a6d52559ccef26b276f84",
+      "fc27b3558c0dc7cb979790aa041fbc92e0a29297ef5d3bad64232c3e90b3cc2d",
+      "fcd28848dd7d5fa4d0c1e11dfe94da98a3c348f28ca95f6bcf936c460b6f8135"
+    ],
+    "recompressed": false,
+    "root_filesystem_extracted": false
+  },
+  "source_authentication": {
+    "passed": true,
+    "release_qualified": false,
+    "source_manifest_digest": "sha256:9b6e8fdd9f6f98631895ccdfaaed6ffd88febd3ea6238d543935a524b572faf3",
+    "scope": "Ephemeral local CI fixture key; never the ThirdKey release identity",
+    "limits": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "64"
+    },
+    "commands": [
+      {
+        "name": "skopeo-version",
+        "exit_code": 0
+      },
+      {
+        "name": "skopeo-package",
+        "exit_code": 0
+      },
+      {
+        "name": "generate-good",
+        "exit_code": 0
+      },
+      {
+        "name": "fingerprint-good",
+        "exit_code": 0
+      },
+      {
+        "name": "export-public-good",
+        "exit_code": 0
+      },
+      {
+        "name": "generate-wrong",
+        "exit_code": 0
+      },
+      {
+        "name": "fingerprint-wrong",
+        "exit_code": 0
+      },
+      {
+        "name": "export-public-wrong",
+        "exit_code": 0
+      },
+      {
+        "name": "sign-control",
+        "exit_code": 0
+      },
+      {
+        "name": "policy-valid",
+        "exit_code": 0
+      },
+      {
+        "name": "policy-unsigned",
+        "exit_code": 1
+      },
+      {
+        "name": "sign-wrong-key",
+        "exit_code": 0
+      },
+      {
+        "name": "policy-wrong-key",
+        "exit_code": 1
+      },
+      {
+        "name": "sign-wrong-reference",
+        "exit_code": 0
+      },
+      {
+        "name": "policy-wrong-reference",
+        "exit_code": 1
+      },
+      {
+        "name": "policy-altered-signature",
+        "exit_code": 1
+      },
+      {
+        "name": "sign-development",
+        "exit_code": 0
+      },
+      {
+        "name": "verify-development",
+        "exit_code": 0
+      },
+      {
+        "name": "stop-agent-0",
+        "exit_code": 0
+      },
+      {
+        "name": "stop-agent-1",
+        "exit_code": 0
+      }
+    ],
+    "negative_controls": {
+      "unsigned": true,
+      "wrong-key": true,
+      "wrong-reference": true,
+      "altered-signature": true
+    },
+    "verifier": {
+      "version": "skopeo version 1.25.1 commit: 849f8f0f9443e56435f4302f81ccadcf6a56da21",
+      "rpm_identity": "skopeo\t1\t1.25.1\t2.fc45\tx86_64"
+    },
+    "public_key_fingerprint": "4F8912F34F4B96BD0C9EB11E6C220D88B23EA7AD",
+    "public_key_sha256": "5526e1f3fdb804166f7d9302e9b75a60eef1e9a0a7649690dd7318047fa1533c",
+    "signature_sha256": "7346e20628d5f39f7249e68a9cbce11ce66cd183feea0213ed40f7cccf05a769",
+    "positive_policy_control": true,
+    "private_keys_removed": true,
+    "cgroup_final": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "64",
+      "memory.peak": "97755136",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "cpu.stat": "usage_usec 640911\nuser_usec 184616\nsystem_usec 456295\nnice_usec 176000\ncore_sched.force_idle_usec 0\nnr_periods 9\nnr_throttled 3\nthrottled_usec 29270\nnr_bursts 0\nburst_usec 0"
+    }
+  },
+  "disk": {
+    "device": 66305,
+    "inode": 10511028,
+    "bytes": 25769803776,
+    "uid": 0,
+    "mode": 384,
+    "links": 1
+  },
+  "installation_completed": true,
+  "disk_sha256": "bfaccb0e9d618fee73328d6d7fa22706c513bfacf347f10cdbdca7fe885efbbe",
+  "boot_inputs": {
+    "boot.py": "f752adeb2ee0a299ae806222195787a7eb47c89bb5b1db64f6e4af570fdbaa5a",
+    "contract.py": "07bfe0081daeccb2d72054b79c9c5c748a6bbfa0f82d3b05bb29a8d9c66ef0c3",
+    "guest.py": "b8aeeb57637475a7000ed0afafb4055e9d7eb1131a42246f36f5dbc39c6e69ee",
+    "o.service": "a8bbd58a3928d1d59f8d97ee4a3a8b4ffec70d26a75de0f1e6bd05a45f6055ad",
+    "s.service": "446848bf916fcfa797ca029217836d3396963bcf85cce73e37a7ff30a857e6f1",
+    "expected.json": "d1ecff5e66b48e1adffb95ca01c883195504ae6741007ef876673855ce5b04a4"
+  },
+  "failure": "CalledProcessError: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/atomic-disk-storage/root', '--runroot', '/run/symbi-atomic-disk-45822682886-1', 'run', '--rm', '--name=symbi-atomic-qemu', '--pull=never', '--network=none', '--pid=private', '--cgroup-parent=/system.slice/symbi-atomic-disk-45822682886-1.service', '--env=LANG=C.UTF-8', '--env=PYTHONDONTWRITEBYTECODE=1', '--read-only', '--user=10001:10001', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--memory=3g', '--memory-swap=3g', '--cpus=2', '--pids-limit=64', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/atomic-disk-storage/boot-input,dst=/inputs,ro', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/atomic-disk-storage/disk/atomic.raw,dst=/inputs/atomic.raw,ro', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/atomic-disk-storage/boot-output,dst=/output', '--entrypoint=/usr/bin/python3', 'sha256:54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1', '/inputs/boot.py']' returned non-zero exit status 1.",
+  "cleanup": {
+    "symbi-atomic-signer": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-atomic-installer": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-atomic-qemu": {
+      "removed": true,
+      "absent": true
+    }
+  },
+  "loops_absent": true,
+  "image_removed": true,
+  "private_storage_removed": true,
+  "private_runroot_removed": true,
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4294971392",
+    "memory.events": "low 0\nhigh 0\nmax 162098\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 718196899\nuser_usec 490551777\nsystem_usec 227645121\nnice_usec 473405000\ncore_sched.force_idle_usec 0\nnr_periods 8835\nnr_throttled 94\nthrottled_usec 2136628\nnr_bursts 0\nburst_usec 0"
+  }
+}

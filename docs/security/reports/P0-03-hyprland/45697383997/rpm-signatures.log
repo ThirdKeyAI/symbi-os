@@ -1,0 +1,810 @@
+File: guest/rpm-000-signature.log
+/inputs/packages/rpms/R-srpm-macros-1.3.7-3.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-001-signature.log
+/inputs/packages/rpms/abseil-cpp-devel-20260526.0-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-002-signature.log
+/inputs/packages/rpms/abseil-cpp-testing-20260526.0-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-003-signature.log
+/inputs/packages/rpms/add-determinism-0.7.3-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-004-signature.log
+/inputs/packages/rpms/annobin-docs-13.28-1.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-005-signature.log
+/inputs/packages/rpms/annobin-plugin-gcc-13.28-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-006-signature.log
+/inputs/packages/rpms/ansible-srpm-macros-1-22.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-007-signature.log
+/inputs/packages/rpms/at-spi2-atk-devel-2.62.1-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-008-signature.log
+/inputs/packages/rpms/at-spi2-core-devel-2.62.1-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-009-signature.log
+/inputs/packages/rpms/atk-devel-2.62.1-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-010-signature.log
+/inputs/packages/rpms/brotli-1.2.1-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-011-signature.log
+/inputs/packages/rpms/brotli-devel-1.2.1-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-012-signature.log
+/inputs/packages/rpms/build-reproducibility-srpm-macros-0.7.3-3.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-013-signature.log
+/inputs/packages/rpms/bzip2-devel-1.0.8-24.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-014-signature.log
+/inputs/packages/rpms/cairo-devel-1.18.6-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-015-signature.log
+/inputs/packages/rpms/cairo-gobject-devel-1.18.6-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-016-signature.log
+/inputs/packages/rpms/cmake-4.3.0-7.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-017-signature.log
+/inputs/packages/rpms/cmake-data-4.3.0-7.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-018-signature.log
+/inputs/packages/rpms/cmake-rpm-macros-4.3.0-7.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-019-signature.log
+/inputs/packages/rpms/cmake-srpm-macros-4.3.0-7.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-020-signature.log
+/inputs/packages/rpms/dbus-devel-1.16.4-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-021-signature.log
+/inputs/packages/rpms/debugedit-5.4-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-022-signature.log
+/inputs/packages/rpms/dwz-0.17-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-023-signature.log
+/inputs/packages/rpms/efi-srpm-macros-6-9.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-024-signature.log
+/inputs/packages/rpms/elfutils-0.197-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-025-signature.log
+/inputs/packages/rpms/erlang-srpm-macros-0.4.2-1.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-026-signature.log
+/inputs/packages/rpms/file-devel-5.48-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-027-signature.log
+/inputs/packages/rpms/filesystem-srpm-macros-3.18-59.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-028-signature.log
+/inputs/packages/rpms/fontconfig-devel-2.18.3-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-029-signature.log
+/inputs/packages/rpms/fonts-srpm-macros-5.0.0-4.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-030-signature.log
+/inputs/packages/rpms/forge-srpm-macros-0.4.0-5.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-031-signature.log
+/inputs/packages/rpms/fpc-srpm-macros-1.3-17.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-032-signature.log
+/inputs/packages/rpms/freetype-devel-2.14.3-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-033-signature.log
+/inputs/packages/rpms/fribidi-devel-1.0.18-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-034-signature.log
+/inputs/packages/rpms/gap-srpm-macros-2-3.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-035-signature.log
+/inputs/packages/rpms/gcc-c++-16.2.1-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-036-signature.log
+/inputs/packages/rpms/gcc-plugin-annobin-16.2.1-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-037-signature.log
+/inputs/packages/rpms/gdb-minimal-18.1-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-038-signature.log
+/inputs/packages/rpms/gdk-pixbuf2-devel-2.44.8-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-039-signature.log
+/inputs/packages/rpms/ghc-srpm-macros-1.10-2.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-040-signature.log
+/inputs/packages/rpms/glib2-devel-2.90.1-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-041-signature.log
+/inputs/packages/rpms/glslang-16.3.0-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-042-signature.log
+/inputs/packages/rpms/glslang-devel-16.3.0-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-043-signature.log
+/inputs/packages/rpms/glycin-devel-2.2.6-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-044-signature.log
+/inputs/packages/rpms/gmock-1.17.0-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-045-signature.log
+/inputs/packages/rpms/gnat-srpm-macros-7-3.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-046-signature.log
+/inputs/packages/rpms/gnome-srpm-macros-1.0-2.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-047-signature.log
+/inputs/packages/rpms/go-srpm-macros-3.8.0-3.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-048-signature.log
+/inputs/packages/rpms/gpgverify-2.2-5.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-049-signature.log
+/inputs/packages/rpms/graphite2-devel-1.3.14-22.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-050-signature.log
+/inputs/packages/rpms/gtest-1.17.0-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-051-signature.log
+/inputs/packages/rpms/gtest-devel-1.17.0-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-052-signature.log
+/inputs/packages/rpms/gtk2-2.24.33-28.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-053-signature.log
+/inputs/packages/rpms/gtk2-devel-2.24.33-28.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-054-signature.log
+/inputs/packages/rpms/gtk3-devel-3.24.52-6.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-055-signature.log
+/inputs/packages/rpms/harfbuzz-cairo-15.0.0-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-056-signature.log
+/inputs/packages/rpms/harfbuzz-devel-15.0.0-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-057-signature.log
+/inputs/packages/rpms/harfbuzz-gpu-15.0.0-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-058-signature.log
+/inputs/packages/rpms/harfbuzz-raster-15.0.0-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-059-signature.log
+/inputs/packages/rpms/harfbuzz-vector-15.0.0-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-060-signature.log
+/inputs/packages/rpms/hwdata-devel-0.413-1.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-061-signature.log
+/inputs/packages/rpms/ibus-gtk2-1.5.35-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-062-signature.log
+/inputs/packages/rpms/java-srpm-macros-1-9.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-063-signature.log
+/inputs/packages/rpms/kernel-srpm-macros-1.0-30.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-064-signature.log
+/inputs/packages/rpms/lcms2-devel-2.16-8.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-065-signature.log
+/inputs/packages/rpms/libGLEW-2.2.0-13.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-066-signature.log
+/inputs/packages/rpms/libX11-devel-1.8.13-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-067-signature.log
+/inputs/packages/rpms/libXau-devel-1.0.12-5.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-068-signature.log
+/inputs/packages/rpms/libXcomposite-devel-0.4.6-8.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-069-signature.log
+/inputs/packages/rpms/libXcursor-devel-1.2.3-5.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-070-signature.log
+/inputs/packages/rpms/libXdamage-devel-1.1.6-8.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-071-signature.log
+/inputs/packages/rpms/libXext-devel-1.3.6-6.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-072-signature.log
+/inputs/packages/rpms/libXfixes-devel-6.0.1-8.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-073-signature.log
+/inputs/packages/rpms/libXft-devel-2.3.8-11.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-074-signature.log
+/inputs/packages/rpms/libXi-devel-1.8.4-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-075-signature.log
+/inputs/packages/rpms/libXinerama-devel-1.1.5-11.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-076-signature.log
+/inputs/packages/rpms/libXrandr-devel-1.5.4-8.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-077-signature.log
+/inputs/packages/rpms/libXrender-devel-0.9.12-5.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-078-signature.log
+/inputs/packages/rpms/libXtst-devel-1.2.5-5.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-079-signature.log
+/inputs/packages/rpms/libblkid-devel-2.42.4-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-080-signature.log
+/inputs/packages/rpms/libcanberra-devel-0.30-52.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-081-signature.log
+/inputs/packages/rpms/libcanberra-gtk2-0.30-52.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-082-signature.log
+/inputs/packages/rpms/libcloudproviders-devel-0.4.1-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-083-signature.log
+/inputs/packages/rpms/libdatrie-devel-0.2.14-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-084-signature.log
+/inputs/packages/rpms/libdav1d-devel-1.5.4-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-085-signature.log
+/inputs/packages/rpms/libdisplay-info-devel-0.3.0-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-086-signature.log
+/inputs/packages/rpms/libdrm-devel-2.4.134-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-087-signature.log
+/inputs/packages/rpms/libeis-1.6.0-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-088-signature.log
+/inputs/packages/rpms/libeis-devel-1.6.0-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-089-signature.log
+/inputs/packages/rpms/libepoxy-devel-1.5.10-13.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-090-signature.log
+/inputs/packages/rpms/libffi-devel-3.5.2-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-091-signature.log
+/inputs/packages/rpms/libglvnd-core-devel-1.7.0-10.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-092-signature.log
+/inputs/packages/rpms/libglvnd-devel-1.7.0-10.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-093-signature.log
+/inputs/packages/rpms/libicu-devel-78.3-9.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-094-signature.log
+/inputs/packages/rpms/libinput-devel-1.32.0-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-095-signature.log
+/inputs/packages/rpms/libjpeg-turbo-devel-3.1.4.1-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-096-signature.log
+/inputs/packages/rpms/libmount-devel-2.42.4-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-097-signature.log
+/inputs/packages/rpms/libpciaccess-devel-0.16-18.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-098-signature.log
+/inputs/packages/rpms/libpng-devel-1.6.59-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-099-signature.log
+/inputs/packages/rpms/librsvg2-devel-2.63.2-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-100-signature.log
+/inputs/packages/rpms/libseat-devel-0.9.3-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-101-signature.log
+/inputs/packages/rpms/libseccomp-devel-2.6.1-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-102-signature.log
+/inputs/packages/rpms/libselinux-devel-3.11-5.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-103-signature.log
+/inputs/packages/rpms/libsepol-devel-3.11-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-104-signature.log
+/inputs/packages/rpms/libstdc++-devel-16.2.1-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-105-signature.log
+/inputs/packages/rpms/libthai-devel-0.1.30-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-106-signature.log
+/inputs/packages/rpms/libuuid-devel-2.42.4-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-107-signature.log
+/inputs/packages/rpms/libwebp-devel-1.6.0-4.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-108-signature.log
+/inputs/packages/rpms/libxcb-devel-1.17.0-8.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-109-signature.log
+/inputs/packages/rpms/libxkbcommon-devel-1.13.1-4.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-110-signature.log
+/inputs/packages/rpms/libxml2-devel-2.15.4-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-111-signature.log
+/inputs/packages/rpms/libzip-devel-1.12.1-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-112-signature.log
+/inputs/packages/rpms/linkdupes-0.7.3-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-113-signature.log
+/inputs/packages/rpms/lua-5.5.1-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-114-signature.log
+/inputs/packages/rpms/lua-devel-5.5.1-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-115-signature.log
+/inputs/packages/rpms/lua-rpm-macros-1-18.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-116-signature.log
+/inputs/packages/rpms/lua-srpm-macros-1-18.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-117-signature.log
+/inputs/packages/rpms/lzo-devel-2.10-17.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-118-signature.log
+/inputs/packages/rpms/lzo-minilzo-2.10-17.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-119-signature.log
+/inputs/packages/rpms/mesa-dri-drivers-26.2.7-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-120-signature.log
+/inputs/packages/rpms/mesa-filesystem-26.2.7-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-121-signature.log
+/inputs/packages/rpms/mesa-libEGL-26.2.7-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-122-signature.log
+/inputs/packages/rpms/mesa-libGL-26.2.7-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-123-signature.log
+/inputs/packages/rpms/mesa-libgbm-26.2.7-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-124-signature.log
+/inputs/packages/rpms/mesa-libgbm-devel-26.2.7-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-125-signature.log
+/inputs/packages/rpms/mesa-vulkan-drivers-26.2.7-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-126-signature.log
+/inputs/packages/rpms/meson-1.12.1-3.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-127-signature.log
+/inputs/packages/rpms/meson-srpm-macros-1.12.1-3.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-128-signature.log
+/inputs/packages/rpms/muParser-2.3.5-6.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-129-signature.log
+/inputs/packages/rpms/muParser-devel-2.3.5-6.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-130-signature.log
+/inputs/packages/rpms/ninja-build-1.13.2-6.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-131-signature.log
+/inputs/packages/rpms/ocaml-srpm-macros-11-4.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-132-signature.log
+/inputs/packages/rpms/openblas-srpm-macros-2-22.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-133-signature.log
+/inputs/packages/rpms/package-notes-srpm-macros-0.20-2.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-134-signature.log
+/inputs/packages/rpms/pango-devel-1.58.2-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-135-signature.log
+/inputs/packages/rpms/pcre2-devel-10.49-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-136-signature.log
+/inputs/packages/rpms/perl-srpm-macros-1-65.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-137-signature.log
+/inputs/packages/rpms/pixman-devel-0.46.2-4.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-138-signature.log
+/inputs/packages/rpms/pugixml-devel-1.16-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-139-signature.log
+/inputs/packages/rpms/pyproject-srpm-macros-1.24.0-1.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-140-signature.log
+/inputs/packages/rpms/python-srpm-macros-3.15-2.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-141-signature.log
+/inputs/packages/rpms/qt5-srpm-macros-5.15.18-3.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-142-signature.log
+/inputs/packages/rpms/qt6-srpm-macros-6.11.2-1.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-143-signature.log
+/inputs/packages/rpms/re2-devel-20251105-19.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-144-signature.log
+/inputs/packages/rpms/redhat-rpm-config-345-5.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-145-signature.log
+/inputs/packages/rpms/rhash-1.4.5-5.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-146-signature.log
+/inputs/packages/rpms/rpm-build-6.1.0-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-147-signature.log
+/inputs/packages/rpms/rust-srpm-macros-28.5-2.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-148-signature.log
+/inputs/packages/rpms/sysprof-capture-devel-51.0-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-149-signature.log
+/inputs/packages/rpms/systemd-devel-262.1-1.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-150-signature.log
+/inputs/packages/rpms/systemd-rpm-macros-262.1-1.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-151-signature.log
+/inputs/packages/rpms/tomlplusplus-3.4.0-8.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-152-signature.log
+/inputs/packages/rpms/tomlplusplus-devel-3.4.0-8.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-153-signature.log
+/inputs/packages/rpms/tree-sitter-srpm-macros-0.4.6-2.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-154-signature.log
+/inputs/packages/rpms/wayland-devel-1.26.0-3.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-155-signature.log
+/inputs/packages/rpms/wayland-protocols-devel-1.50-1.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-156-signature.log
+/inputs/packages/rpms/xcb-util-errors-devel-1.0.1-8.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-157-signature.log
+/inputs/packages/rpms/xcb-util-wm-devel-0.4.2-10.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-158-signature.log
+/inputs/packages/rpms/xorg-x11-proto-devel-2025.1-3.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-159-signature.log
+/inputs/packages/rpms/xz-devel-5.8.3-2.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-160-signature.log
+/inputs/packages/rpms/zig-srpm-macros-1-9.fc45.noarch.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+File: guest/rpm-161-signature.log
+/inputs/packages/rpms/zlib-ng-compat-devel-2.3.3-6.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: 4f50a6114cd5c6976a7f1179655a4b02f577861e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK

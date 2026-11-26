@@ -1,0 +1,24 @@
+Package        Arch   Version         Repository        Size
+Installing:
+ go-filesystem x86_64 0:3.8.0-3.fc45  @commandline   0.0   B
+ golang        x86_64 0:1.27.4-2.fc45 @commandline  10.3 MiB
+ golang-bin    x86_64 0:1.27.4-2.fc45 @commandline  88.6 MiB
+ golang-src    noarch 0:1.27.4-2.fc45 @commandline  90.9 MiB
+ tesseract     x86_64 0:5.5.4-1.fc45  @commandline  83.5 KiB
+
+Transaction Summary:
+ Installing:         5 packages
+
+Updating and loading repositories:
+Repositories loaded.
+Total size of inbound packages is 41 MiB. Need to download 0 B.
+After this operation, 190 MiB extra will be used (install 190 MiB, remove 0 B).
+Running transaction
+[1/7] Verify package files              100% |  39.0   B/s |   5.0   B |  00m00s
+[2/7] Prepare transaction               100% |  20.0   B/s |   5.0   B |  00m00s
+[3/7] Installing golang-src-0:1.27.4-2. 100% | 213.9 MiB/s |  92.0 MiB |  00m00s
+[4/7] Installing go-filesystem-0:3.8.0- 100% | 382.8 KiB/s | 392.0   B |  00m00s
+[5/7] Installing golang-0:1.27.4-2.fc45 100% | 541.4 MiB/s |  10.3 MiB |  00m00s
+[6/7] Installing golang-bin-0:1.27.4-2. 100% | 391.9 MiB/s |  88.6 MiB |  00m00s
+[7/7] Installing tesseract-0:5.5.4-1.fc 100% |  27.8 KiB/s |  85.2 KiB |  00m03s
+Complete!

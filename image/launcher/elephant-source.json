@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "repository": "https://github.com/abenz1267/elephant",
+  "revision": "8f1e21d6efe40b8b3953f95b9574f99f717caf91",
+  "go_minimum": "1.27.1",
+  "go_mod_sha256": "c5fe5f8c609ed14dae2fea900a0cbdc00875352a1b3b1bf6bfa9f84f430288b9",
+  "go_sum_sha256": "c307c62070ecdac44a964fe304b1325b74d859bb851bd9a807faf52091a0f8d0",
+  "scope": "Pinned development source inputs; source build and provider refusal acceptance remain unexecuted",
+  "os_qualified": false
+}

@@ -1,0 +1,35 @@
+{
+  "evidence_reconciled": true,
+  "workflow_passed": false,
+  "run_id": 45784560037,
+  "source_commit": "bcc91ed1e549693c1b0f5a428b7d6561430be256",
+  "failure": "Unprivileged copying could not traverse the mode-0700 archive staging parent",
+  "actual_native_compilation_started": false,
+  "native_tests_ran": false,
+  "compiled_prefix_retained": false,
+  "full_rpm_signatures_verified": 173,
+  "container_removed_and_absent": true,
+  "host_counters": {
+    "memory.max": "8589934592",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "8601964544",
+    "memory.events": "low 0\nhigh 0\nmax 5255\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 193759473\nuser_usec 135524342\nsystem_usec 58235130\nnice_usec 131368000\ncore_sched.force_idle_usec 0\nnr_periods 1581\nnr_throttled 690\nthrottled_usec 37924549\nnr_bursts 0\nburst_usec 0"
+  },
+  "guest_counters": {
+    "memory.max": "6442450944",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "128",
+    "memory.peak": "1359740928",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 14744215\nuser_usec 9464070\nsystem_usec 5280145\nnice_usec 9419000\ncore_sched.force_idle_usec 0\nnr_periods 202\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+  },
+  "offline_tests_passed": 191,
+  "corrected_drivers_parse_and_refuse_local_execution": true,
+  "hosted_corrected_mount_acceptance_pending": true,
+  "os_qualified": false,
+  "consent_qualified": false
+}

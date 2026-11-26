@@ -1,0 +1,92 @@
+{
+  "schema": 1,
+  "card": "P0-03",
+  "date": "2026-11-26",
+  "parent_commit": "552b958994c4659cc044c5632d5c00fa6c87da54",
+  "scope": "Nerd Fonts v3.5.1 development-image integration",
+  "result": {
+    "development_included": true,
+    "selected_for_release": false,
+    "security_qualified": false,
+    "os_qualified": false
+  },
+  "payload": {
+    "jetbrains_mono_faces": 96,
+    "symbols_faces": 2,
+    "font_count": 98,
+    "font_bytes": 248325788,
+    "reviewed_symbol_aliases": 398,
+    "reviewed_notices": 5,
+    "inputs_sha256": "0cb5bd14ebc26cd3b5ca3ff27fac3f967a4d169fce14a9d8897f541518f620f6",
+    "fontconfig_sha256": "c686f822818bd1c4c26ccb1314d16b277e77252f97a74483ca20b2165dbf7ec6"
+  },
+  "tests": {
+    "fail_first": {
+      "passed": true,
+      "expected_failures": 5,
+      "evidence": "before.log"
+    },
+    "targeted": {
+      "passed": true,
+      "tests": 18,
+      "modules": [
+        "image.tests.test_font_install",
+        "image.tests.test_font_intake",
+        "image.tests.test_desktop"
+      ]
+    },
+    "real_exact_asset_check": {
+      "passed": true,
+      "native_fc_scan_rows": 98,
+      "selected_families_present": true,
+      "elapsed_seconds": 1.62,
+      "peak_rss_kib": 97832,
+      "swaps": 0,
+      "evidence": "real-font-check.log",
+      "boundary": "Exact pinned public archive bytes with a synthetic same-job manifest; not hosted artifact acceptance"
+    },
+    "image_suite": {
+      "passed": true,
+      "tests": 277,
+      "elapsed_seconds": 2.08,
+      "peak_rss_kib": 54540,
+      "swaps": 0,
+      "evidence": "image-check.log"
+    },
+    "repository_gate": {
+      "passed": true,
+      "image_tests": 277,
+      "rust_policy_tests": 6,
+      "cargo_jobs": 1,
+      "elapsed_seconds": 4.17,
+      "peak_rss_kib": 68280,
+      "swaps": 0,
+      "checks": [
+        "shell syntax",
+        "image fixtures",
+        "cargo fmt",
+        "cargo clippy",
+        "cargo test",
+        "cargo doc",
+        "cargo deny",
+        "cargo vet"
+      ],
+      "evidence": "repository-check.log"
+    }
+  },
+  "security_properties": [
+    "Current source commit, pins, manifest, archive size, archive hash and complete inventory are required",
+    "Archive members, fontconfig XML, notice paths and destination paths are bounded and fail closed",
+    "Linked or existing destinations are refused and failed copies remove partial output",
+    "Input hashes are rechecked after extraction before the payload is accepted",
+    "Installed-image verification is unprivileged, read-only, capability-free and network-free",
+    "Native output is bounded and every expected font path must appear exactly once"
+  ],
+  "remaining_gates": [
+    "Hosted passive intake from the current workflow run",
+    "Native checks in the actual generic secureblue image",
+    "Native checks in the actual NVIDIA secureblue image",
+    "Booted Kitty, Walker and Waybar glyph rendering",
+    "Final signed-image notice and SBOM verification"
+  ]
+}

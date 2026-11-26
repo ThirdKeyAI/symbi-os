@@ -1,0 +1,73 @@
+--- a/hyprland-share-picker/PickerDataTest.cpp
++++ b/hyprland-share-picker/PickerDataTest.cpp
+@@ -1,6 +1,7 @@
+ #include "PickerData.hpp"
+ 
+ #include <iostream>
++#include <utility>
+ 
+ static bool expect(bool condition, const char* message) {
+     if (condition)
+@@ -77,7 +78,7 @@
+             .workspaceID = SPECIAL[0].id,
+         };
+         success &=
+-            expect(formatSelection(SELECTION, true) == "[SELECTION]r/workspace-id:18446744073709551615\n", "V3 workspace selection leaked display text or lost its restore flag");
++            expect(formatSelection(SELECTION, true) == "[SELECTION]/workspace-id:18446744073709551615\n", "V3 workspace selection leaked text or emitted persistence");
+         success &=
+             expect(formatSelection(SELECTION, false) == "[SELECTION]/workspace-id:18446744073709551615\n", "V3 workspace selection leaked display text or added a restore flag");
+     }
+@@ -160,9 +161,35 @@
+     return success;
+ }
+ 
++// Symbi OS must never emit a remembered choice, even if a caller asks for it.
++static bool testFreshConsentFormatting() {
++    bool success = true;
++    const std::vector<std::pair<SSelection, std::string>> CASES = {
++        {SSelection{.type = SELECTION_OUTPUT, .output = "DP-1"}, "[SELECTION]/screen:DP-1\n"},
++        {SSelection{.type = SELECTION_WINDOW, .windowID = UINT32_MAX}, "[SELECTION]/window:4294967295\n"},
++        {SSelection{.type = SELECTION_WORKSPACE, .workspaceID = UINT64_MAX}, "[SELECTION]/workspace-id:18446744073709551615\n"},
++        {SSelection{.type = SELECTION_REGION, .output = "DP-1", .x = 20, .y = 30, .width = 800, .height = 600},
++         "[SELECTION]/region:DP-1@20,30,800,600\n"},
++    };
++    for (const auto& [selection, expected] : CASES) {
++        for (const bool requestedPersistence : {false, true}) {
++            success &= expect(formatSelection(selection, requestedPersistence) == expected,
++                              "Symbi OS: persistent choice emitted or fresh selection changed");
++        }
++    }
++    for (const bool requestedPersistence : {false, true}) {
++        success &= expect(formatSelection(SSelection{.type = SELECTION_NONE}, requestedPersistence).empty(),
++                          "Symbi OS: cancellation emitted a selection");
++        success &= expect(formatSelection(SSelection{.type = SELECTION_WORKSPACE}, requestedPersistence).empty(),
++                          "Symbi OS: invalid workspace emitted a selection");
++    }
++    return success;
++}
++
+ int main() {
+     bool success = true;
+ 
++    success &= testFreshConsentFormatting();
+     success &= testWorkspaceListV3();
+ 
+     const auto WINDOWS = parseWindowList("4294967295[HC>]kitty[HT>]Terminal[HE>]123[HA>]broken[HC>]");
+@@ -188,7 +215,7 @@
+             .type        = SELECTION_WORKSPACE,
+             .workspaceID = WORKSPACES[0].id,
+         };
+-        success &= expect(formatSelection(WORKSPACE_SELECTION, true) == "[SELECTION]r/workspace-id:18446744073709551615\n", "workspace selection did not serialize only its id");
++        success &= expect(formatSelection(WORKSPACE_SELECTION, true) == "[SELECTION]/workspace-id:18446744073709551615\n", "workspace selection did not serialize only its id");
+         success &= expect(formatSelection(WORKSPACE_SELECTION, false) == "[SELECTION]/workspace-id:18446744073709551615\n", "workspace selection added an unwanted restore flag");
+     }
+     for (const auto MALFORMED :
+@@ -209,7 +236,7 @@
+         .output   = "",
+         .windowID = UINT32_MAX,
+     };
+-    success &= expect(formatSelection(WINDOW_SELECTION, true) == "[SELECTION]r/window:4294967295\n", "window selection was serialized incorrectly");
++    success &= expect(formatSelection(WINDOW_SELECTION, true) == "[SELECTION]/window:4294967295\n", "window selection was serialized incorrectly");
+     success &= expect(escapeMarkup("<&>'\"\n") == "&lt;&amp;&gt;&apos;&quot; ", "markup escaping is incomplete");
+ 
+     return success ? 0 : 1;

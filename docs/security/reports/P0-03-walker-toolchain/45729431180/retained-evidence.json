@@ -1,0 +1,90 @@
+{
+  "run": 45729431180,
+  "head": "b1f273b4fcfc9d7c410290331d3b480aa3f2b54d",
+  "tested_merge": "b7a3535fba9d1637a1c70daccd05f224a0b445f5",
+  "artifact": 15076231391,
+  "artifact_bytes": 117893,
+  "artifact_sha256": "3e7c2c4e564e4a4f6099fa67917dc2fd9e6c089995b297503fcb34829639a47c",
+  "passed": true,
+  "os_qualified": false,
+  "normalization": "Only trailing whitespace in text logs; JSON retained byte-for-byte",
+  "files": [
+    {
+      "path": "result.json",
+      "original_sha256": "986b1f51aba85c1845dae8158354f70f00c22fca2176c932c7b5570af353bef9",
+      "retained_sha256": "986b1f51aba85c1845dae8158354f70f00c22fca2176c932c7b5570af353bef9",
+      "original_bytes": 446,
+      "retained_bytes": 446
+    },
+    {
+      "path": "input-bindings.json",
+      "original_sha256": "a228bd787331f305527327852ab4a07d917053ad81c246361ac19cd002d2d30d",
+      "retained_sha256": "a228bd787331f305527327852ab4a07d917053ad81c246361ac19cd002d2d30d",
+      "original_bytes": 855,
+      "retained_bytes": 855
+    },
+    {
+      "path": "base-signature.json",
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "original_bytes": 1281,
+      "retained_bytes": 1281
+    },
+    {
+      "path": "cgroup-final.json",
+      "original_sha256": "be7a91aaee58b4eebec4b13d7ddf4efe351e19292f6d6ec30f5f89b6ad03042a",
+      "retained_sha256": "be7a91aaee58b4eebec4b13d7ddf4efe351e19292f6d6ec30f5f89b6ad03042a",
+      "original_bytes": 462,
+      "retained_bytes": 462
+    },
+    {
+      "path": "guest/result.json",
+      "original_sha256": "4c683e047239faa345e7ec12369c94a88be98fc623bac9ab58d87e0d8637566b",
+      "retained_sha256": "4c683e047239faa345e7ec12369c94a88be98fc623bac9ab58d87e0d8637566b",
+      "original_bytes": 105935,
+      "retained_bytes": 105935
+    },
+    {
+      "path": "guest/cgroup-final.json",
+      "original_sha256": "d24d4973934ca52b5bf14af3646843b7cced6a72ef262ab8c0bca3f54ced48af",
+      "retained_sha256": "d24d4973934ca52b5bf14af3646843b7cced6a72ef262ab8c0bca3f54ced48af",
+      "original_bytes": 450,
+      "retained_bytes": 450
+    },
+    {
+      "path": "guest/missing-key-control.log",
+      "original_sha256": "73e44b2c36d07a47c603d1ec2777e3eabeaf1385cd10e2a10c1fee866d9d7454",
+      "retained_sha256": "73e44b2c36d07a47c603d1ec2777e3eabeaf1385cd10e2a10c1fee866d9d7454",
+      "original_bytes": 358,
+      "retained_bytes": 358
+    },
+    {
+      "path": "guest/tampered-package-control.log",
+      "original_sha256": "4fdc9d7f9c8d020bfbdadd8bf0118e67ad34dc122687dbcda7d88eb0739c9365",
+      "retained_sha256": "4fdc9d7f9c8d020bfbdadd8bf0118e67ad34dc122687dbcda7d88eb0739c9365",
+      "original_bytes": 753,
+      "retained_bytes": 753
+    },
+    {
+      "path": "guest/keyring.log",
+      "original_sha256": "a2d9592731d4369c4308a823327e3b02417006bb5fb3db6e29805dc59438274d",
+      "retained_sha256": "a2d9592731d4369c4308a823327e3b02417006bb5fb3db6e29805dc59438274d",
+      "original_bytes": 102,
+      "retained_bytes": 102
+    },
+    {
+      "path": "guest/installed-before.log",
+      "original_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759",
+      "retained_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759",
+      "original_bytes": 87814,
+      "retained_bytes": 87814
+    },
+    {
+      "path": "guest/installed-after.log",
+      "original_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759",
+      "retained_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759",
+      "original_bytes": 87814,
+      "retained_bytes": 87814
+    }
+  ]
+}

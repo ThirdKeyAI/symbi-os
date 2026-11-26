@@ -1,0 +1,55 @@
+2026/11/26 01:45:39 INFO elephant config="using default config"
+time=2026-11-26T01:45:39.454Z level=INFO msg=config "runprefix autodetect"=<empty>
+time=2026-11-26T01:45:39.466Z level=INFO msg=providers loaded=desktopapplications
+time=2026-11-26T01:45:39.466Z level=INFO msg=desktopapplications config="using default config"
+time=2026-11-26T01:45:39.467Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/virt-manager.desktop
+time=2026-11-26T01:45:39.467Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/oo7-portal.desktop
+time=2026-11-26T01:45:39.467Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/ibus-setup-typing-booster.desktop
+time=2026-11-26T01:45:39.467Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/ibus-setup-tb.desktop
+time=2026-11-26T01:45:39.467Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/trivalent.desktop
+time=2026-11-26T01:45:39.467Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/thunar-bulk-rename.desktop
+time=2026-11-26T01:45:39.468Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/thunar-settings.desktop
+time=2026-11-26T01:45:39.468Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/org.pulseaudio.pavucontrol.desktop
+time=2026-11-26T01:45:39.468Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/thunar.desktop
+time=2026-11-26T01:45:39.468Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/org.easycoding.TunedSwitcher.desktop
+time=2026-11-26T01:45:39.468Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/blueman-adapters.desktop
+time=2026-11-26T01:45:39.468Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/blueman-manager.desktop
+time=2026-11-26T01:45:39.468Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/remote-viewer.desktop
+time=2026-11-26T01:45:39.468Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/ibus-setup-libbopomofo.desktop
+time=2026-11-26T01:45:39.468Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/ibus-setup-libpinyin.desktop
+time=2026-11-26T01:45:39.469Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/ibus-setup-hangul.desktop
+time=2026-11-26T01:45:39.469Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/xarchiver.desktop
+time=2026-11-26T01:45:39.469Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/bubblejail-config.desktop
+time=2026-11-26T01:45:39.469Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/imv-dir.desktop
+time=2026-11-26T01:45:39.469Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/imv.desktop
+time=2026-11-26T01:45:39.469Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/org.freedesktop.Xwayland.desktop
+time=2026-11-26T01:45:39.469Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/panel-desktop-handler.desktop
+time=2026-11-26T01:45:39.469Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/panel-preferences.desktop
+time=2026-11-26T01:45:39.469Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/ibus-setup-m17n.desktop
+time=2026-11-26T01:45:39.469Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/geoclue-demo-agent.desktop
+time=2026-11-26T01:45:39.469Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/ibus-setup-chewing.desktop
+time=2026-11-26T01:45:39.469Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/ibus-setup-anthy.desktop
+time=2026-11-26T01:45:39.469Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/gcr-viewer.desktop
+time=2026-11-26T01:45:39.469Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/gcr-prompter.desktop
+time=2026-11-26T01:45:39.469Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/system-config-printer.desktop
+time=2026-11-26T01:45:39.470Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/footclient.desktop
+time=2026-11-26T01:45:39.470Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/foot.desktop
+time=2026-11-26T01:45:39.470Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/foot-server.desktop
+time=2026-11-26T01:45:39.470Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/rofi-theme-selector.desktop
+time=2026-11-26T01:45:39.470Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/rofi.desktop
+time=2026-11-26T01:45:39.470Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/firewall-config.desktop
+time=2026-11-26T01:45:39.470Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/nm-applet.desktop
+time=2026-11-26T01:45:39.470Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/xdg-desktop-portal-gtk.desktop
+time=2026-11-26T01:45:39.470Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/org.freedesktop.IBus.Panel.Emojier.desktop
+time=2026-11-26T01:45:39.470Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/org.freedesktop.IBus.Panel.Wayland.Gtk3.desktop
+time=2026-11-26T01:45:39.470Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/org.freedesktop.IBus.Panel.Extension.Gtk3.desktop
+time=2026-11-26T01:45:39.470Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/org.freedesktop.IBus.Setup.desktop
+time=2026-11-26T01:45:39.470Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/qemu.desktop
+time=2026-11-26T01:45:39.470Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/orca.desktop
+time=2026-11-26T01:45:39.470Z level=DEBUG msg=desktopapplications parse=/usr/share/applications/press.freedom.dangerzone.desktop
+time=2026-11-26T01:45:39.470Z level=INFO msg=elephant startup=17.747054ms
+time=2026-11-26T01:45:39.471Z level=INFO msg=comm listen=starting
+time=2026-11-26T01:45:39.471Z level=INFO msg=desktopapplications files=45 time=4.410916ms
+time=2026-11-26T01:45:39.471Z level=INFO msg=desktopapplications watcher_dirs=1
+time=2026-11-26T01:45:39.471Z level=INFO msg=desktopapplications watcher=started
+time=2026-11-26T01:45:39.471Z level=INFO msg=desktopapplications "desktop files"=45 time=4.700699ms

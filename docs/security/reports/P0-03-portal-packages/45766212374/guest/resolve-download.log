@@ -1,0 +1,385 @@
+Package                            Arch   Version             Repository      Size
+Changing reason:
+ git-core                          x86_64 0:2.56.1-1.fc45     @System     27.7 MiB
+   External User -> User                                                          
+Downgrading:
+ mesa-dri-drivers                  x86_64 0:26.2.7-1.fc45     updates     53.3 MiB
+   replacing mesa-dri-drivers      x86_64 1:26.2.7-2.fc45     <unknown>   53.4 MiB
+ mesa-filesystem                   x86_64 0:26.2.7-1.fc45     updates      3.6 KiB
+   replacing mesa-filesystem       x86_64 1:26.2.7-2.fc45     <unknown>    3.6 KiB
+ mesa-libEGL                       x86_64 0:26.2.7-1.fc45     updates    398.5 KiB
+   replacing mesa-libEGL           x86_64 1:26.2.7-2.fc45     <unknown>  398.5 KiB
+ mesa-libGL                        x86_64 0:26.2.7-1.fc45     updates    378.3 KiB
+   replacing mesa-libGL            x86_64 1:26.2.7-2.fc45     <unknown>  378.3 KiB
+ mesa-libgbm                       x86_64 0:26.2.7-1.fc45     updates     19.5 KiB
+   replacing mesa-libgbm           x86_64 1:26.2.7-2.fc45     <unknown>   19.5 KiB
+ mesa-vulkan-drivers               x86_64 0:26.2.7-1.fc45     updates    174.0 MiB
+   replacing mesa-vulkan-drivers   x86_64 1:26.2.7-2.fc45     <unknown>  176.3 MiB
+Upgrading:
+ at-spi2-atk                       x86_64 0:2.62.2-1.fc45     updates    288.2 KiB
+   replacing at-spi2-atk           x86_64 0:2.62.1-1.fc45     <unknown>  288.2 KiB
+ at-spi2-core                      x86_64 0:2.62.2-1.fc45     updates      1.6 MiB
+   replacing at-spi2-core          x86_64 0:2.62.1-1.fc45     <unknown>    1.6 MiB
+ atk                               x86_64 0:2.62.2-1.fc45     updates    252.6 KiB
+   replacing atk                   x86_64 0:2.62.1-1.fc45     <unknown>  252.6 KiB
+ libdav1d                          x86_64 0:1.5.5-1.fc45      updates      1.8 MiB
+   replacing libdav1d              x86_64 0:1.5.4-1.fc45      <unknown>    1.8 MiB
+Installing:
+ abseil-cpp-devel                  x86_64 0:20260526.0-3.fc45 fedora       4.1 MiB
+ cairo-devel                       x86_64 0:1.18.6-1.fc45     fedora       2.3 MiB
+ cmake                             x86_64 0:4.3.0-7.fc45      updates     40.4 MiB
+ file-devel                        x86_64 0:5.48-3.fc45       fedora      10.3 KiB
+ gcc-c++                           x86_64 0:16.2.1-3.fc45     updates     46.8 MiB
+ glib2-devel                       x86_64 0:2.90.1-1.fc45     updates     15.8 MiB
+ glslang-devel                     x86_64 0:16.3.0-2.fc45     fedora     156.1 MiB
+ gtest-devel                       x86_64 0:1.17.0-3.fc45     fedora       1.1 MiB
+ hwdata-devel                      noarch 0:0.413-1.fc45      updates    210.0   B
+ iniparser-devel                   x86_64 0:4.2.6-5.fc45      fedora     128.9 KiB
+ lcms2-devel                       x86_64 0:2.16-8.fc45       fedora     135.7 KiB
+ libXcursor-devel                  x86_64 0:1.2.3-5.fc45      fedora      20.5 KiB
+ libcanberra-devel                 x86_64 0:0.30-52.fc45      fedora     145.0 KiB
+ libdisplay-info-devel             x86_64 0:0.3.0-2.fc45      fedora     102.4 KiB
+ libdrm-devel                      x86_64 0:2.4.134-2.fc45    fedora     743.6 KiB
+ libeis-devel                      x86_64 0:1.6.0-3.fc45      fedora      51.9 KiB
+ libffi-devel                      x86_64 0:3.5.2-3.fc45      fedora      33.9 KiB
+ libglvnd-devel                    x86_64 1:1.7.0-10.fc45     fedora       2.1 MiB
+ libinput-devel                    x86_64 0:1.32.0-1.fc45     fedora     239.6 KiB
+ libjpeg-turbo-devel               x86_64 0:3.1.4.1-2.fc45    fedora     354.2 KiB
+ libpng-devel                      x86_64 2:1.6.59-1.fc45     updates    906.6 KiB
+ librsvg2-devel                    x86_64 0:2.63.2-2.fc45     fedora       1.0 MiB
+ libseat-devel                     x86_64 0:0.9.3-2.fc45      fedora       5.9 KiB
+ libuuid-devel                     x86_64 0:2.42.4-1.fc45     fedora      41.0 KiB
+ libwebp-devel                     x86_64 0:1.6.0-4.fc45      fedora     121.7 KiB
+ libxcb-devel                      x86_64 0:1.17.0-8.fc45     fedora       2.6 MiB
+ libxkbcommon-devel                x86_64 0:1.13.1-4.fc45     fedora     393.4 KiB
+ libzip-devel                      x86_64 0:1.12.1-1.fc45     updates    257.5 KiB
+ lua-devel                         x86_64 0:5.5.1-2.fc45      fedora      48.4 KiB
+ mesa-libgbm-devel                 x86_64 0:26.2.7-1.fc45     updates     30.1 KiB
+ meson                             noarch 0:1.12.1-3.fc45     updates     14.9 MiB
+ muParser-devel                    x86_64 0:2.3.5-6.fc45      fedora     127.3 KiB
+ ninja-build                       x86_64 0:1.13.2-6.fc45     fedora     497.5 KiB
+ pango-devel                       x86_64 0:1.58.2-1.fc45     fedora       1.5 MiB
+ pipewire-devel                    x86_64 0:1.6.11-1.fc45     updates    994.4 KiB
+ pixman-devel                      x86_64 0:0.46.2-4.fc45     fedora      56.1 KiB
+ pugixml-devel                     x86_64 0:1.16-2.fc45       fedora      68.5 KiB
+ re2-devel                         x86_64 2:20251105-19.fc45  fedora     102.5 KiB
+ readline-devel                    x86_64 0:8.3-6.fc45        fedora     595.7 KiB
+ rpm-build                         x86_64 0:6.1.0-1.fc45      fedora     312.2 KiB
+ sdbus-cpp-devel                   x86_64 0:2.3.1-3.fc45      fedora     315.6 KiB
+ systemd-devel                     x86_64 0:262.1-1.fc45      updates    653.8 KiB
+ tomlplusplus-devel                x86_64 0:3.4.0-8.fc45      fedora     637.5 KiB
+ wayland-devel                     x86_64 0:1.26.0-3.fc45     fedora     724.6 KiB
+ wayland-protocols-devel           noarch 0:1.50-1.fc45       updates      1.0 MiB
+ xcb-util-errors-devel             x86_64 0:1.0.1-8.fc45      fedora       6.6 KiB
+ xcb-util-wm-devel                 x86_64 0:0.4.2-10.fc45     fedora     141.1 KiB
+Installing dependencies:
+ R-srpm-macros                     noarch 0:1.3.7-3.fc45      fedora       3.5 KiB
+ abseil-cpp-testing                x86_64 0:20260526.0-3.fc45 fedora     582.0 KiB
+ add-determinism                   x86_64 0:0.7.3-3.fc45      fedora       2.2 MiB
+ annobin-docs                      noarch 0:13.28-1.fc45      fedora      99.7 KiB
+ annobin-plugin-gcc                x86_64 0:13.28-1.fc45      fedora     709.4 KiB
+ ansible-srpm-macros               noarch 0:1-22.fc45         fedora      35.7 KiB
+ at-spi2-atk-devel                 x86_64 0:2.62.2-1.fc45     updates      1.6 KiB
+ at-spi2-core-devel                x86_64 0:2.62.2-1.fc45     updates      4.5 MiB
+ atk-devel                         x86_64 0:2.62.2-1.fc45     updates      6.0 MiB
+ brotli                            x86_64 0:1.2.1-1.fc45      fedora      33.5 KiB
+ brotli-devel                      x86_64 0:1.2.1-1.fc45      fedora      65.8 KiB
+ build-reproducibility-srpm-macros noarch 0:0.7.3-3.fc45      fedora       1.2 KiB
+ bzip2-devel                       x86_64 0:1.0.8-24.fc45     fedora     309.8 KiB
+ cairo-gobject-devel               x86_64 0:1.18.6-1.fc45     fedora       7.0 KiB
+ cmake-data                        noarch 0:4.3.0-7.fc45      updates      9.4 MiB
+ cmake-rpm-macros                  noarch 0:4.3.0-7.fc45      updates      8.4 KiB
+ cmake-srpm-macros                 noarch 0:4.3.0-7.fc45      updates    524.0   B
+ dbus-devel                        x86_64 1:1.16.4-2.fc45     updates    131.7 KiB
+ debugedit                         x86_64 0:5.4-1.fc45        updates    228.8 KiB
+ dwz                               x86_64 0:0.17-3.fc45       fedora     291.1 KiB
+ efi-srpm-macros                   noarch 0:6-9.fc45          fedora      40.3 KiB
+ elfutils                          x86_64 0:0.197-1.fc45      updates      3.1 MiB
+ erlang-srpm-macros                noarch 0:0.4.2-1.fc45      updates      2.0 KiB
+ filesystem-srpm-macros            noarch 0:3.18-59.fc45      fedora      38.2 KiB
+ fontconfig-devel                  x86_64 0:2.18.3-2.fc45     fedora     127.7 KiB
+ fonts-srpm-macros                 noarch 1:5.0.0-4.fc45      fedora      55.8 KiB
+ forge-srpm-macros                 noarch 0:0.4.0-5.fc45      fedora      38.9 KiB
+ fpc-srpm-macros                   noarch 0:1.3-17.fc45       fedora     144.0   B
+ freetype-devel                    x86_64 0:2.14.3-3.fc45     updates      8.6 MiB
+ fribidi-devel                     x86_64 0:1.0.18-1.fc45     updates     78.3 KiB
+ gap-srpm-macros                   noarch 0:2-3.fc45          fedora       2.1 KiB
+ gcc-plugin-annobin                x86_64 0:16.2.1-3.fc45     updates     57.0 KiB
+ gdb-minimal                       x86_64 0:18.1-1.fc45       updates     14.4 MiB
+ gdk-pixbuf2-devel                 x86_64 0:2.44.8-3.fc45     fedora       2.2 MiB
+ ghc-srpm-macros                   noarch 0:1.10-2.fc45       fedora     792.0   B
+ glslang                           x86_64 0:16.3.0-2.fc45     fedora       3.6 MiB
+ glycin-devel                      x86_64 0:2.2.6-1.fc45      updates    151.6 KiB
+ gmock                             x86_64 0:1.17.0-3.fc45     fedora     142.8 KiB
+ gnat-srpm-macros                  noarch 0:7-3.fc45          fedora       1.0 KiB
+ gnome-srpm-macros                 noarch 0:1.0-2.fc45        fedora       3.5 KiB
+ go-srpm-macros                    noarch 0:3.8.0-3.fc45      fedora      61.9 KiB
+ gpgverify                         noarch 0:2.2-5.fc45        fedora       8.7 KiB
+ graphite2-devel                   x86_64 0:1.3.14-22.fc45    fedora      49.3 KiB
+ gtest                             x86_64 0:1.17.0-3.fc45     fedora     513.3 KiB
+ gtk2                              x86_64 0:2.24.33-28.fc45   fedora      13.0 MiB
+ gtk2-devel                        x86_64 0:2.24.33-28.fc45   fedora      23.8 MiB
+ gtk3-devel                        x86_64 0:3.24.52-6.fc45    fedora      34.5 MiB
+ harfbuzz-cairo                    x86_64 0:15.0.0-2.fc45     updates     52.1 KiB
+ harfbuzz-devel                    x86_64 0:15.0.0-2.fc45     updates      6.6 MiB
+ harfbuzz-gpu                      x86_64 0:15.0.0-2.fc45     updates    176.2 KiB
+ harfbuzz-raster                   x86_64 0:15.0.0-2.fc45     updates    120.5 KiB
+ harfbuzz-vector                   x86_64 0:15.0.0-2.fc45     updates    117.3 KiB
+ ibus-gtk2                         x86_64 0:1.5.35-2.fc45     updates     43.9 KiB
+ iniparser                         x86_64 0:4.2.6-5.fc45      fedora      37.5 KiB
+ java-srpm-macros                  noarch 0:1-9.fc45          fedora     870.0   B
+ kernel-srpm-macros                noarch 0:1.0-30.fc45       fedora       1.9 KiB
+ libGLEW                           x86_64 0:2.2.0-13.fc45     fedora     760.3 KiB
+ libX11-devel                      x86_64 0:1.8.13-3.fc45     fedora       1.0 MiB
+ libXau-devel                      x86_64 0:1.0.12-5.fc45     fedora       7.3 KiB
+ libXcomposite-devel               x86_64 0:0.4.6-8.fc45      fedora       7.6 KiB
+ libXdamage-devel                  x86_64 0:1.1.6-8.fc45      fedora       2.5 KiB
+ libXext-devel                     x86_64 0:1.3.6-6.fc45      fedora      97.7 KiB
+ libXfixes-devel                   x86_64 0:6.0.1-8.fc45      fedora       9.2 KiB
+ libXft-devel                      x86_64 0:2.3.8-11.fc45     fedora      29.1 KiB
+ libXi-devel                       x86_64 0:1.8.4-1.fc45      updates    131.9 KiB
+ libXinerama-devel                 x86_64 0:1.1.5-11.fc45     fedora       6.9 KiB
+ libXrandr-devel                   x86_64 0:1.5.4-8.fc45      fedora      21.3 KiB
+ libXrender-devel                  x86_64 0:0.9.12-5.fc45     fedora      50.1 KiB
+ libXtst-devel                     x86_64 0:1.2.5-5.fc45      fedora      11.2 KiB
+ libblkid-devel                    x86_64 0:2.42.4-1.fc45     fedora      45.0 KiB
+ libcanberra-gtk2                  x86_64 0:0.30-52.fc45      fedora      54.0 KiB
+ libcloudproviders-devel           x86_64 0:0.4.1-1.fc45      fedora       1.3 MiB
+ libdatrie-devel                   x86_64 0:0.2.14-3.fc45     fedora     411.3 KiB
+ libdav1d-devel                    x86_64 0:1.5.5-1.fc45      updates     41.9 KiB
+ libeis                            x86_64 0:1.6.0-3.fc45      fedora     127.4 KiB
+ libepoxy-devel                    x86_64 0:1.5.10-13.fc45    fedora       1.6 MiB
+ libglvnd-core-devel               x86_64 1:1.7.0-10.fc45     fedora      40.3 KiB
+ libicu-devel                      x86_64 0:78.3-9.fc45       updates      5.2 MiB
+ libmount-devel                    x86_64 0:2.42.4-1.fc45     fedora      66.5 KiB
+ libpciaccess-devel                x86_64 0:0.16-18.fc45      fedora      15.3 KiB
+ libseccomp-devel                  x86_64 0:2.6.1-3.fc45      fedora     115.6 KiB
+ libselinux-devel                  x86_64 0:3.11-5.fc45       fedora     121.9 KiB
+ libsepol-devel                    x86_64 0:3.11-2.fc45       fedora     120.7 KiB
+ libstdc++-devel                   x86_64 0:16.2.1-3.fc45     updates     41.3 MiB
+ libthai-devel                     x86_64 0:0.1.30-3.fc45     fedora     510.5 KiB
+ libxml2-devel                     x86_64 0:2.15.4-1.fc45     fedora       6.7 MiB
+ linkdupes                         x86_64 0:0.7.3-3.fc45      fedora     782.1 KiB
+ lua                               x86_64 0:5.5.1-2.fc45      fedora     636.1 KiB
+ lua-rpm-macros                    noarch 0:1-18.fc45         fedora       1.8 KiB
+ lua-srpm-macros                   noarch 0:1-18.fc45         fedora       1.3 KiB
+ lzo-devel                         x86_64 0:2.10-17.fc45      fedora     212.2 KiB
+ lzo-minilzo                       x86_64 0:2.10-17.fc45      fedora      36.5 KiB
+ meson-srpm-macros                 noarch 0:1.12.1-3.fc45     updates      1.7 KiB
+ muParser                          x86_64 0:2.3.5-6.fc45      fedora     563.4 KiB
+ ncurses-c++-libs                  x86_64 0:6.6-3.fc45        fedora     153.4 KiB
+ ncurses-devel                     x86_64 0:6.6-3.fc45        fedora     895.6 KiB
+ ocaml-srpm-macros                 noarch 0:11-4.fc45         fedora       1.9 KiB
+ openblas-srpm-macros              noarch 0:2-22.fc45         fedora     112.0   B
+ package-notes-srpm-macros         noarch 0:0.20-2.fc45       fedora       1.6 KiB
+ pcre2-devel                       x86_64 0:10.49-1.fc45      updates      2.1 MiB
+ perl-srpm-macros                  noarch 0:1-65.fc45         fedora     861.0   B
+ pyproject-srpm-macros             noarch 0:1.24.0-1.fc45     updates      3.4 KiB
+ python-srpm-macros                noarch 0:3.15-2.fc45       fedora      51.6 KiB
+ qt5-srpm-macros                   noarch 0:5.15.18-3.fc45    fedora     500.0   B
+ qt6-srpm-macros                   noarch 0:6.11.2-1.fc45     fedora     472.0   B
+ redhat-rpm-config                 noarch 0:345-5.fc45        updates    184.2 KiB
+ rhash                             x86_64 0:1.4.5-5.fc45      fedora     354.8 KiB
+ rust-srpm-macros                  noarch 0:28.5-2.fc45       fedora       5.5 KiB
+ sysprof-capture-devel             x86_64 0:51.0-1.fc45       fedora     852.8 KiB
+ systemd-rpm-macros                noarch 0:262.1-1.fc45      updates      8.5 KiB
+ tomlplusplus                      x86_64 0:3.4.0-8.fc45      fedora     262.1 KiB
+ tree-sitter-srpm-macros           noarch 0:0.4.6-2.fc45      fedora       8.6 KiB
+ xorg-x11-proto-devel              noarch 0:2025.1-3.fc45     fedora       1.8 MiB
+ xz-devel                          x86_64 1:5.8.3-2.fc45      fedora     258.8 KiB
+ zig-srpm-macros                   noarch 0:1-9.fc45          fedora       1.3 KiB
+ zlib-ng-compat-devel              x86_64 0:2.3.3-6.fc45      fedora     107.0 KiB
+
+Transaction Summary:
+ Installing:       163 packages
+ Upgrading:          4 packages
+ Replacing:         10 packages
+ Downgrading:        6 packages
+ Changing reason:    1 package
+
+No matches were found for the following plugin name patterns while disabling libdnf plugins: *
+Updating and loading repositories:
+ Fedora 45 - x86_64 - Updates           100% |   8.5 MiB/s |  19.3 MiB |  00m02s
+ Fedora 45 - x86_64                     100% |   6.4 MiB/s |  71.8 MiB |  00m11s
+Repositories loaded.
+Package "git-core-2.56.1-1.fc45.x86_64" is already installed.
+
+Total size of inbound packages is 146 MiB. Need to download 146 MiB.
+After this operation, 501 MiB extra will be used (install 736 MiB, remove 234 MiB).
+The operation will only download packages for the transaction.
+[  1/173] ninja-build-0:1.13.2-6.fc45.x 100% | 681.6 KiB/s | 203.1 KiB |  00m00s
+[  2/173] rpm-build-0:6.1.0-1.fc45.x86_ 100% |   1.6 MiB/s | 158.1 KiB |  00m00s
+[  3/173] gcc-c++-0:16.2.1-3.fc45.x86_6 100% |   4.8 MiB/s |  17.3 MiB |  00m04s
+[  4/173] cmake-0:4.3.0-7.fc45.x86_64   100% |   4.8 MiB/s |  14.4 MiB |  00m03s
+[  5/173] cmake-rpm-macros-0:4.3.0-7.fc 100% | 135.5 KiB/s |  13.7 KiB |  00m00s
+[  6/173] cmake-data-0:4.3.0-7.fc45.noa 100% |   4.4 MiB/s |   2.7 MiB |  00m01s
+[  7/173] rhash-0:1.4.5-5.fc45.x86_64   100% | 636.1 KiB/s | 201.7 KiB |  00m00s
+[  8/173] meson-0:1.12.1-3.fc45.noarch  100% |   4.5 MiB/s |   2.7 MiB |  00m01s
+[  9/173] meson-srpm-macros-0:1.12.1-3. 100% | 233.5 KiB/s |  11.9 KiB |  00m00s
+[ 10/173] glslang-devel-0:16.3.0-2.fc45 100% |   4.9 MiB/s |  21.4 MiB |  00m04s
+[ 11/173] glslang-0:16.3.0-2.fc45.x86_6 100% |   2.5 MiB/s |   1.2 MiB |  00m00s
+[ 12/173] libxkbcommon-devel-0:1.13.1-4 100% | 991.0 KiB/s |  74.3 KiB |  00m00s
+[ 13/173] libuuid-devel-0:2.42.4-1.fc45 100% | 490.0 KiB/s |  32.8 KiB |  00m00s
+[ 14/173] wayland-devel-0:1.26.0-3.fc45 100% |   1.7 MiB/s | 161.3 KiB |  00m00s
+[ 15/173] wayland-protocols-devel-0:1.5 100% | 761.5 KiB/s | 188.1 KiB |  00m00s
+[ 16/173] cairo-devel-0:1.18.6-1.fc45.x 100% |   1.9 MiB/s | 191.7 KiB |  00m00s
+[ 17/173] pango-devel-0:1.58.2-1.fc45.x 100% |   1.7 MiB/s | 163.9 KiB |  00m00s
+[ 18/173] fontconfig-devel-0:2.18.3-2.f 100% |   1.9 MiB/s | 194.2 KiB |  00m00s
+[ 19/173] pixman-devel-0:0.46.2-4.fc45. 100% | 277.1 KiB/s |  17.7 KiB |  00m00s
+[ 20/173] libXcursor-devel-0:1.2.3-5.fc 100% | 452.8 KiB/s |  39.4 KiB |  00m00s
+[ 21/173] xorg-x11-proto-devel-0:2025.1 100% |   2.4 MiB/s | 302.2 KiB |  00m00s
+[ 22/173] libdrm-devel-0:2.4.134-2.fc45 100% |   1.9 MiB/s | 187.7 KiB |  00m00s
+[ 23/173] libinput-devel-0:1.32.0-1.fc4 100% | 523.1 KiB/s |  43.9 KiB |  00m00s
+[ 24/173] libeis-devel-0:1.6.0-3.fc45.x 100% | 281.2 KiB/s |  20.2 KiB |  00m00s
+[ 25/173] libeis-0:1.6.0-3.fc45.x86_64  100% | 809.4 KiB/s |  58.3 KiB |  00m00s
+[ 26/173] mesa-libgbm-devel-0:26.2.7-1. 100% | 359.3 KiB/s |  20.1 KiB |  00m00s
+[ 27/173] glib2-devel-0:2.90.1-1.fc45.x 100% |   4.2 MiB/s |   1.5 MiB |  00m00s
+[ 28/173] re2-devel-2:20251105-19.fc45. 100% | 453.5 KiB/s |  38.5 KiB |  00m00s
+[ 29/173] muParser-devel-0:2.3.5-6.fc45 100% | 382.8 KiB/s |  31.0 KiB |  00m00s
+[ 30/173] muParser-0:2.3.5-6.fc45.x86_6 100% |   1.7 MiB/s | 181.1 KiB |  00m00s
+[ 31/173] lcms2-devel-0:2.16-8.fc45.x86 100% | 422.4 KiB/s |  31.7 KiB |  00m00s
+[ 32/173] libcanberra-devel-0:0.30-52.f 100% | 422.9 KiB/s |  30.9 KiB |  00m00s
+[ 33/173] libcanberra-gtk2-0:0.30-52.fc 100% | 336.0 KiB/s |  25.2 KiB |  00m00s
+[ 34/173] gtk2-0:2.24.33-28.fc45.x86_64 100% |   4.5 MiB/s |   3.4 MiB |  00m01s
+[ 35/173] lua-devel-0:5.5.1-2.fc45.x86_ 100% | 285.6 KiB/s |  22.0 KiB |  00m00s
+[ 36/173] lua-rpm-macros-0:1-18.fc45.no 100% | 131.0 KiB/s |   9.2 KiB |  00m00s
+[ 37/173] lua-0:5.5.1-2.fc45.x86_64     100% |   1.8 MiB/s | 209.1 KiB |  00m00s
+[ 38/173] lua-srpm-macros-0:1-18.fc45.n 100% | 142.4 KiB/s |   8.7 KiB |  00m00s
+[ 39/173] libseat-devel-0:0.9.3-2.fc45. 100% | 138.0 KiB/s |  10.5 KiB |  00m00s
+[ 40/173] systemd-devel-0:262.1-1.fc45. 100% |   3.7 MiB/s | 763.4 KiB |  00m00s
+[ 41/173] systemd-rpm-macros-0:262.1-1. 100% | 391.4 KiB/s |  21.1 KiB |  00m00s
+[ 42/173] libdisplay-info-devel-0:0.3.0 100% | 368.5 KiB/s |  30.2 KiB |  00m00s
+[ 43/173] hwdata-devel-0:0.413-1.fc45.n 100% | 178.7 KiB/s |   8.9 KiB |  00m00s
+[ 44/173] libzip-devel-0:1.12.1-1.fc45. 100% |   2.5 MiB/s | 252.3 KiB |  00m00s
+[ 45/173] librsvg2-devel-0:2.63.2-2.fc4 100% |   1.2 MiB/s | 116.9 KiB |  00m00s
+[ 46/173] tomlplusplus-devel-0:3.4.0-8. 100% |   1.1 MiB/s | 111.6 KiB |  00m00s
+[ 47/173] tomlplusplus-0:3.4.0-8.fc45.x 100% |   1.1 MiB/s | 106.3 KiB |  00m00s
+[ 48/173] libjpeg-turbo-devel-0:3.1.4.1 100% |   1.2 MiB/s |  97.4 KiB |  00m00s
+[ 49/173] libwebp-devel-0:1.6.0-4.fc45. 100% | 470.6 KiB/s |  39.1 KiB |  00m00s
+[ 50/173] file-devel-0:5.48-3.fc45.x86_ 100% | 196.4 KiB/s |  16.3 KiB |  00m00s
+[ 51/173] libpng-devel-2:1.6.59-1.fc45. 100% |   2.7 MiB/s | 303.3 KiB |  00m00s
+[ 52/173] zlib-ng-compat-devel-0:2.3.3- 100% | 548.2 KiB/s |  37.8 KiB |  00m00s
+[ 53/173] pugixml-devel-0:1.16-2.fc45.x 100% | 309.9 KiB/s |  23.6 KiB |  00m00s
+[ 54/173] libglvnd-devel-1:1.7.0-10.fc4 100% |   1.7 MiB/s | 162.0 KiB |  00m00s
+[ 55/173] libX11-devel-0:1.8.13-3.fc45. 100% |   3.8 MiB/s |   1.1 MiB |  00m00s
+[ 56/173] libglvnd-core-devel-1:1.7.0-1 100% | 259.4 KiB/s |  17.1 KiB |  00m00s
+[ 57/173] libxcb-devel-0:1.17.0-8.fc45. 100% |   4.1 MiB/s |   1.5 MiB |  00m00s
+[ 58/173] xcb-util-wm-devel-0:0.4.2-10. 100% | 316.1 KiB/s |  23.4 KiB |  00m00s
+[ 59/173] xcb-util-errors-devel-0:1.0.1 100% | 151.6 KiB/s |  10.2 KiB |  00m00s
+[ 60/173] gtest-devel-0:1.17.0-3.fc45.x 100% |   2.0 MiB/s | 257.2 KiB |  00m00s
+[ 61/173] gtest-0:1.17.0-3.fc45.x86_64  100% |   1.8 MiB/s | 191.9 KiB |  00m00s
+[ 62/173] readline-devel-0:8.3-6.fc45.x 100% |   1.7 MiB/s | 218.9 KiB |  00m00s
+[ 63/173] libffi-devel-0:3.5.2-3.fc45.x 100% | 440.5 KiB/s |  29.5 KiB |  00m00s
+[ 64/173] pipewire-devel-0:1.6.11-1.fc4 100% |   2.4 MiB/s | 238.1 KiB |  00m00s
+[ 65/173] sdbus-cpp-devel-0:2.3.1-3.fc4 100% | 761.1 KiB/s |  61.7 KiB |  00m00s
+[ 66/173] iniparser-devel-0:4.2.6-5.fc4 100% | 552.0 KiB/s |  44.2 KiB |  00m00s
+[ 67/173] iniparser-0:4.2.6-5.fc45.x86_ 100% | 391.7 KiB/s |  25.8 KiB |  00m00s
+[ 68/173] abseil-cpp-devel-0:20260526.0 100% |   3.5 MiB/s | 925.0 KiB |  00m00s
+[ 69/173] abseil-cpp-testing-0:20260526 100% |   1.7 MiB/s | 178.0 KiB |  00m00s
+[ 70/173] gmock-0:1.17.0-3.fc45.x86_64  100% | 764.9 KiB/s |  66.5 KiB |  00m00s
+[ 71/173] debugedit-0:5.4-1.fc45.x86_64 100% |   1.3 MiB/s |  87.9 KiB |  00m00s
+[ 72/173] dwz-0:0.17-3.fc45.x86_64      100% |   1.5 MiB/s | 139.2 KiB |  00m00s
+[ 73/173] elfutils-0:0.197-1.fc45.x86_6 100% |   3.5 MiB/s | 625.4 KiB |  00m00s
+[ 74/173] redhat-rpm-config-0:345-5.fc4 100% |   1.2 MiB/s |  78.1 KiB |  00m00s
+[ 75/173] R-srpm-macros-0:1.3.7-3.fc45. 100% | 182.8 KiB/s |  11.1 KiB |  00m00s
+[ 76/173] ansible-srpm-macros-0:1-22.fc 100% | 239.1 KiB/s |  19.8 KiB |  00m00s
+[ 77/173] build-reproducibility-srpm-ma 100% | 177.6 KiB/s |  10.8 KiB |  00m00s
+[ 78/173] efi-srpm-macros-0:6-9.fc45.no 100% | 329.9 KiB/s |  21.4 KiB |  00m00s
+[ 79/173] filesystem-srpm-macros-0:3.18 100% | 400.1 KiB/s |  26.4 KiB |  00m00s
+[ 80/173] fonts-srpm-macros-1:5.0.0-4.f 100% | 405.3 KiB/s |  27.2 KiB |  00m00s
+[ 81/173] forge-srpm-macros-0:0.4.0-5.f 100% | 308.3 KiB/s |  19.7 KiB |  00m00s
+[ 82/173] fpc-srpm-macros-0:1.3-17.fc45 100% | 127.3 KiB/s |   7.8 KiB |  00m00s
+[ 83/173] gap-srpm-macros-0:2-3.fc45.no 100% | 147.7 KiB/s |   9.3 KiB |  00m00s
+[ 84/173] ghc-srpm-macros-0:1.10-2.fc45 100% | 139.2 KiB/s |   8.5 KiB |  00m00s
+[ 85/173] gnat-srpm-macros-0:7-3.fc45.n 100% | 140.5 KiB/s |   8.6 KiB |  00m00s
+[ 86/173] gnome-srpm-macros-0:1.0-2.fc4 100% | 144.7 KiB/s |   8.8 KiB |  00m00s
+[ 87/173] go-srpm-macros-0:3.8.0-3.fc45 100% | 421.3 KiB/s |  27.8 KiB |  00m00s
+[ 88/173] java-srpm-macros-0:1-9.fc45.n 100% | 135.8 KiB/s |   8.3 KiB |  00m00s
+[ 89/173] kernel-srpm-macros-0:1.0-30.f 100% | 135.9 KiB/s |   8.3 KiB |  00m00s
+[ 90/173] ocaml-srpm-macros-0:11-4.fc45 100% | 146.7 KiB/s |   9.0 KiB |  00m00s
+[ 91/173] openblas-srpm-macros-0:2-22.f 100% | 123.1 KiB/s |   7.5 KiB |  00m00s
+[ 92/173] package-notes-srpm-macros-0:0 100% | 159.1 KiB/s |  10.5 KiB |  00m00s
+[ 93/173] perl-srpm-macros-0:1-65.fc45. 100% | 136.9 KiB/s |   8.4 KiB |  00m00s
+[ 94/173] python-srpm-macros-0:3.15-2.f 100% | 367.0 KiB/s |  23.9 KiB |  00m00s
+[ 95/173] qt5-srpm-macros-0:5.15.18-3.f 100% | 132.2 KiB/s |   8.1 KiB |  00m00s
+[ 96/173] qt6-srpm-macros-0:6.11.2-1.fc 100% | 148.8 KiB/s |   9.1 KiB |  00m00s
+[ 97/173] rust-srpm-macros-0:28.5-2.fc4 100% | 186.4 KiB/s |  11.4 KiB |  00m00s
+[ 98/173] tree-sitter-srpm-macros-0:0.4 100% |  78.2 KiB/s |  14.0 KiB |  00m00s
+[ 99/173] zig-srpm-macros-0:1-9.fc45.no 100% | 144.5 KiB/s |   8.8 KiB |  00m00s
+[100/173] add-determinism-0:0.7.3-3.fc4 100% |   2.8 MiB/s | 845.7 KiB |  00m00s
+[101/173] linkdupes-0:0.7.3-3.fc45.x86_ 100% |   2.6 MiB/s | 339.2 KiB |  00m00s
+[102/173] ncurses-devel-0:6.6-3.fc45.x8 100% |   3.0 MiB/s | 605.8 KiB |  00m00s
+[103/173] ncurses-c++-libs-0:6.6-3.fc45 100% | 453.5 KiB/s |  38.5 KiB |  00m00s
+[104/173] libicu-devel-0:78.3-9.fc45.x8 100% |   1.9 MiB/s | 810.0 KiB |  00m00s
+[105/173] freetype-devel-0:2.14.3-3.fc4 100% |   3.8 MiB/s |   1.0 MiB |  00m00s
+[106/173] fribidi-devel-0:1.0.18-1.fc45 100% | 447.4 KiB/s |  29.1 KiB |  00m00s
+[107/173] harfbuzz-devel-0:15.0.0-2.fc4 100% |   3.4 MiB/s | 648.7 KiB |  00m00s
+[108/173] harfbuzz-cairo-0:15.0.0-2.fc4 100% | 473.4 KiB/s |  30.8 KiB |  00m00s
+[109/173] harfbuzz-gpu-0:15.0.0-2.fc45. 100% | 752.1 KiB/s |  52.6 KiB |  00m00s
+[110/173] harfbuzz-raster-0:15.0.0-2.fc 100% | 885.9 KiB/s |  67.3 KiB |  00m00s
+[111/173] harfbuzz-vector-0:15.0.0-2.fc 100% | 843.9 KiB/s |  59.9 KiB |  00m00s
+[112/173] libGLEW-0:2.2.0-13.fc45.x86_6 100% |   1.8 MiB/s | 171.2 KiB |  00m00s
+[113/173] libXft-devel-0:2.3.8-11.fc45. 100% | 693.5 KiB/s |  49.2 KiB |  00m00s
+[114/173] libXrender-devel-0:0.9.12-5.f 100% | 295.2 KiB/s |  18.9 KiB |  00m00s
+[115/173] libthai-devel-0:0.1.30-3.fc45 100% |   1.0 MiB/s |  81.1 KiB |  00m00s
+[116/173] libXau-devel-0:1.0.12-5.fc45. 100% | 227.5 KiB/s |  13.9 KiB |  00m00s
+[117/173] libdatrie-devel-0:0.2.14-3.fc 100% |   1.1 MiB/s |  90.4 KiB |  00m00s
+[118/173] libdav1d-devel-0:1.5.5-1.fc45 100% | 304.4 KiB/s |  19.2 KiB |  00m00s
+[119/173] cairo-gobject-devel-0:1.18.6- 100% | 134.5 KiB/s |  10.9 KiB |  00m00s
+[120/173] gdk-pixbuf2-devel-0:2.44.8-3. 100% |   2.3 MiB/s | 370.1 KiB |  00m00s
+[121/173] libpciaccess-devel-0:0.16-18. 100% | 202.6 KiB/s |  12.4 KiB |  00m00s
+[122/173] gtk2-devel-0:2.24.33-28.fc45. 100% |   4.4 MiB/s |   2.8 MiB |  00m01s
+[123/173] gtk3-devel-0:3.24.52-6.fc45.x 100% |   4.5 MiB/s |   4.3 MiB |  00m01s
+[124/173] libXfixes-devel-0:6.0.1-8.fc4 100% | 203.7 KiB/s |  12.4 KiB |  00m00s
+[125/173] at-spi2-atk-devel-0:2.62.2-1. 100% |  55.6 KiB/s |  11.9 KiB |  00m00s
+[126/173] atk-devel-0:2.62.2-1.fc45.x86 100% |   1.6 MiB/s | 449.2 KiB |  00m00s
+[127/173] libXi-devel-0:1.8.4-1.fc45.x8 100% |   1.6 MiB/s | 121.4 KiB |  00m00s
+[128/173] libXcomposite-devel-0:0.4.6-8 100% | 246.2 KiB/s |  15.8 KiB |  00m00s
+[129/173] libXdamage-devel-0:1.1.6-8.fc 100% | 100.4 KiB/s |   9.3 KiB |  00m00s
+[130/173] libXext-devel-0:1.3.6-6.fc45. 100% |   1.1 MiB/s |  88.4 KiB |  00m00s
+[131/173] libXinerama-devel-0:1.1.5-11. 100% | 215.4 KiB/s |  13.1 KiB |  00m00s
+[132/173] libXrandr-devel-0:1.5.4-8.fc4 100% | 300.5 KiB/s |  19.2 KiB |  00m00s
+[133/173] libcloudproviders-devel-0:0.4 100% |   1.3 MiB/s | 122.7 KiB |  00m00s
+[134/173] libepoxy-devel-0:1.5.10-13.fc 100% |   1.2 MiB/s | 132.9 KiB |  00m00s
+[135/173] glycin-devel-0:2.2.6-1.fc45.x 100% | 494.4 KiB/s |  27.7 KiB |  00m00s
+[136/173] lzo-devel-0:2.10-17.fc45.x86_ 100% | 574.7 KiB/s |  39.1 KiB |  00m00s
+[137/173] lzo-minilzo-0:2.10-17.fc45.x8 100% | 368.6 KiB/s |  24.3 KiB |  00m00s
+[138/173] cmake-srpm-macros-0:4.3.0-7.f 100% | 206.0 KiB/s |  10.3 KiB |  00m00s
+[139/173] erlang-srpm-macros-0:0.4.2-1. 100% | 200.6 KiB/s |  10.0 KiB |  00m00s
+[140/173] pyproject-srpm-macros-0:1.24. 100% | 308.0 KiB/s |  15.4 KiB |  00m00s
+[141/173] graphite2-devel-0:1.3.14-22.f 100% | 319.5 KiB/s |  20.4 KiB |  00m00s
+[142/173] libseccomp-devel-0:2.6.1-3.fc 100% | 900.4 KiB/s |  66.6 KiB |  00m00s
+[143/173] pcre2-devel-0:10.49-1.fc45.x8 100% |   3.4 MiB/s | 561.6 KiB |  00m00s
+[144/173] libmount-devel-0:2.42.4-1.fc4 100% | 382.8 KiB/s |  25.6 KiB |  00m00s
+[145/173] libselinux-devel-0:3.11-5.fc4 100% |   1.7 MiB/s | 160.7 KiB |  00m00s
+[146/173] libsepol-devel-0:3.11-2.fc45. 100% | 690.4 KiB/s |  48.3 KiB |  00m00s
+[147/173] sysprof-capture-devel-0:51.0- 100% |   1.8 MiB/s | 182.7 KiB |  00m00s
+[148/173] libstdc++-devel-0:16.2.1-3.fc 100% |   4.8 MiB/s |   6.0 MiB |  00m01s
+[149/173] brotli-devel-0:1.2.1-1.fc45.x 100% | 509.3 KiB/s |  34.6 KiB |  00m00s
+[150/173] brotli-0:1.2.1-1.fc45.x86_64  100% | 364.5 KiB/s |  24.1 KiB |  00m00s
+[151/173] bzip2-devel-0:1.0.8-24.fc45.x 100% |   2.0 MiB/s | 213.5 KiB |  00m00s
+[152/173] at-spi2-core-devel-0:2.62.2-1 100% |   2.9 MiB/s | 362.6 KiB |  00m00s
+[153/173] dbus-devel-1:1.16.4-2.fc45.x8 100% | 688.3 KiB/s |  39.2 KiB |  00m00s
+[154/173] libblkid-devel-0:2.42.4-1.fc4 100% | 369.4 KiB/s |  24.4 KiB |  00m00s
+[155/173] libXtst-devel-0:1.2.5-5.fc45. 100% | 210.2 KiB/s |  15.8 KiB |  00m00s
+[156/173] gdb-minimal-0:18.1-1.fc45.x86 100% |   4.7 MiB/s |   4.8 MiB |  00m01s
+[157/173] libxml2-devel-0:2.15.4-1.fc45 100% |   3.1 MiB/s | 536.4 KiB |  00m00s
+[158/173] xz-devel-1:5.8.3-2.fc45.x86_6 100% | 897.4 KiB/s |  66.4 KiB |  00m00s
+[159/173] gcc-plugin-annobin-0:16.2.1-3 100% |   1.0 MiB/s |  62.7 KiB |  00m00s
+[160/173] annobin-plugin-gcc-0:13.28-1. 100% |   3.4 MiB/s | 695.3 KiB |  00m00s
+[161/173] annobin-docs-0:13.28-1.fc45.n 100% |   1.1 MiB/s |  87.3 KiB |  00m00s
+[162/173] gpgverify-0:2.2-5.fc45.noarch 100% | 182.4 KiB/s |  11.3 KiB |  00m00s
+[163/173] ibus-gtk2-0:1.5.35-2.fc45.x86 100% | 578.5 KiB/s |  33.0 KiB |  00m00s
+[164/173] libdav1d-0:1.5.5-1.fc45.x86_6 100% |   3.6 MiB/s | 665.7 KiB |  00m00s
+[165/173] at-spi2-atk-0:2.62.2-1.fc45.x 100% |   1.3 MiB/s |  90.0 KiB |  00m00s
+[166/173] at-spi2-core-0:2.62.2-1.fc45. 100% |   3.0 MiB/s | 401.8 KiB |  00m00s
+[167/173] atk-0:2.62.2-1.fc45.x86_64    100% |   1.2 MiB/s |  83.0 KiB |  00m00s
+[168/173] mesa-libgbm-0:26.2.7-1.fc45.x 100% | 389.3 KiB/s |  21.0 KiB |  00m00s
+[169/173] mesa-libEGL-0:26.2.7-1.fc45.x 100% |   1.8 MiB/s | 146.5 KiB |  00m00s
+[170/173] mesa-dri-drivers-0:26.2.7-1.f 100% |   4.9 MiB/s |  13.9 MiB |  00m03s
+[171/173] mesa-libGL-0:26.2.7-1.fc45.x8 100% | 648.3 KiB/s | 144.6 KiB |  00m00s
+[172/173] mesa-filesystem-0:26.2.7-1.fc 100% | 283.5 KiB/s |  15.0 KiB |  00m00s
+[173/173] mesa-vulkan-drivers-0:26.2.7- 100% |   4.9 MiB/s |  27.7 MiB |  00m06s
+--------------------------------------------------------------------------------
+[173/173] Total                         100% |   3.4 MiB/s | 146.0 MiB |  00m43s
+Complete!

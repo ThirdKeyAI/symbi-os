@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "version": "1.17.1",
+  "revision": "d01e723ae9480fa53aa9db09a7eff0439548e9f6",
+  "sources": [
+    {
+      "path": "crates/lib/src/status.rs",
+      "git_blob": "4525f60c711d404e077c8bb4a0b2b98b8c8f25cd",
+      "url": "https://github.com/bootc-dev/bootc/blob/d01e723ae9480fa53aa9db09a7eff0439548e9f6/crates/lib/src/status.rs"
+    },
+    {
+      "path": "crates/lib/src/cli.rs",
+      "git_blob": "0a7c0e5987cd1888375f4c75f68fd4e1927d6d5f",
+      "url": "https://github.com/bootc-dev/bootc/blob/d01e723ae9480fa53aa9db09a7eff0439548e9f6/crates/lib/src/cli.rs"
+    }
+  ],
+  "observed_run": 45831330164,
+  "observed_error": "Status: Preparing for write: Ensuring mountns: Reading /proc/1/ns/mnt: Permission denied (os error 13)",
+  "analysis": "status() calls get_host(); when Environment::needs_mount_namespace() is true, get_host calls prepare_for_write(). ensure_self_unshared_mount_namespace() reads /proc/1/ns/mnt before comparing it with /proc/self/ns/mnt. The collector already has a private mount namespace, but that does not bypass the read. The retained journal proves this operation failed, not which kernel/LSM check denied access.",
+  "status_lines": [
+    446,
+    454,
+    483,
+    490
+  ],
+  "cli_lines": [
+    1117,
+    1130
+  ],
+  "capabilities_changed": false,
+  "selinux_changed": false,
+  "boot_acceptance_relaxed": false
+}

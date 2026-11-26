@@ -1,0 +1,9 @@
+{
+  "gitVersion": "v3.1.5",
+  "gitCommit": "e5a0818ca5729481095773409e9c1b60cc278e8d",
+  "gitTreeState": "clean",
+  "buildDate": "2026-11-24T15:15:07Z",
+  "goVersion": "go1.27.3",
+  "compiler": "gc",
+  "platform": "linux/amd64"
+}

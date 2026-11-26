@@ -1,0 +1,39 @@
+@define-color background #1a1b26;
+@define-color base #1a1b26;
+@define-color text #a9b1d6;
+@define-color selected-text #1a1b26;
+@define-color accent #7aa2f7;
+@define-color border #414868;
+@define-color urgent #f7768e;
+
+* {
+  all: unset;
+  color: @text;
+  font-family: "JetBrainsMono Nerd Font", monospace;
+  font-size: 16px;
+}
+
+scrollbar { opacity: 0; }
+.normal-icons { -gtk-icon-size: 16px; }
+.large-icons { -gtk-icon-size: 32px; }
+.box-wrapper {
+  background: alpha(@base, 0.96);
+  border: 2px solid @accent;
+  padding: 20px;
+}
+.search-container {
+  background: @background;
+  border: 1px solid @border;
+  padding: 10px;
+}
+.input placeholder { opacity: 0.55; }
+.input:focus, .input:active { box-shadow: none; outline: none; }
+child:selected { background: alpha(@accent, 0.22); }
+child:selected .item-box * { color: @text; }
+.item-box { padding-left: 14px; }
+.item-text-box { all: unset; padding: 14px 0; }
+.item-subtext { color: @border; font-size: 12px; }
+.item-image { margin-right: 14px; -gtk-icon-transform: scale(0.9); }
+.current { font-style: italic; }
+.keybind-hints { background: @background; padding: 10px; margin-top: 10px; }
+.error { color: @urgent; }

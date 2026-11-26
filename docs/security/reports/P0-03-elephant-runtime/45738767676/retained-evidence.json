@@ -1,0 +1,87 @@
+{
+  "run_id": 45738767676,
+  "head": "a00d749aa436caf328f1b5fb1d81e3bfe4cd67ca",
+  "event": "push",
+  "artifact": {
+    "id": 15079659091,
+    "bytes": 41538,
+    "sha256": "ccaafc45068b3d3e68478d7edc5688558647fb0bd8ff459735ddc715854d3189"
+  },
+  "scope": "Actual retained-binary provider controls and bounded normal-startup capture; no upstream rerun or OS qualification",
+  "normalization": "Text trailing whitespace and trailing blank lines removed; JSON unchanged",
+  "files": {
+    "result.json": {
+      "original_sha256": "c45f6afab8aaf19823bfe22d1833b5553f1c1cffeef279a3d21d97a4b884be1d",
+      "retained_sha256": "c45f6afab8aaf19823bfe22d1833b5553f1c1cffeef279a3d21d97a4b884be1d"
+    },
+    "base-signature.json": {
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    "compiled-manifest.json": {
+      "original_sha256": "8bf5558aa18d977cef385510e06454b47d9cdf6e501a47c7da1110e5679fc747",
+      "retained_sha256": "8bf5558aa18d977cef385510e06454b47d9cdf6e501a47c7da1110e5679fc747"
+    },
+    "ocr/result.json": {
+      "original_sha256": "c218a7f9afc2b7fcd2716b7bb5df5384b13fa3077a9e3b889bf21d1e9cef4357",
+      "retained_sha256": "c218a7f9afc2b7fcd2716b7bb5df5384b13fa3077a9e3b889bf21d1e9cef4357"
+    },
+    "loader/loader-result.json": {
+      "original_sha256": "1e384784d625ee19ddaeac5f232709eb2d9923c6a0c0379ffa21c53c01784ec7",
+      "retained_sha256": "1e384784d625ee19ddaeac5f232709eb2d9923c6a0c0379ffa21c53c01784ec7"
+    },
+    "loader/loader-stdout.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "loader/loader-stderr.log": {
+      "original_sha256": "3122cdc6ae12b06241c72b9e7019113ee663da28d9b16dda426eafec22bdbbbe",
+      "retained_sha256": "3122cdc6ae12b06241c72b9e7019113ee663da28d9b16dda426eafec22bdbbbe"
+    },
+    "providers/provider-loading.json": {
+      "original_sha256": "90d7328c7f4aafffbd0cb933fec2fdadc8d358a1290671e10cd648cc61ec0af0",
+      "retained_sha256": "90d7328c7f4aafffbd0cb933fec2fdadc8d358a1290671e10cd648cc61ec0af0"
+    },
+    "providers/patched-development-stdout.log": {
+      "original_sha256": "fc3bcaffcce9c7ac7b3e6c6ef5f67204b978871cb9ed5229d2c815d202dfd6b1",
+      "retained_sha256": "fc3bcaffcce9c7ac7b3e6c6ef5f67204b978871cb9ed5229d2c815d202dfd6b1"
+    },
+    "providers/patched-dotenv-stdout.log": {
+      "original_sha256": "fc3bcaffcce9c7ac7b3e6c6ef5f67204b978871cb9ed5229d2c815d202dfd6b1",
+      "retained_sha256": "fc3bcaffcce9c7ac7b3e6c6ef5f67204b978871cb9ed5229d2c815d202dfd6b1"
+    },
+    "providers/patched-environment-stdout.log": {
+      "original_sha256": "fc3bcaffcce9c7ac7b3e6c6ef5f67204b978871cb9ed5229d2c815d202dfd6b1",
+      "retained_sha256": "fc3bcaffcce9c7ac7b3e6c6ef5f67204b978871cb9ed5229d2c815d202dfd6b1"
+    },
+    "providers/patched-explicit-config-stderr.log": {
+      "original_sha256": "8d64fe064a1080d69dc200bdfe5106c21e515f80beabe98be04ba18f068b7c6d",
+      "retained_sha256": "8d64fe064a1080d69dc200bdfe5106c21e515f80beabe98be04ba18f068b7c6d"
+    },
+    "providers/patched-explicit-config-stdout.log": {
+      "original_sha256": "fc3bcaffcce9c7ac7b3e6c6ef5f67204b978871cb9ed5229d2c815d202dfd6b1",
+      "retained_sha256": "fc3bcaffcce9c7ac7b3e6c6ef5f67204b978871cb9ed5229d2c815d202dfd6b1"
+    },
+    "providers/patched-extra-provider-stdout.log": {
+      "original_sha256": "fc3bcaffcce9c7ac7b3e6c6ef5f67204b978871cb9ed5229d2c815d202dfd6b1",
+      "retained_sha256": "fc3bcaffcce9c7ac7b3e6c6ef5f67204b978871cb9ed5229d2c815d202dfd6b1"
+    },
+    "providers/patched-nested-provider-stdout.log": {
+      "original_sha256": "fc3bcaffcce9c7ac7b3e6c6ef5f67204b978871cb9ed5229d2c815d202dfd6b1",
+      "retained_sha256": "fc3bcaffcce9c7ac7b3e6c6ef5f67204b978871cb9ed5229d2c815d202dfd6b1"
+    },
+    "providers/patched-system-config-stdout.log": {
+      "original_sha256": "fc3bcaffcce9c7ac7b3e6c6ef5f67204b978871cb9ed5229d2c815d202dfd6b1",
+      "retained_sha256": "fc3bcaffcce9c7ac7b3e6c6ef5f67204b978871cb9ed5229d2c815d202dfd6b1"
+    },
+    "providers/patched-user-config-stdout.log": {
+      "original_sha256": "fc3bcaffcce9c7ac7b3e6c6ef5f67204b978871cb9ed5229d2c815d202dfd6b1",
+      "retained_sha256": "fc3bcaffcce9c7ac7b3e6c6ef5f67204b978871cb9ed5229d2c815d202dfd6b1"
+    },
+    "providers/restored-packaged-provider-stdout.log": {
+      "original_sha256": "fc3bcaffcce9c7ac7b3e6c6ef5f67204b978871cb9ed5229d2c815d202dfd6b1",
+      "retained_sha256": "fc3bcaffcce9c7ac7b3e6c6ef5f67204b978871cb9ed5229d2c815d202dfd6b1"
+    }
+  },
+  "large_artifact_downloaded_locally": false
+}

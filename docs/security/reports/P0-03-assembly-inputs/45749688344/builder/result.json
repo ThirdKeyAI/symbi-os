@@ -1,0 +1,61 @@
+{
+  "passed": true,
+  "source_commit": "669de4383347a17c86d4dc60060a1f238727df34",
+  "limits": {
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "64"
+  },
+  "os_qualified": false,
+  "scope": "Actual cross-job CLI reuse; no native compilation or image build",
+  "artifact": {
+    "id": 15081564466,
+    "bytes": 68141988,
+    "sha256": "2ab11618c7d11c5599aa23a885fe0ad74dd8b73c7adb296e0d2427373432c3fb"
+  },
+  "compiled_manifest": {
+    "schema": 1,
+    "compiled": true,
+    "os_qualified": false,
+    "cli_acceptance_qualified": false,
+    "scope": "Compiled development builder only; inspect separately retained CLI and upstream tests before reuse",
+    "source_commit": "761c2d422f633666710308ab976ee34add8f6f63",
+    "upstream_revision": "a654ee8810c637aa00356999488e97259061275d",
+    "tool_config_sha256": "640b7e7afdd8e44b03c5a7af36a58e75726a686730bec1633d430b8584fc61c2",
+    "cargo_lock_sha256": "a8a3744f502d44cf98b0ad6916c5b308b33b9f107b1903985b845c4548d9df34",
+    "applied_diff_sha256": "05093832a9384b0ed0a37b479a7e2e09f1154405ac8ddda9bca2055cddd1d751",
+    "patches": [
+      {
+        "path": "image/toolchain/patches/0001-validate-os-recipe-v2.patch",
+        "sha256": "47e8de584f0a54a00e8b2145339e0bfd00868cf577f74d71681d9c57fa9d3342"
+      }
+    ],
+    "rust": "1.100.0",
+    "rustc": "rustc 1.100.0 (0ef1bc386 2026-11-09)\nbinary: rustc\ncommit-hash: 0ef1bc386059596dada8fb65b50425aab2ea637a\ncommit-date: 2026-11-09\nhost: x86_64-unknown-linux-gnu\nrelease: 1.100.0\nLLVM version: 23.1.5",
+    "features": [
+      "v1_0_0"
+    ],
+    "profile": "dev",
+    "binary": {
+      "name": "bluebuild",
+      "bytes": 68128896,
+      "sha256": "5c2f24e767719d76c52de6ef7fdbfd2db980c9f0070b8fec237165ab920e9923"
+    },
+    "license": {
+      "name": "LICENSE",
+      "bytes": 11343,
+      "sha256": "3768f2230c9b816657a89e4e6fc97e7d87bfc009ff2585fa740e781ff19442fd"
+    }
+  },
+  "cli_cases": 17,
+  "cgroup_final": {
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "64",
+    "memory.peak": "241360896",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 2502525\nuser_usec 1858903\nsystem_usec 643622\nnice_usec 1834000\ncore_sched.force_idle_usec 0\nnr_periods 35\nnr_throttled 3\nthrottled_usec 26780\nnr_bursts 0\nburst_usec 0"
+  }
+}

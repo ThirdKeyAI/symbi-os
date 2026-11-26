@@ -1,0 +1,26 @@
+Running as unit: symbi-atomic-disk-45869526684-1.service; invocation ID: 8e6ea256cc1544cab9a079d02a86b580
+Atomic install: loading the exact saved image into private CI storage
+Atomic install: verifying opaque OCI layout blobs
+Atomic install: authenticating a local source with an ephemeral offline CI test key
+Atomic install: bootc is writing only the new private 24 GiB regular file
+Atomic boot: starting the offline VM under unprivileged QEMU/TCG
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/runner/work/symbi-os/symbi-os/image/atomic/hosted.py", line 259, in <module>
+    if __name__=='__main__': main()
+                             ^^^^^^
+  File "/home/runner/work/symbi-os/symbi-os/image/atomic/hosted.py", line 191, in main
+    run('boot',command,960)
+  File "/home/runner/work/symbi-os/symbi-os/image/atomic/hosted.py", line 49, in run
+    if check: result.check_returncode()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 502, in check_returncode
+    raise CalledProcessError(self.returncode, self.args, self.stdout,
+subprocess.CalledProcessError: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/atomic-disk-storage/root', '--runroot', '/run/symbi-atomic-disk-45869526684-1', 'run', '--rm', '--name=symbi-atomic-qemu', '--pull=never', '--network=none', '--pid=private', '--cgroup-parent=/system.slice/symbi-atomic-disk-45869526684-1.service', '--env=LANG=C.UTF-8', '--env=PYTHONDONTWRITEBYTECODE=1', '--read-only', '--user=10001:10001', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--memory=3g', '--memory-swap=3g', '--cpus=2', '--pids-limit=64', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/atomic-disk-storage/boot-input,dst=/inputs,ro', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/atomic-disk-storage/disk/atomic.raw,dst=/inputs/atomic.raw,ro', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/atomic-disk-storage/boot-output,dst=/output', '--entrypoint=/usr/bin/python3', 'sha256:54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1', '/inputs/boot.py']' returned non-zero exit status 1.
+Finished with result: exit-code
+Main processes terminated with: code=exited/status=1
+Service runtime: 17min 50.048s
+CPU time consumed: 15min 8.858s
+Memory peak: 256.0K
+Memory swap peak: 0B

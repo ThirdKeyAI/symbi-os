@@ -1,0 +1,3 @@
+xorriso 1.5.8.pl02 : RockRidge filesystem manipulator, libburnia project.
+
+Formatting '/output/with-gpu/guest.qcow2', fmt=qcow2 cluster_size=65536 extended_l2=off compression_type=zlib size=5368709120 backing_file=/inputs/fedora.qcow2 backing_fmt=qcow2 lazy_refcounts=off refcount_bits=16

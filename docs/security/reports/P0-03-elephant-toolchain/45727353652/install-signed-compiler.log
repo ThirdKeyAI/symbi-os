@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/inputs/toolchain_guest.py", line 105, in <module>
+    main()
+    ~~~~^^
+  File "/inputs/toolchain_guest.py", line 93, in main
+    require_compiler(identity)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/inputs/go_identity.py", line 11, in require_compiler
+    raise ValueError(f'Unexpected {name}: {str(actual.get(name))[:160]!r}; expected {value!r}')
+ValueError: Unexpected GOVERSION: 'go1.27.4-X:nodwarf5'; expected 'go1.27.4'

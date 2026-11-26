@@ -1,0 +1,102 @@
+{
+  "run_id": 45723916710,
+  "head": "6853c63270c8c81e62277f6c713756d4dd91af1e",
+  "tested_merge": "0a63377e4e3c38cfa1cfaafbe0dd7ac0d3a01944",
+  "conclusion": "success",
+  "artifact": {
+    "id": 15073337815,
+    "bytes": 66622,
+    "sha256": "e91d92666d087481315053c158665ccc2e9f6fcdf75ab872cd65df9c5ad65633"
+  },
+  "scope": "Exact prefix reuse, additive three-library transaction and actual unprivileged Lua parser controls only. No desktop/native/boot/OS acceptance.",
+  "files": {
+    "result.json": {
+      "original_sha256": "60f277dd374c7bfd71cce00efe71476f6190e7c3df37597dc784978c1a88f1da",
+      "retained_sha256": "60f277dd374c7bfd71cce00efe71476f6190e7c3df37597dc784978c1a88f1da"
+    },
+    "base-signature.json": {
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    "prefix-manifest.json": {
+      "original_sha256": "d158ab5e6948abc59084bf60b771fa0abf92f8c39d47fb77c40b2c6e5e5bee08",
+      "retained_sha256": "d158ab5e6948abc59084bf60b771fa0abf92f8c39d47fb77c40b2c6e5e5bee08"
+    },
+    "session-result.json": {
+      "original_sha256": "f2d212e0d21449006cbbf7d7071ce6107f411e845215cb6f95b52013086ebe6c",
+      "retained_sha256": "f2d212e0d21449006cbbf7d7071ce6107f411e845215cb6f95b52013086ebe6c"
+    },
+    "session-defaults.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "hosted-runtime.log": {
+      "original_sha256": "cc434de41385eb04b8bf10319ad177b6c37695bbd9c8e89e3187aa1de2e2c9e1",
+      "retained_sha256": "cc434de41385eb04b8bf10319ad177b6c37695bbd9c8e89e3187aa1de2e2c9e1"
+    },
+    "add-runtime-packages.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "cosign-bootstrap/verification.json": {
+      "original_sha256": "822329e8d7bf8c27b1a527c931c9bbab901db2f6fce88cb5f53d7dc33e547e35",
+      "retained_sha256": "822329e8d7bf8c27b1a527c931c9bbab901db2f6fce88cb5f53d7dc33e547e35"
+    },
+    "install/Hyprland-needed-libraries.log": {
+      "original_sha256": "f821c52fd6b2be41f1fd4c2b7f04c6c257d92f54f95b29ef663b7cce132df8d2",
+      "retained_sha256": "f821c52fd6b2be41f1fd4c2b7f04c6c257d92f54f95b29ef663b7cce132df8d2"
+    },
+    "install/hyprctl-needed-libraries.log": {
+      "original_sha256": "201191d78f33131f5feaf9e3ec1bf8ecca3816d5b91eb9bfffdab4bbd34b3e48",
+      "retained_sha256": "201191d78f33131f5feaf9e3ec1bf8ecca3816d5b91eb9bfffdab4bbd34b3e48"
+    },
+    "install/import-key.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "install/installed-after.log": {
+      "original_sha256": "102a6aeff003d7c6f638bb0d402451c2561379e8eba60a0d3fc22df0bc73bd8d",
+      "retained_sha256": "102a6aeff003d7c6f638bb0d402451c2561379e8eba60a0d3fc22df0bc73bd8d"
+    },
+    "install/installed-before.log": {
+      "original_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759",
+      "retained_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759"
+    },
+    "install/keyring.log": {
+      "original_sha256": "a2d9592731d4369c4308a823327e3b02417006bb5fb3db6e29805dc59438274d",
+      "retained_sha256": "a2d9592731d4369c4308a823327e3b02417006bb5fb3db6e29805dc59438274d"
+    },
+    "install/offline-runtime-install.log": {
+      "original_sha256": "443350ad8be0fef8f14aaa05583a44cdeb563773d365fc67bdd9f79eb7c02700",
+      "retained_sha256": "443350ad8be0fef8f14aaa05583a44cdeb563773d365fc67bdd9f79eb7c02700"
+    },
+    "install/result.json": {
+      "original_sha256": "691062a08bc34fdae7ed186e603a070d21b8396909e843b36578ccd5a716aeef",
+      "retained_sha256": "691062a08bc34fdae7ed186e603a070d21b8396909e843b36578ccd5a716aeef"
+    },
+    "install/rpm-000-identity.log": {
+      "original_sha256": "782fe608e1fd070d1e308174eed693b448358bf5eeebbf0a39fb8b3ef2b71c5a",
+      "retained_sha256": "782fe608e1fd070d1e308174eed693b448358bf5eeebbf0a39fb8b3ef2b71c5a"
+    },
+    "install/rpm-000-signature.log": {
+      "original_sha256": "cfdc9b3c1107dc155c81c35c06c0b20ebd70aa3a61a8588ac992637541af5735",
+      "retained_sha256": "cfdc9b3c1107dc155c81c35c06c0b20ebd70aa3a61a8588ac992637541af5735"
+    },
+    "install/rpm-001-identity.log": {
+      "original_sha256": "5944f598e094e95813869c7987ec8a5eae692142426a5a1716c5bff00a96e4a4",
+      "retained_sha256": "5944f598e094e95813869c7987ec8a5eae692142426a5a1716c5bff00a96e4a4"
+    },
+    "install/rpm-001-signature.log": {
+      "original_sha256": "e7fcc5ff50610279bcb2645343e92c1da3b0813108aae43e1f27df83946243b3",
+      "retained_sha256": "e7fcc5ff50610279bcb2645343e92c1da3b0813108aae43e1f27df83946243b3"
+    },
+    "install/rpm-002-identity.log": {
+      "original_sha256": "56f4fc77a492c794b60b5107d3c75d83f0506975a8ee54af6a93f3deec5df7c7",
+      "retained_sha256": "56f4fc77a492c794b60b5107d3c75d83f0506975a8ee54af6a93f3deec5df7c7"
+    },
+    "install/rpm-002-signature.log": {
+      "original_sha256": "a7761073e98cec4d38fda28677aa5800754d2d80318accb12b41f9dc48619541",
+      "retained_sha256": "a7761073e98cec4d38fda28677aa5800754d2d80318accb12b41f9dc48619541"
+    }
+  }
+}

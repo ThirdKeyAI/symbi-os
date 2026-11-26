@@ -1,0 +1,28 @@
+[0/2] Re-checking globbed directories...
+[1/16] Building CXX object CMakeFiles/hyprcursor.dir/libhyprcursor/VarList.cpp.o
+[2/16] Building CXX object CMakeFiles/hyprcursor.dir/libhyprcursor/hyprcursor.cpp.o
+[3/16] Building CXX object CMakeFiles/hyprcursor.dir/libhyprcursor/hyprcursor_c.cpp.o
+[4/16] Building CXX object CMakeFiles/hyprcursor.dir/libhyprcursor/manifest.cpp.o
+[5/16] Building CXX object CMakeFiles/hyprcursor.dir/libhyprcursor/meta.cpp.o
+/output/sources/hyprcursor/libhyprcursor/meta.cpp: In function ‘Hyprlang::CParseResult parseDefineSize(const char*, const char*)’:
+/output/sources/hyprcursor/libhyprcursor/meta.cpp:85:29: warning: unused variable ‘DELAY’ [-Wunused-variable]
+   85 |         auto                DELAY = 0;
+      |                             ^~~~~
+[6/16] Linking CXX shared library libhyprcursor.so.0.1.13
+[7/16] Creating library symlink libhyprcursor.so.0 libhyprcursor.so
+[8/16] Building CXX object CMakeFiles/hyprcursor-util.dir/hyprcursor-util/src/main.cpp.o
+/output/sources/hyprcursor/hyprcursor-util/src/main.cpp: In function ‘std::string spawnSync(const std::string&)’:
+/output/sources/hyprcursor/hyprcursor-util/src/main.cpp:229:50: warning: ignoring attributes on template argument ‘int (*)(FILE*)’ [-Wignored-attributes]
+  229 |     const std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+      |                                                  ^
+/output/sources/hyprcursor/hyprcursor-util/src/main.cpp: At global scope:
+/output/sources/hyprcursor/hyprcursor-util/src/main.cpp:31:20: warning: ‘std::string removeBeginEndSpacesTabs(std::string)’ defined but not used [-Wunused-function]
+   31 | static std::string removeBeginEndSpacesTabs(std::string str) {
+      |                    ^~~~~~~~~~~~~~~~~~~~~~~~
+[9/16] Building CXX object CMakeFiles/hyprcursor_test1.dir/tests/full_rendering.cpp.o
+[10/16] Building CXX object CMakeFiles/hyprcursor_test2.dir/tests/only_metadata.cpp.o
+[11/16] Building C object CMakeFiles/hyprcursor_test_c.dir/tests/c_test.c.o
+[12/16] Linking CXX executable hyprcursor-util
+[13/16] Linking CXX executable hyprcursor_test1
+[14/16] Linking CXX executable hyprcursor_test2
+[15/16] Linking C executable hyprcursor_test_c

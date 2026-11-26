@@ -1,0 +1,91 @@
+{
+  "scope": "Normal-startup diagnostics only; listproviders discards all loader errors",
+  "diagnostic_completed": false,
+  "provider_loading_qualified": false,
+  "upstream_tests_passed": false,
+  "os_qualified": false,
+  "limits": {
+    "memory.max": "268435456",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "64"
+  },
+  "path_metadata": [
+    {
+      "path": "/usr/lib/symbi/elephant/providers/desktopapplications.so",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o644",
+      "regular": true,
+      "directory": false,
+      "symlink": false
+    },
+    {
+      "path": "/usr/lib/symbi/elephant/providers",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755",
+      "regular": false,
+      "directory": true,
+      "symlink": false
+    },
+    {
+      "path": "/usr/lib/symbi/elephant",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755",
+      "regular": false,
+      "directory": true,
+      "symlink": false
+    },
+    {
+      "path": "/usr/lib/symbi",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755",
+      "regular": false,
+      "directory": true,
+      "symlink": false
+    },
+    {
+      "path": "/usr/lib",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755",
+      "regular": false,
+      "directory": true,
+      "symlink": false
+    },
+    {
+      "path": "/usr",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o755",
+      "regular": false,
+      "directory": true,
+      "symlink": false
+    },
+    {
+      "path": "/",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o555",
+      "regular": false,
+      "directory": true,
+      "symlink": false
+    }
+  ],
+  "command": [
+    "env",
+    "HOME=/output/loader/home",
+    "XDG_CONFIG_HOME=/output/loader/config",
+    "XDG_CONFIG_DIRS=/inputs/no-system-config",
+    "XDG_CACHE_HOME=/output/loader/cache",
+    "XDG_RUNTIME_DIR=/output/loader/runtime",
+    "GOMAXPROCS=1",
+    "/inputs/binaries/patched",
+    "--debug"
+  ],
+  "timeout_seconds": 5,
+  "timed_out": false
+}

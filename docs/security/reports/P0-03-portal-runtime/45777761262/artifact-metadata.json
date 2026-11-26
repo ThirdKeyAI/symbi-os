@@ -1,0 +1,25 @@
+{
+  "total_count": 1,
+  "artifacts": [
+    {
+      "id": 15097006671,
+      "node_id": "MDg6QXJ0aWZhY3QxNTA5NzAwNjY3MQ==",
+      "name": "portal-runtime-evidence",
+      "size_in_bytes": 74296,
+      "url": "https://api.github.com/repos/ThirdKeyAI/symbi-os/actions/artifacts/15097006671",
+      "archive_download_url": "https://api.github.com/repos/ThirdKeyAI/symbi-os/actions/artifacts/15097006671/zip",
+      "expired": false,
+      "digest": "sha256:632411e88179f0b84211ae94aba6d50ee8e36d6a1cba0d381ecd125572d9e5b2",
+      "created_at": "2026-11-26T07:49:11Z",
+      "updated_at": "2026-11-26T07:49:11Z",
+      "expires_at": "2026-12-10T07:49:10Z",
+      "workflow_run": {
+        "id": 45777761262,
+        "repository_id": 1472078858,
+        "head_repository_id": 1472078858,
+        "head_branch": "card/P0-03-image-foundation",
+        "head_sha": "ddb34fce5ae13d6e521f719e145fb36cafa59732"
+      }
+    }
+  ]
+}

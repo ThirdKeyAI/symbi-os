@@ -1,0 +1,90 @@
+{
+  "run": 45728665797,
+  "head": "525e39025404dfd6f4fca3638bdadef21ff7f911",
+  "tested_merge": "57b1ad738843dff714d3968654716ee201a8d99f",
+  "artifact": 15075997877,
+  "artifact_bytes": 91182,
+  "artifact_sha256": "f6efc18a1472a4ccfbee0970a4659e2095b239275e392137479d2059b92ba7c4",
+  "passed": false,
+  "os_qualified": false,
+  "normalization": "Only trailing whitespace in text logs; JSON retained byte-for-byte",
+  "files": [
+    {
+      "path": "result.json",
+      "original_sha256": "42f0a48aca0ab6176de4a0558a16e34a321d10442174fe0f542f72b4058c1c3d",
+      "retained_sha256": "42f0a48aca0ab6176de4a0558a16e34a321d10442174fe0f542f72b4058c1c3d",
+      "original_bytes": 2578,
+      "retained_bytes": 2578
+    },
+    {
+      "path": "base-signature.json",
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "original_bytes": 1281,
+      "retained_bytes": 1281
+    },
+    {
+      "path": "compiled-manifest.json",
+      "original_sha256": "ddf3e7f8b7a85992eb7c3612a3b6ebc3593b3e089e0e5187c8b04ae05d17868d",
+      "retained_sha256": "ddf3e7f8b7a85992eb7c3612a3b6ebc3593b3e089e0e5187c8b04ae05d17868d",
+      "original_bytes": 1071,
+      "retained_bytes": 1071
+    },
+    {
+      "path": "compile.log",
+      "original_sha256": "2528f828880d96acbd2580172e1444dd11bdb232a1bdce148537c92885ff1654",
+      "retained_sha256": "2528f828880d96acbd2580172e1444dd11bdb232a1bdce148537c92885ff1654",
+      "original_bytes": 793,
+      "retained_bytes": 793
+    },
+    {
+      "path": "compile/result.json",
+      "original_sha256": "48b58db71f276cdf5d1c3fe5132ef9ec2d41df5f90da221aa38f3e4bdbf147ea",
+      "retained_sha256": "48b58db71f276cdf5d1c3fe5132ef9ec2d41df5f90da221aa38f3e4bdbf147ea",
+      "original_bytes": 2850,
+      "retained_bytes": 2850
+    },
+    {
+      "path": "compile/upstream-tests.log",
+      "original_sha256": "f4bd610a01f4ae3b9a1d971bc9cd20bd9d4857697ebb75098e3971a03e70a581",
+      "retained_sha256": "f4bd610a01f4ae3b9a1d971bc9cd20bd9d4857697ebb75098e3971a03e70a581",
+      "original_bytes": 2922,
+      "retained_bytes": 2922
+    },
+    {
+      "path": "compile/compiler-version.log",
+      "original_sha256": "09d3e4f3f053dfc8fe20de420fa739aab7e4161e6ff3d73e1cc1d66066dd96e6",
+      "retained_sha256": "09d3e4f3f053dfc8fe20de420fa739aab7e4161e6ff3d73e1cc1d66066dd96e6",
+      "original_bytes": 43,
+      "retained_bytes": 43
+    },
+    {
+      "path": "compile/compiler-identity.log",
+      "original_sha256": "6d79bb47b69d1cef5afc113d5d57986ef58e43ab9e2ab626d1d13450021a330e",
+      "retained_sha256": "6d79bb47b69d1cef5afc113d5d57986ef58e43ab9e2ab626d1d13450021a330e",
+      "original_bytes": 153,
+      "retained_bytes": 153
+    },
+    {
+      "path": "compile/verify-offline-modules.log",
+      "original_sha256": "b4537ed75f533f993f371954de47e42a793b8e5b0587577de7e27fb3e50696bd",
+      "retained_sha256": "b4537ed75f533f993f371954de47e42a793b8e5b0587577de7e27fb3e50696bd",
+      "original_bytes": 21,
+      "retained_bytes": 21
+    },
+    {
+      "path": "download/result.json",
+      "original_sha256": "75afd62bb9c719e7976953b1eb2186a765ba7639a978e087165e578b71596768",
+      "retained_sha256": "75afd62bb9c719e7976953b1eb2186a765ba7639a978e087165e578b71596768",
+      "original_bytes": 1815,
+      "retained_bytes": 1815
+    },
+    {
+      "path": "toolchain/result.json",
+      "original_sha256": "7282c3fa2cc700c4ce815952fbf06a519aa05dd6a3dc4dfb8ee22f61f012bdfb",
+      "retained_sha256": "7282c3fa2cc700c4ce815952fbf06a519aa05dd6a3dc4dfb8ee22f61f012bdfb",
+      "original_bytes": 6451,
+      "retained_bytes": 6451
+    }
+  ]
+}

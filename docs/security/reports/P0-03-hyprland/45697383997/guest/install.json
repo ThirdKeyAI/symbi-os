@@ -1,0 +1,3150 @@
+{
+  "passed": false,
+  "os_qualified": false,
+  "limits": {
+    "memory.max": "6442450944",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "128"
+  },
+  "commands": [
+    {
+      "name": "installed-before",
+      "command": [
+        "rpm",
+        "-qa",
+        "--qf",
+        "%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "import-key",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--import",
+        "/inputs/fedora-45-primary.asc"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "keyring",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--list"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-000-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/R-srpm-macros-1.3.7-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-001-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/abseil-cpp-devel-20260526.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-002-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/abseil-cpp-testing-20260526.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-003-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/add-determinism-0.7.3-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-004-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/annobin-docs-13.28-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-005-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/annobin-plugin-gcc-13.28-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-006-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/ansible-srpm-macros-1-22.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-007-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/at-spi2-atk-devel-2.62.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-008-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/at-spi2-core-devel-2.62.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-009-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/atk-devel-2.62.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-010-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/brotli-1.2.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-011-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/brotli-devel-1.2.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-012-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/build-reproducibility-srpm-macros-0.7.3-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-013-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/bzip2-devel-1.0.8-24.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-014-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/cairo-devel-1.18.6-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-015-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/cairo-gobject-devel-1.18.6-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-016-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/cmake-4.3.0-7.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-017-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/cmake-data-4.3.0-7.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-018-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/cmake-rpm-macros-4.3.0-7.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-019-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/cmake-srpm-macros-4.3.0-7.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-020-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/dbus-devel-1.16.4-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-021-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/debugedit-5.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-022-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/dwz-0.17-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-023-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/efi-srpm-macros-6-9.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-024-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/elfutils-0.197-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-025-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/erlang-srpm-macros-0.4.2-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-026-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/file-devel-5.48-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-027-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/filesystem-srpm-macros-3.18-59.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-028-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/fontconfig-devel-2.18.3-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-029-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/fonts-srpm-macros-5.0.0-4.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-030-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/forge-srpm-macros-0.4.0-5.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-031-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/fpc-srpm-macros-1.3-17.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-032-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/freetype-devel-2.14.3-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-033-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/fribidi-devel-1.0.18-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-034-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/gap-srpm-macros-2-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-035-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/gcc-c++-16.2.1-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-036-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/gcc-plugin-annobin-16.2.1-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-037-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/gdb-minimal-18.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-038-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/gdk-pixbuf2-devel-2.44.8-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-039-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/ghc-srpm-macros-1.10-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-040-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/glib2-devel-2.90.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-041-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/glslang-16.3.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-042-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/glslang-devel-16.3.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-043-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/glycin-devel-2.2.6-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-044-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/gmock-1.17.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-045-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/gnat-srpm-macros-7-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-046-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/gnome-srpm-macros-1.0-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-047-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/go-srpm-macros-3.8.0-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-048-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/gpgverify-2.2-5.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-049-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/graphite2-devel-1.3.14-22.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-050-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/gtest-1.17.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-051-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/gtest-devel-1.17.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-052-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/gtk2-2.24.33-28.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-053-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/gtk2-devel-2.24.33-28.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-054-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/gtk3-devel-3.24.52-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-055-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/harfbuzz-cairo-15.0.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-056-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/harfbuzz-devel-15.0.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-057-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/harfbuzz-gpu-15.0.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-058-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/harfbuzz-raster-15.0.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-059-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/harfbuzz-vector-15.0.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-060-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/hwdata-devel-0.413-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-061-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/ibus-gtk2-1.5.35-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-062-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/java-srpm-macros-1-9.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-063-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/kernel-srpm-macros-1.0-30.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-064-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/lcms2-devel-2.16-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-065-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libGLEW-2.2.0-13.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-066-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libX11-devel-1.8.13-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-067-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libXau-devel-1.0.12-5.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-068-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libXcomposite-devel-0.4.6-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-069-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libXcursor-devel-1.2.3-5.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-070-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libXdamage-devel-1.1.6-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-071-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libXext-devel-1.3.6-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-072-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libXfixes-devel-6.0.1-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-073-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libXft-devel-2.3.8-11.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-074-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libXi-devel-1.8.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-075-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libXinerama-devel-1.1.5-11.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-076-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libXrandr-devel-1.5.4-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-077-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libXrender-devel-0.9.12-5.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-078-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libXtst-devel-1.2.5-5.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-079-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libblkid-devel-2.42.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-080-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libcanberra-devel-0.30-52.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-081-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libcanberra-gtk2-0.30-52.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-082-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libcloudproviders-devel-0.4.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-083-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libdatrie-devel-0.2.14-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-084-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libdav1d-devel-1.5.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-085-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libdisplay-info-devel-0.3.0-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-086-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libdrm-devel-2.4.134-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-087-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libeis-1.6.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-088-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libeis-devel-1.6.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-089-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libepoxy-devel-1.5.10-13.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-090-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libffi-devel-3.5.2-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-091-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libglvnd-core-devel-1.7.0-10.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-092-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libglvnd-devel-1.7.0-10.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-093-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libicu-devel-78.3-9.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-094-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libinput-devel-1.32.0-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-095-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libjpeg-turbo-devel-3.1.4.1-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-096-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libmount-devel-2.42.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-097-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libpciaccess-devel-0.16-18.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-098-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libpng-devel-1.6.59-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-099-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/librsvg2-devel-2.63.2-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-100-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libseat-devel-0.9.3-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-101-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libseccomp-devel-2.6.1-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-102-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libselinux-devel-3.11-5.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-103-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libsepol-devel-3.11-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-104-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libstdc++-devel-16.2.1-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-105-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libthai-devel-0.1.30-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-106-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libuuid-devel-2.42.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-107-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libwebp-devel-1.6.0-4.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-108-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libxcb-devel-1.17.0-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-109-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libxkbcommon-devel-1.13.1-4.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-110-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libxml2-devel-2.15.4-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-111-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/libzip-devel-1.12.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-112-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/linkdupes-0.7.3-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-113-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/lua-5.5.1-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-114-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/lua-devel-5.5.1-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-115-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/lua-rpm-macros-1-18.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-116-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/lua-srpm-macros-1-18.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-117-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/lzo-devel-2.10-17.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-118-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/lzo-minilzo-2.10-17.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-119-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/mesa-dri-drivers-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-120-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/mesa-filesystem-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-121-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/mesa-libEGL-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-122-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/mesa-libGL-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-123-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/mesa-libgbm-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-124-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/mesa-libgbm-devel-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-125-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/mesa-vulkan-drivers-26.2.7-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-126-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/meson-1.12.1-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-127-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/meson-srpm-macros-1.12.1-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-128-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/muParser-2.3.5-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-129-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/muParser-devel-2.3.5-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-130-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/ninja-build-1.13.2-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-131-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/ocaml-srpm-macros-11-4.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-132-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/openblas-srpm-macros-2-22.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-133-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/package-notes-srpm-macros-0.20-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-134-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/pango-devel-1.58.2-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-135-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/pcre2-devel-10.49-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-136-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/perl-srpm-macros-1-65.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-137-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/pixman-devel-0.46.2-4.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-138-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/pugixml-devel-1.16-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-139-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/pyproject-srpm-macros-1.24.0-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-140-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/python-srpm-macros-3.15-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-141-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/qt5-srpm-macros-5.15.18-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-142-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/qt6-srpm-macros-6.11.2-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-143-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/re2-devel-20251105-19.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-144-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/redhat-rpm-config-345-5.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-145-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/rhash-1.4.5-5.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-146-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/rpm-build-6.1.0-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-147-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/rust-srpm-macros-28.5-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-148-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/sysprof-capture-devel-51.0-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-149-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/systemd-devel-262.1-1.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-150-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/systemd-rpm-macros-262.1-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-151-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/tomlplusplus-3.4.0-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-152-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/tomlplusplus-devel-3.4.0-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-153-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/tree-sitter-srpm-macros-0.4.6-2.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-154-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/wayland-devel-1.26.0-3.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-155-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/wayland-protocols-devel-1.50-1.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-156-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/xcb-util-errors-devel-1.0.1-8.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-157-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/xcb-util-wm-devel-0.4.2-10.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-158-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/xorg-x11-proto-devel-2025.1-3.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-159-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/xz-devel-5.8.3-2.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-160-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/zig-srpm-macros-1-9.fc45.noarch.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-161-signature",
+      "command": [
+        "rpmkeys",
+        "--define",
+        "_keyring fs",
+        "--define",
+        "_keyringpath /output/keyring",
+        "--dbpath",
+        "/output/rpmdb",
+        "--define",
+        "_pkgverify_level all",
+        "--checksig",
+        "--verbose",
+        "/inputs/packages/rpms/zlib-ng-compat-devel-2.3.3-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "offline-install",
+      "command": [
+        "dnf5",
+        "--assumeyes",
+        "--disable-plugin=*",
+        "--disable-repo=*",
+        "--setopt=reposdir=/output/empty-repos",
+        "--setopt=localpkg_gpgcheck=True",
+        "--setopt=install_weak_deps=False",
+        "--setopt=tsflags=nodocs",
+        "install",
+        "--",
+        "/inputs/packages/rpms/R-srpm-macros-1.3.7-3.fc45.noarch.rpm",
+        "/inputs/packages/rpms/abseil-cpp-devel-20260526.0-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/abseil-cpp-testing-20260526.0-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/add-determinism-0.7.3-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/annobin-docs-13.28-1.fc45.noarch.rpm",
+        "/inputs/packages/rpms/annobin-plugin-gcc-13.28-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/ansible-srpm-macros-1-22.fc45.noarch.rpm",
+        "/inputs/packages/rpms/at-spi2-atk-devel-2.62.1-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/at-spi2-core-devel-2.62.1-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/atk-devel-2.62.1-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/brotli-1.2.1-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/brotli-devel-1.2.1-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/build-reproducibility-srpm-macros-0.7.3-3.fc45.noarch.rpm",
+        "/inputs/packages/rpms/bzip2-devel-1.0.8-24.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/cairo-devel-1.18.6-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/cairo-gobject-devel-1.18.6-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/cmake-4.3.0-7.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/cmake-data-4.3.0-7.fc45.noarch.rpm",
+        "/inputs/packages/rpms/cmake-rpm-macros-4.3.0-7.fc45.noarch.rpm",
+        "/inputs/packages/rpms/cmake-srpm-macros-4.3.0-7.fc45.noarch.rpm",
+        "/inputs/packages/rpms/dbus-devel-1.16.4-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/debugedit-5.4-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/dwz-0.17-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/efi-srpm-macros-6-9.fc45.noarch.rpm",
+        "/inputs/packages/rpms/elfutils-0.197-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/erlang-srpm-macros-0.4.2-1.fc45.noarch.rpm",
+        "/inputs/packages/rpms/file-devel-5.48-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/filesystem-srpm-macros-3.18-59.fc45.noarch.rpm",
+        "/inputs/packages/rpms/fontconfig-devel-2.18.3-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/fonts-srpm-macros-5.0.0-4.fc45.noarch.rpm",
+        "/inputs/packages/rpms/forge-srpm-macros-0.4.0-5.fc45.noarch.rpm",
+        "/inputs/packages/rpms/fpc-srpm-macros-1.3-17.fc45.noarch.rpm",
+        "/inputs/packages/rpms/freetype-devel-2.14.3-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/fribidi-devel-1.0.18-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/gap-srpm-macros-2-3.fc45.noarch.rpm",
+        "/inputs/packages/rpms/gcc-c++-16.2.1-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/gcc-plugin-annobin-16.2.1-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/gdb-minimal-18.1-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/gdk-pixbuf2-devel-2.44.8-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/ghc-srpm-macros-1.10-2.fc45.noarch.rpm",
+        "/inputs/packages/rpms/glib2-devel-2.90.1-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/glslang-16.3.0-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/glslang-devel-16.3.0-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/glycin-devel-2.2.6-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/gmock-1.17.0-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/gnat-srpm-macros-7-3.fc45.noarch.rpm",
+        "/inputs/packages/rpms/gnome-srpm-macros-1.0-2.fc45.noarch.rpm",
+        "/inputs/packages/rpms/go-srpm-macros-3.8.0-3.fc45.noarch.rpm",
+        "/inputs/packages/rpms/gpgverify-2.2-5.fc45.noarch.rpm",
+        "/inputs/packages/rpms/graphite2-devel-1.3.14-22.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/gtest-1.17.0-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/gtest-devel-1.17.0-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/gtk2-2.24.33-28.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/gtk2-devel-2.24.33-28.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/gtk3-devel-3.24.52-6.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/harfbuzz-cairo-15.0.0-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/harfbuzz-devel-15.0.0-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/harfbuzz-gpu-15.0.0-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/harfbuzz-raster-15.0.0-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/harfbuzz-vector-15.0.0-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/hwdata-devel-0.413-1.fc45.noarch.rpm",
+        "/inputs/packages/rpms/ibus-gtk2-1.5.35-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/java-srpm-macros-1-9.fc45.noarch.rpm",
+        "/inputs/packages/rpms/kernel-srpm-macros-1.0-30.fc45.noarch.rpm",
+        "/inputs/packages/rpms/lcms2-devel-2.16-8.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libGLEW-2.2.0-13.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libX11-devel-1.8.13-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libXau-devel-1.0.12-5.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libXcomposite-devel-0.4.6-8.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libXcursor-devel-1.2.3-5.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libXdamage-devel-1.1.6-8.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libXext-devel-1.3.6-6.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libXfixes-devel-6.0.1-8.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libXft-devel-2.3.8-11.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libXi-devel-1.8.4-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libXinerama-devel-1.1.5-11.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libXrandr-devel-1.5.4-8.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libXrender-devel-0.9.12-5.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libXtst-devel-1.2.5-5.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libblkid-devel-2.42.4-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libcanberra-devel-0.30-52.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libcanberra-gtk2-0.30-52.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libcloudproviders-devel-0.4.1-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libdatrie-devel-0.2.14-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libdav1d-devel-1.5.4-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libdisplay-info-devel-0.3.0-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libdrm-devel-2.4.134-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libeis-1.6.0-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libeis-devel-1.6.0-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libepoxy-devel-1.5.10-13.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libffi-devel-3.5.2-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libglvnd-core-devel-1.7.0-10.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libglvnd-devel-1.7.0-10.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libicu-devel-78.3-9.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libinput-devel-1.32.0-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libjpeg-turbo-devel-3.1.4.1-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libmount-devel-2.42.4-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libpciaccess-devel-0.16-18.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libpng-devel-1.6.59-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/librsvg2-devel-2.63.2-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libseat-devel-0.9.3-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libseccomp-devel-2.6.1-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libselinux-devel-3.11-5.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libsepol-devel-3.11-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libstdc++-devel-16.2.1-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libthai-devel-0.1.30-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libuuid-devel-2.42.4-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libwebp-devel-1.6.0-4.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libxcb-devel-1.17.0-8.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libxkbcommon-devel-1.13.1-4.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libxml2-devel-2.15.4-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/libzip-devel-1.12.1-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/linkdupes-0.7.3-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/lua-5.5.1-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/lua-devel-5.5.1-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/lua-rpm-macros-1-18.fc45.noarch.rpm",
+        "/inputs/packages/rpms/lua-srpm-macros-1-18.fc45.noarch.rpm",
+        "/inputs/packages/rpms/lzo-devel-2.10-17.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/lzo-minilzo-2.10-17.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/mesa-dri-drivers-26.2.7-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/mesa-filesystem-26.2.7-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/mesa-libEGL-26.2.7-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/mesa-libGL-26.2.7-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/mesa-libgbm-26.2.7-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/mesa-libgbm-devel-26.2.7-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/mesa-vulkan-drivers-26.2.7-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/meson-1.12.1-3.fc45.noarch.rpm",
+        "/inputs/packages/rpms/meson-srpm-macros-1.12.1-3.fc45.noarch.rpm",
+        "/inputs/packages/rpms/muParser-2.3.5-6.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/muParser-devel-2.3.5-6.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/ninja-build-1.13.2-6.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/ocaml-srpm-macros-11-4.fc45.noarch.rpm",
+        "/inputs/packages/rpms/openblas-srpm-macros-2-22.fc45.noarch.rpm",
+        "/inputs/packages/rpms/package-notes-srpm-macros-0.20-2.fc45.noarch.rpm",
+        "/inputs/packages/rpms/pango-devel-1.58.2-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/pcre2-devel-10.49-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/perl-srpm-macros-1-65.fc45.noarch.rpm",
+        "/inputs/packages/rpms/pixman-devel-0.46.2-4.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/pugixml-devel-1.16-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/pyproject-srpm-macros-1.24.0-1.fc45.noarch.rpm",
+        "/inputs/packages/rpms/python-srpm-macros-3.15-2.fc45.noarch.rpm",
+        "/inputs/packages/rpms/qt5-srpm-macros-5.15.18-3.fc45.noarch.rpm",
+        "/inputs/packages/rpms/qt6-srpm-macros-6.11.2-1.fc45.noarch.rpm",
+        "/inputs/packages/rpms/re2-devel-20251105-19.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/redhat-rpm-config-345-5.fc45.noarch.rpm",
+        "/inputs/packages/rpms/rhash-1.4.5-5.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/rpm-build-6.1.0-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/rust-srpm-macros-28.5-2.fc45.noarch.rpm",
+        "/inputs/packages/rpms/sysprof-capture-devel-51.0-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/systemd-devel-262.1-1.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/systemd-rpm-macros-262.1-1.fc45.noarch.rpm",
+        "/inputs/packages/rpms/tomlplusplus-3.4.0-8.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/tomlplusplus-devel-3.4.0-8.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/tree-sitter-srpm-macros-0.4.6-2.fc45.noarch.rpm",
+        "/inputs/packages/rpms/wayland-devel-1.26.0-3.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/wayland-protocols-devel-1.50-1.fc45.noarch.rpm",
+        "/inputs/packages/rpms/xcb-util-errors-devel-1.0.1-8.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/xcb-util-wm-devel-0.4.2-10.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/xorg-x11-proto-devel-2025.1-3.fc45.noarch.rpm",
+        "/inputs/packages/rpms/xz-devel-5.8.3-2.fc45.x86_64.rpm",
+        "/inputs/packages/rpms/zig-srpm-macros-1-9.fc45.noarch.rpm",
+        "/inputs/packages/rpms/zlib-ng-compat-devel-2.3.3-6.fc45.x86_64.rpm"
+      ],
+      "exit_code": 2
+    }
+  ],
+  "scope": "Disposable build stage only; its package transaction is not a product layer"
+}

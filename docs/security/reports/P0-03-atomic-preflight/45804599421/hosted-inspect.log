@@ -1,0 +1,8 @@
+Running as unit: symbi-atomic-inspect-45804599421-1.service
+Atomic preflight: loading the exact retained OCI image into private storage
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 2min 29.545s
+CPU time consumed: 2min 21.757s
+Memory peak: 2.6M
+Memory swap peak: 0B

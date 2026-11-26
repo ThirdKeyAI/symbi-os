@@ -1,0 +1,21 @@
+test_desktop_trust (unittest.loader._FailedTest.test_desktop_trust) ... ERROR
+
+======================================================================
+ERROR: test_desktop_trust (unittest.loader._FailedTest.test_desktop_trust)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_desktop_trust
+Traceback (most recent call last):
+  File "/usr/lib/python3.14/unittest/loader.py", line 426, in _find_test_path
+    module = self._get_module_from_name(name)
+  File "/usr/lib/python3.14/unittest/loader.py", line 367, in _get_module_from_name
+    __import__(name)
+    ~~~~~~~~~~^^^^^^
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-desktop-trust-stage/image/tests/test_desktop_trust.py", line 9, in <module>
+    from image.desktop.trust import prepare_trust
+ModuleNotFoundError: No module named 'image.desktop.trust'
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)

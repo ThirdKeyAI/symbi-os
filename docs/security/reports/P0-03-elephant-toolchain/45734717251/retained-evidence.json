@@ -1,0 +1,134 @@
+{
+  "run_id": 45734717251,
+  "job_id": 139625045429,
+  "head": "d3a4cc32d7a8100477be974adbdffa2aff8d5f61",
+  "artifact": {
+    "id": 15077159927,
+    "bytes": 60028,
+    "sha256": "7e996d623bcebb66de50a6e567581d9633bd93071603ce01909a2de4205d96de"
+  },
+  "scope": "Signed discovery only; exact original four compiler packages plus tesseract, actual signature negative controls and unchanged installed inventory; no installation/build",
+  "os_qualified": false,
+  "selected_files": [
+    {
+      "path": "result.json",
+      "original_sha256": "bfe31414d889d07263ad73be36fff176136ac04282485090c19681e5bced4c4f",
+      "retained_sha256": "bfe31414d889d07263ad73be36fff176136ac04282485090c19681e5bced4c4f"
+    },
+    {
+      "path": "input-bindings.json",
+      "original_sha256": "28d9947aef3c62bd064dcf3cd9eac0fa8f510e7717eae41ee9e5762b60b41388",
+      "retained_sha256": "28d9947aef3c62bd064dcf3cd9eac0fa8f510e7717eae41ee9e5762b60b41388"
+    },
+    {
+      "path": "base-signature.json",
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    {
+      "path": "cgroup-final.json",
+      "original_sha256": "19c563d02fe246bddc476eac93d59c0a063d9d3c417f3f1411d1ed6d6a55aec1",
+      "retained_sha256": "19c563d02fe246bddc476eac93d59c0a063d9d3c417f3f1411d1ed6d6a55aec1"
+    },
+    {
+      "path": "guest/cgroup-final.json",
+      "original_sha256": "df65a35270c499f4aa4b52a94922cbbb992d198e48853e34e2fa8e636ff2c489",
+      "retained_sha256": "df65a35270c499f4aa4b52a94922cbbb992d198e48853e34e2fa8e636ff2c489"
+    },
+    {
+      "path": "guest/import-key.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "guest/installed-after.log",
+      "original_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759",
+      "retained_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759"
+    },
+    {
+      "path": "guest/installed-before.log",
+      "original_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759",
+      "retained_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759"
+    },
+    {
+      "path": "guest/keyring.log",
+      "original_sha256": "a2d9592731d4369c4308a823327e3b02417006bb5fb3db6e29805dc59438274d",
+      "retained_sha256": "a2d9592731d4369c4308a823327e3b02417006bb5fb3db6e29805dc59438274d"
+    },
+    {
+      "path": "guest/missing-key-control.log",
+      "original_sha256": "9dcd15ae694518fb0a6ff3161eafbdee7c758ababcae93e1291c5b8be3d2582a",
+      "retained_sha256": "9dcd15ae694518fb0a6ff3161eafbdee7c758ababcae93e1291c5b8be3d2582a"
+    },
+    {
+      "path": "guest/public-key.log",
+      "original_sha256": "a247b96b84cd715056b2913d10ba1248701dfbc3ac1161fd1bb9319ad28828c3",
+      "retained_sha256": "a247b96b84cd715056b2913d10ba1248701dfbc3ac1161fd1bb9319ad28828c3"
+    },
+    {
+      "path": "guest/resolve-download.log",
+      "original_sha256": "8b2d0d65bea96a0bd417d701cffa9627632adc6ae8725a5c48ff946cbd1f465b",
+      "retained_sha256": "2886cf8f1be8fbd5c387e2a145e91ac33380ec45c84a30dc4aadd29efac8c6c4"
+    },
+    {
+      "path": "guest/result.json",
+      "original_sha256": "9a0dd08b46a8211e54fcea11d97364098575adb471d702cb5c4fe0f9b263fc89",
+      "retained_sha256": "9a0dd08b46a8211e54fcea11d97364098575adb471d702cb5c4fe0f9b263fc89"
+    },
+    {
+      "path": "guest/rpm-000-identity.log",
+      "original_sha256": "ed93ff40f75214a3e9d43f55374c650c54f887b15cf18ba3f88f68f5bd408cb4",
+      "retained_sha256": "ed93ff40f75214a3e9d43f55374c650c54f887b15cf18ba3f88f68f5bd408cb4"
+    },
+    {
+      "path": "guest/rpm-000-signature.log",
+      "original_sha256": "07cd18b09118e429c779aa6ee06a5df8abffba76fc3e6302e70188ab81b55a90",
+      "retained_sha256": "07cd18b09118e429c779aa6ee06a5df8abffba76fc3e6302e70188ab81b55a90"
+    },
+    {
+      "path": "guest/rpm-001-identity.log",
+      "original_sha256": "a0616c98c203a5b42162a382716e396c8b3f0ecb6da7b7a2788d0900ea81183c",
+      "retained_sha256": "a0616c98c203a5b42162a382716e396c8b3f0ecb6da7b7a2788d0900ea81183c"
+    },
+    {
+      "path": "guest/rpm-001-signature.log",
+      "original_sha256": "cd7ea2138fda58dc1cc7e4affffb93a2d99625f379aae6b9999fe25dde641b17",
+      "retained_sha256": "cd7ea2138fda58dc1cc7e4affffb93a2d99625f379aae6b9999fe25dde641b17"
+    },
+    {
+      "path": "guest/rpm-002-identity.log",
+      "original_sha256": "248ef2b67e9ad30d0df9b0388ba121246b9c0ff47fcacd8efb891deca7d6517e",
+      "retained_sha256": "248ef2b67e9ad30d0df9b0388ba121246b9c0ff47fcacd8efb891deca7d6517e"
+    },
+    {
+      "path": "guest/rpm-002-signature.log",
+      "original_sha256": "bd7d0dea014dc78dabe694023c884820b41edf6e77086be52069e9bfe303a31b",
+      "retained_sha256": "bd7d0dea014dc78dabe694023c884820b41edf6e77086be52069e9bfe303a31b"
+    },
+    {
+      "path": "guest/rpm-003-identity.log",
+      "original_sha256": "5e5e831eb6d97c20587b67c0fb86115bb98d6232d439990c5eaeec16fb61cbd5",
+      "retained_sha256": "5e5e831eb6d97c20587b67c0fb86115bb98d6232d439990c5eaeec16fb61cbd5"
+    },
+    {
+      "path": "guest/rpm-003-signature.log",
+      "original_sha256": "00689c5dddaaafe3d1cbdb1796b4fd848233f100181d7e6e74f4374d5d3e4e0e",
+      "retained_sha256": "00689c5dddaaafe3d1cbdb1796b4fd848233f100181d7e6e74f4374d5d3e4e0e"
+    },
+    {
+      "path": "guest/rpm-004-identity.log",
+      "original_sha256": "39d3af50f813d5475f3b5a3eb9e000b76eebb72aa2edb2a86a2c49d93e41d13c",
+      "retained_sha256": "39d3af50f813d5475f3b5a3eb9e000b76eebb72aa2edb2a86a2c49d93e41d13c"
+    },
+    {
+      "path": "guest/rpm-004-signature.log",
+      "original_sha256": "cbd700f5c7e5d4c13ddf0d1c946a1ab6f69e7a0081d69ca84073ea44adc90d72",
+      "retained_sha256": "cbd700f5c7e5d4c13ddf0d1c946a1ab6f69e7a0081d69ca84073ea44adc90d72"
+    },
+    {
+      "path": "guest/tampered-package-control.log",
+      "original_sha256": "29cc0b42a0ce706f92687708972d90fd648e7a05482899805d6f97c5015e2cb0",
+      "retained_sha256": "29cc0b42a0ce706f92687708972d90fd648e7a05482899805d6f97c5015e2cb0"
+    }
+  ]
+}

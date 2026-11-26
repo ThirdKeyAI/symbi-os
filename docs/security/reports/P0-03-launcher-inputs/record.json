@@ -1,0 +1,68 @@
+{
+  "scope": "Candidate source/API observations and static ELF inspection only; no release authentication or execution qualification",
+  "observed_date": "2026-11-25",
+  "candidate_inputs": "image/launcher/candidates.json",
+  "static_inspection": "image/launcher/static-inspection.json",
+  "archive_published_checksums_matched": true,
+  "programs_executed_locally": false,
+  "local_peak_rss_kib": 32948,
+  "local_cpu_seconds": 0.32,
+  "source_records": {
+    "static-inspection.json": {
+      "sha256": "a3e8943dc7243e5a7750ffd672d1ddde9dd14c24faa3c5335a0a915b885caca1"
+    },
+    "candidates.json": {
+      "sha256": "e09522f03aeb06d607b8da4d5d7e9da1e8713cb243c790144f45f41725dc628d"
+    },
+    "elephant/LICENSE": {
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    "elephant/go.mod": {
+      "sha256": "c5fe5f8c609ed14dae2fea900a0cbdc00875352a1b3b1bf6bfa9f84f430288b9"
+    },
+    "elephant/observed-release.json": {
+      "sha256": "b1a68bf37c7fd8159347a904b43bb36c7c4acb46edfa1d6c1b59fb3ac91adaf7"
+    },
+    "walker/LICENSE": {
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    "walker/Cargo.lock": {
+      "sha256": "3448367c28c769e29f681ea2de84d4a822f08569bbef6628f03535c61fec2315"
+    },
+    "walker/observed-release.json": {
+      "sha256": "a25c4f4e97ef717a7db696f5e065ac5db8a4e97db211ee0cae2ac4917db88531"
+    },
+    "walker/resources/config.toml": {
+      "sha256": "3c5c6867d0216d0c86437a9c413cff4608da514c53e50b1bc412f4965d750a8b"
+    },
+    "walker/.github/workflows/build.yml": {
+      "sha256": "9b6b601f75bad91d9372e258cf3cd626c47d912816989170a75c3632d0706b45"
+    },
+    "elephant/.github/workflows/build.yml": {
+      "sha256": "2da98549a947f033547d697e25a1c2b3015eb1c261e19740bae6b47ca8d3d2e5"
+    }
+  },
+  "upstream_binary_attestation_verified": false,
+  "source_to_binary_reproduction_verified": false,
+  "signature_and_license_review_complete": false,
+  "observations": [
+    "Published Walker release workflow builds against mutable Rust/actions/gtk4-layer-shell inputs and contains no artifact attestation step; source commit is not proof of binary correspondence",
+    "Elephant provider loading searches library/config directories and honors ELEPHANT_PROVIDER_DIR and ELEPHANT_DEV; restrict shipped providers and normal launch paths before menu acceptance",
+    "Only desktopapplications is a candidate provider; no optional menu/remote provider is selected",
+    "Walker ELF needs libgtk4-layer-shell.so.0; Fedora 45 package page lists a provider, which must still be resolved and signature-verified on the hosted builder"
+  ],
+  "fedora_package_page": "https://packages.fedoraproject.org/pkgs/gtk4-layer-shell/gtk4-layer-shell/fedora-45.html",
+  "remaining": [
+    "Actual signed RPM discovery and reviewed pin",
+    "Launcher installation and compatibility on selected base",
+    "Provider/extension refusal tests",
+    "Release input authentication/provenance and license review"
+  ],
+  "os_qualified": false,
+  "log_normalization": {
+    "file": "launcher-profile-red.log",
+    "original_sha256": "ac042dc848a80d021d36e603016024b98e4666ce447a1aa31eb8972df2f3a26f",
+    "retained_sha256": "7d4e0f98b410790d485393dbe1ea71de347cd9a7e245b44c488423a7c25e34d9",
+    "change": "Trailing whitespace normalized; test output unchanged"
+  }
+}

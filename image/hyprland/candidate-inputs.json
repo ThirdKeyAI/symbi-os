@@ -72,6 +72,16 @@
       "repo": "hyprland-protocols",
       "rev": "cd1aba6bd78775825eb230b3a4274c48b6705eb7",
       "type": "github"
+    },
+    {
+      "name": "hyprwire",
+      "version": "0.3.1",
+      "lastModified": 1792081530,
+      "narHash": "sha256-SRs96bR3VbViiQ1vOhZOqy/HxczIWCoHaGKhncwr1js=",
+      "owner": "hyprwm",
+      "repo": "hyprwire",
+      "rev": "a546e42d45e161682f729ebf52375bd4800d7041",
+      "type": "github"
     }
   ],
   "submodules": [

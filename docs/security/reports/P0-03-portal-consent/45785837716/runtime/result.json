@@ -1,0 +1,130 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "consent_qualified": false,
+  "limits": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128"
+  },
+  "commands": [
+    {
+      "name": "installed-before",
+      "exit_code": 0
+    },
+    {
+      "name": "import-key",
+      "exit_code": 0
+    },
+    {
+      "name": "keyring",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "missing-key-control",
+      "exit_code": 1
+    },
+    {
+      "name": "tampered-package-control",
+      "exit_code": 1
+    },
+    {
+      "name": "rpm-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "offline-install",
+      "exit_code": 0
+    },
+    {
+      "name": "installed-after",
+      "exit_code": 0
+    },
+    {
+      "name": "probe-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "loader-0",
+      "exit_code": 0
+    },
+    {
+      "name": "loader-1",
+      "exit_code": 0
+    },
+    {
+      "name": "loader-2",
+      "exit_code": 0
+    },
+    {
+      "name": "portal-version",
+      "exit_code": 0
+    }
+  ],
+  "runtime_package": {
+    "filename": "iniparser-4.2.6-5.fc45.x86_64.rpm",
+    "bytes": 26470,
+    "sha256": "8774475752a94ae62e9958819c03fa3977677d53c93b3b981a82f480b1767743",
+    "nevra": "iniparser-4.2.6-5.fc45.x86_64",
+    "vendor": "Fedora Project",
+    "license": "MIT",
+    "signature_verified": true,
+    "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+  },
+  "loader_probes": [
+    "lib/libhyprtoolkit.so.0.6.0",
+    "bin/hyprland-share-picker",
+    "libexec/xdg-desktop-portal-hyprland"
+  ],
+  "scope": "Additive runtime library and unprivileged loader/CLI checks; no GUI or consent qualification",
+  "negative_controls": {
+    "missing_key_rejected": true,
+    "tampered_package_rejected": true
+  },
+  "base_package_count": 2178,
+  "required_packages": [
+    "iniparser\t0\t4.2.6\t5.fc45\tx86_64"
+  ],
+  "added_packages": [
+    "iniparser\t0\t4.2.6\t5.fc45\tx86_64"
+  ],
+  "all_base_packages_unchanged": true,
+  "base_crypto_configuration_unchanged": true,
+  "probe_identity": {
+    "uid": [
+      10001,
+      10001,
+      10001,
+      10001
+    ],
+    "gid": [
+      10001,
+      10001,
+      10001,
+      10001
+    ],
+    "groups": [],
+    "capabilities": {
+      "CapInh": "0000000000000000",
+      "CapPrm": "0000000000000000",
+      "CapEff": "0000000000000000",
+      "CapAmb": "0000000000000000"
+    },
+    "no_new_privileges": 1
+  },
+  "portal_version": "xdg-desktop-portal-hyprland v1.5.0",
+  "cgroup_final": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128",
+    "memory.peak": "194068480",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 2259746\nuser_usec 1601655\nsystem_usec 658091\nnice_usec 1599000\ncore_sched.force_idle_usec 0\nnr_periods 27\nnr_throttled 10\nthrottled_usec 52039\nnr_bursts 0\nburst_usec 0"
+  }
+}

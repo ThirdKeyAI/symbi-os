@@ -1,0 +1,38 @@
+test_entrypoints_load_one_shared_binding_file (image.tests.test_desktop_defaults.ShortcutCompatibility.test_entrypoints_load_one_shared_binding_file) ... ok
+test_every_binding_is_named_for_future_help_and_runtime_accounting (image.tests.test_desktop_defaults.ShortcutCompatibility.test_every_binding_is_named_for_future_help_and_runtime_accounting) ... ok
+test_media_actions_are_constant_packaged_commands (image.tests.test_desktop_defaults.ShortcutCompatibility.test_media_actions_are_constant_packaged_commands) ... ok
+test_review_is_bound_to_the_selected_compositor_revision (image.tests.test_desktop_defaults.ShortcutCompatibility.test_review_is_bound_to_the_selected_compositor_revision) ... ok
+test_working_core_and_reserved_menu_chords_keep_their_meanings (image.tests.test_desktop_defaults.ShortcutCompatibility.test_working_core_and_reserved_menu_chords_keep_their_meanings) ... ok
+test_workspaces_match_the_recorded_physical_keycodes (image.tests.test_desktop_defaults.ShortcutCompatibility.test_workspaces_match_the_recorded_physical_keycodes) ... ok
+test_compositor_bar_and_launcher_share_local_palette (image.tests.test_desktop_defaults.TokyoNightDefaults.test_compositor_bar_and_launcher_share_local_palette) ... ok
+test_inactive_kitty_profile_preserves_terminal_look_and_keys_without_remote_control (image.tests.test_desktop_defaults.TokyoNightDefaults.test_inactive_kitty_profile_preserves_terminal_look_and_keys_without_remote_control) ... ok
+test_inactive_tmux_profile_preserves_keys_without_shell_hooks (image.tests.test_desktop_defaults.TokyoNightDefaults.test_inactive_tmux_profile_preserves_keys_without_shell_hooks) ... ok
+test_walker_selects_only_the_shipped_local_theme_and_provider (image.tests.test_desktop_defaults.TokyoNightDefaults.test_walker_selects_only_the_shipped_local_theme_and_provider) ... ok
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.001s
+
+OK
+	Command being timed: "python3 -m unittest -v image.tests.test_desktop_defaults"
+	User time (seconds): 0.02
+	System time (seconds): 0.00
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.03
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 17360
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 2864
+	Voluntary context switches: 0
+	Involuntary context switches: 4
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

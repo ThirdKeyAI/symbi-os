@@ -1,0 +1,56 @@
+{"disk": {"device": 66305, "inode": 10511028, "bytes": 25769803776, "uid": 0, "mode": 384, "links": 1}, "limits": {"memory.max": "2147483648", "memory.swap.max": "0", "cpu.max": "100000 100000", "pids.max": "128"}, "command": ["/usr/bin/bootc", "install", "to-disk", "--source-imgref=dir:/inputs/signed", "--target-imgref=ghcr.io/thirdkeyai/symbiont-os@sha256:9b6e8fdd9f6f98631895ccdfaaed6ffd88febd3ea6238d543935a524b572faf3", "--enforce-container-sigpolicy", "--filesystem=btrfs", "--generic-image", "--via-loopback", "--karg=console=ttyS0,115200n8", "--karg=selinux=1", "--karg=enforcing=1", "--karg=systemd.unit=multi-user.target", "--karg=systemd.wants=o.service", "/output/atomic.raw"], "scope": "Ephemeral CI-signed local development input; original ThirdKey policy remains inside the installed image"}
+Installing image: ostree-image-signed:docker://ghcr.io/thirdkeyai/symbiont-os@sha256:9b6e8fdd9f6f98631895ccdfaaed6ffd88febd3ea6238d543935a524b572faf3
+Block setup: direct
+       Size: 25769803776
+     Serial: <unknown>
+      Model: <unknown>
+ Partitions: UUID
+Checking that no-one is using this disk right now ... OK
+
+Disk /dev/loop0: 24 GiB, 25769803776 bytes, 50331648 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+
+>>> Script header accepted.
+>>> Script header accepted.
+>>> Created a new GPT disklabel (GUID: 76132497-6B84-4609-9389-8B121B5EFD83).
+/dev/loop0p1: Created a new partition 1 of type 'BIOS boot' and of size 1 MiB.
+/dev/loop0p2: Created a new partition 2 of type 'EFI System' and of size 512 MiB.
+/dev/loop0p3: Created a new partition 3 of type 'Linux root (x86-64)' and of size 23.5 GiB.
+/dev/loop0p4: Done.
+
+New situation:
+Disklabel type: gpt
+Disk identifier: 76132497-6B84-4609-9389-8B121B5EFD83
+
+Device         Start      End  Sectors  Size Type
+/dev/loop0p1    2048     4095     2048    1M BIOS boot
+/dev/loop0p2    4096  1052671  1048576  512M EFI System
+/dev/loop0p3 1052672 50329599 49276928 23.5G Linux root (x86-64)
+
+The partition table has been altered.
+Calling ioctl() to re-read partition table.
+Syncing disks.
+Creating root filesystem (btrfs) on device /dev/loop0p3 (size=25.2 GB)
+> mkfs.btrfs -U 71b09b66-9157-481a-bd74-894766c20499 -L root /dev/loop0p3
+Creating ESP filesystem
+> mkfs.fat /dev/loop0p2 -n EFI-SYSTEM
+Initializing ostree layout
+layers already present: 0; layers needed: 129 (4.1 GB)
+Bootloader: grub
+Installing bootloader via bootupd
+Added 01_users.cfg
+Added 10_blscfg.cfg
+Added 14_menu_show_once.cfg
+Added 30_uefi-firmware.cfg
+Added 41_custom.cfg
+Installed: grub.cfg
+Installed: bootuuid.cfg
+Installed: "EFI/fedora/grub.cfg"
+Installed: "EFI/fedora/bootuuid.cfg"
+Trimming root
+.: 13.9 GiB (14964166656 bytes) trimmed
+Finalizing filesystem root
+Unmounting filesystems
+Installation complete!

@@ -1,0 +1,20 @@
+Package       Arch   Version        Repository        Size
+Installing:
+ libeis       x86_64 0:1.6.0-3.fc45 @commandline 127.4 KiB
+ muParser     x86_64 0:2.3.5-6.fc45 @commandline 563.4 KiB
+ tomlplusplus x86_64 0:3.4.0-8.fc45 @commandline 262.1 KiB
+
+Transaction Summary:
+ Installing:         3 packages
+
+Updating and loading repositories:
+Repositories loaded.
+Total size of inbound packages is 346 KiB. Need to download 0 B.
+After this operation, 953 KiB extra will be used (install 953 KiB, remove 0 B).
+Running transaction
+[1/5] Verify package files              100% |   1.5 KiB/s |   3.0   B |  00m00s
+[2/5] Prepare transaction               100% |  10.0   B/s |   3.0   B |  00m00s
+[3/5] Installing tomlplusplus-0:3.4.0-8 100% |  36.8 MiB/s | 263.5 KiB |  00m00s
+[4/5] Installing muParser-0:2.3.5-6.fc4 100% |  91.9 MiB/s | 564.9 KiB |  00m00s
+[5/5] Installing libeis-0:1.6.0-3.fc45. 100% | 164.6 KiB/s | 128.5 KiB |  00m01s
+Complete!

@@ -1,0 +1,16 @@
+Running as unit: symbi-portal-build-45773194827-1.service
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/runner/work/symbi-os/symbi-os/image/portal/hosted_build.py", line 199, in <module>
+    main()
+    ~~~~^^
+  File "/home/runner/work/symbi-os/symbi-os/image/portal/hosted_build.py", line 170, in main
+    if 'not found' in checked.stdout+checked.stderr:raise ValueError('Selected base lacks a portal runtime dependency')
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Selected base lacks a portal runtime dependency
+          Finished with result: exit-code
+Main processes terminated with: code=exited, status=1/FAILURE
+               Service runtime: 12min 2.775s
+             CPU time consumed: 12min 3.598s
+                   Memory peak: 8G (swap: 0B)

@@ -1,0 +1,78 @@
+{
+  "evidence_reconciled": true,
+  "run_id": 45777761262,
+  "source_commit": "ddb34fce5ae13d6e521f719e145fb36cafa59732",
+  "workflow_passed": true,
+  "os_qualified": false,
+  "consent_qualified": false,
+  "product_installation": false,
+  "original_evidence_files": 53,
+  "original_expanded_bytes": 262281,
+  "base_signature_subject_verified": true,
+  "runtime_package": {
+    "filename": "iniparser-4.2.6-5.fc45.x86_64.rpm",
+    "bytes": 26470,
+    "sha256": "8774475752a94ae62e9958819c03fa3977677d53c93b3b981a82f480b1767743",
+    "nevra": "iniparser-4.2.6-5.fc45.x86_64",
+    "vendor": "Fedora Project",
+    "license": "MIT",
+    "signature_verified": true,
+    "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+  },
+  "real_missing_key_and_tamper_refused": true,
+  "installed_packages_before": 2178,
+  "installed_packages_after": 2179,
+  "all_base_packages_unchanged": true,
+  "crypto_configuration_slots_unchanged": 40,
+  "loader_probes": [
+    "lib/libhyprtoolkit.so.0.6.0",
+    "bin/hyprland-share-picker",
+    "libexec/xdg-desktop-portal-hyprland"
+  ],
+  "native_probe_identity": {
+    "uid": [
+      10001,
+      10001,
+      10001,
+      10001
+    ],
+    "gid": [
+      10001,
+      10001,
+      10001,
+      10001
+    ],
+    "groups": [],
+    "capabilities": {
+      "CapInh": "0000000000000000",
+      "CapPrm": "0000000000000000",
+      "CapEff": "0000000000000000",
+      "CapAmb": "0000000000000000"
+    },
+    "no_new_privileges": 1
+  },
+  "actual_portal_version": "xdg-desktop-portal-hyprland v1.5.0",
+  "retained_portal_and_compositor_bindings_verified": true,
+  "native_components_recompiled": false,
+  "container_removed_and_absent": true,
+  "host_counters": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4360118272",
+    "memory.events": "low 0\nhigh 0\nmax 41706\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 158133838\nuser_usec 94836623\nsystem_usec 63297215\nnice_usec 90753000\ncore_sched.force_idle_usec 0\nnr_periods 1583\nnr_throttled 485\nthrottled_usec 26232740\nnr_bursts 0\nburst_usec 0"
+  },
+  "guest_counters": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128",
+    "memory.peak": "350724096",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 3222085\nuser_usec 1961749\nsystem_usec 1260335\nnice_usec 1955000\ncore_sched.force_idle_usec 0\nnr_periods 59\nnr_throttled 14\nthrottled_usec 95563\nnr_bursts 0\nburst_usec 0"
+  },
+  "local_native_execution": false,
+  "local_image_download": false
+}

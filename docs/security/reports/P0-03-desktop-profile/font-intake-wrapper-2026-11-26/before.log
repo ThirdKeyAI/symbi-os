@@ -1,0 +1,15 @@
+test_host_wrapper_does_not_precreate_inspector_evidence (image.tests.test_font_intake.FontInputs.test_host_wrapper_does_not_precreate_inspector_evidence) ... FAIL
+
+======================================================================
+FAIL: test_host_wrapper_does_not_precreate_inspector_evidence (image.tests.test_font_intake.FontInputs.test_host_wrapper_does_not_precreate_inspector_evidence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/vmstore/repos2/symbi-os/.cache/p0-image-followup/image/tests/test_font_intake.py", line 43, in test_host_wrapper_does_not_precreate_inspector_evidence
+    self.assertNotIn('mkdir -p "$evidence"', script)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'mkdir -p "$evidence"' unexpectedly found in '#!/usr/bin/env bash\nset -euo pipefail\n[[ "${GITHUB_ACTIONS:-}" == true && "${RUNNER_ENVIRONMENT:-}" == github-hosted ]] || {\n  echo \'Font candidate intake requires disposable GitHub-hosted CI.\' >&2\n  exit 1\n}\nroot=$(git rev-parse --show-toplevel)\nevidence="$root/.cache/font-intake-evidence"\nmkdir -p "$evidence"\nunit="symbi-font-intake-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"\nset +e\nsudo systemd-run --unit="$unit" --wait --pipe --working-directory="$root" \\\n  --uid="$(id -u)" --gid="$(id -g)" \\\n  --property=MemoryMax=512M --property=MemorySwapMax=0 --property=CPUQuota=100% \\\n  --property=TasksMax=32 --property=Nice=10 --property=RuntimeMaxSec=10min \\\n  --property=TimeoutStopSec=15 --property=KillMode=control-group \\\n  --property=NoNewPrivileges=yes --property=CapabilityBoundingSet= \\\n  --property=PrivateTmp=yes --property=ProtectSystem=strict \\\n  --property="ReadWritePaths=$root/.cache" --property=UMask=0077 \\\n  /usr/bin/env -i PATH=/usr/bin:/bin LANG=C.UTF-8 PYTHONDONTWRITEBYTECODE=1 \\\n  GITHUB_ACTIONS=true RUNNER_ENVIRONMENT=github-hosted "GITHUB_SHA=$GITHUB_SHA" \\\n  python3 -m image.fonts.intake 2>&1 | tee "$evidence/hosted-intake.log"\nstatus=${PIPESTATUS[0]}\nset -e\nexit "$status"\n'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (failures=1)

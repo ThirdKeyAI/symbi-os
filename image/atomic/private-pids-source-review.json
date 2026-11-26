@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "scope": "Static upstream systemd v262.1 documentation review; the booted Fedora package is 262.1. This does not establish distro binary/source equivalence.",
+  "repository": "systemd/systemd",
+  "tag": "v262.1",
+  "tag_object": "f85dfc5dd463f37b67ce589e511be36f527b19f6",
+  "tag_signature_verified_by_github": true,
+  "revision": "73612ea502d53baf9b0df4336cfc296a7ee0d524",
+  "path": "man/systemd.exec.xml",
+  "git_blob": "151cff518a70dc4761d7305857f83b6888834572",
+  "url": "https://github.com/systemd/systemd/blob/73612ea502d53baf9b0df4336cfc296a7ee0d524/man/systemd.exec.xml",
+  "excerpt": "PrivatePIDs= takes a boolean and defaults to false. When enabled, it creates a new PID namespace for executed processes; each executed process is PID 1 and /proc only shows processes in that namespace. It implies MountAPIVFS=yes, applies only to service units, and is unsupported with Type=forking. It was added in version 257.",
+  "application": "s.service is a Type=oneshot service. PrivatePIDs=yes makes its fixed bootc process PID 1 with a private /proc. The pinned bootc source treats PID 1 as already isolated when /proc/1/ns/mnt and /proc/self/ns/mnt match. If PID namespaces are unavailable or the native behavior differs, bootc status or the service-result check fails closed.",
+  "limits": "The collector retains only CAP_SYS_ADMIN, empty ambient capabilities, no-new-privileges, a private mount namespace and existing resource ceilings. CAP_SYS_PTRACE is not granted. Native confirmation remains required."
+}

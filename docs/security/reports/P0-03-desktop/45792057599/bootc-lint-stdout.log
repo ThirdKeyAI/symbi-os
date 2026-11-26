@@ -1,0 +1,6 @@
+Lint warning: nonempty-boot: Found non-empty /boot:
+  symvers-7.3.4-300.secureblue.1.fc45.x86_64.xz
+
+Checks passed: 13
+Checks skipped: 1
+Warnings: 1

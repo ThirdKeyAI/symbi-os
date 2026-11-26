@@ -1,0 +1,635 @@
+{
+  "passed": true,
+  "image_built": true,
+  "os_qualified": false,
+  "source_commit": "23a6c721092ad77c3af33c11cab230ecaaa54cff",
+  "variant": "generic",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "base-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "pull-base",
+      "exit_code": 0
+    },
+    {
+      "name": "podman-version",
+      "exit_code": 0
+    },
+    {
+      "name": "base-prerequisites",
+      "exit_code": 0
+    },
+    {
+      "name": "base-check-cleanup",
+      "exit_code": 0
+    },
+    {
+      "name": "base-check-absent",
+      "exit_code": 1
+    },
+    {
+      "name": "build-image",
+      "exit_code": 0
+    },
+    {
+      "name": "save-image",
+      "exit_code": 0
+    },
+    {
+      "name": "compress-image",
+      "exit_code": 0
+    },
+    {
+      "name": "installed-files",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-installed-files",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-installed-files",
+      "exit_code": 1
+    },
+    {
+      "name": "ldd-Hyprland",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-ldd-Hyprland",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-ldd-Hyprland",
+      "exit_code": 1
+    },
+    {
+      "name": "ldd-hyprctl",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-ldd-hyprctl",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-ldd-hyprctl",
+      "exit_code": 1
+    },
+    {
+      "name": "ldd-elephant",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-ldd-elephant",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-ldd-elephant",
+      "exit_code": 1
+    },
+    {
+      "name": "ldd-walker",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-ldd-walker",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-ldd-walker",
+      "exit_code": 1
+    },
+    {
+      "name": "ldd-symbi",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-ldd-symbi",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-ldd-symbi",
+      "exit_code": 1
+    },
+    {
+      "name": "ldd-symbi-sandbox-supervisor",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-ldd-symbi-sandbox-supervisor",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-ldd-symbi-sandbox-supervisor",
+      "exit_code": 1
+    },
+    {
+      "name": "ldd-portal-toolkit",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-ldd-portal-toolkit",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-ldd-portal-toolkit",
+      "exit_code": 1
+    },
+    {
+      "name": "ldd-portal-picker",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-ldd-portal-picker",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-ldd-portal-picker",
+      "exit_code": 1
+    },
+    {
+      "name": "ldd-portal-backend",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-ldd-portal-backend",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-ldd-portal-backend",
+      "exit_code": 1
+    },
+    {
+      "name": "symbi-version",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-symbi-version",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-symbi-version",
+      "exit_code": 1
+    },
+    {
+      "name": "walker-version",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-walker-version",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-walker-version",
+      "exit_code": 1
+    },
+    {
+      "name": "elephant-provider",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-elephant-provider",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-elephant-provider",
+      "exit_code": 1
+    },
+    {
+      "name": "portal-version",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-portal-version",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-portal-version",
+      "exit_code": 1
+    },
+    {
+      "name": "picker-allow-token",
+      "exit_code": 2
+    },
+    {
+      "name": "cleanup-picker-allow-token",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-picker-allow-token",
+      "exit_code": 1
+    },
+    {
+      "name": "picker-unknown-option",
+      "exit_code": 2
+    },
+    {
+      "name": "cleanup-picker-unknown-option",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-picker-unknown-option",
+      "exit_code": 1
+    },
+    {
+      "name": "portal-activation",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-portal-activation",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-portal-activation",
+      "exit_code": 1
+    },
+    {
+      "name": "session-defaults",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-session-defaults",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-session-defaults",
+      "exit_code": 1
+    },
+    {
+      "name": "bootc-lint",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-bootc-lint",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-bootc-lint",
+      "exit_code": 1
+    },
+    {
+      "name": "remaining-build-containers",
+      "exit_code": 0
+    },
+    {
+      "name": "all-containers-absent",
+      "exit_code": 0
+    }
+  ],
+  "checks": [
+    {
+      "name": "ldd-Hyprland",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "ldd-hyprctl",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "ldd-elephant",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "ldd-walker",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "ldd-symbi",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "ldd-symbi-sandbox-supervisor",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "ldd-portal-toolkit",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "ldd-portal-picker",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "ldd-portal-backend",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "symbi-version",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "walker-version",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "elephant-provider",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "portal-version",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "picker-allow-token",
+      "exit_code": 2,
+      "passed": true
+    },
+    {
+      "name": "picker-unknown-option",
+      "exit_code": 2,
+      "passed": true
+    },
+    {
+      "name": "portal-activation",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "session-defaults",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "name": "bootc-lint",
+      "passed": true,
+      "exit_code": 0
+    }
+  ],
+  "containers": {
+    "symbi-desktop-base-check": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-installed-files": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-ldd-Hyprland": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-ldd-hyprctl": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-ldd-elephant": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-ldd-walker": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-ldd-symbi": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-ldd-symbi-sandbox-supervisor": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-ldd-portal-toolkit": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-ldd-portal-picker": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-ldd-portal-backend": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-symbi-version": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-walker-version": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-elephant-provider": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-portal-version": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-picker-allow-token": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-picker-unknown-option": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-portal-activation": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-session-defaults": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-desktop-bootc-lint": {
+      "removed": true,
+      "absent": true
+    }
+  },
+  "scope": "Actual desktop OCI assembly and installed-input checks; boot, graphics, TLS, containment and signed-release acceptance remain open",
+  "parent_controllers_before": {
+    "cgroup.controllers": "cpuset cpu io memory pids",
+    "cgroup.subtree_control": "",
+    "cgroup.procs": ""
+  },
+  "image_build_limits_verified": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128"
+  },
+  "disk_free_before_pull": 88728346624,
+  "signature_verified_before_pull": true,
+  "image_run_cgroup": "/system.slice/symbi-desktop-build-45792057599-1.service/image-build/run",
+  "image_build_cgroup_final": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128",
+    "memory.peak": "2147483648",
+    "memory.events": "low 0\nhigh 0\nmax 1613\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 21847672\nuser_usec 8620810\nsystem_usec 13226861\nnice_usec 8325000\ncore_sched.force_idle_usec 0\nnr_periods 262\nnr_throttled 191\nthrottled_usec 6936109\nnr_bursts 0\nburst_usec 0"
+  },
+  "image_id": "sha256:54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1",
+  "installation": {
+    "passed": true,
+    "os_qualified": false,
+    "crypto_policy_qualified": false,
+    "limits": {
+      "memory.max": "2147483648",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "max"
+    },
+    "commands": [
+      {
+        "name": "installed-before",
+        "exit_code": 0
+      },
+      {
+        "name": "import-key",
+        "exit_code": 0
+      },
+      {
+        "name": "keyring",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-0-signature",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-0-identity",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-1-signature",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-1-identity",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-2-signature",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-2-identity",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-3-signature",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-3-identity",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-4-signature",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-4-identity",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-5-signature",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-5-identity",
+        "exit_code": 0
+      },
+      {
+        "name": "offline-install",
+        "exit_code": 0
+      },
+      {
+        "name": "installed-after",
+        "exit_code": 0
+      }
+    ],
+    "target_base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+    "scope": "Actual image package installation; dynamic TLS and boot/containment acceptance remain separate",
+    "base_package_count": 2178,
+    "required_packages": [
+      "libeis\t0\t1.6.0\t3.fc45\tx86_64",
+      "muParser\t0\t2.3.5\t6.fc45\tx86_64",
+      "tomlplusplus\t0\t3.4.0\t8.fc45\tx86_64",
+      "gtk4-layer-shell\t0\t1.3.0\t3.fc45\tx86_64",
+      "openssl3-libs\t1\t3.5.9\t1.fc45\tx86_64",
+      "iniparser\t0\t4.2.6\t5.fc45\tx86_64"
+    ],
+    "added_packages": [
+      "gtk4-layer-shell\t0\t1.3.0\t3.fc45\tx86_64",
+      "iniparser\t0\t4.2.6\t5.fc45\tx86_64",
+      "libeis\t0\t1.6.0\t3.fc45\tx86_64",
+      "muParser\t0\t2.3.5\t6.fc45\tx86_64",
+      "openssl3-libs\t1\t3.5.9\t1.fc45\tx86_64",
+      "tomlplusplus\t0\t3.4.0\t8.fc45\tx86_64"
+    ],
+    "all_base_packages_unchanged": true,
+    "base_crypto_configuration_unchanged": true,
+    "compatibility_configuration_sha256": "34108f65c3c759083f6b2d8ff8c509e3504aa78e5180b197827d90827ddc663f",
+    "cgroup_final": {
+      "memory.max": "2147483648",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "max",
+      "memory.peak": "367988736",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "cpu.stat": "usage_usec 3311006\nuser_usec 1951824\nsystem_usec 1359181\nnice_usec 1953000\ncore_sched.force_idle_usec 0\nnr_periods 38\nnr_throttled 4\nthrottled_usec 12028\nnr_bursts 0\nburst_usec 0"
+    }
+  },
+  "image_archive": {
+    "name": "symbiont-os-generic.oci.tar.gz",
+    "bytes": 4026640633,
+    "sha256": "08b759cea64df1372683aa261da07f96e2ff51e57dc1b3535278445d5cac37af",
+    "image_id": "sha256:54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1"
+  },
+  "installed_files": {
+    "passed": true,
+    "os_qualified": false,
+    "installed_files_checked": 102,
+    "installed_package_count": 2184,
+    "all_package_identities_preserved_after_build": true,
+    "uid": 10001,
+    "limits": {
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "64"
+    },
+    "scope": "Installed bytes and packaging only; no boot or containment qualification"
+  },
+  "portal_activation": {
+    "passed": true,
+    "interactive_session_qualified": false,
+    "scope": "Installed vendor defaults and absolute activation paths; users can override portal preferences"
+  },
+  "all_containers_absent": true,
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4311535616",
+    "memory.events": "low 0\nhigh 0\nmax 39115\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 405100993\nuser_usec 329979745\nsystem_usec 75121247\nnice_usec 324769000\ncore_sched.force_idle_usec 0\nnr_periods 4064\nnr_throttled 910\nthrottled_usec 129588332\nnr_bursts 0\nburst_usec 0"
+  }
+}

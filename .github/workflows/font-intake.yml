@@ -1,0 +1,56 @@
+name: Nerd Font candidate intake
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "image/fonts/**"
+      - "image/tests/test_font_intake.py"
+      - "scripts/check-font-intake.sh"
+      - ".github/workflows/font-intake.yml"
+      - "!image/fonts/README.md"
+  pull_request:
+    paths:
+      - "image/fonts/**"
+      - "image/tests/test_font_intake.py"
+      - "scripts/check-font-intake.sh"
+      - ".github/workflows/font-intake.yml"
+      - "!image/fonts/README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: font-intake-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  inspect:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Authenticate and passively inventory exact font candidates
+        run: bash scripts/check-font-intake.sh
+      - name: Retain bounded public evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: nerd-font-intake-evidence
+          path: .cache/font-intake-evidence/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Retain exact public candidate archives for later native review
+        if: success()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: nerd-font-candidates
+          path: .cache/font-candidate/
+          compression-level: 0
+          retention-days: 14
+          if-no-files-found: error

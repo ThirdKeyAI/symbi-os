@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scope": "Candidate Fedora compatibility libraries for the pinned Symbiont runtime; signed discovery only, no installation or OS qualification",
+  "source_inputs": "image/assembly/runtime-development.lock.json",
+  "observed_failure": "docs/security/reports/P0-03-assembly-inputs/45747059051/runtime/result.json",
+  "observed_failure_sha256": "87679468fe29d6a652c2771a6919fa5240c8dd6ed59d957f3bfde2c7b3f0abde",
+  "packages": [
+    "libssl.so.3()(64bit)",
+    "libcrypto.so.3()(64bit)"
+  ],
+  "expected_provider": "openssl3-libs",
+  "notes": [
+    "Actual original-base ldd and CLI loading found missing libssl.so.3 and libcrypto.so.3; all eight probe containers were removed",
+    "Fedora lists openssl3-libs as the OpenSSL 3 compatibility provider: https://packages.fedoraproject.org/pkgs/openssl3/openssl3-libs/fedora-45-updates.html",
+    "Resolve only the already-reviewed Fedora 45 release/updates repositories, then verify every candidate signature and pin exact bytes before a separate offline installation",
+    "Preserve the base OpenSSL 4 libraries and every installed package identity; no Ubuntu libraries, source change or new Cargo feature"
+  ],
+  "loader_output": "docs/security/reports/P0-03-assembly-inputs/45747059051/runtime/ldd-symbi-stdout.log",
+  "loader_output_sha256": "d644f5c1831dc6c2e7c16303005fff4ab8649dab11ea1afc06d1b7c1faa2898c"
+}
