@@ -38,3 +38,18 @@ examples that disable SELinux.
 Actual installation/Atomic boot, rendering/input, consent interaction, containment,
 physical NVIDIA, signed release/update/rollback and human TCB reviews remain gates.
 The existing cloud graphics result is infrastructure evidence, not an Atomic boot.
+
+
+## Protected kernel-file observation
+
+The first real saved-image preflight passed archive ingestion, exact image loading
+and all installed files/packages, then failed because the unprivileged probe could
+not read the protected initramfs. The original failure and complete cleanup evidence
+are retained under `P0-03-atomic-preflight/45799924739/`.
+The correction uses [Podman's stopped-container file copy](https://docs.podman.io/en/latest/markdown/podman-cp.1.html)
+for only kernel/initramfs, into new private CI storage. The source container must
+remain never-started before and after. No code runs as root in a container, no
+installed permissions change, and the private copied bytes are deleted after
+hashing. The two unprivileged probes receive only hash-bound metadata. Four new
+regressions pass; all 217 image tests pass locally. Corrected hosted acceptance
+is pending. This still performs no disk installation or boot.

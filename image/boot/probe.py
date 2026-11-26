@@ -9,9 +9,9 @@ import stat
 import subprocess
 
 
-def regular(path, maximum=1024**3):
+def regular(path, maximum=1024**3, *, allow_empty=False):
     info = path.lstat()
-    if not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= maximum:
+    if not stat.S_ISREG(info.st_mode) or not (0 if allow_empty else 1) <= info.st_size <= maximum:
         raise ValueError('Expected a bounded regular installed file: '+str(path))
     with path.open('rb') as stream: digest = hashlib.file_digest(stream, 'sha256').hexdigest()
     return {'bytes': info.st_size, 'sha256': digest, 'uid': info.st_uid, 'mode': stat.S_IMODE(info.st_mode)}
@@ -63,8 +63,14 @@ def main():
     report['install_options'] = sorted(set(re.findall(r'--[a-z][a-z0-9-]*',help_text)))
     report['os'] = settings(Path('/etc/os-release'))
     report['selinux'] = settings(Path('/etc/selinux/config'))
-    report['kernel'] = {'version':kernel, **{name:regular(Path('/usr/lib/modules')/kernel/name)
-                                          for name in ('vmlinuz','initramfs.img')}}
+    # The protected initramfs remains unreadable here. The controller hashes
+    # copies from a never-started container and supplies only public metadata.
+    kernel_input=Path('/qualification/kernel.json')
+    if kernel_input.is_symlink() or not kernel_input.is_file() or kernel_input.stat().st_size>65536:
+        raise ValueError('Invalid controller-supplied kernel observation')
+    raw=kernel_input.read_bytes()
+    report['kernel']=json.loads(raw)
+    report['kernel_source_sha256']=hashlib.sha256(raw).hexdigest()
     report['trust'] = {path:regular(Path('/')/path,65536) for path in
                       ('etc/containers/policy.json','etc/containers/registries.d/symbiont.yaml')}
     report['backend_files'] = {}
@@ -72,7 +78,7 @@ def main():
                  '/usr/lib/composefs/setup-root-conf.toml'):
         path=Path(name)
         if path.exists():
-            info=regular(path,65536);info['text']=path.read_text();report['backend_files'][name]=info
+            info=regular(path,65536,allow_empty=True);info['text']=path.read_text();report['backend_files'][name]=info
     report['tools'] = {}
     for name in ('bootc','bootupctl','grub2-install','grub2-mkconfig','mkfs.btrfs','mkfs.ext4','mkfs.xfs',
                  'qemu-system-x86_64','qemu-img','xorriso'):

@@ -13,6 +13,7 @@ def main():
         raise SystemExit('Use the disposable hosted Atomic image preflight units')
     if sys.argv[1:] not in (['prepare'], ['inspect']): raise SystemExit('Select prepare or inspect')
     from image.boot.inputs import require_desktop_image, unpack_desktop_image
+    from image.boot.kernel_files import read_copied_kernel, validate_copy_container
     from image.boot.preflight import expected_inputs, validate_loaded_image, validate_report
     from image.launcher.probes.bounded_process import run_bounded
     from image.toolchain.reuse import digest, unique_json
@@ -52,7 +53,7 @@ def main():
         del record['active_command'];save()
         if check: result.check_returncode()
         return result
-    podman=None; image_id=manifest['archive']['image_id']; containers=[]
+    podman=None; image_id=manifest['archive']['image_id']; containers=[]; kernel_output=None
     try:
         expected=expected_inputs(root,lock,pins,variant)
         record['expected_inputs']=expected
@@ -101,7 +102,30 @@ def main():
             rows=unique_json(run('inspect-image',podman+['image','inspect',image_id]).stdout)
             observed=validate_loaded_image(rows,image_id)
             record['loaded_image']={key:observed[key] for key in ('Id','Digest','Architecture','Os')}
+            # Preserve the source's root-only permissions. No code runs as root
+            # in a container: Podman reads only two paths from a stopped image.
+            copy_source='symbi-atomic-kernel-copy';containers.append(copy_source)
+            run('create-kernel-copy',podman+['create','--name='+copy_source,'--pull=never',
+                '--read-only','--network=none','--user=10001:10001','--cap-drop=ALL',
+                '--security-opt=no-new-privileges','--memory=512m','--memory-swap=512m',
+                '--cpus=1','--pids-limit=64','--entrypoint=/usr/bin/false',image_id])
+            before=unique_json(run('kernel-copy-before',podman+['container','inspect',copy_source]).stdout)
+            validate_copy_container(before,image_id)
+            kernel_output=storage/'kernel-files';kernel_output.mkdir(mode=0o700)
+            for filename in ('vmlinuz','initramfs.img'):
+                run('copy-'+filename,podman+['cp','--archive=true',
+                    copy_source+':/usr/lib/modules/'+expected['kernel']+'/'+filename,
+                    str(kernel_output/filename)],120)
+            kernel=read_copied_kernel(kernel_output,expected['kernel'])
+            after=unique_json(run('kernel-copy-after',podman+['container','inspect',copy_source]).stdout)
+            validate_copy_container(after,image_id)
+            record['kernel_copy']={'source_container':copy_source,'never_started':True,'kernel':kernel}
+            shutil.rmtree(kernel_output);kernel_output=None
+            record['kernel_copy']['private_payload_removed']=True
             qualification=storage/'qualification';qualification.mkdir(mode=0o755)
+            (qualification/'kernel.json').write_text(json.dumps(kernel,sort_keys=True)+'\n')
+            (qualification/'kernel.json').chmod(0o644)
+            record['kernel_copy']['observation_sha256']=digest(qualification/'kernel.json')
             (qualification/'expected.json').write_text(json.dumps(expected)+'\n')
             (qualification/'expected.json').chmod(0o644)
             for source,name in [(root/'image/boot/probe.py','probe.py'),
@@ -125,12 +149,17 @@ def main():
                         raise ValueError('Installed payload re-verification failed')
                     record['installed_files']=result
                 else:
-                    validate_report(result,expected);record['boot_inputs']=result
+                    validate_report(result,expected)
+                    if (result['kernel']!=kernel
+                            or result.get('kernel_source_sha256')!=record['kernel_copy']['observation_sha256']):
+                        raise ValueError('Unprivileged report changed its bound kernel observation')
+                    record['boot_inputs']=result
             record['passed']=True
     except Exception as error:
         record['failure']=type(error).__name__+': '+str(error)
         raise
     finally:
+        if kernel_output is not None: shutil.rmtree(kernel_output)
         if podman is not None:
             record['cleanup']={}
             for name in containers:

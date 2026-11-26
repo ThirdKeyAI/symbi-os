@@ -1,0 +1,21 @@
+test_atomic_kernel_files (unittest.loader._FailedTest.test_atomic_kernel_files) ... ERROR
+
+======================================================================
+ERROR: test_atomic_kernel_files (unittest.loader._FailedTest.test_atomic_kernel_files)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_atomic_kernel_files
+Traceback (most recent call last):
+  File "/usr/lib/python3.14/unittest/loader.py", line 426, in _find_test_path
+    module = self._get_module_from_name(name)
+  File "/usr/lib/python3.14/unittest/loader.py", line 367, in _get_module_from_name
+    __import__(name)
+    ~~~~~~~~~~^^^^^^
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-atomic-protected-kernel-stage/image/tests/test_atomic_kernel_files.py", line 7, in <module>
+    from image.boot.kernel_files import read_copied_kernel
+ModuleNotFoundError: No module named 'image.boot.kernel_files'
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)
