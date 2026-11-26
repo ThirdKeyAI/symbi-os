@@ -85,5 +85,30 @@ class WalkerInputs(unittest.TestCase):
             with self.subTest(after=after), self.assertRaises(ValueError):inputs.require_additive(before, after, expected)
 
 
+    def test_reviewed_rpm_epochs_are_part_of_exact_identity(self):
+        observed = [('gpgmepp-devel\t1\t2.0.0\t2.fc45\tx86_64', 'gpgmepp-devel-1:2.0.0-2.fc45.x86_64'),
+                    ('libpng-devel\t2\t1.6.59\t1.fc45\tx86_64', 'libpng-devel-2:1.6.59-1.fc45.x86_64'),
+                    ('openssl-devel\t1\t4.0.3\t1.fc45\tx86_64', 'openssl-devel-1:4.0.3-1.fc45.x86_64'),
+                    ('xz-devel\t1\t5.8.3\t2.fc45\tx86_64', 'xz-devel-1:5.8.3-2.fc45.x86_64'),
+                    ('cargo\t0\t1.100.0\t1.fc45\tx86_64', 'cargo-1.100.0-1.fc45.x86_64')]
+        for identity, pinned in observed:
+            with self.subTest(identity=identity):
+                inputs.require_package_identity(identity, pinned)
+                fields = identity.split('\t')
+                for index in range(5):
+                    changed = fields.copy()
+                    changed[index] = '3' if index == 1 else 'changed'
+                    with self.subTest(field=index), self.assertRaises(ValueError):
+                        inputs.require_package_identity('\t'.join(changed), pinned)
+
+    def test_missing_noncanonical_or_unpinned_epoch_is_refused(self):
+        pinned = 'gpgmepp-devel-1:2.0.0-2.fc45.x86_64'
+        for epoch in ('', '(none)', '01', '-1', '0', '2'):
+            with self.subTest(epoch=epoch), self.assertRaises(ValueError):
+                inputs.require_package_identity('gpgmepp-devel\t'+epoch+'\t2.0.0\t2.fc45\tx86_64', pinned)
+        with self.assertRaises(ValueError):
+            inputs.require_package_identity('gpgmepp-devel\t1\t2.0.0\t2.fc45\tx86_64', pinned.replace('1:', ''))
+
+
 if __name__ == '__main__':
     unittest.main()

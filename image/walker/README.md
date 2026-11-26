@@ -44,3 +44,23 @@ check refusal and probe behavior. The local entry points reject compilation;
 no local Rust/GTK build, VM or large artifact download is needed. Path filters
 start this workflow only for Walker inputs and shared build dependencies, and
 skip duplicate internal PR jobs before runner allocation.
+
+
+## Exact RPM epoch comparison
+
+[Walker run 45739493292](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45739493292)
+authenticated both archives, the base and pinned source. The first 14 package
+signature/payload checks passed, then a mistaken zero-epoch assumption rejected
+`gpgmepp-devel-1:2.0.0-2.fc45.x86_64`. That exact epoch is already present in the
+signed discovery manifest and current lock. No package transaction, source
+compilation or CLI acceptance occurred. The compiler container was removed and
+verified absent. The 2 GiB guest peaked at 59,740,160 bytes with no limit/OOM
+events; the parent had memory pressure but no OOM/kill. Raw failure evidence is
+retained under `P0-03-walker-toolchain/45739493292/`.
+
+The identity comparison now includes the recorded nonzero epoch when matching
+NEVRA. Tests reproduced the four already-pinned nonzero epochs (gpgmepp, libpng,
+OpenSSL and xz), then exercise changed name/epoch/version/release/architecture and
+missing/noncanonical epochs. Every changed identity still fails. No package,
+hash, signature, source pin, sandbox or resource limit changes. Actual installation,
+compiler identity, source build and runtime acceptance remain hosted gates.

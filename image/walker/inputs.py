@@ -67,3 +67,17 @@ def require_additive(before, after, expected):
         raise ValueError('A candidate would replace an existing base package')
     if not set(before).issubset(after) or set(after)-set(before) != set(expected):
         raise ValueError('The transaction must preserve the base and add only reviewed packages')
+
+
+def require_package_identity(identity, pinned):
+    fields = identity.split('\t')
+    if len(fields) != 5 or not all(fields):
+        raise ValueError('Ambiguous RPM identity')
+    name, epoch, version, release, arch = fields
+    if not re.fullmatch(r'0|[1-9][0-9]*', epoch):
+        raise ValueError('Noncanonical RPM epoch')
+    # RPM's NEVRA includes nonzero epochs; the reviewed discovery lock already
+    # records them. Never discard the epoch or require every package to use zero.
+    epoch_prefix = '' if epoch == '0' else epoch+':'
+    if f'{name}-{epoch_prefix}{version}-{release}.{arch}' != pinned:
+        raise ValueError('RPM identity differs from the reviewed package')

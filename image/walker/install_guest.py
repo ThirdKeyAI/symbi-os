@@ -6,7 +6,7 @@ from pathlib import Path
 import platform
 import subprocess
 import sys
-from inputs import digest, require_additive, require_rust_identity
+from inputs import digest, require_additive, require_package_identity, require_rust_identity
 
 
 def main():
@@ -68,9 +68,7 @@ def main():
             identities = run(f'rpm-{index:03}-identity', ['rpm', '-qp', '--qf', fmt, str(path)]).splitlines()
             if len(identities) != 1 or len(identities[0].split('\t')) != 5:
                 raise ValueError('Ambiguous RPM identity')
-            name, epoch, version, release, arch = identities[0].split('\t')
-            if epoch != '0' or f'{name}-{version}-{release}.{arch}' != row['nevra']:
-                raise ValueError('RPM identity differs from the reviewed package')
+            require_package_identity(identities[0], row['nevra'])
             expected += identities
             packages.append(str(path))
         if len(packages) != (91 if mode == 'build' else 1) or any((output/'empty-repos').iterdir()):
