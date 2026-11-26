@@ -45,7 +45,7 @@ def safe_public_path(name):
             or any(part.lower().endswith((".pem", ".key", ".p12")) for part in path.parts)):
         raise ValueError("unsafe public qualification path")
     allowed = {"bootc-before.json", "bootc-after.json", "platform.json", "platform.log",
-               "release-driver.log", "release"}
+               "release-driver.log", "vertical-slice.json", "release"}
     if path.parts[0] not in allowed:
         raise ValueError("unexpected public qualification path")
     return path
@@ -144,10 +144,14 @@ def wait_status_socket(path):
 
 
 def main():
-    if len(sys.argv) != 3:
-        raise SystemExit("Expected the fixed driver and expectation credentials")
+    if len(sys.argv) != 4:
+        raise SystemExit("Expected the fixed driver, validator and expectation credentials")
     driver = Path(sys.argv[1])
-    expected_path = Path(sys.argv[2])
+    validator = Path(sys.argv[2])
+    expected_path = Path(sys.argv[3])
+    if (driver.name != "symbi-landlock.py" or validator.name != "vertical_slice.py"
+            or driver.parent != validator.parent):
+        raise ValueError("fixed sibling qualification driver and validator required")
     expected_raw = expected_path.read_bytes()
     if len(expected_raw) > 128 * 1024:
         raise ValueError("oversized guest expectation")
@@ -158,6 +162,7 @@ def main():
               "release_qualified": False, "product": product,
               "nonce": expected.get("nonce"), "expected_sha256": sha256(expected_path),
               "runner_sha256": sha256(Path(__file__)), "driver_sha256": sha256(driver),
+              "validator_sha256": sha256(validator),
               "source_revision": expected.get("source_revision"),
               "source_manifest_sha256": expected.get("source_manifest_sha256"),
               "binary_sha256": expected.get("binary_sha256"),
@@ -204,6 +209,7 @@ def main():
         record["landlock_abi"] = abi
         command = ["/usr/bin/python3", "-E", "-s", "-B", str(driver),
                    "--source", str(source), "--binary", str(binary),
+                   "--expected-revision", expected["source_revision"],
                    "--expected-binary-sha256", expected["binary_sha256"],
                    "--image-ref", expected["image_ref"], "--expected-abi", str(abi),
                    "--bootc-status-socket", "/run/symbi-qualification/status.sock",

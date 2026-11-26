@@ -210,7 +210,9 @@ def run_landlock(root, group, podman, image_id, atomic_disk, storage, containers
         files = {
             "boot.py": "image/qualification/boot.py", "guest.py": "image/qualification/guest.py",
             "prepare.py": "image/qualification/prepare.py",
-            "landlock.py": "image/qualification/landlock.py", "status_server.py": "image/qualification/status_server.py",
+            "landlock.py": "image/qualification/landlock.py",
+            "vertical_slice.py": "image/qualification/vertical_slice.py",
+            "status_server.py": "image/qualification/status_server.py",
             "fstab.extra": "image/qualification/fstab.extra", "p.service": "image/qualification/p.service",
             "q.service": "image/qualification/q.service", "l.service": "image/qualification/l.service",
             "sysusers.conf": "image/qualification/sysusers.conf",

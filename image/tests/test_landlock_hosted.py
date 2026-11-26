@@ -4,7 +4,9 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 import zlib
@@ -52,6 +54,7 @@ class HostedLandlock(unittest.TestCase):
             "expected_sha256": "f" * 64,
             "runner_sha256": "1" * 64,
             "driver_sha256": "2" * 64,
+            "validator_sha256": "3" * 64,
             "source_revision": expected["source_revision"],
             "source_manifest_sha256": expected["source_manifest_sha256"],
             "binary_sha256": expected["binary_sha256"],
@@ -76,6 +79,7 @@ class HostedLandlock(unittest.TestCase):
             "opt/io.systemd.credentials/systemd.extra-unit.l.service",
             "opt/io.systemd.credentials/symbi-status-server.py",
             "opt/io.systemd.credentials/symbi-landlock.py",
+            "opt/io.systemd.credentials/vertical_slice.py",
             "opt/io.systemd.credentials/symbi-runner.py",
             "opt/io.systemd.credentials/symbi-prepare.py",
             "opt/io.systemd.credentials/symbi-expected.json",
@@ -114,7 +118,55 @@ class HostedLandlock(unittest.TestCase):
         self.assertEqual(runner["FailureAction"], ["poweroff"])
         self.assertNotIn("ExecStopPost", runner)
         self.assertEqual(set(runner["ImportCredential"]),
-                         {"symbi-landlock.py", "symbi-runner.py", "symbi-expected.json"})
+                         {"symbi-landlock.py", "vertical_slice.py", "symbi-runner.py",
+                          "symbi-expected.json"})
+        self.assertEqual(runner["ExecStart"], [
+            "/usr/bin/python3 %d/symbi-runner.py %d/symbi-landlock.py "
+            "%d/vertical_slice.py %d/symbi-expected.json",
+        ])
+
+    def test_staged_driver_imports_validator_without_repository_package(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            credentials = root / "credentials"
+            unrelated = root / "unrelated"
+            credentials.mkdir()
+            unrelated.mkdir()
+            shutil.copyfile(ROOT / "image/qualification/landlock.py",
+                            credentials / "symbi-landlock.py")
+            shutil.copyfile(ROOT / "image/qualification/vertical_slice.py",
+                            credentials / "vertical_slice.py")
+            result = subprocess.run(
+                [sys.executable, "-E", "-s", "-B", str(credentials / "symbi-landlock.py"),
+                 "--help"],
+                cwd=unrelated,
+                env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8"},
+                stdin=subprocess.DEVNULL,
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("--expected-revision", result.stdout)
+
+    def test_guest_runner_passes_authenticated_revision_without_repository_state(self):
+        driver = (ROOT / "image/qualification/landlock.py").read_text()
+        runner = (ROOT / "image/qualification/guest.py").read_text()
+        self.assertNotIn("upstream/symbiont.toml", driver)
+        self.assertNotIn("import tomllib", driver)
+        self.assertIn('"--expected-revision", expected["source_revision"]', runner)
+
+    def test_vertical_slice_report_crosses_the_guest_allowlist(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            raw = b'{"passed":true}\n'
+            (output / "vertical-slice.json").write_bytes(raw)
+            (output / "vertical-slice.json").chmod(0o600)
+            reports = collect_public_artifacts(output, {"public_reports": {
+                "vertical-slice.json": hashlib.sha256(raw).hexdigest(),
+            }})
+            self.assertEqual(reports["vertical-slice.json"]["bytes"], len(raw))
+            self.assertEqual(reports["vertical-slice.json"]["sha256"], hashlib.sha256(raw).hexdigest())
 
     def test_qemu_has_no_network_login_or_host_share(self):
         command = qemu_command(Path("/inputs"), Path("/output"))
@@ -130,7 +182,8 @@ class HostedLandlock(unittest.TestCase):
 
     def test_bounded_public_report_is_authenticated_and_expanded(self):
         report = self.report()
-        files = validate_guest_report(report, self.expected(), "f" * 64, "1" * 64, "2" * 64)
+        files = validate_guest_report(report, self.expected(), "f" * 64, "1" * 64,
+                                      "2" * 64, "3" * 64)
         self.assertEqual(files, {"platform.json": b'{"passed":true}\n'})
 
     def test_private_changed_or_excessive_report_is_rejected(self):
@@ -147,7 +200,8 @@ class HostedLandlock(unittest.TestCase):
         cases.append(oversized)
         for report in cases:
             with self.subTest(keys=list(report["artifacts"])), self.assertRaises(ValueError):
-                validate_guest_report(report, self.expected(), "f" * 64, "1" * 64, "2" * 64)
+                validate_guest_report(report, self.expected(), "f" * 64, "1" * 64,
+                                      "2" * 64, "3" * 64)
 
     def test_public_artifact_parent_symlink_cannot_escape(self):
         with tempfile.TemporaryDirectory() as directory:
