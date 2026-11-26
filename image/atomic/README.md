@@ -409,18 +409,51 @@ signed by a second ephemeral offline fixture key.
 
 The predecessor is installed to a new guarded regular-file disk. The current
 image is exposed through a second read-only ext4 disk labeled `SYMBIUPDATE`.
-Inside the offline VM, a temporary firmware-generated service mounts that disk
-read-only with `nosuid,nodev,noexec`, temporarily binds an enforcing policy for
-the exact fixture-signed manifest, and invokes `bootc switch --transport dir
---enforce-container-sigpolicy`. Three boots reuse one qcow2 overlay: the first
-stages the current digest, the second proves it booted and queues `bootc
-rollback`, and the third proves the exact predecessor booted again. Every boot
-requires the expected digest and `containerPolicy` status; only loopback is
-present and host swap remains disabled.
+A first disposable qcow2 overlay keeps the valid signature and invokes the real
+`bootc switch --transport dir --enforce-container-sigpolicy` through the exact
+overlayfs mount and fixed `/run/symbi-update-negative/source` path later used by
+the rejection cases. It must return zero, keep the predecessor booted, set the
+configured default to the exact staged current digest, and change no other
+deployment slot. The controller records both state hashes, then deletes that
+qcow2 so the staged change cannot reach another case.
+
+Four independent qcow2 overlays then boot from the untouched installed
+predecessor. Each receives the same in-memory source overlay containing the
+authenticated manifest and blobs with exactly one control: no signature, a
+signature from another key, a signature for another reference, or altered
+signature bytes. The same command must return nonzero and the complete
+configured image reference plus booted, staged, rollback and rollback-queue
+state must remain unchanged. Every rejection must begin with the positive
+control's recorded starting-state hash. The controller deletes each qcow2 before
+the next case begins.
+
+Three later boots reuse a separate persistent qcow2 overlay: the first stages
+the correctly signed current digest, the second proves it booted and queues
+`bootc rollback`, and the third proves the exact predecessor booted again.
+Every boot requires the expected digest and `containerPolicy` status; only
+loopback is present and host swap remains disabled. The ordinary
+installed-image boot remains a separate harness mode and disk overlay.
 
 This is a development recovery proof, not release signing. Both fixture keys
 are generated offline and their private material is removed. The shipped
 default-reject policy remains in each image; the temporary update policy exists
-only in the disposable service mount namespace. The hosted run and current
-preflight binding are still pending. Eleven focused update tests and the full
-290-test Python suite pass locally; the native VM result is not yet claimed.
+only in the disposable service mount namespace. The earlier Skopeo controls
+remain required as source-policy evidence; they do not substitute for these
+native bootc attempts. The hosted native VM result is not yet claimed.
+
+[Run 45908852827](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45908852827)
+at `a417ed1287e11a7ed0e75f686a078ed4ec0951b8` stopped before QEMU. Artifact
+intake, OCI verification, current-source authentication and predecessor
+installation preparation ran, then the parent rejected the requested
+6,000-second controller deadline because its shared subprocess helper permits
+at most 3,600 seconds. Evidence upload subsequently could not traverse the
+root-owned update evidence directory. This branch keeps that shared limit
+unchanged. A dedicated runner accepts only the fixed offline eight-boot Atomic
+controller shape, including its local Podman storage, cgroup, isolation and
+exact mount arguments. Its 5,400-second, one-MiB-per-stream bounds leave 20
+minutes in the existing 110-minute systemd unit for predecessor preparation
+and cleanup. The host wrapper refuses linked or special evidence trees before
+use, then reclaims
+only the three exact, direct evidence directories after the systemd unit stops
+and revalidates them first. The failed run does not establish a signature
+refusal, boot, update or rollback result.

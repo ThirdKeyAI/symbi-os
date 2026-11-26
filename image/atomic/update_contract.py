@@ -1,8 +1,11 @@
 """Pure contracts for the disposable signed-update and rollback VM gate."""
 import base64
 import copy
+import hashlib
 import json
+from pathlib import Path
 import re
+import stat
 
 from image.atomic.contract import digest_value
 from image.boot.inputs import require_desktop_image
@@ -10,11 +13,11 @@ from image.toolchain.reuse import exact_hash
 
 
 UPDATE_SOURCE = "/var/lib/symbi-update/source"
+NEGATIVE_UPDATE_SOURCE = "/run/symbi-update-negative/source"
+NEGATIVE_CASES = ("unsigned", "wrong-key", "wrong-reference", "altered-signature")
+POSITIVE_OVERLAY_CASE = "valid-signature"
 NEGATIVE_CONTROLS = {
-    "unsigned": True,
-    "wrong-key": True,
-    "wrong-reference": True,
-    "altered-signature": True,
+    case: True for case in NEGATIVE_CASES
 }
 
 
@@ -32,8 +35,7 @@ def update_policy(original, public_key, manifest_digest):
             and "insecureAcceptAnything" not in json.dumps(original),
             "unexpected enforcing release policy or fixture key")
     policy = copy.deepcopy(original)
-    policy["transports"]["dir"] = {
-        UPDATE_SOURCE: [{
+    rule = [{
             "type": "signedBy",
             "keyType": "GPGKeys",
             "keyData": base64.b64encode(public_key).decode("ascii"),
@@ -42,17 +44,51 @@ def update_policy(original, public_key, manifest_digest):
                 "dockerReference": "localhost/symbi-ci/development@" + manifest_digest,
             },
         }]
+    policy["transports"]["dir"] = {
+        UPDATE_SOURCE: copy.deepcopy(rule),
+        NEGATIVE_UPDATE_SOURCE: copy.deepcopy(rule),
     }
     return policy
 
 
-def update_command():
+def update_command(source=UPDATE_SOURCE):
+    if source not in (UPDATE_SOURCE, NEGATIVE_UPDATE_SOURCE):
+        raise ValueError("fixed positive or negative update source required")
     return ["/usr/bin/bootc", "switch", "--transport", "dir",
-            "--enforce-container-sigpolicy", UPDATE_SOURCE]
+            "--enforce-container-sigpolicy", source]
 
 
 def rollback_command():
     return ["/usr/bin/bootc", "rollback"]
+
+
+def negative_signature_payloads(directory, authentication):
+    """Bind the four real-source controls emitted by the offline fixture signer."""
+    directory = Path(directory)
+    recorded = authentication.get("negative_source_signatures")
+    require(isinstance(recorded, dict) and set(recorded) == set(NEGATIVE_CASES)
+            and recorded.get("unsigned") is None,
+            "negative source signature inventory is incomplete")
+    result = {"unsigned": None}
+    for case in NEGATIVE_CASES[1:]:
+        digest = recorded.get(case)
+        require(exact_hash(digest), "invalid negative source signature identity")
+        path = directory / ("negative-" + case + "-signature-1")
+        try:
+            info = path.lstat()
+            require(stat.S_ISREG(info.st_mode) and info.st_nlink == 1
+                    and 0 < info.st_size <= 65536,
+                    "negative source signature is linked, special or oversized")
+            payload = path.read_bytes()
+        except OSError as error:
+            raise ValueError("negative source signature is unavailable") from error
+        require(hashlib.sha256(payload).hexdigest() == digest,
+                "negative source signature bytes changed")
+        result[case] = {
+            "base64": base64.b64encode(payload).decode("ascii"),
+            "sha256": digest,
+        }
+    return result
 
 
 def require_update_base(config, pins, current):
@@ -128,6 +164,19 @@ def validate_report(report, old_digest, new_digest):
     require(authentication.get("positive_controls") == {"install": True, "update": True}
             and authentication.get("negative_controls") == NEGATIVE_CONTROLS,
             "signed update source controls are incomplete")
+    require(report.get("bootc_negative_controls") == NEGATIVE_CONTROLS
+            and report.get("negative_overlays_discarded") is True,
+            "native bootc signature refusals or overlay disposal are incomplete")
+    positive = report.get("same_path_positive_control")
+    require(isinstance(positive, dict) and positive.get("passed") is True
+            and positive.get("overlay_discarded") is True
+            and positive.get("negative_baselines_clean") is True
+            and positive.get("source") == NEGATIVE_UPDATE_SOURCE
+            and exact_hash(positive.get("report_sha256"))
+            and exact_hash(positive.get("state_before_sha256"))
+            and exact_hash(positive.get("state_after_sha256"))
+            and positive["state_before_sha256"] != positive["state_after_sha256"],
+            "same-path valid-signature acceptance or state disposal is incomplete")
     phases = report.get("phases")
     expected = [
         {"name": "installed", "booted_digest": old_digest,
@@ -145,6 +194,8 @@ def validate_report(report, old_digest, new_digest):
         "passed": True,
         "signed_update": True,
         "booted_rollback": True,
+        "same_path_signature_acceptance": True,
+        "bootc_signature_rejections": True,
         "installed_digest": old_digest,
         "updated_digest": new_digest,
         "rolled_back_digest": old_digest,

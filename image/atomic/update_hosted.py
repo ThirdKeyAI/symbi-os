@@ -10,8 +10,12 @@ import uuid
 from image.atomic.contract import (create_disk, directory_source, installer_mounts,
                                    installer_policy, require_disk, sha256, unique_json,
                                    unpack_oci)
-from image.atomic.update_contract import (require_update_base, update_policy,
+from image.atomic.update_contract import (NEGATIVE_CASES, NEGATIVE_UPDATE_SOURCE,
+                                          POSITIVE_OVERLAY_CASE,
+                                          negative_signature_payloads,
+                                          require_update_base, update_policy,
                                           validate_artifact_metadata, validate_report)
+from image.atomic.update_process import TIMEOUT_SECONDS
 from image.boot.inputs import unpack_desktop_image
 
 
@@ -57,6 +61,7 @@ def _sign_source(root, group, podman, image_id, storage, containers, run,
             or sha256(output / "good-public.asc") != result.get("public_key_sha256")
             or sha256(output / "signature-1") != result.get("signature_sha256")):
         raise ValueError("predecessor source authentication acceptance incomplete")
+    negative_signature_payloads(output, result)
     shutil.copyfile(output / "signature-1", source / "signature-1")
     return output, result
 
@@ -231,6 +236,17 @@ def run_update(root, group, podman, image_id, storage, containers, run, pins,
                     "policy_sha256": sha256(inputs / "update-policy.json"),
                     "original_policy_sha256": old_original_policy_sha256}
         (inputs / "expected.json").write_text(json.dumps(expected, sort_keys=True) + "\n")
+        positive_control = {"case": POSITIVE_OVERLAY_CASE,
+                            "source": NEGATIVE_UPDATE_SOURCE}
+        (inputs / "expected-positive.json").write_text(json.dumps({
+            **expected, "same_path_positive_control": positive_control}, sort_keys=True) + "\n")
+        negative_payloads = negative_signature_payloads(current_signing,
+                                                         current_authentication)
+        for case in NEGATIVE_CASES:
+            control = {"case": case, "source": NEGATIVE_UPDATE_SOURCE,
+                       "signature": negative_payloads[case]}
+            (inputs / ("expected-" + case + ".json")).write_text(
+                json.dumps({**expected, "negative_control": control}, sort_keys=True) + "\n")
         for path in inputs.iterdir():
             path.chmod(0o644)
         output = storage / "update-boot-output"
@@ -247,11 +263,19 @@ def run_update(root, group, podman, image_id, storage, containers, run, pins,
                             "--mount", f"type=bind,src={update_disk},dst=/inputs/update.raw,ro",
                             "--mount", f"type=bind,src={output},dst=/output",
                             "--entrypoint=/usr/bin/python3", image_id, "/inputs/update_boot.py"]
-        run("signed-update-and-rollback", command, 6000)
+        run("signed-update-and-rollback", command, TIMEOUT_SECONDS)
         controller = unique_json((output / "result.json").read_bytes())
+        positive = controller.get("same_path_positive_control")
         if (controller.get("passed") is not True or controller.get("guest_booted") is not True
                 or controller.get("source_disk_unchanged") is not True
-                or controller.get("persistent_overlay") is not True):
+                or controller.get("persistent_overlay") is not True
+                or not isinstance(positive, dict) or positive.get("passed") is not True
+                or positive.get("overlay_discarded") is not True
+                or positive.get("negative_baselines_clean") is not True
+                or positive.get("source") != NEGATIVE_UPDATE_SOURCE
+                or controller.get("bootc_negative_controls")
+                != {case: True for case in NEGATIVE_CASES}
+                or controller.get("negative_overlays_discarded") is not True):
             raise ValueError("signed update and rollback VM did not pass")
         controls = {case: True for case in
                     ("unsigned", "wrong-key", "wrong-reference", "altered-signature")}
@@ -262,6 +286,9 @@ def run_update(root, group, podman, image_id, storage, containers, run, pins,
                                                 for case in controls}}
         report = {"schema": 1, "passed": True, "guest_booted": True,
                   "release_qualified": False, "source_authentication": authentication,
+                  "same_path_positive_control": positive,
+                  "bootc_negative_controls": controller["bootc_negative_controls"],
+                  "negative_overlays_discarded": controller["negative_overlays_discarded"],
                   "phases": controller["phases"], "source_disk_unchanged": True,
                   "persistent_overlay": True}
         summary = validate_report(report, old_digest, current_digest)
@@ -273,6 +300,9 @@ def run_update(root, group, podman, image_id, storage, containers, run, pins,
         shutil.copytree(old_signing / "evidence", evidence / "predecessor-authentication")
         (evidence / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
         record.update(passed=True, guest_booted=True, source_authentication=authentication,
+                      same_path_positive_control=positive,
+                      bootc_negative_controls=controller["bootc_negative_controls"],
+                      negative_overlays_discarded=controller["negative_overlays_discarded"],
                       source_disk=source_disk, phases=controller["phases"], summary=summary)
         return record
     except Exception as error:

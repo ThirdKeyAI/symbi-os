@@ -104,13 +104,27 @@ def main():
                 changed=bytearray(good_signature);changed[len(changed)//2]^=1;signature.write_bytes(changed)
             copy_control(case,False);record['negative_controls'][case]=True
         shutil.rmtree(fixture)
-        sign('sign-development',manifest,'localhost/symbi-ci/development@'+expected['manifest_digest'],keys[0],output/'signature-1')
+        development_reference='localhost/symbi-ci/development@'+expected['manifest_digest']
+        sign('sign-development',manifest,development_reference,keys[0],output/'signature-1')
+        source_controls={'unsigned':None}
+        negative=output/'negative-wrong-key-signature-1'
+        sign('sign-development-wrong-key',manifest,development_reference,keys[1],negative)
+        source_controls['wrong-key']=sha256(negative)
+        negative=output/'negative-wrong-reference-signature-1'
+        sign('sign-development-wrong-reference',manifest,
+             development_reference.replace('/development@','/unapproved@'),keys[0],negative)
+        source_controls['wrong-reference']=sha256(negative)
+        negative=output/'negative-altered-signature-signature-1'
+        changed=bytearray((output/'signature-1').read_bytes());changed[len(changed)//2]^=1
+        negative.write_bytes(changed)
+        source_controls['altered-signature']=sha256(negative)
         verified=run('verify-development',['/usr/bin/skopeo','standalone-verify','--public-key-file',str(keys[0][2]),
-                     str(manifest),'localhost/symbi-ci/development@'+expected['manifest_digest'],keys[0][1],str(output/'signature-1')])
+                     str(manifest),development_reference,keys[0][1],str(output/'signature-1')])
         if expected['manifest_digest'] not in verified.stdout:
             raise ValueError('Development signature verification did not identify the exact digest')
         record.update(passed=True,public_key_fingerprint=keys[0][1],public_key_sha256=sha256(keys[0][2]),
-                      signature_sha256=sha256(output/'signature-1'),positive_policy_control=True)
+                      signature_sha256=sha256(output/'signature-1'),positive_policy_control=True,
+                      negative_source_signatures=source_controls)
     except Exception as error:
         record['failure']=type(error).__name__+': '+str(error)
         raise
