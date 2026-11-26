@@ -1,6 +1,8 @@
 """Inert acceptance tests for the offline hosted Landlock qualification boot."""
 import base64
+from contextlib import redirect_stdout
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
@@ -9,8 +11,10 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 import zlib
 
+from image.qualification import landlock as landlock_driver
 from image.qualification.boot import (firmware_arguments, qemu_command,
                                       validate_guest_report)
 from image.qualification.guest import collect_public_artifacts
@@ -149,12 +153,69 @@ class HostedLandlock(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertIn("--expected-revision", result.stdout)
 
+    def test_staged_driver_refuses_absent_or_non_sibling_validator(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            credentials = root / "credentials"
+            unrelated = root / "unrelated"
+            other = root / "other"
+            credentials.mkdir()
+            unrelated.mkdir()
+            other.mkdir()
+            driver = credentials / "symbi-landlock.py"
+            shutil.copyfile(ROOT / "image/qualification/landlock.py", driver)
+
+            absent = subprocess.run(
+                [sys.executable, "-E", "-s", "-B", str(driver), "--help"],
+                cwd=unrelated,
+                env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8"},
+                stdin=subprocess.DEVNULL,
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            self.assertNotEqual(absent.returncode, 0)
+            self.assertIn("vertical_slice", absent.stderr)
+
+            validator = other / "vertical_slice.py"
+            validator.write_text("def validate_vertical_slice(*args):\n    return {}\n")
+            non_sibling = subprocess.run(
+                [sys.executable, "-E", "-s", "-B",
+                 str(ROOT / "image/qualification/guest.py"), str(driver),
+                 str(validator), str(credentials / "symbi-expected.json")],
+                cwd=unrelated,
+                env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8"},
+                stdin=subprocess.DEVNULL,
+                capture_output=True,
+                text=True,
+                timeout=10,
+            )
+            self.assertNotEqual(non_sibling.returncode, 0)
+            self.assertIn("fixed sibling qualification driver and validator", non_sibling.stderr)
+
     def test_guest_runner_passes_authenticated_revision_without_repository_state(self):
         driver = (ROOT / "image/qualification/landlock.py").read_text()
         runner = (ROOT / "image/qualification/guest.py").read_text()
         self.assertNotIn("upstream/symbiont.toml", driver)
         self.assertNotIn("import tomllib", driver)
         self.assertIn('"--expected-revision", expected["source_revision"]', runner)
+
+    def test_driver_rejects_malformed_authenticated_revision_before_filesystem_use(self):
+        arguments = [
+            "symbi-landlock.py", "--source", "/unreachable/source",
+            "--binary", "/unreachable/symbi", "--expected-revision", "B" * 40,
+            "--expected-binary-sha256", "c" * 64,
+            "--image-ref", "ghcr.io/thirdkeyai/symbiont-os@sha256:" + "d" * 64,
+            "--expected-abi", "6", "--bootc-status-socket",
+            "/run/symbi-qualification/status.sock", "--output", "/unreachable/output",
+        ]
+        output = io.StringIO()
+        with mock.patch.object(landlock_driver, "host_details", return_value={"fixture": True}), \
+                mock.patch.object(sys, "argv", arguments), redirect_stdout(output):
+            self.assertEqual(landlock_driver.main(), 1)
+        report = json.loads(output.getvalue())
+        self.assertEqual(report["error"], "invalid runtime source revision")
+        self.assertNotIn("runtime_revision", report)
 
     def test_vertical_slice_report_crosses_the_guest_allowlist(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -185,6 +246,13 @@ class HostedLandlock(unittest.TestCase):
         files = validate_guest_report(report, self.expected(), "f" * 64, "1" * 64,
                                       "2" * 64, "3" * 64)
         self.assertEqual(files, {"platform.json": b'{"passed":true}\n'})
+
+    def test_validator_hash_substitution_is_rejected(self):
+        report = self.report()
+        report["validator_sha256"] = "0" * 64
+        with self.assertRaisesRegex(ValueError, "unbound, incomplete or falsely qualified"):
+            validate_guest_report(report, self.expected(), "f" * 64, "1" * 64,
+                                  "2" * 64, "3" * 64)
 
     def test_private_changed_or_excessive_report_is_rejected(self):
         cases = []
@@ -255,7 +323,7 @@ class HostedLandlock(unittest.TestCase):
         self.assertIn("deddb9e997244d2289c217ad76b8fde0e9b0339b", workflow)
         self.assertIn("persist-credentials: false", workflow)
         self.assertIn("SYMBI_QUALIFICATION: landlock", workflow)
-        self.assertIn("branches: [main]", workflow)
+        self.assertIn("branches: [main, card/P0-04-hosted-fix]", workflow)
         self.assertIn("cancel-in-progress: true", workflow)
         self.assertIn("include-hidden-files: true", workflow)
 

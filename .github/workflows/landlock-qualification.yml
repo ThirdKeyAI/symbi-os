@@ -2,7 +2,7 @@ name: Fedora Landlock qualification
 
 on:
   push:
-    branches: [main]
+    branches: [main, card/P0-04-hosted-fix]
     paths:
       - "image/qualification/**"
       - "image/atomic/**"
