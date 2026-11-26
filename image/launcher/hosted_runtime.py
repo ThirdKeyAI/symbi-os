@@ -65,6 +65,7 @@ def main():
         sys.path.insert(0, str(root/'image/launcher/probes'))
         from bounded_process import run_bounded
         from provider_acceptance import run_checks
+        from loader_diagnostic import capture_startup
 
         pins = json.loads((root/'image/base-images.json').read_text())
         render(pins, 'generic', root)
@@ -97,7 +98,6 @@ def main():
         record['original_build_run'] = lock['run_id']
         (evidence/'compiled-manifest.json').write_text(json.dumps(manifest, indent=2)+'\n')
         shutil.copyfile(root/'image/launcher/ocr_diagnostic.py', inputs/'ocr_diagnostic.py')
-        shutil.copyfile(root/'image/launcher/loader_diagnostic.py', inputs/'loader_diagnostic.py')
         shutil.copyfile(root/'image/launcher/probes/bounded_process.py', inputs/'bounded_process.py')
         auth = storage/'auth.json'
         auth.write_text('{"auths": {}}\n')
@@ -133,18 +133,39 @@ def main():
         shutil.copyfile(inputs/'binaries/desktopapplications', trusted/'desktopapplications.so')
         (trusted/'desktopapplications.so').chmod(0o644)
         loader_container = 'symbi-elephant-loader-diagnostic'
-        loader_command = [('--name='+loader_container if value == '--name='+container else value)
+        loader_evidence = evidence/'loader'
+        loader_evidence.mkdir()
+        loader_home = output/'loader'
+        loader_home.mkdir(mode=0o755)
+        os.chown(loader_home, 10001, 10001)
+        for name in ('home', 'config', 'cache', 'runtime'):
+            path = loader_home/name
+            path.mkdir(mode=0o700)
+            os.chown(path, 10001, 10001)
+        loader_command = [('--name='+loader_container if value == '--name='+container else
+                           '--entrypoint=/inputs/binaries/patched' if value == '--entrypoint=/usr/bin/python3' else value)
                           for value in command[:-2]]
         loader_command += ['--mount', f'type=bind,src={inputs / "packaged"},dst=/usr/lib/symbi,ro',
-                           base['image'], '/inputs/loader_diagnostic.py']
+                           '--env=HOME=/output/loader/home', '--env=XDG_CONFIG_HOME=/output/loader/config',
+                           '--env=XDG_CONFIG_DIRS=/inputs/no-system-config', '--env=XDG_CACHE_HOME=/output/loader/cache',
+                           '--env=XDG_RUNTIME_DIR=/output/loader/runtime', '--env=GOMAXPROCS=1',
+                           base['image'], '--debug']
+        loader_record = {'scope': 'Host-supervised normal-startup output only; no provider or OS qualification',
+                         'diagnostic_completed': False, 'provider_loading_qualified': False,
+                         'upstream_tests_passed': False, 'os_qualified': False,
+                         'supervisor': 'host', 'container_entrypoint': '/inputs/binaries/patched'}
         try:
-            run('loader-diagnostic', loader_command, 45)
+            # The hosted controller owns the timeout and container removal. The
+            # service is the container's entrypoint, without a guest supervisor.
+            capture_startup(loader_command, loader_evidence, loader_record)
         finally:
             removed = run_bounded(podman+['rm', '--force', '--ignore', loader_container],
                                   evidence/'loader-cleanup-stdout.log', evidence/'loader-cleanup-stderr.log')
             exists = run_bounded(podman+['container', 'exists', loader_container],
                                  evidence/'loader-exists-stdout.log', evidence/'loader-exists-stderr.log')
             record['loader_container_absent'] = removed.returncode == 0 and exists.returncode == 1
+            loader_record['container_absent'] = record['loader_container_absent']
+            (loader_evidence/'loader-result.json').write_text(json.dumps(loader_record, indent=2)+'\n')
             if not record['loader_container_absent']:
                 raise RuntimeError('Loader diagnostic container cleanup failed')
         binaries = {name: inputs/'binaries'/name for name in BINARIES}

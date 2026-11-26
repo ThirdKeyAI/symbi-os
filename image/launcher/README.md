@@ -186,3 +186,24 @@ patched executable and marker hashes match the previous build.
 The reviewed 108 MB artifact stays hosted. Exact archive/manifest/binary hashes
 and source bindings are pinned for reuse. This does not install Elephant in the
 product or qualify desktop launch behavior, dependency audits, or the final OS.
+
+
+## Startup lifetime moved to the hosted controller
+
+[Reuse run 45737671979](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45737671979)
+authenticated the new artifact and all bindings. Its normal-startup output now
+loads the real desktopapplications provider, parses 45 desktop files and starts
+the socket/listener. The guest supervisor still failed to return before the
+45-second outer timeout; its initial report is retained as incomplete, and the
+17 independent controls were not reached. Both diagnostic containers were
+removed and verified absent. There was memory-limit pressure but no OOM/kill.
+The precise cause of the guest supervisor hang is not established.
+
+The service now runs directly as the container entrypoint. The hosted controller
+captures bounded output, enforces the existing five-second observation and
+explicitly removes/verifies the container afterward. The three existing actual
+process regressions cover this capture helper's timeout/reaping, early exit and
+output-overflow behavior. All guest isolation/resource limits, artifact bindings
+and the 17 acceptance expectations remain unchanged. No source recompilation is
+needed. A new hosted result must validate this lifecycle before claiming reuse
+success; the separate successful source-build suite remains valid.
