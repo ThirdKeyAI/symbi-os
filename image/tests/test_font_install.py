@@ -139,21 +139,20 @@ class FontPayload(unittest.TestCase):
 
 
 class FontDefaults(unittest.TestCase):
-    def test_only_exact_retained_prefont_image_may_skip_native_font_scan(self):
-        from image.desktop.verify import LEGACY_FONTLESS_SOURCE, verify_font_payload
+    def test_every_retained_image_requires_native_font_scan(self):
+        from image.desktop.verify import verify_font_payload
 
         lock = json.loads((ROOT / "image/desktop-images.lock.json").read_text())
-        generic = lock["images"]["generic"]
-        nvidia = lock["images"]["nvidia"]
-        self.assertEqual(nvidia["tested_commit"], LEGACY_FONTLESS_SOURCE)
-        self.assertEqual(nvidia["manifest"]["source_commit"], LEGACY_FONTLESS_SOURCE)
-        self.assertNotEqual(generic["tested_commit"], LEGACY_FONTLESS_SOURCE)
-        self.assertEqual(generic["manifest"]["source_commit"], generic["tested_commit"])
-        result = verify_font_payload({"source_commit": LEGACY_FONTLESS_SOURCE})
-        self.assertIs(result["checked"], False)
-        for source in (generic["tested_commit"], "0" * 40):
-            with self.subTest(source=source), self.assertRaises(ValueError):
-                verify_font_payload({"source_commit": source})
+        sources = set()
+        for variant, selected in lock["images"].items():
+            with self.subTest(variant=variant):
+                self.assertEqual(selected["manifest"]["source_commit"], selected["tested_commit"])
+                sources.add(selected["tested_commit"])
+                with self.assertRaises(ValueError):
+                    verify_font_payload({"source_commit": selected["tested_commit"]})
+        self.assertEqual(sources, {"d436c6ee8a7ed159afa59db9bd82377ae8ea2389"})
+        with self.assertRaises(ValueError):
+            verify_font_payload({"source_commit": "0" * 40})
         hosted = (ROOT / "image/boot/hosted.py").read_text()
         self.assertIn("(root/'image/fonts/verify.py','font_verify.py')", hosted)
         self.assertIn("'font_verify.py'", hosted[hosted.index("record['probe_hashes']"):])

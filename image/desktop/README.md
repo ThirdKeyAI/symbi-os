@@ -230,6 +230,8 @@ uses the base's own `fc-scan` and `fc-match` executables. It requires every
 expected path exactly once and JetBrainsMono Nerd Font as the monospace choice.
 The initial base preflight now fails before assembly when either executable is
 absent. Local exact-byte integration, all 277 image fixtures and the serial
-repository gate pass with one Cargo job and zero swap. The hosted
-generic and NVIDIA image jobs have not yet exercised this change. Booted
-font rendering and desktop interaction remain later acceptance gates.
+repository gate pass with one Cargo job and zero swap. Generic run 45870354828
+and NVIDIA run 45908299514 exercised this change at the same source commit.
+Both installed-image probes parsed all 98 expected faces and selected
+JetBrainsMono Nerd Font as the system monospace family. Booted font rendering
+and desktop interaction remain later acceptance gates.
