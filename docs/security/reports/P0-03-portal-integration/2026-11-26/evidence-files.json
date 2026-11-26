@@ -1,0 +1,22 @@
+{
+  "portal-consent-prefix-before.log": {
+    "bytes": 2112,
+    "sha256": "80f3f63d9312571ddc8c591784a6ab8a3c6e784426003c726c9e7b3edb931c29"
+  },
+  "portal-consent-prefix-after.log": {
+    "bytes": 1138,
+    "sha256": "e889ec3c8d88a57e058a718d989d7994fdf905b850578425065347b502748c5d"
+  },
+  "desktop-portal-before.log": {
+    "bytes": 2048,
+    "sha256": "e71428d09f1a1b8ad331f54bd88ba48411478439b397458856cfb9ec5367bda0"
+  },
+  "desktop-portal-after.log": {
+    "bytes": 1127,
+    "sha256": "705a637e5a7c528193e720bc3b7e8537163f48c887bb129c220601ea03f05db6"
+  },
+  "portal-desktop-offline-checks.log": {
+    "bytes": 1328,
+    "sha256": "1bf215a823c01a8d9178da109ba918683fc2b62ccda5df29d709b786ccb9c965"
+  }
+}

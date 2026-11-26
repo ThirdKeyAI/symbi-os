@@ -145,3 +145,39 @@ visible; there was no OOM or kill. See
 `docs/security/reports/P0-03-desktop/45760174895/`. The 5.03 GB archive stays
 hosted. This is packaging acceptance; actual Atomic boot and physical NVIDIA
 driver/display acceptance remain separate, incomplete gates.
+
+
+## Strict portal consumer and desktop integration preparation
+
+The dedicated consumer now validates the patched artifact against its exact
+source/patch/RPM/compositor bindings and original compiled parent. It keeps the
+original toolkit test accounting separate from the new portal regression and
+negative controls, preserving archive extraction safeguards. Only two newly
+built executables and the exact downstream Apache license may differ from the
+parent; all other 46 entries remain identical.
+
+The desktop recipe now selects the eleven runtime/activation entries, excludes
+headers/pkgconfig metadata, installs the signed iniparser runtime package and
+sets explicit Hyprland ScreenCast/Screenshot vendor preferences with GTK as the
+other default. User portal preferences retain their normal precedence. The
+session exports its desktop identity before compositor startup. Installed-image
+probes cover three additional loaders, the portal version, both picker CLI
+refusals and exact activation commands/defaults. Complete interaction and actual
+Atomic boot remain unverified.
+
+All **201 offline checks** pass, including ten tests written and run before their
+implementations. Peak local RSS was 35,772 KiB under 128 MiB/10%-CPU/zero-swap
+limits. Shared file-helper behavior is unchanged by its move to `files.py`;
+future desktop assembly changes no longer trigger portal compilation solely
+through that shared import. Exact source/native artifact hashes remain pinned.
+Evidence: `docs/security/reports/P0-03-portal-integration/2026-11-26/`.
+No native/image workload ran locally. Hosted image and exact-head workspace/formal
+results remain pending; no OS or consent qualification claim is added.
+
+The vendor selection is `/usr/share/xdg-desktop-portal/hyprland-portals.conf`.
+It follows the frontend's documented [desktop-specific search order and backend
+selection](https://flatpak.github.io/xdg-desktop-portal/docs/portals.conf.html).
+The original [portal descriptor](https://github.com/hyprwm/xdg-desktop-portal-hyprland/blob/85450448ea40a54ec4f10bd607e68019d8f5cc41/hyprland.portal)
+and retained systemd/D-Bus templates supply the exact activation schema.
+User preference overrides and other installed backends remain part of the
+future trusted desktop threat model; this configuration is not that boundary.

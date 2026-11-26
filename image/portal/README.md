@@ -158,6 +158,9 @@ reconciliation are retained under `P0-03-portal-consent/45785837716/`.
 
 `consent-prefix.lock.json` pins the new hosted archive and its exact manifest
 without changing `development-prefix.lock.json`, which remains the original
-compiled-toolkit parent. The new output needs a dedicated strict archive consumer
-before image integration; no native archive was downloaded locally. Full
+compiled-toolkit parent. `consent_prefix.py` now validates this output independently of its original
+parent and reuses the same strict archive extractor. `desktop/portal.py` selects
+only the eleven runtime/activation entries; the desktop recipe consumes the
+exact patched artifact and signed iniparser package. No native archive was
+downloaded locally. The updated image still needs hosted assembly and probes. Full
 D-Bus/GUI/capture/lifecycle and product-image qualification remain pending.

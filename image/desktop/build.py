@@ -5,7 +5,7 @@ from pathlib import Path
 import re
 import shutil
 
-from image.desktop.prepare import inventory
+from image.desktop.files import inventory
 from image.desktop.recipe import review_containerfile
 from image.hyprland.inventory import require_subject
 from image.launcher.probes.bounded_process import run_bounded
@@ -100,7 +100,7 @@ def main():
         run('pull-base',podman+['pull','--authfile',str(auth),base['image']],1200)
         run('podman-version',podman+['version','--format=json'])
         preflight_name='symbi-desktop-base-check'
-        preflight='set -eu; for x in bash jq curl grep ls bootc python3 dnf5 rpm; do command -v "$x"; done; for x in /usr/bin/Hyprland /usr/bin/hyprctl /usr/bin/elephant /usr/bin/walker /usr/bin/symbi /usr/bin/symbi-sandbox-supervisor /usr/lib/symbi; do test ! -e "$x"; test ! -L "$x"; done'
+        preflight='set -eu; for x in bash jq curl grep ls bootc python3 dnf5 rpm; do command -v "$x"; done; for x in /usr/bin/Hyprland /usr/bin/hyprctl /usr/bin/elephant /usr/bin/walker /usr/bin/symbi /usr/bin/symbi-sandbox-supervisor /usr/lib/symbi /usr/lib/systemd/user/xdg-desktop-portal-hyprland.service /usr/share/dbus-1/services/org.freedesktop.impl.portal.desktop.hyprland.service /usr/share/xdg-desktop-portal/portals/hyprland.portal /usr/share/xdg-desktop-portal/hyprland-portals.conf; do test ! -e "$x"; test ! -L "$x"; done'
         try:
             run('base-prerequisites',podman+['run','--rm','--name='+preflight_name,'--pull=never','--read-only','--network=none',
                 '--user=10001:10001','--cap-drop=ALL','--security-opt=no-new-privileges','--memory=128m','--memory-swap=128m',
@@ -155,6 +155,7 @@ def main():
         for source, name in [(evidence/'preparation.json','preparation.json'),
                              (install_output/'installed-after-stdout.log','installed-after-stdout.log'),
                              (root/'image/desktop/verify.py','verify.py'),
+                             (root/'image/desktop/portal.py','portal.py'),
                              (root/'image/hyprland/guest_inventory.py','guest_inventory.py'),
                              (root/'image/hyprland/tests/qualify_session_defaults.py','qualify_session_defaults.py')]:
             shutil.copyfile(source,qualification/name); (qualification/name).chmod(0o644)
@@ -187,12 +188,30 @@ def main():
             result=guest('ldd-'+name,'/usr/bin/ldd',['/usr/bin/'+name])
             passed=result.returncode==0 and 'not found' not in result.stdout+result.stderr
             record['checks'].append({'name':'ldd-'+name,'passed':passed,'exit_code':result.returncode})
+        for name, relative in [('toolkit', 'lib/libhyprtoolkit.so.0.6.0'), ('picker', 'bin/hyprland-share-picker'),
+                               ('backend', 'libexec/xdg-desktop-portal-hyprland')]:
+            result=guest('ldd-portal-'+name, '/usr/bin/ldd', ['/usr/lib/symbi/portal/'+relative])
+            record['checks'].append({'name': 'ldd-portal-'+name,
+                'passed': result.returncode == 0 and 'not found' not in result.stdout+result.stderr, 'exit_code': result.returncode})
         for name,executable,args,expected in [
                 ('symbi-version','/usr/bin/symbi',['--version'],'symbi 3.0.0'),
                 ('walker-version','/usr/bin/walker',['--version'],'2.17.2'),
-                ('elephant-provider','/usr/bin/elephant',['listproviders'],'desktopapplications')]:
+                ('elephant-provider','/usr/bin/elephant',['listproviders'],'desktopapplications'),
+                ('portal-version', '/usr/lib/symbi/portal/libexec/xdg-desktop-portal-hyprland', ['--version'],
+                 'xdg-desktop-portal-hyprland v'+prepared['portal']['version'])]:
             result=guest(name,executable,args)
             record['checks'].append({'name':name,'passed':result.returncode==0 and result.stdout.strip()==expected,'exit_code':result.returncode})
+        for name, argument in [('allow-token', '--allow-token'), ('unknown-option', '--symbi-unrecognized')]:
+            result=guest('picker-'+name, '/usr/lib/symbi/portal/bin/hyprland-share-picker', [argument])
+            record['checks'].append({'name': 'picker-'+name, 'exit_code': result.returncode,
+                'passed': result.returncode == 2 and not result.stdout.strip()
+                          and result.stderr.strip() == '[XDPH_PICKER_ERROR] This picker accepts no command-line options'})
+        result=guest('portal-activation', '/usr/bin/python3', ['/qualification/portal.py'])
+        activation = unique_json(result.stdout) if result.returncode == 0 else {}
+        record['checks'].append({'name': 'portal-activation', 'exit_code': result.returncode,
+            'passed': result.returncode == 0 and activation.get('passed') is True
+                      and activation.get('interactive_session_qualified') is False})
+        record['portal_activation'] = activation
         result=guest('session-defaults','/usr/bin/python3',['/qualification/qualify_session_defaults.py',
             '--hyprland','/usr/bin/Hyprland','--defaults','/usr/share/symbiont/defaults/hypr',
             '--work-dir','/output/s','--report','/output/session-result.json'])

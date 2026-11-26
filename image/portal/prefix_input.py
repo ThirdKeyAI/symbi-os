@@ -77,6 +77,11 @@ def require_portal_manifest(manifest, lock, pins, base, rpm_hash, compositor_has
 
 def unpack_portal(archive, lock, pins, base, rpm_hash, compositor_hash, destination):
     manifest = require_portal_manifest(lock['manifest'],lock,pins,base,rpm_hash,compositor_hash)
+    return unpack_verified_portal_archive(archive, lock, manifest, destination)
+
+
+def unpack_verified_portal_archive(archive, lock, manifest, destination):
+    """Extract only after the caller validates its original or patched manifest."""
     if (archive.is_symlink() or not archive.is_file() or archive.resolve() != archive
             or archive.stat().st_size != lock['artifact']['bytes'] or digest(archive) != lock['artifact']['sha256']):
         raise ValueError('Portal artifact changed')

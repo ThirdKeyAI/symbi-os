@@ -7,61 +7,18 @@ import subprocess
 
 from image.assembly.inputs import unpack_runtime
 from image.assembly.runtime_install import require_runtime_rpms
+from image.desktop.files import copy_regular, inventory, release_file_cache
 from image.desktop.inputs import select_prefix_files
+from image.desktop.portal import select_consent_files
 from image.desktop.recipe import render_desktop, review_containerfile
 from image.desktop.trust import prepare_trust
 from image.hyprland.build_inputs import require_current_requirements, unpack_rpms
 from image.hyprland.prefix_input import unpack_prefix
 from image.launcher.binary_inputs import require_bindings, unpack_binaries
 from image.launcher.walker_binary_inputs import unpack_walker
+from image.portal.consent_prefix import load_consent_prefix, unpack_consent_portal
+from image.portal.runtime_inputs import select_runtime_package
 from image.toolchain.reuse import digest, unique_json, unpack_tool
-
-
-def copy_regular(source, target, executable=False):
-    if source.is_symlink() or not source.is_file() or source.resolve() != source:
-        raise ValueError('Expected a regular prepared input: '+str(source))
-    target.parent.mkdir(parents=True, exist_ok=True)
-    if target.exists() or target.is_symlink():
-        raise ValueError('Overlapping desktop payload: '+str(target))
-    # Keep dirty file pages bounded as well as Python buffers. A complete
-    # runtime executable is about 500 MiB; copying it in one sendfile call can
-    # otherwise retain a large dirty working set inside a small cgroup.
-    with source.open('rb') as incoming, target.open('xb') as outgoing:
-        pending = 0
-        while chunk := incoming.read(1024**2):
-            outgoing.write(chunk)
-            pending += len(chunk)
-            if pending >= 16*1024**2:
-                outgoing.flush()
-                os.fsync(outgoing.fileno())
-                os.posix_fadvise(outgoing.fileno(), 0, 0, os.POSIX_FADV_DONTNEED)
-                pending = 0
-        outgoing.flush()
-        os.fsync(outgoing.fileno())
-        os.posix_fadvise(outgoing.fileno(), 0, 0, os.POSIX_FADV_DONTNEED)
-    target.chmod(0o755 if executable else 0o644)
-
-
-def release_file_cache(directory):
-    """Sync only this run's extracted files, then release their clean cache."""
-    for path in directory.rglob('*'):
-        if path.is_file() and not path.is_symlink():
-            with path.open('r+b') as stream:
-                os.fsync(stream.fileno())
-                os.posix_fadvise(stream.fileno(), 0, 0, os.POSIX_FADV_DONTNEED)
-
-
-def inventory(directory):
-    result = {}
-    for path in sorted(directory.rglob('*')):
-        name = path.relative_to(directory).as_posix()
-        if path.is_symlink():
-            result[name] = {'link': os.readlink(path)}
-        elif path.is_file():
-            result[name] = {'sha256': digest(path), 'bytes': path.stat().st_size, 'mode': path.stat().st_mode & 0o777}
-        elif not path.is_dir():
-            raise ValueError('Special build context member')
-    return result
 
 
 def main():
@@ -150,6 +107,26 @@ def main():
             target = payload/'usr/bin'/name
             target.parent.mkdir(parents=True, exist_ok=True)
             target.symlink_to('../lib/symbi/hyprland/bin/'+name)
+        checkpoint('extract-patched-portal')
+        portal_args, portal_bindings, portal_packages = load_consent_prefix(root, build_base)
+        portal_lock = artifact('portal', 'image/portal/consent-prefix.lock.json')
+        if portal_lock != portal_args[0]: raise ValueError('Portal artifact lock changed during preparation')
+        portal = unpack_consent_portal(root/'.cache/portal-consent-prefix.zip', *portal_args, storage/'portal')
+        release_file_cache(storage/'portal')
+        for relative, path in select_consent_files(storage/'portal/portal', portal).items():
+            target = payload/relative
+            if path.is_symlink():
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.symlink_to(os.readlink(path))
+            else:
+                copy_regular(path, target, bool(path.stat().st_mode & 0o111))
+        record['portal'] = {'manifest_sha256': portal_lock['manifest_sha256'], 'bindings': portal_bindings,
+                            'parent_manifest_sha256': portal['parent_prefix_manifest_sha256'],
+                            'unchanged_retained_files': portal['unchanged_retained_files'],
+                            'native_negative_controls': portal['native_negative_controls'],
+                            'consent_qualified': False,
+                            'version': next(row['version'] for row in portal['source_inputs']['components']
+                                            if row['name'] == 'xdg-desktop-portal-hyprland')}
         checkpoint('extract-elephant')
         elephant_lock = artifact('elephant', 'image/launcher/development-binaries.lock.json')
         if (elephant_lock.get('upstream_tests_passed') is not True
@@ -199,8 +176,17 @@ def main():
             for row in lock['packages']:
                 copy_regular(storage/(name+'-rpms')/'rpms'/row['filename'], install/'rpms'/row['filename'])
                 packages.append(row)
-        if len(packages) != 5 or len({row['filename'] for row in packages}) != 5:
-            raise ValueError('Expected five distinct reviewed runtime libraries')
+        checkpoint('select-signed-portal-runtime')
+        portal_rpms = artifact('portal-rpms', 'image/portal/build-rpms.lock.json')
+        if portal_rpms != portal_packages: raise ValueError('Portal RPM lock changed during preparation')
+        unpack_rpms(root/'.cache/portal-build-rpms.zip', portal_rpms, storage/'portal-rpms')
+        release_file_cache(storage/'portal-rpms')
+        package = select_runtime_package(portal_rpms)
+        copy_regular(storage/'portal-rpms/rpms'/package['filename'], install/'rpms'/package['filename'])
+        packages.append(package)
+        record['portal']['runtime_package'] = package
+        if len(packages) != 6 or len({row['filename'] for row in packages}) != 6:
+            raise ValueError('Expected six distinct reviewed runtime libraries')
         combined = {'schema': 1, 'qualified': False, 'target_base': record['base'],
                     'resolution_base': build_base, 'key': trust['key'], 'packages': packages}
         (install/'combined-lock.json').write_text(json.dumps(combined, indent=2)+'\n')
@@ -227,7 +213,9 @@ def main():
         sources_doc.mkdir(parents=True)
         (sources_doc/'development-inputs.json').write_text(json.dumps(record, indent=2)+'\n')
         for relative in ('image/hyprland/patches/0001-disable-native-loading.patch',
-                         'image/launcher/patches/0001-packaged-application-provider-only.patch'):
+                         'image/launcher/patches/0001-packaged-application-provider-only.patch',
+                         'image/portal/patches/0001-no-restore-tests.patch',
+                         'image/portal/patches/0002-require-fresh-screen-sharing-consent.patch'):
             copy_regular(root/relative, sources_doc/'patches'/Path(relative).name)
         for path in ('image/overlay', 'image/desktop/session'):
             if any(p.is_symlink() or not (p.is_file() or p.is_dir()) for p in (root/path).rglob('*')):

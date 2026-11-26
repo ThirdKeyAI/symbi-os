@@ -1,4 +1,4 @@
-"""Verify and install the five signed runtime libraries inside the image build."""
+"""Verify and install the six signed runtime libraries inside the image build."""
 import json
 import os
 from pathlib import Path
@@ -29,8 +29,8 @@ def main():
     if sorted(p.name for p in Path('/sys/class/net').iterdir()) != ['lo']:
         raise ValueError('Offline image assembly must have only loopback')
     lock = json.loads((inputs/'combined-lock.json').read_text())
-    if lock.get('schema') != 1 or lock.get('qualified') is not False or len(lock.get('packages', [])) != 5:
-        raise ValueError('Expected the reviewed five-package runtime selection')
+    if lock.get('schema') != 1 or lock.get('qualified') is not False or len(lock.get('packages', [])) != 6:
+        raise ValueError('Expected the reviewed six-package runtime selection')
     key = inputs/'fedora-45-primary.asc'
     if digest(key) != lock['key']['sha256']: raise ValueError('Fedora key changed')
     record = {'passed': False, 'os_qualified': False, 'crypto_policy_qualified': False,
@@ -69,7 +69,7 @@ def main():
             if len(rows) != 1: raise ValueError('Ambiguous package identity')
             require_package_identity(rows[0], row['nevra'])
             identities.append(rows[0]); packages[rows[0]] = str(path)
-        if {row.split('\t')[0] for row in identities} != {'libeis', 'muParser', 'tomlplusplus', 'gtk4-layer-shell', 'openssl3-libs'}:
+        if {row.split('\t')[0] for row in identities} != {'libeis', 'muParser', 'tomlplusplus', 'gtk4-layer-shell', 'openssl3-libs', 'iniparser'}:
             raise ValueError('Unexpected runtime package provider')
         delta = required_package_delta(before, identities)
         if delta:

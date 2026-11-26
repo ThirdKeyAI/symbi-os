@@ -5,6 +5,8 @@ on:
     branches: ["**"]
     paths:
       - "image/desktop/**"
+      - "image/portal/**"
+      - "LICENSE"
       - "image/base-images.json"
       - "image/release-trust.json"
       - "image/signing.py"
@@ -55,9 +57,12 @@ on:
       - "scripts/check-desktop-image.sh"
       - ".github/workflows/desktop-image.yml"
       - "!image/desktop/README.md"
+      - "!image/portal/README.md"
   pull_request:
     paths:
       - "image/desktop/**"
+      - "image/portal/**"
+      - "LICENSE"
       - "image/base-images.json"
       - "image/release-trust.json"
       - "image/signing.py"
@@ -108,6 +113,7 @@ on:
       - "scripts/check-desktop-image.sh"
       - ".github/workflows/desktop-image.yml"
       - "!image/desktop/README.md"
+      - "!image/portal/README.md"
   workflow_dispatch:
     inputs:
       variant:
@@ -158,6 +164,10 @@ jobs:
           echo '43ef54a307fcb72b7dd878a0930683544ed50904f5c294a32c2e236a5d614a0a  .cache/launcher-runtime-rpms.zip' | sha256sum --check --strict
           timeout 300 gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15084582682/zip > .cache/symbiont-runtime-rpms.zip
           echo 'bea530216afb23f6c370fe4027e76740287a588d917b1ff7c09a4c9081061fa0  .cache/symbiont-runtime-rpms.zip' | sha256sum --check --strict
+          timeout 300 gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15100886169/zip > .cache/portal-consent-prefix.zip
+          echo 'd96d07ce422a3de7f12bb75f32a77f7df3f40e6386ee4ada644b7a5d7f92aa40  .cache/portal-consent-prefix.zip' | sha256sum --check --strict
+          timeout 300 gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15092560593/zip > .cache/portal-build-rpms.zip
+          echo 'ce26dda0cab7e61de9c888503d2e5d3ff87e23f74e859fbfd270dd9de74c2565  .cache/portal-build-rpms.zip' | sha256sum --check --strict
       - name: Prepare and validate the real desktop build context
         run: bash scripts/check-desktop-image.sh prepare
       - name: Assemble and inspect the installed desktop image

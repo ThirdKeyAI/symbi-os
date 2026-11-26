@@ -9,7 +9,7 @@ def main():
     if (os.environ.get('GITHUB_ACTIONS') != 'true'
             or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted' or os.geteuid() != 0):
         raise SystemExit('Portal runtime checks require the disposable hosted resource unit')
-    from image.desktop.prepare import release_file_cache
+    from image.desktop.files import release_file_cache
     from image.hyprland.build_inputs import unpack_rpms
     from image.hyprland.inventory import require_subject
     from image.hyprland.prefix_input import unpack_prefix
