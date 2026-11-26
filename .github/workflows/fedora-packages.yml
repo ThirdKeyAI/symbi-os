@@ -49,12 +49,21 @@ on:
       - "!image/**/README.md"
       - "!image/**/runtime-README.md"
   workflow_dispatch:
+    inputs:
+      profile:
+        description: Fedora package discovery profile
+        required: true
+        default: hyprland
+        type: choice
+        options:
+          - hyprland
+          - container-runtime
 
 permissions:
   contents: read
 
 concurrency:
-  group: fedora-packages-${{ github.ref }}
+  group: fedora-packages-${{ github.event_name == 'workflow_dispatch' && inputs.profile == 'container-runtime' && 'container-runtime' || 'hyprland' }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -63,25 +72,32 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 50
+    env:
+      SYMBI_FEDORA_PACKAGE_PROFILE: ${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'hyprland' }}
     steps:
       - name: Check out proposed OS revision
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
       - name: Authenticate and resolve Fedora build inputs without installation
-        run: bash scripts/check-fedora-packages.sh
+        run: |
+          case "$SYMBI_FEDORA_PACKAGE_PROFILE" in
+            hyprland|container-runtime) ;;
+            *) echo 'Unsupported workflow package profile.' >&2; exit 2 ;;
+          esac
+          bash scripts/check-fedora-packages.sh "$SYMBI_FEDORA_PACKAGE_PROFILE"
       - name: Retain public discovery evidence including failures
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: fedora-package-evidence
+          name: ${{ github.event_name == 'workflow_dispatch' && inputs.profile == 'container-runtime' && 'container-runtime-fedora-package-evidence' || 'fedora-package-evidence' }}
           path: .cache/fedora-package-evidence/
           retention-days: 14
           if-no-files-found: error
       - name: Retain authenticated candidates for a later pinned offline build
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: fedora-build-rpm-candidates
+          name: ${{ github.event_name == 'workflow_dispatch' && inputs.profile == 'container-runtime' && 'container-runtime-rpm-candidates' || 'fedora-build-rpm-candidates' }}
           path: |
             .cache/fedora-package-output/rpms/
             .cache/fedora-package-output/evidence/result.json

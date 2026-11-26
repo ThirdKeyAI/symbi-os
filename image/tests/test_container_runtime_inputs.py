@@ -6,9 +6,12 @@ import io
 import json
 import os
 from pathlib import Path
+import subprocess
 import tarfile
 import tempfile
 import unittest
+
+import yaml
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -180,16 +183,41 @@ class ContainerRuntimeInputs(unittest.TestCase):
         )
         wrapper = (ROOT / "scripts/check-fedora-packages.sh").read_text()
         self.assertIn("container-runtime", wrapper)
-        for relative in (
-            ".github/workflows/container-packages.yml",
-            ".github/workflows/gvisor-intake.yml",
-        ):
-            workflow = (ROOT / relative).read_text()
-            self.assertIn("branches: [main]", workflow)
-            self.assertIn("workflow_dispatch:", workflow)
-            self.assertNotIn('branches: ["**"]', workflow)
-            self.assertNotIn("pull_request:", workflow)
-            self.assertIn("contents: read", workflow)
+        self.assertFalse((ROOT / ".github/workflows/container-packages.yml").exists())
+        workflow_path = ROOT / ".github/workflows/fedora-packages.yml"
+        workflow = workflow_path.read_text()
+        document = yaml.safe_load(workflow)
+        triggers = document[True]
+        profile = triggers["workflow_dispatch"]["inputs"]["profile"]
+        self.assertEqual(profile["type"], "choice")
+        self.assertEqual(profile["default"], "hyprland")
+        self.assertEqual(profile["options"], ["hyprland", "container-runtime"])
+        self.assertEqual(triggers["push"]["branches"], ["main"])
+        job = document["jobs"]["packages"]
+        selected = job["env"]["SYMBI_FEDORA_PACKAGE_PROFILE"]
+        self.assertEqual(
+            selected,
+            "${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'hyprland' }}",
+        )
+        self.assertIn("inputs.profile == 'container-runtime'", document["concurrency"]["group"])
+        command = next(step["run"] for step in job["steps"]
+                       if step["name"] == "Authenticate and resolve Fedora build inputs without installation")
+        self.assertIn('case "$SYMBI_FEDORA_PACKAGE_PROFILE" in', command)
+        self.assertIn("hyprland|container-runtime", command)
+        self.assertIn('bash scripts/check-fedora-packages.sh "$SYMBI_FEDORA_PACKAGE_PROFILE"', command)
+        self.assertNotIn("${{ inputs.profile }}", command)
+        artifact_names = [step["with"]["name"] for step in job["steps"]
+                          if step.get("uses", "").startswith("actions/upload-artifact@")]
+        self.assertTrue(all("inputs.profile == 'container-runtime'" in name
+                            for name in artifact_names))
+        self.assertIn("contents: read", workflow)
+
+        intake_workflow = (ROOT / ".github/workflows/gvisor-intake.yml").read_text()
+        self.assertIn("branches: [main]", intake_workflow)
+        self.assertIn("workflow_dispatch:", intake_workflow)
+        self.assertNotIn('branches: ["**"]', intake_workflow)
+        self.assertNotIn("pull_request:", intake_workflow)
+        self.assertIn("contents: read", intake_workflow)
 
         intake_wrapper = (ROOT / "scripts/check-gvisor-intake.sh").read_text()
         for required in (
@@ -220,6 +248,18 @@ class ContainerRuntimeInputs(unittest.TestCase):
         )
         self.assertNotIn("runsc install", combined)
         self.assertNotIn("release/latest", combined)
+
+    def test_package_wrapper_rejects_profile_injection_before_hosted_checks(self):
+        with tempfile.TemporaryDirectory() as directory:
+            marker = Path(directory) / "injected"
+            result = subprocess.run(
+                ["bash", str(ROOT / "scripts/check-fedora-packages.sh"),
+                 "container-runtime; touch " + str(marker)],
+                stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=10,
+            )
+            self.assertEqual(result.returncode, 2)
+            self.assertEqual(result.stderr.strip(), "Unknown package discovery profile.")
+            self.assertFalse(marker.exists())
 
 
 if __name__ == "__main__":
