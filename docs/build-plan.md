@@ -104,6 +104,12 @@ The product image is Fedora Atomic (bootc), built with [BlueBuild](https://blue-
 - Symbiont runtime and the `symbi-*` services from this plan, as systemd units with SELinux policy modules.
 - Hyprland, Waybar and Walker configs adapted from Omarchy, plus an Agents section in the single Super + Alt + Space menu.
 - Owner-selected desktop profile: MPlayer, Ombuntu-style menus, Tokyo Night as the initial theme, Kitty as the default terminal, Nerd Fonts and the inspected local terminal customizations. Preserve the owner's existing keyboard shortcuts, including local overrides; the application launcher stays on Super + Space and the main menu on Super + Alt + Space. Exact requirements, local observations and the full shortcut reference are in [Desktop defaults and Ombuntu compatibility](desktop-profile.md). These additions remain pending in P0-03.
+- Tolaria as the default Git-backed Markdown second brain. The OS source build
+  disables its self-updater, unauthenticated writable loopback bridge, runtime
+  package downloads, direct model-provider routes, direct agent launches and
+  durable writes to real harness configuration. Super+Shift+O keeps the existing
+  note-app shortcut. Human vault selection and editing stay local; governed agent
+  access is delivered by P1-13 through named contracts and reviewed Git diffs.
 - Managed browser policies (telemetry off, keyring-backed passwords) and developer-tool telemetry opt-outs, borrowed from Ombuntu.
 - Security by removal: `hyprpm` and all Hyprland plugins disabled, no menu extensions, no remote themes, no `curl | sh` installers anywhere.
 
@@ -182,6 +188,16 @@ A thin desktop launcher: it generates a Symbiont control project per principal (
 - **Registry:** `/etc/symbi/models.toml` (system), `~/.config/symbi/models.toml` (user; a new remote provider needs trusted-path confirmation); project files only narrow.
 - Every call lands in the run's protected journal, and a D-Bus signal on each remote call drives the egress light.
 
+### Tolaria second-brain route
+
+The desktop app is a human-owned Git and Markdown editor. It never launches an
+agent directly in the OS profile and never edits the user's real harness
+configuration. P1-13 adds a first-party governed route: named read operations see
+only a selected vault, while writes happen on a private branch/worktree and
+produce a reviewable diff. Applying that diff is a separate human-approved action;
+the service cannot merge or push. Vault contents are untrusted input and cannot
+widen grants, change session class or become executable instructions.
+
 ### Acceptance criteria
 
 - [ ] Symbiont's Landlock platform diagnostic and release driver pass on the Fedora Atomic image, with the report retained (P0-04).
@@ -193,6 +209,8 @@ A thin desktop launcher: it generates a Symbiont control project per principal (
 - [ ] Revoking a principal ends an in-flight model response within 1 second.
 - [ ] A malicious project config cannot change routing.
 - [ ] Cursor refuses to start in a confidential session.
+- [ ] A governed agent can read a selected Tolaria vault without direct filesystem
+  access; a write changes only an isolated branch until the human approves the diff.
 
 ## Phase 2: symbi-trustd and the grant broker
 
@@ -601,11 +619,11 @@ Open questions raised: <links, or none>
 
 | ID | Card | Depends on | Invariants | Owner | Status |
 | --- | --- | --- | --- | --- | --- |
-| P0-01 | Repo scaffold, CI, cargo-deny/vet, Cedar schema skeleton | none | INV-12 | Codex | Done |
-| P0-02 | TLA+ models: GrantLifecycle, TrustedInput, Freeze, JournalBeforeEffect, SessionClass | none | INV-2, 3, 4, 5, 8, 10 | Codex | Done |
-| P0-03 | Base image: BlueBuild recipe on secureblue, cosign signing, SBOM, ported Ombuntu defaults | P0-01 | INV-12 | Codex | In review; verified inputs ready, image qualification pending |
-| P0-04 | Qualify Symbiont 3.0's Landlock route on the Fedora Atomic image (platform diagnostic and release driver); retain the report | P0-03 | INV-1, 7 | Codex | In review; offline installed-image runner prepared, native result pending |
-| P0-05 | Container tier on Fedora Atomic: moby-engine or Podman for Symbiont's Docker and gVisor routes; qualify the choice | P0-03 | INV-1 | Codex | In review; Moby chosen, hosted fixtures passed, native packages and route pending |
+| P0-01 | Repo scaffold, CI, cargo-deny/vet, Cedar schema skeleton | none | INV-12 | Implementation agent | Done |
+| P0-02 | TLA+ models: GrantLifecycle, TrustedInput, Freeze, JournalBeforeEffect, SessionClass | none | INV-2, 3, 4, 5, 8, 10 | Implementation agent | Done |
+| P0-03 | Base image: BlueBuild recipe on secureblue, cosign signing, SBOM, ported Ombuntu defaults | P0-01 | INV-12 | Implementation agent | In review; verified inputs ready, image qualification pending |
+| P0-04 | Qualify Symbiont 3.0's Landlock route on the Fedora Atomic image (platform diagnostic and release driver); retain the report | P0-03 | INV-1, 7 | Implementation agent | In review; offline installed-image runner prepared, native result pending |
+| P0-05 | Container tier on Fedora Atomic: moby-engine or Podman for Symbiont's Docker and gVisor routes; qualify the choice | P0-03 | INV-1 | Implementation agent | In review; Moby chosen, hosted fixtures passed, native packages and route pending |
 | P1-01 | symbi-common: principal IDs, D-Bus types, Symbiont API and journal clients | P0-01 | INV-5 |  | Not started |
 | P1-02 | symbi-run: desktop launcher over Symbiont's managed CLI route (governed mode) | P1-01, P0-04 | INV-7, 13 |  | Not started |
 | P1-03 | symbi-egressd: Symbiont outbound capabilities for APIs; allowlisted CONNECT proxy for workspace mode | P1-01 | INV-1, 5, 6, 7 |  | Not started |
@@ -616,8 +634,9 @@ Open questions raised: <links, or none>
 | P1-08 | Pi adapter for governed and workspace modes | P1-02, P1-04 | INV-6, 13 |  | Not started |
 | P1-09 | Cursor: workspace mode only, remote-only, symbi-claude-code Cursor hooks | P1-02, P1-03 | INV-8 |  | Not started |
 | P1-10 | Escape suite v1, extending Symbiont's containment and Landlock test drivers | P1-02 | INV-1, 7 |  | Not started |
-| P1-11 | Phase 1 release: services shipped in the signed Fedora Atomic image | P1-05 to P1-10, P0-03 | INV-12 |  | Not started |
+| P1-11 | Phase 1 release: services shipped in the signed Fedora Atomic image | P1-05 to P1-10, P1-12, P1-13, P0-03 | INV-12 |  | Not started |
 | P1-12 | Workspace mode: writable project snapshot, diff applied only after approval (terminal relay until trustd) | P1-02, P1-03 | INV-1, 2, 7 |  | Not started |
+| P1-13 | Tolaria governed second-brain route: selected-vault reads, isolated Git writes and reviewed diff application | P1-02, P1-12, P0-03 | INV-1, 2, 5, 7, 13 |  | Not started |
 | P2-02 | Wayland protocols and Hyprland patch: trusted surface, input provenance | P0-02 | INV-4 |  | Not started |
 | P2-03 | symbi-trustd: escalation-queue surface, cards, secure attention key, freeze, credential entry | P2-02 | INV-2, 4, 10 |  | Not started |
 | P2-04 | symbi-grantd: portal backend writing Symbiont root ceilings and file grants; revocation path | P2-03 | INV-2, 3, 8 |  | Not started |

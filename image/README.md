@@ -122,6 +122,25 @@ changing compositor would violate the plan.
 The Agents menu and runtime units arrive with their implementing cards; the
 current launcher exposes local applications only.
 
+## Tolaria second-brain candidate
+
+Tolaria is selected for the final desktop as a human-owned Git and Markdown
+second brain. The source release, pnpm tool, lockfiles and downstream managed-OS
+patch are fixed under `image/tolaria/`. The release tag is unsigned and no GitHub
+attestation was found, so the repository records that limitation instead of
+claiming upstream source authentication. The exact source archive is pinned by
+commit and SHA-256, inspected without extraction, patched to fail closed, then
+must be built from source using signed Fedora inputs and unchanged language
+lockfiles.
+
+The candidate is not installed in either built image yet. A dedicated package
+discovery workflow runs only on `main` or by manual dispatch, which prevents
+ordinary branch pushes from adding to the heavy-build queue. Its output must be
+reviewed and pinned before the later no-network build. A real Walker launch,
+Super+Shift+O shortcut, vault edit/commit, updater refusal, bridge refusal and
+selected-base loader test are release gates. Agent access is deferred to P1-13's
+named read contracts and isolated Git-diff workflow.
+
 ## Hosted BlueBuild compatibility check
 
 `image/toolchain/bluebuild.json` pins the experimental source build to

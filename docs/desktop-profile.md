@@ -2,9 +2,10 @@
 
 Owner decision: Symbi OS should keep the owner's Ombuntu desktop habits:
 MPlayer, familiar menus, Tokyo Night by default, Kitty as the default terminal,
-Nerd Fonts, terminal customizations, and the same keyboard shortcuts. This is
-part of P0-03 desktop integration. The requirements below are pending; the
-already-built generic and NVIDIA images do not yet contain this full profile.
+Nerd Fonts, terminal customizations, Tolaria as the default second brain, and
+the same keyboard shortcuts. This is part of P0-03 desktop integration. The
+requirements below are pending; the already-built generic and NVIDIA images do
+not yet contain this full profile.
 
 ## Local reference and intended defaults
 
@@ -24,6 +25,7 @@ the OS's existing Ombuntu input pin.
 | Fonts | JetBrainsMono Nerd Font, its Mono/Propo variants, Symbols Nerd Font and Omarchy icons | Package licensed, pinned font assets; use JetBrainsMono Nerd Font in Kitty and suitable Nerd Font glyphs in menus/bar |
 | Media | Both MPlayer and mpv are installed | Include the explicitly requested MPlayer; retain mpv compatibility for the Ombuntu media profile and qualify real audio/video playback |
 | Menus | Walker application launcher, Omarchy menu, capture/toggle/hardware/system/theme/background menus, keybinding help, bar menu entry | Port the familiar menu structure and shortcuts to working Fedora actions; retain the planned Agents section for the cards that implement it |
+| Notes | The recorded session maps Super+Shift+O to Obsidian | Ship the patched Tolaria desktop app, expose it through Walker and keep Super+Shift+O as the note/second-brain shortcut |
 | Shell | Bash imports Omarchy defaults; Starship, mise, zoxide, fzf, eza, bat, fd and ripgrep are available | Port interactive prompt, navigation, completion, history, aliases and file previews using packaged tools and Fedora paths |
 | Terminal tools | tmux, Neovim, btop, fastfetch and lazygit are installed | Include and configure the matching terminal workflow; record exact authenticated Fedora/source inputs before assembly |
 
@@ -37,6 +39,15 @@ selects Tokyo Night. Its [font setup](https://github.com/Ombuntu/Ombuntu/blob/8f
 selects JetBrainsMono Nerd Font and Omarchy icons. Reuse reviewed data and
 licenses through the image pipeline; do not execute the Ubuntu installers.
 See [third-party provenance](../image/THIRD_PARTY.md).
+
+Tolaria vaults remain ordinary user-selected Git repositories containing
+Markdown and YAML frontmatter. First launch must not silently create a vault in
+the user's home. The desktop app may edit and commit in the active human session;
+its updater, writable loopback bridge, direct model-provider routes, runtime
+package downloads and durable agent-configuration writes are disabled in the OS
+build. Governed agent reads and isolated-branch writes belong to P1-13. An agent
+write is presented as a diff and cannot merge or push without a separate human
+decision.
 
 ## Preserve shortcuts
 
@@ -72,6 +83,7 @@ explicitly in the acceptance report.
 | Print / Alt+Print | Screenshot / recording menu |
 | Super+Ctrl+L | Lock screen |
 | Super+Shift+Enter or B / Super+Shift+F / Super+Shift+N | Browser / file manager / editor |
+| Super+Shift+O | Tolaria second brain, preserving the existing note-app chord |
 | Volume, brightness and playback keys | Existing media actions and modifier variants |
 
 The table is a summary; the full reference also covers grouping, scratchpads,
@@ -125,6 +137,9 @@ apply to the curated menu/theme port.
 - [ ] Exercise Kitty/tmux key delivery, clipboard and file/image previews,
   interactive/noninteractive shell startup and representative file names with
   spaces and metacharacters. Launchers preserve arguments without shell injection.
+- [ ] Launch Tolaria from Walker and Super+Shift+O on both image variants; open
+  an existing Git vault, edit and commit a Markdown note, and verify that update,
+  loopback bridge, direct-provider and durable config-write routes stay disabled.
 - [ ] Exercise each shipped menu action, unavailable optional-app handling,
   font/icon rendering, both media players and audio/video output in the actual
   image. No shortcut is silently remapped or claimed complete because it parses.

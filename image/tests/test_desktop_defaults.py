@@ -164,6 +164,7 @@ class ShortcutCompatibility(unittest.TestCase):
             "SUPER + TAB": 'workspace = "e+1"',
             "SUPER + SHIFT + TAB": 'workspace = "e-1"',
             "SUPER + CTRL + TAB": 'workspace = "previous"',
+            "SUPER + SHIFT + O": "hl.dsp.no_op()",
         }
         for chord, handler in expected.items():
             with self.subTest(chord=chord):

@@ -1,0 +1,41 @@
+name: Tolaria source intake
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "image/tolaria/source.json"
+      - "image/tolaria/inputs.py"
+      - "image/tolaria/intake.py"
+      - "image/tolaria/patches/**"
+      - "image/tests/test_tolaria_inputs.py"
+      - "scripts/check-tolaria-intake.sh"
+      - ".github/workflows/tolaria-intake.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tolaria-intake-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out the proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Authenticate and inventory fixed public inputs without execution
+        run: bash scripts/check-tolaria-intake.sh
+      - name: Retain bounded public evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: tolaria-source-intake-evidence
+          path: .cache/tolaria-intake-evidence/
+          retention-days: 14
+          if-no-files-found: error

@@ -1,0 +1,1094 @@
+--- a/src-tauri/Cargo.toml
++++ b/src-tauri/Cargo.toml
+@@ -34,7 +34,6 @@
+ csv = "1.4"
+ dirs = "5"
+ tauri-plugin-dialog = "2"
+-tauri-plugin-updater = "2.10.0"
+ tauri-plugin-process = "2.3.1"
+ tauri-plugin-opener = "2"
+ tauri-plugin-prevent-default = "4.0.4"
+--- a/src-tauri/tauri.conf.json
++++ b/src-tauri/tauri.conf.json
+@@ -47,7 +47,9 @@
+         "worker-src": "'self'"
+       },
+       "devCsp": "default-src 'self' ipc: http://ipc.localhost http://localhost:5202 http://127.0.0.1:5202 asset: http://asset.localhost data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:5202 http://127.0.0.1:5202 https://us.i.posthog.com https://eu.i.posthog.com https://us-assets.i.posthog.com https://eu-assets.i.posthog.com; connect-src 'self' ipc: http://ipc.localhost http://localhost:5202 http://127.0.0.1:5202 asset: http://asset.localhost data: ws://localhost:5202 ws://127.0.0.1:5202 ws://localhost:9710 ws://127.0.0.1:9710 ws://localhost:9711 ws://127.0.0.1:9711 https:; img-src 'self' asset: http://asset.localhost data: blob: https:; style-src 'self' 'unsafe-inline'; style-src-elem 'self' 'unsafe-inline'; style-src-attr 'unsafe-inline'; font-src 'self' data:; media-src 'self' asset: http://asset.localhost data: blob: https:; object-src 'none'; frame-src 'self' data: tolaria-html-block: http://tolaria-html-block.localhost; worker-src 'self'",
+-      "dangerousDisableAssetCspModification": ["style-src"],
++      "dangerousDisableAssetCspModification": [
++        "style-src"
++      ],
+       "assetProtocol": {
+         "enable": true,
+         "scope": []
+@@ -57,7 +59,7 @@
+   "bundle": {
+     "active": true,
+     "targets": "all",
+-    "createUpdaterArtifacts": true,
++    "createUpdaterArtifacts": false,
+     "category": "Utility",
+     "windows": {
+       "webviewInstallMode": {
+@@ -80,17 +82,10 @@
+   "plugins": {
+     "deep-link": {
+       "desktop": {
+-        "schemes": ["tolaria"]
++        "schemes": [
++          "tolaria"
++        ]
+       }
+-    },
+-    "updater": {
+-      "endpoints": [
+-        "https://refactoringhq.github.io/tolaria/stable/latest.json"
+-      ],
+-      "windows": {
+-        "installMode": "passive"
+-      },
+-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEE4NkQ5MDI3REVCRkFGNUMKUldSY3I3L2VKNUJ0cU5JRlRZZlp3NGhnU3ZwbkVKeGVvREpmb2sxRVJndHFpVFZPNlArbEE5R1IK"
+     }
+   }
+ }
+--- a/src-tauri/capabilities/default.json
++++ b/src-tauri/capabilities/default.json
+@@ -7,7 +7,11 @@
+     "ai-workspace",
+     "note-*"
+   ],
+-  "platforms": ["linux", "macOS", "windows"],
++  "platforms": [
++    "linux",
++    "macOS",
++    "windows"
++  ],
+   "permissions": [
+     "core:default",
+     "core:window:allow-create",
+@@ -26,7 +30,6 @@
+     "core:event:default",
+     "dialog:default",
+     "deep-link:default",
+-    "updater:default",
+     "process:default",
+     "opener:default"
+   ]
+--- a/src-tauri/src/app_updater.rs
++++ b/src-tauri/src/app_updater.rs
+@@ -1,56 +1,7 @@
+-use chrono::Datelike;
+-use serde::{Deserialize, Serialize};
+-use std::path::Path;
+-use std::process::{Command, Stdio};
+-use std::time::Duration;
+-use tauri::{ipc::Channel, AppHandle, Runtime, Url};
+-use tauri_plugin_updater::UpdaterExt;
+-mod timeout;
+-use timeout::timeout_updater_check;
++use serde::Serialize;
++use tauri::{ipc::Channel, AppHandle, Runtime};
+ 
+-const ALPHA_METADATA_ASSET_NAME: &str = "alpha-latest.json";
+-const GITHUB_RELEASES_API_URL: &str =
+-    "https://api.github.com/repos/refactoringhq/tolaria/releases?per_page=100";
+-const RELEASES_BASE_URL: &str = "https://refactoringhq.github.io/tolaria";
+-const POISONED_STABLE_RECOVERY_FLOOR: &str = "2026.8.19";
+-const UPDATER_HTTP_TIMEOUT: Duration = Duration::from_secs(120);
+-const UPDATER_USER_AGENT: &str = concat!("Tolaria/", env!("CARGO_PKG_VERSION"));
+-pub const SYSTEM_PACKAGE_UPDATE_MESSAGE: &str = "system-package-updates-use-package-manager";
+-
+-fn system_package_update_required() -> bool {
+-    let is_linux = cfg!(target_os = "linux");
+-    let is_appimage = std::env::var_os("APPIMAGE").is_some();
+-    let is_system_package = is_linux
+-        && !is_appimage
+-        && std::fs::read_link("/proc/self/exe")
+-            .is_ok_and(|executable| package_manager_owns_executable(&executable));
+-    requires_package_manager_update(is_linux, is_appimage, is_system_package)
+-}
+-
+-fn package_manager_owns_executable(executable: &Path) -> bool {
+-    ["dpkg-query", "rpm"].into_iter().any(|manager| {
+-        let mut command = Command::new(manager);
+-        if manager == "dpkg-query" {
+-            command.arg("--search");
+-        } else {
+-            command.arg("-qf");
+-        }
+-        command
+-            .arg(executable)
+-            .stdout(Stdio::null())
+-            .stderr(Stdio::null())
+-            .status()
+-            .is_ok_and(|status| status.success())
+-    })
+-}
+-
+-fn requires_package_manager_update(
+-    is_linux: bool,
+-    is_appimage: bool,
+-    is_system_package: bool,
+-) -> bool {
+-    is_linux && !is_appimage && is_system_package
+-}
++pub const SYSTEM_PACKAGE_UPDATE_MESSAGE: &str = "symbi-os-image-updates-only";
+ 
+ #[derive(Debug, Clone, Serialize)]
+ #[serde(rename_all = "camelCase")]
+@@ -75,307 +26,28 @@
+     Finished,
+ }
+ 
+-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+-enum ReleaseChannel {
+-    Alpha,
+-    Stable,
+-}
+-
+-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+-struct AlphaReleaseVersion {
+-    year: i32,
+-    month: u32,
+-    day: u32,
+-    sequence: u32,
+-}
+-
+-#[derive(Debug, Clone, Deserialize)]
+-struct GitHubRelease {
+-    tag_name: String,
+-    draft: bool,
+-    published_at: chrono::DateTime<chrono::Utc>,
+-    assets: Vec<GitHubAsset>,
+-}
+-
+-#[derive(Debug, Clone, Deserialize)]
+-struct GitHubAsset {
+-    name: String,
+-    browser_download_url: String,
+-}
+-
+-impl ReleaseChannel {
+-    fn from_settings_value(value: Option<&str>) -> Self {
+-        match crate::settings::effective_release_channel(value) {
+-            "alpha" => Self::Alpha,
+-            _ => Self::Stable,
+-        }
+-    }
+-
+-    fn as_str(self) -> &'static str {
+-        match self {
+-            Self::Alpha => "alpha",
+-            Self::Stable => "stable",
+-        }
+-    }
+-
+-    fn updater_endpoint(self) -> Result<Url, String> {
+-        let endpoint = format!("{}/{}/latest.json", RELEASES_BASE_URL, self.as_str());
+-        Url::parse(&endpoint).map_err(|e| format!("Invalid updater endpoint: {e}"))
+-    }
+-}
+-
+-impl AlphaReleaseVersion {
+-    fn parse_tag(tag_name: &str) -> Option<Self> {
+-        let release = tag_name.strip_prefix("alpha-v")?;
+-        let (date, sequence) = release.split_once("-alpha.")?;
+-        let sequence = sequence.parse().ok()?;
+-        let (year, month, day) = parse_calendar_date(date)?;
+-        chrono::NaiveDate::from_ymd_opt(year, month, day)?;
+-
+-        Some(Self {
+-            year,
+-            month,
+-            day,
+-            sequence,
+-        })
+-    }
+-}
+-
+-fn parse_calendar_date(value: &str) -> Option<(i32, u32, u32)> {
+-    let mut parts = value.split('.');
+-    let year = parts.next()?.parse().ok()?;
+-    let month = parts.next()?.parse().ok()?;
+-    let day = parts.next()?.parse().ok()?;
+-    if parts.next().is_some() {
+-        return None;
+-    }
+-
+-    Some((year, month, day))
+-}
+-
+-fn calendar_version_date(version: &str) -> Option<chrono::NaiveDate> {
+-    let core = version.split_once('-').map_or(version, |(value, _)| value);
+-    let (year, month, day) = parse_calendar_date(core)?;
+-    chrono::NaiveDate::from_ymd_opt(year, month, day)
+-}
+-
+-fn should_recover_poisoned_calendar_version(
+-    current_version: &str,
+-    remote_version: &str,
+-    today: chrono::NaiveDate,
+-) -> bool {
+-    let Some(current_date) = calendar_version_date(current_version) else {
+-        return false;
+-    };
+-    let Some(remote_date) = calendar_version_date(remote_version) else {
+-        return false;
+-    };
+-    let tomorrow = today.succ_opt().unwrap_or(today);
+-    let recovery_floor = calendar_version_date(POISONED_STABLE_RECOVERY_FLOOR)
+-        .expect("the stable recovery floor must be a valid calendar version");
+-    let stable_recovery =
+-        current_date.year() == 2027 && remote_date.year() == 2026 && remote_date >= recovery_floor;
+-
+-    (stable_recovery || (current_date > tomorrow && remote_date >= today))
+-        && remote_date <= tomorrow
+-}
+-
+-fn should_install_update(
+-    current_version: &str,
+-    remote_version: &str,
+-    remote_is_semver_newer: bool,
+-    today: chrono::NaiveDate,
+-) -> bool {
+-    remote_is_semver_newer
+-        || should_recover_poisoned_calendar_version(current_version, remote_version, today)
+-}
+-
+-fn latest_alpha_release_metadata_url(releases: &[GitHubRelease]) -> Option<Url> {
+-    releases
+-        .iter()
+-        .filter(|release| !release.draft)
+-        .filter_map(alpha_release_metadata_candidate)
+-        .max_by_key(|(_, published_at, _)| *published_at)
+-        .map(|(_, _, url)| url)
+-}
+-
+-fn alpha_release_metadata_candidate(
+-    release: &GitHubRelease,
+-) -> Option<(AlphaReleaseVersion, chrono::DateTime<chrono::Utc>, Url)> {
+-    let version = AlphaReleaseVersion::parse_tag(&release.tag_name)?;
+-    let asset = release
+-        .assets
+-        .iter()
+-        .find(|asset| asset.name == ALPHA_METADATA_ASSET_NAME)?;
+-    let url = Url::parse(&asset.browser_download_url).ok()?;
+-
+-    Some((version, release.published_at, url))
+-}
+-
+-async fn alpha_release_metadata_endpoint() -> Result<Url, String> {
+-    let client = reqwest::Client::builder()
+-        .timeout(UPDATER_HTTP_TIMEOUT)
+-        .user_agent(UPDATER_USER_AGENT)
+-        .build()
+-        .map_err(|e| format!("Failed to create updater metadata client: {e}"))?;
+-
+-    let releases = client
+-        .get(GITHUB_RELEASES_API_URL)
+-        .header(reqwest::header::ACCEPT, "application/vnd.github+json")
+-        .send()
+-        .await
+-        .map_err(|e| format!("Failed to fetch GitHub releases: {e}"))?
+-        .error_for_status()
+-        .map_err(|e| format!("GitHub releases request failed: {e}"))?
+-        .json::<Vec<GitHubRelease>>()
+-        .await
+-        .map_err(|e| format!("Failed to parse GitHub releases: {e}"))?;
+-
+-    latest_alpha_release_metadata_url(&releases)
+-        .ok_or_else(|| "No alpha updater metadata asset found in GitHub releases".to_string())
+-}
+-
+-async fn updater_endpoint(release_channel: ReleaseChannel) -> Result<Url, String> {
+-    match release_channel {
+-        ReleaseChannel::Stable => release_channel.updater_endpoint(),
+-        ReleaseChannel::Alpha => alpha_release_metadata_endpoint()
+-            .await
+-            .or_else(|_| release_channel.updater_endpoint()),
+-    }
+-}
+-
+-fn build_updater<R: Runtime>(
+-    app_handle: &AppHandle<R>,
+-    endpoint: Url,
+-) -> Result<tauri_plugin_updater::Updater, String> {
+-    build_updater_with_timeout(app_handle, endpoint, UPDATER_HTTP_TIMEOUT)
+-}
+-
+-fn build_updater_with_timeout<R: Runtime>(
+-    app_handle: &AppHandle<R>,
+-    endpoint: Url,
+-    request_timeout: Duration,
+-) -> Result<tauri_plugin_updater::Updater, String> {
+-    let builder = app_handle
+-        .updater_builder()
+-        .version_comparator(|current, release| {
+-            let remote_is_semver_newer = release.version > current;
+-            should_install_update(
+-                &current.to_string(),
+-                &release.version.to_string(),
+-                remote_is_semver_newer,
+-                chrono::Utc::now().date_naive(),
+-            )
+-        })
+-        .timeout(request_timeout)
+-        .endpoints(vec![endpoint])
+-        .map_err(|e| format!("Failed to configure updater endpoint: {e}"))?;
+-
+-    builder
+-        .build()
+-        .map_err(|e| format!("Failed to build updater: {e}"))
+-}
+-
+-fn to_update_metadata(update: tauri_plugin_updater::Update) -> AppUpdateMetadata {
+-    AppUpdateMetadata {
+-        current_version: update.current_version,
+-        version: update.version,
+-        date: update.date.map(|value| value.to_string()),
+-        body: update.body,
+-    }
+-}
+-
+-fn ensure_expected_update_version(
+-    update: &tauri_plugin_updater::Update,
+-    expected_version: &str,
+-) -> Result<(), String> {
+-    if update.version == expected_version {
+-        return Ok(());
+-    }
+-
+-    Err(format!(
+-        "Expected update version {}, found {}",
+-        expected_version, update.version
+-    ))
+-}
+-
+-async fn install_update(
+-    update: tauri_plugin_updater::Update,
+-    on_event: Channel<AppUpdateDownloadEvent>,
+-) -> Result<(), String> {
+-    let mut started = false;
+-    update
+-        .download_and_install(
+-            |chunk_length, content_length| {
+-                if !started {
+-                    started = true;
+-                    let _ = on_event.send(AppUpdateDownloadEvent::Started { content_length });
+-                }
+-
+-                let _ = on_event.send(AppUpdateDownloadEvent::Progress { chunk_length });
+-            },
+-            || {
+-                let _ = on_event.send(AppUpdateDownloadEvent::Finished);
+-            },
+-        )
+-        .await
+-        .map_err(|e| format!("Failed to download and install update: {e}"))
+-}
+-
+-async fn refreshed_update(
+-    updater: tauri_plugin_updater::Updater,
+-    expected_version: &str,
+-) -> Result<tauri_plugin_updater::Update, String> {
+-    let update = timeout_updater_check(|| updater.check(), UPDATER_HTTP_TIMEOUT)
+-        .await
+-        .map_err(|_| "Update check timed out".to_string())?
+-        .map_err(|e| format!("Failed to refresh update metadata: {e}"))?
+-        .ok_or_else(|| "No update is currently available".to_string())?;
+-
+-    ensure_expected_update_version(&update, expected_version)?;
+-    Ok(update)
+-}
+-
+ pub async fn check_for_app_update<R: Runtime>(
+-    app_handle: AppHandle<R>,
+-    release_channel: Option<String>,
++    _app_handle: AppHandle<R>,
++    _release_channel: Option<String>,
+ ) -> Result<Option<AppUpdateMetadata>, String> {
+-    if system_package_update_required() {
+-        return Err(SYSTEM_PACKAGE_UPDATE_MESSAGE.to_string());
+-    }
+-    timeout_updater_check(
+-        || async {
+-            let channel = ReleaseChannel::from_settings_value(release_channel.as_deref());
+-            let updater = build_updater(&app_handle, updater_endpoint(channel).await?)?;
+-            let update = updater
+-                .check()
+-                .await
+-                .map_err(|e| format!("Failed to check for updates: {e}"))?;
+-
+-            Ok(update.map(to_update_metadata))
+-        },
+-        UPDATER_HTTP_TIMEOUT,
+-    )
+-    .await
+-    .map_err(|_| "Update check timed out".to_string())?
++    Err(SYSTEM_PACKAGE_UPDATE_MESSAGE.to_string())
+ }
+ 
+ pub async fn download_and_install_app_update<R: Runtime>(
+-    app_handle: AppHandle<R>,
+-    release_channel: Option<String>,
+-    expected_version: String,
+-    on_event: Channel<AppUpdateDownloadEvent>,
++    _app_handle: AppHandle<R>,
++    _release_channel: Option<String>,
++    _expected_version: String,
++    _on_event: Channel<AppUpdateDownloadEvent>,
+ ) -> Result<(), String> {
+-    if system_package_update_required() {
+-        return Err(SYSTEM_PACKAGE_UPDATE_MESSAGE.to_string());
+-    }
+-    let channel = ReleaseChannel::from_settings_value(release_channel.as_deref());
+-    let updater = build_updater(&app_handle, updater_endpoint(channel).await?)?;
+-    let update = refreshed_update(updater, &expected_version).await?;
+-
+-    install_update(update, on_event).await
++    Err(SYSTEM_PACKAGE_UPDATE_MESSAGE.to_string())
+ }
+ 
+ #[cfg(test)]
+-#[path = "app_updater/tests.rs"]
+-mod tests;
++mod tests {
++    use super::SYSTEM_PACKAGE_UPDATE_MESSAGE;
++
++    #[test]
++    fn image_updates_are_the_only_update_route() {
++        assert_eq!(SYSTEM_PACKAGE_UPDATE_MESSAGE, "symbi-os-image-updates-only");
++    }
++}
+--- a/src-tauri/src/lib.rs
++++ b/src-tauri/src/lib.rs
+@@ -144,8 +144,6 @@
+ 
+ #[cfg(desktop)]
+ fn install_desktop_runtime_plugins(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
+-    app.handle()
+-        .plugin(tauri_plugin_updater::Builder::new().build())?;
+     app.handle().plugin(tauri_plugin_process::init())?;
+     app.handle().plugin(tauri_plugin_opener::init())?;
+     Ok(())
+@@ -259,12 +257,6 @@
+ 
+     if telemetry::init_sentry_from_settings() {
+         log::info!("Sentry initialized (crash reporting enabled)");
+-    }
+-
+-    #[cfg(desktop)]
+-    {
+-        desktop_runtime::spawn_startup_tasks();
+-        desktop_runtime::spawn_initial_ws_bridge_sync(app);
+     }
+ 
+     Ok(())
+--- a/src-tauri/src/commands/system.rs
++++ b/src-tauri/src/commands/system.rs
+@@ -107,73 +107,42 @@
+ 
+ #[cfg(desktop)]
+ #[tauri::command]
+-pub async fn register_mcp_tools(vault_path: String) -> Result<String, String> {
+-    let vault_path = super::expand_tilde(&vault_path).into_owned();
+-    crate::commands::blocking::run_blocking_labeled("Registration task failed", move || {
+-        crate::mcp::register_mcp(&vault_path)
+-    })
+-    .await?
++pub async fn register_mcp_tools(_vault_path: String) -> Result<String, String> {
++    Err("symbi-os-transient-mcp-only".into())
+ }
+ 
+ #[cfg(desktop)]
+ #[tauri::command]
+ pub async fn remove_mcp_tools() -> Result<String, String> {
+-    crate::commands::blocking::run_blocking_labeled("Removal task failed", crate::mcp::remove_mcp)
+-        .await
+-}
+-
+-#[cfg(desktop)]
+-#[tauri::command]
+-pub async fn check_mcp_status(vault_path: String) -> Result<crate::mcp::McpStatus, String> {
+-    let vault_path = super::expand_tilde(&vault_path).into_owned();
+-    crate::commands::blocking::run_blocking_labeled("MCP status check failed", move || {
+-        crate::mcp::check_mcp_status(&vault_path)
+-    })
+-    .await
+-}
+-
+-#[cfg(desktop)]
+-#[tauri::command]
+-pub async fn get_mcp_config_snippet(vault_path: String) -> Result<String, String> {
+-    let vault_path = super::expand_tilde(&vault_path).into_owned();
+-    crate::commands::blocking::run_blocking_labeled("MCP config task failed", move || {
+-        crate::mcp::mcp_config_snippet(&vault_path)
+-    })
+-    .await?
+-}
+-
+-#[cfg(desktop)]
+-#[tauri::command]
+-pub async fn get_opencode_mcp_config_snippet(vault_path: String) -> Result<String, String> {
+-    let vault_path = super::expand_tilde(&vault_path).into_owned();
+-    crate::commands::blocking::run_blocking_labeled("OpenCode MCP config task failed", move || {
+-        crate::mcp::opencode_mcp_config_snippet(&vault_path)
+-    })
+-    .await?
++    Err("symbi-os-transient-mcp-only".into())
++}
++
++#[cfg(desktop)]
++#[tauri::command]
++pub async fn check_mcp_status(_vault_path: String) -> Result<crate::mcp::McpStatus, String> {
++    Ok(crate::mcp::McpStatus::NotInstalled)
++}
++
++#[cfg(desktop)]
++#[tauri::command]
++pub async fn get_mcp_config_snippet(_vault_path: String) -> Result<String, String> {
++    Err("symbi-os-transient-mcp-only".into())
++}
++
++#[cfg(desktop)]
++#[tauri::command]
++pub async fn get_opencode_mcp_config_snippet(_vault_path: String) -> Result<String, String> {
++    Err("symbi-os-transient-mcp-only".into())
+ }
+ 
+ #[cfg(desktop)]
+ #[tauri::command]
+ pub async fn sync_mcp_bridge_vault(
+-    app: tauri::AppHandle,
+-    vault_path: Option<String>,
+-    vault_paths: Option<Vec<String>>,
++    _app: tauri::AppHandle,
++    _vault_path: Option<String>,
++    _vault_paths: Option<Vec<String>>,
+ ) -> Result<String, String> {
+-    let expanded_vault_path = vault_path
+-        .as_deref()
+-        .map(str::trim)
+-        .filter(|path| !path.is_empty())
+-        .map(|path| super::expand_tilde(path).into_owned());
+-    let vault_path = expanded_vault_path.as_deref().map(std::path::Path::new);
+-    let expanded_vault_paths = vault_paths
+-        .unwrap_or_default()
+-        .into_iter()
+-        .map(|path| super::expand_tilde(path.trim()).into_owned())
+-        .filter(|path| !path.is_empty())
+-        .map(std::path::PathBuf::from)
+-        .collect::<Vec<_>>();
+-
+-    crate::sync_ws_bridge_for_vault(&app, vault_path, &expanded_vault_paths).map(str::to_string)
++    Ok("disabled".into())
+ }
+ 
+ // ── MCP commands (mobile stubs) ─────────────────────────────────────────────
+--- a/src-tauri/src/commands/ai.rs
++++ b/src-tauri/src/commands/ai.rs
+@@ -8,128 +8,47 @@
+ use super::expand_tilde;
+ 
+ #[cfg(desktop)]
+-type StreamEmitter<Event> = Box<dyn Fn(Event) + Send>;
+-
+-#[cfg(desktop)]
+ const AGENT_DOCS_RESOURCE_DIR: &str = "agent-docs";
+ 
+-#[cfg(desktop)]
+-struct DesktopStreamScope {
+-    event_name: String,
+-    stream_id: Option<String>,
+-}
+-
+-#[cfg(desktop)]
+-impl DesktopStreamScope {
+-    fn shared(event_name: impl Into<String>) -> Self {
+-        Self {
+-            event_name: event_name.into(),
+-            stream_id: None,
+-        }
+-    }
+-
+-    fn cancellable(event_name: impl Into<String>) -> Self {
+-        let event_name = event_name.into();
+-        Self {
+-            stream_id: Some(event_name.clone()),
+-            event_name,
+-        }
+-    }
+-}
+-
+-#[cfg(desktop)]
+-async fn run_desktop_stream<Event, Request, Runner>(
+-    app_handle: tauri::AppHandle,
+-    scope: DesktopStreamScope,
+-    request: Request,
+-    runner: Runner,
+-) -> Result<String, String>
+-where
+-    Event: serde::Serialize + Send + 'static,
+-    Request: Send + 'static,
+-    Runner: FnOnce(Request, StreamEmitter<Event>) -> Result<String, String> + Send + 'static,
+-{
+-    use tauri::Emitter;
+-
+-    super::blocking::run_blocking_labeled("Task failed", move || {
+-        let DesktopStreamScope {
+-            event_name,
+-            stream_id,
+-        } = scope;
+-        let run = || {
+-            runner(
+-                request,
+-                Box::new(move |event| {
+-                    let _ = app_handle.emit(event_name.as_str(), &event);
+-                }),
+-            )
+-        };
+-        match stream_id {
+-            Some(stream_id) => crate::ai_agent_processes::with_stream_id(stream_id, run),
+-            None => run(),
+-        }
+-    })
+-    .await?
+-}
+-
+-#[cfg(desktop)]
+-macro_rules! define_desktop_stream_command {
+-    ($name:ident, $request:ty, $event_name:literal, $runner:path) => {
+-        #[tauri::command]
+-        pub async fn $name(
+-            app_handle: tauri::AppHandle,
+-            request: $request,
+-        ) -> Result<String, String> {
+-            run_desktop_stream(
+-                app_handle,
+-                DesktopStreamScope::shared($event_name),
+-                request,
+-                $runner,
+-            )
+-            .await
+-        }
++// ── Claude CLI commands (desktop) ───────────────────────────────────────────
++
++#[cfg(desktop)]
++#[tauri::command]
++pub fn check_claude_cli() -> ClaudeCliStatus {
++    ClaudeCliStatus {
++        installed: false,
++        version: None,
++    }
++}
++
++#[cfg(desktop)]
++#[tauri::command]
++pub async fn get_ai_agents_status() -> AiAgentsStatus {
++    unavailable_ai_agents_status()
++}
++
++#[cfg(desktop)]
++fn unavailable_ai_agents_status() -> AiAgentsStatus {
++    let missing = || crate::ai_agents::AiAgentAvailability {
++        installed: false,
++        version: None,
+     };
+-}
+-
+-#[cfg(desktop)]
+-fn is_scoped_stream_event_name(default_event_name: &str, event_name: &str) -> bool {
+-    event_name
+-        .strip_prefix(default_event_name)
+-        .and_then(|suffix| suffix.strip_prefix('-'))
+-        .is_some_and(|suffix| {
+-            !suffix.is_empty()
+-                && suffix
+-                    .chars()
+-                    .all(|character| character.is_ascii_alphanumeric() || character == '-')
+-        })
+-}
+-
+-#[cfg(desktop)]
+-fn stream_event_name(default_event_name: &'static str, requested: Option<&str>) -> String {
+-    requested
+-        .filter(|event_name| is_scoped_stream_event_name(default_event_name, event_name))
+-        .unwrap_or(default_event_name)
+-        .to_string()
+-}
+-
+-// ── Claude CLI commands (desktop) ───────────────────────────────────────────
+-
+-#[cfg(desktop)]
+-#[tauri::command]
+-pub fn check_claude_cli() -> ClaudeCliStatus {
+-    crate::claude_cli::check_cli()
+-}
+-
+-#[cfg(desktop)]
+-#[tauri::command]
+-pub async fn get_ai_agents_status() -> AiAgentsStatus {
+-    crate::ai_agents::get_ai_agents_status().await
++    AiAgentsStatus {
++        claude_code: missing(),
++        codex: missing(),
++        copilot: missing(),
++        opencode: missing(),
++        pi: missing(),
++        antigravity: missing(),
++        kiro: missing(),
++        hermes: missing(),
++    }
+ }
+ 
+ #[cfg(desktop)]
+ #[tauri::command]
+ pub async fn get_ai_agent_model_catalog() -> Vec<crate::ai_agents::AiAgentModelCapability> {
+-    crate::ai_agents::get_ai_agent_model_catalog().await
++    Vec::new()
+ }
+ 
+ #[cfg(desktop)]
+@@ -174,90 +93,57 @@
+ }
+ 
+ #[cfg(desktop)]
+-define_desktop_stream_command!(
+-    stream_claude_chat,
+-    ChatStreamRequest,
+-    "claude-stream",
+-    crate::claude_cli::run_chat_stream
+-);
+-
+-#[cfg(desktop)]
+-fn normalize_agent_request(mut request: AiAgentStreamRequest) -> AiAgentStreamRequest {
+-    request.vault_path = expand_tilde(&request.vault_path).into_owned();
+-    request.vault_paths = request
+-        .vault_paths
+-        .into_iter()
+-        .map(|path| expand_tilde(&path).into_owned())
+-        .collect();
+-    request
+-}
+-
+-#[cfg(desktop)]
+-fn run_normalized_ai_agent_stream(
+-    request: AiAgentStreamRequest,
+-    emitter: StreamEmitter<crate::ai_agents::AiAgentStreamEvent>,
+-) -> Result<String, String> {
+-    crate::ai_agents::run_ai_agent_stream(normalize_agent_request(request), emitter)
++#[tauri::command]
++pub async fn stream_claude_chat(
++    _app_handle: tauri::AppHandle,
++    _request: ChatStreamRequest,
++) -> Result<String, String> {
++    Err("symbi-os-governed-agent-route-only".into())
+ }
+ 
+ #[cfg(desktop)]
+ #[tauri::command]
+ pub async fn stream_ai_agent(
+-    app_handle: tauri::AppHandle,
+-    request: AiAgentStreamRequest,
+-) -> Result<String, String> {
+-    let event_name = stream_event_name("ai-agent-stream", request.event_name.as_deref());
+-    run_desktop_stream(
+-        app_handle,
+-        DesktopStreamScope::cancellable(event_name),
+-        request,
+-        run_normalized_ai_agent_stream,
+-    )
+-    .await
+-}
+-
+-#[cfg(desktop)]
+-#[tauri::command]
+-pub fn abort_ai_agent_stream(event_name: String) -> Result<bool, String> {
+-    if !is_scoped_stream_event_name("ai-agent-stream", &event_name) {
+-        return Err("Invalid AI agent stream id".into());
+-    }
+-
+-    crate::ai_agent_processes::abort_stream(&event_name)
++    _app_handle: tauri::AppHandle,
++    _request: AiAgentStreamRequest,
++) -> Result<String, String> {
++    Err("symbi-os-governed-agent-route-only".into())
++}
++
++#[cfg(desktop)]
++#[tauri::command]
++pub fn abort_ai_agent_stream(_event_name: String) -> Result<bool, String> {
++    Err("symbi-os-governed-agent-route-only".into())
+ }
+ 
+ #[cfg(desktop)]
+ #[tauri::command]
+ pub async fn stream_ai_model(
+-    app_handle: tauri::AppHandle,
+-    request: AiModelStreamRequest,
+-) -> Result<String, String> {
+-    let event_name = stream_event_name("ai-model-stream", request.event_name.as_deref());
+-    run_desktop_stream(
+-        app_handle,
+-        DesktopStreamScope::shared(event_name),
+-        request,
+-        crate::ai_models::run_ai_model_stream,
+-    )
+-    .await
+-}
+-
+-#[cfg(desktop)]
+-#[tauri::command]
+-pub fn save_ai_model_provider_api_key(provider_id: String, api_key: String) -> Result<(), String> {
+-    crate::ai_models::save_provider_api_key(provider_id, api_key)
+-}
+-
+-#[cfg(desktop)]
+-#[tauri::command]
+-pub fn delete_ai_model_provider_api_key(provider_id: String) -> Result<(), String> {
+-    crate::ai_models::delete_provider_api_key(provider_id)
+-}
+-
+-#[cfg(desktop)]
+-#[tauri::command]
+-pub fn test_ai_model_provider(request: AiModelProviderTestRequest) -> Result<String, String> {
+-    crate::ai_models::test_ai_model_provider(request)
++    _app_handle: tauri::AppHandle,
++    _request: AiModelStreamRequest,
++) -> Result<String, String> {
++    Err("symbi-os-model-broker-only".into())
++}
++
++#[cfg(desktop)]
++#[tauri::command]
++pub fn save_ai_model_provider_api_key(
++    _provider_id: String,
++    _api_key: String,
++) -> Result<(), String> {
++    Err("symbi-os-model-broker-only".into())
++}
++
++#[cfg(desktop)]
++#[tauri::command]
++pub fn delete_ai_model_provider_api_key(_provider_id: String) -> Result<(), String> {
++    Err("symbi-os-model-broker-only".into())
++}
++
++#[cfg(desktop)]
++#[tauri::command]
++pub fn test_ai_model_provider(_request: AiModelProviderTestRequest) -> Result<String, String> {
++    Err("symbi-os-model-broker-only".into())
+ }
+ 
+ // ── Claude CLI (mobile stubs) ───────────────────────────────────────────────
+@@ -385,79 +271,16 @@
+ 
+     #[cfg(desktop)]
+     #[test]
+-    fn normalize_agent_request_expands_tilde_in_vault_path() {
+-        use crate::ai_agents::AiAgentId;
+-
+-        let home = dirs::home_dir().unwrap();
+-        let request = AiAgentStreamRequest {
+-            agent: AiAgentId::ClaudeCode,
+-            message: "hi".into(),
+-            model: None,
+-            system_prompt: None,
+-            vault_path: "~/Vaults/content".into(),
+-            vault_paths: vec!["~/Vaults/secondary".into()],
+-            permission_mode: None,
+-            event_name: None,
+-        };
+-
+-        let normalized = normalize_agent_request(request);
+-
+-        assert_eq!(
+-            normalized.vault_path,
+-            format!("{}/Vaults/content", home.display()),
+-            "vault_path must be tilde-expanded so spawned agents can chdir into it",
+-        );
+-        assert_eq!(
+-            normalized.vault_paths,
+-            vec![format!("{}/Vaults/secondary", home.display())],
+-            "vault_paths must be tilde-expanded so spawned agents can access every active vault",
+-        );
+-    }
+-
+-    #[cfg(desktop)]
+-    #[test]
+-    fn normalize_agent_request_leaves_absolute_vault_path_untouched() {
+-        use crate::ai_agents::AiAgentId;
+-
+-        let request = AiAgentStreamRequest {
+-            agent: AiAgentId::Codex,
+-            message: "hi".into(),
+-            model: None,
+-            system_prompt: None,
+-            vault_path: "/Users/example/vault".into(),
+-            vault_paths: Vec::new(),
+-            permission_mode: None,
+-            event_name: None,
+-        };
+-
+-        let normalized = normalize_agent_request(request);
+-
+-        assert_eq!(normalized.vault_path, "/Users/example/vault");
+-    }
+-
+-    #[cfg(desktop)]
+-    #[test]
+-    fn stream_event_name_accepts_only_scoped_names() {
+-        assert_eq!(
+-            stream_event_name("ai-agent-stream", Some("ai-agent-stream-chat-123")),
+-            "ai-agent-stream-chat-123",
+-        );
+-        assert_eq!(
+-            stream_event_name("ai-agent-stream", Some("ai-model-stream-chat-123")),
+-            "ai-agent-stream",
+-        );
+-        assert_eq!(
+-            stream_event_name("ai-agent-stream", Some("ai-agent-stream/../bad")),
+-            "ai-agent-stream",
+-        );
+-    }
+-
+-    #[cfg(desktop)]
+-    #[test]
+-    fn abort_ai_agent_stream_rejects_unscoped_names() {
+-        let result = abort_ai_agent_stream("ai-model-stream-chat-123".into());
+-
+-        assert!(matches!(result, Err(message) if message.contains("Invalid AI agent stream id")));
++    fn managed_build_reports_direct_agents_unavailable() {
++        let status = unavailable_ai_agents_status();
++        assert!(!status.claude_code.installed);
++        assert!(!status.codex.installed);
++        assert!(!status.pi.installed);
++        assert!(!status.copilot.installed);
++        assert!(!status.opencode.installed);
++        assert!(!status.antigravity.installed);
++        assert!(!status.kiro.installed);
++        assert!(!status.hermes.installed);
+     }
+ 
+     #[test]
+--- a/src-tauri/src/pi_config/package_args.rs
++++ b/src-tauri/src/pi_config/package_args.rs
+@@ -1,50 +1,7 @@
+-use serde_json::Value;
+ use std::path::Path;
+ 
+-const PI_MCP_ADAPTER_EXTENSION: &str = "npm:pi-mcp-adapter";
+-
+-pub(super) fn build_args(agent_dir: &Path, vault_dir: &Path) -> Vec<String> {
+-    let mut args = vec!["--mode".into(), "json".into(), "--no-session".into()];
+-    if !settings_load_mcp_adapter(&agent_dir.join("settings.json"))
+-        && !settings_load_mcp_adapter(&vault_dir.join(".pi/settings.json"))
+-    {
+-        args.push("--extension".into());
+-        args.push(PI_MCP_ADAPTER_EXTENSION.into());
+-    }
+-    args
+-}
+-
+-fn settings_load_mcp_adapter(path: &Path) -> bool {
+-    let Ok(contents) = std::fs::read_to_string(path) else {
+-        return false;
+-    };
+-    let Ok(settings) = serde_json::from_str::<Value>(&contents) else {
+-        return false;
+-    };
+-    settings
+-        .get("packages")
+-        .and_then(Value::as_array)
+-        .is_some_and(|packages| packages.iter().any(package_loads_mcp_adapter))
+-}
+-
+-fn package_loads_mcp_adapter(package: &Value) -> bool {
+-    let (source, extensions) = match package {
+-        Value::String(source) => (source.as_str(), None),
+-        Value::Object(config) => (
+-            config
+-                .get("source")
+-                .and_then(Value::as_str)
+-                .unwrap_or_default(),
+-            config.get("extensions"),
+-        ),
+-        _ => return false,
+-    };
+-    let is_adapter = source
+-        .strip_prefix(PI_MCP_ADAPTER_EXTENSION)
+-        .is_some_and(|suffix| suffix.is_empty() || suffix.starts_with('@'));
+-    let extensions_disabled =
+-        matches!(extensions, Some(Value::Array(entries)) if entries.is_empty());
+-    is_adapter && !extensions_disabled
++pub(super) fn build_args(_agent_dir: &Path, _vault_dir: &Path) -> Vec<String> {
++    vec!["--mode".into(), "json".into(), "--no-session".into()]
+ }
+ 
+ #[cfg(test)]
+@@ -52,60 +9,12 @@
+     use super::*;
+ 
+     #[test]
+-    fn args_use_documented_json_mode_with_mcp_adapter() {
+-        let args = args_for_settings(r#"{}"#, false);
+-
+-        assert_eq!(args[..3], ["--mode", "json", "--no-session"]);
+-        assert!(args.contains(&PI_MCP_ADAPTER_EXTENSION.to_string()));
+-        assert!(!args.contains(&"--no-tools".to_string()));
+-    }
+-
+-    #[test]
+-    fn args_skip_injected_adapter_when_settings_load_it() {
+-        let cases = [
+-            (r#"{"packages":["npm:pi-mcp-adapter"]}"#, false),
+-            (
+-                r#"{"packages":[{"source":"npm:pi-mcp-adapter@1.2.3"}]}"#,
+-                false,
+-            ),
+-            (r#"{"packages":["npm:pi-mcp-adapter"]}"#, true),
+-        ];
+-
+-        for (settings, project_local) in cases {
+-            let args = args_for_settings(settings, project_local);
+-            assert!(!args.contains(&"--extension".to_string()), "{settings}");
+-            assert!(
+-                !args.contains(&PI_MCP_ADAPTER_EXTENSION.to_string()),
+-                "{settings}"
+-            );
+-        }
+-    }
+-
+-    #[test]
+-    fn args_keep_injected_adapter_for_non_loading_or_invalid_settings() {
+-        let cases = [
+-            r#"{"packages":["npm:pi-mcp-adapter-plus"]}"#,
+-            r#"{"packages":[{"source":"npm:pi-mcp-adapter","extensions":[]}]}"#,
+-            r#"{"comment":"npm:pi-mcp-adapter"}"#,
+-            "not json",
+-        ];
+-
+-        for settings in cases {
+-            let args = args_for_settings(settings, false);
+-            assert!(args.contains(&"--extension".to_string()), "{settings}");
+-        }
+-    }
+-
+-    fn args_for_settings(settings: &str, project_local: bool) -> Vec<String> {
++    fn args_never_request_runtime_extensions() {
+         let agent_dir = tempfile::tempdir().unwrap();
+         let vault_dir = tempfile::tempdir().unwrap();
+-        let settings_path = if project_local {
+-            vault_dir.path().join(".pi/settings.json")
+-        } else {
+-            agent_dir.path().join("settings.json")
+-        };
+-        std::fs::create_dir_all(settings_path.parent().unwrap()).unwrap();
+-        std::fs::write(settings_path, settings).unwrap();
+-        build_args(agent_dir.path(), vault_dir.path())
++        let args = build_args(agent_dir.path(), vault_dir.path());
++
++        assert_eq!(args, vec!["--mode", "json", "--no-session"]);
++        assert!(!args.contains(&"--extension".to_string()));
+     }
+ }

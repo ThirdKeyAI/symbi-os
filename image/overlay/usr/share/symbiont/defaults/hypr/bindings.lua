@@ -17,6 +17,7 @@ hl.bind("SUPER + SHIFT + Return", hl.dsp.no_op(), { description = "Browser (rese
 hl.bind("SUPER + SHIFT + B", hl.dsp.no_op(), { description = "Browser (reserved alternate)" })
 hl.bind("SUPER + SHIFT + F", hl.dsp.no_op(), { description = "File manager (reserved)" })
 hl.bind("SUPER + SHIFT + N", hl.dsp.no_op(), { description = "Editor (reserved)" })
+hl.bind("SUPER + SHIFT + O", hl.dsp.no_op(), { description = "Tolaria second brain (reserved until qualified build)" })
 
 hl.bind("SUPER + W", hl.dsp.window.close(), { description = "Close window" })
 hl.bind("SUPER + T", hl.dsp.window.float({ action = "toggle" }), { description = "Toggle window floating" })

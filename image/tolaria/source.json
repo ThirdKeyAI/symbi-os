@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "status": "candidate-awaiting-bounded-fedora-build-and-os-qualification",
+  "repository": "https://github.com/refactoringhq/tolaria",
+  "license": "AGPL-3.0-or-later",
+  "release": {
+    "tag": "v2026-11-18",
+    "published_at": "2026-11-18T22:20:21Z",
+    "tag_object": "7145103d8183cb243ab831969fd200e431eab560",
+    "tag_signed": false,
+    "source_commit": "a87d074c0f35acd6475b6e37145ccbfd6fbecffd",
+    "github_attestation_found": false
+  },
+  "source": {
+    "url": "https://github.com/refactoringhq/tolaria/archive/a87d074c0f35acd6475b6e37145ccbfd6fbecffd.tar.gz",
+    "bytes": 19818838,
+    "sha256": "5c1ce4b2eec123589e02f8a99352356652ceb53a10626a7196a12921d60828b9",
+    "root": "tolaria-a87d074c0f35acd6475b6e37145ccbfd6fbecffd",
+    "members": 5071,
+    "regular_files": 4821,
+    "directories": 250,
+    "expanded_bytes": 48889892
+  },
+  "required_files": {
+    "LICENSE": {
+      "bytes": 34523,
+      "sha256": "0d96a4ff68ad6d4b6f1f30f713b18d5184912ba8dd389f86aa7710db079abcb0"
+    },
+    "package.json": {
+      "bytes": 21432,
+      "sha256": "85a8abb7d51f7a9e50425a50ea000123989d25a6a2e73ebf874c988f03a541c1"
+    },
+    "pnpm-lock.yaml": {
+      "bytes": 826214,
+      "sha256": "517c7037c139b40978c185b8326793d0a4c3b6096a435089d41127add4379c2d"
+    },
+    "mcp-server/package.json": {
+      "bytes": 705,
+      "sha256": "fd248d94c67ab39d9b9baf258a6b54be438fbe5cd27577b49c546c331df76bbc"
+    },
+    "mcp-server/package-lock.json": {
+      "bytes": 46021,
+      "sha256": "8a5f15f0c19de0f52c3cd5f4563ef4698c45c0af26e435b52a1c9e795615fec2"
+    },
+    "src-tauri/Cargo.toml": {
+      "bytes": 1581,
+      "sha256": "3124020864b98d9569b23870f5598673e83721c2bd033100ce279f44c296986a"
+    },
+    "src-tauri/Cargo.lock": {
+      "bytes": 164016,
+      "sha256": "130ee33ea734efc9cf65816258f4bf8b84f7dd6f50c8c6cd832bd6f404d854f1"
+    },
+    "src-tauri/tauri.conf.json": {
+      "bytes": 3945,
+      "sha256": "c866d894e7340111f9daae2b10eb171353395c5c1debf52799c687cfa88dd46c"
+    },
+    "src-tauri/capabilities/default.json": {
+      "bytes": 912,
+      "sha256": "86231077f6c6a6d54be5f34119a94de144c3358b6a4a806ba68ccb1e0b0961f6"
+    }
+  },
+  "downstream_patch": {
+    "path": "image/tolaria/patches/0001-managed-os-integration.patch",
+    "bytes": 36350,
+    "sha256": "f3a2d1bddd4323831ec28c83516766a7cebfbcaebe4f6264d7217f202e0cb687",
+    "paths": [
+      "src-tauri/Cargo.toml",
+      "src-tauri/tauri.conf.json",
+      "src-tauri/capabilities/default.json",
+      "src-tauri/src/app_updater.rs",
+      "src-tauri/src/lib.rs",
+      "src-tauri/src/commands/system.rs",
+      "src-tauri/src/commands/ai.rs",
+      "src-tauri/src/pi_config/package_args.rs"
+    ],
+    "result_sha256": {
+      "src-tauri/Cargo.toml": "abae3ba6a0e6f66d81aeea89b88ab3b281472db2926e4241d7232e9f58b6c4ff",
+      "src-tauri/tauri.conf.json": "af5d461b8ab3b7bce75a18b12a2d0edd2e71d8c5b865afb7588482ca779b6094",
+      "src-tauri/capabilities/default.json": "719f31d494a516d2ad8a5d154fc89dbc2a27e8b3036f51ffbcfe7cb0d7a04609",
+      "src-tauri/src/app_updater.rs": "630660b96a5fe9871632d6a79cdaa890751ebbcfb9f30ba95b798513a14e0bb4",
+      "src-tauri/src/lib.rs": "4b4c5b723630f849183cc2e0ce206f63942337026e4e489fbe385b9d904ca514",
+      "src-tauri/src/commands/system.rs": "b7abefec0c1df44e00c6a026176a2cb7f24146bd611456c633e1cab4f78146c7",
+      "src-tauri/src/commands/ai.rs": "8df4f939d303c5e9b71a84ffd4c4e83ad57c78a76b639d1ff630eb6fae433e5e",
+      "src-tauri/src/pi_config/package_args.rs": "b75d28af74fbe3bd41c116d674074ca85441d1b21a3d6089f125e3a85456c687"
+    }
+  },
+  "pnpm": {
+    "version": "10.34.9",
+    "url": "https://registry.npmjs.org/pnpm/-/pnpm-10.34.9.tgz",
+    "bytes": 4895615,
+    "sha256": "7e8a946108e7baab119e51d27c24d6178b46545422643dbc91e34e2f1ee32e0f",
+    "npm_integrity": "sha512-9JtajqD97bRLs8DB1ldQkqU8KVDZW3rRXfEfF5dId6LeOgHAfpNOmyjOcW5RwJqUlixzBtCb4uHksYqMh2L9Mg==",
+    "npm_signing_key_id": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+    "members": 1065,
+    "expanded_bytes": 19969472,
+    "required_files": {
+      "package/package.json": "50f7f5893429f81ee43ea9664e0c61001dcfc70ea1d049856b23dc43d4e1ce4f",
+      "package/bin/pnpm.cjs": "b276da51dc8ca5b0d3ee3371695b50fc8b3244b281b091c63a3f082a88dadeb9",
+      "package/bin/pnpx.cjs": "907715e8c1a40838de62c59f87082036937356df91d976777be21cfad62d6029"
+    }
+  },
+  "selected": false,
+  "security_qualified": false,
+  "os_qualified": false
+}
