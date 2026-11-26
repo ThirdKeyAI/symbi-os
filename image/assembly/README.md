@@ -32,8 +32,8 @@ output and time, and its named container is removed and verified absent.
 Both `ldd` results and real version/help/parser results are retained even when
 dependencies fail. The selected base inventory contains OpenSSL 4; the retained
 runtime was built on Ubuntu with default features. Compatibility must be
-observed, not inferred. No compatibility RPM or feature change is introduced
-by this check. Run only through `scripts/check-assembly-inputs.sh` on hosted CI;
+observed, not inferred. The additive compatibility RPM below addresses the
+observed loader failure without changing source or features. Run only through `scripts/check-assembly-inputs.sh` on hosted CI;
 local large downloads, compilation and VM work stay disabled.
 
 ## OpenSSL compatibility input and offline acceptance
@@ -46,7 +46,7 @@ package inventories. The archive/manifest/RPM hashes are pinned in
 `runtime-rpms.lock.json`; signature and identity evidence is retained under
 `docs/security/reports/P0-03-runtime-packages/45748551523`.
 
-The next acceptance run verifies those RPM bytes and signatures again in an
+The acceptance workflow verifies those RPM bytes and signatures again in an
 offline installation guest capped at 2 GiB/one CPU/no swap/128 tasks. Its writes are
 limited to the disposable image and private output. It requires an
 additive package transaction and unchanged original crypto-configuration hashes,
@@ -60,3 +60,28 @@ expectations are unchanged. No runtime executable is installed into the stage.
 Configuration preservation and CLI loading do not prove TLS policy equivalence
 or Fedora isolation. Crypto-policy behavior and the full final-image acceptance
 gates remain separate work; no product or crypto-policy qualification is claimed.
+
+## Passed additive runtime compatibility
+
+[Run 45749688344](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45749688344)
+at `669de4383347a17c86d4dc60060a1f238727df34` passed all 17 retained builder
+CLI cases and all six real runtime loader/CLI controls. Installation adds only
+`openssl3-libs-1:3.5.9-1.fc45.x86_64`; all 2,178 original package identities,
+32 existing crypto configuration files/links and eight absent configuration slots
+are unchanged. The original OpenSSL 4 package remains installed. All nine
+installer/probe containers were removed and checked absent.
+
+The original `openssl3.cnf` includes Fedora's system crypto-policy file. Those
+bytes are retained verbatim; inclusion and preservation do not establish actual
+TLS behavior. Both `crypto_policy_qualified` and `os_qualified` remain false.
+The installer peaked at 338,669,568 bytes under its 2 GiB limit and the builder
+at 241,360,896 bytes under 512 MiB, with no limit/OOM events. The 4 GiB parent
+recorded memory pressure but no OOM or kill; its raw counters are retained.
+Evidence is in `docs/security/reports/P0-03-assembly-inputs/45749688344/`.
+
+The Walker reader at `image/launcher/walker_binary_inputs.py` prepares reuse of
+its already-passed artifact for desktop assembly. It validates current source,
+RPM-lock, manifest, binary and original-license bindings, bounds extraction and
+refuses unsafe entries or output paths. Its five fixture tests execute no native
+binary. Actual image installation, desktop operation and Fedora containment are
+still separate acceptance work.

@@ -7,3 +7,6 @@ image/hyprland/patches/*.patch whitespace=-blank-at-eol
 
 # Go patch context has a diff space before source indentation tabs.
 image/launcher/patches/*.patch whitespace=-blank-at-eol,-space-before-tab
+
+# Preserve the exact package-owned configuration as captured evidence.
+docs/security/reports/P0-03-assembly-inputs/45749688344/runtime/install/compatibility-configs/etc/pki/tls/openssl3.cnf whitespace=-blank-at-eol,-space-before-tab

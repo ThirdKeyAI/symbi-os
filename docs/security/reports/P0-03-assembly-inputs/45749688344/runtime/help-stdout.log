@@ -1,0 +1,32 @@
+Symbiont - AI Agent Runtime and DSL
+
+Usage: symbi [COMMAND]
+
+Commands:
+  init         Create a new Symbiont project (symbiont.toml, agents/, policies/, docker-compose.yml, .env)
+  up           Start the Symbiont runtime with auto-configuration
+  doctor       Check system health and dependencies
+  audit        Inspect protected run evidence
+  invocation   Inspect and reconcile retained invocation outcomes
+  improvement  Opt in, evaluate and release governed workflow instructions
+  logs         Show runtime logs
+  status       Show running agents, routes, and I/O handlers
+  new          Create a new project from a template
+  run          Run a single agent and exit
+  tools        Manage ToolClad tool manifests
+  mcp          Start MCP server (stdio transport) for AI assistant integration
+  agents-md    Generate AGENTS.md from agent DSL definitions
+  dsl          Parse and execute DSL
+  fmt          Canonical-format Symbi (.symbi) source files
+  chat         Manage chat channel adapters (Slack, Teams, Mattermost)
+  skills       Manage agent skills (load, verify, sign, scan)
+  cron         Manage cron-scheduled agent jobs
+  shell        Interactive agent orchestration shell
+  repl         Interactive DSL REPL (forwards to the repl-cli binary)
+  schemapin    TOFU integrity pinning for MCP server configs (used by SessionStart hooks)
+  policy       Evaluate Cedar authorization policies against tool-call inputs
+  help         Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help     Print help
+  -V, --version  Print version

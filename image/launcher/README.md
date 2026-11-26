@@ -223,3 +223,11 @@ RPM bundles and runs only on resource-limited hosted workers. Walker run 4574101
 original-base CLI controls. `walker-development-binary.lock.json` pins the exact
 retained artifact and original source license for reuse. Desktop integration,
 dependency review and OS qualification remain pending.
+
+`walker_binary_inputs.py` consumes the retained Walker artifact without a source
+rebuild. It binds the exact current source and build/runtime RPM locks, requires
+the reviewed upstream/CLI results, and verifies the ZIP, manifest, executable and
+original license (including its Git blob identity). Only bounded regular members
+in a fresh directory are accepted; the binary becomes executable after validation.
+Five fixture tests cover intact reuse, stale bindings, corrupt bytes, unsafe ZIP
+members and output paths. Desktop/GUI and product qualification remain pending.
