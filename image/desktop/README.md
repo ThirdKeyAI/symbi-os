@@ -73,6 +73,16 @@ reads back every limit and records setup before pulling. The existing enclosing
 [cgroup v2 controller rules](https://docs.kernel.org/admin-guide/cgroup-v2.html#enabling-and-disabling).
 Actual image assembly remains a separate hosted gate.
 
+[Run 45755957778](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45755957778)
+verified the delegated limits, base signature and base prerequisites, then failed
+at the first image RUN. In the selected Podman 4.9.3,
+[Buildah assigns `CgroupParent` directly to OCI `CgroupsPath`](https://github.com/podman-container-tools/podman/blob/v4.9.3/vendor/github.com/containers/buildah/run_linux.go#L456).
+The enabled parent cannot contain processes. RUN now uses `image-build/run`,
+a leaf beside `image-build/supervisor`; both remain subject to the same enclosing
+2 GiB/one-CPU/zero-swap/128-task cap. All temporary containers from the failed
+attempt were removed and verified absent. Parent memory pressure is retained
+without OOM/kill; the nested build peaked at 23,216,128 bytes without limit events.
+
 Build and cleanup behavior follows the primary
 [Podman build documentation](https://docs.podman.io/en/latest/markdown/podman-build.1.html)
 and [container removal documentation](https://docs.podman.io/en/latest/markdown/podman-rm.1.html).

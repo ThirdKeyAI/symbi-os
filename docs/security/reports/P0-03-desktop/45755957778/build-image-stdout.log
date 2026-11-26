@@ -1,0 +1,12 @@
+[1/4] STEP 1/1: FROM ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f AS symbiont-os
+--> 52c4eb0cdd5c
+[4/4] STEP 1/29: FROM 52c4eb0cdd5c9e892f6a8aafc9bd1b25222c746cbabea2b249fd79369d35f7ee
+[4/4] STEP 2/29: ARG TARGETARCH
+[4/4] STEP 3/29: ARG RECIPE=/home/runner/work/symbi-os/symbi-os/.cache/desktop-image-inputs/context/recipe.json
+[4/4] STEP 4/29: ARG IMAGE_REGISTRY=ghcr.io/thirdkeyai
+[4/4] STEP 5/29: ARG BB_BUILD_FEATURES="bootc"
+[4/4] STEP 6/29: ARG CONFIG_DIRECTORY="/tmp/files"
+[4/4] STEP 7/29: ARG MODULE_DIRECTORY="/tmp/modules"
+[4/4] STEP 8/29: ARG IMAGE_NAME="symbiont-os"
+[4/4] STEP 9/29: ARG BASE_IMAGE="ghcr.io/secureblue/sericea-main-hardened"
+[4/4] STEP 10/29: RUN --mount=type=bind,src=.bluebuild-scripts_a654ee88,dst=/scripts/,ro   /scripts/pre_build.sh

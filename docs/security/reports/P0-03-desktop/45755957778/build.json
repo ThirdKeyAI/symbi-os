@@ -1,0 +1,93 @@
+{
+  "passed": false,
+  "image_built": false,
+  "os_qualified": false,
+  "source_commit": "ea04aa3e0fb10eae3ce5752ed0ce4bee2558fef7",
+  "variant": "generic",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "base-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "pull-base",
+      "exit_code": 0
+    },
+    {
+      "name": "podman-version",
+      "exit_code": 0
+    },
+    {
+      "name": "base-prerequisites",
+      "exit_code": 0
+    },
+    {
+      "name": "base-check-cleanup",
+      "exit_code": 0
+    },
+    {
+      "name": "base-check-absent",
+      "exit_code": 1
+    },
+    {
+      "name": "build-image",
+      "exit_code": 1
+    },
+    {
+      "name": "remaining-build-containers",
+      "exit_code": 0
+    },
+    {
+      "name": "all-containers-absent",
+      "exit_code": 0
+    }
+  ],
+  "checks": [],
+  "containers": {
+    "symbi-desktop-base-check": {
+      "removed": true,
+      "absent": true
+    }
+  },
+  "scope": "Actual desktop OCI assembly and installed-input checks; boot, graphics, TLS, containment and signed-release acceptance remain open",
+  "parent_controllers_before": {
+    "cgroup.controllers": "cpuset cpu io memory pids",
+    "cgroup.subtree_control": "",
+    "cgroup.procs": ""
+  },
+  "image_build_limits_verified": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128"
+  },
+  "disk_free_before_pull": 89059594240,
+  "signature_verified_before_pull": true,
+  "image_build_cgroup_final": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128",
+    "memory.peak": "23216128",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 410716\nuser_usec 218536\nsystem_usec 192180\nnice_usec 199000\ncore_sched.force_idle_usec 0\nnr_periods 6\nnr_throttled 3\nthrottled_usec 62630\nnr_bursts 0\nburst_usec 0"
+  },
+  "failure": "CalledProcessError: Command '['/usr/bin/python3', '-m', 'image.desktop.enter_build', 'podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/desktop-image-storage/root', '--runroot', '/run/symbi-desktop-build-45755957778-1', 'build', '--authfile', '/home/runner/work/symbi-os/symbi-os/.cache/desktop-image-storage/auth.json', '--pull=never', '--network=none', '--isolation=oci', '--jobs=1', '--layers=false', '--force-rm', '--memory=2g', '--memory-swap=2g', '--cpu-period=100000', '--cpu-quota=100000', '--cgroup-parent=/system.slice/symbi-desktop-build-45755957778-1.service/image-build', '--cap-drop=ALL', '--cap-add=CHOWN,DAC_OVERRIDE,FOWNER,FSETID,SETGID,SETUID,SETFCAP', '--security-opt=no-new-privileges', '--volume', '/home/runner/work/symbi-os/symbi-os/.cache/desktop-image-storage/install-evidence:/symbi-build-evidence:rw', '--iidfile', '/home/runner/work/symbi-os/symbi-os/.cache/desktop-image-storage/image-id', '--file', '/home/runner/work/symbi-os/symbi-os/.cache/desktop-image-inputs/context/Containerfile', '/home/runner/work/symbi-os/symbi-os/.cache/desktop-image-inputs/context']' returned non-zero exit status 1.",
+  "all_containers_absent": true,
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4317097984",
+    "memory.events": "low 0\nhigh 0\nmax 31021\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 175000233\nuser_usec 138254469\nsystem_usec 36745764\nnice_usec 135204000\ncore_sched.force_idle_usec 0\nnr_periods 1143\nnr_throttled 655\nthrottled_usec 79131288\nnr_bursts 0\nburst_usec 0"
+  }
+}

@@ -112,10 +112,16 @@ def main():
             record['containers'][preflight_name]={'removed':remove.returncode==0,'absent':exists.returncode==1}
             if remove.returncode!=0 or exists.returncode!=1: raise ValueError('Base preflight cleanup failed')
         iid=storage/'image-id'
+        # This Buildah sets the supplied parent directly as OCI CgroupsPath.
+        # RUN needs a leaf: image-build itself distributes controllers to its
+        # children and cannot contain processes. Both RUN and the supervisor
+        # stay under the existing combined build-tree ceiling.
+        run_group=build_group/'run'
+        record['image_run_cgroup']='/'+str(run_group.relative_to('/sys/fs/cgroup'))
         command=['/usr/bin/python3','-m','image.desktop.enter_build',*podman,'build','--authfile',str(auth),
                  '--pull=never','--network=none','--isolation=oci','--jobs=1','--layers=false','--force-rm',
                  '--memory=2g','--memory-swap=2g','--cpu-period=100000','--cpu-quota=100000',
-                 '--cgroup-parent=/'+str(build_group.relative_to('/sys/fs/cgroup')),
+                 '--cgroup-parent='+record['image_run_cgroup'],
                  '--cap-drop=ALL','--cap-add=CHOWN,DAC_OVERRIDE,FOWNER,FSETID,SETGID,SETUID,SETFCAP',
                  '--security-opt=no-new-privileges','--volume',str(install_output)+':/symbi-build-evidence:rw',
                  '--iidfile',str(iid),'--file',str(context/'Containerfile'),str(context)]
