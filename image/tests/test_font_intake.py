@@ -38,6 +38,17 @@ class FontInputs(unittest.TestCase):
             self.assertEqual(path.stat().st_size, row["bytes"])
             self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), row["sha256"])
 
+    def test_host_wrapper_does_not_precreate_inspector_evidence(self):
+        script = (ROOT / "scripts/check-font-intake.sh").read_text()
+        self.assertNotIn('mkdir -p "$evidence"', script)
+        self.assertIn('hosted_log=', script)
+        self.assertIn('[[ ! -e "$evidence"', script)
+        self.assertIn('! -e "$hosted_log"', script)
+        self.assertIn('pipeline_status=("${PIPESTATUS[@]}")', script)
+        self.assertIn('pipeline_status[1]', script)
+        self.assertLess(script.index("systemd-run"),
+                        script.index('mv -- "$hosted_log" "$evidence/hosted-intake.log"'))
+
 
 class PassiveFontArchive(unittest.TestCase):
     def module(self):

@@ -65,3 +65,20 @@ Cargo job and zero swap. The hosted intake, actual secureblue bases, booted
 rendering and both-image acceptance are
 still required. The payload is marked development-included while release,
 security and OS qualification remain false.
+
+## Hosted wrapper lifecycle correction
+
+The first hosted intake at development commit `88c49ec` stopped before any
+download because the shell wrapper created the evidence directory and the
+inspector correctly required a fresh path. The wrapper now writes the live
+systemd output to a separate fresh regular file. After the bounded unit exits,
+it validates both pipeline statuses and moves that log into the direct evidence
+directory created by the inspector. An early inspector failure still gets a new
+evidence directory and retained log. Stale paths, links, non-direct cache roots,
+non-numeric run identities and an existing destination are refused.
+
+The correction changes no font pin, archive rule, resource ceiling or
+qualification flag. Its fail-first regression and 12 focused tests pass. The
+complete serial repository gate passes 278 image tests plus the Rust, Cedar and
+supply-chain checks in 4.52 seconds at 67,608 KiB peak RSS with one Cargo job
+and zero swap. Hosted intake and image reruns remain required.
