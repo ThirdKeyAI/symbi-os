@@ -1,0 +1,21 @@
+test_atomic_preflight (unittest.loader._FailedTest.test_atomic_preflight) ... ERROR
+
+======================================================================
+ERROR: test_atomic_preflight (unittest.loader._FailedTest.test_atomic_preflight)
+----------------------------------------------------------------------
+ImportError: Failed to import test module: test_atomic_preflight
+Traceback (most recent call last):
+  File "/usr/lib/python3.14/unittest/loader.py", line 426, in _find_test_path
+    module = self._get_module_from_name(name)
+  File "/usr/lib/python3.14/unittest/loader.py", line 367, in _get_module_from_name
+    __import__(name)
+    ~~~~~~~~~~^^^^^^
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-atomic-preflight-stage/image/tests/test_atomic_preflight.py", line 9, in <module>
+    from image.boot.preflight import validate_report, validate_loaded_image
+ModuleNotFoundError: No module named 'image.boot.preflight'
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (errors=1)
