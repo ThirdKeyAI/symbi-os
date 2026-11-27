@@ -27,9 +27,12 @@ from image.qualification.boot import (MAX_QMP_MESSAGE_BYTES,
                                       capture_process_identity,
                                       discard_control_socket, discard_overlay,
                                       firmware_arguments, overlay_command,
+                                      observe_qmp_topology,
                                       path_identity, qemu_command, qmp_request,
                                       prepare_process_identity,
                                       stop_child, validate_guest_report,
+                                      validate_qmp_block_topology,
+                                      validate_qmp_topology_record,
                                       validate_peer_credentials,
                                       validate_process_state,
                                       validate_socket_info,
@@ -39,6 +42,7 @@ from image.qualification.boot import (MAX_QMP_MESSAGE_BYTES,
 from image.qualification.guest import collect_public_artifacts
 from image.qualification.hosted import (QUALIFICATION_FILES,
                                         retain_deferred_landlock_output,
+                                        validate_landlock_controller_result,
                                         validate_source_checkout)
 from image.qualification.hosted_process import (TIMEOUT_SECONDS,
                                                 validate_landlock_controller_command)
@@ -327,11 +331,27 @@ class HostedLandlock(unittest.TestCase):
         self.assertNotIn("tcg,thread=single", joined)
         self.assertNotIn("-smp 1", joined)
         self.assertIn("product=Symbi-Hosted-Landlock-Probe", joined)
-        self.assertIn("file=/output/guest.qcow2,format=qcow2,if=virtio", joined)
+        self.assertIn("-boot strict=on", joined)
+        root_drive = "file=/output/guest.qcow2,format=qcow2,if=none,id=symbi-atomic-root"
+        root_device = ("virtio-blk-pci,drive=symbi-atomic-root,"
+                       "id=symbi-atomic-root-device,serial=SYMBIROOT,bootindex=1")
+        source_drive = ("file=/inputs/source.raw,format=raw,if=none,"
+                        "id=symbi-qualification-source,readonly=on")
+        source_device = ("virtio-blk-pci,drive=symbi-qualification-source,"
+                         "id=symbi-qualification-source-device,serial=SYMBIQUAL")
+        self.assertIn(root_drive, command)
+        self.assertIn(root_device, command)
+        self.assertIn(source_drive, command)
+        self.assertIn(source_device, command)
+        self.assertEqual(command.index("-boot") + 1,
+                         command.index("strict=on"))
+        self.assertLess(command.index(root_drive), command.index(root_device))
+        self.assertLess(command.index(root_device), command.index(source_drive))
+        self.assertLess(command.index(source_drive), command.index(source_device))
+        self.assertNotIn("bootindex=", source_device)
+        self.assertEqual(sum("bootindex=" in value for value in command), 1)
         self.assertNotIn("snapshot=on", joined)
         self.assertNotIn("file=/inputs/atomic.raw", joined)
-        self.assertIn("file=/inputs/source.raw,format=raw,if=none,id=symbi-qualification-source,readonly=on", joined)
-        self.assertIn("virtio-blk-pci,drive=symbi-qualification-source,serial=SYMBIQUAL", joined)
         self.assertIn("-qmp unix:/output/qmp.sock,server=on,wait=off", joined)
         self.assertEqual(overlay_command(), [
             "/usr/bin/qemu-img", "create", "-f", "qcow2", "-F", "raw",
@@ -605,9 +625,84 @@ class HostedLandlock(unittest.TestCase):
             b'"microseconds":3}}\n',
             b'{"return":{},"id":"symbi-quit"}\n'])
         self.assertEqual(qmp_request(quit_stream, "quit"), {})
+        blocks = [
+            {"device": "symbi-atomic-root", "qdev": "symbi-atomic-root-device",
+             "inserted": {"file": "/output/guest.qcow2", "drv": "qcow2",
+                          "ro": False, "backing_file": "/inputs/atomic.raw"}},
+            {"device": "symbi-qualification-source",
+             "qdev": "symbi-qualification-source-device",
+             "inserted": {"file": "/inputs/source.raw", "drv": "raw",
+                          "ro": True}},
+        ]
+
+        def response(value, request_id):
+            return (json.dumps({"return": value, "id": request_id},
+                               separators=(",", ":")) + "\n").encode()
+
+        topology_stream = Stream([
+            greeting, capabilities, response(blocks, "symbi-query-block"),
+            response(1, "symbi-root-bootindex"),
+            response(-1, "symbi-source-bootindex"),
+        ])
+        topology = qmp_request(topology_stream, "query-block-topology")
+        self.assertEqual(topology, validate_qmp_topology_record(topology))
+        self.assertEqual(topology_stream.writes, [
+            b'{"execute":"qmp_capabilities","id":"symbi-qmp-capabilities"}\n',
+            b'{"execute":"query-block","id":"symbi-query-block"}\n',
+            (b'{"execute":"qom-get","id":"symbi-root-bootindex",'
+             b'"arguments":{"path":"/machine/peripheral/'
+             b'symbi-atomic-root-device","property":"bootindex"}}\n'),
+            (b'{"execute":"qom-get","id":"symbi-source-bootindex",'
+             b'"arguments":{"path":"/machine/peripheral/'
+             b'symbi-qualification-source-device","property":"bootindex"}}\n'),
+        ])
         for forbidden in ("qmp_capabilities", "stop", "cont", "system_reset"):
             with self.subTest(forbidden=forbidden), self.assertRaises(ValueError):
                 qmp_request(Stream([]), forbidden)
+
+        expected = validate_qmp_block_topology(blocks, 1, -1)
+        mutations = {
+            "blocks not list": {},
+            "missing source": blocks[:1],
+            "duplicate root": [blocks[0], blocks[0]],
+            "root drive": [{**blocks[0], "device": "other"}, blocks[1]],
+            "root qdev": [{**blocks[0], "qdev": "other"}, blocks[1]],
+            "root inserted": [{**blocks[0], "inserted": []}, blocks[1]],
+            "root file": [{**blocks[0], "inserted": {
+                **blocks[0]["inserted"], "file": "/inputs/source.raw"}}, blocks[1]],
+            "root format": [{**blocks[0], "inserted": {
+                **blocks[0]["inserted"], "drv": "raw"}}, blocks[1]],
+            "root readonly": [{**blocks[0], "inserted": {
+                **blocks[0]["inserted"], "ro": True}}, blocks[1]],
+            "root backing": [{**blocks[0], "inserted": {
+                **blocks[0]["inserted"], "backing_file": "/other"}}, blocks[1]],
+            "source drive": [blocks[0], {**blocks[1], "device": "other"}],
+            "source qdev": [blocks[0], {**blocks[1], "qdev": "other"}],
+            "source writable": [blocks[0], {**blocks[1], "inserted": {
+                **blocks[1]["inserted"], "ro": False}}],
+            "source backing": [blocks[0], {**blocks[1], "inserted": {
+                **blocks[1]["inserted"], "backing_file": "/other"}}],
+        }
+        for name, changed in mutations.items():
+            with self.subTest(topology_mutation=name), self.assertRaises(ValueError):
+                validate_qmp_block_topology(changed, 1, -1)
+        for name, root_index, source_index in (
+            ("root bool", True, -1), ("root missing", None, -1),
+            ("root wrong", 2, -1), ("source bool", 1, False),
+            ("source included", 1, 2), ("source missing", 1, None),
+        ):
+            with self.subTest(bootindex_mutation=name), self.assertRaises(ValueError):
+                validate_qmp_block_topology(blocks, root_index, source_index)
+        for key, value in (("schema", True), ("strict_boot", 1),
+                           ("root", []), ("source", None)):
+            changed = copy.deepcopy(expected)
+            changed[key] = value
+            with self.subTest(record_mutation=key), self.assertRaises(ValueError):
+                validate_qmp_topology_record(changed)
+        changed = copy.deepcopy(expected)
+        changed["root"]["bootindex"] = True
+        with self.assertRaises(ValueError):
+            validate_qmp_topology_record(changed)
 
         invalid = {
             "extra greeting field": (
@@ -670,6 +765,85 @@ class HostedLandlock(unittest.TestCase):
         for name, lines in invalid.items():
             with self.subTest(name=name), self.assertRaises((ValueError, TimeoutError)):
                 qmp_request(Stream(lines), "query-status")
+
+    def test_qmp_topology_observation_retries_only_socket_startup(self):
+        topology = validate_qmp_block_topology([
+            {"device": "symbi-atomic-root", "qdev": "symbi-atomic-root-device",
+             "inserted": {"file": "/output/guest.qcow2", "drv": "qcow2",
+                          "ro": False, "backing_file": "/inputs/atomic.raw"}},
+            {"device": "symbi-qualification-source",
+             "qdev": "symbi-qualification-source-device",
+             "inserted": {"file": "/inputs/source.raw", "drv": "raw",
+                          "ro": True}},
+        ], 1, -1)
+        request = mock.Mock(side_effect=(
+            FileNotFoundError(errno.ENOENT, "synthetic absent socket"),
+            ConnectionRefusedError(errno.ECONNREFUSED, "synthetic startup"),
+            topology,
+        ))
+        clock = mock.Mock(side_effect=(0.0, 0.1, 0.2))
+        sleep = mock.Mock()
+        missing_socket = mock.Mock()
+        missing_socket.lstat.side_effect = FileNotFoundError(
+            errno.ENOENT, "synthetic absent socket")
+        self.assertEqual(observe_qmp_topology(
+            {"path": missing_socket}, clock=clock, sleep=sleep,
+            request=request), topology)
+        self.assertEqual(request.call_count, 3)
+        self.assertEqual(sleep.call_args_list, [mock.call(0.1), mock.call(0.1)])
+
+        with self.assertRaisesRegex(ValueError, "synthetic malformed"):
+            observe_qmp_topology(
+                {}, request=mock.Mock(side_effect=ValueError("synthetic malformed")))
+        with self.assertRaisesRegex(PermissionError, "synthetic denied"):
+            observe_qmp_topology(
+                {}, request=mock.Mock(side_effect=PermissionError(
+                    errno.EACCES, "synthetic denied")))
+        with self.assertRaisesRegex(TimeoutError, "within 30 seconds"):
+            observe_qmp_topology(
+                {"path": missing_socket},
+                clock=mock.Mock(side_effect=(0.0, 30.0)),
+                sleep=mock.Mock(), request=mock.Mock(side_effect=FileNotFoundError(
+                    errno.ENOENT, "synthetic absent socket")))
+        existing_socket = mock.Mock()
+        existing_socket.lstat.return_value = mock.Mock()
+        with self.assertRaisesRegex(FileNotFoundError, "synthetic process gone"):
+            observe_qmp_topology(
+                {"path": existing_socket}, request=mock.Mock(
+                    side_effect=FileNotFoundError(
+                        errno.ENOENT, "synthetic process gone")))
+
+    def test_host_acceptance_requires_exact_qmp_boot_topology(self):
+        source_revision = "a" * 40
+        binary_sha256 = "b" * 64
+        topology = validate_qmp_block_topology([
+            {"device": "symbi-atomic-root", "qdev": "symbi-atomic-root-device",
+             "inserted": {"file": "/output/guest.qcow2", "drv": "qcow2",
+                          "ro": False, "backing_file": "/inputs/atomic.raw"}},
+            {"device": "symbi-qualification-source",
+             "qdev": "symbi-qualification-source-device",
+             "inserted": {"file": "/inputs/source.raw", "drv": "raw",
+                          "ro": True}},
+        ], 1, -1)
+        controller = {"passed": True, "qualification_qualified": True,
+                      "source_revision": source_revision,
+                      "binary_sha256": binary_sha256,
+                      "block_topology": topology}
+        self.assertIsNone(validate_landlock_controller_result(
+            0, controller, source_revision, binary_sha256))
+        mutations = (
+            ("exit", 1, controller),
+            ("bool exit", False, controller),
+            ("missing topology", 0, {key: value for key, value in controller.items()
+                                     if key != "block_topology"}),
+            ("wrong topology", 0, {**controller, "block_topology": {
+                **topology, "strict_boot": False}}),
+            ("unqualified", 0, {**controller, "qualification_qualified": False}),
+        )
+        for name, exit_code, changed in mutations:
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                validate_landlock_controller_result(
+                    exit_code, changed, source_revision, binary_sha256)
 
     def test_unique_json_rejects_constants_and_duplicate_keys(self):
         for constant in ("NaN", "Infinity", "-Infinity"):
