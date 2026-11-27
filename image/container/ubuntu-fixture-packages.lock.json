@@ -1,0 +1,116 @@
+{
+  "schema": 1,
+  "status": "pending",
+  "selected": false,
+  "qualified": false,
+  "container_qualified": false,
+  "signature_qualified": false,
+  "os_qualified": false,
+  "release_qualified": false,
+  "rootfs": {
+    "archive": "ubuntu-base-24.04.5-base-amd64.tar.gz",
+    "url": "https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.5-base-amd64.tar.gz",
+    "bytes": 30028293,
+    "sha256": "e77b6f10c2590cef872b33ee9f635a0e3fd1f57fb074c0e52b5c7f56147a0c86",
+    "checksum": {
+      "filename": "SHA256SUMS",
+      "url": "https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/SHA256SUMS",
+      "sha256": "30f23cec3a46679bcf21dbe0c0a0ab51440e9b2f5ac69b3ae1d4a7a71c0ffc69",
+      "signature_filename": "SHA256SUMS.gpg",
+      "signature_url": "https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/SHA256SUMS.gpg",
+      "signature_sha256": "5164e25bab9ff0467fc83415c8f759bb79cbd4e0264b9a11f49ff1e6a10a4c1f",
+      "signer_fingerprint": "843938DF228D22F7B3742BC0D94AA3F0EFE21092"
+    },
+    "keyring": {
+      "filename": "ubuntu-archive-keyring.gpg",
+      "sha256": "80a36b0a6de2f69f49d2df75ef473ccde121e9e190b9ea01d20a4f63778d5c31"
+    }
+  },
+  "package_request": {
+    "architecture": "amd64",
+    "component": "main",
+    "suites": [
+      "noble",
+      "noble-updates",
+      "noble-security"
+    ],
+    "roots": [
+      "python3",
+      "git",
+      "ca-certificates"
+    ],
+    "install_recommends": false
+  },
+  "sources": [
+    {
+      "base_url": "https://archive.ubuntu.com/ubuntu",
+      "suite": "noble",
+      "component": "main",
+      "architecture": "amd64",
+      "metadata": {
+        "mode": "inrelease",
+        "inrelease_url": "https://archive.ubuntu.com/ubuntu/dists/noble/InRelease",
+        "release_url": null,
+        "signature_url": null,
+        "signer_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C"
+      },
+      "packages_url": "https://archive.ubuntu.com/ubuntu/dists/noble/main/binary-amd64/Packages.xz"
+    },
+    {
+      "base_url": "https://archive.ubuntu.com/ubuntu",
+      "suite": "noble-updates",
+      "component": "main",
+      "architecture": "amd64",
+      "metadata": {
+        "mode": "inrelease",
+        "inrelease_url": "https://archive.ubuntu.com/ubuntu/dists/noble-updates/InRelease",
+        "release_url": null,
+        "signature_url": null,
+        "signer_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C"
+      },
+      "packages_url": "https://archive.ubuntu.com/ubuntu/dists/noble-updates/main/binary-amd64/Packages.xz"
+    },
+    {
+      "base_url": "https://security.ubuntu.com/ubuntu",
+      "suite": "noble-security",
+      "component": "main",
+      "architecture": "amd64",
+      "metadata": {
+        "mode": "inrelease",
+        "inrelease_url": "https://security.ubuntu.com/ubuntu/dists/noble-security/InRelease",
+        "release_url": null,
+        "signature_url": null,
+        "signer_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C"
+      },
+      "packages_url": "https://security.ubuntu.com/ubuntu/dists/noble-security/main/binary-amd64/Packages.xz"
+    }
+  ],
+  "fixture_source": {
+    "runtime_source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+    "fixture_revision": "cd4b34282ade880c8ac3d5136d31ff80cde92794",
+    "fixture_tree": "2b2379d0de4eaaf4a57cf52c96355015bb3dc25d",
+    "drivers": {
+      "test-filesystem-grants.py": "c5dc5d798c285f99e8db72b64d55749f127aa4139645425b7bd69d48dd7e9ded",
+      "test-source-broker.py": "ae2b6490cca43924e0f14aa84e71943c4684f298103db72b62eef534a16d1d2e",
+      "test-git-source.py": "82a02079c1a13799d03295e33ea4bc6f6120af7b8c4d25a840dcf023b4e0a075"
+    }
+  },
+  "producer": {
+    "workflow": null,
+    "run_id": null,
+    "run_attempt": null,
+    "head_sha": null
+  },
+  "artifact": {
+    "id": null,
+    "name": "container-ubuntu-fixture-packages",
+    "bytes": null,
+    "sha256": null
+  },
+  "release_metadata": [],
+  "package_indexes": [],
+  "package_count": 0,
+  "package_bytes": 0,
+  "packages": [],
+  "scope": "Pending signed Ubuntu fixture package closure; no metadata payload, artifact, build, container, OS or release qualification"
+}
