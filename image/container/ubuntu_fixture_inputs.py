@@ -26,6 +26,17 @@ ARTIFACT_FIELDS = {"id", "name", "bytes", "sha256"}
 FIXTURE_SOURCE_FIELDS = {
     "runtime_source_revision", "fixture_revision", "fixture_tree", "drivers",
 }
+NATIVE_FIXTURE_FIELDS = {
+    "schema", "repository", "revision", "tree", "runtime_source_revision",
+    "pull_request", "reviewed_head", "drivers", "qualified", "scope",
+}
+NATIVE_FIXTURE_REPOSITORY = "https://github.com/ThirdKeyAI/Symbiont"
+NATIVE_FIXTURE_PULL_REQUEST = 25
+NATIVE_FIXTURE_REVIEWED_HEAD = "b98b3f172f2875ccc5dadd6d3e86a4b6abc0c992"
+NATIVE_FIXTURE_SCOPE = (
+    "PR 24 reviewed fixture drivers plus PR 25 serialized lifecycle CI; "
+    "installed runtime and Fedora qualification remain separate bindings"
+)
 EXPECTED_FIXTURE_SOURCE = {
     "runtime_source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
     "fixture_revision": "cd4b34282ade880c8ac3d5136d31ff80cde92794",
@@ -49,17 +60,36 @@ def require(condition, message):
         raise ValueError(message)
 
 
+def _validate_native_fixture_pin(source, fixture):
+    require(isinstance(fixture, dict) and set(fixture) == NATIVE_FIXTURE_FIELDS
+            and type(fixture.get("schema")) is int and fixture["schema"] == 1
+            and fixture.get("repository") == NATIVE_FIXTURE_REPOSITORY
+            and fixture.get("revision") == source["fixture_revision"]
+            and fixture.get("tree") == source["fixture_tree"]
+            and fixture.get("runtime_source_revision")
+            == source["runtime_source_revision"]
+            and type(fixture.get("pull_request")) is int
+            and fixture["pull_request"] == NATIVE_FIXTURE_PULL_REQUEST
+            and fixture.get("reviewed_head") == NATIVE_FIXTURE_REVIEWED_HEAD
+            and packages.exact_hash(fixture["reviewed_head"], 40)
+            and fixture.get("drivers") == source["drivers"]
+            and fixture.get("qualified") is False
+            and fixture.get("scope") == NATIVE_FIXTURE_SCOPE,
+            "reviewed native fixture source pin changed or made a claim")
+    return fixture
+
+
 def _validate_fixture_source(root, source):
     require(isinstance(source, dict) and set(source) == FIXTURE_SOURCE_FIELDS
             and source == EXPECTED_FIXTURE_SOURCE,
             "Ubuntu fixture runtime or reviewed driver source changed")
-    runtime = tomllib.loads((root / "upstream/symbiont.toml").read_text())
+    runtime_raw = packages.read_bounded_control_file(
+        root, "upstream/symbiont.toml", "Symbiont runtime pin")
+    runtime = tomllib.loads(runtime_raw.decode("utf-8"))
     fixture = packages.unique_json(
-        root / "image/container/native-fixture.lock.json")
+        root, "image/container/native-fixture.lock.json")
+    _validate_native_fixture_pin(source, fixture)
     require(runtime.get("revision") == source["runtime_source_revision"]
-            and fixture.get("revision") == source["fixture_revision"]
-            and fixture.get("tree") == source["fixture_tree"]
-            and fixture.get("drivers") == source["drivers"]
             and source["runtime_source_revision"] != source["fixture_revision"],
             "Ubuntu fixture source does not match the reviewed repository pins")
     return source
@@ -111,16 +141,14 @@ def validate_pending_lock(root, lock):
 
 def load_pending_lock(root):
     root = Path(root).resolve()
-    lock = packages.unique_json(root / "image/container" / LOCK_NAME)
+    lock = packages.unique_json(root, "image/container/" + LOCK_NAME)
     validate_pending_lock(root, lock)
     return lock
 
 
 def validate_artifact_for_use(root, lock, candidate, metadata):
-    """Reject candidate selection while the reviewed lock remains pending."""
+    """Reject use after pending validation; candidate shapes grant no authority."""
     validate_pending_lock(root, lock)
-    packages.validate_candidate_artifact(candidate)
-    packages.validate_artifact_metadata(metadata, candidate)
     raise ValueError(
         "pending Ubuntu fixture package closure cannot select or use an artifact"
     )
