@@ -108,9 +108,10 @@ The controller also runs a narrower, controller-observed negative set once per
 backend. Positive-control listeners establish that the controller can observe
 TCP, UDP and Unix-socket delivery; the isolated worker must not reach those
 listeners, a synthetic PipeWire socket or an unmounted private SSH canary, signal
-or ptrace the controller, open uinput, or see the daemon socket. These results
-are recorded as `controller_escape_negatives_passed`. They do not exercise the
-shipping managed route and can never set `escape_suite_qualified`.
+or ptrace the controller, observe `/dev/uinput`, or see the daemon socket. The
+uinput result is a device-absence check without a positive-controlled target.
+These results are recorded as `controller_escape_negatives_passed`. They do not
+exercise the shipping managed route and can never set `escape_suite_qualified`.
 
 Only `qualification.json` is public evidence from this stage. It records exact
 case names, runtime observations, input and report hashes, and cleanup results.
@@ -133,9 +134,12 @@ The gate currently has two explicit pending selectors.
 `image/container/fedora-runtime-image.lock.json` contains no invented derived
 image run, artifact or digest. `image/container/native-fixture-image.lock.json`
 likewise contains no invented offline fixture OCI identity. The latter is bound
-to the reviewed merge, tree and all three driver hashes; preflight cannot pass
-until the exact preserved OCI archive, image ID and repository digest are
-selected. The separate runtime producer generates
+to the reviewed merge, tree and all three driver hashes. When selected, a
+separate intake authenticates producer and artifact metadata, exact outer and
+inner bytes, and the bounded manifest, then verifies manifest-derived image
+identity against the OCI. Producer and consumer commits are independent exact
+identities. Preflight cannot pass until that reviewed artifact is preserved.
+The separate runtime producer generates
 the derived OCI and `fedora-runtime.lock.json`; that generated contract retains
 the full resolved RPM closure using the fields the discovery job actually
 produces: filename, byte count, SHA-256, NEVRA, vendor, license, signature status
@@ -163,7 +167,8 @@ bytes while every qualification field remains false. The installed-image boot,
 six-profile native matrix, managed route, escape suite and review are still
 blockers; the controller fails before allocating its 60 GiB disk while either
 required OCI is unavailable. Its second-boot transport and invocation are also
-still unimplemented.
+still unimplemented, as are the fixture producer output and shipping managed
+route.
 
 ## Hosted Landlock execution
 

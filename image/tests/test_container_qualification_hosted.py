@@ -3,7 +3,6 @@ import copy
 import importlib.util
 import json
 from pathlib import Path
-import sys
 import tempfile
 import unittest
 from unittest import mock
@@ -214,9 +213,13 @@ class FedoraContainerController(unittest.TestCase):
                                              verify=lambda *arguments: None)
         self.assertFalse(result["passed"])
         self.assertFalse(result["qualified"])
+        self.assertFalse(result["container_qualified"])
+        self.assertFalse(result["signature_qualified"])
         self.assertFalse(result["native_fixture_matrix_passed"])
+        self.assertFalse(result["controller_escape_negatives_passed"])
         self.assertFalse(result["managed_route_qualified"])
         self.assertFalse(result["escape_suite_qualified"])
+        self.assertFalse(result["review_complete"])
         self.assertIn("pending-container-runtime-image", result["blockers"])
         self.assertIn("pending-native-fixture-image", result["blockers"])
         self.assertFalse(result["native_fixture_image_ready"])
@@ -246,9 +249,11 @@ class FedoraContainerController(unittest.TestCase):
         changes = [
             ("selected", True),
             ("qualified", True),
+            ("container_qualified", True),
+            ("signature_qualified", True),
             ("workflow", {**original["workflow"], "id": 1}),
             ("producer", {**original["producer"], "run_id": 1}),
-            ("archive", {**original["archive"], "sha256": "0" * 64}),
+            ("manifest", {**original["manifest"], "sha256": "0" * 64}),
             ("fixture_source", {**original["fixture_source"], "tree": "0" * 40}),
             ("scope", "ready"),
             ("unexpected", True),
@@ -264,40 +269,20 @@ class FedoraContainerController(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     self.module.load_native_fixture_image(root, "1" * 40, source)
 
-    def test_selected_native_fixture_requires_exact_preserved_oci(self):
+    def test_selected_native_fixture_delegates_to_authenticated_intake(self):
         source = self.module.load_fixture_pin(ROOT)
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            archive = root / ".cache/container-native-fixture-inputs/symbi-native-fixture.oci.tar"
-            archive.parent.mkdir(parents=True)
-            archive.write_bytes(b"synthetic offline OCI fixture\n")
-            selected = json.loads(
-                (ROOT / "image/container/native-fixture-image.lock.json").read_text())
-            selected.update(state="selected", selected=True)
-            selected["workflow"]["id"] = 123
-            selected["producer"].update(run_id=456, run_attempt=1,
-                                        head_sha="1" * 40, status="completed",
-                                        conclusion="success")
-            selected["artifact"].update(id=789, bytes=1024, sha256="2" * 64)
-            selected["archive"].update(
-                bytes=archive.stat().st_size,
-                sha256=self.module.sha256(archive),
-                image_id="sha256:" + "3" * 64,
-                repo_digest="ghcr.io/thirdkeyai/symbi-native-fixture@sha256:" + "4" * 64,
-            )
-            path = root / "image/container/native-fixture-image.lock.json"
-            path.parent.mkdir(parents=True)
-            path.write_text(json.dumps(selected))
-            observed = self.module.load_native_fixture_image(root, "1" * 40, source)
-            self.assertTrue(observed["ready"])
-            self.assertEqual(observed["path"], archive)
-            archive.unlink()
-            missing = self.module.load_native_fixture_image(root, "1" * 40, source)
-            self.assertFalse(missing["ready"])
-            self.assertEqual(missing["blocker"], "missing-native-fixture-image")
-            archive.write_bytes(b"changed\n")
-            with self.assertRaises(ValueError):
-                self.module.load_native_fixture_image(root, "1" * 40, source)
+            expected = {"ready": True, "image": {"image_id": "sha256:" + "2" * 64}}
+            with mock.patch(
+                    "image.container.native_fixture_inputs.validate_consumed_fixture",
+                    return_value=expected) as validate:
+                observed = self.module.load_native_fixture_image(
+                    root, "1" * 40, source)
+            self.assertEqual(observed, expected)
+            validate.assert_called_once_with(
+                root, "1" * 40,
+                {key: source[key] for key in ("revision", "tree", "drivers")})
 
     def test_reviewed_fixture_checkout_requires_merge_revision_tree_and_driver_hashes(self):
         pin = self.module.load_fixture_pin(ROOT)
@@ -323,9 +308,13 @@ class FedoraContainerController(unittest.TestCase):
             "card": "P0-05",
             "passed": False,
             "qualified": False,
+            "container_qualified": False,
             "os_qualified": False,
             "release_qualified": False,
+            "signature_qualified": False,
+            "review_complete": False,
             "native_fixture_matrix_passed": False,
+            "controller_escape_negatives_passed": False,
             "managed_route_qualified": False,
             "escape_suite_qualified": False,
             "fedora_runtime_ready": True,
@@ -355,7 +344,23 @@ class FedoraContainerController(unittest.TestCase):
         self.assertFalse(result["os_qualified"])
         self.assertFalse(result["release_qualified"])
         self.assertFalse(result["native_fixture_matrix_passed"])
+        self.assertFalse(result["controller_escape_negatives_passed"])
+        self.assertFalse(result["managed_route_qualified"])
+        self.assertFalse(result["escape_suite_qualified"])
         self.assertIn("native-fedora-six-run-matrix", result["blockers"])
+        for field in ("native_fixture_matrix_passed",
+                      "controller_escape_negatives_passed",
+                      "managed_route_qualified", "escape_suite_qualified"):
+            claimed = copy.deepcopy(prepared)
+            claimed[field] = True
+            with self.subTest(field=field), tempfile.TemporaryDirectory() as directory, \
+                    mock.patch.object(self.module, "build_preflight",
+                                      return_value=claimed), \
+                    mock.patch.object(self.module, "validate_fixture_checkout",
+                                      return_value=checkout):
+                rejected = self.module.run_container_preflight(
+                    Path(directory), "1" * 40, "2" * 40)
+            self.assertFalse(rejected["passed"])
 
     def test_ready_input_without_candidate_boot_binding_stays_failed(self):
         prepared = {
@@ -363,9 +368,13 @@ class FedoraContainerController(unittest.TestCase):
             "card": "P0-05",
             "passed": False,
             "qualified": False,
+            "container_qualified": False,
             "os_qualified": False,
             "release_qualified": False,
+            "signature_qualified": False,
+            "review_complete": False,
             "native_fixture_matrix_passed": False,
+            "controller_escape_negatives_passed": False,
             "managed_route_qualified": False,
             "escape_suite_qualified": False,
             "fedora_runtime_ready": True,

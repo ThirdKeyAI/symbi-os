@@ -170,10 +170,12 @@ are still required before product use.
 
 `image/container/native-fixture-image.lock.json` is the independent offline OCI
 selector for those reviewed drivers. It is intentionally pending: producer run,
-artifact, archive, image ID and repository digest are null. Native preflight
-binds it back to the merge, tree and driver hashes above and refuses both
-invented pending values and changed selected bytes. The earlier hosted fixture
-evidence did not preserve an OCI archive, so no digest is inferred from it.
+artifact, manifest and archive digests are null, and the selector has no image
+identity fields. A selected intake must authenticate producer and artifact API
+records, exact outer and inner bytes, and a bounded manifest. Image ID and
+repository digest are derived from that manifest and verified against the OCI
+layout. The consumer run is bound separately from the earlier producer commit.
+The existing hosted fixture evidence preserved no OCI, so no digest is inferred.
 
 ## P0-05 Fedora container candidate inputs
 

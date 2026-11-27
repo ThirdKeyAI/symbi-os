@@ -248,6 +248,7 @@ class ContainerEvidence(unittest.TestCase):
         self.assertTrue(evidence["controller_escape_negatives_passed"])
         self.assertFalse(evidence["managed_route_qualified"])
         self.assertFalse(evidence["escape_suite_qualified"])
+        self.assertFalse(evidence["signature_qualified"])
         self.assertFalse(evidence["review_complete"])
         self.assertFalse(evidence["qualified"])
         self.assertEqual(evidence["remaining_blockers"], [

@@ -37,8 +37,15 @@ if (result.get("passed") is not True
         or result.get("fedora_runtime_ready") is not True
         or result.get("native_fixture_image_ready") is not True
         or result.get("qualified") is not False
+        or result.get("container_qualified") is not False
         or result.get("os_qualified") is not False
-        or result.get("release_qualified") is not False):
+        or result.get("release_qualified") is not False
+        or result.get("signature_qualified") is not False
+        or result.get("review_complete") is not False
+        or result.get("native_fixture_matrix_passed") is not False
+        or result.get("controller_escape_negatives_passed") is not False
+        or result.get("managed_route_qualified") is not False
+        or result.get("escape_suite_qualified") is not False):
     blockers = result.get("blockers")
     detail = ",".join(blockers) if isinstance(blockers, list) else "invalid-preflight-result"
     raise SystemExit("Container native inputs are not ready: " + detail)
