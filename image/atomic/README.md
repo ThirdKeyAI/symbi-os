@@ -58,8 +58,8 @@ remain separate required tests.
 QEMU runs as UID 10001 with no capabilities, no new privileges, a read-only
 container root and a read-only source disk. A new qcow2 overlay receives guest
 writes. There is no NIC, SSH, login account, password, autologin, filesystem
-share, host GPU or KVM device. One TCG CPU and 1,536 MiB guest memory boot the
-installed bootloader, kernel and initramfs, rather than a substitute cloud OS.
+share, host GPU or KVM device. Two non-SMT TCG cores and 1,536 MiB guest memory
+boot the installed bootloader, kernel and initramfs, rather than a substitute cloud OS.
 This initial run uses serial-only output and does not claim graphics support.
 
 The temporary systemd unit and public observation inputs arrive as QEMU firmware
@@ -443,6 +443,26 @@ required.
 The final serial repository gate passes all 280 image tests plus Cedar, Rust,
 supply-chain and formal drift checks in 6.20 seconds at 70,188 KiB peak RSS,
 with one Cargo job and zero swap.
+
+## Use the allotted second CPU during full inventory
+
+[Run 46011242361](https://github.com/ThirdKeyAI/symbi-os/actions/runs/46011242361)
+passed source authentication and installation, then reached the ordinary
+installed-image observer and completed the fixed bootc status collector. The
+complete RPM inventory exhausted its existing 180-second allowance while
+first-boot services were still active. The incomplete report was rejected,
+QEMU exited normally after 608.356 seconds, and the later Landlock boot did not
+start.
+
+The container already had a fixed two-CPU quota, but QEMU exposed one CPU under
+single-threaded TCG. It used 653.359 CPU seconds without cgroup throttling. The
+correction uses `tcg,thread=multi` and an explicit two-core, one-socket,
+one-thread-per-core topology. This lets the inventory observer retain its one
+full CPU while first-boot services can use the other bounded core. The 1,536 MiB
+guest, 3 GiB container, two-CPU quota, 64-task and zero-swap ceilings are
+unchanged. So are the full canonical inventory hash/count comparison, its
+180-second subprocess deadline, the 420-second unit deadline, offline network
+and host-share exclusions. A native rerun is still required.
 
 ## Reuse by the Landlock qualification workflow
 

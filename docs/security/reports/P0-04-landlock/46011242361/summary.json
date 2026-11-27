@@ -1,0 +1,139 @@
+{
+  "schema": 1,
+  "passed": false,
+  "qualified": false,
+  "run": {
+    "id": 46011242361,
+    "attempt": 1,
+    "event": "workflow_dispatch",
+    "head_branch": "card/P0-04-hosted-fix",
+    "head_sha": "a2e782e236e917f390a9fbe92da4f81149e773c5",
+    "head_tree": "df6a57613e1111b4600145229af710aca6a25b68",
+    "job_id": 140547025888,
+    "job_name": "qualify",
+    "conclusion": "failure",
+    "started_at": "2026-11-27T13:55:06Z",
+    "completed_at": "2026-11-27T14:18:54Z",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46011242361"
+  },
+  "artifact": {
+    "id": 15204622522,
+    "name": "fedora-landlock-qualification",
+    "bytes": 77081,
+    "digest": "sha256:8308c65be1f114921b2c811af6f116daf25daad446aafd96f40015c5d5995730",
+    "downloaded_zip_digest_matched": true,
+    "safe_regular_relative_members": 87,
+    "expanded_bytes": 252441
+  },
+  "bindings": {
+    "image_source_commit": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+    "image_manifest_digest": "sha256:1dcf72c2e3eda7e5480269b1559e3b5527c77fdb70d28983d4e29baa03b8de6e",
+    "container_image_id": "sha256:46561dc6a11f404965d63aa3065017f94d37cc3ac3a261a9e5579ffba0f4cc40",
+    "installed_disk_sha256": "0d976fadd5abeccb292db2d364d8bec15faf3e1e96aeb316c37f49bd71307ef3",
+    "boot_input_sha256": {
+      "boot.py": "f752adeb2ee0a299ae806222195787a7eb47c89bb5b1db64f6e4af570fdbaa5a",
+      "contract.py": "d847b4f7cc7b536326edf0c65e38e26a999a3d266d137923526ab72e810a774c",
+      "expected.json": "d9d0c0081b2ca486d65b3a482a366d474f27c5847403162c71bd9bd2b5476d17",
+      "guest.py": "516ab558a3587f9c81fb43db272696eba4869b92a1db5b5060b7f0cdd36e33af",
+      "o.service": "58e167f98b877d47cd9c92b24ffdd285d50fa12f60a6407aa14fd618600beab1",
+      "s.service": "5419c00f05a2516b90b1fedc84b9566fc5ad9b8475b9706666eb7ed46c4c9a2f"
+    }
+  },
+  "retained_evidence_sha256": {
+    "atomic-disk-evidence/result.json": "a595d4e4ec1bffaa3a634e85cba989de921bf2c74a865610deb73106cfe153b9",
+    "atomic-disk-evidence/guest-result.json": "a9a8c97e255c7b615980c9c6cd6afda8156363a630ad9d1c2683b31d218b3c53",
+    "atomic-disk-evidence/guest-report.json": "2b957c27477d3d8414894192471584bdc05981043c3e8f85bdcb45838a91bd8d",
+    "atomic-disk-evidence/systemd-result.txt": "86efa14a3a4ecb033af3cada6f3ac599732d67ef47bcc7b42d83067d09b27c0e"
+  },
+  "observation": {
+    "source_authentication_passed": true,
+    "installation_completed": true,
+    "first_guest_reached_probe": true,
+    "first_qemu_exit_code": 0,
+    "first_qemu_elapsed_seconds": 608.3562646979999,
+    "full_canonical_rpm_inventory_attempted": true,
+    "full_canonical_rpm_inventory_completed": false,
+    "inventory_deadline_seconds": 180,
+    "probe_completed": false,
+    "accepted_guest_boot": false,
+    "second_landlock_boot_started": false,
+    "failure_stage": "ordinary Atomic guest full package inventory",
+    "first_boot_qemu": {
+      "tcg_threading": "single",
+      "virtual_cpus": 1,
+      "guest_memory_mib": 1536,
+      "memory_max_bytes": 3221225472,
+      "memory_peak_bytes": 3221225472,
+      "memory_max_events": 684,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0,
+      "swap_max_bytes": 0,
+      "cpu_quota": "200000 100000",
+      "cpu_usage_usec": 653358804,
+      "cpu_throttled_usec": 0,
+      "pids_max": 64
+    },
+    "hosted_parent": {
+      "memory_high_bytes": 4294967296,
+      "memory_max_bytes": 5368709120,
+      "memory_peak_bytes": 4297064448,
+      "memory_high_events": 55165,
+      "memory_max_events": 114407,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0,
+      "swap_max_bytes": 0,
+      "cpu_quota": "200000 100000",
+      "pids_max": 256
+    },
+    "cleanup": {
+      "all_three_containers_removed_and_absent": true,
+      "loop_devices_absent": true,
+      "loaded_image_removed": true,
+      "private_storage_removed": true,
+      "private_runroot_removed": true
+    }
+  },
+  "correction": {
+    "ordinary_boot_tcg_threading": "multi",
+    "ordinary_boot_virtual_cpu_topology": "cpus=2,sockets=1,cores=2,threads=1",
+    "ordinary_boot_guest_memory_mib": 1536,
+    "controller_memory_max_bytes": 3221225472,
+    "controller_swap_max_bytes": 0,
+    "controller_cpu_quota": "200000 100000",
+    "controller_pids_max": 64,
+    "inventory_deadline_seconds": 180,
+    "complete_inventory_hash_and_count_required": true,
+    "host_access_unchanged": true,
+    "native_rerun_required": true
+  },
+  "local_verification": {
+    "fail_first_missing_qemu_argument_contract": true,
+    "focused_atomic_and_inventory_tests": 25,
+    "focused_peak_rss_kib": 28692,
+    "focused_swaps": 0,
+    "full_image_tests": 396,
+    "full_image_seconds": 2.311,
+    "full_image_peak_rss_kib": 59684,
+    "full_image_address_limit_bytes": 402653184,
+    "full_image_swaps": 0,
+    "qualification_tests": 35,
+    "qualification_seconds": 0.104,
+    "qualification_peak_rss_kib": 26512,
+    "qualification_address_limit_bytes": 134217728,
+    "qualification_swaps": 0,
+    "initial_full_image_128_mib_limit": "unrelated LZMA fixture allocation exceeded the artificial address-space cap",
+    "python_syntax": true,
+    "json_parse": true,
+    "diff_check": true,
+    "local_image_vm_container_cargo_network_or_build_run": false
+  },
+  "claims": {
+    "accepted_guest_boot": false,
+    "landlock_qualified": false,
+    "containment_qualified": false,
+    "os_qualified": false,
+    "release_qualified": false
+  }
+}

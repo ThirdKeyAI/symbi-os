@@ -12,7 +12,7 @@ import importlib.util
 
 from image.atomic.contract import (create_disk, require_disk, unpack_oci,
                                    installer_arguments, firmware_arguments,
-                                   validate_report)
+                                   qemu_arguments, validate_report)
 from image.atomic.hosted import stop_after_container_candidate_boot
 
 
@@ -133,6 +133,28 @@ class AtomicBoot(unittest.TestCase):
             self.assertFalse(any(v.split('=')[0]==forbidden for v in command))
         for bad in ('latest','sha256:'+'x'*64,'sha256:'+'a'*64+' --wipe'):
             with self.assertRaises(ValueError): installer_arguments(bad)
+
+    def test_atomic_probe_uses_both_bounded_cpus_without_smt_or_new_host_access(self):
+        command=qemu_arguments(Path('/inputs'))
+        self.assertEqual(command,[
+            '/usr/bin/qemu-system-x86_64','-machine','q35,dump-guest-core=off',
+            '-accel','tcg,thread=multi','-cpu','max','-m','1536M','-smp',
+            'cpus=2,sockets=1,cores=2,threads=1','-nodefaults','-no-user-config',
+            '-no-reboot','-net','none','-smbios',
+            'type=1,manufacturer=Symbi-Test,product=Symbi-Hosted-Atomic-Probe',
+            '-drive','file=/output/guest.qcow2,format=qcow2,if=virtio',
+            '-device','virtio-rng-pci','-device','virtio-serial-pci',
+            '-chardev','file,id=report,path=/output/report.json',
+            '-device','virtserialport,chardev=report,name=org.symbi.atomic',
+            '-serial','file:/output/serial.log','-monitor','none','-display','none',
+            *firmware_arguments(Path('/inputs')),
+        ])
+        for forbidden in ('-enable-kvm','-nic','-virtfs','-fsdev','hostfwd'):
+            self.assertNotIn(forbidden,command)
+        with self.assertRaises(ValueError):
+            qemu_arguments(Path('/other'))
+        hosted=(Path(__file__).resolve().parents[2]/'image/atomic/hosted.py').read_text()
+        self.assertIn("'--memory=3g','--memory-swap=3g','--cpus=2','--pids-limit=64'",hosted)
 
     def test_firmware_names_fit_qemu_and_do_not_add_login_credentials(self):
         args=firmware_arguments(Path('/inputs'))
