@@ -255,9 +255,13 @@ class ContainerRuntimeInputs(unittest.TestCase):
         self.assertEqual(
             closure["test"],
             ["rpm", "--dbpath", "/output/closure-rpmdb", "--test", "--noscripts",
-             "--notriggers", "--nosignature", "-Uvh", *[str(path) for path in packages]],
+             "--notriggers", "--nosignature", "--ignoresize", "-Uvh",
+             *[str(path) for path in packages]],
         )
         self.assertTrue(all("--root" not in command for command in closure.values()))
+        self.assertTrue(all("--nodeps" not in command for command in closure.values()))
+        self.assertTrue(all("--replacefiles" not in command for command in closure.values()))
+        self.assertTrue(all("--force" not in command for command in closure.values()))
         with self.assertRaises(ValueError):
             resolver.offline_closure_commands([Path("/tmp/unreviewed.rpm")])
         with self.assertRaises(ValueError):

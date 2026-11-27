@@ -113,7 +113,7 @@ def offline_closure_commands(packages):
         'init': prefix + ['--initdb'],
         'query': query,
         'test': prefix + [
-            '--test', '--noscripts', '--notriggers', '--nosignature', '-Uvh',
+            '--test', '--noscripts', '--notriggers', '--nosignature', '--ignoresize', '-Uvh',
             *[str(package) for package in packages],
         ],
     }

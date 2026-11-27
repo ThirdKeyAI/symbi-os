@@ -22,6 +22,9 @@ an RPM test transaction resolves against an empty private RPM database using
 only that set. The database is selected directly instead of changing root, so
 the read-only discovery container keeps every Linux capability dropped. The test
 transaction executes no scripts and installs nothing.
+Because the read-only container reports no installable root space, the test
+transaction skips RPM's disk-space check; package bytes are bounded separately,
+and dependency and file-conflict checks remain enabled.
 
 `gvisor-inputs.json` fixes release `release-20261123.1`, its commit and tag
 object, the complete x86_64 bzip2 archive, the publisher checksum list, license,
