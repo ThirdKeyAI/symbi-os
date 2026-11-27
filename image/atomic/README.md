@@ -479,3 +479,49 @@ reconciled, and the preflight lock now names that run. The failed attempt used
 a zero-swap limit and launched no installer or VM; its failure record recorded
 zero peak swap and zero OOM, OOM-kill and OOM-group-kill counters. Native update
 acceptance still requires a fresh exact-head run.
+
+## Preserve the SELinux install domain for update operations
+
+[Run 45974190039](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45974190039)
+at `c3781ebb990f90f82c2e7982c74fe9eb70ef265b` booted the first disposable
+guest, selected mount ID 550 for the authenticated `/dev/vdb` ext4 source and
+passed the read-only mount binding. Fixture-source authentication and cleanup
+also passed. The update service then invoked `/usr/bin/bootc status --json`
+directly from Python. Bootc lacked the SELinux install domain and its fallback
+copy failed while assigning `security.selinux`: permission denied. No switch,
+rejection case, updated boot or rollback ran, so the attempt remains failed and
+unqualified.
+
+The compact [failure manifest](../../docs/security/reports/P0-03-atomic-boot/45974190039/summary.json)
+binds the 82,721-byte artifact, its 98 files, critical report hashes and resource
+counters. The three-GiB controller and five-GiB parent reached their exact
+ceilings, recording 6,651 and 172,673 limit events. Both recorded zero OOM,
+OOM-kill, OOM-group-kill and swap. Containers, the loaded image, private storage
+and private runroot were removed.
+
+Status snapshots now restart the fixed `s.service` direct collector. Each read
+requires a new root-owned 0600 bounded file, a successful active/exited service
+result, stable file identity and a sequence-bound hash. Direct status execution
+from the Python service is rejected by the controller.
+
+Switch and rollback must see the source, overlay and temporary policy bind inside
+`update-o.service`'s existing `PrivateMounts` namespace. A separate mutation unit
+cannot inherit that arbitrary mount namespace. Instead, the fixed `b.service`
+runs only three constant-path preparation commands in `install_t`: copy
+`/usr/bin/bootc` to a new root-owned 0700 file, label it by reference to
+`/usr/bin/ostree`, and move it to `/run/symbi-update-bootc`. Before every use,
+the update service requires regular root-owned source, reference and copy files,
+exact source/copy bytes, an independent single-link copy, exact label equality
+and the `install_exec_t` type. It then executes only the fixed signed switch or
+rollback command through that copy in its own mount namespace. The copy is
+revalidated after execution and removed in `finally` on success, native
+rejection, timeout or exception; unsafe cleanup fails the report.
+
+The [pinned source review](selinux-launcher-source-review.json) records bootc
+1.17.1's own copy, `/usr/bin/ostree` label and re-exec behavior. The correction
+does not add a permissive fallback, policy exception, network interface or
+caller-selected command. Enforcing SELinux, default-reject signature policy,
+read-only source binding and all resource limits remain required. Static review
+and offline fixtures cannot establish the expected domain transition. A fresh
+hosted run must prove status, switch and rollback under the installed enforcing
+policy before any update or OS qualification.

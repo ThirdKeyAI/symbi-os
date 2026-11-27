@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "passed": false,
+  "qualification": false,
+  "run": {
+    "id": 45974190039,
+    "head_branch": "card/P0-03-update-proof",
+    "head_sha": "c3781ebb990f90f82c2e7982c74fe9eb70ef265b",
+    "conclusion": "failure",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45974190039"
+  },
+  "artifact": {
+    "id": 15187950173,
+    "name": "atomic-development-boot-generic",
+    "bytes": 82721,
+    "digest": "sha256:e7bdc22db8367b2ba33b943bef72cffbe131815b270cd05d0c4a45a6e95072b0",
+    "downloaded_zip_sha256": "e7bdc22db8367b2ba33b943bef72cffbe131815b270cd05d0c4a45a6e95072b0",
+    "files": 98,
+    "uncompressed_bytes": 230472,
+    "created_at": "2026-11-27T09:45:59Z",
+    "expires_at": "2026-12-11T09:45:58Z",
+    "expired_at_review": false
+  },
+  "critical_evidence_sha256": {
+    "atomic-disk-evidence/result.json": "7adaba2df8cc9cbc2e1e23b2bf84de2928fb8e1e51f4e98bb284d27aae786417",
+    "atomic-disk-evidence/source-authentication/result.json": "5bd3e3eeb88e72ef4787272c81b6995b2373c8e18133a71b8250e8aa1343f29a",
+    "atomic-update-evidence/result.json": "8b5dfe54d5dfe3347ce8d0fb50a1f6844142c8f6b56b55e624f7bf77bf0217f6",
+    "atomic-update-evidence/controller-result.json": "a5d1682fd67d2fc71eae257cfe48e515960abd922b9db3f239d6ce5cc25e31e0",
+    "atomic-update-evidence/same-path-positive.json": "98ea2913781c1c7f315fe4cd0e1c38b114cba0c3725a1ae3ad5a24470dd911f5",
+    "atomic-update-evidence/same-path-positive-serial.log": "65f2b9a344ae9d748c363ccea3e23797ca6c1995cd75215e1d414622a7b322d0"
+  },
+  "observation": {
+    "stage": "same-path-positive",
+    "guest_booted": true,
+    "source_fixture_authentication_passed": true,
+    "source_device": "/dev/vdb",
+    "source_mountpoint": "/run/symbi-update",
+    "mountinfo_path_match_count": 2,
+    "visible_mount_id": 550,
+    "selected_mount_id": 550,
+    "source_mount_binding_passed": true,
+    "bootc_switch_attempted": false,
+    "failure": "Direct bootc status from the Python update service failed while its SELinux fallback tried fsetxattr(security.selinux): permission denied."
+  },
+  "resources": {
+    "controller": {
+      "memory_max_bytes": 3221225472,
+      "memory_peak_bytes": 3221225472,
+      "memory_max_events": 6651
+    },
+    "parent": {
+      "memory_max_bytes": 5368709120,
+      "memory_peak_bytes": 5368709120,
+      "memory_max_events": 172673
+    },
+    "oom_events": 0,
+    "oom_kill_events": 0,
+    "oom_group_kill_events": 0,
+    "swap_max_bytes": 0
+  },
+  "cleanup": {
+    "containers_removed_and_absent": true,
+    "image_removed": true,
+    "private_storage_removed": true,
+    "private_runroot_removed": true,
+    "passed": true
+  },
+  "local_correction": {
+    "status": "reviewed-pending-hosted-rerun",
+    "status_command": "fixed direct s.service with fresh root-only bounded output and exact service-result checks",
+    "mutation_command": "fixed root-only byte-identical bootc copy labeled exactly like /usr/bin/ostree and executed inside update-o.service's existing private mount namespace",
+    "launcher_path": "/run/symbi-update-bootc",
+    "launcher_mode": "0700",
+    "launcher_source": "/usr/bin/bootc",
+    "launcher_label_reference": "/usr/bin/ostree",
+    "selinux_enforcing_required": true,
+    "signature_policy_enforcement_required": true,
+    "network_added": false,
+    "policy_exception_added": false,
+    "cleanup_required_on_all_outcomes": true,
+    "resource_limits_changed": false
+  },
+  "local_verification": {
+    "focused_update_tests": 54,
+    "focused_seconds": 0.128,
+    "focused_peak_rss_kib": 35248,
+    "full_image_tests": 333,
+    "full_image_seconds": 2.068,
+    "full_image_peak_rss_kib": 56136,
+    "swaps": 0,
+    "python_syntax": "pass",
+    "diff_check": "pass"
+  },
+  "next": "A fresh exact-head hosted run must prove the fixed services under enforcing SELinux and pass the signed switch, four guest refusal controls, updated boot and rollback before qualification."
+}

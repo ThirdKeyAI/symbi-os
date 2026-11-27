@@ -71,6 +71,8 @@ def firmware_arguments(directory=Path("/inputs"), expected_filename="expected.js
         raise ValueError("fixed update firmware input required")
     files = [
         ("systemd.extra-unit.o.service", "update-o.service"),
+        ("systemd.extra-unit.s.service", "s.service"),
+        ("systemd.extra-unit.b.service", "update-b.service"),
         ("symbi-update.py", "update_guest.py"),
         ("symbi-update-expected.json", expected_filename),
         ("symbi-update-policy.json", "update-policy.json"),
@@ -150,6 +152,129 @@ def validate_source_device(report, expected):
         raise ValueError("update source-device evidence is unbound")
 
 
+def validate_status_observations(report, expected_count):
+    """Require every deployment snapshot to come from the fixed direct unit."""
+    expected_service = {
+        "Result": "success", "ExecMainCode": "1", "ExecMainStatus": "0",
+        "ActiveState": "active", "SubState": "exited",
+    }
+    observations = report.get("status_observations")
+    commands = report.get("commands")
+    if (type(expected_count) is not int or expected_count < 1
+            or not isinstance(observations, list)
+            or len(observations) != expected_count
+            or not isinstance(commands, list)):
+        raise ValueError("fixed bootc status observations are incomplete")
+    for sequence, observation in enumerate(observations, 1):
+        if (not isinstance(observation, dict)
+                or set(observation) != {
+                    "sequence", "unit", "service", "bytes", "sha256"
+                }
+                or observation.get("sequence") != sequence
+                or observation.get("unit") != "s.service"
+                or observation.get("service") != expected_service
+                or type(observation.get("bytes")) is not int
+                or not 0 < observation["bytes"] <= MAX_REPORT
+                or re.fullmatch(r"[a-f0-9]{64}",
+                                observation.get("sha256", "")) is None):
+            raise ValueError("fixed bootc status observation is unbound")
+    starts = [item for item in commands if item.get("command") ==
+              ["/usr/bin/systemctl", "restart", "s.service"]]
+    shows = [item for item in commands if item.get("command") == [
+        "/usr/bin/systemctl", "show", "s.service",
+        "--property=Result,ExecMainCode,ExecMainStatus,ActiveState,SubState",
+    ]]
+    if (len(starts) != expected_count or len(shows) != expected_count
+            or any(item.get("exit_code") != 0 for item in starts + shows)
+            or any(item.get("command", [None])[0:1] == ["/usr/bin/bootc"]
+                   for item in commands)):
+        raise ValueError("status bypassed the fixed direct bootc unit")
+
+
+def validate_launcher(report):
+    """Require the root-only bootc copy prepared and labeled by install_t."""
+    launcher = report.get("bootc_launcher")
+    service = {
+        "Result": "success", "ExecMainCode": "1", "ExecMainStatus": "0",
+        "ActiveState": "active", "SubState": "exited",
+    }
+    commands = report.get("commands")
+    show_command = [
+        "/usr/bin/systemctl", "show", "b.service",
+        "--property=Result,ExecMainCode,ExecMainStatus,ActiveState,SubState",
+    ]
+    if (not isinstance(launcher, dict)
+            or set(launcher) != {
+                "unit", "service", "source", "path", "label_reference",
+                "source_sha256", "copy_sha256", "selinux_label", "mode",
+                "removed",
+            }
+            or launcher.get("unit") != "b.service"
+            or launcher.get("service") != service
+            or launcher.get("source") != "/usr/bin/bootc"
+            or launcher.get("path") != "/run/symbi-update-bootc"
+            or launcher.get("label_reference") != "/usr/bin/ostree"
+            or launcher.get("source_sha256") != launcher.get("copy_sha256")
+            or re.fullmatch(r"[a-f0-9]{64}",
+                            launcher.get("source_sha256", "")) is None
+            or not isinstance(launcher.get("selinux_label"), str)
+            or re.fullmatch(r"[^:\x00]+:object_r:install_exec_t:[^\x00]+",
+                            launcher["selinux_label"]) is None
+            or launcher.get("mode") != "0700"
+            or launcher.get("removed") is not True
+            or not isinstance(commands, list)
+            or len([item for item in commands
+                    if item.get("command") == show_command
+                    and item.get("exit_code") == 0]) != 1):
+        raise ValueError("fixed SELinux bootc launcher is unbound")
+    return launcher
+
+
+def validate_operation_observation(report, operation, expected_success):
+    """Bind one exact mutation to the validated labeled bootc copy."""
+    paths = {
+        "negative": ["switch", "--transport", "dir",
+                     "--enforce-container-sigpolicy", NEGATIVE_UPDATE_SOURCE],
+        "positive": ["switch", "--transport", "dir",
+                     "--enforce-container-sigpolicy", "/run/symbi-update/source"],
+        "rollback": ["rollback"],
+    }
+    observation = report.get("bootc_operation")
+    commands = report.get("commands")
+    expected_command = ["/run/symbi-update-bootc", *paths.get(operation, [])]
+    validate_launcher(report)
+    if (operation not in paths or type(expected_success) is not bool
+            or not isinstance(observation, dict)
+            or set(observation) != {
+                "name", "command", "exit_code", "stderr", "stderr_sha256"
+            }
+            or observation.get("name") != operation
+            or observation.get("command") != expected_command
+            or type(observation.get("exit_code")) is not int
+            or not isinstance(observation.get("stderr"), str)
+            or len(observation["stderr"].encode()) > 128 * 1024
+            or hashlib.sha256(observation["stderr"].encode()).hexdigest()
+               != observation.get("stderr_sha256")
+            or not isinstance(commands, list)):
+        raise ValueError("fixed bootc operation observation is unbound")
+    if expected_success:
+        if observation["exit_code"] != 0:
+            raise ValueError("fixed bootc operation did not succeed")
+    elif (observation["exit_code"] == 0
+          or "signature" not in observation["stderr"].lower()):
+        raise ValueError("native bootc signature rejection reason is incomplete")
+    matches = [item for item in commands if item.get("command") == expected_command]
+    other_bootc = [item for item in commands
+                   if item.get("command", [None])[0:1]
+                   in (["/usr/bin/bootc"], ["/run/symbi-update-bootc"])
+                   and item.get("command") != expected_command]
+    if (len(matches) != 1
+            or matches[0].get("exit_code") != observation["exit_code"]
+            or matches[0].get("stderr") != observation["stderr"]
+            or other_bootc):
+        raise ValueError("mutation bypassed the fixed labeled bootc command")
+
+
 def validate_phase_report(report, expected, expected_hash, runner_hash, phase):
     required = {"schema": 1, "passed": True, "guest_booted": True,
                 "release_qualified": False, "product": "Symbi-Hosted-Update-Probe",
@@ -159,8 +284,21 @@ def validate_phase_report(report, expected, expected_hash, runner_hash, phase):
     if any(report.get(key) != value for key, value in required.items()) or "failure" in report:
         raise ValueError("unbound or incomplete update guest phase")
     validate_source_device(report, expected)
+    name = phase.get("name")
+    validate_status_observations(report, 1 if name == "rolled-back" else 2)
+    if name == "installed":
+        validate_operation_observation(report, "positive", True)
+    elif name == "updated":
+        validate_operation_observation(report, "rollback", True)
+    elif name == "rolled-back":
+        if "bootc_operation" in report:
+            raise ValueError("rollback verification unexpectedly mutated the deployment")
+        validate_launcher(report)
+    else:
+        raise ValueError("unknown update phase report")
     commands = report.get("commands")
-    if not isinstance(commands, list) or not commands or any(item.get("exit_code") != 0 for item in commands):
+    if (not isinstance(commands, list) or not commands
+            or any(item.get("exit_code") != 0 for item in commands)):
         raise ValueError("update guest command evidence is incomplete")
 
 
@@ -172,6 +310,8 @@ def validate_positive_report(report, expected, expected_hash, runner_hash):
     if any(report.get(key) != value for key, value in required.items()) or "failure" in report:
         raise ValueError("unbound or incomplete same-path positive update report")
     validate_source_device(report, expected)
+    validate_status_observations(report, 2)
+    validate_operation_observation(report, "negative", True)
     control = report.get("same_path_positive_control")
     if (not isinstance(control, dict) or control.get("case") != POSITIVE_OVERLAY_CASE
             or control.get("switch_accepted") is not True
@@ -188,13 +328,8 @@ def validate_positive_report(report, expected, expected_hash, runner_hash):
             or any(not isinstance(value, str) or re.fullmatch(r"[a-f0-9]{64}", value) is None
                    for value in hashes)):
         raise ValueError("same-path positive control did not bind its state transition")
-    expected_switch = ["/usr/bin/bootc", "switch", "--transport", "dir",
-                       "--enforce-container-sigpolicy", NEGATIVE_UPDATE_SOURCE]
     commands = report.get("commands")
-    if not isinstance(commands, list) or not commands:
-        raise ValueError("same-path positive command evidence is missing")
-    switches = [item for item in commands if item.get("command") == expected_switch]
-    if (len(switches) != 1 or switches[0].get("exit_code") != 0
+    if (not isinstance(commands, list) or not commands
             or any(item.get("exit_code") != 0 for item in commands)):
         raise ValueError("real enforced same-path bootc switch acceptance is incomplete")
 
@@ -209,11 +344,14 @@ def validate_negative_report(report, expected, expected_hash, runner_hash, case)
     if any(report.get(key) != value for key, value in required.items()) or "failure" in report:
         raise ValueError("unbound or incomplete negative update guest report")
     validate_source_device(report, expected)
+    validate_status_observations(report, 2)
+    validate_operation_observation(report, "negative", False)
     control = report.get("negative_control")
     if (not isinstance(control, dict) or control.get("case") != case
             or control.get("switch_rejected") is not True
             or type(control.get("switch_exit_code")) is not int
             or control["switch_exit_code"] == 0
+            or control["switch_exit_code"] != report["bootc_operation"]["exit_code"]
             or control.get("deployment_unchanged") is not True
             or control.get("default_unchanged") is not True
             or control.get("source") != NEGATIVE_UPDATE_SOURCE
@@ -222,15 +360,12 @@ def validate_negative_report(report, expected, expected_hash, runner_hash, case)
             or len(control["state_sha256"]) != 64
             or any(character not in "0123456789abcdef" for character in control["state_sha256"])):
         raise ValueError("native bootc rejection did not preserve the deployment state")
-    expected_switch = ["/usr/bin/bootc", "switch", "--transport", "dir",
-                       "--enforce-container-sigpolicy", NEGATIVE_UPDATE_SOURCE]
     commands = report.get("commands")
-    if not isinstance(commands, list) or not commands:
-        raise ValueError("negative update command evidence is missing")
-    switches = [item for item in commands if item.get("command") == expected_switch]
-    if (len(switches) != 1 or switches[0].get("exit_code") != control["switch_exit_code"]
-            or switches[0]["exit_code"] == 0
-            or any(item.get("exit_code") != 0 for item in commands if item is not switches[0])):
+    failed_switches = [item for item in commands if item.get("command") ==
+                       report["bootc_operation"]["command"]]
+    if (len(failed_switches) != 1 or failed_switches[0].get("exit_code") == 0
+            or any(item.get("exit_code") != 0 for item in commands
+                   if item is not failed_switches[0])):
         raise ValueError("real enforced bootc switch rejection evidence is incomplete")
 
 
@@ -273,7 +408,7 @@ def main():
             or sha256(inputs / "update.raw") != source.get("sha256")):
         raise ValueError("authenticated update source disk changed")
     names = ["update_guest.py", "expected.json", "update-policy.json",
-             "update-o.service"]
+             "update-o.service", "s.service", "update-b.service"]
     positive_name = "expected-positive.json"
     positive_raw = (inputs / positive_name).read_bytes()
     if len(positive_raw) > 128 * 1024:

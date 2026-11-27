@@ -31,6 +31,25 @@ POSITIVE_OVERLAY_CASE = "valid-signature"
 UPDATE_COMMAND_TIMEOUT_SECONDS = 1200
 STATE = Path("/var/lib/symbi-update-test/phase")
 CHANNEL = Path("/dev/virtio-ports/org.symbi.update")
+STATUS_OUTPUT = Path("/run/symbi-atomic-status.json")
+STATUS_UNIT = "s.service"
+STATUS_PROPERTIES = (
+    "Result,ExecMainCode,ExecMainStatus,ActiveState,SubState"
+)
+STATUS_SERVICE = {
+    "Result": "success", "ExecMainCode": "1", "ExecMainStatus": "0",
+    "ActiveState": "active", "SubState": "exited",
+}
+BOOTC_LAUNCHER = Path("/run/symbi-update-bootc")
+BOOTC_SOURCE = Path("/usr/bin/bootc")
+BOOTC_LABEL_REFERENCE = Path("/usr/bin/ostree")
+BOOTC_OPERATIONS = {
+    "negative": ["switch", "--transport", "dir",
+                 "--enforce-container-sigpolicy", str(NEGATIVE_SOURCE)],
+    "positive": ["switch", "--transport", "dir",
+                 "--enforce-container-sigpolicy", str(SOURCE)],
+    "rollback": ["rollback"],
+}
 
 
 def sha256(path):
@@ -40,6 +59,288 @@ def sha256(path):
 
 def exact_digest(value):
     return isinstance(value, str) and re.fullmatch(r"sha256:[a-f0-9]{64}", value)
+
+
+def service_properties(raw):
+    """Parse the exact bounded systemd result needed by a fixed unit."""
+    if (not isinstance(raw, str) or not raw.endswith("\n")
+            or not 0 < len(raw.encode()) <= 4096):
+        raise ValueError("invalid fixed service property output")
+    properties = {}
+    for line in raw.splitlines():
+        if "=" not in line:
+            raise ValueError("malformed fixed service property output")
+        key, value = line.split("=", 1)
+        if (key not in STATUS_PROPERTIES.split(",") or key in properties
+                or not value or len(value) > 128):
+            raise ValueError("ambiguous fixed service property output")
+        properties[key] = value
+    if set(properties) != set(STATUS_PROPERTIES.split(",")):
+        raise ValueError("incomplete fixed service property output")
+    return properties
+
+
+def _unique_json(raw):
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("duplicate bootc status key")
+            result[key] = value
+        return result
+    value = json.loads(raw, object_pairs_hook=unique)
+    if not isinstance(value, dict):
+        raise ValueError("bootc status is not an object")
+    return value
+
+
+def fixed_bootc_status(run, observations, status_path=STATUS_OUTPUT):
+    """Restart the fixed direct collector and read only its fresh output."""
+    if not isinstance(observations, list) or not Path(status_path).is_absolute():
+        raise ValueError("invalid fixed status observation target")
+    status_path = Path(status_path)
+    parent = os.open(status_path.parent,
+                     os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    try:
+        directory = os.fstat(parent)
+        if (not stat.S_ISDIR(directory.st_mode) or directory.st_uid != 0
+                or directory.st_gid != 0
+                or directory.st_mode & 0o022):
+            raise ValueError("status parent is not root controlled")
+        try:
+            stale = os.open(status_path.name,
+                            os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC,
+                            dir_fd=parent)
+        except FileNotFoundError:
+            pass
+        else:
+            try:
+                info = os.fstat(stale)
+                if (not stat.S_ISREG(info.st_mode) or info.st_uid != 0
+                        or info.st_gid != 0
+                        or info.st_nlink != 1 or stat.S_IMODE(info.st_mode) != 0o600):
+                    raise ValueError("stale status output is not private and root owned")
+            finally:
+                os.close(stale)
+            os.unlink(status_path.name, dir_fd=parent)
+        run(["/usr/bin/systemctl", "restart", STATUS_UNIT], timeout=120)
+        raw_properties = run([
+            "/usr/bin/systemctl", "show", STATUS_UNIT,
+            "--property=" + STATUS_PROPERTIES,
+        ])
+        properties = service_properties(raw_properties)
+        if properties != STATUS_SERVICE:
+            raise ValueError("fixed bootc status collector did not complete")
+        output = os.open(status_path.name,
+                         os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC,
+                         dir_fd=parent)
+        with os.fdopen(output, "rb") as stream:
+            before = os.fstat(stream.fileno())
+            if (not stat.S_ISREG(before.st_mode) or before.st_uid != 0
+                    or before.st_gid != 0
+                    or before.st_nlink != 1 or stat.S_IMODE(before.st_mode) != 0o600
+                    or not 0 < before.st_size <= 128 * 1024):
+                raise ValueError("status output is not one bounded private root file")
+            raw = stream.read(128 * 1024 + 1)
+            after = os.fstat(stream.fileno())
+            identity = lambda info: (
+                info.st_dev, info.st_ino, info.st_mode, info.st_uid, info.st_gid,
+                info.st_nlink, info.st_size, info.st_mtime_ns, info.st_ctime_ns,
+            )
+            if len(raw) != before.st_size or identity(before) != identity(after):
+                raise ValueError("status output changed during observation")
+    finally:
+        os.close(parent)
+    observation = {
+        "sequence": len(observations) + 1,
+        "unit": STATUS_UNIT,
+        "service": properties,
+        "bytes": len(raw),
+        "sha256": hashlib.sha256(raw).hexdigest(),
+    }
+    observations.append(observation)
+    return _unique_json(raw)
+
+
+def _fd_digest(fd):
+    with os.fdopen(os.dup(fd), "rb") as stream:
+        return hashlib.file_digest(stream, "sha256").hexdigest()
+
+
+def _stable_regular(fd, *, uid=0, gid=0, mode=None, single_link=False):
+    before = os.fstat(fd)
+    if (not stat.S_ISREG(before.st_mode) or before.st_uid != uid
+            or before.st_gid != gid
+            or not 0 < before.st_size <= 256 * 1024 * 1024
+            or (mode is not None and stat.S_IMODE(before.st_mode) != mode)
+            or (single_link and before.st_nlink != 1)):
+        raise ValueError("bootc launcher file controls changed")
+    digest = _fd_digest(fd)
+    after = os.fstat(fd)
+    identity = lambda info: (
+        info.st_dev, info.st_ino, info.st_mode, info.st_uid, info.st_gid,
+        info.st_nlink, info.st_size, info.st_mtime_ns, info.st_ctime_ns,
+    )
+    if identity(before) != identity(after):
+        raise ValueError("bootc launcher file changed during observation")
+    return before, digest
+
+
+def _launcher_file_observation(source_path=None, label_reference=None,
+                               launcher_path=None):
+    source_path = BOOTC_SOURCE if source_path is None else Path(source_path)
+    label_reference = (BOOTC_LABEL_REFERENCE if label_reference is None
+                       else Path(label_reference))
+    launcher_path = BOOTC_LAUNCHER if launcher_path is None else Path(launcher_path)
+    if (not source_path.is_absolute() or not label_reference.is_absolute()
+            or not launcher_path.is_absolute()):
+        raise ValueError("bootc launcher paths must be absolute")
+    parent = os.open(launcher_path.parent,
+                     os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    source = reference = copy = None
+    try:
+        directory = os.fstat(parent)
+        if (not stat.S_ISDIR(directory.st_mode) or directory.st_uid != 0
+                or directory.st_gid != 0
+                or directory.st_mode & 0o022):
+            raise ValueError("bootc launcher parent is not root controlled")
+        source = os.open(source_path,
+                         os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        reference = os.open(label_reference,
+                            os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        copy = os.open(launcher_path.name,
+                       os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=parent)
+        source_info, source_hash = _stable_regular(source, mode=0o755)
+        reference_info, _ = _stable_regular(reference, mode=0o755)
+        copy_info, copy_hash = _stable_regular(copy, mode=0o700, single_link=True)
+        if ((source_info.st_dev, source_info.st_ino)
+                == (copy_info.st_dev, copy_info.st_ino)
+                or source_info.st_size != copy_info.st_size
+                or source_hash != copy_hash
+                or not stat.S_ISREG(reference_info.st_mode)):
+            raise ValueError("bootc launcher is not an independent exact copy")
+        def normalized_label(descriptor):
+            value = os.getxattr(descriptor, "security.selinux")
+            if value.endswith(b"\0"):
+                value = value[:-1]
+            if not value or b"\0" in value:
+                raise ValueError("invalid SELinux file label")
+            return value
+        label = normalized_label(copy)
+        reference_label = normalized_label(reference)
+        if label != reference_label:
+            raise ValueError("bootc launcher SELinux label differs from ostree")
+        label_text = label.decode("ascii")
+        if re.fullmatch(r"[^:\x00]+:object_r:install_exec_t:[^\x00]+", label_text) is None:
+            raise ValueError("bootc launcher does not carry install_exec_t")
+        return {
+            "source": str(source_path),
+            "path": str(launcher_path),
+            "label_reference": str(label_reference),
+            "source_sha256": source_hash,
+            "copy_sha256": copy_hash,
+            "selinux_label": label_text,
+            "mode": "0700",
+        }
+    finally:
+        for fd in (copy, reference, source, parent):
+            if fd is not None:
+                os.close(fd)
+
+
+def fixed_bootc_launcher(run):
+    """Validate the install_t-prepared immutable launcher before any use."""
+    properties = service_properties(run([
+        "/usr/bin/systemctl", "show", "b.service",
+        "--property=" + STATUS_PROPERTIES,
+    ]))
+    if properties != STATUS_SERVICE:
+        raise ValueError("fixed bootc launcher preparation did not complete")
+    return {
+        "unit": "b.service", "service": properties,
+        **_launcher_file_observation(), "removed": False,
+    }
+
+
+def remove_bootc_launcher(expected=None, *, source_path=None,
+                          label_reference=None, launcher_path=None):
+    """Remove only the exact validated root-only launcher, then prove absence."""
+    launcher_path = BOOTC_LAUNCHER if launcher_path is None else Path(launcher_path)
+    try:
+        current = _launcher_file_observation(source_path, label_reference,
+                                             launcher_path)
+    except FileNotFoundError:
+        if expected is not None:
+            raise ValueError("validated bootc launcher disappeared before cleanup")
+        return False
+    if expected is not None:
+        retained = {key: value for key, value in expected.items()
+                    if key not in {"unit", "service", "removed"}}
+        if retained != current or expected.get("removed") is not False:
+            raise ValueError("bootc launcher changed before cleanup")
+    parent = os.open(launcher_path.parent,
+                     os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    try:
+        os.unlink(launcher_path.name, dir_fd=parent)
+        os.fsync(parent)
+        try:
+            os.stat(launcher_path.name, dir_fd=parent, follow_symlinks=False)
+        except FileNotFoundError:
+            pass
+        else:
+            raise ValueError("bootc launcher remains after cleanup")
+    finally:
+        os.close(parent)
+    if expected is not None:
+        expected["removed"] = True
+    return True
+
+
+def finalize_bootc_launcher(record, remover=None):
+    """Always attempt bounded launcher cleanup and fail the report if it fails."""
+    if not isinstance(record, dict):
+        raise ValueError("invalid update report during launcher cleanup")
+    remover = remove_bootc_launcher if remover is None else remover
+    try:
+        remover(record.get("bootc_launcher"))
+    except Exception as error:
+        record["passed"] = False
+        cleanup_failure = type(error).__name__ + ": " + str(error)
+        record["launcher_cleanup_failure"] = cleanup_failure
+        if "failure" not in record:
+            record["failure"] = "launcher cleanup: " + cleanup_failure
+
+
+def fixed_bootc_operation(run, record, operation, *, expected_success, timeout):
+    """Run one exact mutation through the validated install_exec_t copy."""
+    if (operation not in BOOTC_OPERATIONS or type(expected_success) is not bool
+            or type(timeout) is not int
+            or not 1 <= timeout <= UPDATE_COMMAND_TIMEOUT_SECONDS
+            or not isinstance(record.get("bootc_launcher"), dict)):
+        raise ValueError("invalid fixed bootc operation")
+    current = _launcher_file_observation()
+    retained = {key: value for key, value in record["bootc_launcher"].items()
+                if key not in {"unit", "service", "removed"}}
+    if current != retained or record["bootc_launcher"].get("removed") is not False:
+        raise ValueError("bootc launcher changed before use")
+    command = [str(BOOTC_LAUNCHER), *BOOTC_OPERATIONS[operation]]
+    result = run(command, timeout=timeout, check=False, return_result=True)
+    if _launcher_file_observation() != current:
+        raise ValueError("bootc launcher changed during use")
+    observation = {
+        "name": operation,
+        "command": command,
+        "exit_code": result.returncode,
+        "stderr": result.stderr,
+        "stderr_sha256": hashlib.sha256(result.stderr.encode()).hexdigest(),
+    }
+    record["bootc_operation"] = observation
+    if expected_success:
+        if result.returncode != 0:
+            raise ValueError("fixed bootc operation failed")
+    elif result.returncode == 0 or "signature" not in result.stderr.lower():
+        raise ValueError("bootc did not retain a native signature rejection")
+    return observation
 
 
 def validate_source_identity(raw, expected):
@@ -588,10 +889,12 @@ def main():
               "release_qualified": False, "product": product,
               "nonce": expected["nonce"], "expected_sha256": sha256(expected_path),
               "runner_sha256": sha256(Path(__file__)), "commands": [],
+              "status_observations": [],
               "scope": "Offline ephemeral fixture-signed update and rollback only"}
 
-    def run(command, *, timeout=120, check=True):
-        if type(timeout) is not int or not 1 <= timeout <= UPDATE_COMMAND_TIMEOUT_SECONDS:
+    def run(command, *, timeout=120, check=True, return_result=False):
+        if (type(timeout) is not int or not 1 <= timeout <= UPDATE_COMMAND_TIMEOUT_SECONDS
+                or type(check) is not bool or type(return_result) is not bool):
             raise ValueError("invalid update command timeout")
         result = subprocess.run(command, stdin=subprocess.DEVNULL, capture_output=True,
                                 timeout=timeout, text=True,
@@ -603,13 +906,14 @@ def main():
                                    "stderr": result.stderr})
         if check:
             result.check_returncode()
-        return result.stdout
+        return result if return_result else result.stdout
 
     try:
         if sorted(path.name for path in Path("/sys/class/net").iterdir()) != ["lo"]:
             raise ValueError("update guest gained a network interface")
         if run(["/usr/sbin/getenforce"]).strip() != "Enforcing":
             raise ValueError("SELinux is not enforcing")
+        record["bootc_launcher"] = fixed_bootc_launcher(run)
         observed_devices = []
 
         def scan_source():
@@ -656,7 +960,7 @@ def main():
                 or sha256(policy_path) != expected["policy_sha256"]
                 or sha256(Path("/etc/containers/policy.json")) != expected["original_policy_sha256"]):
             raise ValueError("authenticated update input changed")
-        raw_status = lambda: json.loads(run(["/usr/bin/bootc", "status", "--json"]))
+        raw_status = lambda: fixed_bootc_status(run, record["status_observations"])
         positive = expected.get("same_path_positive_control")
         negative = expected.get("negative_control")
         if positive is not None or negative is not None:
@@ -735,10 +1039,10 @@ def main():
             run(["/usr/bin/mount", "-o", "remount,bind,ro", "/etc/containers/policy.json"])
             if sha256(Path("/etc/containers/policy.json")) != expected["policy_sha256"]:
                 raise ValueError("guest update policy bind changed")
-            switch = ["/usr/bin/bootc", "switch", "--transport", "dir",
-                      "--enforce-container-sigpolicy", str(NEGATIVE_SOURCE)]
-            run(switch, timeout=UPDATE_COMMAND_TIMEOUT_SECONDS, check=False)
-            switch_exit = record["commands"][-1]["exit_code"]
+            operation = fixed_bootc_operation(
+                run, record, "negative", expected_success=is_positive,
+                timeout=UPDATE_COMMAND_TIMEOUT_SECONDS)
+            switch_exit = operation["exit_code"]
             if is_positive:
                 after = staged_deployment_snapshot(raw_status(), old, new)
                 after_hash = hashlib.sha256(json.dumps(
@@ -778,8 +1082,8 @@ def main():
             run(["/usr/bin/mount", "-o", "remount,bind,ro", "/etc/containers/policy.json"])
             if sha256(Path("/etc/containers/policy.json")) != expected["policy_sha256"]:
                 raise ValueError("guest update policy bind changed")
-            run(["/usr/bin/bootc", "switch", "--transport", "dir",
-                 "--enforce-container-sigpolicy", str(SOURCE)],
+            fixed_bootc_operation(
+                run, record, "positive", expected_success=True,
                 timeout=UPDATE_COMMAND_TIMEOUT_SECONDS)
             phase_status(raw_status(), old, staged=new)
             write_state("updated")
@@ -787,7 +1091,8 @@ def main():
                                "operation": "signed-update-staged", "staged_digest": new}
         elif state == "updated":
             phase_status(raw_status(), new, rollback=old)
-            run(["/usr/bin/bootc", "rollback"], timeout=300)
+            fixed_bootc_operation(
+                run, record, "rollback", expected_success=True, timeout=300)
             phase_status(raw_status(), new, rollback=old, rollback_queued=True)
             write_state("rolled-back")
             record["phase"] = {"name": "updated", "booted_digest": new,
@@ -803,6 +1108,8 @@ def main():
             record["passed"] = True
     except Exception as error:
         record["failure"] = type(error).__name__ + ": " + str(error)
+    finally:
+        finalize_bootc_launcher(record)
     raw = (json.dumps(record, sort_keys=True) + "\n").encode()
     if len(raw) > 128 * 1024:
         raise ValueError("update guest report exceeds its bound")

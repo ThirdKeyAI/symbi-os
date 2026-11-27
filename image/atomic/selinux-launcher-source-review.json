@@ -1,0 +1,21 @@
+{
+  "repository": "bootc-dev/bootc",
+  "revision": "d01e723ae9480fa53aa9db09a7eff0439548e9f6",
+  "version": "1.17.1",
+  "scope": "Static review of the SELinux install-domain re-exec path; not distro binary equivalence or native execution proof",
+  "source": {
+    "path": "crates/lib/src/lsm.rs",
+    "git_blob_sha": "56564631456ca9e836088ce4754158281f922e8c",
+    "bytes": 26702,
+    "url": "https://github.com/bootc-dev/bootc/blob/d01e723ae9480fa53aa9db09a7eff0439548e9f6/crates/lib/src/lsm.rs"
+  },
+  "reviewed_behavior": [
+    "selinux_ensure_install first tests whether the current domain can assign an unknown SELinux label.",
+    "When that test fails, bootc copies its current executable, sets the copy's label from the policy label for /usr/bin/ostree, and re-executes the copy.",
+    "The observed hosted failure occurred at the fallback copy's fsetxattr(security.selinux), before any bootc switch.",
+    "The correction prepares a byte-identical root-owned copy in an explicit install_t service, applies the installed /usr/bin/ostree file label, and then requires exact source/copy hashes and exact file-label equality before use.",
+    "The correction does not enable BOOTC_SETENFORCE0_FALLBACK and continues to require enforcing SELinux."
+  ],
+  "namespace_reason": "The switch source, overlay and temporary policy bind exist only in update-o.service's PrivateMounts namespace. Executing the validated fixed copy from that service preserves those exact inputs; a separate mutation service would observe the wrong mount namespace.",
+  "pending": "A native hosted rerun must prove that executing the install_exec_t-labeled copy transitions as expected under the installed enforcing policy and that status, switch and rollback all complete without a fallback or policy relaxation."
+}

@@ -12,6 +12,7 @@ import subprocess
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
+from types import SimpleNamespace
 
 from image.atomic.update_contract import (NEGATIVE_UPDATE_SOURCE, POSITIVE_OVERLAY_CASE,
                                           update_policy,
@@ -30,6 +31,8 @@ from image.atomic.update_boot import (DISPOSABLE_PHASE_TIMEOUT_SECONDS,
                                       validate_shared_baseline)
 from image.atomic.update_process import TIMEOUT_SECONDS, validate_update_controller_command
 from image.atomic.update_guest import (UPDATE_COMMAND_TIMEOUT_SECONDS,
+                                       BOOTC_LABEL_REFERENCE, BOOTC_LAUNCHER,
+                                       BOOTC_SOURCE,
                                        FDINFO_MAX_BYTES,
                                        MOUNTINFO_MAX_BYTES,
                                        SOURCE, STATE, SOURCE_SERIAL,
@@ -45,7 +48,13 @@ from image.atomic.update_guest import (UPDATE_COMMAND_TIMEOUT_SECONDS,
                                        source_mount_observation,
                                        observe_visible_source_mount,
                                        validate_source_mount,
-                                       validate_mounted_device)
+                                       validate_mounted_device,
+                                       _launcher_file_observation,
+                                       fixed_bootc_launcher,
+                                       fixed_bootc_operation,
+                                       fixed_bootc_status,
+                                       remove_bootc_launcher,
+                                       finalize_bootc_launcher)
 from image.atomic.update_hosted import retain_controller_output, run_update
 from image.atomic.hosted import (RETAINED_REPORT_MAX_BYTES,
                                  validate_retained_preflight)
@@ -641,6 +650,8 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertIn("phase-1.json", joined)
         firmware = firmware_arguments()
         self.assertIn("systemd.extra-unit.o.service", " ".join(firmware))
+        self.assertIn("systemd.extra-unit.s.service", " ".join(firmware))
+        self.assertIn("systemd.extra-unit.b.service", " ".join(firmware))
         self.assertNotIn("fstab.extra", " ".join(firmware))
 
     def test_each_bootc_rejection_uses_a_distinct_disposable_overlay(self):
@@ -751,8 +762,66 @@ class AtomicUpdateTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             staged_deployment_snapshot(invalid, self.old, self.new)
 
+    @staticmethod
+    def launcher_report():
+        return {
+            "unit": "b.service",
+            "service": {"Result": "success", "ExecMainCode": "1",
+                        "ExecMainStatus": "0", "ActiveState": "active",
+                        "SubState": "exited"},
+            "source": "/usr/bin/bootc", "path": "/run/symbi-update-bootc",
+            "label_reference": "/usr/bin/ostree",
+            "source_sha256": "8" * 64, "copy_sha256": "8" * 64,
+            "selinux_label": "system_u:object_r:install_exec_t:s0",
+            "mode": "0700", "removed": True,
+        }
+
+    @staticmethod
+    def status_evidence(count):
+        service = {"Result": "success", "ExecMainCode": "1",
+                   "ExecMainStatus": "0", "ActiveState": "active",
+                   "SubState": "exited"}
+        observations = [
+            {"sequence": sequence, "unit": "s.service", "service": service,
+             "bytes": 1024, "sha256": f"{sequence}" * 64}
+            for sequence in range(1, count + 1)
+        ]
+        commands = [{
+            "command": ["/usr/bin/systemctl", "show", "b.service",
+                        "--property=Result,ExecMainCode,ExecMainStatus,ActiveState,SubState"],
+            "exit_code": 0,
+        }]
+        for _sequence in range(count):
+            commands.extend([
+                {"command": ["/usr/bin/systemctl", "restart", "s.service"],
+                 "exit_code": 0},
+                {"command": ["/usr/bin/systemctl", "show", "s.service",
+                             "--property=Result,ExecMainCode,ExecMainStatus,ActiveState,SubState"],
+                 "exit_code": 0},
+            ])
+        return observations, commands
+
+    @staticmethod
+    def operation_report(name, exit_code=0, stderr=""):
+        arguments = {
+            "negative": ["switch", "--transport", "dir",
+                         "--enforce-container-sigpolicy", NEGATIVE_UPDATE_SOURCE],
+            "positive": ["switch", "--transport", "dir",
+                         "--enforce-container-sigpolicy", "/run/symbi-update/source"],
+            "rollback": ["rollback"],
+        }[name]
+        command = ["/run/symbi-update-bootc", *arguments]
+        return {
+            "name": name, "command": command, "exit_code": exit_code,
+            "stderr": stderr,
+            "stderr_sha256": hashlib.sha256(stderr.encode()).hexdigest(),
+        }
+
     def positive_report(self):
-        switch = update_command(NEGATIVE_UPDATE_SOURCE)
+        observations, commands = self.status_evidence(2)
+        operation = self.operation_report("negative")
+        commands.insert(3, {"command": operation["command"], "exit_code": 0,
+                            "stderr": operation["stderr"]})
         return {
             "schema": 1, "passed": True, "guest_booted": True,
             "release_qualified": False, "product": "Symbi-Hosted-Update-Probe",
@@ -761,6 +830,9 @@ class AtomicUpdateTests(unittest.TestCase):
             "source_device": {"path": "/dev/vdb", "serial": "SYMBIUPDATE",
                               "TYPE": "ext4",
                               "LABEL": "SYMBIUPDATE", "UUID": self.source_uuid},
+            "status_observations": observations,
+            "bootc_launcher": self.launcher_report(),
+            "bootc_operation": operation,
             "same_path_positive_control": {
                 "case": POSITIVE_OVERLAY_CASE, "switch_accepted": True,
                 "switch_exit_code": 0, "booted_unchanged": True,
@@ -769,11 +841,7 @@ class AtomicUpdateTests(unittest.TestCase):
                 "state_after_sha256": "7" * 64,
                 "source": NEGATIVE_UPDATE_SOURCE, "source_readonly": True,
             },
-            "commands": [
-                {"command": ["/usr/bin/bootc", "status", "--json"], "exit_code": 0},
-                {"command": switch, "exit_code": 0},
-                {"command": ["/usr/bin/bootc", "status", "--json"], "exit_code": 0},
-            ],
+            "commands": commands,
         }
 
     def test_same_path_positive_report_binds_success_and_controlled_state(self):
@@ -786,7 +854,8 @@ class AtomicUpdateTests(unittest.TestCase):
         validate_shared_baseline(report, self.negative_report())
         mutations = []
         changed = copy.deepcopy(report)
-        changed["commands"][1]["exit_code"] = 1
+        changed["commands"][3]["exit_code"] = 1
+        changed["bootc_operation"]["exit_code"] = 1
         changed["same_path_positive_control"]["switch_exit_code"] = 1
         mutations.append(changed)
         changed = copy.deepcopy(report)
@@ -807,8 +876,12 @@ class AtomicUpdateTests(unittest.TestCase):
             validate_shared_baseline(report, negative)
 
     def negative_report(self, case="unsigned"):
-        switch = update_command(NEGATIVE_UPDATE_SOURCE)
         state_hash = "3" * 64
+        observations, commands = self.status_evidence(2)
+        operation = self.operation_report(
+            "negative", exit_code=1, stderr="signature verification failed\n")
+        commands.insert(3, {"command": operation["command"], "exit_code": 1,
+                            "stderr": operation["stderr"]})
         return {
             "schema": 1, "passed": True, "guest_booted": True,
             "release_qualified": False, "product": "Symbi-Hosted-Update-Probe",
@@ -817,17 +890,16 @@ class AtomicUpdateTests(unittest.TestCase):
             "source_device": {"path": "/dev/vdb", "serial": "SYMBIUPDATE",
                               "TYPE": "ext4",
                               "LABEL": "SYMBIUPDATE", "UUID": self.source_uuid},
+            "status_observations": observations,
+            "bootc_launcher": self.launcher_report(),
+            "bootc_operation": operation,
             "negative_control": {
                 "case": case, "switch_rejected": True, "switch_exit_code": 1,
                 "deployment_unchanged": True, "default_unchanged": True,
                 "state_sha256": state_hash, "source": NEGATIVE_UPDATE_SOURCE,
                 "source_readonly": True,
             },
-            "commands": [
-                {"command": ["/usr/bin/bootc", "status", "--json"], "exit_code": 0},
-                {"command": switch, "exit_code": 1},
-                {"command": ["/usr/bin/bootc", "status", "--json"], "exit_code": 0},
-            ],
+            "commands": commands,
         }
 
     def test_negative_report_requires_failed_real_switch_and_unchanged_state(self):
@@ -839,14 +911,15 @@ class AtomicUpdateTests(unittest.TestCase):
         validate_negative_report(report, expected, "5" * 64, "6" * 64, "unsigned")
         mutations = []
         changed = copy.deepcopy(report)
-        changed["commands"][1]["exit_code"] = 0
+        changed["commands"][3]["exit_code"] = 0
+        changed["bootc_operation"]["exit_code"] = 0
         changed["negative_control"]["switch_exit_code"] = 0
         mutations.append(changed)
         changed = copy.deepcopy(report)
         changed["negative_control"]["deployment_unchanged"] = False
         mutations.append(changed)
         changed = copy.deepcopy(report)
-        changed["commands"][1]["command"][-1] = "/tmp/other"
+        changed["commands"][3]["command"][-1] = "/tmp/other"
         mutations.append(changed)
         changed = copy.deepcopy(report)
         changed["source_device"]["LABEL"] = "OTHER"
@@ -863,6 +936,10 @@ class AtomicUpdateTests(unittest.TestCase):
                                     "uuid": self.source_uuid}}
         phase = {"name": "installed", "booted_digest": self.old,
                  "operation": "signed-update-staged", "staged_digest": self.new}
+        observations, commands = self.status_evidence(2)
+        operation = self.operation_report("positive")
+        commands.insert(3, {"command": operation["command"], "exit_code": 0,
+                            "stderr": operation["stderr"]})
         report = {
             "schema": 1, "passed": True, "guest_booted": True,
             "release_qualified": False, "product": "Symbi-Hosted-Update-Probe",
@@ -872,8 +949,10 @@ class AtomicUpdateTests(unittest.TestCase):
                               "TYPE": "ext4",
                               "LABEL": "SYMBIUPDATE", "UUID": self.source_uuid},
             "phase": phase,
-            "commands": [{"command": ["/usr/bin/bootc", "status", "--json"],
-                          "exit_code": 0}],
+            "status_observations": observations,
+            "bootc_launcher": self.launcher_report(),
+            "bootc_operation": operation,
+            "commands": commands,
         }
         validate_phase_report(report, expected, "5" * 64, "6" * 64, phase)
         for field in ("path", "serial", "TYPE", "LABEL", "UUID"):
@@ -897,7 +976,17 @@ class AtomicUpdateTests(unittest.TestCase):
                         (root / "image/atomic/update-o.service").read_text().splitlines()
                         if "=" in line and not line.startswith("#"))
         self.assertNotIn("RequiresMountsFor", settings)
-        self.assertEqual(settings["After"], "local-fs.target")
+        self.assertEqual(settings["Requires"], "b.service")
+        self.assertNotIn("Wants", settings)
+        self.assertEqual(settings["After"], "local-fs.target b.service")
+        self.assertNotIn("s.service", settings.get("Requires", ""))
+        self.assertNotIn("s.service", settings.get("After", ""))
+
+        status_settings = dict(line.split("=", 1) for line in
+                               (root / "image/atomic/s.service").read_text().splitlines()
+                               if "=" in line and not line.startswith("#"))
+        self.assertNotIn("o.service", status_settings.get("Before", ""))
+        self.assertNotIn("o.service", status_settings.get("After", ""))
         self.assertEqual(settings["RuntimeDirectory"], "symbi-update")
         self.assertEqual(settings["RuntimeDirectoryMode"], "0700")
         self.assertEqual(settings["StateDirectory"], "symbi-update-test")
@@ -906,6 +995,257 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertEqual(settings["TasksMax"], "128")
         self.assertFalse((root / "image/atomic/update-fstab.extra").exists())
         self.assertNotIn("udev", (root / "image/atomic/update-o.service").read_text())
+
+        launcher = dict(line.split("=", 1) for line in
+                        (root / "image/atomic/update-b.service").read_text().splitlines()
+                        if "=" in line and not line.startswith("#"))
+        self.assertEqual(launcher["SELinuxContext"],
+                         "system_u:system_r:install_t:s0")
+        self.assertEqual(launcher["User"], "root")
+        self.assertEqual(launcher["Group"], "root")
+        self.assertEqual(launcher["CapabilityBoundingSet"],
+                         "CAP_CHOWN CAP_DAC_OVERRIDE CAP_FOWNER CAP_MAC_ADMIN")
+        self.assertEqual(launcher["MemorySwapMax"], "0")
+        self.assertEqual(launcher["TasksMax"], "16")
+        text = (root / "image/atomic/update-b.service").read_text()
+        self.assertIn("/usr/bin/bootc /run/symbi-update-bootc.new", text)
+        self.assertIn("--reference=/usr/bin/ostree", text)
+        self.assertIn("/run/symbi-update-bootc.new /run/symbi-update-bootc", text)
+        self.assertNotIn("PrivateMounts=", text)
+        self.assertNotIn("/bin/sh", text)
+        conditions = [line for line in text.splitlines()
+                      if line.startswith("ConditionPathExists=")]
+        self.assertEqual(conditions, [
+            "ConditionPathExists=!/etc/initrd-release",
+            "ConditionPathExists=!/run/symbi-update-bootc",
+            "ConditionPathExists=!/run/symbi-update-bootc.new",
+        ])
+
+        skipped = ("Result=success\nExecMainCode=0\nExecMainStatus=0\n"
+                   "ActiveState=inactive\nSubState=dead\n")
+        with self.assertRaisesRegex(ValueError, "preparation did not complete"):
+            fixed_bootc_launcher(Mock(return_value=skipped))
+
+    @staticmethod
+    def root_file_stat(real_fstat, changed_gid_path=None):
+        def reader(descriptor):
+            observed = real_fstat(descriptor)
+            path = Path(os.readlink(f"/proc/self/fd/{descriptor}"))
+            return SimpleNamespace(
+                st_mode=observed.st_mode, st_uid=0,
+                st_gid=1 if changed_gid_path == path else 0,
+                st_size=observed.st_size, st_nlink=observed.st_nlink,
+                st_dev=observed.st_dev, st_ino=observed.st_ino,
+                st_mtime_ns=observed.st_mtime_ns,
+                st_ctime_ns=observed.st_ctime_ns,
+            )
+        return reader
+
+    def launcher_fixture(self, root):
+        source, reference = root / "bootc", root / "ostree"
+        launcher = root / "symbi-update-bootc"
+        source.write_bytes(b"fixed bootc bytes")
+        reference.write_bytes(b"label reference")
+        launcher.write_bytes(source.read_bytes())
+        source.chmod(0o755)
+        reference.chmod(0o755)
+        launcher.chmod(0o700)
+        return source, reference, launcher
+
+    def test_fixed_launcher_binds_bytes_owner_mode_link_and_selinux_label(self):
+        real_fstat = os.fstat
+        label = b"system_u:object_r:install_exec_t:s0\0"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source, reference, launcher = self.launcher_fixture(root)
+            root_stat = self.root_file_stat(real_fstat)
+            with patch("image.atomic.update_guest.os.fstat", side_effect=root_stat), \
+                    patch("image.atomic.update_guest.os.getxattr", return_value=label):
+                observation = _launcher_file_observation(source, reference, launcher)
+            self.assertEqual(observation["source_sha256"], observation["copy_sha256"])
+            self.assertEqual(observation["mode"], "0700")
+            self.assertEqual(observation["selinux_label"], label[:-1].decode())
+
+            mutations = (
+                "source-gid", "reference-gid", "copy-gid",
+                "source-mode", "reference-mode", "copy-mode",
+                "copy-link", "hash", "label", "source-symlink",
+                "reference-symlink", "copy-symlink",
+            )
+            for mutation in mutations:
+                with self.subTest(mutation=mutation):
+                    source, reference, launcher = self.launcher_fixture(root)
+                    changed_gid = {
+                        "source-gid": source,
+                        "reference-gid": reference,
+                        "copy-gid": launcher,
+                    }.get(mutation)
+                    getxattr = Mock(return_value=label)
+                    extra = None
+                    original = None
+                    if mutation == "source-mode":
+                        source.chmod(0o775)
+                    elif mutation == "reference-mode":
+                        reference.chmod(0o775)
+                    elif mutation == "copy-mode":
+                        launcher.chmod(0o744)
+                    elif mutation == "copy-link":
+                        extra = root / "launcher-link"
+                        os.link(launcher, extra)
+                    elif mutation == "hash":
+                        launcher.write_bytes(b"altered bootc byt")
+                        launcher.chmod(0o700)
+                    elif mutation == "label":
+                        def labels(descriptor, _name):
+                            target = Path(os.readlink(f"/proc/self/fd/{descriptor}"))
+                            return (b"system_u:object_r:bin_t:s0\0"
+                                    if target == launcher else label)
+                        getxattr.side_effect = labels
+                    elif mutation.endswith("-symlink"):
+                        target = {"source-symlink": source,
+                                  "reference-symlink": reference,
+                                  "copy-symlink": launcher}[mutation]
+                        original = target.with_name(target.name + ".real")
+                        target.rename(original)
+                        target.symlink_to(original)
+                    stat_reader = self.root_file_stat(real_fstat, changed_gid)
+                    with patch("image.atomic.update_guest.os.fstat",
+                               side_effect=stat_reader), \
+                            patch("image.atomic.update_guest.os.getxattr", getxattr):
+                        with self.assertRaises((OSError, ValueError)):
+                            _launcher_file_observation(source, reference, launcher)
+                    if extra is not None:
+                        extra.unlink()
+                    if original is not None:
+                        target = {"source-symlink": source,
+                                  "reference-symlink": reference,
+                                  "copy-symlink": launcher}[mutation]
+                        target.unlink()
+                        original.rename(target)
+
+    def test_fixed_status_replaces_stale_output_and_binds_service_freshness(self):
+        real_fstat = os.fstat
+        properties = ("Result=success\nExecMainCode=1\nExecMainStatus=0\n"
+                      "ActiveState=active\nSubState=exited\n")
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "status.json"
+            output.write_bytes(b'{"stale":true}\n')
+            output.chmod(0o600)
+            fresh = b'{"fresh":true}\n'
+            commands = []
+
+            def run(command, **_options):
+                commands.append(command)
+                if command[1] == "restart":
+                    output.write_bytes(fresh)
+                    output.chmod(0o600)
+                    return ""
+                return properties
+
+            observations = []
+            with patch("image.atomic.update_guest.os.fstat",
+                       side_effect=self.root_file_stat(real_fstat)):
+                self.assertEqual(fixed_bootc_status(run, observations, output),
+                                 {"fresh": True})
+            self.assertEqual(len(observations), 1)
+            self.assertEqual(observations[0]["bytes"], len(fresh))
+            self.assertEqual(observations[0]["sha256"],
+                             hashlib.sha256(fresh).hexdigest())
+            self.assertEqual(commands[0],
+                             ["/usr/bin/systemctl", "restart", "s.service"])
+
+            output.write_bytes(b'{"stale":true}\n')
+            output.chmod(0o600)
+            with patch("image.atomic.update_guest.os.fstat",
+                       side_effect=self.root_file_stat(real_fstat)):
+                with self.assertRaises(FileNotFoundError):
+                    fixed_bootc_status(
+                        lambda command, **_options: properties,
+                        [], output)
+            self.assertFalse(output.exists())
+
+    def test_fixed_bootc_operation_revalidates_before_and_after_execution(self):
+        launcher = self.launcher_report()
+        launcher["removed"] = False
+        record = {"bootc_launcher": launcher}
+        current = {key: value for key, value in launcher.items()
+                   if key not in {"unit", "service", "removed"}}
+        result = SimpleNamespace(returncode=0, stderr="")
+        runner = Mock(return_value=result)
+        with patch("image.atomic.update_guest._launcher_file_observation",
+                   side_effect=[current, current]):
+            observed = fixed_bootc_operation(
+                runner, record, "positive", expected_success=True, timeout=120)
+        self.assertEqual(observed["command"], [
+            "/run/symbi-update-bootc", "switch", "--transport", "dir",
+            "--enforce-container-sigpolicy", "/run/symbi-update/source",
+        ])
+        runner.assert_called_once_with(observed["command"], timeout=120,
+                                       check=False, return_result=True)
+
+        changed = dict(current, copy_sha256="0" * 64)
+        before_runner = Mock(return_value=result)
+        with patch("image.atomic.update_guest._launcher_file_observation",
+                   return_value=changed), self.assertRaisesRegex(
+                       ValueError, "changed before use"):
+            fixed_bootc_operation(before_runner, record, "positive",
+                                  expected_success=True, timeout=120)
+        before_runner.assert_not_called()
+
+        after_runner = Mock(return_value=result)
+        with patch("image.atomic.update_guest._launcher_file_observation",
+                   side_effect=[current, changed]), self.assertRaisesRegex(
+                       ValueError, "changed during use"):
+            fixed_bootc_operation(after_runner, record, "positive",
+                                  expected_success=True, timeout=120)
+        after_runner.assert_called_once()
+
+    def test_launcher_cleanup_is_exact_and_finalizer_runs_for_all_outcomes(self):
+        self.assertEqual(BOOTC_SOURCE, Path("/usr/bin/bootc"))
+        self.assertEqual(BOOTC_LABEL_REFERENCE, Path("/usr/bin/ostree"))
+        self.assertEqual(BOOTC_LAUNCHER, Path("/run/symbi-update-bootc"))
+        real_fstat = os.fstat
+        label = b"system_u:object_r:install_exec_t:s0\0"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source, reference, launcher = self.launcher_fixture(root)
+            stat_reader = self.root_file_stat(real_fstat)
+            with patch("image.atomic.update_guest.os.fstat", side_effect=stat_reader), \
+                    patch("image.atomic.update_guest.os.getxattr", return_value=label):
+                observed = _launcher_file_observation(source, reference, launcher)
+                expected = {"unit": "b.service", "service": {}, **observed,
+                            "removed": False}
+                self.assertTrue(remove_bootc_launcher(
+                    expected, source_path=source, label_reference=reference,
+                    launcher_path=launcher))
+            self.assertFalse(launcher.exists())
+            self.assertTrue(expected["removed"])
+
+            source, reference, launcher = self.launcher_fixture(root)
+            unsafe_link = root / "unsafe-link"
+            os.link(launcher, unsafe_link)
+            with patch("image.atomic.update_guest.os.fstat", side_effect=stat_reader), \
+                    patch("image.atomic.update_guest.os.getxattr", return_value=label):
+                with self.assertRaises(ValueError):
+                    remove_bootc_launcher(
+                        source_path=source, label_reference=reference,
+                        launcher_path=launcher)
+            self.assertTrue(launcher.exists())
+            unsafe_link.unlink()
+
+        for outcome in ("success", "rejection", "timeout", "exception"):
+            with self.subTest(outcome=outcome):
+                record = {"passed": outcome in {"success", "rejection"},
+                          "bootc_launcher": {"removed": False}}
+                if outcome in {"timeout", "exception"}:
+                    record["failure"] = outcome
+                remover = Mock(return_value=True)
+                finalize_bootc_launcher(record, remover)
+                remover.assert_called_once_with(record["bootc_launcher"])
+        record = {"passed": True, "bootc_launcher": {"removed": False}}
+        finalize_bootc_launcher(record, Mock(side_effect=TimeoutError("cleanup stalled")))
+        self.assertFalse(record["passed"])
+        self.assertIn("cleanup stalled", record["failure"])
 
     def test_update_device_readiness_wait_is_fixed_and_bounded(self):
         self.assertEqual(SOURCE_SERIAL, "SYMBIUPDATE")
