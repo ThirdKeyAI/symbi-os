@@ -7,6 +7,7 @@ from pathlib import Path
 import signal
 import shutil
 import socket
+import stat
 import subprocess
 import tempfile
 import unittest
@@ -29,11 +30,22 @@ from image.atomic.update_boot import (DISPOSABLE_PHASE_TIMEOUT_SECONDS,
                                       validate_shared_baseline)
 from image.atomic.update_process import TIMEOUT_SECONDS, validate_update_controller_command
 from image.atomic.update_guest import (UPDATE_COMMAND_TIMEOUT_SECONDS,
-                                       SOURCE, STATE,
+                                       FDINFO_MAX_BYTES,
+                                       MOUNTINFO_MAX_BYTES,
+                                       SOURCE, STATE, SOURCE_SERIAL,
+                                       SOURCE_DEVICE_TIMEOUT_SECONDS,
                                        phase_status, deployment_snapshot,
                                        staged_deployment_snapshot,
                                        validate_source_identity,
-                                       device_settle_command)
+                                       discover_source_device,
+                                       wait_for_source_device,
+                                       mount_observation,
+                                       parse_visible_mount_id,
+                                       read_visible_mount_id,
+                                       source_mount_observation,
+                                       observe_visible_source_mount,
+                                       validate_source_mount,
+                                       validate_mounted_device)
 from image.atomic.update_hosted import retain_controller_output, run_update
 from image.atomic.hosted import (RETAINED_REPORT_MAX_BYTES,
                                  validate_retained_preflight)
@@ -517,6 +529,13 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertEqual(config["manifest_digest"],
                          "sha256:9b6e8fdd9f6f98631895ccdfaaed6ffd88febd3ea6238d543935a524b572faf3")
         self.assertLess(selected["run_id"], current["images"]["generic"]["run_id"])
+        evidence_path = root / current["images"]["generic"]["evidence"]
+        evidence = json.loads(evidence_path.read_text())
+        self.assertEqual(evidence["source_commit"], current["images"]["generic"]["tested_commit"])
+        self.assertEqual(evidence["image_manifest_sha256"],
+                         current["images"]["generic"]["manifest_sha256"])
+        self.assertEqual(evidence["hosted_image_artifact"]["id"],
+                         current["images"]["generic"]["artifact"]["id"])
 
         changed = copy.deepcopy(config)
         changed["image"]["tested_commit"] = current["images"]["generic"]["tested_commit"]
@@ -606,7 +625,11 @@ class AtomicUpdateTests(unittest.TestCase):
     def test_three_boot_vm_uses_one_persistent_overlay_and_read_only_source(self):
         command = qemu_command(1)
         joined = " ".join(command)
-        self.assertIn("file=/output/guest.qcow2,format=qcow2,if=virtio", joined)
+        self.assertIn(
+            "file=/output/guest.qcow2,format=qcow2,if=none,id=symbi-boot-disk",
+            joined)
+        self.assertIn(
+            "virtio-blk-pci,drive=symbi-boot-disk,bootindex=1", joined)
         self.assertNotIn("snapshot=on", joined)
         self.assertIn(
             "file=/inputs/update.raw,format=raw,if=none,id=symbi-update-source,readonly=on",
@@ -625,7 +648,9 @@ class AtomicUpdateTests(unittest.TestCase):
             "unsigned", "wrong-key", "wrong-reference", "altered-signature")}
         for case, command in commands.items():
             joined = " ".join(command)
-            self.assertIn(f"file=/output/negative-{case}.qcow2,format=qcow2,if=virtio", joined)
+            self.assertIn(
+                f"file=/output/negative-{case}.qcow2,format=qcow2,"
+                "if=none,id=symbi-boot-disk", joined)
             self.assertIn(f"path=/output/negative-{case}.json", joined)
             self.assertIn(f"file=/inputs/expected-{case}.json", joined)
             self.assertIn(
@@ -636,13 +661,45 @@ class AtomicUpdateTests(unittest.TestCase):
             self.assertNotIn("file=/output/guest.qcow2", joined)
         self.assertEqual(len({tuple(command) for command in commands.values()}), 4)
         positive = " ".join(positive_qemu_command())
-        self.assertIn("file=/output/same-path-positive.qcow2,format=qcow2,if=virtio", positive)
+        self.assertIn(
+            "file=/output/same-path-positive.qcow2,format=qcow2,"
+            "if=none,id=symbi-boot-disk", positive)
         self.assertIn("path=/output/same-path-positive.json", positive)
         self.assertIn("file=/inputs/expected-positive.json", positive)
         self.assertNotIn("file=/output/guest.qcow2", positive)
         self.assertNotIn("file=/output/negative-", positive)
         with self.assertRaises(ValueError):
             negative_qemu_command("caller-selected")
+
+    def test_all_update_vms_boot_only_the_explicit_overlay(self):
+        commands = [
+            positive_qemu_command(),
+            *(negative_qemu_command(case) for case in (
+                "unsigned", "wrong-key", "wrong-reference", "altered-signature")),
+            *(qemu_command(index) for index in range(3)),
+        ]
+        for command in commands:
+            with self.subTest(report=command[command.index("-chardev") + 1]):
+                drives = [command[index + 1] for index, value in enumerate(command)
+                          if value == "-drive"]
+                devices = [command[index + 1] for index, value in enumerate(command)
+                           if value == "-device"]
+                self.assertEqual(len(drives), 2)
+                self.assertEqual(len(set(drives)), 2)
+                self.assertTrue(any(
+                    value.endswith("if=none,id=symbi-boot-disk") for value in drives))
+                self.assertIn(
+                    "file=/inputs/update.raw,format=raw,if=none,"
+                    "id=symbi-update-source,readonly=on", drives)
+                self.assertEqual(
+                    [value for value in devices if "bootindex=" in value],
+                    ["virtio-blk-pci,drive=symbi-boot-disk,bootindex=1"])
+                self.assertIn(
+                    "virtio-blk-pci,drive=symbi-update-source,serial=SYMBIUPDATE",
+                    devices)
+                self.assertEqual(command.count("-boot"), 1)
+                self.assertEqual(command[command.index("-boot") + 1], "strict=on")
+                self.assertFalse(any("if=virtio" in value for value in command))
 
     def test_guest_status_requires_exact_signed_slots_and_rollback_queue(self):
         phase_status(self.status(self.old), self.old)
@@ -701,7 +758,8 @@ class AtomicUpdateTests(unittest.TestCase):
             "release_qualified": False, "product": "Symbi-Hosted-Update-Probe",
             "nonce": "4" * 32, "expected_sha256": "5" * 64,
             "runner_sha256": "6" * 64, "source_mounted_readonly": True,
-            "source_device": {"path": "/dev/vdb", "TYPE": "ext4",
+            "source_device": {"path": "/dev/vdb", "serial": "SYMBIUPDATE",
+                              "TYPE": "ext4",
                               "LABEL": "SYMBIUPDATE", "UUID": self.source_uuid},
             "same_path_positive_control": {
                 "case": POSITIVE_OVERLAY_CASE, "switch_accepted": True,
@@ -721,6 +779,7 @@ class AtomicUpdateTests(unittest.TestCase):
     def test_same_path_positive_report_binds_success_and_controlled_state(self):
         expected = {"nonce": "4" * 32, "new_digest": self.new,
                     "source_disk": {"filesystem": "ext4", "label": "SYMBIUPDATE",
+                                    "serial": "SYMBIUPDATE",
                                     "uuid": self.source_uuid}}
         report = self.positive_report()
         validate_positive_report(report, expected, "5" * 64, "6" * 64)
@@ -755,7 +814,8 @@ class AtomicUpdateTests(unittest.TestCase):
             "release_qualified": False, "product": "Symbi-Hosted-Update-Probe",
             "nonce": "4" * 32, "expected_sha256": "5" * 64,
             "runner_sha256": "6" * 64, "source_mounted_readonly": True,
-            "source_device": {"path": "/dev/vdb", "TYPE": "ext4",
+            "source_device": {"path": "/dev/vdb", "serial": "SYMBIUPDATE",
+                              "TYPE": "ext4",
                               "LABEL": "SYMBIUPDATE", "UUID": self.source_uuid},
             "negative_control": {
                 "case": case, "switch_rejected": True, "switch_exit_code": 1,
@@ -774,6 +834,7 @@ class AtomicUpdateTests(unittest.TestCase):
         report = self.negative_report()
         expected = {"nonce": "4" * 32,
                     "source_disk": {"filesystem": "ext4", "label": "SYMBIUPDATE",
+                                    "serial": "SYMBIUPDATE",
                                     "uuid": self.source_uuid}}
         validate_negative_report(report, expected, "5" * 64, "6" * 64, "unsigned")
         mutations = []
@@ -798,6 +859,7 @@ class AtomicUpdateTests(unittest.TestCase):
     def test_phase_report_binds_the_exact_source_device(self):
         expected = {"nonce": "4" * 32,
                     "source_disk": {"filesystem": "ext4", "label": "SYMBIUPDATE",
+                                    "serial": "SYMBIUPDATE",
                                     "uuid": self.source_uuid}}
         phase = {"name": "installed", "booted_digest": self.old,
                  "operation": "signed-update-staged", "staged_digest": self.new}
@@ -806,18 +868,28 @@ class AtomicUpdateTests(unittest.TestCase):
             "release_qualified": False, "product": "Symbi-Hosted-Update-Probe",
             "nonce": "4" * 32, "expected_sha256": "5" * 64,
             "runner_sha256": "6" * 64, "source_mounted_readonly": True,
-            "source_device": {"path": "/dev/vdb", "TYPE": "ext4",
+            "source_device": {"path": "/dev/vdb", "serial": "SYMBIUPDATE",
+                              "TYPE": "ext4",
                               "LABEL": "SYMBIUPDATE", "UUID": self.source_uuid},
             "phase": phase,
             "commands": [{"command": ["/usr/bin/bootc", "status", "--json"],
                           "exit_code": 0}],
         }
         validate_phase_report(report, expected, "5" * 64, "6" * 64, phase)
-        for field in ("path", "TYPE", "LABEL", "UUID"):
+        for field in ("path", "serial", "TYPE", "LABEL", "UUID"):
             changed = copy.deepcopy(report)
             changed["source_device"].pop(field)
             with self.subTest(field=field), self.assertRaises(ValueError):
                 validate_phase_report(changed, expected, "5" * 64, "6" * 64, phase)
+        changed = copy.deepcopy(report)
+        changed["source_device"]["serial"] = "OTHER"
+        with self.assertRaises(ValueError):
+            validate_phase_report(changed, expected, "5" * 64, "6" * 64, phase)
+        changed_expected = copy.deepcopy(expected)
+        changed_expected["source_disk"]["serial"] = "OTHER"
+        with self.assertRaises(ValueError):
+            validate_phase_report(report, changed_expected, "5" * 64,
+                                  "6" * 64, phase)
 
     def test_update_service_and_mount_are_bounded_and_offline(self):
         root = Path(__file__).resolve().parents[2]
@@ -825,7 +897,7 @@ class AtomicUpdateTests(unittest.TestCase):
                         (root / "image/atomic/update-o.service").read_text().splitlines()
                         if "=" in line and not line.startswith("#"))
         self.assertNotIn("RequiresMountsFor", settings)
-        self.assertEqual(settings["After"], "local-fs.target systemd-udev-trigger.service")
+        self.assertEqual(settings["After"], "local-fs.target")
         self.assertEqual(settings["RuntimeDirectory"], "symbi-update")
         self.assertEqual(settings["RuntimeDirectoryMode"], "0700")
         self.assertEqual(settings["StateDirectory"], "symbi-update-test")
@@ -833,11 +905,116 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertEqual(settings["MemorySwapMax"], "0")
         self.assertEqual(settings["TasksMax"], "128")
         self.assertFalse((root / "image/atomic/update-fstab.extra").exists())
+        self.assertNotIn("udev", (root / "image/atomic/update-o.service").read_text())
 
     def test_update_device_readiness_wait_is_fixed_and_bounded(self):
-        self.assertEqual(device_settle_command(), [
-            "/usr/bin/udevadm", "settle", "--timeout=30",
-            "--exit-if-exists=/dev/disk/by-id/virtio-SYMBIUPDATE"])
+        self.assertEqual(SOURCE_SERIAL, "SYMBIUPDATE")
+        self.assertEqual(SOURCE_DEVICE_TIMEOUT_SECONDS, 30)
+        source = Path("/dev/vdb")
+        scan = Mock(side_effect=[(None, ["vda"]),
+                                 (source, ["vda", "vdb"])])
+        clock = Mock(side_effect=[0.0, 0.0, 0.1])
+        sleeper = Mock()
+        self.assertEqual(wait_for_source_device(scan=scan, clock=clock,
+                                                sleeper=sleeper),
+                         (source, ["vda", "vdb"]))
+        sleeper.assert_called_once_with(0.25)
+
+        scan = Mock(return_value=(None, ["vda"]))
+        with self.assertRaisesRegex(ValueError, "virtio serial is absent"):
+            wait_for_source_device(scan=scan,
+                                   clock=Mock(side_effect=[0.0, 0.0, 30.0]),
+                                   sleeper=Mock())
+        self.assertEqual(scan.call_count, 1)
+
+    def test_source_device_discovery_binds_exact_serial_and_device_number(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            sys_block, dev_root = root / "sys", root / "dev"
+            sys_block.mkdir()
+            dev_root.mkdir()
+            numbers = {"vda": (252, 0), "vdb": (252, 16)}
+
+            def add(name, serial_value, number):
+                entry = sys_block / name
+                entry.mkdir()
+                (entry / "dev").write_text(f"{number[0]}:{number[1]}\n")
+                if serial_value is not None:
+                    (entry / "serial").write_bytes(serial_value)
+
+            add("vda", b"", numbers["vda"])
+            add("vda1", b"SYMBIUPDATE", (252, 1))
+            add("vdb", b"SYMBIUPDATE", numbers["vdb"])
+            (sys_block / "zram0").mkdir()
+
+            def block_lstat(path):
+                major, minor = numbers[Path(path).name]
+                return Mock(st_mode=stat.S_IFBLK | 0o600,
+                            st_rdev=os.makedev(major, minor))
+
+            source, inventory = discover_source_device(sys_block, dev_root,
+                                                        block_lstat)
+            self.assertEqual(source, dev_root / "vdb")
+            self.assertEqual(inventory, ["vda", "vda1", "vdb", "zram0"])
+
+            (sys_block / "vdb" / "serial").write_bytes(b"symbiupdate")
+            self.assertIsNone(discover_source_device(sys_block, dev_root,
+                                                     block_lstat)[0])
+            (sys_block / "vdb" / "serial").write_bytes(b"SYMBIUPDATE\n")
+            self.assertIsNone(discover_source_device(sys_block, dev_root,
+                                                     block_lstat)[0])
+            (sys_block / "vdb" / "serial").write_bytes(b"SYMBIUPDATE-X")
+            self.assertIsNone(discover_source_device(sys_block, dev_root,
+                                                     block_lstat)[0])
+
+    def test_source_device_discovery_rejects_ambiguity_and_node_substitution(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            sys_block, dev_root = root / "sys", root / "dev"
+            sys_block.mkdir()
+            dev_root.mkdir()
+
+            def add(name, number):
+                entry = sys_block / name
+                entry.mkdir()
+                (entry / "serial").write_bytes(b"SYMBIUPDATE")
+                (entry / "dev").write_text(f"{number[0]}:{number[1]}\n")
+
+            add("vdb", (252, 16))
+            self.assertIsNone(discover_source_device(sys_block, dev_root)[0])
+            (dev_root / "vdb").write_text("not a device")
+            with self.assertRaisesRegex(ValueError, "device node differs"):
+                discover_source_device(sys_block, dev_root)
+            (dev_root / "vdb").unlink()
+            target = dev_root / "target"
+            target.write_text("not a device")
+            (dev_root / "vdb").symlink_to(target)
+            with self.assertRaisesRegex(ValueError, "device node differs"):
+                discover_source_device(sys_block, dev_root)
+
+            mismatch = Mock(st_mode=stat.S_IFBLK | 0o600,
+                            st_rdev=os.makedev(252, 17))
+            with self.assertRaisesRegex(ValueError, "device node differs"):
+                discover_source_device(sys_block, dev_root,
+                                       lambda _path: mismatch)
+
+            add("vdc", (252, 32))
+            with self.assertRaisesRegex(ValueError, "ambiguous"):
+                discover_source_device(sys_block, dev_root,
+                                       lambda _path: mismatch)
+
+    def test_source_device_discovery_rejects_unbounded_or_unsafe_inventory(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            sys_block = Path(temporary)
+            (sys_block / "bad name").mkdir()
+            with self.assertRaisesRegex(ValueError, "invalid block-device inventory"):
+                discover_source_device(sys_block, sys_block)
+        with tempfile.TemporaryDirectory() as temporary:
+            sys_block = Path(temporary)
+            for index in range(65):
+                (sys_block / f"loop{index}").mkdir()
+            with self.assertRaisesRegex(ValueError, "invalid block-device inventory"):
+                discover_source_device(sys_block, sys_block)
 
     def test_source_mount_is_boot_ephemeral_while_phase_state_persists(self):
         self.assertEqual(SOURCE, Path("/run/symbi-update/source"))
@@ -863,6 +1040,171 @@ class AtomicUpdateTests(unittest.TestCase):
             with self.subTest(changed=changed), self.assertRaises(ValueError):
                 validate_source_identity(changed, expected)
 
+    def test_source_mount_observation_binds_kernel_mountinfo_to_the_device(self):
+        raw = (r"46 23 0:1 /cache\040root /run/other\040mount ro - tmpfs "
+               "tmpfs\\134name rw\n"
+               "99 23 0:44 / /run/symbi-update "
+               "rw,nosuid,nodev,noexec - tmpfs runtime rw\n"
+               "47 23 252:16 / /run/symbi-update "
+               "ro,nosuid,nodev,noexec,relatime - ext4 /dev/vdb ro,seclabel\n")
+        observation = source_mount_observation(raw, 47)
+        self.assertEqual(observation, {
+            "mountinfo_sha256": hashlib.sha256(raw.encode()).hexdigest(),
+            "path_match_count": 2,
+            "selected_match_count": 1,
+            "visible_mount_id": 47,
+            "selected_mount_id": 47,
+            "mountpoint": "/run/symbi-update",
+            "root": "/",
+            "fstype": "ext4",
+            "source": "/dev/vdb",
+            "major_minor": "252:16",
+            "options": ["ro", "nosuid", "nodev", "noexec", "relatime"],
+            "super_options": ["ro", "seclabel"],
+        })
+        self.assertEqual(validate_source_mount(
+            observation, Path("/dev/vdb"), (252, 16)), observation)
+
+    def test_source_mount_validation_rejects_changed_controls(self):
+        valid = ("47 23 252:16 / /run/symbi-update "
+                 "ro,nosuid,nodev,noexec,relatime - ext4 /dev/vdb ro,seclabel\n")
+        mutations = {
+            "device number": valid.replace("252:16", "252:17"),
+            "filesystem root": valid.replace("252:16 / /run", "252:16 /subtree /run"),
+            "mountpoint": valid.replace("/run/symbi-update", "/run/other"),
+            "source": valid.replace("/dev/vdb", "/dev/vdc"),
+            "filesystem": valid.replace(" ext4 ", " xfs "),
+            "read only": valid.replace("ro,nosuid", "rw,nosuid"),
+            "nosuid": valid.replace(",nosuid", ""),
+            "nodev": valid.replace(",nodev", ""),
+            "noexec": valid.replace(",noexec", ""),
+        }
+        for name, raw in mutations.items():
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                validate_source_mount(
+                    source_mount_observation(raw, 47), Path("/dev/vdb"), (252, 16))
+
+    def test_source_mount_observation_rejects_ambiguous_or_unsafe_input(self):
+        valid = ("47 23 252:16 / /run/symbi-update "
+                 "ro,nosuid,nodev,noexec - ext4 /dev/vdb ro,seclabel\n")
+        cases = {
+            "duplicate selected ID": valid + valid,
+            "malformed escape": valid.replace("symbi-update", r"symbi\041update"),
+            "unknown escape": valid.replace("/dev/vdb", r"/dev/vd\142"),
+            "nul": valid.replace("ext4", "ext4\x00"),
+            "oversized": valid + ("x" * MOUNTINFO_MAX_BYTES),
+        }
+        for name, raw in cases.items():
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                observation = source_mount_observation(raw, 47)
+                validate_source_mount(observation, Path("/dev/vdb"), (252, 16))
+
+    def test_visible_mount_id_selection_fails_closed_without_guessing(self):
+        visible = ("47 23 252:16 / /run/symbi-update "
+                   "ro,nosuid,nodev,noexec - ext4 /dev/vdb ro,seclabel\n")
+        hidden = ("99 23 0:44 / /run/symbi-update "
+                  "rw,nosuid,nodev,noexec - tmpfs runtime rw\n")
+        selected = source_mount_observation(visible + hidden, 47)
+        self.assertEqual(selected["path_match_count"], 2)
+        self.assertEqual(selected["visible_mount_id"], 47)
+        self.assertEqual(selected["selected_mount_id"], 47)
+        self.assertEqual(selected["source"], "/dev/vdb")
+        for raw, visible_id in (
+            (visible + visible, 47),
+            (visible + hidden, 48),
+        ):
+            with self.subTest(visible_id=visible_id), self.assertRaises(ValueError):
+                validate_source_mount(
+                    source_mount_observation(raw, visible_id),
+                    Path("/dev/vdb"), (252, 16))
+
+    def test_fdinfo_mount_id_parser_is_bounded_and_unambiguous(self):
+        raw = "pos:\t0\nflags:\t012000000\nmnt_id:\t47\nino:\t123\n"
+        self.assertEqual(parse_visible_mount_id(raw), 47)
+        mutations = {
+            "missing": raw.replace("mnt_id:\t47\n", ""),
+            "duplicate": raw + "mnt_id:\t47\n",
+            "negative": raw.replace("mnt_id:\t47", "mnt_id:\t-1"),
+            "leading zero": raw.replace("mnt_id:\t47", "mnt_id:\t047"),
+            "non-numeric": raw.replace("mnt_id:\t47", "mnt_id:\tabc"),
+            "nul": raw.replace("mnt_id", "mnt\x00_id"),
+            "no newline": raw.rstrip("\n"),
+            "oversized": raw + ("x" * FDINFO_MAX_BYTES),
+        }
+        for name, changed in mutations.items():
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                parse_visible_mount_id(changed)
+
+    def test_visible_mount_open_binds_fdinfo_mountinfo_and_named_path(self):
+        raw = ("47 23 252:16 / /run/symbi-update "
+               "ro,nosuid,nodev,noexec - ext4 /dev/vdb ro,seclabel\n")
+        opened = Mock(st_mode=stat.S_IFDIR | 0o700, st_dev=11, st_ino=22)
+        named = Mock(st_mode=stat.S_IFDIR | 0o700, st_dev=11, st_ino=22)
+        close = Mock()
+        opener = Mock(return_value=9)
+        observation = observe_visible_source_mount(
+            opener=opener, descriptor_stat=Mock(return_value=opened),
+            path_lstat=Mock(side_effect=[named, named]), closer=close,
+            fdinfo_reader=Mock(return_value=47), mountinfo_reader=Mock(return_value=raw))
+        self.assertEqual(observation["selected_mount_id"], 47)
+        opened_path, opened_flags = opener.call_args.args
+        self.assertEqual(opened_path, SOURCE.parent)
+        self.assertTrue(opened_flags & os.O_PATH)
+        self.assertTrue(opened_flags & os.O_DIRECTORY)
+        self.assertTrue(opened_flags & os.O_NOFOLLOW)
+        close.assert_called_once_with(9)
+
+        symlink = Mock(st_mode=stat.S_IFLNK | 0o777, st_dev=11, st_ino=22)
+        changed = Mock(st_mode=stat.S_IFDIR | 0o700, st_dev=11, st_ino=23)
+        for name, named_states in {
+            "symlink": [symlink],
+            "descriptor mismatch": [changed],
+            "changed path": [named, changed],
+        }.items():
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                observe_visible_source_mount(
+                    opener=Mock(return_value=9),
+                    descriptor_stat=Mock(return_value=opened),
+                    path_lstat=Mock(side_effect=named_states), closer=Mock(),
+                    fdinfo_reader=Mock(return_value=47),
+                    mountinfo_reader=Mock(return_value=raw))
+
+    def test_real_host_fdinfo_mount_id_selects_the_visible_root_mount(self):
+        descriptor = os.open("/", os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC)
+        try:
+            visible_mount_id = read_visible_mount_id(descriptor)
+        finally:
+            os.close(descriptor)
+        observation = mount_observation(
+            Path("/proc/self/mountinfo").read_text(), Path("/"), visible_mount_id)
+        self.assertEqual(observation["selected_match_count"], 1)
+        self.assertEqual(observation["selected_mount_id"], visible_mount_id)
+        self.assertEqual(observation["mountpoint"], "/")
+
+    def test_mounted_device_binding_requires_one_real_mount_of_the_block_node(self):
+        source = Mock(st_mode=stat.S_IFBLK | 0o600,
+                      st_rdev=os.makedev(252, 16))
+        mounted = Mock(st_mode=stat.S_IFDIR | 0o755,
+                       st_dev=os.makedev(252, 16))
+        kwargs = {
+            "device_lstat": Mock(return_value=source),
+            "mount_stat": Mock(return_value=mounted),
+            "is_mount": Mock(return_value=True),
+        }
+        self.assertEqual(validate_mounted_device(
+            Path("/dev/vdb"), SOURCE.parent, **kwargs), (252, 16))
+        for name, change in {
+            "not mounted": {"is_mount": Mock(return_value=False)},
+            "not block": {"device_lstat": Mock(return_value=Mock(
+                st_mode=stat.S_IFREG | 0o600, st_rdev=os.makedev(252, 16)))},
+            "other mounted device": {"mount_stat": Mock(return_value=Mock(
+                st_mode=stat.S_IFDIR | 0o755, st_dev=os.makedev(252, 17)))},
+        }.items():
+            changed = dict(kwargs)
+            changed.update(change)
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                validate_mounted_device(Path("/dev/vdb"), SOURCE.parent, **changed)
+
     def test_existing_atomic_workflow_downloads_both_exact_artifacts(self):
         root = Path(__file__).resolve().parents[2]
         workflow = (root / ".github/workflows/atomic-boot.yml").read_text()
@@ -876,8 +1218,8 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertIn("SYMBI_QUALIFICATION=update", script)
         self.assertIn("--property=MemoryMax=5G", script)
         self.assertIn("'memory.max':'5368709120'", hosted)
-        self.assertIn("qualification not in ('','landlock','update','containers')", hosted)
-        self.assertIn("qualification=='landlock'", hosted)
+        self.assertIn("qualification not in ('','update')", hosted)
+        self.assertNotIn("qualification=='landlock'", hosted)
         self.assertIn("qualification=='update'", hosted)
 
     def test_only_the_fixed_atomic_controller_can_use_the_extended_timeout(self):

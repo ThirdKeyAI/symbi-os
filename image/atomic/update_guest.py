@@ -12,7 +12,19 @@ import sys
 import time
 
 SOURCE = Path("/run/symbi-update/source")
-SOURCE_DEVICE = Path("/dev/disk/by-id/virtio-SYMBIUPDATE")
+SOURCE_SERIAL = "SYMBIUPDATE"
+SOURCE_SERIAL_BYTES = b"SYMBIUPDATE"
+SOURCE_DEVICE_TIMEOUT_SECONDS = 30
+SYS_BLOCK = Path("/sys/class/block")
+DEV_ROOT = Path("/dev")
+MOUNTINFO = Path("/proc/self/mountinfo")
+MOUNTINFO_MAX_BYTES = 256 * 1024
+MOUNTINFO_MAX_LINES = 4096
+MOUNTINFO_MAX_LINE_BYTES = 8192
+FDINFO = Path("/proc/self/fdinfo")
+FDINFO_MAX_BYTES = 4096
+FDINFO_MAX_LINES = 64
+FDINFO_MAX_LINE_BYTES = 512
 NEGATIVE_SOURCE = Path("/run/symbi-update-negative/source")
 NEGATIVE_CASES = ("unsigned", "wrong-key", "wrong-reference", "altered-signature")
 POSITIVE_OVERLAY_CASE = "valid-signature"
@@ -58,10 +70,403 @@ def validate_source_identity(raw, expected):
     return selected
 
 
-def device_settle_command():
-    """Wait a bounded time for the one fixed virtio source identity."""
-    return ["/usr/bin/udevadm", "settle", "--timeout=30",
-            "--exit-if-exists=" + str(SOURCE_DEVICE)]
+_MOUNTINFO_ESCAPES = {
+    "040": " ",
+    "011": "\t",
+    "012": "\n",
+    "134": "\\",
+}
+
+
+def _decode_mountinfo_field(value):
+    """Decode only the four escapes emitted by procfs mountinfo."""
+    if (not isinstance(value, str) or not 1 <= len(value) <= 4096
+            or "\x00" in value or "\r" in value or "\n" in value):
+        raise ValueError("invalid mountinfo field")
+    decoded = []
+    offset = 0
+    while offset < len(value):
+        if value[offset] != "\\":
+            decoded.append(value[offset])
+            offset += 1
+            continue
+        code = value[offset + 1:offset + 4]
+        if len(code) != 3 or code not in _MOUNTINFO_ESCAPES:
+            raise ValueError("invalid mountinfo escape")
+        decoded.append(_MOUNTINFO_ESCAPES[code])
+        offset += 4
+    result = "".join(decoded)
+    if "\x00" in result:
+        raise ValueError("invalid decoded mountinfo field")
+    return result
+
+
+def _mountinfo_options(value):
+    if (not isinstance(value, str) or not 1 <= len(value) <= 4096
+            or "\x00" in value or any(character.isspace() for character in value)):
+        raise ValueError("invalid mountinfo options")
+    options = value.split(",")
+    if (not 1 <= len(options) <= 128
+            or any(not option or len(option) > 4096 for option in options)):
+        raise ValueError("ambiguous mountinfo options")
+    return options
+
+
+def mount_observation(raw, mountpoint, visible_mount_id):
+    """Select the kernel row named by an opened directory's visible mount ID."""
+    mountpoint = Path(mountpoint)
+    if (not mountpoint.is_absolute() or not isinstance(raw, str)
+            or type(visible_mount_id) is not int or not 1 <= visible_mount_id <= 9999999999):
+        raise ValueError("invalid visible mount observation input")
+    try:
+        encoded = raw.encode("utf-8")
+    except UnicodeEncodeError as error:
+        raise ValueError("invalid mountinfo encoding") from error
+    if (not 0 < len(encoded) <= MOUNTINFO_MAX_BYTES or not raw.endswith("\n")
+            or "\x00" in raw or "\r" in raw):
+        raise ValueError("invalid or oversized mountinfo")
+    lines = raw[:-1].split("\n")
+    if not 1 <= len(lines) <= MOUNTINFO_MAX_LINES:
+        raise ValueError("invalid mountinfo line count")
+    matches = []
+    for line in lines:
+        if (not line or len(line.encode("utf-8")) > MOUNTINFO_MAX_LINE_BYTES
+                or "\t" in line):
+            raise ValueError("invalid mountinfo line")
+        fields = line.split(" ")
+        if (not 10 <= len(fields) <= 128 or any(not field for field in fields)
+                or len([field for field in fields if field == "-"]) != 1):
+            raise ValueError("malformed mountinfo line")
+        separator = fields.index("-")
+        if separator < 6 or len(fields) != separator + 4:
+            raise ValueError("malformed mountinfo separator")
+        if (re.fullmatch(r"(0|[1-9][0-9]{0,9})", fields[0]) is None
+                or re.fullmatch(r"(0|[1-9][0-9]{0,9})", fields[1]) is None
+                or re.fullmatch(r"(0|[1-9][0-9]{0,6}):(0|[1-9][0-9]{0,6})",
+                                fields[2]) is None
+                or re.fullmatch(r"[A-Za-z0-9_.+-]{1,128}",
+                                fields[separator + 1]) is None
+                or any(len(field) > 4096 for field in fields[6:separator])):
+            raise ValueError("invalid mountinfo identity")
+        root = _decode_mountinfo_field(fields[3])
+        observed_mountpoint = _decode_mountinfo_field(fields[4])
+        source = _decode_mountinfo_field(fields[separator + 2])
+        options = _mountinfo_options(fields[5])
+        super_options = _mountinfo_options(fields[separator + 3])
+        if observed_mountpoint == str(mountpoint):
+            matches.append({
+                "mount_id": int(fields[0]),
+                "mountpoint": observed_mountpoint,
+                "root": root,
+                "fstype": fields[separator + 1],
+                "source": source,
+                "major_minor": fields[2],
+                "options": options,
+                "super_options": super_options,
+            })
+    selected = [entry for entry in matches if entry["mount_id"] == visible_mount_id]
+    observation = {
+        "mountinfo_sha256": hashlib.sha256(encoded).hexdigest(),
+        "path_match_count": len(matches),
+        "selected_match_count": len(selected),
+        "visible_mount_id": visible_mount_id,
+        "selected_mount_id": visible_mount_id if selected else None,
+    }
+    if len(selected) == 1:
+        selected_entry = dict(selected[0])
+        observation["selected_mount_id"] = selected_entry.pop("mount_id")
+        observation.update(selected_entry)
+    return observation
+
+
+def source_mount_observation(raw, visible_mount_id, mountpoint=SOURCE.parent):
+    """Observe only the fixed update mountpoint selected by its open descriptor."""
+    if Path(mountpoint) != SOURCE.parent:
+        raise ValueError("fixed update mountpoint required")
+    return mount_observation(raw, mountpoint, visible_mount_id)
+
+
+def validate_source_mount(observation, source_device, device_number):
+    """Bind one mountinfo entry to the exact direct block node and controls."""
+    required = {"mountinfo_sha256", "path_match_count", "selected_match_count",
+                "visible_mount_id", "selected_mount_id", "mountpoint", "root",
+                "fstype", "source", "major_minor", "options", "super_options"}
+    source_device = Path(source_device)
+    if (not isinstance(observation, dict) or set(observation) != required
+            or type(observation.get("path_match_count")) is not int
+            or observation.get("path_match_count") < 1
+            or observation.get("selected_match_count") != 1
+            or observation.get("visible_mount_id") != observation.get("selected_mount_id")
+            or re.fullmatch(r"[a-f0-9]{64}",
+                            observation.get("mountinfo_sha256", "")) is None
+            or not isinstance(device_number, tuple) or len(device_number) != 2
+            or any(type(value) is not int or not 0 <= value <= 9999999
+                   for value in device_number)
+            or re.fullmatch(r"/dev/vd[a-z]{1,3}", str(source_device)) is None):
+        raise ValueError("ambiguous update source mount observation")
+    options = observation.get("options")
+    super_options = observation.get("super_options")
+    if (not isinstance(options, list) or not isinstance(super_options, list)
+            or len(options) != len(set(options))
+            or len(super_options) != len(set(super_options))
+            or any(not isinstance(value, str) or not value or len(value) > 4096
+                   for value in options + super_options)
+            or observation.get("mountpoint") != str(SOURCE.parent)
+            or observation.get("root") != "/"
+            or observation.get("fstype") != "ext4"
+            or observation.get("source") != str(source_device)
+            or observation.get("major_minor") != f"{device_number[0]}:{device_number[1]}"
+            or "rw" in options
+            or not {"ro", "nosuid", "nodev", "noexec"}.issubset(set(options))):
+        raise ValueError("update source mount controls changed")
+    return observation
+
+
+def parse_visible_mount_id(raw):
+    """Parse one canonical mnt_id from a bounded procfs fdinfo record."""
+    if not isinstance(raw, str):
+        raise ValueError("invalid fdinfo input")
+    try:
+        encoded = raw.encode("ascii")
+    except UnicodeEncodeError as error:
+        raise ValueError("invalid fdinfo encoding") from error
+    if (not 0 < len(encoded) <= FDINFO_MAX_BYTES or not raw.endswith("\n")
+            or "\x00" in raw or "\r" in raw):
+        raise ValueError("invalid or oversized fdinfo")
+    lines = raw[:-1].split("\n")
+    if not 1 <= len(lines) <= FDINFO_MAX_LINES:
+        raise ValueError("invalid fdinfo line count")
+    mount_ids = []
+    for line in lines:
+        if (not line or len(line.encode("ascii")) > FDINFO_MAX_LINE_BYTES
+                or ":" not in line):
+            raise ValueError("malformed fdinfo line")
+        key, value = line.split(":", 1)
+        if re.fullmatch(r"[a-z_]{1,64}", key) is None or len(value) > 4096:
+            raise ValueError("invalid fdinfo field")
+        if key == "mnt_id":
+            match = re.fullmatch(r"[\t ]+(0|[1-9][0-9]{0,9})", value)
+            if match is None:
+                raise ValueError("invalid fdinfo mount ID")
+            mount_ids.append(int(match.group(1)))
+    if len(mount_ids) != 1 or mount_ids[0] < 1:
+        raise ValueError("ambiguous fdinfo mount ID")
+    return mount_ids[0]
+
+
+def read_visible_mount_id(descriptor):
+    """Read the fixed procfs fdinfo record for one still-open descriptor."""
+    if type(descriptor) is not int or descriptor < 0:
+        raise ValueError("invalid visible mount descriptor")
+    path = FDINFO / str(descriptor)
+    flags = os.O_RDONLY | os.O_CLOEXEC
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    fdinfo = os.open(path, flags)
+    try:
+        chunks = []
+        total = 0
+        while total <= FDINFO_MAX_BYTES:
+            chunk = os.read(fdinfo, min(4096, FDINFO_MAX_BYTES + 1 - total))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            total += len(chunk)
+    finally:
+        os.close(fdinfo)
+    if total > FDINFO_MAX_BYTES:
+        raise ValueError("oversized fdinfo")
+    try:
+        raw = b"".join(chunks).decode("ascii")
+    except UnicodeDecodeError as error:
+        raise ValueError("invalid fdinfo encoding") from error
+    return parse_visible_mount_id(raw)
+
+
+def observe_visible_source_mount(*, opener=None, descriptor_stat=None,
+                                 path_lstat=None, closer=None,
+                                 fdinfo_reader=None, mountinfo_reader=None):
+    """Open the fixed path and select the row the kernel exposes through that fd."""
+    opener = os.open if opener is None else opener
+    descriptor_stat = os.fstat if descriptor_stat is None else descriptor_stat
+    path_lstat = os.lstat if path_lstat is None else path_lstat
+    closer = os.close if closer is None else closer
+    fdinfo_reader = read_visible_mount_id if fdinfo_reader is None else fdinfo_reader
+    mountinfo_reader = read_mountinfo if mountinfo_reader is None else mountinfo_reader
+    required_flags = (getattr(os, "O_PATH", 0) | os.O_DIRECTORY | os.O_CLOEXEC
+                      | getattr(os, "O_NOFOLLOW", 0))
+    if not getattr(os, "O_PATH", 0) or not getattr(os, "O_NOFOLLOW", 0):
+        raise ValueError("kernel path-only no-follow open is unavailable")
+    descriptor = opener(SOURCE.parent, required_flags)
+    try:
+        opened = descriptor_stat(descriptor)
+        before = path_lstat(SOURCE.parent)
+        identity = lambda info: (info.st_dev, info.st_ino, stat.S_IFMT(info.st_mode))
+        if (not stat.S_ISDIR(opened.st_mode) or not stat.S_ISDIR(before.st_mode)
+                or identity(opened) != identity(before)):
+            raise ValueError("visible update mount path differs from its descriptor")
+        visible_mount_id = fdinfo_reader(descriptor)
+        observation = source_mount_observation(mountinfo_reader(), visible_mount_id)
+        after = path_lstat(SOURCE.parent)
+        if not stat.S_ISDIR(after.st_mode) or identity(after) != identity(opened):
+            raise ValueError("visible update mount path changed during observation")
+        return observation
+    finally:
+        closer(descriptor)
+
+
+def validate_mounted_device(source_device, mountpoint, *, device_lstat=None,
+                            mount_stat=None, is_mount=None):
+    """Require the mounted directory and direct block node to share a device ID."""
+    source_device, mountpoint = Path(source_device), Path(mountpoint)
+    if (re.fullmatch(r"/dev/vd[a-z]{1,3}", str(source_device)) is None
+            or mountpoint != SOURCE.parent):
+        raise ValueError("fixed update source device and mountpoint required")
+    device_lstat = os.lstat if device_lstat is None else device_lstat
+    mount_stat = os.stat if mount_stat is None else mount_stat
+    is_mount = os.path.ismount if is_mount is None else is_mount
+    device = device_lstat(source_device)
+    mounted = mount_stat(mountpoint)
+    if (not stat.S_ISBLK(device.st_mode) or not stat.S_ISDIR(mounted.st_mode)
+            or not is_mount(mountpoint)):
+        raise ValueError("update source is not a direct block-device mount")
+    device_number = (os.major(device.st_rdev), os.minor(device.st_rdev))
+    mounted_number = (os.major(mounted.st_dev), os.minor(mounted.st_dev))
+    if mounted_number != device_number:
+        raise ValueError("mounted update source device number differs")
+    return device_number
+
+
+def read_mountinfo(path=MOUNTINFO):
+    """Read the current mount namespace table with a hard byte ceiling."""
+    if Path(path) != MOUNTINFO:
+        raise ValueError("fixed mountinfo path required")
+    flags = os.O_RDONLY | os.O_CLOEXEC
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    descriptor = os.open(path, flags)
+    try:
+        chunks = []
+        total = 0
+        while total <= MOUNTINFO_MAX_BYTES:
+            chunk = os.read(descriptor, min(65536, MOUNTINFO_MAX_BYTES + 1 - total))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            total += len(chunk)
+    finally:
+        os.close(descriptor)
+    if total > MOUNTINFO_MAX_BYTES:
+        raise ValueError("oversized mountinfo")
+    try:
+        return b"".join(chunks).decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError("invalid mountinfo encoding") from error
+
+
+def _sysfs_bytes(path, limit):
+    """Read one bounded sysfs attribute without following its final component."""
+    flags = os.O_RDONLY | os.O_CLOEXEC
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    try:
+        descriptor = os.open(path, flags)
+    except FileNotFoundError:
+        return None
+    try:
+        return os.read(descriptor, limit + 1)
+    finally:
+        os.close(descriptor)
+
+
+def _sysfs_value(path):
+    """Read one small ASCII sysfs line."""
+    raw = _sysfs_bytes(path, 128)
+    if raw is None:
+        return None
+    if len(raw) > 128 or b"\x00" in raw or b"\r" in raw:
+        raise ValueError("invalid block-device sysfs attribute")
+    if raw.endswith(b"\n"):
+        raw = raw[:-1]
+    if b"\n" in raw:
+        raise ValueError("invalid block-device sysfs attribute")
+    try:
+        value = raw.decode("ascii")
+    except UnicodeDecodeError as error:
+        raise ValueError("invalid block-device sysfs attribute") from error
+    if not value:
+        raise ValueError("empty block-device sysfs attribute")
+    return value
+
+
+def _block_serial(path):
+    """Read only enough bytes to compare the kernel's exact virtio serial."""
+    return _sysfs_bytes(path, len(SOURCE_SERIAL_BYTES))
+
+
+def discover_source_device(sys_block=SYS_BLOCK, dev_root=DEV_ROOT, device_lstat=None):
+    """Find one virtio disk by exact kernel serial and bind its device node."""
+    sys_block, dev_root = Path(sys_block), Path(dev_root)
+    device_lstat = os.lstat if device_lstat is None else device_lstat
+    entries = list(sys_block.iterdir())
+    names = sorted(path.name for path in entries)
+    if (not names or len(names) > 64
+            or len(names) != len(set(names))
+            or any(re.fullmatch(r"[A-Za-z0-9_.!-]{1,128}", name) is None
+                   for name in names)):
+        raise ValueError("invalid block-device inventory")
+    matches = []
+    for name in names:
+        if re.fullmatch(r"vd[a-z]{1,3}", name) is None:
+            continue
+        entry = sys_block / name
+        if _block_serial(entry / "serial") == SOURCE_SERIAL_BYTES:
+            matches.append(name)
+    if len(matches) > 1:
+        raise ValueError("ambiguous update source virtio serial")
+    if not matches:
+        return None, names
+    name = matches[0]
+    major_minor = _sysfs_value(sys_block / name / "dev")
+    if major_minor is None:
+        return None, names
+    match = re.fullmatch(r"(0|[1-9][0-9]{0,6}):(0|[1-9][0-9]{0,6})",
+                         major_minor)
+    if match is None:
+        raise ValueError("invalid update source device number")
+    major, minor = int(match[1]), int(match[2])
+    device = dev_root / name
+    try:
+        info = device_lstat(device)
+    except FileNotFoundError:
+        return None, names
+    if (not stat.S_ISBLK(info.st_mode)
+            or (os.major(info.st_rdev), os.minor(info.st_rdev)) != (major, minor)):
+        raise ValueError("update source device node differs from sysfs")
+    return device, names
+
+
+def wait_for_source_device(*, scan=None, clock=None, sleeper=None,
+                           timeout=SOURCE_DEVICE_TIMEOUT_SECONDS):
+    """Poll the kernel block inventory for a bounded time without udev state."""
+    if type(timeout) is not int or not 1 <= timeout <= SOURCE_DEVICE_TIMEOUT_SECONDS:
+        raise ValueError("invalid update source discovery timeout")
+    scan = discover_source_device if scan is None else scan
+    clock = time.monotonic if clock is None else clock
+    sleeper = time.sleep if sleeper is None else sleeper
+    deadline = clock() + timeout
+    first_scan = True
+    while True:
+        if not first_scan and clock() >= deadline:
+            raise ValueError("fixed update source virtio serial is absent")
+        first_scan = False
+        device, inventory = scan()
+        if device is not None:
+            return device, inventory
+        remaining = deadline - clock()
+        if remaining <= 0:
+            raise ValueError("fixed update source virtio serial is absent")
+        sleeper(min(0.25, remaining))
 
 
 def image_digest(entry, expected):
@@ -173,8 +578,11 @@ def main():
         raise ValueError("oversized update credential")
     expected = json.loads(expected_path.read_bytes())
     old, new = expected["old_digest"], expected["new_digest"]
+    source_expected = expected.get("source_disk")
     if (not exact_digest(old) or not exact_digest(new) or old == new
-            or not re.fullmatch(r"[a-f0-9]{32}", expected["nonce"])):
+            or not re.fullmatch(r"[a-f0-9]{32}", expected["nonce"])
+            or not isinstance(source_expected, dict)
+            or source_expected.get("serial") != SOURCE_SERIAL):
         raise ValueError("invalid update expectation")
     record = {"schema": 1, "passed": False, "guest_booted": True,
               "release_qualified": False, "product": product,
@@ -202,22 +610,23 @@ def main():
             raise ValueError("update guest gained a network interface")
         if run(["/usr/sbin/getenforce"]).strip() != "Enforcing":
             raise ValueError("SELinux is not enforcing")
-        run(device_settle_command(), timeout=40, check=False)
-        settle_exit = record["commands"][-1]["exit_code"]
-        block_devices = sorted(path.name for path in Path("/sys/class/block").iterdir())
-        if (not block_devices or len(block_devices) > 64
-                or any(re.fullmatch(r"[A-Za-z0-9_.!-]{1,128}", name) is None
-                       for name in block_devices)):
-            raise ValueError("invalid block-device inventory")
+        observed_devices = []
+
+        def scan_source():
+            device, inventory = discover_source_device()
+            observed_devices[:] = inventory
+            return device, inventory
+
+        try:
+            source_device, block_devices = wait_for_source_device(scan=scan_source)
+        except ValueError:
+            if observed_devices:
+                record["block_devices"] = observed_devices
+            raise
         record["block_devices"] = block_devices
-        if settle_exit != 0 or not SOURCE_DEVICE.is_symlink():
-            raise ValueError("fixed update source block-device link is absent")
-        source_device = SOURCE_DEVICE.resolve(strict=True)
-        if not stat.S_ISBLK(source_device.stat().st_mode):
-            raise ValueError("fixed update source is not a block device")
         identity = validate_source_identity(
-            run(["/usr/sbin/blkid", "-p", "-o", "export", str(SOURCE_DEVICE)]),
-            expected.get("source_disk"))
+            run(["/usr/sbin/blkid", "-p", "-o", "export", str(source_device)]),
+            source_expected)
         mountpoint = SOURCE.parent.lstat()
         if (not stat.S_ISDIR(mountpoint.st_mode) or stat.S_IMODE(mountpoint.st_mode) != 0o700
                 or mountpoint.st_uid != 0 or mountpoint.st_gid != 0
@@ -227,18 +636,15 @@ def main():
             if next(entries, None) is not None:
                 raise ValueError("update runtime mount point is not empty")
         run(["/usr/bin/mount", "-t", "ext4", "-o", "ro,nosuid,nodev,noexec",
-             str(SOURCE_DEVICE), str(SOURCE.parent)])
+             str(source_device), str(SOURCE.parent)])
         if not os.statvfs(SOURCE).f_flag & os.ST_RDONLY:
             raise ValueError("update source is writable")
-        mount = run(["/usr/bin/findmnt", "-n", "-o", "SOURCE,FSTYPE,OPTIONS",
-                     "--target", str(SOURCE)]).split()
-        mounted_source = mount[0].split("[", 1)[0] if mount else ""
-        if (len(mount) != 3 or Path(mounted_source).resolve(strict=True) != source_device
-                or mount[1] != "ext4"
-                or not {"ro", "nosuid", "nodev", "noexec"}.issubset(
-                    set(mount[2].split(",")))):
-            raise ValueError("update source mount controls changed")
-        record["source_device"] = {"path": str(source_device), **identity}
+        observation = observe_visible_source_mount()
+        record["source_mount_observation"] = observation
+        device_number = validate_mounted_device(source_device, SOURCE.parent)
+        validate_source_mount(observation, source_device, device_number)
+        record["source_device"] = {"path": str(source_device),
+                                   "serial": SOURCE_SERIAL, **identity}
         manifest = SOURCE / "manifest.json"
         signature = SOURCE / "signature-1"
         for path in (manifest, signature):
