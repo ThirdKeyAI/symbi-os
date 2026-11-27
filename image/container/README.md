@@ -106,10 +106,31 @@ contract beside it. Its record binds the hosted source/run identity, cgroup and
 zero-OOM observation; native preflight also requires the successful final unit
 result and zero swap. Wrong run, head, artifact, ZIP/manifest/contract/OCI hash,
 signature claim, variant, linked path or resource record fails before an install
-disk is allocated. The
-installed-image boot and six-profile native controller remain a separate gate,
-and the workflow still fails closed before allocating its 60 GiB disk until that
-controller is bound.
+disk is allocated.
+
+The hosted Atomic controller now binds the next stage. Once the reviewed slot
+contains a real selected producer, it loads only that streamed OCI archive,
+requires the selected image ID and manifest digest, verifies the opaque OCI
+layout, and applies the existing ephemeral offline test signature with its
+positive and negative policy controls. It then uses the existing `bootc`
+installer and first offline QEMU boot. The booted guest checks every runsc path
+and hash plus `/etc/docker/daemon.json` from the generated
+`fedora-runtime.lock.json` using descriptor-relative traversal that rejects
+links in every path component; it also requires the unchanged source RPM
+inventory.
+The outer native controller remains at 4 GiB, two CPUs and zero swap, matching
+the existing Landlock gate. A successful observation records only a candidate
+boot pass: `qualified`, `os_qualified` and `release_qualified` stay false, and
+`native-fedora-six-run-matrix`, managed-route, escape-suite and review blockers
+remain. This stage does not invoke the daemon/fixture controller, and no fixture
+profile runs. Its bounded evidence records `candidate_boot_passed=true`, runs
+cleanup, and then leaves the overall qualification workflow nonzero until the
+six-profile controller and remaining gates pass.
+
+The committed selector is still pending, so this install/boot path has not run
+against a real derived artifact. No native-containment result can be inferred
+until the producer and selector are retained and the later six-profile
+controller passes.
 
 `gvisor-inputs.json` fixes release `release-20261123.1`, its commit and tag
 object, the complete x86_64 bzip2 archive, the publisher checksum list, license,

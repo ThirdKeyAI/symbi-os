@@ -654,10 +654,17 @@ class HostedLandlock(unittest.TestCase):
         boot = (ROOT / "image/qualification/boot.py").read_text()
         service = (ROOT / "image/qualification/l.service").read_text()
         wrapper = (ROOT / "scripts/check-landlock-qualification.sh").read_text()
+        container_wrapper = (ROOT / "scripts/check-container-qualification.sh").read_text()
+        atomic = (ROOT / "image/atomic/hosted.py").read_text()
         workflow = (ROOT / ".github/workflows/landlock-qualification.yml").read_text()
         self.assertIn("time.monotonic() - started >= 5700", boot)
         self.assertIn("RuntimeMaxSec=95min", service)
         self.assertIn("RuntimeMaxSec=145min", wrapper)
+        self.assertIn("MemoryMax=4G", wrapper)
+        self.assertIn("MemoryMax=4G", container_wrapper)
+        self.assertIn("qualification in ('landlock','containers')", atomic)
+        self.assertIn("'4294967296'", atomic)
+        self.assertIn("else '5368709120'", atomic)
         self.assertIn("timeout-minutes: 165", workflow)
 
     def test_bounded_public_report_is_authenticated_and_expanded(self):

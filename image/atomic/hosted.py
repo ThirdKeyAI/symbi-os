@@ -75,6 +75,10 @@ RETAINED_RECONCILIATION_CHECKS = [
     'The exact complete desktop-image lock, generic artifact, image source and manifest match',
     'Installed inputs, boot inputs and cleanup passed without swap, OOM or OOM kill',
 ]
+CONTAINER_QUALIFICATION_BLOCKERS = (
+    'native-fedora-six-run-matrix', 'managed-route-evidence',
+    'escape-suite-evidence', 'required-review',
+)
 RETAINED_BOOT_INPUT_KEYS = {
     'schema', 'os_qualified', 'guest_booted', 'uid', 'cap_eff',
     'no_new_privileges', 'root_readonly', 'interfaces', 'limits', 'os',
@@ -474,6 +478,29 @@ def validate_retained_preflight(root, readiness, selected, manifest, expected):
     return reports
 
 
+def stop_after_container_candidate_boot(record,observation):
+    """Retain the first-boot result while making incomplete qualification fail."""
+    blockers=list(CONTAINER_QUALIFICATION_BLOCKERS)
+    if (not isinstance(record,dict) or not isinstance(observation,dict)
+            or record.get('container_preflight',{}).get('blockers')!=blockers):
+        raise ValueError('Container candidate boot lost an explicit qualification blocker')
+    record.update({
+        'passed':False,
+        'qualified':False,
+        'container_qualified':False,
+        'os_qualified':False,
+        'release_qualified':False,
+        'native_fixture_matrix_passed':False,
+        'managed_route_qualified':False,
+        'escape_suite_qualified':False,
+        'candidate_boot_passed':True,
+        'container_candidate_observation':observation,
+        'remaining_blockers':blockers,
+    })
+    raise ValueError('Container candidate boot passed; qualification remains blocked: '
+                     +','.join(blockers))
+
+
 def main():
     qualification=os.environ.get('SYMBI_QUALIFICATION','')
     if (os.environ.get('GITHUB_ACTIONS')!='true' or os.environ.get('RUNNER_ENVIRONMENT')!='github-hosted'
@@ -489,7 +516,10 @@ def main():
             or not group.name.endswith('.service') or (group/'cgroup.procs').read_text().strip()):
         raise ValueError('Unexpected delegated installer controller')
     limits={n:(group/n).read_text().strip() for n in ('memory.max','memory.swap.max','cpu.max','pids.max')}
-    if limits!={'memory.max':'5368709120','memory.swap.max':'0','cpu.max':'200000 100000','pids.max':'256'}:
+    expected_limits={'memory.max':('4294967296' if qualification in ('landlock','containers')
+                                   else '5368709120'),
+                     'memory.swap.max':'0','cpu.max':'200000 100000','pids.max':'256'}
+    if limits!=expected_limits:
         raise ValueError('Hosted Atomic resource limits changed')
     required={'cpu','memory','pids'}
     if not required.issubset((group/'cgroup.controllers').read_text().split()): raise ValueError('Missing delegation')
@@ -521,33 +551,67 @@ def main():
         if check: result.check_returncode()
         return result
     podman=None;containers=[];storage=None;disk=None;identity=None;boot_output=None;runroot=None;disk_readonly=False;signing_output=None
+    container_candidate=None;manifest_digest=None
     try:
         if qualification=='containers':
             from image.qualification.container_hosted import run_container_preflight
             record['container_preflight']=run_container_preflight(
                 root,record['source_commit'],record['image_source_commit'])
             save()
-            if record['container_preflight'].get('passed') is not True:
-                blockers=record['container_preflight'].get('blockers') or ['invalid-container-preflight']
+            remaining=list(CONTAINER_QUALIFICATION_BLOCKERS)
+            invalid=(record['container_preflight'].get('passed') is not True
+                    or record['container_preflight'].get('qualified') is not False
+                    or record['container_preflight'].get('os_qualified') is not False
+                    or record['container_preflight'].get('release_qualified') is not False
+                    or record['container_preflight'].get('native_fixture_matrix_passed') is not False
+                    or record['container_preflight'].get('managed_route_qualified') is not False
+                    or record['container_preflight'].get('escape_suite_qualified') is not False
+                    or record['container_preflight'].get('blockers')!=remaining)
+            if invalid:
+                blockers=record['container_preflight'].get('blockers')
+                if (not isinstance(blockers,list) or not blockers
+                        or any(not isinstance(item,str) for item in blockers)):
+                    blockers=['invalid-container-preflight']
                 raise ValueError('Fedora container inputs remain fail closed: '+','.join(blockers))
-            # The exact derived image and generated contract are now bound.  The
-            # separate installed-image boot and six-profile controller is the
-            # next gate; do not spend a 60 GiB disk or imply qualification here.
-            raise ValueError('Fedora container native six-run controller is not yet bound')
-        readiness=unique_json((root/'image/atomic/preflight.lock.json').read_bytes())
-        validate_retained_preflight(root, readiness, selected, manifest, expected)
-        record['preflight']=readiness
-        # The existing bounded prepare phase verifies the current GitHub artifact
-        # metadata and streams its complete ZIP/manifest/OCI hashes again.
-        prepared=unique_json((root/'.cache/atomic-image-evidence/prepare.json').read_bytes())
-        if (prepared['passed'] is not True or prepared['source_commit']!=record['source_commit']
-                or prepared['expected_inputs']!=expected or prepared['variant']!='generic'
-                or prepared['lock_sha256']!=sha256(root/'image/desktop-images.lock.json')):
-            raise ValueError('Current hosted image intake has not passed')
-        archive=root/'.cache/atomic-image-inputs'/manifest['archive']['name']
-        if (archive.is_symlink() or not archive.is_file() or archive.stat().st_size!=manifest['archive']['bytes']
-                or sha256(archive)!=manifest['archive']['sha256']):
-            raise ValueError('Verified development archive changed')
+            container_candidate=record['container_preflight'].get('container_boot')
+            candidate_fields={'archive','generated_manifest_sha256','contract_sha256',
+                              'runsc_files','daemon_configuration_sha256','inventory_sha256',
+                              'qualified','os_qualified','release_qualified','remaining_blocker'}
+            if (not isinstance(container_candidate,dict) or set(container_candidate)!=candidate_fields
+                    or container_candidate.get('qualified') is not False
+                    or container_candidate.get('os_qualified') is not False
+                    or container_candidate.get('release_qualified') is not False
+                    or container_candidate.get('remaining_blocker')!='native-fedora-six-run-matrix'):
+                raise ValueError('Fedora container candidate boot binding is incomplete')
+            archive_binding=container_candidate['archive']
+            archive=root/'.cache/container-runtime-native-inputs'/archive_binding['name']
+            info=archive.lstat()
+            if (not stat.S_ISREG(info.st_mode) or info.st_nlink!=1 or archive.is_symlink()
+                    or info.st_size!=archive_binding['bytes']
+                    or sha256(archive)!=archive_binding['sha256']):
+                raise ValueError('Verified derived container image archive changed')
+            record['image_id']=archive_binding['image_id']
+            manifest_digest=archive_binding['manifest_digest']
+            record['container_candidate']=container_candidate
+            record['scope']=('Exact derived container-runtime image installed and booted with fixture '
+                             'authentication; native containment qualification remains open')
+            save()
+        else:
+            readiness=unique_json((root/'image/atomic/preflight.lock.json').read_bytes())
+            validate_retained_preflight(root, readiness, selected, manifest, expected)
+            record['preflight']=readiness
+            # The existing bounded prepare phase verifies the current GitHub artifact
+            # metadata and streams its complete ZIP/manifest/OCI hashes again.
+            prepared=unique_json((root/'.cache/atomic-image-evidence/prepare.json').read_bytes())
+            if (prepared['passed'] is not True or prepared['source_commit']!=record['source_commit']
+                    or prepared['expected_inputs']!=expected or prepared['variant']!='generic'
+                    or prepared['lock_sha256']!=sha256(root/'image/desktop-images.lock.json')):
+                raise ValueError('Current hosted image intake has not passed')
+            archive=root/'.cache/atomic-image-inputs'/manifest['archive']['name']
+            if (archive.is_symlink() or not archive.is_file() or archive.stat().st_size!=manifest['archive']['bytes']
+                    or sha256(archive)!=manifest['archive']['sha256']):
+                raise ValueError('Verified development archive changed')
+            manifest_digest=readiness['manifest_digest']
         storage=root/'.cache/atomic-disk-storage';storage.mkdir(mode=0o700)
         record['disk_free_before_load']=shutil.disk_usage(storage).free
         if record['disk_free_before_load']<60*1024**3: raise ValueError('Need 60 GiB free for isolated install and boot')
@@ -558,17 +622,17 @@ def main():
         print('Atomic install: loading the exact saved image into private CI storage',flush=True)
         run('load-image',podman+['load','--input',str(archive)],1800)
         loaded=validate_loaded_image(unique_json(run('inspect-image',podman+['image','inspect',image_id]).stdout),image_id)
-        if loaded['Digest']!=readiness['manifest_digest']: raise ValueError('Loaded OCI manifest changed')
+        if loaded['Digest']!=manifest_digest: raise ValueError('Loaded OCI manifest changed')
         record['loaded_image']={k:loaded[k] for k in ('Id','Digest','Architecture','Os')}
         print('Atomic install: verifying opaque OCI layout blobs',flush=True)
-        record['oci']=unpack_oci(archive,storage/'oci',readiness['manifest_digest'],image_id)
-        record['directory_source']=directory_source(storage/'oci',storage/'signed',readiness['manifest_digest'])
+        record['oci']=unpack_oci(archive,storage/'oci',manifest_digest,image_id)
+        record['directory_source']=directory_source(storage/'oci',storage/'signed',manifest_digest)
         signer_input=storage/'signer-input';signer_input.mkdir(mode=0o755)
         for name in ('sign.py','contract.py'):
             shutil.copyfile(root/'image/atomic'/name,signer_input/name);(signer_input/name).chmod(0o644)
         shutil.copyfile(root/'image/launcher/probes/bounded_process.py',signer_input/'bounded_process.py')
         shutil.copyfile(storage/'signed/manifest.json',signer_input/'manifest.json')
-        (signer_input/'sign.json').write_text(json.dumps({'manifest_digest':readiness['manifest_digest']})+'\n')
+        (signer_input/'sign.json').write_text(json.dumps({'manifest_digest':manifest_digest})+'\n')
         signing_output=storage/'signer-output';signing_output.mkdir(mode=0o700);os.chown(signing_output,10001,10001)
         container='symbi-atomic-signer';containers.append(container)
         common=['--pull=never','--network=none','--pid=private',
@@ -582,7 +646,7 @@ def main():
             '--env=HOME=/output','--entrypoint=/usr/bin/python3',image_id,'/inputs/sign.py'],480)
         signed=unique_json((signing_output/'evidence/result.json').read_bytes())
         if (signed.get('passed') is not True or signed.get('release_qualified') is not False
-                or signed.get('source_manifest_digest')!=readiness['manifest_digest']
+                or signed.get('source_manifest_digest')!=manifest_digest
                 or signed.get('private_keys_removed') is not True or signed.get('positive_policy_control') is not True
                 or signed.get('negative_controls')!={case:True for case in ('unsigned','wrong-key','wrong-reference','altered-signature')}
                 or sha256(signing_output/'good-public.asc')!=signed.get('public_key_sha256')
@@ -596,12 +660,12 @@ def main():
         policy_bytes=(json.dumps(policy,indent=2)+'\n').encode()
         if hashlib.sha256(policy_bytes).hexdigest()!=expected['trust']['etc/containers/policy.json']:
             raise ValueError('The immutable release policy binding changed')
-        local_policy=installer_policy(policy,(signing_output/'good-public.asc').read_bytes(),readiness['manifest_digest'])
+        local_policy=installer_policy(policy,(signing_output/'good-public.asc').read_bytes(),manifest_digest)
         if qualification=='update':
             from image.atomic.update_hosted import run_update
             print('Atomic update: installing the exact predecessor for a signed switch and booted rollback',flush=True)
             record['update']=run_update(root,group,podman,image_id,storage,containers,run,pins,
-                                        lock,readiness['manifest_digest'],storage/'signed',
+                                        lock,manifest_digest,storage/'signed',
                                         signing_output,signed,policy,policy_bytes)
             record['guest_booted']=record['update']['guest_booted'] is True
             record['update_qualified']=record['update']['passed'] is True
@@ -617,7 +681,7 @@ def main():
         (installer_input/'original-policy.json').write_bytes(policy_bytes)
         shutil.copyfile(signing_output/'good-public.asc',installer_input/'test-public.asc')
         (installer_input/'install-policy.json').write_text(json.dumps(local_policy,indent=2)+'\n')
-        (installer_input/'install.json').write_text(json.dumps({'disk':identity,'manifest_digest':readiness['manifest_digest'],
+        (installer_input/'install.json').write_text(json.dumps({'disk':identity,'manifest_digest':manifest_digest,
             'original_policy_sha256':expected['trust']['etc/containers/policy.json'],
             'installer_policy_sha256':sha256(installer_input/'install-policy.json'),
             'test_public_key_sha256':signed['public_key_sha256'],'signature_sha256':signed['signature_sha256']})+'\n')
@@ -635,7 +699,7 @@ def main():
         loops=unique_json(run('disk-loops-after-install',['losetup','--json','--list','--output','NAME,BACK-FILE','--associated',str(disk)]).stdout)
         if loops.get('loopdevices') not in (None,[]): raise ValueError('Installer left attached loop devices')
         record['installation_completed']=True;record['disk_sha256']=sha256(disk);save()
-        expected['manifest_digest']=readiness['manifest_digest']
+        expected['manifest_digest']=manifest_digest
         payload=unique_json((root/'docs/security/reports/P0-03-desktop'/str(selected['run_id'])/'preparation.json').read_bytes())
         expected['payload']={**payload['payload'],**payload['overlay']}
         expected['payload_count']=len(expected['payload'])
@@ -643,6 +707,14 @@ def main():
         if len(set(inventory))!=len(inventory): raise ValueError('Duplicate retained package identity')
         expected['inventory_count']=len(inventory)
         expected['inventory_sha256']=hashlib.sha256(('\n'.join(sorted(inventory))+'\n').encode()).hexdigest()
+        if container_candidate is not None:
+            if expected['inventory_sha256']!=container_candidate['inventory_sha256']:
+                raise ValueError('Generated container contract uses a different source package inventory')
+            expected['container_candidate']={
+                'contract_sha256':container_candidate['contract_sha256'],
+                'runsc_files':container_candidate['runsc_files'],
+                'daemon_configuration_sha256':container_candidate['daemon_configuration_sha256'],
+            }
         expected['nonce']=secrets.token_hex(16)
         boot_input=storage/'boot-input';boot_input.mkdir(mode=0o755)
         for name in ('boot.py','contract.py','guest.py','o.service','s.service'):
@@ -673,6 +745,9 @@ def main():
             raise ValueError('Hosted QEMU observation did not pass')
         if sha256(disk)!=record['disk_sha256']: raise ValueError('Read-only source disk changed during boot')
         record['guest_booted']=True;record['boot_id']=report['boot_id']
+        if container_candidate is not None:
+            print('Container candidate boot passed; stopping before native-fedora-six-run-matrix',flush=True)
+            stop_after_container_candidate_boot(record,report['container_candidate'])
         if qualification=='landlock':
             from image.qualification.hosted import run_landlock
             print('Landlock qualification: starting the second offline installed-image boot',flush=True)

@@ -66,9 +66,10 @@ installed payload/package identities and bootc's booted/future-update reference.
 The service has a 256 MiB/half-CPU/32-task/zero-swap ceiling and powers off after
 the probe. A stale, incomplete or permissive report fails validation.
 
-Resource limits: current artifact preparation 1 GiB/one CPU; controller
-4 GiB/two CPUs/256 tasks; temporary signer 1 GiB/one CPU/64 tasks; installer
-2 GiB/one CPU/128 tasks; QEMU container
+Resource limits: current artifact preparation 1 GiB/one CPU; ordinary Atomic
+install/update controller 5 GiB/two CPUs/256 tasks; the Landlock and container
+qualification wrappers 4 GiB/two CPUs/256 tasks; temporary signer 1 GiB/one
+CPU/64 tasks; installer 2 GiB/one CPU/128 tasks; QEMU container
 3 GiB/two CPUs/64 tasks. All use zero swap. Large inputs, virtual disks and OCI
 storage stay hosted and are removed after the attempt. Only bounded original
 logs and JSON observations are uploaded. The new workflow has one concurrency

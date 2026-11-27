@@ -1217,7 +1217,8 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertIn(".cache/atomic-update-evidence", workflow)
         self.assertIn("SYMBI_QUALIFICATION=update", script)
         self.assertIn("--property=MemoryMax=5G", script)
-        self.assertIn("'memory.max':'5368709120'", hosted)
+        self.assertIn("else '5368709120'", hosted)
+        self.assertIn("qualification in ('landlock','containers')", hosted)
         self.assertIn(
             "qualification not in ('','landlock','update','containers')", hosted)
         self.assertIn("qualification=='landlock'", hosted)

@@ -8,10 +8,12 @@ from pathlib import Path
 import tarfile
 import tempfile
 import unittest
+import importlib.util
 
 from image.atomic.contract import (create_disk, require_disk, unpack_oci,
                                    installer_arguments, firmware_arguments,
                                    validate_report)
+from image.atomic.hosted import stop_after_container_candidate_boot
 
 
 class AtomicBoot(unittest.TestCase):
@@ -263,6 +265,130 @@ class AtomicBoot(unittest.TestCase):
         expected,report=self.boot()
         validate_report(report,expected,'a'*32,'e'*64,'f'*64)
         self.assertFalse(report['os_qualified']);self.assertFalse(report['release_qualified'])
+
+    def test_boot_report_binds_exact_container_candidate_observations(self):
+        expected,report=self.boot()
+        expected['container_candidate']={
+            'contract_sha256':'a'*64,
+            'runsc_files':{
+                'usr/bin/runsc':'b'*64,
+                'etc/containerd/runsc.toml':'c'*64,
+            },
+            'daemon_configuration_sha256':'d'*64,
+        }
+        report['container_candidate']={
+            'contract_sha256':'a'*64,
+            'runsc_files':expected['container_candidate']['runsc_files'],
+            'daemon_configuration_sha256':'d'*64,
+        }
+        validate_report(report,expected,'a'*32,'e'*64,'f'*64)
+        for field,value in (
+                ('contract_sha256','0'*64),
+                ('runsc_files',{'usr/bin/runsc':'0'*64}),
+                ('daemon_configuration_sha256','0'*64)):
+            changed=copy.deepcopy(report);changed['container_candidate'][field]=value
+            with self.subTest(field=field),self.assertRaises(ValueError):
+                validate_report(changed,expected,'a'*32,'e'*64,'f'*64)
+        missing=copy.deepcopy(report);del missing['container_candidate']
+        with self.assertRaises(ValueError):
+            validate_report(missing,expected,'a'*32,'e'*64,'f'*64)
+
+    def test_guest_observes_contract_bound_container_files_read_only(self):
+        spec=importlib.util.spec_from_file_location(
+            'atomic_guest',Path(__file__).resolve().parents[1]/'atomic/guest.py')
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            files={
+                'usr/bin/runsc':b'runsc exact bytes',
+                'usr/bin/gvisor-bin/runsc-netgofer':b'netgofer exact bytes',
+            }
+            for relative,raw in files.items():
+                path=root/relative;path.parent.mkdir(parents=True,exist_ok=True)
+                path.write_bytes(raw);path.chmod(0o755)
+            daemon=root/'etc/docker/daemon.json';daemon.parent.mkdir(parents=True)
+            daemon.write_bytes(b'{"runtimes":{"runsc":{}}}\n');daemon.chmod(0o644)
+            for path in root.rglob('*'):
+                if path.is_dir() and not path.is_symlink(): path.chmod(0o755)
+            expected={
+                'contract_sha256':'a'*64,
+                'runsc_files':{name:hashlib.sha256(raw).hexdigest()
+                               for name,raw in files.items()},
+                'daemon_configuration_sha256':hashlib.sha256(daemon.read_bytes()).hexdigest(),
+            }
+            observed=module.observe_container_candidate(root,expected,owner_uid=os.geteuid())
+            self.assertEqual(observed,expected)
+            daemon.write_bytes(b'{"runtimes":{}}\n')
+            with self.assertRaises(ValueError):
+                module.observe_container_candidate(root,expected,owner_uid=os.geteuid())
+            daemon.write_bytes(b'{"runtimes":{"runsc":{}}}\n')
+            (root/'usr/bin/runsc').write_bytes(b'changed')
+            with self.assertRaises(ValueError):
+                module.observe_container_candidate(root,expected,owner_uid=os.geteuid())
+            (root/'usr/bin/runsc').unlink();(root/'usr/bin/runsc').symlink_to('/dev/null')
+            with self.assertRaises(ValueError):
+                module.observe_container_candidate(root,expected,owner_uid=os.geteuid())
+
+    def test_guest_rejects_intermediate_symlinks_in_container_bindings(self):
+        spec=importlib.util.spec_from_file_location(
+            'atomic_guest_symlinks',Path(__file__).resolve().parents[1]/'atomic/guest.py')
+        module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+        runsc=b'runsc exact bytes';netgofer=b'netgofer exact bytes'
+        daemon_raw=b'{"runtimes":{"runsc":{}}}\n'
+        for redirected in ('runsc','daemon'):
+            with self.subTest(redirected=redirected),tempfile.TemporaryDirectory() as directory:
+                root=Path(directory)
+                direct=root/'usr/bin/runsc';direct.parent.mkdir(parents=True)
+                direct.write_bytes(runsc);direct.chmod(0o755)
+                if redirected=='runsc':
+                    target=root/'redirected-runsc';target.mkdir()
+                    (target/'runsc-netgofer').write_bytes(netgofer)
+                    (target/'runsc-netgofer').chmod(0o755)
+                    (root/'usr/bin/gvisor-bin').symlink_to(target,target_is_directory=True)
+                else:
+                    target=root/'usr/bin/gvisor-bin';target.mkdir()
+                    (target/'runsc-netgofer').write_bytes(netgofer)
+                    (target/'runsc-netgofer').chmod(0o755)
+                etc=root/'etc';etc.mkdir()
+                if redirected=='daemon':
+                    target=root/'redirected-daemon';target.mkdir()
+                    (target/'daemon.json').write_bytes(daemon_raw)
+                    (target/'daemon.json').chmod(0o644)
+                    (etc/'docker').symlink_to(target,target_is_directory=True)
+                else:
+                    target=etc/'docker';target.mkdir()
+                    (target/'daemon.json').write_bytes(daemon_raw)
+                    (target/'daemon.json').chmod(0o644)
+                for path in root.rglob('*'):
+                    if path.is_dir() and not path.is_symlink(): path.chmod(0o755)
+                expected={
+                    'contract_sha256':'a'*64,
+                    'runsc_files':{
+                        'usr/bin/runsc':hashlib.sha256(runsc).hexdigest(),
+                        'usr/bin/gvisor-bin/runsc-netgofer':hashlib.sha256(netgofer).hexdigest(),
+                    },
+                    'daemon_configuration_sha256':hashlib.sha256(daemon_raw).hexdigest(),
+                }
+                with self.assertRaises(ValueError):
+                    module.observe_container_candidate(root,expected,owner_uid=os.geteuid())
+
+    def test_candidate_boot_observation_cannot_pass_container_qualification(self):
+        blockers=['native-fedora-six-run-matrix','managed-route-evidence',
+                  'escape-suite-evidence','required-review']
+        record={'passed':False,'os_qualified':False,'release_qualified':False,
+                'container_preflight':{'blockers':blockers}}
+        observation={'contract_sha256':'a'*64,'runsc_files':{'usr/bin/runsc':'b'*64},
+                     'daemon_configuration_sha256':'c'*64}
+        with self.assertRaisesRegex(ValueError,'qualification remains blocked'):
+            stop_after_container_candidate_boot(record,observation)
+        self.assertTrue(record['candidate_boot_passed'])
+        self.assertEqual(record['container_candidate_observation'],observation)
+        self.assertEqual(record['remaining_blockers'],blockers)
+        for field in ('passed','qualified','container_qualified','os_qualified',
+                      'release_qualified','native_fixture_matrix_passed',
+                      'managed_route_qualified','escape_suite_qualified'):
+            with self.subTest(field=field):
+                self.assertFalse(record[field])
 
     def test_wrong_guest_replayed_report_and_unenforced_boot_are_refused(self):
         expected,original=self.boot()

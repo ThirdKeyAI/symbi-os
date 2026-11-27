@@ -15,6 +15,77 @@ def sha256(path):
     with path.open('rb') as source: return hashlib.file_digest(source,'sha256').hexdigest()
 
 
+def _observe_bound_regular(root_fd,parts,owner_uid,maximum,expected_digest,label):
+    """Open each component relative to held directory descriptors, never links."""
+    directory_fd=os.dup(root_fd);file_fd=None
+    try:
+        for component in parts[:-1]:
+            child=os.open(component,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW,
+                          dir_fd=directory_fd)
+            os.close(directory_fd);directory_fd=child
+            info=os.fstat(directory_fd)
+            if (not stat.S_ISDIR(info.st_mode) or info.st_uid!=owner_uid
+                    or info.st_gid!=owner_uid or stat.S_IMODE(info.st_mode)&0o022):
+                raise ValueError('Booted container path parent changed: '+label)
+        file_fd=os.open(parts[-1],os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK,
+                        dir_fd=directory_fd)
+        info=os.fstat(file_fd)
+        if (not stat.S_ISREG(info.st_mode) or info.st_nlink!=1
+                or info.st_uid!=owner_uid or info.st_gid!=owner_uid
+                or stat.S_IMODE(info.st_mode)&0o022 or not 0<info.st_size<=maximum):
+            raise ValueError('Booted container file metadata changed: '+label)
+        stream=os.fdopen(file_fd,'rb');file_fd=None
+        with stream:
+            digest=hashlib.file_digest(stream,'sha256').hexdigest()
+        if digest!=expected_digest:
+            raise ValueError('Booted container file content changed: '+label)
+        return digest
+    except OSError as error:
+        raise ValueError('Booted container path is not direct: '+label) from error
+    finally:
+        if file_fd is not None: os.close(file_fd)
+        os.close(directory_fd)
+
+
+def observe_container_candidate(root, expected, owner_uid=0):
+    """Observe only the contract-bound runtime bytes in a booted filesystem."""
+    if (not isinstance(expected,dict)
+            or set(expected)!={'contract_sha256','runsc_files','daemon_configuration_sha256'}
+            or re.fullmatch(r'[0-9a-f]{64}',expected.get('contract_sha256','')) is None
+            or re.fullmatch(r'[0-9a-f]{64}',expected.get('daemon_configuration_sha256','')) is None
+            or type(owner_uid) is not int or owner_uid<0):
+        raise ValueError('Invalid generated container contract boot binding')
+    files=expected.get('runsc_files')
+    if not isinstance(files,dict) or not 0<len(files)<=64:
+        raise ValueError('Missing bounded runsc file bindings')
+    observed={};root_fd=None
+    try:
+        root_fd=os.open(Path(root),os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+        root_info=os.fstat(root_fd)
+        if (not stat.S_ISDIR(root_info.st_mode) or root_info.st_uid!=owner_uid
+                or root_info.st_gid!=owner_uid or stat.S_IMODE(root_info.st_mode)&0o022):
+            raise ValueError('Container observation root changed')
+        for relative,digest in files.items():
+            path_parts=Path(relative).parts if isinstance(relative,str) else ()
+            if (not path_parts or str(Path(relative))!=relative or '\\' in relative
+                    or Path(relative).is_absolute() or '..' in path_parts
+                    or path_parts[0] not in ('usr','etc')
+                    or re.fullmatch(r'[0-9a-f]{64}',digest or '') is None):
+                raise ValueError('Unsafe runsc file binding')
+            observed[relative]=_observe_bound_regular(
+                root_fd,path_parts,owner_uid,256*1024**2,digest,relative)
+        _observe_bound_regular(
+            root_fd,('etc','docker','daemon.json'),owner_uid,128*1024,
+            expected['daemon_configuration_sha256'],'etc/docker/daemon.json')
+    except OSError as error:
+        raise ValueError('Container observation root is not direct') from error
+    finally:
+        if root_fd is not None: os.close(root_fd)
+    return {'contract_sha256':expected['contract_sha256'],
+            'runsc_files':dict(sorted(observed.items())),
+            'daemon_configuration_sha256':expected['daemon_configuration_sha256']}
+
+
 def read_bootc_status(path, properties):
     required={'Result':'success','ExecMainCode':'1','ExecMainStatus':'0',
               'ActiveState':'active','SubState':'exited'}
@@ -117,6 +188,9 @@ def main():
             record['payload_count']+=1
         for relative in expected['trust']:
             record['trust'][relative]=sha256(Path('/')/relative)
+        if 'container_candidate' in expected:
+            record['container_candidate']=observe_container_candidate(
+                Path('/'),expected['container_candidate'])
         record['payload_verified']=True
         record['probe_completed']=True
     except Exception as error:
