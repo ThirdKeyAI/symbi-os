@@ -458,7 +458,15 @@ environment; the predecessor's opaque OCI blobs are independently verified and
 signed by a second ephemeral offline fixture key.
 
 The predecessor is installed to a new guarded regular-file disk. The current
-image is exposed through a second read-only ext4 disk labeled `SYMBIUPDATE`.
+image is exposed through a second read-only raw ext4 backend and an explicitly
+paired `virtio-blk-pci` device whose fixed serial is `SYMBIUPDATE`. The guest
+waits at most 30 seconds for udev, resolves only
+`/dev/disk/by-id/virtio-SYMBIUPDATE`, validates its ext4 type, label and
+generated UUID against the hash-bound source metadata, and mounts it at
+`/run/symbi-update` read-only with `nosuid,nodev,noexec` inside the update
+service's private mount namespace. The service has no boot-time mount
+dependency, so a missing device still produces a bounded guest report with the
+observed block-device names.
 A first disposable qcow2 overlay keeps the valid signature and invokes the real
 `bootc switch --transport dir --enforce-container-sigpolicy` through the exact
 overlayfs mount and fixed `/run/symbi-update-negative/source` path later used by

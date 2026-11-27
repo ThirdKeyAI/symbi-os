@@ -11,7 +11,8 @@ import subprocess
 import sys
 import time
 
-SOURCE = Path("/var/lib/symbi-update/source")
+SOURCE = Path("/run/symbi-update/source")
+SOURCE_DEVICE = Path("/dev/disk/by-id/virtio-SYMBIUPDATE")
 NEGATIVE_SOURCE = Path("/run/symbi-update-negative/source")
 NEGATIVE_CASES = ("unsigned", "wrong-key", "wrong-reference", "altered-signature")
 POSITIVE_OVERLAY_CASE = "valid-signature"
@@ -27,6 +28,40 @@ def sha256(path):
 
 def exact_digest(value):
     return isinstance(value, str) and re.fullmatch(r"sha256:[a-f0-9]{64}", value)
+
+
+def validate_source_identity(raw, expected):
+    """Require the mounted update filesystem's exact generated identity."""
+    if (not isinstance(raw, str) or not isinstance(expected, dict)
+            or expected.get("filesystem") != "ext4"
+            or expected.get("label") != "SYMBIUPDATE"
+            or re.fullmatch(r"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}",
+                            expected.get("uuid", "")) is None):
+        raise ValueError("invalid expected update filesystem identity")
+    lines = raw.splitlines()
+    if not 1 <= len(lines) <= 32:
+        raise ValueError("invalid update filesystem identity output")
+    fields = {}
+    for line in lines:
+        if "=" not in line:
+            raise ValueError("malformed update filesystem identity output")
+        key, value = line.split("=", 1)
+        if (re.fullmatch(r"[A-Z0-9_]+", key) is None or not value
+                or key in fields or len(key) > 64 or len(value) > 4096):
+            raise ValueError("ambiguous update filesystem identity output")
+        fields[key] = value
+    selected = {name: fields.get(name) for name in ("TYPE", "LABEL", "UUID")}
+    required = {"TYPE": expected["filesystem"], "LABEL": expected["label"],
+                "UUID": expected["uuid"]}
+    if selected != required:
+        raise ValueError("update filesystem identity differs")
+    return selected
+
+
+def device_settle_command():
+    """Wait a bounded time for the one fixed virtio source identity."""
+    return ["/usr/bin/udevadm", "settle", "--timeout=30",
+            "--exit-if-exists=" + str(SOURCE_DEVICE)]
 
 
 def image_digest(entry, expected):
@@ -167,11 +202,43 @@ def main():
             raise ValueError("update guest gained a network interface")
         if run(["/usr/sbin/getenforce"]).strip() != "Enforcing":
             raise ValueError("SELinux is not enforcing")
+        run(device_settle_command(), timeout=40, check=False)
+        settle_exit = record["commands"][-1]["exit_code"]
+        block_devices = sorted(path.name for path in Path("/sys/class/block").iterdir())
+        if (not block_devices or len(block_devices) > 64
+                or any(re.fullmatch(r"[A-Za-z0-9_.!-]{1,128}", name) is None
+                       for name in block_devices)):
+            raise ValueError("invalid block-device inventory")
+        record["block_devices"] = block_devices
+        if settle_exit != 0 or not SOURCE_DEVICE.is_symlink():
+            raise ValueError("fixed update source block-device link is absent")
+        source_device = SOURCE_DEVICE.resolve(strict=True)
+        if not stat.S_ISBLK(source_device.stat().st_mode):
+            raise ValueError("fixed update source is not a block device")
+        identity = validate_source_identity(
+            run(["/usr/sbin/blkid", "-p", "-o", "export", str(SOURCE_DEVICE)]),
+            expected.get("source_disk"))
+        mountpoint = SOURCE.parent.lstat()
+        if (not stat.S_ISDIR(mountpoint.st_mode) or stat.S_IMODE(mountpoint.st_mode) != 0o700
+                or mountpoint.st_uid != 0 or mountpoint.st_gid != 0
+                or mountpoint.st_nlink != 2 or os.path.ismount(SOURCE.parent)):
+            raise ValueError("update runtime mount point controls changed")
+        with os.scandir(SOURCE.parent) as entries:
+            if next(entries, None) is not None:
+                raise ValueError("update runtime mount point is not empty")
+        run(["/usr/bin/mount", "-t", "ext4", "-o", "ro,nosuid,nodev,noexec",
+             str(SOURCE_DEVICE), str(SOURCE.parent)])
         if not os.statvfs(SOURCE).f_flag & os.ST_RDONLY:
             raise ValueError("update source is writable")
-        mount = run(["/usr/bin/findmnt", "-n", "-o", "FSTYPE,OPTIONS", "--target", str(SOURCE)]).split()
-        if len(mount) != 2 or mount[0] != "ext4" or not {"ro", "nosuid", "nodev", "noexec"}.issubset(set(mount[1].split(","))):
+        mount = run(["/usr/bin/findmnt", "-n", "-o", "SOURCE,FSTYPE,OPTIONS",
+                     "--target", str(SOURCE)]).split()
+        mounted_source = mount[0].split("[", 1)[0] if mount else ""
+        if (len(mount) != 3 or Path(mounted_source).resolve(strict=True) != source_device
+                or mount[1] != "ext4"
+                or not {"ro", "nosuid", "nodev", "noexec"}.issubset(
+                    set(mount[2].split(",")))):
             raise ValueError("update source mount controls changed")
+        record["source_device"] = {"path": str(source_device), **identity}
         manifest = SOURCE / "manifest.json"
         signature = SOURCE / "signature-1"
         for path in (manifest, signature):

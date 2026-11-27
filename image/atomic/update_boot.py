@@ -70,7 +70,6 @@ def firmware_arguments(directory=Path("/inputs"), expected_filename="expected.js
     if directory != Path("/inputs") or expected_filename not in allowed:
         raise ValueError("fixed update firmware input required")
     files = [
-        ("fstab.extra", "update-fstab.extra"),
         ("systemd.extra-unit.o.service", "update-o.service"),
         ("symbi-update.py", "update_guest.py"),
         ("symbi-update-expected.json", expected_filename),
@@ -97,7 +96,9 @@ def _qemu_command(overlay, report, serial, expected_filename,
         "-nodefaults", "-no-user-config", "-no-reboot", "-net", "none",
         "-smbios", "type=1,manufacturer=Symbi-Test,product=Symbi-Hosted-Update-Probe",
         "-drive", "file=" + overlay + ",format=qcow2,if=virtio",
-        "-drive", "file=/inputs/update.raw,format=raw,if=virtio,readonly=on",
+        "-drive", "file=/inputs/update.raw,format=raw,if=none,"
+                  "id=symbi-update-source,readonly=on",
+        "-device", "virtio-blk-pci,drive=symbi-update-source,serial=SYMBIUPDATE",
         "-device", "virtio-rng-pci", "-device", "virtio-serial-pci",
         "-chardev", "file,id=report,path=" + report,
         "-device", "virtserialport,chardev=report,name=org.symbi.update",
@@ -129,6 +130,22 @@ def positive_qemu_command(directory=Path("/inputs"), output=Path("/output")):
                          "expected-positive.json", directory, output)
 
 
+def validate_source_device(report, expected):
+    """Bind guest block evidence to the authenticated source-disk identity."""
+    try:
+        observed = report["source_device"]
+        source = expected["source_disk"]
+    except (KeyError, TypeError) as error:
+        raise ValueError("update source-device evidence is missing") from error
+    required = {"path", "TYPE", "LABEL", "UUID"}
+    if (not isinstance(observed, dict) or set(observed) != required
+            or re.fullmatch(r"/dev/vd[a-z]{1,3}", observed.get("path", "")) is None
+            or observed.get("TYPE") != source.get("filesystem")
+            or observed.get("LABEL") != source.get("label")
+            or observed.get("UUID") != source.get("uuid")):
+        raise ValueError("update source-device evidence is unbound")
+
+
 def validate_phase_report(report, expected, expected_hash, runner_hash, phase):
     required = {"schema": 1, "passed": True, "guest_booted": True,
                 "release_qualified": False, "product": "Symbi-Hosted-Update-Probe",
@@ -137,6 +154,7 @@ def validate_phase_report(report, expected, expected_hash, runner_hash, phase):
                 "phase": phase}
     if any(report.get(key) != value for key, value in required.items()) or "failure" in report:
         raise ValueError("unbound or incomplete update guest phase")
+    validate_source_device(report, expected)
     commands = report.get("commands")
     if not isinstance(commands, list) or not commands or any(item.get("exit_code") != 0 for item in commands):
         raise ValueError("update guest command evidence is incomplete")
@@ -149,6 +167,7 @@ def validate_positive_report(report, expected, expected_hash, runner_hash):
                 "runner_sha256": runner_hash, "source_mounted_readonly": True}
     if any(report.get(key) != value for key, value in required.items()) or "failure" in report:
         raise ValueError("unbound or incomplete same-path positive update report")
+    validate_source_device(report, expected)
     control = report.get("same_path_positive_control")
     if (not isinstance(control, dict) or control.get("case") != POSITIVE_OVERLAY_CASE
             or control.get("switch_accepted") is not True
@@ -185,6 +204,7 @@ def validate_negative_report(report, expected, expected_hash, runner_hash, case)
                 "runner_sha256": runner_hash, "source_mounted_readonly": True}
     if any(report.get(key) != value for key, value in required.items()) or "failure" in report:
         raise ValueError("unbound or incomplete negative update guest report")
+    validate_source_device(report, expected)
     control = report.get("negative_control")
     if (not isinstance(control, dict) or control.get("case") != case
             or control.get("switch_rejected") is not True
@@ -248,7 +268,7 @@ def main():
             or sha256(inputs / "update.raw") != source.get("sha256")):
         raise ValueError("authenticated update source disk changed")
     names = ["update_guest.py", "expected.json", "update-policy.json",
-             "update-o.service", "update-fstab.extra"]
+             "update-o.service"]
     positive_name = "expected-positive.json"
     positive_raw = (inputs / positive_name).read_bytes()
     if len(positive_raw) > 128 * 1024:
