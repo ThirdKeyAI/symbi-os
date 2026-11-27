@@ -180,35 +180,64 @@ descriptor and accepts success only after the destination name still matches
 the held root and the complete nested identity, byte, hash and manifest binding
 has been revalidated. The Linux main-thread download timer restores its prior
 signal handler and rejects an already active process timer. Cleanup does not
-unlink or remove pathnames because a same-user replacement can race any separate
-identity check. Private partial downloads and staging trees remain for explicit
-operator disposal, including the empty staging parent after successful publish.
+unlink or remove pathnames inside the reusable writer because a same-user
+replacement can race any separate identity check. The hosted wrapper waits for
+the service to stop, rechecks its exact direct mode-`0700` cache directories
+under the resolved checkout, and retains the private scratch for disposal with
+the ephemeral runner. It performs no recursive pathname cleanup or ownership
+change.
 
 This preparation is not wired to `container-fixtures.yml` or
 `native_fixture_build.py`. The current Dockerfile still performs its historical
 live apt installation, the committed Ubuntu lock remains pending and empty, and
 its public validator rejects a populated candidate. No image build, OCI export,
-cold load, artifact upload or qualification was enabled by this slice.
-The candidate's hash-only observations cannot prove that the future wrapper ran
-`gpgv`, apt or dpkg. They cannot make a verification boolean true. Hosted logs
-and artifact provenance remain mandatory review input.
+cold load, selection or qualification is enabled by this slice.
 
-The next hosted step must be a separately reviewed manual producer job on a
-fresh Ubuntu runner. Under one CPU, bounded memory and zero swap, it must verify
-the committed Ubuntu keyring and rootfs checksum, fetch the three exact
-InRelease files, extract their Release text with the prepared `gpgv` command,
-and retain strict structured results: exact argv, the tool hash computed from
-its already-open descriptor, exit status, bounded raw stdout and stderr plus
-their hashes, verification time and exact input identities. It must fetch only
-the three
-Packages.xz members named by those signed Release files, read only dpkg status
-from the authenticated rootfs archive, stage local file repositories, and run
-apt update, URI planning and simulation with external networking disabled. It
-must bind every planned package to its signed index row, download the payloads
-sequentially, compare `dpkg-deb` identity to that row, and pass the no-act dpkg
-plan before writing and independently rechecking the unselected candidate.
+The new `ubuntu-fixture-packages.yml` workflow is `workflow_dispatch` only. Its
+checked-in contract is `pending-discovery`, with all three InRelease and all
+three Packages.xz byte/hash identities null. The wrapper creates a bounded
+transient unit for either mode; inside it, pending `produce` refuses before
+retained-input validation, in-cgroup inspection, authenticated producer
+commands or network opening. `discover` runs in a
+2 GiB/one-CPU/128-task/zero-swap systemd unit. It binds a clean checkout HEAD and
+tree to `GITHUB_SHA`, verifies the exact retained keyring and signed Ubuntu Base
+checksum, downloads the exact rootfs, verifies each current InRelease
+against the full pinned archive fingerprint, enforces
+suite/codename/freshness, and fetches only the Packages.xz member named by the
+signed Release. It retains exact argv, reopened tool identity and hash, bounded
+raw stdout/stderr, input identities, cgroup/systemd state and retention evidence.
+The resulting discovery pins are explicitly non-authoritative. A separate
+systemd-derived resource record is always written after the unit stops, so a
+killed process or truncated primary cgroup record cannot hide the observable
+swap and OOM outcome.
+
+Discovery runs as the hosted account with empty ambient and bounding capability
+sets and namespace creation denied. The dormant production branch alone permits
+a network namespace and grants `CAP_SYS_ADMIN` for its exact `unshare --net`
+calls. Both modes have a private mount and temporary namespace, strict read-only
+system/home trees, and one exact writable cache subtree. The production
+capability/namespace combination has not run on Ubuntu 24.04; a failure there
+must stop production rather than broaden the sandbox.
+
+After a separate review commits all six discovered identities and changes the
+contract to `ready`, the production path stages only `file:` repositories and
+runs apt update, URI planning and simulation inside a new network namespace. It
+binds every planned package to the signed index, downloads one bound package at
+a time through the reviewed hard-deadline downloader, and runs
+`dpkg --no-act --unpack` in another networkless phase while proving base status
+unchanged. It then writes and independently rechecks the unselected candidate.
+Only that full successful path reaches the conditional candidate artifact
+upload. The candidate manifest still keeps `producer_passed` and every
+verification/selection/qualification field false; structured raw evidence is
+external and cannot turn those booleans true.
+
 If any current Ubuntu suite omits `Valid-Until` or fails another strict field,
 the job must stop; changing the source or freshness policy needs its own review.
-Only a fully passing run may add an unselected candidate artifact. Selecting its
-real run, artifact and byte identities is a later committed review, and only
-that selection can unblock an offline `docker build --network=none` change.
+GitHub does not expose a new `workflow_dispatch` file until that workflow path
+exists on the default branch. Hosted discovery is therefore blocked until a
+separately reviewed minimal registration change lands on `main`. The next
+producer step is then one reviewed `discover` dispatch. Its exact raw evidence
+must be inspected before copying the six byte/hash values into the contract. A
+later `produce` dispatch remains unselected; selecting its real run, artifact
+and byte identities is a separate committed review, and only that can unblock
+an offline `docker build --network=none` change.

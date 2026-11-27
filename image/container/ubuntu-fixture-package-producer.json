@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "state": "pending-discovery",
+  "repository": {
+    "id": 1472078858,
+    "full_name": "ThirdKeyAI/symbi-os"
+  },
+  "workflow": ".github/workflows/ubuntu-fixture-packages.yml",
+  "event": "workflow_dispatch",
+  "runner": "ubuntu-24.04",
+  "limits": {
+    "memory_max": 2147483648,
+    "memory_swap_max": 0,
+    "cpu_max": "100000 100000",
+    "pids_max": 128,
+    "runtime_seconds": 3000
+  },
+  "timeouts": {
+    "metadata_seconds": 300,
+    "rootfs_seconds": 600,
+    "offline_command_seconds": 600,
+    "package_download_seconds": 600
+  },
+  "retained_inputs": {
+    "rootfs_verification": "image/container/hosted/ubuntu/verified-rootfs.json",
+    "checksum": "image/container/hosted/ubuntu/SHA256SUMS",
+    "checksum_signature": "image/container/hosted/ubuntu/SHA256SUMS.gpg",
+    "archive_keyring": "image/container/hosted/ubuntu/archive.gpg"
+  },
+  "metadata_pins": [
+    {
+      "suite": "noble",
+      "inrelease": {
+        "bytes": null,
+        "sha256": null
+      },
+      "packages_xz": {
+        "bytes": null,
+        "sha256": null
+      }
+    },
+    {
+      "suite": "noble-updates",
+      "inrelease": {
+        "bytes": null,
+        "sha256": null
+      },
+      "packages_xz": {
+        "bytes": null,
+        "sha256": null
+      }
+    },
+    {
+      "suite": "noble-security",
+      "inrelease": {
+        "bytes": null,
+        "sha256": null
+      },
+      "packages_xz": {
+        "bytes": null,
+        "sha256": null
+      }
+    }
+  ],
+  "artifacts": {
+    "evidence": "container-ubuntu-fixture-package-evidence",
+    "candidate": "container-ubuntu-fixture-packages",
+    "retention_days": 14
+  },
+  "candidate": {
+    "state": "candidate-unselected",
+    "producer_passed": false,
+    "selected": false,
+    "qualified": false,
+    "container_qualified": false,
+    "signature_qualified": false,
+    "os_qualified": false,
+    "release_qualified": false
+  },
+  "scope": "Manual hosted discovery pending reviewed InRelease and Packages.xz byte pins; no image consumer, selection or qualification"
+}

@@ -4,8 +4,9 @@ The functions in this module are producer-side only.  They authenticate signed
 Release text, bind one Packages.xz per reviewed suite, bind apt's file-only URI
 and simulation plans to exact package rows, and stream exact package payloads.
 The resulting manifest is always an unselected candidate with every
-qualification claim false.  No consumer imports this module and no workflow
-currently invokes it, builds an image, or uploads an artifact.
+qualification claim false.  The manual hosted producer may invoke it after
+reviewed metadata pins are complete, but no image consumer imports it and it
+cannot select, qualify, or authorize an artifact.
 """
 from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
@@ -57,8 +58,8 @@ BAD_GPG_STATUS = {
     "KEYEXPIRED", "SIGEXPIRED",
 }
 CANDIDATE_SCOPE = (
-    "Unselected Ubuntu fixture package bytes; command execution, authenticated "
-    "verification, selection, offline image build and qualification remain blocked"
+    "Unselected Ubuntu fixture package bytes; raw hosted command evidence is "
+    "external, and selection, offline image build and qualification remain blocked"
 )
 CANDIDATE_CLAIMS = (
     "selected", "qualified", "container_qualified", "signature_qualified",
@@ -906,23 +907,14 @@ def validate_apt_simulation(raw, package_rows):
     }
 
 
-def offline_plan_commands(apt_root, repository_root, keyring, roots,
-                          package_paths):
-    """Return exact local-repository apt and no-act dpkg commands."""
+def offline_apt_commands(apt_root, repository_root, keyring, roots):
+    """Return exact local-repository apt commands before package download."""
     apt_root = _canonical_absolute_path(apt_root, "offline apt root")
     repository_root = _canonical_absolute_path(
         repository_root, "offline apt repository root")
     keyring = _canonical_absolute_path(keyring, "offline apt keyring")
-    require(list(roots) == packages.EXPECTED_REQUEST["roots"]
-            and package_paths and len(package_paths) <= packages.MAX_PACKAGE_COUNT,
-            "offline Ubuntu package roots or package paths changed")
-    normalized = [
-        _canonical_absolute_path(path, "offline dpkg package")
-        for path in package_paths
-    ]
-    require(len(normalized) == len(set(normalized))
-            and all(path.name.endswith(".deb") for path in normalized),
-            "offline dpkg package paths are invalid or duplicated")
+    require(list(roots) == packages.EXPECTED_REQUEST["roots"],
+            "offline Ubuntu package roots changed")
     common = [
         "/usr/bin/apt-get",
         "-o", "Dir=" + str(apt_root),
@@ -936,6 +928,7 @@ def offline_plan_commands(apt_root, repository_root, keyring, roots,
         "-o", "Acquire::Retries=0",
         "-o", "Acquire::AllowInsecureRepositories=false",
         "-o", "Acquire::Check-Valid-Until=true",
+        "-o", "APT::Sandbox::User=root",
         "-o", "Dir::Etc::Trusted=" + str(keyring),
         "-o", "Dir::Etc::TrustedParts=-",
     ]
@@ -948,12 +941,34 @@ def offline_plan_commands(apt_root, repository_root, keyring, roots,
                  *install],
         "simulate": [*common, "--quiet=2", "--simulate", "--no-download",
                      *install],
-        "dpkg": [
-            "/usr/bin/dpkg", "--root=" + str(apt_root),
-            "--admindir=" + str(apt_root / "var/lib/dpkg"),
-            "--no-act", "--unpack", *[str(path) for path in normalized],
-        ],
     }
+
+
+def offline_dpkg_command(apt_root, package_paths):
+    """Return the exact no-act dpkg command for downloaded package bytes."""
+    apt_root = _canonical_absolute_path(apt_root, "offline apt root")
+    require(package_paths and len(package_paths) <= packages.MAX_PACKAGE_COUNT,
+            "offline dpkg package paths changed")
+    normalized = [
+        _canonical_absolute_path(path, "offline dpkg package")
+        for path in package_paths
+    ]
+    require(len(normalized) == len(set(normalized))
+            and all(path.name.endswith(".deb") for path in normalized),
+            "offline dpkg package paths are invalid or duplicated")
+    return [
+        "/usr/bin/dpkg", "--root=" + str(apt_root),
+        "--admindir=" + str(apt_root / "var/lib/dpkg"),
+        "--no-act", "--unpack", *[str(path) for path in normalized],
+    ]
+
+
+def offline_plan_commands(apt_root, repository_root, keyring, roots,
+                          package_paths):
+    """Return exact local-repository apt and no-act dpkg commands."""
+    result = offline_apt_commands(apt_root, repository_root, keyring, roots)
+    result["dpkg"] = offline_dpkg_command(apt_root, package_paths)
+    return result
 
 
 def offline_sources_list(repository_root, keyring, sources):
