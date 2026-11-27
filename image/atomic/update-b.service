@@ -16,7 +16,7 @@ SELinuxContext=system_u:system_r:install_t:s0
 ExecStart=/usr/bin/install --owner=0 --group=0 --mode=0700 /usr/bin/bootc /run/symbi-update-bootc.new
 ExecStart=/usr/bin/chcon --reference=/usr/bin/ostree /run/symbi-update-bootc.new
 ExecStart=/usr/bin/mv /run/symbi-update-bootc.new /run/symbi-update-bootc
-ExecStopPost=/usr/bin/rm --force /run/symbi-update-bootc.new
+ExecStopPost=-/usr/bin/rm --force /run/symbi-update-bootc.new
 UMask=0077
 CapabilityBoundingSet=CAP_CHOWN CAP_DAC_OVERRIDE CAP_FOWNER CAP_MAC_ADMIN
 AmbientCapabilities=

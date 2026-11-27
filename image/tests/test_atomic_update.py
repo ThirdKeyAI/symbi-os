@@ -21,6 +21,7 @@ from image.atomic.update_contract import (NEGATIVE_UPDATE_SOURCE, POSITIVE_OVERL
                                           validate_report, require_update_base,
                                           validate_artifact_metadata)
 from image.atomic.update_boot import (DISPOSABLE_PHASE_TIMEOUT_SECONDS,
+                                      _SENSITIVE_ASSIGNMENT as VALIDATOR_SENSITIVE,
                                       qemu_command, negative_qemu_command,
                                       positive_qemu_command,
                                       firmware_arguments,
@@ -33,7 +34,9 @@ from image.atomic.update_boot import (DISPOSABLE_PHASE_TIMEOUT_SECONDS,
 from image.atomic.update_boot_failure import (JOURNAL_MAX_BYTES,
                                               JOURNAL_MAX_LINES,
                                               JOURNAL_MAX_LINE_BYTES,
-                                              bounded_journal_excerpt)
+                                              _SENSITIVE_ASSIGNMENT as PRODUCER_SENSITIVE,
+                                              bounded_journal_excerpt,
+                                              service_properties)
 from image.atomic.update_process import TIMEOUT_SECONDS, validate_update_controller_command
 from image.atomic.update_guest import (UPDATE_COMMAND_TIMEOUT_SECONDS,
                                        BOOTC_LABEL_REFERENCE, BOOTC_LAUNCHER,
@@ -130,15 +133,101 @@ class AtomicUpdateTests(unittest.TestCase):
             output, evidence = root / "output", root / "evidence"
             output.mkdir()
             evidence.mkdir()
-            (output / "result.json").write_text('{"passed": false}\n')
-            raw = (json.dumps(self.launcher_failure_report(), sort_keys=True) + "\n").encode()
+            report = self.launcher_failure_report()
+            controller = self.launcher_failure_controller(report)
+            controller["unreviewed"] = "API_TOKEN=short"
+            controller_raw = (json.dumps(controller, sort_keys=True) + "\n").encode()
+            (output / "result.json").write_bytes(controller_raw)
+            raw = (json.dumps(report, sort_keys=True) + "\n").encode()
             (output / "same-path-positive.json").write_bytes(raw)
+            (output / "same-path-positive-serial.log").write_text(
+                "b.service: API_TOKEN=short\n")
+            (output / "qemu-same-path-positive.log").write_text(
+                "guest console API_TOKEN=short\n")
             (output / "same-path-positive.qcow2").write_bytes(b"private disk")
             retained = retain_controller_output(output, evidence)
             self.assertEqual(retained,
                              ["controller-result.json", "same-path-positive.json"])
+            retained_controller = json.loads(
+                (evidence / "controller-result.json").read_bytes())
+            self.assertEqual(set(retained_controller), {
+                "schema", "passed", "guest_booted", "release_qualified",
+                "active_phase", "failure", "negative_reports", "phase_reports",
+                "inputs", "launcher_failure_validated",
+            })
+            self.assertTrue(retained_controller["launcher_failure_validated"])
+            self.assertEqual(retained_controller["inputs"],
+                             {"update_boot_failure.py": "a" * 64})
+            self.assertEqual(
+                retained_controller["failure"],
+                "same-path-positive failed; bounded launcher report validated")
             self.assertEqual((evidence / "same-path-positive.json").read_bytes(), raw)
             self.assertFalse((evidence / "same-path-positive.qcow2").exists())
+            retained_raw = b"".join(path.read_bytes() for path in evidence.iterdir())
+            self.assertNotIn(b"API_TOKEN", retained_raw)
+            self.assertNotIn(b"API_TOKEN=short", retained_raw)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            output, evidence = root / "output", root / "evidence"
+            output.mkdir()
+            evidence.mkdir()
+            report = self.launcher_failure_report()
+            unredacted = "b.service: API_TOKEN=short"
+            payload = (unredacted + "\n").encode("ascii")
+            report["journal"].update(
+                excerpt=[unredacted], line_count=1, bytes=len(payload),
+                sha256=hashlib.sha256(payload).hexdigest())
+            controller = self.launcher_failure_controller(
+                failure="ValueError: launcher-preparation journal excerpt is unsafe")
+            controller["unreviewed"] = "API_TOKEN=short"
+            (output / "result.json").write_text(
+                json.dumps(controller, sort_keys=True) + "\n")
+            (output / "same-path-positive.json").write_text(
+                json.dumps(report, sort_keys=True) + "\n")
+            (output / "same-path-positive-serial.log").write_text(
+                unredacted + "\n")
+            (output / "qemu-same-path-positive.log").write_text(
+                unredacted + "\n")
+            retained = retain_controller_output(output, evidence)
+            self.assertEqual(retained, ["controller-result.json"])
+            retained_raw = (evidence / "controller-result.json").read_bytes()
+            self.assertNotIn(b"API_TOKEN", retained_raw)
+            retained_controller = json.loads(retained_raw)
+            self.assertFalse(retained_controller["launcher_failure_validated"])
+            self.assertEqual(
+                retained_controller["failure"],
+                "same-path-positive failed; bounded launcher report unavailable or rejected")
+            self.assertFalse((evidence / "same-path-positive.json").exists())
+            self.assertFalse((evidence / "same-path-positive-serial.log").exists())
+            self.assertFalse((evidence / "qemu-same-path-positive.log").exists())
+
+        for case, report_raw in (
+            ("malformed", b'{"diagnostic":'),
+            ("missing-diagnostic", b'{"API_TOKEN":"short","schema":1}\n'),
+        ):
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                output, evidence = root / "output", root / "evidence"
+                output.mkdir()
+                evidence.mkdir()
+                controller = self.launcher_failure_controller(
+                    failure="ValueError: rejected same-path-positive report")
+                controller["unreviewed"] = "API_TOKEN=short"
+                (output / "result.json").write_text(
+                    json.dumps(controller, sort_keys=True) + "\n")
+                (output / "same-path-positive.json").write_bytes(report_raw)
+                (output / "same-path-positive-serial.log").write_text(
+                    "API_TOKEN=short\n")
+                (output / "qemu-same-path-positive.log").write_text(
+                    "API_TOKEN=short\n")
+                retained = retain_controller_output(output, evidence)
+                self.assertEqual(retained, ["controller-result.json"])
+                retained_raw = (evidence / "controller-result.json").read_bytes()
+                self.assertNotIn(b"API_TOKEN", retained_raw)
+                self.assertFalse(json.loads(retained_raw)["launcher_failure_validated"])
+                self.assertEqual([path.name for path in evidence.iterdir()],
+                                 ["controller-result.json"])
 
     def test_failed_update_refuses_unsafe_diagnostic_entries(self):
         for case in ("unexpected", "symlink", "hardlink", "fifo", "socket",
@@ -148,6 +237,7 @@ class AtomicUpdateTests(unittest.TestCase):
                 output, evidence = root / "output", root / "evidence"
                 output.mkdir()
                 evidence.mkdir()
+                (output / "result.json").write_text('{"passed": false}\n')
                 path = output / "same-path-positive-serial.log"
                 if case == "unexpected":
                     (output / "unreviewed.txt").write_text("x")
@@ -194,6 +284,7 @@ class AtomicUpdateTests(unittest.TestCase):
             output, evidence = root / "output", root / "evidence"
             output.mkdir()
             evidence.mkdir()
+            (output / "result.json").write_text('{"passed": false}\n')
             path = output / "same-path-positive-serial.log"
             path.write_bytes(b"a" * 4096)
             initial = path.stat()
@@ -203,7 +294,7 @@ class AtomicUpdateTests(unittest.TestCase):
             def changing_read(descriptor, count):
                 nonlocal changed
                 raw = original_read(descriptor, count)
-                if not changed:
+                if not changed and os.fstat(descriptor).st_ino == initial.st_ino:
                     changed = True
                     path.write_bytes(b"b" * 4096)
                     os.utime(path, ns=(initial.st_atime_ns, initial.st_mtime_ns))
@@ -699,6 +790,24 @@ class AtomicUpdateTests(unittest.TestCase):
             "scope": "Bounded launcher-preparation diagnostics; no update action ran",
         }
 
+    @staticmethod
+    def launcher_failure_controller(report=None, failure=None):
+        result = {
+            "schema": 1,
+            "passed": False,
+            "guest_booted": False,
+            "release_qualified": False,
+            "active_phase": "same-path-positive",
+            "failure": (failure or
+                        "RuntimeError: launcher preparation failed; inspect bounded report"),
+            "negative_reports": [],
+            "phase_reports": [],
+            "inputs": {"update_boot_failure.py": "a" * 64},
+        }
+        if report is not None:
+            result["launcher_failure"] = report
+        return result
+
     def test_launcher_failure_report_binds_exact_fields_and_bounds(self):
         report = self.launcher_failure_report()
         self.assertEqual(validate_launcher_failure_report(report, "a" * 64), report)
@@ -711,6 +820,9 @@ class AtomicUpdateTests(unittest.TestCase):
         mutations.append(changed)
         changed = copy.deepcopy(report)
         changed["service"]["ExecMainStatus"] = "not-a-number"
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["service"]["ExecMainStatus"] = "0"
         mutations.append(changed)
         changed = copy.deepcopy(report)
         changed["journal"]["excerpt"][0] = "x" * (JOURNAL_MAX_LINE_BYTES + 1)
@@ -729,6 +841,12 @@ class AtomicUpdateTests(unittest.TestCase):
                 validate_launcher_failure_report(changed, "a" * 64)
         with self.assertRaises(ValueError):
             validate_launcher_failure_report(report, "b" * 64)
+        properties = ("Result=exit-code\nExecMainCode=1\nExecMainStatus=229\n"
+                      "ActiveState=failed\nSubState=failed\n")
+        self.assertEqual(service_properties(properties), report["service"])
+        with self.assertRaisesRegex(ValueError, "did not fail closed"):
+            service_properties(properties.replace("ExecMainStatus=229",
+                                                  "ExecMainStatus=0"))
 
     def test_launcher_failure_journal_is_bounded_and_redacts_secret_shapes(self):
         secret = "s" * 64
@@ -754,6 +872,58 @@ class AtomicUpdateTests(unittest.TestCase):
         payload = ("\n".join(observed["excerpt"]) + "\n").encode("ascii")
         self.assertEqual(len(payload), observed["bytes"])
         self.assertEqual(hashlib.sha256(payload).hexdigest(), observed["sha256"])
+
+        sensitive_keys = (
+            ("API_TOKEN", "=", "x"),
+            ("GH_TOKEN", "=", "gh"),
+            ("client-secret", "=", "s"),
+            ("client_secret", "=", "tiny"),
+            ("client.secret", "=", "dot"),
+            ("Authorization", ": ", "short"),
+            ("--token", "=", "short"),
+            ('"token"', ": ", '"short"'),
+            ("X-API-Key", ": ", "short"),
+            ("API_KEY", "=", "short"),
+            ("OPENAI_API_KEY", "=", "short"),
+            ("DB_KEY", "=", "short"),
+            ("AWS_ACCESS_KEY_ID", "=", "short"),
+            ("PRIVATE_KEY", "=", "short"),
+            ("GITHUB_PAT", "=", "short"),
+            ("AUTH", "=", "short"),
+            ("AUTH_TOKEN", "=", "short"),
+            ("Authentication", ": ", "short"),
+            ("JWT", "=", "short"),
+            ("JWT_SECRET", "=", "short"),
+            ("PASSWD", "=", "short"),
+            ("PASSPHRASE", "=", "short"),
+            ("--password", " ", "short"),
+        )
+        self.assertEqual(PRODUCER_SENSITIVE.pattern,
+                         VALIDATOR_SENSITIVE.pattern)
+        for key, separator, value in sensitive_keys:
+            with self.subTest(key=key):
+                prefix = "b.service: "
+                sanitized = bounded_journal_excerpt(
+                    prefix + key + separator + value + "\n")
+                self.assertEqual(
+                    sanitized["excerpt"],
+                    [prefix + key + separator + "<redacted>"],
+                )
+                report = self.launcher_failure_report()
+                report["journal"] = sanitized
+                self.assertEqual(
+                    validate_launcher_failure_report(report, "a" * 64), report)
+
+                changed = copy.deepcopy(report)
+                unredacted = prefix + key + separator + value
+                changed["journal"]["excerpt"] = [unredacted]
+                changed["journal"]["line_count"] = 1
+                raw_unredacted = (unredacted + "\n").encode("ascii")
+                changed["journal"]["bytes"] = len(raw_unredacted)
+                changed["journal"]["sha256"] = hashlib.sha256(
+                    raw_unredacted).hexdigest()
+                with self.assertRaisesRegex(ValueError, "excerpt is unsafe"):
+                    validate_launcher_failure_report(changed, "a" * 64)
 
     def test_each_bootc_rejection_uses_a_distinct_disposable_overlay(self):
         commands = {case: negative_qemu_command(case) for case in (
@@ -1110,6 +1280,8 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertEqual(launcher["MemorySwapMax"], "0")
         self.assertEqual(launcher["TasksMax"], "16")
         self.assertEqual(launcher["OnFailure"], "f.service")
+        self.assertEqual(launcher["ExecStopPost"],
+                         "-/usr/bin/rm --force /run/symbi-update-bootc.new")
         text = (root / "image/atomic/update-b.service").read_text()
         self.assertIn("/usr/bin/bootc /run/symbi-update-bootc.new", text)
         self.assertIn("--reference=/usr/bin/ostree", text)

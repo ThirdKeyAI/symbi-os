@@ -15,6 +15,7 @@ from image.atomic.update_contract import (NEGATIVE_CASES, NEGATIVE_UPDATE_SOURCE
                                           negative_signature_payloads,
                                           require_update_base, update_policy,
                                           validate_artifact_metadata, validate_report)
+from image.atomic.update_boot import validate_launcher_failure_report
 from image.atomic.update_process import TIMEOUT_SECONDS
 from image.boot.inputs import unpack_desktop_image
 
@@ -73,6 +74,90 @@ def _read_bounded_regular(path):
         os.close(descriptor)
 
 
+def _launcher_failure_publication(payloads):
+    """Select only safe same-path failure payloads, or the ordinary-path sentinel."""
+    controller_raw = payloads.get("result.json")
+    report_raw = payloads.get("same-path-positive.json")
+    if controller_raw is None:
+        raise ValueError("missing update controller result")
+    try:
+        controller = unique_json(controller_raw)
+    except (UnicodeError, ValueError) as error:
+        raise ValueError("invalid update controller result") from error
+    try:
+        report = unique_json(report_raw) if report_raw is not None else None
+    except (UnicodeError, ValueError):
+        report = None
+    active_same_path = controller.get("active_phase") == "same-path-positive"
+    report_claimed = (isinstance(report, dict)
+                      and report.get("diagnostic") == "launcher-preparation-failure")
+    embedded = controller.get("launcher_failure")
+    if not active_same_path:
+        if report_claimed or embedded is not None:
+            raise ValueError("launcher failure evidence escaped its controller phase")
+        return None
+    failure = controller.get("failure")
+    if (controller.get("schema") != 1
+            or controller.get("passed") is not False
+            or controller.get("guest_booted") is not False
+            or controller.get("release_qualified") is not False
+            or controller.get("negative_reports") != []
+            or controller.get("phase_reports") != []
+            or "same_path_positive_control" in controller
+            or not isinstance(failure, str)
+            or not 0 < len(failure.encode()) <= 512
+            or any(character < " " or character > "~" for character in failure)):
+        raise ValueError("invalid same-path failure controller result")
+    inputs = controller.get("inputs")
+    runner_hash = (inputs.get("update_boot_failure.py")
+                   if isinstance(inputs, dict) else None)
+    if (not isinstance(runner_hash, str) or len(runner_hash) != 64
+            or any(character not in "0123456789abcdef" for character in runner_hash)):
+        raise ValueError("launcher diagnostic runner hash is absent")
+    validated_embedded = None
+    if embedded is not None:
+        validated_embedded = validate_launcher_failure_report(embedded, runner_hash)
+    if not report_claimed:
+        return [("controller-result.json",
+                 _fixed_launcher_failure_controller(runner_hash, False))]
+    try:
+        validated = validate_launcher_failure_report(report, runner_hash)
+    except ValueError:
+        if validated_embedded is not None:
+            raise ValueError("separate launcher failure report differs from controller")
+        return [("controller-result.json",
+                 _fixed_launcher_failure_controller(runner_hash, False))]
+    if (validated_embedded != validated
+            or failure
+            != "RuntimeError: launcher preparation failed; inspect bounded report"):
+        return [("controller-result.json",
+                 _fixed_launcher_failure_controller(runner_hash, False))]
+    return [
+        ("controller-result.json",
+         _fixed_launcher_failure_controller(runner_hash, True)),
+        ("same-path-positive.json", report_raw),
+    ]
+
+
+def _fixed_launcher_failure_controller(runner_hash, report_validated):
+    """Serialize only fixed controller facts for the diagnostic publication path."""
+    result = {
+        "schema": 1,
+        "passed": False,
+        "guest_booted": False,
+        "release_qualified": False,
+        "active_phase": "same-path-positive",
+        "failure": ("same-path-positive failed; bounded launcher report validated"
+                    if report_validated else
+                    "same-path-positive failed; bounded launcher report unavailable or rejected"),
+        "negative_reports": [],
+        "phase_reports": [],
+        "inputs": {"update_boot_failure.py": runner_hash},
+        "launcher_failure_validated": report_validated,
+    }
+    return (json.dumps(result, sort_keys=True, separators=(",", ":")) + "\n").encode()
+
+
 def retain_controller_output(output, evidence):
     """Copy only bounded direct diagnostics; never retain guest disk overlays."""
     output, evidence = Path(output), Path(evidence)
@@ -84,11 +169,18 @@ def retain_controller_output(output, evidence):
             raise ValueError("unexpected update controller output: " + path.name)
         names.add(path.name)
     retained = []
-    payloads = []
-    for name in sorted(names & public):
-        raw = _read_bounded_regular(output / name)
-        target_name = "controller-result.json" if name == "result.json" else name
-        payloads.append((target_name, raw))
+    cached = {name: _read_bounded_regular(output / name)
+              for name in ("result.json", "same-path-positive.json")
+              if name in names}
+    payloads = _launcher_failure_publication(cached)
+    if payloads is None:
+        payloads = []
+        for name in sorted(names & public):
+            raw = cached.get(name)
+            if raw is None:
+                raw = _read_bounded_regular(output / name)
+            target_name = "controller-result.json" if name == "result.json" else name
+            payloads.append((target_name, raw))
     for name, raw in payloads:
         target = evidence / name
         with target.open("xb") as stream:

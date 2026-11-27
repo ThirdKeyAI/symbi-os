@@ -21,6 +21,23 @@ LAUNCHER_FAILURE_JOURNAL_COMMAND = [
 LAUNCHER_FAILURE_JOURNAL_MAX_BYTES = 8 * 1024
 LAUNCHER_FAILURE_JOURNAL_MAX_LINES = 24
 LAUNCHER_FAILURE_JOURNAL_MAX_LINE_BYTES = 512
+_SENSITIVE_COMPONENT = (
+    r"(?:(?:api|private)[_.-]key|authorization|authentication|auth|cookie|"
+    r"credential|password|passwd|passphrase|secret|token|jwt|pat|key)"
+)
+_SENSITIVE_IDENTIFIER = (
+    r"(?:[A-Za-z0-9]+[_.-])*" + _SENSITIVE_COMPONENT
+    + r"(?:[_.-][A-Za-z0-9]+)*"
+)
+_SENSITIVE_KEY = (
+    r"(?:[\"']" + _SENSITIVE_IDENTIFIER + r"[\"']"
+    + r"|-{1,2}" + _SENSITIVE_IDENTIFIER
+    + r"|" + _SENSITIVE_IDENTIFIER + r")"
+)
+_SENSITIVE_ASSIGNMENT = re.compile(
+    r"(?i)(?<![A-Za-z0-9_.-])(" + _SENSITIVE_KEY
+    + r")(\s*[:=]\s*|\s+)(.*)$"
+)
 
 
 def sha256(path):
@@ -69,6 +86,7 @@ def validate_launcher_failure_report(report, runner_hash):
             or service.get("SubState") != "failed"
             or re.fullmatch(r"[0-9]{1,3}", service.get("ExecMainCode", "")) is None
             or re.fullmatch(r"[0-9]{1,3}", service.get("ExecMainStatus", "")) is None
+            or service.get("ExecMainStatus") == "0"
             or any(not isinstance(value, str) or not value or len(value.encode()) > 128
                    for value in service.values())):
         raise ValueError("launcher-preparation service failure is incomplete")
@@ -89,13 +107,14 @@ def validate_launcher_failure_report(report, runner_hash):
             or len(journal["excerpt"]) != journal["line_count"]):
         raise ValueError("launcher-preparation journal metadata is incomplete")
     for line in journal["excerpt"]:
+        sensitive_assignment = (_SENSITIVE_ASSIGNMENT.search(line)
+                                if isinstance(line, str) else None)
         if (not isinstance(line, str)
                 or len(line.encode("ascii", errors="ignore")) != len(line)
                 or len(line.encode("ascii")) > LAUNCHER_FAILURE_JOURNAL_MAX_LINE_BYTES
                 or any(not " " <= character <= "~" for character in line)
-                or re.search(
-                    r"(?i)\b(?:authorization|cookie|credential|password|secret|token)"
-                    r"\s*[:=]\s*(?!<redacted>)[^ ]+", line)
+                or (sensitive_assignment is not None
+                    and sensitive_assignment.group(3) != "<redacted>")
                 or re.search(r"(?i)\bbearer\s+(?!<redacted>)[^ ]+", line)
                 or re.search(r"(?<![A-Za-z0-9])[A-Za-z0-9_+/=-]{48,}(?![A-Za-z0-9])",
                              line)):

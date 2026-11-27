@@ -587,11 +587,23 @@ requires `b.service` to be in the failed state, then the reporter records exactl
 five systemd result fields and a sanitized `b.service` journal excerpt through
 the existing virtio report channel. A failed precheck is a unit failure rather
 than a clean condition skip, so `OnFailure=poweroff.target` and `ExecStopPost`
-retain fail-safe shutdown if reporter validation fails. The excerpt is limited
-to 24 lines, 512 bytes per line and 8 KiB overall; control characters and
-secret-shaped assignments or long values are redacted. The report is limited to
+retain fail-safe shutdown if reporter validation fails. The launcher cleanup is
+still attempted, but its `ExecStopPost` is non-fatal so a late cleanup failure
+cannot start the diagnostic after the launcher main process succeeded and the
+update service may have run. Both reporter and controller require a nonzero
+`ExecMainStatus`.
+
+The excerpt is limited to 24 lines, 512 bytes per line and 8 KiB overall;
+control characters and short or long secret assignments are redacted with the
+same producer/validator grammar. This includes quoted JSON keys, header values,
+separated command-line values and delimiter-bounded token, secret, password,
+authentication, JWT, PAT and generic key components. The report is limited to
 128 KiB and bound to the diagnostic script's SHA-256. The controller validates
-this exact schema and still fails the run. After the write, or if the diagnostic
-fails, the guest powers off. The ordinary update path and its existing
-`ExecStopPost` shutdown remain unchanged. This permits one bounded diagnostic
-rerun and does not qualify or alter the launcher.
+this exact schema and still fails the run. For this failed same-path phase, the
+publication step retains only a fixed normalized controller result and a fully validated,
+sanitized report. If that report is malformed, missing its diagnostic marker or
+fails validation, only the normalized controller result remains; the raw
+controller, report, serial and QEMU logs are dropped. Other update evidence
+paths are unchanged.
+After the write, or if the diagnostic fails, the guest powers off. This permits
+one bounded diagnostic rerun and does not qualify or alter the launcher.

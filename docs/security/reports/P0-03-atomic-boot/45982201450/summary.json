@@ -88,8 +88,55 @@
     "journal_max_bytes": 8192,
     "journal_control_characters_removed": true,
     "journal_secret_shapes_redacted": true,
+    "sensitive_identifier_components": [
+      "authorization",
+      "authentication",
+      "auth",
+      "cookie",
+      "credential",
+      "password",
+      "passwd",
+      "passphrase",
+      "secret",
+      "token",
+      "jwt",
+      "pat",
+      "key"
+    ],
+    "short_secret_values_redacted": true,
+    "producer_validator_redaction_grammar_identical": true,
+    "main_exit_status_nonzero_required": true,
+    "launcher_cleanup_attempt_nonfatal": true,
     "runner_hash_bound": true,
     "report_max_bytes": 131072,
+    "valid_failure_publication": [
+      "controller-result.json",
+      "same-path-positive.json"
+    ],
+    "normalized_controller_keys": [
+      "schema",
+      "passed",
+      "guest_booted",
+      "release_qualified",
+      "active_phase",
+      "failure",
+      "negative_reports",
+      "phase_reports",
+      "inputs",
+      "launcher_failure_validated"
+    ],
+    "normalized_controller_failure_categories": [
+      "same-path-positive failed; bounded launcher report validated",
+      "same-path-positive failed; bounded launcher report unavailable or rejected"
+    ],
+    "invalid_or_malformed_failure_publication": [
+      "controller-result.json"
+    ],
+    "same_path_failure_falls_through_ordinary_retention": false,
+    "raw_serial_retained": false,
+    "raw_qemu_log_retained": false,
+    "raw_controller_retained": false,
+    "unvalidated_report_retained": false,
     "poweroff_after_report": true,
     "poweroff_on_reporter_failure": true,
     "update_success_path_semantics_changed": false,
@@ -97,14 +144,14 @@
   },
   "local_verification": {
     "focused_update_tests": 57,
-    "focused_seconds": 0.134,
-    "focused_peak_rss_kib": 35096,
+    "focused_seconds": 0.136,
+    "focused_peak_rss_kib": 35736,
     "full_image_tests": 336,
-    "full_image_seconds": 2.065,
-    "full_image_peak_rss_kib": 55556,
+    "full_image_seconds": 2.086,
+    "full_image_peak_rss_kib": 55856,
     "swaps": 0,
     "python_syntax": "pass",
-    "systemd_unit_syntax": "pass with expected local /usr/bin/bootc absence warning",
+    "systemd_unit_syntax": "pass for b.service, f.service and o.service; only unrelated host CPUAccounting deprecation warning",
     "diff_check": "pass"
   },
   "next": "Review the bounded diagnostic, then run the exact reviewed head once. Use the retained service result and journal excerpt to identify the failed launcher-preparation step before changing the SELinux mechanism; no update or OS qualification is claimed."

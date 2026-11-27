@@ -25,9 +25,22 @@ COMMAND_STDOUT_MAX_BYTES = 64 * 1024
 COMMAND_STDERR_MAX_BYTES = 8 * 1024
 REPORT_MAX_BYTES = 128 * 1024
 SCOPE = "Bounded launcher-preparation diagnostics; no update action ran"
-_SECRET_ASSIGNMENT = re.compile(
-    r"(?i)\b(authorization|cookie|credential|password|secret|token)"
-    r"(\s*[:=]\s*).*$"
+_SENSITIVE_COMPONENT = (
+    r"(?:(?:api|private)[_.-]key|authorization|authentication|auth|cookie|"
+    r"credential|password|passwd|passphrase|secret|token|jwt|pat|key)"
+)
+_SENSITIVE_IDENTIFIER = (
+    r"(?:[A-Za-z0-9]+[_.-])*" + _SENSITIVE_COMPONENT
+    + r"(?:[_.-][A-Za-z0-9]+)*"
+)
+_SENSITIVE_KEY = (
+    r"(?:[\"']" + _SENSITIVE_IDENTIFIER + r"[\"']"
+    + r"|-{1,2}" + _SENSITIVE_IDENTIFIER
+    + r"|" + _SENSITIVE_IDENTIFIER + r")"
+)
+_SENSITIVE_ASSIGNMENT = re.compile(
+    r"(?i)(?<![A-Za-z0-9_.-])(" + _SENSITIVE_KEY
+    + r")(\s*[:=]\s*|\s+)(.*)$"
 )
 _BEARER_VALUE = re.compile(r"(?i)\bbearer\s+[^ ]+")
 _LONG_VALUE = re.compile(r"(?<![A-Za-z0-9])[A-Za-z0-9_+/=-]{48,}(?![A-Za-z0-9])")
@@ -59,7 +72,8 @@ def service_properties(raw):
             or properties["ActiveState"] != "failed"
             or properties["SubState"] != "failed"
             or re.fullmatch(r"[0-9]{1,3}", properties["ExecMainCode"]) is None
-            or re.fullmatch(r"[0-9]{1,3}", properties["ExecMainStatus"]) is None):
+            or re.fullmatch(r"[0-9]{1,3}", properties["ExecMainStatus"]) is None
+            or properties["ExecMainStatus"] == "0"):
         raise ValueError("launcher service did not fail closed")
     return properties
 
@@ -67,8 +81,8 @@ def service_properties(raw):
 def _sanitize_line(line):
     line = "".join(character if " " <= character <= "~" else "?"
                    for character in line)
-    line = _SECRET_ASSIGNMENT.sub(lambda match: match.group(1)
-                                  + match.group(2) + "<redacted>", line)
+    line = _SENSITIVE_ASSIGNMENT.sub(lambda match: match.group(1)
+                                     + match.group(2) + "<redacted>", line)
     line = _BEARER_VALUE.sub("Bearer <redacted>", line)
     return _LONG_VALUE.sub("<redacted>", line)
 
