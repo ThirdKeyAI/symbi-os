@@ -433,6 +433,31 @@ approval. The [first retained assessment](security/reports/P0-03-cve-bz/2026-11-
 records open matches; no MCP client was installed and no service authority was
 created. Signed service integration remains Phase 4 work.
 
+#### External integration references for later evaluation
+
+The following 14 entries are reference-only. They are not OS defaults or signed
+service IDs; they are not installed, connected, configured, approved or
+supported, and they are not part of the signed catalog. Any selection or
+adoption requires P4-01/P4-03/P4-04 service-manifest, contract,
+credential/data-boundary and terms review.
+
+| Label | Reference ID |
+| --- | --- |
+| Dropbox | `app-69b31dc2110c8191b8b47dc98fe5a052@openai-curated-remote` |
+| Box | `box@openai-curated-remote` |
+| Figma | `figma@openai-curated-remote` |
+| Finances | `finances@openai-curated-remote` |
+| Gmail | `gmail@openai-curated-remote` |
+| Google Calendar | `google-calendar@openai-curated-remote` |
+| Google Drive | `google-drive@openai-curated-remote` |
+| Linear | `linear@openai-curated-remote` |
+| Notion | `notion@openai-curated-remote` |
+| OpenAI Developers | `openai-developers@openai-curated-remote` |
+| Outlook Calendar | `outlook-calendar@openai-curated-remote` |
+| Outlook Email | `outlook-email@openai-curated-remote` |
+| SharePoint | `sharepoint@openai-curated-remote` |
+| Teams | `teams@openai-curated-remote` |
+
 The proposed `verify_stale` push rule is already a Phase 5 example, not an
 implemented GitHub/Gitea gate. Freshness must come from trusted verification
 evidence bound to the exact repository, content and required checks; a skill or
