@@ -56,6 +56,23 @@ BOOTC_OPERATIONS = {
 }
 
 
+def write_channel(raw, channel=CHANNEL):
+    """Write one bounded report completely before the service can power off."""
+    if not isinstance(raw, bytes) or not 0 < len(raw) <= 128 * 1024:
+        raise ValueError("invalid update guest report payload")
+    channel = Path(channel)
+    deadline = time.monotonic() + 15
+    while not channel.exists() and time.monotonic() < deadline:
+        time.sleep(0.1)
+    with channel.open("wb", buffering=0) as output:
+        offset = 0
+        while offset < len(raw):
+            written = output.write(raw[offset:])
+            if type(written) is not int or not 0 < written <= len(raw) - offset:
+                raise RuntimeError("guest report channel stopped accepting data")
+            offset += written
+
+
 def sha256(path):
     with Path(path).open("rb") as stream:
         return hashlib.file_digest(stream, "sha256").hexdigest()
@@ -1061,11 +1078,7 @@ def main():
     raw = (json.dumps(record, sort_keys=True) + "\n").encode()
     if len(raw) > 128 * 1024:
         raise ValueError("update guest report exceeds its bound")
-    deadline = time.monotonic() + 15
-    while not CHANNEL.exists() and time.monotonic() < deadline:
-        time.sleep(0.1)
-    with CHANNEL.open("wb", buffering=0) as output:
-        output.write(raw)
+    write_channel(raw)
     if not record["passed"]:
         raise RuntimeError("update guest phase failed")
 

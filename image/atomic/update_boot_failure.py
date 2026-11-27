@@ -156,10 +156,16 @@ def write_report(report, channel=CHANNEL):
     if not 0 < len(raw) <= REPORT_MAX_BYTES:
         raise ValueError("transition-probe diagnostic report exceeded its bound")
     deadline = time.monotonic() + 15
-    while not Path(channel).exists() and time.monotonic() < deadline:
+    channel = Path(channel)
+    while not channel.exists() and time.monotonic() < deadline:
         time.sleep(0.1)
-    with Path(channel).open("wb", buffering=0) as output:
-        output.write(raw)
+    with channel.open("wb", buffering=0) as output:
+        offset = 0
+        while offset < len(raw):
+            written = output.write(raw[offset:])
+            if type(written) is not int or not 0 < written <= len(raw) - offset:
+                raise RuntimeError("transition report channel stopped accepting data")
+            offset += written
 
 
 def main():

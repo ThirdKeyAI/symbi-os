@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import re
+import stat
 import subprocess
 import time
 
@@ -43,6 +44,27 @@ _SENSITIVE_ASSIGNMENT = re.compile(
 def sha256(path):
     with Path(path).open("rb") as stream:
         return hashlib.file_digest(stream, "sha256").hexdigest()
+
+
+def _phase_report_observation(path, name):
+    """Describe the exact report endpoint after one QEMU process exits."""
+    path = Path(path)
+    try:
+        info = path.lstat()
+    except FileNotFoundError:
+        return {"name": name, "state": "absent", "bytes": 0, "sha256": None}
+    if (path.is_symlink() or not stat.S_ISREG(info.st_mode)
+            or info.st_nlink != 1):
+        return {"name": name, "state": "unsafe", "bytes": info.st_size,
+                "sha256": None}
+    if info.st_size == 0:
+        return {"name": name, "state": "empty", "bytes": 0,
+                "sha256": hashlib.sha256(b"").hexdigest()}
+    if info.st_size > MAX_REPORT:
+        return {"name": name, "state": "oversized", "bytes": info.st_size,
+                "sha256": None}
+    return {"name": name, "state": "ready", "bytes": info.st_size,
+            "sha256": sha256(path)}
 
 
 def unique_json(raw):
@@ -515,7 +537,7 @@ def main():
             or (inputs / "update.raw").stat().st_size != source.get("bytes")
             or sha256(inputs / "update.raw") != source.get("sha256")):
         raise ValueError("authenticated update source disk changed")
-    names = ["update_guest.py", "update_boot_failure.py", "expected.json",
+    names = ["update_boot.py", "update_guest.py", "update_boot_failure.py", "expected.json",
              "update-policy.json", "update-o.service", "s.service",
              "update-b.service", "update-f.service"]
     positive_name = "expected-positive.json"
@@ -596,11 +618,22 @@ def main():
                     if time.monotonic() - started >= timeout:
                         raise TimeoutError("update guest phase exceeded its bound")
                     time.sleep(0.5)
+            phase_process = {
+                "label": label,
+                "command_sha256": hashlib.sha256(json.dumps(
+                    command, separators=(",", ":")).encode()).hexdigest(),
+                "exit_code": child.returncode,
+                "log_name": log_name,
+                "serial_name": serial_name,
+                "report": _phase_report_observation(output / report_name, report_name),
+            }
             if child.returncode != 0:
+                record["phase_failure"] = phase_process
                 raise RuntimeError("update QEMU phase failed; inspect original logs")
             child = None
             path = output / report_name
             if path.is_symlink() or not path.is_file() or not 0 < path.stat().st_size <= MAX_REPORT:
+                record["phase_failure"] = phase_process
                 raise ValueError("missing bounded update phase report")
             return path, time.monotonic() - started
 

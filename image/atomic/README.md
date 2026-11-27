@@ -597,3 +597,20 @@ runcon should retain the generic executable label rather than a special
 transition-bearing label.
 Only a successful probe followed by the complete switch, refusal, reboot and
 rollback sequence can advance this gate, and it still cannot qualify the OS.
+
+Run 46004435476 at `658964d475c2f431abb96ab37d784c427fccfc0c`
+reached the first same-path-positive VM but produced no nonempty phase report.
+The missing-report branch proves that QEMU exited zero, while the outer cgroup
+recorded zero OOM, OOM-kill and swap events despite heavy reclaim at its 5 GiB
+limit. The retained publisher then reduced the failure to a generic controller
+sentinel and discarded the private serial and QEMU logs, so this artifact cannot
+establish the native transition result. The guest and transition-failure writers
+also performed one unchecked unbuffered write. They now retry short writes and
+fail on a zero or invalid result before systemd can request poweroff.
+
+A recurrence retains only a content-free structured diagnostic. It binds the
+exact same-path command hash and zero exit, fixed report and log names,
+absent-or-empty report identity, injected input hashes, cleanup state and bounded
+resource counters. Raw serial, QEMU output and private overlays remain excluded.
+The compact audited summary is `missing-report-review.json`; this instrumentation
+does not relax acceptance or claim that the SELinux transition succeeded.
