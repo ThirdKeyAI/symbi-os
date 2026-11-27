@@ -120,6 +120,14 @@ revoke or freeze to remain pending indefinitely when work does not drain. This
 is a documented availability limitation of the safety contract, not a proven
 deadline. The implementation must not hide that state by acknowledging early.
 
+The build plan and OS control review plan now track three reviewer follow-ups as
+future executable work: FML-01 composes physical approval with exact grant use;
+FML-02 models exclusion at synthetic-event delivery, rather than only receipt
+minting; and FML-03 defines observable and timed completion semantics for
+freeze/revoke network effects. These entries document gaps already outside the
+five bounded models. They add no transition, assumption or proof claim to the
+current models, and no control is qualified by recording them.
+
 There are no runtime traces yet because no covered runtime implementation
 exists. Do not relabel model-generated traces as execution logs. Before a TCB
 implementation is qualified, instrument real atomic transitions, retain real
@@ -153,7 +161,7 @@ to the executable design model. That exercises this handoff; it does not test
 whether a future implementation change is reflected in the model.
 
 covered:
-  - docs/build-plan.md 72161ddb91ec
+  - docs/build-plan.md 5fca0f12b092
     > ## Building on Symbiont 3.0
     > ## Base OS and image pipeline
   - formal/GrantLifecycle.tla 3eb20542d5d1

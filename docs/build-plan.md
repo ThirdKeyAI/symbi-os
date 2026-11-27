@@ -59,14 +59,14 @@ Most of the trusted core already exists in [Symbiont](https://github.com/thirdke
 | Skills and Store | SKILL.md loader; `symbi-skill-v2` signatures (SchemaPin over every file digest); ClawHavoc scanner (40 rules); `symbi skills list`, `scan`, `verify` | Capability manifests (`skill.toml`); the Store |
 | Policy studio | `symbi policy evaluate`; `symbi tools validate` and `test` dry runs; `repl-lsp` | Z3 property checks; UI |
 | symbi doctor | `symbi doctor` checks the boundary, supervised launch, namespaces and managed CLI startup | Image signature, bootc and trustd checks |
-| Evidence | `docs/security/controls.json` control catalogue with qualification reports | The 14 invariants registered as controls |
+| Evidence | Upstream runtime catalogue for its supported routes | OS-owned `docs/security/controls.json` preparation for all 14 invariants; upstream review and runtime qualification remain pending |
 | Voice | Slack, Teams and Mattermost channel adapters; coordinator delegation through `CommunicationPolicyGate`; `symbi-invis-strip` | A voice channel adapter |
 
 **Rules for agents touching Symbiont**
 
 - Pin Symbiont by commit. Runtime changes go upstream first and follow its `AGENTS.md` and evidence conventions.
 - Rely only on routes Symbiont documents as supported for the chosen backend. Its own docs state that full containment across all entry points is not established, that browser execution is unavailable, and that the Landlock route does not yet serve PTYs or registered HTTP and scheduled agents.
-- A new security property needs a `controls.json` entry and a retained qualification report, not only tests.
+- A new security property needs a fail-closed local `controls.json` entry and an exact retained qualification report, not only tests. Upstream registration is a separate reviewed change and cannot broaden narrower runtime evidence.
 
 ## Security invariants
 
@@ -89,7 +89,19 @@ These 14 rules define the product; a build that breaks one is not shippable. Eac
 | INV-13 | **Project config only narrows.** A repo's local config cannot change providers, routing, sandbox or egress. | symbi-run, modeld | Tests |
 | INV-14 | **Voice is never authority.** Voice cannot approve or grant. Audio stays on-device until a wake event and a policy decision allow it out. | voice service, trustd | TLA+ + tests |
 
-Register each invariant as a control in Symbiont's catalogue (`docs/security/controls.json`) with retained qualification reports; a passing test alone is not a validation claim.
+Prepare each invariant in the OS-owned [control catalogue](security/controls.json) and validate its claims locally. Upstream registration and the external evidence-retention policy remain subject to owner and upstream review; a passing test or design model alone is not a validation claim.
+
+### Formal composition and runtime-evidence follow-ups
+
+The five P0-02 models keep their current promises and bounded scope. Three
+review findings are explicit future executable work; they do not complete or
+qualify any control:
+
+| Task | Required engineering and evidence | Cards |
+| --- | --- | --- |
+| FML-01 | Compose one physical trusted-path approval with creation or widening of its exact grant and the first grant use. Check nonce/resource/principal binding and single use with deliberate faults, then retain a real end-to-end journal trace. | P2-03, P2-04, P5-05 |
+| FML-02 | Model delivery to the trusted surface, not only receipt minting. A delivered synthetic event must violate INV-4 even when ignored; retain compositor traces, fuzzing and capture-exclusion evidence. | P2-02, P2-03, P2-05 |
+| FML-03 | Define observable completion and acknowledgement frontiers for every freeze/revoke executor, including remotely accepted network effects. Reject early acknowledgement and retain concurrent traces plus the timed 500 ms freeze test. | P1-03, P1-04, P2-03, P2-04, P5-05 |
 
 ## Base OS and image pipeline
 
@@ -694,7 +706,7 @@ Open questions raised: <links, or none>
 
 ## Risks and open questions
 
-Implementation notes raised during P0: see [docs/open-questions.md](open-questions.md) for CI/review setup, the retired base image, signing setup, unresolved model attributes, build-tool lockfile review, and qualification prerequisites. The original questions below remain open.
+Implementation notes raised during P0: see [docs/open-questions.md](open-questions.md) for CI/review setup, the retired base image, signing setup, unresolved model attributes, build-tool lockfile review, control-catalogue ownership/evidence retention, and qualification prerequisites. The original questions below remain open.
 
 The biggest risk is the Hyprland patch for the trusted path; everything else has a known fallback.
 

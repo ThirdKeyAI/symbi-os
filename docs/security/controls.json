@@ -1,0 +1,467 @@
+{
+  "schema_version": 1,
+  "scope": "Symbi OS-wide security properties on the exact signed Fedora Atomic image. Design models, source references, fixtures and build-input checks are not runtime qualification.",
+  "controls": [
+    {
+      "id": "OSI-001",
+      "title": "Complete mediation of agent effects",
+      "threat": "An agent reaches a file, process, network endpoint or service without the Cedar gate deciding the prepared action",
+      "invariant": "INV-1: No agent side effect occurs without a gate decision, and model output never grants authority",
+      "owner": "Symbiont gate, symbi-run, symbi-egressd, symbi-modeld, symbi-servicesd, and symbi-browserd",
+      "implementation_status": "partial",
+      "validation_status": "untested",
+      "routes": [
+        "managed_cli_landlock",
+        "managed_cli_docker",
+        "managed_cli_gvisor",
+        "os_service_brokers"
+      ],
+      "backends": [
+        "symbiont_gate",
+        "landlock",
+        "docker",
+        "gvisor"
+      ],
+      "sources": [
+        "upstream/symbiont.toml",
+        "image/qualification/landlock.py",
+        "image/qualification/containers.py"
+      ],
+      "tests": [
+        "image/qualification/tests/test_landlock.py",
+        "image/qualification/tests/test_containers.py",
+        "image/qualification/tests/test_vertical_slice.py"
+      ],
+      "limitations": [
+        "Qualification drivers and strict report validators exist, but the exact installed OS routes have not all passed native qualification",
+        "Desktop launchers and service brokers are not implemented",
+        "No OS-wide escape suite result is attached"
+      ],
+      "qualifications": []
+    },
+    {
+      "id": "OSI-002",
+      "title": "Only physical human acts create or widen grants",
+      "threat": "An agent, application, voice command or replayed approval creates, widens or extends its own authority",
+      "invariant": "INV-2: Grants are created, widened or extended only by a physical trusted-path confirmation or human designation act",
+      "owner": "symbi-trustd and symbi-grantd",
+      "implementation_status": "planned",
+      "validation_status": "untested",
+      "routes": [
+        "trusted_path_confirmation",
+        "human_designation"
+      ],
+      "backends": [
+        "hyprland_trusted_surface",
+        "symbi_trustd",
+        "symbi_grantd"
+      ],
+      "sources": [
+        "formal/GrantLifecycle.tla",
+        "formal/TrustedInput.tla",
+        "docs/build-plan.md"
+      ],
+      "tests": [
+        "formal/GrantLifecycle.cfg",
+        "formal/TrustedInput.cfg",
+        "formal/faults.tsv"
+      ],
+      "limitations": [
+        "The bounded models are design evidence, not an implemented trusted path",
+        "A composed physical approval to exact grant-use model and runtime trace remain required",
+        "No compositor, trustd or grant broker runtime qualification is attached"
+      ],
+      "qualifications": []
+    },
+    {
+      "id": "OSI-003",
+      "title": "Revocation acknowledgement is final",
+      "threat": "An in-flight or cached action completes after the user is told its grant is revoked",
+      "invariant": "INV-3: After revocation is acknowledged, no action under that grant completes",
+      "owner": "Symbiont gate, symbi-egressd, symbi-modeld, and symbi-grantd",
+      "implementation_status": "planned",
+      "validation_status": "untested",
+      "routes": [
+        "file_grants",
+        "service_egress",
+        "model_inference",
+        "workspace_proxy"
+      ],
+      "backends": [
+        "symbiont_gate",
+        "symbi_egressd",
+        "symbi_modeld"
+      ],
+      "sources": [
+        "formal/GrantLifecycle.tla",
+        "upstream/symbiont.toml",
+        "docs/build-plan.md"
+      ],
+      "tests": [
+        "formal/GrantLifecycle.cfg",
+        "formal/faults.tsv"
+      ],
+      "limitations": [
+        "The bounded revoke model assumes cancellation prevents later external completion",
+        "Each network executor still needs an observable completion and acknowledgement contract",
+        "No real concurrent revoke trace or timed integration result is attached"
+      ],
+      "qualifications": []
+    },
+    {
+      "id": "OSI-004",
+      "title": "Trusted surfaces exclude synthetic input",
+      "threat": "Synthetic input reaches a trusted surface and is mistaken for a human grant action",
+      "invariant": "INV-4: Synthetic input never reaches a trusted-path surface",
+      "owner": "Hyprland trusted-path patch and symbi-trustd",
+      "implementation_status": "planned",
+      "validation_status": "untested",
+      "routes": [
+        "trusted_surface_input"
+      ],
+      "backends": [
+        "hyprland_trusted_surface",
+        "libinput_provenance"
+      ],
+      "sources": [
+        "formal/TrustedInput.tla",
+        "docs/build-plan.md"
+      ],
+      "tests": [
+        "formal/TrustedInput.cfg",
+        "formal/faults.tsv"
+      ],
+      "limitations": [
+        "The current model constrains receipt minting and does not explicitly model delivery to the surface",
+        "An explicit delivery-exclusion model and synthetic-input fuzzing remain required",
+        "No compositor or screen-capture runtime result is attached"
+      ],
+      "qualifications": []
+    },
+    {
+      "id": "OSI-005",
+      "title": "Durable signed journal precedes each released effect",
+      "threat": "A crash, reorder or unsigned record permits an effect without durable attributable evidence",
+      "invariant": "INV-5: Every executed action is hash-chained, signed and synced before its effect is released",
+      "owner": "Symbiont protected journal, symbi-egressd, symbi-modeld, symbi-grantd, and symbi-servicesd",
+      "implementation_status": "partial",
+      "validation_status": "untested",
+      "routes": [
+        "managed_cli_effects",
+        "service_egress",
+        "model_inference",
+        "grant_changes"
+      ],
+      "backends": [
+        "protected_journal",
+        "symbi_egressd",
+        "symbi_modeld",
+        "symbi_grantd"
+      ],
+      "sources": [
+        "formal/JournalBeforeEffect.tla",
+        "upstream/symbiont.toml",
+        "image/qualification/vertical_slice.py"
+      ],
+      "tests": [
+        "formal/JournalBeforeEffect.cfg",
+        "formal/faults.tsv",
+        "image/qualification/tests/test_vertical_slice.py"
+      ],
+      "limitations": [
+        "The retained runtime fixture and validator preparation do not establish the installed OS behavior",
+        "OS brokers and grant events are not implemented",
+        "No real crash trace from an exact image is attached"
+      ],
+      "qualifications": []
+    },
+    {
+      "id": "OSI-006",
+      "title": "Provider and OAuth secrets stay outside workers",
+      "threat": "A worker reads a credential from its environment, files, memory or inherited descriptors",
+      "invariant": "INV-6: Provider keys and OAuth tokens stay in trusted stores and are injected only at a trusted egress boundary",
+      "owner": "symbi-egressd and symbi-modeld",
+      "implementation_status": "planned",
+      "validation_status": "untested",
+      "routes": [
+        "service_egress",
+        "model_inference",
+        "workspace_vendor_access"
+      ],
+      "backends": [
+        "symbi_egressd",
+        "symbi_modeld",
+        "vault_or_openbao"
+      ],
+      "sources": [
+        "upstream/symbiont.toml",
+        "docs/build-plan.md",
+        "docs/open-questions.md"
+      ],
+      "tests": [],
+      "limitations": [
+        "The OS brokers are not implemented",
+        "The proposed subscription-token exception conflicts with the invariant and remains unresolved",
+        "No worker canary or memory, file, environment and descriptor inspection is attached"
+      ],
+      "qualifications": []
+    },
+    {
+      "id": "OSI-007",
+      "title": "Workers have only brokered network exits",
+      "threat": "A worker bypasses the policy brokers through a host, namespace or container network path",
+      "invariant": "INV-7: An agent network namespace reaches only the egress and model broker sockets",
+      "owner": "symbi-run, symbi-egressd, symbi-modeld, and worker-namespace integration",
+      "implementation_status": "partial",
+      "validation_status": "untested",
+      "routes": [
+        "managed_cli_landlock",
+        "managed_cli_docker",
+        "managed_cli_gvisor",
+        "workspace_mode"
+      ],
+      "backends": [
+        "landlock",
+        "docker",
+        "gvisor",
+        "network_namespace"
+      ],
+      "sources": [
+        "image/qualification/landlock.py",
+        "image/qualification/containers.py",
+        "upstream/symbiont.toml"
+      ],
+      "tests": [
+        "image/qualification/tests/test_landlock.py",
+        "image/qualification/tests/test_containers.py"
+      ],
+      "limitations": [
+        "Native qualification on the exact installed image is incomplete",
+        "Workspace-mode proxy confinement is not implemented",
+        "No OS-wide direct-network escape suite result is attached"
+      ],
+      "qualifications": []
+    },
+    {
+      "id": "OSI-008",
+      "title": "Confidential sessions stay on local destinations",
+      "threat": "Caller-controlled or stale routing metadata sends confidential content to a remote model, API or voice service",
+      "invariant": "INV-8: A client-confidential session never sends content to a remote model, API or voice service",
+      "owner": "symbi-modeld, symbi-egressd, and the voice adapter",
+      "implementation_status": "planned",
+      "validation_status": "untested",
+      "routes": [
+        "model_inference",
+        "service_egress",
+        "voice_provider"
+      ],
+      "backends": [
+        "symbi_modeld",
+        "symbi_egressd",
+        "voice_adapter"
+      ],
+      "sources": [
+        "formal/SessionClass.tla",
+        "docs/build-plan.md"
+      ],
+      "tests": [
+        "formal/SessionClass.cfg",
+        "formal/faults.tsv"
+      ],
+      "limitations": [
+        "The bounded model assumes authenticated destination metadata",
+        "The trusted source and vocabulary for session class remain unresolved",
+        "No OS broker or voice runtime result is attached"
+      ],
+      "qualifications": []
+    },
+    {
+      "id": "OSI-009",
+      "title": "Equivalent service requests receive one decision",
+      "threat": "A request denied over one transport succeeds through a browser, shared tab or alternate API route",
+      "invariant": "INV-9: API, agent-browser and shared-tab forms of one request receive the same Cedar decision",
+      "owner": "symbi-servicesd and symbi-browserd",
+      "implementation_status": "planned",
+      "validation_status": "untested",
+      "routes": [
+        "service_api",
+        "agent_browser",
+        "shared_tab"
+      ],
+      "backends": [
+        "symbi_servicesd",
+        "symbi_browserd"
+      ],
+      "sources": [
+        "docs/build-plan.md"
+      ],
+      "tests": [],
+      "limitations": [
+        "The service and browser brokers are not implemented",
+        "No transport-normalization model exists",
+        "No cross-transport decision trace is attached"
+      ],
+      "qualifications": []
+    },
+    {
+      "id": "OSI-010",
+      "title": "Freeze acknowledgement stops all agent completion",
+      "threat": "A queued, in-flight or remotely accepted action completes while the user believes the system is frozen",
+      "invariant": "INV-10: After freeze acknowledgement, no agent action completes until a trusted resume",
+      "owner": "symbi-trustd and every OS effect executor",
+      "implementation_status": "planned",
+      "validation_status": "untested",
+      "routes": [
+        "worker_execution",
+        "service_egress",
+        "model_inference",
+        "workspace_proxy"
+      ],
+      "backends": [
+        "cgroup_freezer",
+        "symbi_egressd",
+        "symbi_modeld"
+      ],
+      "sources": [
+        "formal/Freeze.tla",
+        "docs/build-plan.md"
+      ],
+      "tests": [
+        "formal/Freeze.cfg",
+        "formal/faults.tsv"
+      ],
+      "limitations": [
+        "The bounded model assumes cancellation drains kernel and network work",
+        "Each executor still needs an observable completion and acknowledgement contract",
+        "No real trace establishes the 500 millisecond target"
+      ],
+      "qualifications": []
+    },
+    {
+      "id": "OSI-011",
+      "title": "Skill manifests can only reduce effective authority",
+      "threat": "A skill manifest, instruction or runtime dependency adds authority outside the human grant",
+      "invariant": "INV-11: Effective authority is the intersection of agent grants and the skill manifest",
+      "owner": "Symbiont gate and the OS skill loader",
+      "implementation_status": "planned",
+      "validation_status": "untested",
+      "routes": [
+        "governed_skill_execution",
+        "workspace_skill_execution"
+      ],
+      "backends": [
+        "symbiont_gate",
+        "symbi_skill_manifest"
+      ],
+      "sources": [
+        "policy/schema.cedarschema",
+        "docs/build-plan.md"
+      ],
+      "tests": [
+        "crates/symbi-common/tests/policy.rs"
+      ],
+      "limitations": [
+        "The current Cedar fixtures establish schema behavior and default denial only",
+        "The skill manifest and grant intersection are not implemented",
+        "No property-check or runtime denial report is attached"
+      ],
+      "qualifications": []
+    },
+    {
+      "id": "OSI-012",
+      "title": "Trusted artifacts are immutable and authenticated",
+      "threat": "A mutable, unsigned or substituted image, contract, skill, model or data artifact enters a trusted path",
+      "invariant": "INV-12: Images, contracts, manifests, skills, model weights and wake-word models are pinned and signature-checked before use",
+      "owner": "OS image pipeline, Store, symbi-modeld, and the voice service",
+      "implementation_status": "partial",
+      "validation_status": "untested",
+      "routes": [
+        "image_build",
+        "atomic_update",
+        "desktop_payload_intake",
+        "future_skill_and_model_intake"
+      ],
+      "backends": [
+        "bootc",
+        "containers_image_policy",
+        "cosign",
+        "digest_locked_payloads"
+      ],
+      "sources": [
+        "image/signing.py",
+        "image/recipe.py",
+        "image/atomic/update_contract.py",
+        "image/default_apps/intake.py"
+      ],
+      "tests": [
+        "image/tests/test_release_gate.py",
+        "image/tests/test_atomic_update.py",
+        "image/tests/test_default_app_inputs.py"
+      ],
+      "limitations": [
+        "Several authenticated inputs and fail-closed intake paths exist, but no release image is qualified",
+        "Some selected desktop payload closure and source-RPM evidence remain open",
+        "No single exact report covers signed build, update, rollback and every named artifact class"
+      ],
+      "qualifications": []
+    },
+    {
+      "id": "OSI-013",
+      "title": "Project configuration only narrows authority",
+      "threat": "A malicious repository changes provider, routing, sandbox or egress controls",
+      "invariant": "INV-13: Repository-local configuration cannot widen providers, routing, sandbox or egress",
+      "owner": "symbi-run, symbi-modeld, and harness-profile owners",
+      "implementation_status": "planned",
+      "validation_status": "untested",
+      "routes": [
+        "governed_harness",
+        "workspace_harness"
+      ],
+      "backends": [
+        "symbi_run",
+        "symbi_modeld",
+        "harness_profiles"
+      ],
+      "sources": [
+        "upstream/symbiont.toml",
+        "docs/build-plan.md"
+      ],
+      "tests": [],
+      "limitations": [
+        "The desktop launcher and profiles are not implemented",
+        "The pinned runtime has narrower source/control separation that is not OS-wide evidence",
+        "No malicious-project matrix is attached"
+      ],
+      "qualifications": []
+    },
+    {
+      "id": "OSI-014",
+      "title": "Voice never grants authority",
+      "threat": "Replayed, synthesized or injected speech approves a grant or releases confidential audio without policy",
+      "invariant": "INV-14: Voice cannot approve or grant, and audio stays local until wake and policy decisions allow release",
+      "owner": "Voice adapter, symbi-trustd, and local audio service",
+      "implementation_status": "planned",
+      "validation_status": "untested",
+      "routes": [
+        "local_voice_capture",
+        "voice_command",
+        "voice_provider"
+      ],
+      "backends": [
+        "voice_adapter",
+        "symbi_trustd",
+        "local_audio_pipeline"
+      ],
+      "sources": [
+        "docs/build-plan.md"
+      ],
+      "tests": [],
+      "limitations": [
+        "Voice is optional and not implemented",
+        "The audio-capture isolation mechanism remains unresolved",
+        "No replay, self-wake, injection or trusted-path refusal result is attached"
+      ],
+      "qualifications": []
+    }
+  ]
+}
