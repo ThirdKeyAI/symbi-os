@@ -1,0 +1,112 @@
+{
+  "schema": 1,
+  "passed": false,
+  "qualified": false,
+  "run": {
+    "id": 45983074956,
+    "head_branch": "card/P0-04-hosted-fix",
+    "head_sha": "1a4cf15a056e1586df8e710237f1dbaeca2fdc8d",
+    "conclusion": "failure",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45983074956"
+  },
+  "artifact": {
+    "id": 15190533578,
+    "name": "fedora-landlock-qualification",
+    "bytes": 75060,
+    "digest": "sha256:b33c227b3a658d51f5c3b08039c6b02efc70b5ad39eb19858afb6ef258ffc7ba",
+    "downloaded_zip_digest_matched": true,
+    "expires_at": "2026-12-11T10:53:25Z"
+  },
+  "bindings": {
+    "image_source_commit": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+    "image_manifest_digest": "sha256:1dcf72c2e3eda7e5480269b1559e3b5527c77fdb70d28983d4e29baa03b8de6e",
+    "installed_disk_sha256": "d713319b558f6723868fefcb9e24590f59a0f34eaa2fd0852a7f4cdc4724f1fe",
+    "status_unit_sha256": "b26b75ee303e9ecbb4e6e0b706c0bebe51607ed6b0d0d845c309d8268be928f0"
+  },
+  "retained_evidence_sha256": {
+    "atomic-disk-evidence/result.json": "b4626a939ca02f2e84bb0a35fcfa1e420e05fd8d70411613a5beec64434b94a7",
+    "atomic-disk-evidence/guest-result.json": "2b23dd254db2bea8dd3f2dd5e7471477f8a3bb3a0e3a216a9f3faa747421aa8f",
+    "atomic-disk-evidence/guest-report.json": "5886e71b201fe2cb2250f3250dfa6ca3adfbde5eaa47e5d9ff492d280b48b36e",
+    "atomic-disk-evidence/guest-serial.log": "b14dd98bdc8a0092b410c5b151fd729ce78066b342b17e6a8d7afa032b937dad",
+    "atomic-disk-evidence/systemd-result.txt": "37e20e0b0623eacf13dee354c9dd0ca00544cd1c20d35bb7a679b59a44797116"
+  },
+  "observation": {
+    "source_authentication_passed": true,
+    "installation_completed": true,
+    "guest_reached_probe": true,
+    "selinux": "Enforcing",
+    "sysroot_filesystem": "btrfs",
+    "usr_readonly": true,
+    "sysroot_readonly": true,
+    "status_collector": {
+      "command": "/usr/bin/bootc status --json",
+      "result": "timeout",
+      "active_state": "failed",
+      "sub_state": "failed",
+      "exec_main_code": "1",
+      "exec_main_status": "0",
+      "wall_seconds": 90.259,
+      "cpu_seconds": 6.505,
+      "memory_peak": "41.6M"
+    },
+    "prior_same_unit": {
+      "run_id": 45869526684,
+      "head_sha": "88c49ecb57fe8104c962c8a4e420bb87831dc1dd",
+      "status_unit_sha256": "b26b75ee303e9ecbb4e6e0b706c0bebe51607ed6b0d0d845c309d8268be928f0",
+      "result": "success",
+      "wall_seconds": 67.358
+    },
+    "ordinary_qemu": {
+      "exit_code": 0,
+      "elapsed_seconds": 399.7008191739999,
+      "memory_max_bytes": 3221225472,
+      "memory_peak_bytes": 3221225472,
+      "memory_max_events": 197,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "swap_max_bytes": 0
+    },
+    "hosted_parent": {
+      "memory_max_bytes": 4294967296,
+      "memory_peak_bytes": 4294971392,
+      "memory_max_events": 169845,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "swap_max_bytes": 0
+    },
+    "landlock_controller_started": false,
+    "landlock_service_started": false,
+    "cleanup_complete": true
+  },
+  "claims": {
+    "accepted_guest_boot": false,
+    "landlock_qualified": false,
+    "containment_qualified": false,
+    "os_qualified": false,
+    "release_qualified": false
+  },
+  "correction": {
+    "previous_timeout_start_seconds": 90,
+    "timeout_start_seconds": 180,
+    "timeout_stop_seconds": 15,
+    "corrected_status_unit_sha256": "5419c00f05a2516b90b1fedc84b9566fc5ad9b8475b9706666eb7ed46c4c9a2f",
+    "fixed_command_unchanged": true,
+    "capability_bound_unchanged": true,
+    "cpu_limit_unchanged": true,
+    "memory_limit_unchanged": true,
+    "task_limit_unchanged": true,
+    "swap_limit_unchanged": true,
+    "native_rerun_required": true
+  },
+  "local_verification": {
+    "focused_serial_tests": 51,
+    "focused_seconds": 0.210,
+    "focused_peak_rss_kib": 32908,
+    "full_image_serial_tests": 390,
+    "full_image_seconds": 2.327,
+    "full_image_peak_rss_kib": 59684,
+    "json_parse": "pass",
+    "patch_whitespace": "pass",
+    "swaps": 0
+  }
+}
