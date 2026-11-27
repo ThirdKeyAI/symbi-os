@@ -1,4 +1,4 @@
-"""Write one bounded launcher-preparation failure report before guest poweroff."""
+"""Write one bounded explicit-transition failure report before guest poweroff."""
 import hashlib
 import json
 import os
@@ -24,7 +24,7 @@ JOURNAL_MAX_LINE_BYTES = 512
 COMMAND_STDOUT_MAX_BYTES = 64 * 1024
 COMMAND_STDERR_MAX_BYTES = 8 * 1024
 REPORT_MAX_BYTES = 128 * 1024
-SCOPE = "Bounded launcher-preparation diagnostics; no update action ran"
+SCOPE = "Bounded explicit-transition diagnostics; no update action ran"
 _SENSITIVE_COMPONENT = (
     r"(?:(?:api|private)[_.-]key|authorization|authentication|auth|cookie|"
     r"credential|password|passwd|passphrase|secret|token|jwt|pat|key)"
@@ -55,26 +55,26 @@ def service_properties(raw):
     """Parse exactly the five fixed systemd failure fields."""
     if (not isinstance(raw, str) or not raw.endswith("\n")
             or not 0 < len(raw.encode()) <= 4096):
-        raise ValueError("invalid launcher service property output")
+        raise ValueError("invalid transition-probe service property output")
     allowed = set(STATUS_PROPERTIES.split(","))
     properties = {}
     for line in raw.splitlines():
         if "=" not in line:
-            raise ValueError("malformed launcher service property output")
+            raise ValueError("malformed transition-probe service property output")
         key, value = line.split("=", 1)
         if (key not in allowed or key in properties or not value
                 or len(value.encode()) > 128):
-            raise ValueError("ambiguous launcher service property output")
+            raise ValueError("ambiguous transition-probe service property output")
         properties[key] = value
     if set(properties) != allowed:
-        raise ValueError("incomplete launcher service property output")
+        raise ValueError("incomplete transition-probe service property output")
     if (properties["Result"] == "success"
             or properties["ActiveState"] != "failed"
             or properties["SubState"] != "failed"
             or re.fullmatch(r"[0-9]{1,3}", properties["ExecMainCode"]) is None
             or re.fullmatch(r"[0-9]{1,3}", properties["ExecMainStatus"]) is None
             or properties["ExecMainStatus"] == "0"):
-        raise ValueError("launcher service did not fail closed")
+        raise ValueError("transition-probe service did not fail closed")
     return properties
 
 
@@ -90,7 +90,7 @@ def _sanitize_line(line):
 def bounded_journal_excerpt(raw):
     """Return a printable, redacted journal excerpt under fixed byte limits."""
     if not isinstance(raw, str):
-        raise ValueError("invalid launcher journal output")
+        raise ValueError("invalid transition-probe journal output")
     encoded = raw.encode("utf-8", errors="strict")
     truncated = len(encoded) > JOURNAL_MAX_BYTES
     prefix = encoded[:JOURNAL_MAX_BYTES].decode("utf-8", errors="ignore")
@@ -121,7 +121,7 @@ def bounded_journal_excerpt(raw):
             break
     payload = ("\n".join(excerpt) + ("\n" if excerpt else "")).encode("ascii")
     if len(payload) > JOURNAL_MAX_BYTES:
-        raise ValueError("bounded launcher journal exceeded its limit")
+        raise ValueError("bounded transition-probe journal exceeded its limit")
     return {
         "unit": LAUNCHER_UNIT,
         "command": JOURNAL_COMMAND,
@@ -138,7 +138,7 @@ def fixed_command(command, *, timeout, stdout_max):
             or any(not isinstance(value, str) or not value for value in command)
             or type(timeout) is not int or not 1 <= timeout <= 30
             or type(stdout_max) is not int or not 1 <= stdout_max <= COMMAND_STDOUT_MAX_BYTES):
-        raise ValueError("invalid launcher diagnostic command")
+        raise ValueError("invalid transition-probe diagnostic command")
     result = subprocess.run(
         command, stdin=subprocess.DEVNULL, capture_output=True, text=True,
         timeout=timeout,
@@ -146,7 +146,7 @@ def fixed_command(command, *, timeout, stdout_max):
     )
     if (len(result.stdout.encode()) > stdout_max
             or len(result.stderr.encode()) > COMMAND_STDERR_MAX_BYTES):
-        raise ValueError("launcher diagnostic command output exceeded its bound")
+        raise ValueError("transition-probe diagnostic command output exceeded its bound")
     result.check_returncode()
     return result.stdout
 
@@ -154,7 +154,7 @@ def fixed_command(command, *, timeout, stdout_max):
 def write_report(report, channel=CHANNEL):
     raw = (json.dumps(report, sort_keys=True, separators=(",", ":")) + "\n").encode()
     if not 0 < len(raw) <= REPORT_MAX_BYTES:
-        raise ValueError("launcher diagnostic report exceeded its bound")
+        raise ValueError("transition-probe diagnostic report exceeded its bound")
     deadline = time.monotonic() + 15
     while not Path(channel).exists() and time.monotonic() < deadline:
         time.sleep(0.1)
@@ -179,7 +179,7 @@ def main():
         "guest_booted": True,
         "release_qualified": False,
         "product": product,
-        "diagnostic": "launcher-preparation-failure",
+        "diagnostic": "bootc-transition-probe-failure",
         "unit": LAUNCHER_UNIT,
         "runner_sha256": sha256(Path(__file__)),
         "service": properties,

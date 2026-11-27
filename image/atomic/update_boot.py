@@ -13,14 +13,14 @@ DISPOSABLE_PHASE_TIMEOUT_SECONDS = 1800
 NEGATIVE_CASES = ("unsigned", "wrong-key", "wrong-reference", "altered-signature")
 NEGATIVE_UPDATE_SOURCE = "/run/symbi-update-negative/source"
 POSITIVE_OVERLAY_CASE = "valid-signature"
-LAUNCHER_FAILURE_SCOPE = "Bounded launcher-preparation diagnostics; no update action ran"
-LAUNCHER_FAILURE_JOURNAL_COMMAND = [
+TRANSITION_FAILURE_SCOPE = "Bounded explicit-transition diagnostics; no update action ran"
+TRANSITION_FAILURE_JOURNAL_COMMAND = [
     "/usr/bin/journalctl", "--unit=b.service", "--boot=0", "--no-pager",
     "--output=short-monotonic", "--lines=24",
 ]
-LAUNCHER_FAILURE_JOURNAL_MAX_BYTES = 8 * 1024
-LAUNCHER_FAILURE_JOURNAL_MAX_LINES = 24
-LAUNCHER_FAILURE_JOURNAL_MAX_LINE_BYTES = 512
+TRANSITION_FAILURE_JOURNAL_MAX_BYTES = 8 * 1024
+TRANSITION_FAILURE_JOURNAL_MAX_LINES = 24
+TRANSITION_FAILURE_JOURNAL_MAX_LINE_BYTES = 512
 _SENSITIVE_COMPONENT = (
     r"(?:(?:api|private)[_.-]key|authorization|authentication|auth|cookie|"
     r"credential|password|passwd|passphrase|secret|token|jwt|pat|key)"
@@ -59,8 +59,8 @@ def unique_json(raw):
     return value
 
 
-def validate_launcher_failure_report(report, runner_hash):
-    """Accept only the hash-bound, bounded launcher failure diagnostic."""
+def validate_transition_failure_report(report, runner_hash):
+    """Accept only the hash-bound, bounded explicit-transition diagnostic."""
     required = {
         "schema", "passed", "guest_booted", "release_qualified", "product",
         "diagnostic", "unit", "runner_sha256", "service", "journal", "scope",
@@ -70,12 +70,12 @@ def validate_launcher_failure_report(report, runner_hash):
             or report.get("guest_booted") is not True
             or report.get("release_qualified") is not False
             or report.get("product") != "Symbi-Hosted-Update-Probe"
-            or report.get("diagnostic") != "launcher-preparation-failure"
+            or report.get("diagnostic") != "bootc-transition-probe-failure"
             or report.get("unit") != "b.service"
             or report.get("runner_sha256") != runner_hash
             or re.fullmatch(r"[a-f0-9]{64}", runner_hash or "") is None
-            or report.get("scope") != LAUNCHER_FAILURE_SCOPE):
-        raise ValueError("unbound launcher-preparation failure report")
+            or report.get("scope") != TRANSITION_FAILURE_SCOPE):
+        raise ValueError("unbound transition-probe failure report")
     service = report.get("service")
     service_fields = {
         "Result", "ExecMainCode", "ExecMainStatus", "ActiveState", "SubState",
@@ -89,41 +89,41 @@ def validate_launcher_failure_report(report, runner_hash):
             or service.get("ExecMainStatus") == "0"
             or any(not isinstance(value, str) or not value or len(value.encode()) > 128
                    for value in service.values())):
-        raise ValueError("launcher-preparation service failure is incomplete")
+        raise ValueError("transition-probe service failure is incomplete")
     journal = report.get("journal")
     journal_fields = {
         "unit", "command", "line_count", "bytes", "sha256", "truncated", "excerpt",
     }
     if (not isinstance(journal, dict) or set(journal) != journal_fields
             or journal.get("unit") != "b.service"
-            or journal.get("command") != LAUNCHER_FAILURE_JOURNAL_COMMAND
+            or journal.get("command") != TRANSITION_FAILURE_JOURNAL_COMMAND
             or type(journal.get("line_count")) is not int
-            or not 0 <= journal["line_count"] <= LAUNCHER_FAILURE_JOURNAL_MAX_LINES
+            or not 0 <= journal["line_count"] <= TRANSITION_FAILURE_JOURNAL_MAX_LINES
             or type(journal.get("bytes")) is not int
-            or not 0 <= journal["bytes"] <= LAUNCHER_FAILURE_JOURNAL_MAX_BYTES
+            or not 0 <= journal["bytes"] <= TRANSITION_FAILURE_JOURNAL_MAX_BYTES
             or type(journal.get("truncated")) is not bool
             or re.fullmatch(r"[a-f0-9]{64}", journal.get("sha256", "")) is None
             or not isinstance(journal.get("excerpt"), list)
             or len(journal["excerpt"]) != journal["line_count"]):
-        raise ValueError("launcher-preparation journal metadata is incomplete")
+        raise ValueError("transition-probe journal metadata is incomplete")
     for line in journal["excerpt"]:
         sensitive_assignment = (_SENSITIVE_ASSIGNMENT.search(line)
                                 if isinstance(line, str) else None)
         if (not isinstance(line, str)
                 or len(line.encode("ascii", errors="ignore")) != len(line)
-                or len(line.encode("ascii")) > LAUNCHER_FAILURE_JOURNAL_MAX_LINE_BYTES
+                or len(line.encode("ascii")) > TRANSITION_FAILURE_JOURNAL_MAX_LINE_BYTES
                 or any(not " " <= character <= "~" for character in line)
                 or (sensitive_assignment is not None
                     and sensitive_assignment.group(3) != "<redacted>")
                 or re.search(r"(?i)\bbearer\s+(?!<redacted>)[^ ]+", line)
                 or re.search(r"(?<![A-Za-z0-9])[A-Za-z0-9_+/=-]{48,}(?![A-Za-z0-9])",
                              line)):
-            raise ValueError("launcher-preparation journal excerpt is unsafe")
+            raise ValueError("transition-probe journal excerpt is unsafe")
     payload = ("\n".join(journal["excerpt"])
                + ("\n" if journal["excerpt"] else "")).encode("ascii")
     if (len(payload) != journal["bytes"]
             or hashlib.sha256(payload).hexdigest() != journal["sha256"]):
-        raise ValueError("launcher-preparation journal digest differs")
+        raise ValueError("transition-probe journal digest differs")
     return report
 
 
@@ -286,9 +286,9 @@ def validate_status_observations(report, expected_count):
         raise ValueError("status bypassed the fixed direct bootc unit")
 
 
-def validate_launcher(report):
-    """Require the root-only bootc copy prepared and labeled by install_t."""
-    launcher = report.get("bootc_launcher")
+def validate_transition(report):
+    """Require the fixed transition probe and stable labeled executables."""
+    transition = report.get("bootc_transition")
     service = {
         "Result": "success", "ExecMainCode": "1", "ExecMainStatus": "0",
         "ActiveState": "active", "SubState": "exited",
@@ -298,35 +298,42 @@ def validate_launcher(report):
         "/usr/bin/systemctl", "show", "b.service",
         "--property=Result,ExecMainCode,ExecMainStatus,ActiveState,SubState",
     ]
-    if (not isinstance(launcher, dict)
-            or set(launcher) != {
-                "unit", "service", "source", "path", "label_reference",
-                "source_sha256", "copy_sha256", "selinux_label", "mode",
-                "removed",
+    probe_command = [
+        "/usr/bin/runcon", "system_u:system_r:install_t:s0",
+        "/usr/bin/bootc", "--version",
+    ]
+    if (not isinstance(transition, dict)
+            or set(transition) != {
+                "unit", "service", "context", "probe_command", "scope",
+                "runcon", "runcon_sha256", "source", "source_sha256",
+                "label_reference", "label_reference_sha256", "selinux_label", "mode",
             }
-            or launcher.get("unit") != "b.service"
-            or launcher.get("service") != service
-            or launcher.get("source") != "/usr/bin/bootc"
-            or launcher.get("path") != "/run/symbi-update-bootc"
-            or launcher.get("label_reference") != "/usr/bin/ostree"
-            or launcher.get("source_sha256") != launcher.get("copy_sha256")
-            or re.fullmatch(r"[a-f0-9]{64}",
-                            launcher.get("source_sha256", "")) is None
-            or not isinstance(launcher.get("selinux_label"), str)
+            or transition.get("unit") != "b.service"
+            or transition.get("service") != service
+            or transition.get("context") != "system_u:system_r:install_t:s0"
+            or transition.get("probe_command") != probe_command
+            or transition.get("scope")
+               != "Explicit transition availability only; no update qualification"
+            or transition.get("runcon") != "/usr/bin/runcon"
+            or transition.get("source") != "/usr/bin/bootc"
+            or transition.get("label_reference") != "/usr/bin/ostree"
+            or any(re.fullmatch(r"[a-f0-9]{64}", transition.get(key, "")) is None
+                   for key in ("runcon_sha256", "source_sha256",
+                               "label_reference_sha256"))
+            or not isinstance(transition.get("selinux_label"), str)
             or re.fullmatch(r"[^:\x00]+:object_r:install_exec_t:[^\x00]+",
-                            launcher["selinux_label"]) is None
-            or launcher.get("mode") != "0700"
-            or launcher.get("removed") is not True
+                            transition["selinux_label"]) is None
+            or transition.get("mode") != "0755"
             or not isinstance(commands, list)
             or len([item for item in commands
                     if item.get("command") == show_command
                     and item.get("exit_code") == 0]) != 1):
-        raise ValueError("fixed SELinux bootc launcher is unbound")
-    return launcher
+        raise ValueError("fixed SELinux bootc transition is unbound")
+    return transition
 
 
 def validate_operation_observation(report, operation, expected_success):
-    """Bind one exact mutation to the validated labeled bootc copy."""
+    """Bind one exact mutation to runcon and the validated labeled bootc."""
     paths = {
         "negative": ["switch", "--transport", "dir",
                      "--enforce-container-sigpolicy", NEGATIVE_UPDATE_SOURCE],
@@ -336,8 +343,11 @@ def validate_operation_observation(report, operation, expected_success):
     }
     observation = report.get("bootc_operation")
     commands = report.get("commands")
-    expected_command = ["/run/symbi-update-bootc", *paths.get(operation, [])]
-    validate_launcher(report)
+    expected_command = [
+        "/usr/bin/runcon", "system_u:system_r:install_t:s0", "/usr/bin/bootc",
+        *paths.get(operation, []),
+    ]
+    validate_transition(report)
     if (operation not in paths or type(expected_success) is not bool
             or not isinstance(observation, dict)
             or set(observation) != {
@@ -361,13 +371,13 @@ def validate_operation_observation(report, operation, expected_success):
     matches = [item for item in commands if item.get("command") == expected_command]
     other_bootc = [item for item in commands
                    if item.get("command", [None])[0:1]
-                   in (["/usr/bin/bootc"], ["/run/symbi-update-bootc"])
+                   in (["/usr/bin/bootc"], ["/usr/bin/runcon"])
                    and item.get("command") != expected_command]
     if (len(matches) != 1
             or matches[0].get("exit_code") != observation["exit_code"]
             or matches[0].get("stderr") != observation["stderr"]
             or other_bootc):
-        raise ValueError("mutation bypassed the fixed labeled bootc command")
+        raise ValueError("mutation bypassed the fixed runcon bootc command")
 
 
 def validate_phase_report(report, expected, expected_hash, runner_hash, phase):
@@ -388,7 +398,7 @@ def validate_phase_report(report, expected, expected_hash, runner_hash, phase):
     elif name == "rolled-back":
         if "bootc_operation" in report:
             raise ValueError("rollback verification unexpectedly mutated the deployment")
-        validate_launcher(report)
+        validate_transition(report)
     else:
         raise ValueError("unknown update phase report")
     commands = report.get("commands")
@@ -596,10 +606,10 @@ def main():
             positive_qemu_command(), "same-path-positive", "same-path-positive.json",
             "same-path-positive-serial.log", DISPOSABLE_PHASE_TIMEOUT_SECONDS)
         positive_report = unique_json(path.read_bytes())
-        if positive_report.get("diagnostic") == "launcher-preparation-failure":
-            record["launcher_failure"] = validate_launcher_failure_report(
+        if positive_report.get("diagnostic") == "bootc-transition-probe-failure":
+            record["transition_failure"] = validate_transition_failure_report(
                 positive_report, hashes["update_boot_failure.py"])
-            raise RuntimeError("launcher preparation failed; inspect bounded report")
+            raise RuntimeError("bootc transition probe failed; inspect bounded report")
         validate_positive_report(positive_report, positive_expected,
                                  hashes[positive_name], hashes["update_guest.py"])
         baseline_hash = positive_report["same_path_positive_control"]["state_before_sha256"]

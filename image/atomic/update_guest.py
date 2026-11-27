@@ -40,9 +40,12 @@ STATUS_SERVICE = {
     "Result": "success", "ExecMainCode": "1", "ExecMainStatus": "0",
     "ActiveState": "active", "SubState": "exited",
 }
-BOOTC_LAUNCHER = Path("/run/symbi-update-bootc")
+BOOTC_CONTEXT = "system_u:system_r:install_t:s0"
+BOOTC_RUNCON = Path("/usr/bin/runcon")
 BOOTC_SOURCE = Path("/usr/bin/bootc")
 BOOTC_LABEL_REFERENCE = Path("/usr/bin/ostree")
+BOOTC_PROBE_COMMAND = [str(BOOTC_RUNCON), BOOTC_CONTEXT,
+                       str(BOOTC_SOURCE), "--version"]
 BOOTC_OPERATIONS = {
     "negative": ["switch", "--transport", "dir",
                  "--enforce-container-sigpolicy", str(NEGATIVE_SOURCE)],
@@ -167,14 +170,13 @@ def _fd_digest(fd):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
-def _stable_regular(fd, *, uid=0, gid=0, mode=None, single_link=False):
+def _stable_regular(fd, *, uid=0, gid=0, mode=None):
     before = os.fstat(fd)
     if (not stat.S_ISREG(before.st_mode) or before.st_uid != uid
             or before.st_gid != gid
             or not 0 < before.st_size <= 256 * 1024 * 1024
-            or (mode is not None and stat.S_IMODE(before.st_mode) != mode)
-            or (single_link and before.st_nlink != 1)):
-        raise ValueError("bootc launcher file controls changed")
+            or (mode is not None and stat.S_IMODE(before.st_mode) != mode)):
+        raise ValueError("fixed bootc input controls changed")
     digest = _fd_digest(fd)
     after = os.fstat(fd)
     identity = lambda info: (
@@ -182,43 +184,31 @@ def _stable_regular(fd, *, uid=0, gid=0, mode=None, single_link=False):
         info.st_nlink, info.st_size, info.st_mtime_ns, info.st_ctime_ns,
     )
     if identity(before) != identity(after):
-        raise ValueError("bootc launcher file changed during observation")
+        raise ValueError("fixed bootc input changed during observation")
     return before, digest
 
 
-def _launcher_file_observation(source_path=None, label_reference=None,
-                               launcher_path=None):
+def _bootc_file_observation(source_path=None, label_reference=None,
+                            runcon_path=None):
     source_path = BOOTC_SOURCE if source_path is None else Path(source_path)
     label_reference = (BOOTC_LABEL_REFERENCE if label_reference is None
                        else Path(label_reference))
-    launcher_path = BOOTC_LAUNCHER if launcher_path is None else Path(launcher_path)
+    runcon_path = BOOTC_RUNCON if runcon_path is None else Path(runcon_path)
     if (not source_path.is_absolute() or not label_reference.is_absolute()
-            or not launcher_path.is_absolute()):
-        raise ValueError("bootc launcher paths must be absolute")
-    parent = os.open(launcher_path.parent,
-                     os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
-    source = reference = copy = None
+            or not runcon_path.is_absolute()):
+        raise ValueError("fixed bootc input paths must be absolute")
+    source = reference = runcon = None
     try:
-        directory = os.fstat(parent)
-        if (not stat.S_ISDIR(directory.st_mode) or directory.st_uid != 0
-                or directory.st_gid != 0
-                or directory.st_mode & 0o022):
-            raise ValueError("bootc launcher parent is not root controlled")
         source = os.open(source_path,
                          os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
         reference = os.open(label_reference,
                             os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
-        copy = os.open(launcher_path.name,
-                       os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=parent)
-        source_info, source_hash = _stable_regular(source, mode=0o755)
-        reference_info, _ = _stable_regular(reference, mode=0o755)
-        copy_info, copy_hash = _stable_regular(copy, mode=0o700, single_link=True)
-        if ((source_info.st_dev, source_info.st_ino)
-                == (copy_info.st_dev, copy_info.st_ino)
-                or source_info.st_size != copy_info.st_size
-                or source_hash != copy_hash
-                or not stat.S_ISREG(reference_info.st_mode)):
-            raise ValueError("bootc launcher is not an independent exact copy")
+        runcon = os.open(runcon_path,
+                         os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        _, source_hash = _stable_regular(source, mode=0o755)
+        _, reference_hash = _stable_regular(reference, mode=0o755)
+        _, runcon_hash = _stable_regular(runcon, mode=0o755)
+
         def normalized_label(descriptor):
             value = os.getxattr(descriptor, "security.selinux")
             if value.endswith(b"\0"):
@@ -226,107 +216,62 @@ def _launcher_file_observation(source_path=None, label_reference=None,
             if not value or b"\0" in value:
                 raise ValueError("invalid SELinux file label")
             return value
-        label = normalized_label(copy)
+        label = normalized_label(source)
         reference_label = normalized_label(reference)
         if label != reference_label:
-            raise ValueError("bootc launcher SELinux label differs from ostree")
+            raise ValueError("bootc SELinux label differs from ostree")
         label_text = label.decode("ascii")
         if re.fullmatch(r"[^:\x00]+:object_r:install_exec_t:[^\x00]+", label_text) is None:
-            raise ValueError("bootc launcher does not carry install_exec_t")
+            raise ValueError("bootc does not carry install_exec_t")
         return {
+            "runcon": str(runcon_path),
+            "runcon_sha256": runcon_hash,
             "source": str(source_path),
-            "path": str(launcher_path),
             "label_reference": str(label_reference),
             "source_sha256": source_hash,
-            "copy_sha256": copy_hash,
+            "label_reference_sha256": reference_hash,
             "selinux_label": label_text,
-            "mode": "0700",
+            "mode": "0755",
         }
     finally:
-        for fd in (copy, reference, source, parent):
+        for fd in (runcon, reference, source):
             if fd is not None:
                 os.close(fd)
 
 
-def fixed_bootc_launcher(run):
-    """Validate the install_t-prepared immutable launcher before any use."""
+def fixed_bootc_transition(run):
+    """Bind the successful nonmutating transition probe and executable inputs."""
     properties = service_properties(run([
         "/usr/bin/systemctl", "show", "b.service",
         "--property=" + STATUS_PROPERTIES,
     ]))
     if properties != STATUS_SERVICE:
-        raise ValueError("fixed bootc launcher preparation did not complete")
+        raise ValueError("fixed bootc transition probe did not complete")
     return {
         "unit": "b.service", "service": properties,
-        **_launcher_file_observation(), "removed": False,
+        "context": BOOTC_CONTEXT,
+        "probe_command": BOOTC_PROBE_COMMAND,
+        "scope": "Explicit transition availability only; no update qualification",
+        **_bootc_file_observation(),
     }
 
 
-def remove_bootc_launcher(expected=None, *, source_path=None,
-                          label_reference=None, launcher_path=None):
-    """Remove only the exact validated root-only launcher, then prove absence."""
-    launcher_path = BOOTC_LAUNCHER if launcher_path is None else Path(launcher_path)
-    try:
-        current = _launcher_file_observation(source_path, label_reference,
-                                             launcher_path)
-    except FileNotFoundError:
-        if expected is not None:
-            raise ValueError("validated bootc launcher disappeared before cleanup")
-        return False
-    if expected is not None:
-        retained = {key: value for key, value in expected.items()
-                    if key not in {"unit", "service", "removed"}}
-        if retained != current or expected.get("removed") is not False:
-            raise ValueError("bootc launcher changed before cleanup")
-    parent = os.open(launcher_path.parent,
-                     os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
-    try:
-        os.unlink(launcher_path.name, dir_fd=parent)
-        os.fsync(parent)
-        try:
-            os.stat(launcher_path.name, dir_fd=parent, follow_symlinks=False)
-        except FileNotFoundError:
-            pass
-        else:
-            raise ValueError("bootc launcher remains after cleanup")
-    finally:
-        os.close(parent)
-    if expected is not None:
-        expected["removed"] = True
-    return True
-
-
-def finalize_bootc_launcher(record, remover=None):
-    """Always attempt bounded launcher cleanup and fail the report if it fails."""
-    if not isinstance(record, dict):
-        raise ValueError("invalid update report during launcher cleanup")
-    remover = remove_bootc_launcher if remover is None else remover
-    try:
-        remover(record.get("bootc_launcher"))
-    except Exception as error:
-        record["passed"] = False
-        cleanup_failure = type(error).__name__ + ": " + str(error)
-        record["launcher_cleanup_failure"] = cleanup_failure
-        if "failure" not in record:
-            record["failure"] = "launcher cleanup: " + cleanup_failure
-
-
 def fixed_bootc_operation(run, record, operation, *, expected_success, timeout):
-    """Run one exact mutation through the validated install_exec_t copy."""
+    """Run one exact mutation through runcon after revalidating fixed inputs."""
     if (operation not in BOOTC_OPERATIONS or type(expected_success) is not bool
             or type(timeout) is not int
             or not 1 <= timeout <= UPDATE_COMMAND_TIMEOUT_SECONDS
-            or not isinstance(record.get("bootc_launcher"), dict)):
+            or not isinstance(record.get("bootc_transition"), dict)):
         raise ValueError("invalid fixed bootc operation")
-    current = _launcher_file_observation()
-    retained = {key: value for key, value in record["bootc_launcher"].items()
-                if key not in {"unit", "service", "removed"}}
-    if current != retained or record["bootc_launcher"].get("removed") is not False:
-        raise ValueError("bootc launcher changed before use")
-    command = [str(BOOTC_LAUNCHER), *BOOTC_OPERATIONS[operation]]
+    current = _bootc_file_observation()
+    retained = {key: record["bootc_transition"].get(key) for key in current}
+    if current != retained:
+        raise ValueError("fixed bootc input changed before use")
+    command = [str(BOOTC_RUNCON), BOOTC_CONTEXT, str(BOOTC_SOURCE),
+               *BOOTC_OPERATIONS[operation]]
     result = run(command, timeout=timeout, check=False, return_result=True)
-    if _launcher_file_observation() != current:
-        raise ValueError("bootc launcher changed during use")
+    if _bootc_file_observation() != current:
+        raise ValueError("fixed bootc input changed during use")
     observation = {
         "name": operation,
         "command": command,
@@ -913,7 +858,7 @@ def main():
             raise ValueError("update guest gained a network interface")
         if run(["/usr/sbin/getenforce"]).strip() != "Enforcing":
             raise ValueError("SELinux is not enforcing")
-        record["bootc_launcher"] = fixed_bootc_launcher(run)
+        record["bootc_transition"] = fixed_bootc_transition(run)
         observed_devices = []
 
         def scan_source():
@@ -1108,8 +1053,6 @@ def main():
             record["passed"] = True
     except Exception as error:
         record["failure"] = type(error).__name__ + ": " + str(error)
-    finally:
-        finalize_bootc_launcher(record)
     raw = (json.dumps(record, sort_keys=True) + "\n").encode()
     if len(raw) > 128 * 1024:
         raise ValueError("update guest report exceeds its bound")

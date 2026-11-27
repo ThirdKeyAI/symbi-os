@@ -16,6 +16,9 @@ UPDATE_SOURCE = "/run/symbi-update/source"
 NEGATIVE_UPDATE_SOURCE = "/run/symbi-update-negative/source"
 NEGATIVE_CASES = ("unsigned", "wrong-key", "wrong-reference", "altered-signature")
 POSITIVE_OVERLAY_CASE = "valid-signature"
+BOOTC_COMMAND = [
+    "/usr/bin/runcon", "system_u:system_r:install_t:s0", "/usr/bin/bootc",
+]
 NEGATIVE_CONTROLS = {
     case: True for case in NEGATIVE_CASES
 }
@@ -54,12 +57,12 @@ def update_policy(original, public_key, manifest_digest):
 def update_command(source=UPDATE_SOURCE):
     if source not in (UPDATE_SOURCE, NEGATIVE_UPDATE_SOURCE):
         raise ValueError("fixed positive or negative update source required")
-    return ["/usr/bin/bootc", "switch", "--transport", "dir",
+    return [*BOOTC_COMMAND, "switch", "--transport", "dir",
             "--enforce-container-sigpolicy", source]
 
 
 def rollback_command():
-    return ["/usr/bin/bootc", "rollback"]
+    return [*BOOTC_COMMAND, "rollback"]
 
 
 def negative_signature_payloads(directory, authentication):

@@ -1,5 +1,5 @@
 [Unit]
-Description=Retain bounded launcher-preparation failure evidence
+Description=Retain bounded bootc transition-probe failure evidence
 ConditionPathExists=!/etc/initrd-release
 After=b.service
 OnFailure=poweroff.target
