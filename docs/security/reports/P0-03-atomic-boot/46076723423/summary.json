@@ -1,0 +1,244 @@
+{
+  "artifact": {
+    "bytes": 71634,
+    "downloaded_zip_sha256": "91439759ef4deaf8388f8faead1f113ddfd64f64686af0cdfcb2ae4656c8c351",
+    "github_digest": "sha256:91439759ef4deaf8388f8faead1f113ddfd64f64686af0cdfcb2ae4656c8c351",
+    "id": 15235488737,
+    "largest_member_bytes": 88681,
+    "name": "atomic-development-boot-generic",
+    "safe_regular_relative_members": 95,
+    "strict_json_documents": 7,
+    "uncompressed_bytes": 154295,
+    "zip_integrity": true
+  },
+  "card": "P0-03",
+  "claims": {
+    "four_guest_signature_rejections_passed": false,
+    "guest_booted": false,
+    "os_qualified": false,
+    "p0_03_qualified": false,
+    "passed": false,
+    "release_qualified": false,
+    "rollback_passed": false,
+    "selinux_transition_supported": false,
+    "signed_update_accepted": false,
+    "updated_boot_passed": false
+  },
+  "cleanup": {
+    "containers": {
+      "symbi-atomic-signer": {
+        "absent": true,
+        "removed": true
+      },
+      "symbi-atomic-update-old-installer": {
+        "absent": true,
+        "removed": true
+      },
+      "symbi-atomic-update-old-signer": {
+        "absent": true,
+        "removed": true
+      },
+      "symbi-atomic-update-qemu": {
+        "absent": true,
+        "removed": true
+      }
+    },
+    "loaded_image_absent": true,
+    "loaded_image_removed": true,
+    "loop_list_empty": true,
+    "private_runroot_removed": true,
+    "private_storage_removed": true
+  },
+  "critical_evidence_sha256": {
+    "atomic-disk-evidence/hosted.log": "ce7777bf2ce2e5ddc62e64620859146134178e2bd34f90d34ae6a0424a167775",
+    "atomic-disk-evidence/result.json": "7345c16947c9aed9b3b5e31eddc3ccd4ceb16bbbe122cd529f9de5420c688f0d",
+    "atomic-disk-evidence/signed-update-and-rollback-stderr.log": "c1c10ff8e1a84a9f375ab268093e53a3f21a5125272beed58940fb4409bf4c37",
+    "atomic-disk-evidence/source-authentication/result.json": "6240cf3e89cb4543164e9f995e03987f14268787056720d655418d13aa931a50",
+    "atomic-disk-evidence/systemd-result.txt": "f255748bc24bd697cf56439ea41f3f423319aec12d1727b4bf3131670c38b40c",
+    "atomic-disk-evidence/update-old-loops-stdout.log": "3f1d39e826503300542203478b61c9393220197f672114f5813fa484380802ed",
+    "atomic-update-evidence/controller-result.json": "ddf02c1d5ea0d7f050c97b92898647b7365edca99f1b82460b4d8087b8320477",
+    "atomic-update-evidence/result.json": "2e594f3ea7580429873b72f0749bcbe4c76218f79f1396893c0b8f9fbdd13f20",
+    "atomic-update-evidence/same-path-positive-diagnostic.json": "70382f78f6abae7ba440f48a5697b8a7f50e50d86fe10b0744e8e88cb84bd98c"
+  },
+  "failure": {
+    "collector": {
+      "bytes": 5614,
+      "completed_stages": [
+        "service-properties",
+        "source-journal",
+        "monitor",
+        "identity-correlation"
+      ],
+      "failure_kind": "invalid-evidence",
+      "name": "same-path-positive-collector.jsonl",
+      "prefix_validated": true,
+      "reason": "denial-malformed",
+      "sha256": "421d98325b4d0203a19c69502943d5b0e1ee9c572ba3afd02603cd6119451439",
+      "stage": "avc-journal",
+      "state": "ready",
+      "stream_validated": true,
+      "suffix": null
+    },
+    "interpretation": "The exact record matched the enforcing AVC denial syntax but its MESSAGE lacked audit(timestamp:serial). The Fedora-era systemd v257 ingestion contract strips that header, emits its authenticated serial as the same journal record's trusted _AUDIT_ID field, and builds MESSAGE from the remaining payload. The failed command did not request _AUDIT_ID, so this run does not establish its value and does not validate the denial.",
+    "journal_command": {
+      "command_sha256": "7373554e2c9520bd806bdd03945655f471493d5ddbff36f09c7743a348061978",
+      "exit_code": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_truncated": false,
+      "stdout_bytes": 589,
+      "stdout_sha256": "501800167a416e2e2dd18214721e3de7f05ac8bb758f2a8f45e7a5b0fe93df7a",
+      "stdout_truncated": false,
+      "timed_out": false
+    },
+    "lifecycle": {
+      "boundary": "invalid",
+      "events": [],
+      "last_event": null,
+      "marker_count": 3,
+      "state": "invalid"
+    },
+    "phase_diagnostic_validated": true,
+    "predecessor_install_passed": true,
+    "qemu_exit_code": 0,
+    "qemu_log": {
+      "bytes": 0,
+      "name": "qemu-same-path-positive.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "state": "empty"
+    },
+    "report": {
+      "bytes": 0,
+      "name": "same-path-positive.json",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "state": "empty"
+    },
+    "serial": {
+      "bytes": 77011,
+      "name": "same-path-positive-serial.log",
+      "sha256": "c57bf57244920466cbc2e1a0735e2666a9d7a9297d873b2936676dc971fcfbba",
+      "state": "ready"
+    },
+    "stage": "same-path-positive-avc-journal-audit-serial-pattern-missing",
+    "transition_failure_validated": false,
+    "validated_parser_predicates": {
+      "audit_serial_pattern_matched": false,
+      "denial_pattern_matched": true,
+      "record_count": 1,
+      "record_index": 0,
+      "schema": 1
+    }
+  },
+  "local_correction": {
+    "acceptance_predicate_changed": true,
+    "audit_transport_serial_source": "journal-audit-id",
+    "enforcing_mode_changed": false,
+    "kernel_transport_serial_source": "message-audit-header",
+    "maximum_record_count": 32,
+    "parser_predicate_fields": [
+      "schema",
+      "record_index",
+      "record_count",
+      "transport",
+      "serial_source",
+      "denial_pattern_matched",
+      "authenticated_serial_matched"
+    ],
+    "policy_allow_rule_added": false,
+    "raw_journal_content_retained": false,
+    "resource_limits_changed": false,
+    "serial_sources_are_mutually_exclusive": true,
+    "status": "corrected-pending-hosted-rerun",
+    "systemd_contract": {
+      "commit": "70bae7648f2c18010187c9cf20093155eaa26029",
+      "path": "src/journal/journald-audit.c",
+      "tag": "v257",
+      "url": "https://github.com/systemd/systemd/blob/70bae7648f2c18010187c9cf20093155eaa26029/src/journal/journald-audit.c"
+    },
+    "update_after_transition_failure": false
+  },
+  "local_verification": {
+    "complete_address_space_cap_bytes": 201326592,
+    "complete_image_tests": 374,
+    "complete_peak_rss_kib": 62060,
+    "complete_process_swaps": 0,
+    "focused_address_space_cap_bytes": 201326592,
+    "focused_peak_rss_kib": 39224,
+    "focused_process_swaps": 0,
+    "focused_update_tests": 95,
+    "independent_cold_review": "pending",
+    "local_image_vm_container_build_or_package_manager": false,
+    "status": "pass"
+  },
+  "reachability": {
+    "in_guest_update_negative_reports": [],
+    "installed_update_phase_reports": [],
+    "rollback_observed": false,
+    "rollback_phase_reports": [],
+    "same_path_qemu_process_completed": true,
+    "source_authentication_positive": true,
+    "source_signature_negative_controls": {
+      "altered-signature": true,
+      "unsigned": true,
+      "wrong-key": true,
+      "wrong-reference": true
+    },
+    "update_acceptance_observed": false,
+    "update_action_observed": false,
+    "updated_boot_observed": false,
+    "updated_boot_phase_reports": []
+  },
+  "resources": {
+    "added_swap": false,
+    "outer": {
+      "cpu_max": "200000 100000",
+      "memory_events": {
+        "max": 172514,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "memory_max": 5368709120,
+      "memory_peak": 5368709120,
+      "memory_swap_max": 0,
+      "pids_max": 256
+    },
+    "update_controller": {
+      "cpu_max": "200000 100000",
+      "memory_events": {
+        "max": 6954,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "memory_max": 3221225472,
+      "memory_peak": 3221225472,
+      "memory_swap_max": 0,
+      "pids_max": 64
+    }
+  },
+  "retention": {
+    "disk_images_committed": false,
+    "downloaded_artifact_path": "/tmp/symbi-p003-run-46076723423-nuEebYs9/artifact.zip",
+    "note": "Only compact content-free facts and hashes are retained in Git; raw evidence remains outside the repository.",
+    "private_keys_committed": false,
+    "raw_collector_committed": false,
+    "raw_journal_committed": false,
+    "raw_logs_committed": false,
+    "raw_serial_committed": false
+  },
+  "run": {
+    "attempt": 1,
+    "branch": "card/P0-03-selinux-fix",
+    "conclusion": "failure",
+    "event": "workflow_dispatch",
+    "evidence_upload_succeeded": true,
+    "head": "890e3aee32c420df71ccb652d96d98066f6a0568",
+    "id": 46076723423,
+    "job_id": 140766068121,
+    "job_name": "install-and-boot",
+    "parent": "ac71d6fc43ff3c0da3493fd18bb963d54a12ba2e",
+    "tree": "b93fc0bb0f2d73ec57731516d11e9911030810cb"
+  },
+  "schema": 1
+}

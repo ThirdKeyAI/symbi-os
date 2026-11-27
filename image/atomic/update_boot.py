@@ -60,7 +60,8 @@ TRANSITION_SOURCE_JOURNAL_COMMAND = [
 TRANSITION_AVC_JOURNAL_COMMAND = [
     "/usr/bin/journalctl", "--boot=0", "--no-pager", "--quiet",
     "--output=json",
-    "--output-fields=MESSAGE,__CURSOR,__MONOTONIC_TIMESTAMP,_TRANSPORT",
+    "--output-fields=MESSAGE,__CURSOR,__MONOTONIC_TIMESTAMP,_TRANSPORT,"
+    "_AUDIT_ID",
     "--lines=33",
     "--grep=avc:[[:space:]]+denied.*comm=\"runcon\".*(?:path|name)=\"/usr/bin/bootc\"",
     "_TRANSPORT=audit", "+", "_TRANSPORT=kernel",
@@ -231,7 +232,8 @@ def _valid_transition_avc_parser_predicates(value):
     """Validate one bounded, content-free malformed-denial observation."""
     fields = {
         "schema", "record_index", "record_count",
-        "denial_pattern_matched", "audit_serial_pattern_matched",
+        "transport", "serial_source", "denial_pattern_matched",
+        "authenticated_serial_matched",
     }
     return (isinstance(value, dict) and set(value) == fields
             and type(value.get("schema")) is int and value["schema"] == 1
@@ -239,10 +241,19 @@ def _valid_transition_avc_parser_predicates(value):
             and type(value.get("record_count")) is int
             and 1 <= value["record_count"] <= TRANSITION_AVC_MAX_RECORDS
             and 0 <= value["record_index"] < value["record_count"]
+            and isinstance(value.get("transport"), str)
+            and value.get("transport") in {"audit", "kernel"}
+            and isinstance(value.get("serial_source"), str)
+            and value.get("serial_source") in {
+                "journal-audit-id", "message-audit-header",
+            }
+            and value["serial_source"] == (
+                "journal-audit-id" if value["transport"] == "audit"
+                else "message-audit-header")
             and type(value.get("denial_pattern_matched")) is bool
-            and type(value.get("audit_serial_pattern_matched")) is bool
+            and type(value.get("authenticated_serial_matched")) is bool
             and not (value["denial_pattern_matched"]
-                     and value["audit_serial_pattern_matched"]))
+                     and value["authenticated_serial_matched"]))
 
 
 def _valid_transition_avc_failure_detail(detail):
@@ -928,9 +939,10 @@ def validate_transition_failure_report(report, runner_hash):
           or command_observation["stdout_sha256"] != avc["raw_sha256"]):
         raise ValueError("transition AVC record evidence is incomplete")
     avc_record_fields = {
-        "audit_serial", "transport", "receipt_monotonic_usec", "pid", "comm",
-        "path_field", "path", "source_context", "target_context", "class",
-        "permissions", "permissive", "cursor_sha256",
+        "audit_serial", "audit_serial_source", "transport",
+        "receipt_monotonic_usec", "pid", "comm", "path_field", "path",
+        "source_context", "target_context", "class", "permissions",
+        "permissive", "cursor_sha256",
     }
     for record in avc["records"]:
         permissions = record.get("permissions") if isinstance(record, dict) else None
@@ -939,6 +951,9 @@ def validate_transition_failure_report(report, runner_hash):
                 or not 0 < record["audit_serial"] <= 2**63 - 1
                 or not isinstance(record.get("transport"), str)
                 or record["transport"] not in {"audit", "kernel"}
+                or record.get("audit_serial_source") != (
+                    "journal-audit-id" if record.get("transport") == "audit"
+                    else "message-audit-header")
                 or type(record.get("receipt_monotonic_usec")) is not int
                 or not max(0, int(main_started)
                            - TRANSITION_JOURNAL_CORRELATION_MARGIN_USEC)

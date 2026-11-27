@@ -39,7 +39,8 @@ SOURCE_JOURNAL_COMMAND = [
 AVC_JOURNAL_COMMAND = [
     "/usr/bin/journalctl", "--boot=0", "--no-pager", "--quiet",
     "--output=json",
-    "--output-fields=MESSAGE,__CURSOR,__MONOTONIC_TIMESTAMP,_TRANSPORT",
+    "--output-fields=MESSAGE,__CURSOR,__MONOTONIC_TIMESTAMP,_TRANSPORT,"
+    "_AUDIT_ID",
     "--lines=33",
     "--grep=avc:[[:space:]]+denied.*comm=\"runcon\".*(?:path|name)=\"/usr/bin/bootc\"",
     "_TRANSPORT=audit", "+", "_TRANSPORT=kernel",
@@ -158,7 +159,8 @@ def _valid_avc_parser_predicates(value):
     """Validate one bounded, content-free malformed-denial observation."""
     fields = {
         "schema", "record_index", "record_count",
-        "denial_pattern_matched", "audit_serial_pattern_matched",
+        "transport", "serial_source", "denial_pattern_matched",
+        "authenticated_serial_matched",
     }
     return (isinstance(value, dict) and set(value) == fields
             and type(value.get("schema")) is int and value["schema"] == 1
@@ -166,10 +168,19 @@ def _valid_avc_parser_predicates(value):
             and type(value.get("record_count")) is int
             and 1 <= value["record_count"] <= AVC_MAX_RECORDS
             and 0 <= value["record_index"] < value["record_count"]
+            and isinstance(value.get("transport"), str)
+            and value.get("transport") in {"audit", "kernel"}
+            and isinstance(value.get("serial_source"), str)
+            and value.get("serial_source") in {
+                "journal-audit-id", "message-audit-header",
+            }
+            and value["serial_source"] == (
+                "journal-audit-id" if value["transport"] == "audit"
+                else "message-audit-header")
             and type(value.get("denial_pattern_matched")) is bool
-            and type(value.get("audit_serial_pattern_matched")) is bool
+            and type(value.get("authenticated_serial_matched")) is bool
             and not (value["denial_pattern_matched"]
-                     and value["audit_serial_pattern_matched"]))
+                     and value["authenticated_serial_matched"]))
 
 
 class AvcParserPredicateError(ValueError):
@@ -438,15 +449,34 @@ def parse_avc_evidence(raw, source, service=None):
             raise ValueError("incomplete transition AVC journal record")
         denial = re.search(
             r"avc:[ ]+denied[ ]+\{[ ]*([a-z0-9_ ]+?)[ ]*\}[ ]+for\b", message)
-        serial = re.search(r"audit\([0-9]+(?:\.[0-9]+)?:([0-9]{1,20})\)", message)
-        if denial is None or serial is None:
+        message_serial = re.search(
+            r"audit\([0-9]+(?:\.[0-9]+)?:([0-9]{1,20})\)", message)
+        if transport == "audit":
+            serial_source = "journal-audit-id"
+            serial_text = item.get("_AUDIT_ID")
+            serial_matched = (
+                isinstance(serial_text, str)
+                and re.fullmatch(r"[1-9][0-9]{0,19}", serial_text) is not None
+                and int(serial_text) <= 2**63 - 1)
+        else:
+            serial_source = "message-audit-header"
+            serial_text = (message_serial.group(1)
+                           if message_serial is not None else None)
+            serial_matched = (serial_text is not None
+                              and 0 < int(serial_text) <= 2**63 - 1)
+        if denial is None or not serial_matched:
             raise AvcParserPredicateError({
                 "schema": 1,
                 "record_index": record_index,
                 "record_count": len(items),
+                "transport": transport,
+                "serial_source": serial_source,
                 "denial_pattern_matched": denial is not None,
-                "audit_serial_pattern_matched": serial is not None,
+                "authenticated_serial_matched": serial_matched,
             })
+        if ((transport == "audit" and message_serial is not None)
+                or (transport == "kernel" and "_AUDIT_ID" in item)):
+            raise ValueError("ambiguous transition AVC audit serial")
         permissions = denial.group(1).split()
         if (not 1 <= len(permissions) <= 16 or len(set(permissions)) != len(permissions)
                 or any(re.fullmatch(r"[a-z0-9_]{1,64}", value) is None
@@ -463,7 +493,7 @@ def parse_avc_evidence(raw, source, service=None):
         pid_text = _avc_field(message, "pid")
         timestamp = int(monotonic)
         pid = int(pid_text) if re.fullmatch(r"[0-9]{1,10}", pid_text) else 0
-        audit_serial = int(serial.group(1))
+        audit_serial = int(serial_text)
         if (len(path_matches) != 1 or path_matches[0][1] != "/usr/bin/bootc"
                 or _avc_field(message, "comm", quoted=True) != "runcon"
                 or _SELINUX_CONTEXT.fullmatch(source_context) is None
@@ -483,6 +513,7 @@ def parse_avc_evidence(raw, source, service=None):
             raise ValueError("transition AVC falls outside the main process")
         records.append({
             "audit_serial": audit_serial,
+            "audit_serial_source": serial_source,
             "transport": transport,
             "receipt_monotonic_usec": timestamp,
             "pid": pid,

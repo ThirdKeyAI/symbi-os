@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import resource
 import signal
 import shutil
@@ -48,6 +49,7 @@ from image.atomic.update_boot_failure import (JOURNAL_MAX_BYTES,
                                               AVC_COMMAND_SHA256,
                                               AVC_FAILURE_REASONS,
                                               AvcEvidenceError,
+                                              AvcParserPredicateError,
                                               CollectorCommandError,
                                               _SENSITIVE_ASSIGNMENT as PRODUCER_SENSITIVE,
                                               _kill_and_reap,
@@ -154,14 +156,18 @@ class AtomicUpdateTests(unittest.TestCase):
 
     @staticmethod
     def avc_parser_predicates(*, record_index=0, record_count=1,
+                              transport="kernel",
+                              serial_source="message-audit-header",
                               denial_pattern_matched=False,
-                              audit_serial_pattern_matched=True):
+                              authenticated_serial_matched=True):
         return {
             "schema": 1,
             "record_index": record_index,
             "record_count": record_count,
+            "transport": transport,
+            "serial_source": serial_source,
             "denial_pattern_matched": denial_pattern_matched,
-            "audit_serial_pattern_matched": audit_serial_pattern_matched,
+            "authenticated_serial_matched": authenticated_serial_matched,
         }
 
     @staticmethod
@@ -582,11 +588,11 @@ class AtomicUpdateTests(unittest.TestCase):
             (message.replace("audit(100.200:42):", "audit:"),
              self.avc_parser_predicates(
                  denial_pattern_matched=True,
-                 audit_serial_pattern_matched=False)),
+                 authenticated_serial_matched=False)),
             (message.replace("audit(100.200:42):", "audit:")
                     .replace("avc: denied", "avc: rejected"),
              self.avc_parser_predicates(
-                 audit_serial_pattern_matched=False)),
+                 authenticated_serial_matched=False)),
         )
         for malformed, predicates in messages:
             changed = copy.deepcopy(record)
@@ -650,7 +656,9 @@ class AtomicUpdateTests(unittest.TestCase):
         for key, value in (
                 ("record_count", 0), ("record_count", 33),
                 ("record_index", -1), ("record_index", 1),
-                ("denial_pattern_matched", True)):
+                ("denial_pattern_matched", True),
+                ("transport", "audit"),
+                ("serial_source", "journal-audit-id")):
             changed = copy.deepcopy(terminal)
             changed["failure_detail"]["parser_predicates"][key] = value
             mutations.append((key, value, changed))
@@ -2950,6 +2958,7 @@ class AtomicUpdateTests(unittest.TestCase):
                 "truncated": False,
                 "records": [{
                     "audit_serial": 42,
+                    "audit_serial_source": "message-audit-header",
                     "transport": "kernel",
                     "receipt_monotonic_usec": 1002,
                     "pid": 654,
@@ -3289,9 +3298,10 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertNotIn("vda3", retained)
         self.assertNotIn("audit: type=1400", retained)
         self.assertEqual(set(observed["records"][0]), {
-            "audit_serial", "transport", "receipt_monotonic_usec", "pid", "comm",
-            "path_field", "path", "source_context", "target_context", "class",
-            "permissions", "permissive", "cursor_sha256",
+            "audit_serial", "audit_serial_source", "transport",
+            "receipt_monotonic_usec", "pid", "comm", "path_field", "path",
+            "source_context", "target_context", "class", "permissions",
+            "permissive", "cursor_sha256",
         })
         runner = Mock(return_value=self.avc_command_result(
             exit_code=0, stdout=raw.encode()))
@@ -3355,6 +3365,122 @@ class AtomicUpdateTests(unittest.TestCase):
             '"MESSAGE":', '"MESSAGE":"duplicate","MESSAGE":', 1)
         with self.assertRaises(ValueError):
             parse_source_capture(ambiguous, invocation)
+
+    def test_audit_transport_binds_trusted_structured_serial_to_exact_record(self):
+        source_context = "system_u:system_r:unconfined_service_t:s0"
+        source = {
+            "source_context": source_context,
+            "requested_context": BOOTC_CONTEXT,
+        }
+        service = self.transition_failure_report()["service"]
+        kernel_record = json.loads(self.avc_journal_raw())
+        audit_record = copy.deepcopy(kernel_record)
+        audit_record["MESSAGE"] = re.sub(
+            r"^.*audit\([0-9]+\.[0-9]+:[0-9]+\):[ ]+", "AVC ",
+            audit_record["MESSAGE"], count=1)
+        audit_record["_TRANSPORT"] = "audit"
+        audit_record["_AUDIT_ID"] = "42"
+        self.assertIn("_AUDIT_ID", AVC_JOURNAL_COMMAND[5])
+        raw = json.dumps(audit_record) + "\n"
+        parsed = parse_avc_evidence(raw, source, service)
+        self.assertEqual(parsed["records"][0]["audit_serial"], 42)
+        self.assertEqual(
+            parsed["records"][0]["audit_serial_source"], "journal-audit-id")
+        self.assertEqual(parsed["records"][0]["transport"], "audit")
+
+        second = copy.deepcopy(audit_record)
+        second["_AUDIT_ID"] = "43"
+        second["__CURSOR"] = "s=" + "3" * 64
+        paired = parse_avc_evidence(
+            raw + json.dumps(second) + "\n", source, service)
+        self.assertEqual(
+            [(record["audit_serial"], record["audit_serial_source"])
+             for record in paired["records"]],
+            [(42, "journal-audit-id"), (43, "journal-audit-id")],
+        )
+        duplicate = copy.deepcopy(second)
+        duplicate["_AUDIT_ID"] = "42"
+        with self.assertRaisesRegex(ValueError, "duplicated"):
+            parse_avc_evidence(
+                raw + json.dumps(duplicate) + "\n", source, service)
+
+        invalid_ids = (
+            None, True, 42, [], {}, "", "0", "00", "-1", "+1", "1.0",
+            "9223372036854775808", "18446744073709551615",
+        )
+        for invalid in invalid_ids:
+            changed = copy.deepcopy(audit_record)
+            changed["_AUDIT_ID"] = invalid
+            with self.subTest(invalid=invalid), \
+                    self.assertRaises(AvcParserPredicateError) as caught:
+                parse_avc_evidence(json.dumps(changed) + "\n", source, service)
+            self.assertEqual(caught.exception.predicates,
+                             self.avc_parser_predicates(
+                                 transport="audit",
+                                 serial_source="journal-audit-id",
+                                 denial_pattern_matched=True,
+                                 authenticated_serial_matched=False))
+        missing = copy.deepcopy(audit_record)
+        del missing["_AUDIT_ID"]
+        with self.assertRaises(AvcParserPredicateError) as caught:
+            parse_avc_evidence(json.dumps(missing) + "\n", source, service)
+        self.assertEqual(caught.exception.predicates,
+                         self.avc_parser_predicates(
+                             transport="audit",
+                             serial_source="journal-audit-id",
+                             denial_pattern_matched=True,
+                             authenticated_serial_matched=False))
+        malformed_denial = copy.deepcopy(audit_record)
+        malformed_denial["MESSAGE"] = malformed_denial["MESSAGE"].replace(
+            "avc: denied", "avc: rejected")
+        with self.assertRaises(AvcParserPredicateError) as caught:
+            parse_avc_evidence(
+                json.dumps(malformed_denial) + "\n", source, service)
+        self.assertEqual(caught.exception.predicates,
+                         self.avc_parser_predicates(
+                             transport="audit",
+                             serial_source="journal-audit-id"))
+
+        ambiguous_audit = copy.deepcopy(audit_record)
+        ambiguous_audit["MESSAGE"] = (
+            "audit(100.200:42): " + ambiguous_audit["MESSAGE"])
+        with self.assertRaisesRegex(ValueError, "ambiguous"):
+            parse_avc_evidence(
+                json.dumps(ambiguous_audit) + "\n", source, service)
+        ambiguous_kernel = copy.deepcopy(kernel_record)
+        ambiguous_kernel["_AUDIT_ID"] = "42"
+        with self.assertRaisesRegex(ValueError, "ambiguous"):
+            parse_avc_evidence(
+                json.dumps(ambiguous_kernel) + "\n", source, service)
+
+        missing_message_serial = copy.deepcopy(kernel_record)
+        missing_message_serial["MESSAGE"] = missing_message_serial["MESSAGE"].replace(
+            "audit(100.200:42):", "audit:")
+        with self.assertRaises(AvcParserPredicateError) as caught:
+            parse_avc_evidence(
+                json.dumps(missing_message_serial) + "\n", source, service)
+        self.assertEqual(caught.exception.predicates,
+                         self.avc_parser_predicates(
+                             denial_pattern_matched=True,
+                             authenticated_serial_matched=False))
+
+        report = self.transition_failure_report()
+        report["avc"]["records"][0] = parsed["records"][0]
+        report["avc"]["raw_bytes"] = len(raw.encode())
+        report["avc"]["raw_sha256"] = hashlib.sha256(raw.encode()).hexdigest()
+        report["avc"]["command_observation"] = self.avc_command_observation(
+            exit_code=0, stdout=raw.encode())
+        self.assertEqual(
+            validate_transition_failure_report(report, "a" * 64), report)
+        for transport, serial_source in (
+                ("audit", "message-audit-header"),
+                ("kernel", "journal-audit-id")):
+            changed = copy.deepcopy(report)
+            changed["avc"]["records"][0]["transport"] = transport
+            changed["avc"]["records"][0]["audit_serial_source"] = serial_source
+            with self.subTest(transport=transport, source=serial_source), \
+                    self.assertRaises(ValueError):
+                validate_transition_failure_report(changed, "a" * 64)
 
     def test_transition_diagnostic_command_hard_caps_pipes(self):
         self.assertEqual(
