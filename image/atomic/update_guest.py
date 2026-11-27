@@ -12,7 +12,11 @@ import sys
 import time
 
 SOURCE = Path("/run/symbi-update/source")
-SOURCE_DEVICE = Path("/dev/disk/by-id/virtio-SYMBIUPDATE")
+SOURCE_SERIAL = "SYMBIUPDATE"
+SOURCE_SERIAL_BYTES = b"SYMBIUPDATE"
+SOURCE_DEVICE_TIMEOUT_SECONDS = 30
+SYS_BLOCK = Path("/sys/class/block")
+DEV_ROOT = Path("/dev")
 NEGATIVE_SOURCE = Path("/run/symbi-update-negative/source")
 NEGATIVE_CASES = ("unsigned", "wrong-key", "wrong-reference", "altered-signature")
 POSITIVE_OVERLAY_CASE = "valid-signature"
@@ -58,10 +62,109 @@ def validate_source_identity(raw, expected):
     return selected
 
 
-def device_settle_command():
-    """Wait a bounded time for the one fixed virtio source identity."""
-    return ["/usr/bin/udevadm", "settle", "--timeout=30",
-            "--exit-if-exists=" + str(SOURCE_DEVICE)]
+def _sysfs_bytes(path, limit):
+    """Read one bounded sysfs attribute without following its final component."""
+    flags = os.O_RDONLY | os.O_CLOEXEC
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    try:
+        descriptor = os.open(path, flags)
+    except FileNotFoundError:
+        return None
+    try:
+        return os.read(descriptor, limit + 1)
+    finally:
+        os.close(descriptor)
+
+
+def _sysfs_value(path):
+    """Read one small ASCII sysfs line."""
+    raw = _sysfs_bytes(path, 128)
+    if raw is None:
+        return None
+    if len(raw) > 128 or b"\x00" in raw or b"\r" in raw:
+        raise ValueError("invalid block-device sysfs attribute")
+    if raw.endswith(b"\n"):
+        raw = raw[:-1]
+    if b"\n" in raw:
+        raise ValueError("invalid block-device sysfs attribute")
+    try:
+        value = raw.decode("ascii")
+    except UnicodeDecodeError as error:
+        raise ValueError("invalid block-device sysfs attribute") from error
+    if not value:
+        raise ValueError("empty block-device sysfs attribute")
+    return value
+
+
+def _block_serial(path):
+    """Read only enough bytes to compare the kernel's exact virtio serial."""
+    return _sysfs_bytes(path, len(SOURCE_SERIAL_BYTES))
+
+
+def discover_source_device(sys_block=SYS_BLOCK, dev_root=DEV_ROOT, device_lstat=None):
+    """Find one virtio disk by exact kernel serial and bind its device node."""
+    sys_block, dev_root = Path(sys_block), Path(dev_root)
+    device_lstat = os.lstat if device_lstat is None else device_lstat
+    entries = list(sys_block.iterdir())
+    names = sorted(path.name for path in entries)
+    if (not names or len(names) > 64
+            or len(names) != len(set(names))
+            or any(re.fullmatch(r"[A-Za-z0-9_.!-]{1,128}", name) is None
+                   for name in names)):
+        raise ValueError("invalid block-device inventory")
+    matches = []
+    for name in names:
+        if re.fullmatch(r"vd[a-z]{1,3}", name) is None:
+            continue
+        entry = sys_block / name
+        if _block_serial(entry / "serial") == SOURCE_SERIAL_BYTES:
+            matches.append(name)
+    if len(matches) > 1:
+        raise ValueError("ambiguous update source virtio serial")
+    if not matches:
+        return None, names
+    name = matches[0]
+    major_minor = _sysfs_value(sys_block / name / "dev")
+    if major_minor is None:
+        return None, names
+    match = re.fullmatch(r"(0|[1-9][0-9]{0,6}):(0|[1-9][0-9]{0,6})",
+                         major_minor)
+    if match is None:
+        raise ValueError("invalid update source device number")
+    major, minor = int(match[1]), int(match[2])
+    device = dev_root / name
+    try:
+        info = device_lstat(device)
+    except FileNotFoundError:
+        return None, names
+    if (not stat.S_ISBLK(info.st_mode)
+            or (os.major(info.st_rdev), os.minor(info.st_rdev)) != (major, minor)):
+        raise ValueError("update source device node differs from sysfs")
+    return device, names
+
+
+def wait_for_source_device(*, scan=None, clock=None, sleeper=None,
+                           timeout=SOURCE_DEVICE_TIMEOUT_SECONDS):
+    """Poll the kernel block inventory for a bounded time without udev state."""
+    if type(timeout) is not int or not 1 <= timeout <= SOURCE_DEVICE_TIMEOUT_SECONDS:
+        raise ValueError("invalid update source discovery timeout")
+    scan = discover_source_device if scan is None else scan
+    clock = time.monotonic if clock is None else clock
+    sleeper = time.sleep if sleeper is None else sleeper
+    deadline = clock() + timeout
+    first_scan = True
+    while True:
+        if not first_scan and clock() >= deadline:
+            raise ValueError("fixed update source virtio serial is absent")
+        first_scan = False
+        device, inventory = scan()
+        if device is not None:
+            return device, inventory
+        remaining = deadline - clock()
+        if remaining <= 0:
+            raise ValueError("fixed update source virtio serial is absent")
+        sleeper(min(0.25, remaining))
 
 
 def image_digest(entry, expected):
@@ -173,8 +276,11 @@ def main():
         raise ValueError("oversized update credential")
     expected = json.loads(expected_path.read_bytes())
     old, new = expected["old_digest"], expected["new_digest"]
+    source_expected = expected.get("source_disk")
     if (not exact_digest(old) or not exact_digest(new) or old == new
-            or not re.fullmatch(r"[a-f0-9]{32}", expected["nonce"])):
+            or not re.fullmatch(r"[a-f0-9]{32}", expected["nonce"])
+            or not isinstance(source_expected, dict)
+            or source_expected.get("serial") != SOURCE_SERIAL):
         raise ValueError("invalid update expectation")
     record = {"schema": 1, "passed": False, "guest_booted": True,
               "release_qualified": False, "product": product,
@@ -202,22 +308,23 @@ def main():
             raise ValueError("update guest gained a network interface")
         if run(["/usr/sbin/getenforce"]).strip() != "Enforcing":
             raise ValueError("SELinux is not enforcing")
-        run(device_settle_command(), timeout=40, check=False)
-        settle_exit = record["commands"][-1]["exit_code"]
-        block_devices = sorted(path.name for path in Path("/sys/class/block").iterdir())
-        if (not block_devices or len(block_devices) > 64
-                or any(re.fullmatch(r"[A-Za-z0-9_.!-]{1,128}", name) is None
-                       for name in block_devices)):
-            raise ValueError("invalid block-device inventory")
+        observed_devices = []
+
+        def scan_source():
+            device, inventory = discover_source_device()
+            observed_devices[:] = inventory
+            return device, inventory
+
+        try:
+            source_device, block_devices = wait_for_source_device(scan=scan_source)
+        except ValueError:
+            if observed_devices:
+                record["block_devices"] = observed_devices
+            raise
         record["block_devices"] = block_devices
-        if settle_exit != 0 or not SOURCE_DEVICE.is_symlink():
-            raise ValueError("fixed update source block-device link is absent")
-        source_device = SOURCE_DEVICE.resolve(strict=True)
-        if not stat.S_ISBLK(source_device.stat().st_mode):
-            raise ValueError("fixed update source is not a block device")
         identity = validate_source_identity(
-            run(["/usr/sbin/blkid", "-p", "-o", "export", str(SOURCE_DEVICE)]),
-            expected.get("source_disk"))
+            run(["/usr/sbin/blkid", "-p", "-o", "export", str(source_device)]),
+            source_expected)
         mountpoint = SOURCE.parent.lstat()
         if (not stat.S_ISDIR(mountpoint.st_mode) or stat.S_IMODE(mountpoint.st_mode) != 0o700
                 or mountpoint.st_uid != 0 or mountpoint.st_gid != 0
@@ -227,7 +334,7 @@ def main():
             if next(entries, None) is not None:
                 raise ValueError("update runtime mount point is not empty")
         run(["/usr/bin/mount", "-t", "ext4", "-o", "ro,nosuid,nodev,noexec",
-             str(SOURCE_DEVICE), str(SOURCE.parent)])
+             str(source_device), str(SOURCE.parent)])
         if not os.statvfs(SOURCE).f_flag & os.ST_RDONLY:
             raise ValueError("update source is writable")
         mount = run(["/usr/bin/findmnt", "-n", "-o", "SOURCE,FSTYPE,OPTIONS",
@@ -238,7 +345,8 @@ def main():
                 or not {"ro", "nosuid", "nodev", "noexec"}.issubset(
                     set(mount[2].split(",")))):
             raise ValueError("update source mount controls changed")
-        record["source_device"] = {"path": str(source_device), **identity}
+        record["source_device"] = {"path": str(source_device),
+                                   "serial": SOURCE_SERIAL, **identity}
         manifest = SOURCE / "manifest.json"
         signature = SOURCE / "signature-1"
         for path in (manifest, signature):

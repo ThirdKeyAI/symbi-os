@@ -1,0 +1,147 @@
+{
+  "schema": 1,
+  "passed": false,
+  "qualification": false,
+  "run": {
+    "id": 45957908436,
+    "attempt": 1,
+    "event": "workflow_dispatch",
+    "workflow_id": 431513082,
+    "repository_id": 1472078858,
+    "head_repository_id": 1472078858,
+    "head_branch": "card/P0-03-update-proof",
+    "head_sha": "729772493882838b97f72c0692dda9126fec21c5",
+    "job_id": 140368581904,
+    "job_name": "install-and-boot",
+    "conclusion": "failure",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45957908436"
+  },
+  "artifact": {
+    "id": 15180268555,
+    "name": "atomic-development-boot-generic",
+    "bytes": 82494,
+    "digest": "sha256:6ef16252a260e1c9f473908dc33927946883e7cf92f266382075fb9c26a2e557",
+    "downloaded_zip_sha256": "6ef16252a260e1c9f473908dc33927946883e7cf92f266382075fb9c26a2e557",
+    "files": 98,
+    "uncompressed_bytes": 229181,
+    "expires_at": "2026-12-11T07:45:00Z"
+  },
+  "retained_evidence_sha256": {
+    "atomic-disk-evidence/result.json": "a6fc46cfbefaf33f7722bfb2537c2766bca37108597184c3ed16268865da3ae1",
+    "atomic-disk-evidence/source-authentication/result.json": "18f0e692a8b0c6aec7b7e1e758e20d29d5dd485078cdbc85911f8b5fe4e17e4d",
+    "atomic-disk-evidence/signed-update-and-rollback-stderr.log": "9a056f10b95b55fa707b35bf74b2a0845424ced30de2bccdd6f07e47cb4bc1e1",
+    "atomic-disk-evidence/systemd-result.txt": "e945424f1e392f6d222e787ebb90bba53a13d106fe5685845d9549d4c1e1485e",
+    "atomic-update-evidence/result.json": "5cf1d6c29f7417f9d5dea7817279d069ab3211a4509a973e11553c1341ee35b3",
+    "atomic-update-evidence/controller-result.json": "2770896d8f8f44a324ffd5329020ca585a390daa4714fe7707d17dcc3769d161",
+    "atomic-update-evidence/same-path-positive.json": "3019da37ec2212e622bc62fb2872c0cdfa7b5875574e56cf21f3493c3dc14f35",
+    "atomic-update-evidence/same-path-positive-serial.log": "5f6407db25ebd9ded49e46799ba0025711ad48002da11089b3241313c5852660"
+  },
+  "observation": {
+    "stage": "same-path-positive",
+    "artifact_intake_passed": true,
+    "predecessor_installation_passed": true,
+    "source_disk_construction_passed": true,
+    "qemu_exit_code": 0,
+    "serial_log_bytes": 74247,
+    "guest_report_bytes": 1018,
+    "guest_report_guest_booted": true,
+    "controller_guest_booted": false,
+    "block_devices": [
+      "vda",
+      "vda1",
+      "vda2",
+      "vda3",
+      "vdb",
+      "zram0"
+    ],
+    "udevadm_settle_exit_code": 1,
+    "udevadm_stderr": "Failed to issue io.systemd.service.Ping() varlink call: Timer expired",
+    "fixed_device_link_presence": "not observed because the nonzero settle result short-circuited the link check",
+    "guest_failure": "ValueError: fixed update source block-device link is absent",
+    "controller_failure": "ValueError: unbound or incomplete same-path positive update report",
+    "phase_reports": 0,
+    "negative_reports": 0
+  },
+  "device_contract_exercised": {
+    "explicit_boot_disk": true,
+    "boot_index": 1,
+    "strict_boot": true,
+    "source_read_only": true,
+    "source_serial": "SYMBIUPDATE",
+    "source_boot_indexed": false,
+    "serial_identity_bound_in_guest": false
+  },
+  "source_disk": {
+    "bytes": 5625753600,
+    "entries": 133,
+    "payload_bytes": 4240735427,
+    "filesystem": "ext4",
+    "label": "SYMBIUPDATE",
+    "uuid": "3f688bfe-5d11-423c-a81e-7f89029315f0",
+    "sha256": "f0edc15c5239e4a30634d5c093c2b524ed73cde30eefa1edfe374f32354c930b"
+  },
+  "host_fixture_authentication": {
+    "passed": true,
+    "release_qualified": false,
+    "scope": "Ephemeral CI fixture key; not the ThirdKey release identity",
+    "valid_accepted": true,
+    "unsigned_rejected": true,
+    "wrong_key_rejected": true,
+    "wrong_reference_rejected": true,
+    "altered_signature_rejected": true,
+    "private_keys_removed": true
+  },
+  "resources": {
+    "controller": {
+      "memory_max_bytes": 3221225472,
+      "memory_peak_bytes": 3221225472,
+      "memory_max_events": 6745,
+      "cpu_usage_usec": 337059737
+    },
+    "hosted_parent": {
+      "memory_max_bytes": 5368709120,
+      "memory_peak_bytes": 5368709120,
+      "memory_max_events": 172265,
+      "cpu_usage_usec": 771614605
+    },
+    "oom_events": 0,
+    "oom_kill_events": 0,
+    "oom_group_kill_events": 0,
+    "swap_max_bytes": 0
+  },
+  "cleanup": {
+    "named_containers_removed_and_absent": true,
+    "loaded_image_removed": true,
+    "private_runroot_removed": true,
+    "private_storage_removed": true,
+    "child_cleanup_attempted": false,
+    "qemu_exited_naturally": true
+  },
+  "correction": {
+    "sysfs_serial_attribute": "/sys/class/block/<vdname>/serial",
+    "exact_serial": "SYMBIUPDATE",
+    "serial_normalization": false,
+    "unique_whole_disk_required": true,
+    "direct_block_node_required": true,
+    "device_node_bound_to_sysfs_major_minor": true,
+    "udev_state_required": false,
+    "readiness_timeout_seconds": 30,
+    "poll_interval_seconds": 0.25,
+    "exact_blkid_type_label_uuid_retained": true,
+    "report_binds_serial": true,
+    "resource_limits_changed": false
+  },
+  "local_verification": {
+    "focused_update_tests": 42,
+    "focused_seconds": 0.131,
+    "focused_peak_rss_kib": 34372,
+    "full_image_tests": 321,
+    "full_suite_seconds": 2.072,
+    "full_suite_peak_rss_kib": 54508,
+    "swaps": 0,
+    "python_syntax": "pass",
+    "diff_check": "pass",
+    "cold_review": "no blockers"
+  },
+  "next": "A fresh exact-head hosted run must bind the kernel serial and pass the signed switch, four guest refusal controls, updated boot and rollback before qualification."
+}

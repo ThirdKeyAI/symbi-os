@@ -188,7 +188,8 @@ def _prepare_source_disk(source, storage, run):
         os.chmod(disk, 0o444)
         return disk, {"bytes": disk.stat().st_size, "sha256": sha256(disk),
                       "filesystem": "ext4", "label": "SYMBIUPDATE",
-                      "uuid": filesystem_uuid, "entries": entries,
+                      "uuid": filesystem_uuid, "serial": "SYMBIUPDATE",
+                      "entries": entries,
                       "payload_bytes": total}
     finally:
         shutil.rmtree(staging)
