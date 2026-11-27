@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import re
+import stat
 import subprocess
 import time
 import zlib
@@ -35,11 +36,66 @@ def unique_json(raw):
     return result
 
 
+def stop_child(child):
+    """Best-effort QEMU cleanup that never masks the primary gate failure."""
+    result = {"attempted": False, "terminated": False, "killed": False, "errors": []}
+    if child is None or child.poll() is not None:
+        return result
+    result["attempted"] = True
+    try:
+        child.terminate()
+        result["terminated"] = True
+    except OSError as error:
+        result["errors"].append(type(error).__name__ + ": " + str(error))
+    else:
+        try:
+            child.wait(timeout=10)
+            return result
+        except subprocess.TimeoutExpired:
+            pass
+    try:
+        child.kill()
+        result["killed"] = True
+    except OSError as error:
+        result["errors"].append(type(error).__name__ + ": " + str(error))
+    else:
+        try:
+            child.wait(timeout=10)
+        except subprocess.TimeoutExpired as error:
+            result["errors"].append(type(error).__name__ + ": " + str(error))
+    return result
+
+
+def discard_overlay(path, identity=None):
+    """Remove only the controller-owned overlay without masking other failures."""
+    path = Path(path)
+    result = {"attempted": False, "removed": False, "errors": []}
+    try:
+        info = path.lstat()
+    except FileNotFoundError:
+        result["removed"] = True
+        return result
+    result["attempted"] = True
+    try:
+        if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.geteuid()
+                or info.st_nlink != 1
+                or (identity is not None and (info.st_dev, info.st_ino) != identity)):
+            raise ValueError("qualification overlay identity changed before discard")
+        path.unlink()
+        if path.exists() or path.is_symlink():
+            raise ValueError("qualification overlay remains after discard")
+        result["removed"] = True
+    except (OSError, ValueError) as error:
+        result["errors"].append(type(error).__name__ + ": " + str(error))
+    return result
+
+
 def firmware_arguments(directory):
     if directory != Path("/inputs"):
         raise ValueError("fixed read-only firmware input mount required")
     files = [
         ("fstab.extra", "fstab.extra"),
+        ("systemd.extra-unit.m.service", "m.service"),
         ("systemd.extra-unit.p.service", "p.service"),
         ("systemd.extra-unit.q.service", "q.service"),
         ("systemd.extra-unit.l.service", "l.service"),
@@ -48,6 +104,7 @@ def firmware_arguments(directory):
         ("vertical_slice.py", "vertical_slice.py"),
         ("symbi-runner.py", "guest.py"),
         ("symbi-prepare.py", "prepare.py"),
+        ("symbi-source-mount.py", "source_mount.py"),
         ("symbi-expected.json", "expected.json"),
         ("symbi-sysusers.conf", "sysusers.conf"),
     ]
@@ -60,6 +117,13 @@ def firmware_arguments(directory):
     return result
 
 
+def overlay_command(inputs=Path("/inputs"), output=Path("/output")):
+    if inputs != Path("/inputs") or output != Path("/output"):
+        raise ValueError("fixed overlay mounts required")
+    return ["/usr/bin/qemu-img", "create", "-f", "qcow2", "-F", "raw",
+            "-b", "/inputs/atomic.raw", "/output/guest.qcow2"]
+
+
 def qemu_command(inputs=Path("/inputs"), output=Path("/output")):
     if inputs != Path("/inputs") or output != Path("/output"):
         raise ValueError("fixed QEMU mounts required")
@@ -68,14 +132,33 @@ def qemu_command(inputs=Path("/inputs"), output=Path("/output")):
         "-accel", "tcg,thread=single", "-cpu", "max", "-m", "2048M", "-smp", "1",
         "-nodefaults", "-no-user-config", "-no-reboot", "-net", "none",
         "-smbios", "type=1,manufacturer=Symbi-Test,product=Symbi-Hosted-Landlock-Probe",
-        "-drive", "file=/inputs/atomic.raw,format=raw,if=virtio,snapshot=on,readonly=on",
-        "-drive", "file=/inputs/source.raw,format=raw,if=virtio,readonly=on",
+        "-drive", "file=/output/guest.qcow2,format=qcow2,if=virtio",
+        "-drive", "file=/inputs/source.raw,format=raw,if=none,"
+                  "id=symbi-qualification-source,readonly=on",
+        "-device", "virtio-blk-pci,drive=symbi-qualification-source,serial=SYMBIQUAL",
         "-device", "virtio-rng-pci", "-device", "virtio-serial-pci",
         "-chardev", "file,id=report,path=/output/report.json",
         "-device", "virtserialport,chardev=report,name=org.symbi.qualification",
         "-serial", "file:/output/serial.log", "-monitor", "none", "-display", "none",
         *firmware_arguments(inputs),
     ]
+
+
+def validate_source_device(report, expected):
+    """Bind guest block evidence to the authenticated source-disk identity."""
+    try:
+        observed = report["source_device"]
+        source = expected["source_disk"]
+    except (KeyError, TypeError) as error:
+        raise ValueError("qualification source-device evidence is missing") from error
+    required = {"path", "TYPE", "LABEL", "UUID"}
+    if (not isinstance(observed, dict) or not isinstance(source, dict)
+            or set(observed) != required
+            or re.fullmatch(r"/dev/vd[a-z]{1,3}", observed.get("path", "")) is None
+            or observed.get("TYPE") != source.get("filesystem")
+            or observed.get("LABEL") != source.get("label")
+            or observed.get("UUID") != source.get("uuid")):
+        raise ValueError("qualification source-device evidence differs")
 
 
 def _safe_artifact_name(name):
@@ -128,6 +211,7 @@ def validate_guest_report(report, expected, expected_hash, runner_hash, driver_h
     }
     if any(report.get(key) != value for key, value in required.items()):
         raise ValueError("unbound, incomplete or falsely qualified guest report")
+    validate_source_device(report, expected)
     minimum = expected.get("minimum_landlock_abi", 6)
     if type(report.get("landlock_abi")) is not int or report["landlock_abi"] < minimum:
         raise ValueError("Landlock ABI does not meet the selected minimum")
@@ -190,7 +274,15 @@ def main():
               "source_disk": source_disk,
               "scope": "Offline Landlock qualification on the exact installed development image"}
     child = None
+    overlay = output / "guest.qcow2"
+    overlay_identity = None
     try:
+        with (output / "prepare-overlay.log").open("x") as log:
+            subprocess.run(overlay_command(inputs, output), stdin=subprocess.DEVNULL,
+                           stdout=log, stderr=subprocess.STDOUT, check=True, timeout=30)
+        overlay_identity = (overlay.stat().st_dev, overlay.stat().st_ino)
+        record["overlay"] = {"path": str(overlay), "backing": "/inputs/atomic.raw",
+                             "format": "qcow2"}
         command = qemu_command(inputs, output)
         record["command"] = command
         (output / "result.json").write_text(json.dumps(record, indent=2) + "\n")
@@ -230,6 +322,8 @@ def main():
         (evidence / "summary.json").write_text(json.dumps(report["summary"], indent=2) + "\n")
         if sha256(inputs / "source.raw") != source_disk["sha256"]:
             raise ValueError("read-only source disk changed during qualification")
+        if (overlay.stat().st_dev, overlay.stat().st_ino) != overlay_identity:
+            raise ValueError("qualification overlay identity changed")
         record.update(passed=True, guest_booted=True, qualification_qualified=True,
                       source_revision=report["source_revision"],
                       binary_sha256=report["binary_sha256"], landlock_abi=report["landlock_abi"],
@@ -238,13 +332,13 @@ def main():
         record["failure"] = type(error).__name__ + ": " + str(error)
         raise
     finally:
-        if child is not None and child.poll() is None:
-            child.terminate()
-            try:
-                child.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                child.kill()
-                child.wait(timeout=10)
+        cleanup = stop_child(child)
+        record["child_cleanup"] = cleanup
+        if cleanup["attempted"]:
+            record["passed"] = False
+        overlay_cleanup = discard_overlay(overlay, overlay_identity)
+        record["overlay_cleanup"] = overlay_cleanup
+        if not overlay_cleanup["removed"] or overlay_cleanup["errors"]:
             record["passed"] = False
         record["cgroup_final"] = {name: (group / name).read_text().strip()
                                     for name in (*limits, "memory.peak", "memory.events", "cpu.stat")}

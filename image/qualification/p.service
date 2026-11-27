@@ -1,8 +1,8 @@
 [Unit]
 Description=Prepare the disposable non-root qualification account
 ConditionPathExists=!/etc/initrd-release
-RequiresMountsFor=/var/lib/symbi-qualification/source
-After=local-fs.target
+Requires=m.service
+After=m.service
 Before=q.service l.service
 OnFailure=poweroff.target
 
