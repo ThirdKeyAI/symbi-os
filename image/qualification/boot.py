@@ -31,6 +31,7 @@ MAX_PROGRESS_BYTES = 1024 * 1024
 MAX_PROGRESS_SAMPLE_BYTES = 8192
 PROGRESS_INTERVAL_SECONDS = 30
 MAX_QMP_MESSAGE_BYTES = 16384
+MAX_QMP_MESSAGES_PER_CALL = 8
 QMP_TIMEOUT_SECONDS = 2
 QMP_SOCKET_MODE = 0o700
 QMP_CREDENTIALS = struct.Struct("=iII")
@@ -57,7 +58,12 @@ def unique_json(raw):
                 raise ValueError("duplicate qualification report key")
             result[key] = value
         return result
-    result = json.loads(raw, object_pairs_hook=unique)
+
+    def reject_constant(value):
+        raise ValueError("non-RFC JSON constant: " + value)
+
+    result = json.loads(raw, object_pairs_hook=unique,
+                        parse_constant=reject_constant)
     if not isinstance(result, dict):
         raise ValueError("qualification report must be a JSON object")
     return result
@@ -95,18 +101,42 @@ def _validate_qmp_greeting(greeting):
         raise ValueError("invalid QMP greeting values")
 
 
-def _qmp_call(stream, name, request_id):
+def _validate_qmp_event(message):
+    keys = set(message) if isinstance(message, dict) else set()
+    if keys not in ({"event", "timestamp"},
+                    {"event", "data", "timestamp"}):
+        raise ValueError("unexpected QMP event schema")
+    timestamp = message["timestamp"]
+    _exact_keys(timestamp, {"seconds", "microseconds"},
+                "QMP event timestamp")
+    if (not isinstance(message["event"], str)
+            or re.fullmatch(r"[A-Z][A-Z0-9_]{0,127}",
+                            message["event"]) is None
+            or ("data" in message and not isinstance(message["data"], dict))
+            or type(timestamp["seconds"]) is not int
+            or not 0 <= timestamp["seconds"] <= 2**63 - 1
+            or type(timestamp["microseconds"]) is not int
+            or not 0 <= timestamp["microseconds"] <= 999999):
+        raise ValueError("invalid QMP event values")
+
+
+def _qmp_call(stream, name, request_id, allow_events=False):
     raw = (json.dumps({"execute": name, "id": request_id},
                       separators=(",", ":")) + "\n").encode()
     if len(raw) > 1024:
         raise ValueError("oversized QMP request")
     stream.write(raw)
     stream.flush()
-    response = _qmp_message(stream)
-    _exact_keys(response, {"return", "id"}, "QMP response")
-    if response["id"] != request_id:
-        raise ValueError("unexpected QMP response id")
-    return response["return"]
+    for _ in range(MAX_QMP_MESSAGES_PER_CALL):
+        response = _qmp_message(stream)
+        if allow_events and isinstance(response, dict) and "event" in response:
+            _validate_qmp_event(response)
+            continue
+        _exact_keys(response, {"return", "id"}, "QMP response")
+        if response["id"] != request_id:
+            raise ValueError("unexpected QMP response id")
+        return response["return"]
+    raise ValueError("too many QMP events before response")
 
 
 def qmp_request(stream, name, stable=lambda: None):
@@ -119,15 +149,18 @@ def qmp_request(stream, name, stable=lambda: None):
     if capabilities != {}:
         raise ValueError("unexpected QMP capabilities response")
     stable()
-    result = _qmp_call(stream, name, "symbi-" + name)
+    result = _qmp_call(stream, name, "symbi-" + name, allow_events=True)
     if name == "quit":
         if result != {}:
             raise ValueError("unexpected QMP quit response")
         return result
-    _exact_keys(result, {"running", "singlestep", "status"},
-                "QMP query-status response")
+    keys = set(result) if isinstance(result, dict) else set()
+    if keys not in ({"running", "status"},
+                    {"running", "singlestep", "status"}):
+        raise ValueError("unexpected QMP query-status response schema")
     if (type(result["running"]) is not bool
-            or type(result["singlestep"]) is not bool
+            or ("singlestep" in result
+                and type(result["singlestep"]) is not bool)
             or not isinstance(result["status"], str)
             or result["status"] not in QMP_STATES
             or result["running"] is not (result["status"] == "running")):
@@ -472,13 +505,15 @@ def stop_child(child, identity=None, control=None, request=qmp_command,
             result["qmp_quit"] = True
         except Exception as error:
             result["errors"].append(_cleanup_error(error))
-        else:
-            try:
-                if prove_exit(child, identity, 10):
-                    result["exit_proven"] = True
-                    return result
-            except Exception as error:
-                result["errors"].append(_cleanup_error(error))
+        # QEMU may close QMP after accepting quit but before returning its
+        # response.  In either case only pidfd readiness plus the direct
+        # Popen return code authorizes private-leaf cleanup.
+        try:
+            if prove_exit(child, identity, 10):
+                result["exit_proven"] = True
+                return result
+        except Exception as error:
+            result["errors"].append(_cleanup_error(error))
     try:
         verify(identity)
         send_signal(identity, signal.SIGTERM)
@@ -676,7 +711,8 @@ def qemu_command(inputs=Path("/inputs"), output=Path("/output")):
         raise ValueError("fixed QEMU mounts required")
     return [
         "/usr/bin/qemu-system-x86_64", "-machine", "q35,dump-guest-core=off",
-        "-accel", "tcg,thread=single", "-cpu", "max", "-m", "2048M", "-smp", "1",
+        "-accel", "tcg,thread=multi", "-cpu", "max", "-m", "2048M",
+        "-smp", "cpus=2,sockets=1,cores=2,threads=1",
         "-nodefaults", "-no-user-config", "-no-reboot", "-net", "none",
         "-smbios", "type=1,manufacturer=Symbi-Test,product=Symbi-Hosted-Landlock-Probe",
         "-drive", "file=/output/guest.qcow2,format=qcow2,if=virtio",
