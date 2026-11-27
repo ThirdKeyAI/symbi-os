@@ -1,0 +1,170 @@
+{
+  "etc/crypto-policies/back-ends/bind.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/bind.txt",
+    "sha256": "de64669cdf2f9b5074089e202ea7f0bc04c94087c1e7ee0c3eba753b8c89c692",
+    "mode": 420
+  },
+  "etc/crypto-policies/back-ends/gnutls.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/gnutls.txt",
+    "sha256": "f3fdf680a08deae452dae687a88c772e14ba75f054d9e978fca6433c767e4827",
+    "mode": 420
+  },
+  "etc/crypto-policies/back-ends/java.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/java.txt",
+    "sha256": "4830ab5342ebfdaf3b078ad0c22df80a182662049b5827ac0cfb7bff5ee3e516",
+    "mode": 420
+  },
+  "etc/crypto-policies/back-ends/krb5.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/krb5.txt",
+    "sha256": "eac3d00644f5b9ac59296ff888399c00a568d885fb3188d481a0f3fd7543c7c7",
+    "mode": 420
+  },
+  "etc/crypto-policies/back-ends/libreswan.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/libreswan.txt",
+    "sha256": "5370840eb4a8a2ab688cd07aa87110a2beea893c080a398275a93a29775a83a4",
+    "mode": 420
+  },
+  "etc/crypto-policies/back-ends/libssh.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/libssh.txt",
+    "sha256": "defc1570fd8d2965bfffcbac3db68c64884b2abd0f774180998b32ed644e21f3",
+    "mode": 420
+  },
+  "etc/crypto-policies/back-ends/nss.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/nss.txt",
+    "sha256": "f354956681d2ad76aea01efc0aba4c34f77e85f28c62475919f8cfbf5a9853a2",
+    "mode": 420
+  },
+  "etc/crypto-policies/back-ends/openssh.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/openssh.txt",
+    "sha256": "3f55c31e5e01d001f280a83fdfae6e21417fb7438614e9034e0f0b1eccc331a6",
+    "mode": 420
+  },
+  "etc/crypto-policies/back-ends/opensshserver.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/opensshserver.txt",
+    "sha256": "a19771cf98492a15b639001f746237b990f9cd65822255925f665147581d54db",
+    "mode": 420
+  },
+  "etc/crypto-policies/back-ends/openssl_fips.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/openssl_fips.txt",
+    "sha256": "ce58fa596fd447999c0fc9ea20f25072b77621e9eaa5166aa06f030d970b626b",
+    "mode": 420
+  },
+  "etc/crypto-policies/back-ends/opensslcnf.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/opensslcnf.txt",
+    "sha256": "221cc052299b29e20415cb58b8e0fdc8331f26058cde5d8cac7dc327b750e1a3",
+    "mode": 420
+  },
+  "etc/crypto-policies/back-ends/rpm-sequoia.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/rpm-sequoia.txt",
+    "sha256": "41db06cca2b40bb82c06e0c9e8e618f88027c8bd3ba9abbbd15f593cab9aa23a",
+    "mode": 420
+  },
+  "etc/crypto-policies/back-ends/sequoia.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/sequoia.txt",
+    "sha256": "a6b78a0e2e6753bd207b434835b53c5ae84cbd4a87b13996dde332fadd45b8d5",
+    "mode": 420
+  },
+  "etc/crypto-policies/config": {
+    "link": null,
+    "sha256": "85907f2a81cec2526ecf94651b3aec8c26a84a57276e0f75ad23a3f45cbc01d0",
+    "mode": 420
+  },
+  "etc/crypto-policies/state/CURRENT.pol": {
+    "link": null,
+    "sha256": "8fee13e6ca2cae58b4e40c130708cfacbccafc4bd5d04a3b7833f27f8e6a208f",
+    "mode": 420
+  },
+  "etc/pki/tls/openssl.cnf": {
+    "link": null,
+    "sha256": "560c5ffc479650fbaca8e381e301f71f1c021c7fbf63488cbf26b7f69f08c246",
+    "mode": 420
+  },
+  "usr/etc/crypto-policies/back-ends/opensslcnf.config": null,
+  "usr/etc/crypto-policies/config": null,
+  "usr/etc/crypto-policies/state/CURRENT.pol": null,
+  "usr/etc/pki/tls/openssl.cnf": null,
+  "usr/share/factory/etc/crypto-policies/back-ends/opensslcnf.config": null,
+  "usr/share/factory/etc/crypto-policies/config": null,
+  "usr/share/factory/etc/crypto-policies/state/CURRENT.pol": null,
+  "usr/share/factory/etc/pki/tls/openssl.cnf": null,
+  "usr/share/secureblue/etc/crypto-policies/back-ends/bind.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/bind.txt",
+    "sha256": "de64669cdf2f9b5074089e202ea7f0bc04c94087c1e7ee0c3eba753b8c89c692",
+    "mode": 420
+  },
+  "usr/share/secureblue/etc/crypto-policies/back-ends/gnutls.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/gnutls.txt",
+    "sha256": "f3fdf680a08deae452dae687a88c772e14ba75f054d9e978fca6433c767e4827",
+    "mode": 420
+  },
+  "usr/share/secureblue/etc/crypto-policies/back-ends/java.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/java.txt",
+    "sha256": "4830ab5342ebfdaf3b078ad0c22df80a182662049b5827ac0cfb7bff5ee3e516",
+    "mode": 420
+  },
+  "usr/share/secureblue/etc/crypto-policies/back-ends/krb5.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/krb5.txt",
+    "sha256": "eac3d00644f5b9ac59296ff888399c00a568d885fb3188d481a0f3fd7543c7c7",
+    "mode": 420
+  },
+  "usr/share/secureblue/etc/crypto-policies/back-ends/libreswan.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/libreswan.txt",
+    "sha256": "5370840eb4a8a2ab688cd07aa87110a2beea893c080a398275a93a29775a83a4",
+    "mode": 420
+  },
+  "usr/share/secureblue/etc/crypto-policies/back-ends/libssh.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/libssh.txt",
+    "sha256": "defc1570fd8d2965bfffcbac3db68c64884b2abd0f774180998b32ed644e21f3",
+    "mode": 420
+  },
+  "usr/share/secureblue/etc/crypto-policies/back-ends/nss.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/nss.txt",
+    "sha256": "f354956681d2ad76aea01efc0aba4c34f77e85f28c62475919f8cfbf5a9853a2",
+    "mode": 420
+  },
+  "usr/share/secureblue/etc/crypto-policies/back-ends/openssh.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/openssh.txt",
+    "sha256": "3f55c31e5e01d001f280a83fdfae6e21417fb7438614e9034e0f0b1eccc331a6",
+    "mode": 420
+  },
+  "usr/share/secureblue/etc/crypto-policies/back-ends/opensshserver.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/opensshserver.txt",
+    "sha256": "a19771cf98492a15b639001f746237b990f9cd65822255925f665147581d54db",
+    "mode": 420
+  },
+  "usr/share/secureblue/etc/crypto-policies/back-ends/openssl_fips.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/openssl_fips.txt",
+    "sha256": "ce58fa596fd447999c0fc9ea20f25072b77621e9eaa5166aa06f030d970b626b",
+    "mode": 420
+  },
+  "usr/share/secureblue/etc/crypto-policies/back-ends/opensslcnf.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/opensslcnf.txt",
+    "sha256": "221cc052299b29e20415cb58b8e0fdc8331f26058cde5d8cac7dc327b750e1a3",
+    "mode": 420
+  },
+  "usr/share/secureblue/etc/crypto-policies/back-ends/rpm-sequoia.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/rpm-sequoia.txt",
+    "sha256": "41db06cca2b40bb82c06e0c9e8e618f88027c8bd3ba9abbbd15f593cab9aa23a",
+    "mode": 420
+  },
+  "usr/share/secureblue/etc/crypto-policies/back-ends/sequoia.config": {
+    "link": "/usr/share/crypto-policies/DEFAULT/sequoia.txt",
+    "sha256": "a6b78a0e2e6753bd207b434835b53c5ae84cbd4a87b13996dde332fadd45b8d5",
+    "mode": 420
+  },
+  "usr/share/secureblue/etc/crypto-policies/config": {
+    "link": null,
+    "sha256": "85907f2a81cec2526ecf94651b3aec8c26a84a57276e0f75ad23a3f45cbc01d0",
+    "mode": 420
+  },
+  "usr/share/secureblue/etc/crypto-policies/state/CURRENT.pol": {
+    "link": null,
+    "sha256": "8fee13e6ca2cae58b4e40c130708cfacbccafc4bd5d04a3b7833f27f8e6a208f",
+    "mode": 420
+  },
+  "usr/share/secureblue/etc/pki/tls/openssl.cnf": {
+    "link": null,
+    "sha256": "560c5ffc479650fbaca8e381e301f71f1c021c7fbf63488cbf26b7f69f08c246",
+    "mode": 420
+  }
+}

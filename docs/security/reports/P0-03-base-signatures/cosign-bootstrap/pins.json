@@ -1,0 +1,31 @@
+{
+  "version": "v3.1.5",
+  "source_revision": "e5a0818ca5729481095773409e9c1b60cc278e8d",
+  "public_key_source": "https://raw.githubusercontent.com/sigstore/cosign/e5a0818ca5729481095773409e9c1b60cc278e8d/release/release-cosign.pub",
+  "assets": [
+    {
+      "name": "cosign-linux-amd64",
+      "sha256": "912502def4baf810eaf36b210a4f51e1da214f9f6d664e2a9a2154cfc67ee0d6",
+      "bytes": 145753267,
+      "url": "https://github.com/sigstore/cosign/releases/download/v3.1.5/cosign-linux-amd64"
+    },
+    {
+      "name": "cosign-linux-amd64-kms.sigstore.json",
+      "sha256": "9640eb9b9f1236bbb145197cc6cf098ed1fb5f7613c6c731647a2431d0dac518",
+      "bytes": 3789,
+      "url": "https://github.com/sigstore/cosign/releases/download/v3.1.5/cosign-linux-amd64-kms.sigstore.json"
+    },
+    {
+      "name": "cosign-linux-amd64.sigstore.json",
+      "sha256": "93caa214530bb3eca98a8fa69f291c16d5f53a82af4b33cf49fae1412d5a4c25",
+      "bytes": 6275,
+      "url": "https://github.com/sigstore/cosign/releases/download/v3.1.5/cosign-linux-amd64.sigstore.json"
+    },
+    {
+      "name": "cosign_checksums.txt",
+      "sha256": "7f7a577e2c458185810c469936e75c9da48921f5a48d573ba15dba3a0d83788b",
+      "bytes": 3908,
+      "url": "https://github.com/sigstore/cosign/releases/download/v3.1.5/cosign_checksums.txt"
+    }
+  ]
+}

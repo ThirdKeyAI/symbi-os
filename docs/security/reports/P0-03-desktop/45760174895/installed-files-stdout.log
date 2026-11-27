@@ -1,0 +1,1 @@
+{"passed": true, "os_qualified": false, "installed_files_checked": 88, "installed_package_count": 2328, "all_package_identities_preserved_after_build": true, "uid": 10001, "limits": {"memory.max": "536870912", "memory.swap.max": "0", "cpu.max": "100000 100000", "pids.max": "64"}, "scope": "Installed bytes and packaging only; no boot or containment qualification"}

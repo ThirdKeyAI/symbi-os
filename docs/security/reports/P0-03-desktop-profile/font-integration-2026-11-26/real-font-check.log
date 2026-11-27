@@ -1,0 +1,164 @@
+{
+  "passed": true,
+  "record": {
+    "schema": 1,
+    "development_included": true,
+    "selected_for_release": false,
+    "security_qualified": false,
+    "os_qualified": false,
+    "source_commit": "552b958994c4659cc044c5632d5c00fa6c87da54",
+    "inputs_sha256": "0cb5bd14ebc26cd3b5ca3ff27fac3f967a4d169fce14a9d8897f541518f620f6",
+    "candidate_manifest_sha256": "2e2488c9e6b58cb533a54dcb5cf76013d1f415fcd7e756478149e47f42c80437",
+    "archives": {
+      "JetBrainsMono.tar.xz": {
+        "members": 98,
+        "fonts": 96,
+        "expanded_bytes": 243185440,
+        "inventory_sha256": "935da0eb2e17ba99e514ab81df3c816c20927f522ecdbe560b057e50527b45ab"
+      },
+      "NerdFontsSymbolsOnly.tar.xz": {
+        "members": 5,
+        "fonts": 2,
+        "expanded_bytes": 5206217,
+        "inventory_sha256": "3d12ba9d80ad4eaaf608e2a72fd1d6fb3d5e036151d88bdbd366418d374140d5"
+      }
+    },
+    "font_count": 98,
+    "font_bytes": 248325788,
+    "font_paths": [
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Bold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-BoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ExtraBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ExtraBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ExtraLight.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ExtraLightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Italic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Light.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-LightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Medium.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-MediumItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Regular.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-SemiBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-SemiBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Thin.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ThinItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Bold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-BoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ExtraBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ExtraBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ExtraLight.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ExtraLightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Italic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Light.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-LightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Medium.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-MediumItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Regular.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-SemiBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-SemiBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Thin.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ThinItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Bold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-BoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ExtraBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ExtraBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ExtraLight.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ExtraLightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Italic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Light.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-LightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Medium.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-MediumItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Regular.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-SemiBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-SemiBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Thin.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ThinItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Bold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-BoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ExtraBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ExtraBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ExtraLight.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ExtraLightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Italic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Light.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-LightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Medium.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-MediumItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Regular.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-SemiBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-SemiBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Thin.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ThinItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Bold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-BoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ExtraBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ExtraBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ExtraLight.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ExtraLightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Italic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Light.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-LightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Medium.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-MediumItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Regular.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-SemiBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-SemiBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Thin.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ThinItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Bold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-BoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ExtraBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ExtraBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ExtraLight.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ExtraLightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Italic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Light.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-LightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Medium.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-MediumItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Regular.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-SemiBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-SemiBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Thin.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ThinItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/Symbols/SymbolsNerdFont-Regular.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/Symbols/SymbolsNerdFontMono-Regular.ttf"
+    ],
+    "fontconfig": {
+      "aliases": 398,
+      "sha256": "c686f822818bd1c4c26ccb1314d16b277e77252f97a74483ca20b2165dbf7ec6"
+    },
+    "notice_count": 5,
+    "scope": "Development-image font payload; native parsing and booted desktop acceptance remain separate gates"
+  },
+  "native_rows": 98,
+  "selected_families_present": true,
+  "fontconfig_review": {
+    "aliases": 398,
+    "sha256": "c686f822818bd1c4c26ccb1314d16b277e77252f97a74483ca20b2165dbf7ec6"
+  }
+}
+	Command being timed: "python3 font-integration-stage/real_font_check.py"
+	User time (seconds): 1.21
+	System time (seconds): 0.40
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.62
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 97832
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 4
+	Minor (reclaiming a frame) page faults: 128250
+	Voluntary context switches: 24
+	Involuntary context switches: 48
+	Swaps: 0
+	File system inputs: 784
+	File system outputs: 24
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

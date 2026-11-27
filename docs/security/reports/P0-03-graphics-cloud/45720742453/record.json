@@ -1,0 +1,69 @@
+{
+  "run_id": 45720742453,
+  "head": "5822e713f5960e803f753fc353dafb36dcd7470e",
+  "tested_merge": "943be8905da5dc1e3dace4b5bf5f9f5f648dd88b",
+  "conclusion": "success",
+  "artifact": {
+    "id": 15072167129,
+    "bytes": 67713,
+    "sha256": "420a8490a93ec28bf55d57a76fcda93a7b410f2e713e0ee45364cedc681e5032"
+  },
+  "files": {
+    "result.json": {
+      "original_sha256": "a73aa861706b2e6fedaabc4b38cde56c43a6773bcb76b78c08e68ddd37447ce6",
+      "retained_sha256": "a73aa861706b2e6fedaabc4b38cde56c43a6773bcb76b78c08e68ddd37447ce6",
+      "bytes": 1706
+    },
+    "base-signature.json": {
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "bytes": 1281
+    },
+    "cloud-input.json": {
+      "original_sha256": "4feb7f2c7129a036916fc676c3aaf6c57b5f5b61877221408f4b8e79ece86d63",
+      "retained_sha256": "4feb7f2c7129a036916fc676c3aaf6c57b5f5b61877221408f4b8e79ece86d63",
+      "bytes": 541
+    },
+    "guest-result.json": {
+      "original_sha256": "bae6b479a45199dbf4ebd54cd87e986bced30848ed984f90b9b730ae1feecfb8",
+      "retained_sha256": "bae6b479a45199dbf4ebd54cd87e986bced30848ed984f90b9b730ae1feecfb8",
+      "bytes": 3962
+    },
+    "guest-with-gpu-report.json": {
+      "original_sha256": "6225f22184c123817513578f599b2d44ea170704ed0ba8f4ed9e57a0cc455f82",
+      "retained_sha256": "6225f22184c123817513578f599b2d44ea170704ed0ba8f4ed9e57a0cc455f82",
+      "bytes": 1444
+    },
+    "guest-without-gpu-report.json": {
+      "original_sha256": "3821f152f3a7b18bd8e051a0a0644ca5bcf21fd4507313ea29672b7dc3c525f7",
+      "retained_sha256": "3821f152f3a7b18bd8e051a0a0644ca5bcf21fd4507313ea29672b7dc3c525f7",
+      "bytes": 1283
+    },
+    "guest-with-gpu-serial.log": {
+      "original_sha256": "eb615a7cea9587790ffafbcb5231f4544fca7db084d896dbab51df8333eff375",
+      "retained_sha256": "61506a7225f30f4bf5a842752236daa3e2586eeffc2fb0dcd430d5083b037889",
+      "bytes": 104341
+    },
+    "guest-without-gpu-serial.log": {
+      "original_sha256": "8efe36856351bf67a4ab4b6d1ff889cce849a1da23dd3b84d37bbc2792663442",
+      "retained_sha256": "ec7cd2a628d374ac16a1e774969273176b9c98d2b3a838534ca984f5621c3b50",
+      "bytes": 104615
+    },
+    "cloud-checksum-signature.log": {
+      "original_sha256": "9b8e377d5d453d12743afa3aa58e95b7fa08e940c09f3a9415322d70fb229322",
+      "retained_sha256": "9b8e377d5d453d12743afa3aa58e95b7fa08e940c09f3a9415322d70fb229322",
+      "bytes": 572
+    },
+    "cloud-checksum-changed.log": {
+      "original_sha256": "f8cd46e527cf4e08e186016ce553c34bcf736fd70d73a1624617d3944acb40f4",
+      "retained_sha256": "f8cd46e527cf4e08e186016ce553c34bcf736fd70d73a1624617d3944acb40f4",
+      "bytes": 369
+    },
+    "cloud-checksum-missing-key.log": {
+      "original_sha256": "028d93bd093f7461a96fc815e07c5784633da4719746f689e501c6ccdbb1a42a",
+      "retained_sha256": "028d93bd093f7461a96fc815e07c5784633da4719746f689e501c6ccdbb1a42a",
+      "bytes": 315
+    }
+  },
+  "os_qualified": false
+}

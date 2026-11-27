@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "built": true,
+  "os_qualified": false,
+  "source_commit": "1e171d1820b473141df4c300dd657056a171b98a",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "variant": "generic",
+  "archive": {
+    "name": "symbiont-os-generic.oci.tar.gz",
+    "bytes": 4034269486,
+    "sha256": "7c1f6a7896c22ff70bc9fca7a1822d1144ad755c18bc032583081c6e71ce8156",
+    "image_id": "sha256:68a9d7bcdbf15413a897821de45c2c20a76a9197bea1fdbcf2aeec56edcb483c"
+  },
+  "preparation_sha256": "6439c1145df34600ed74733a4e22885e78e59fb712172bacbefb8fe099220189"
+}

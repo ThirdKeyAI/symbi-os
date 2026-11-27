@@ -1,0 +1,8 @@
+/output/rpms/mplayer-1.5.1-0.26.r38531.20260727.f401198.fc45.x86_64.rpm:
+    Header OpenPGP DSA signature: NOTFOUND
+    Header OpenPGP V4 RSA/SHA256 signature, key ID e06f8ecdd651ff2e: NOKEY
+    Header OpenPGP signature: NOTFOUND
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+    Legacy OpenPGP DSA signature: NOTFOUND
+    Legacy OpenPGP V4 RSA/SHA256 signature, key ID e06f8ecdd651ff2e: NOKEY

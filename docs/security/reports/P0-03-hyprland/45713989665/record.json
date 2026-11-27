@@ -1,0 +1,68 @@
+{
+  "run_id": 45713989665,
+  "conclusion": "failure",
+  "artifact": {
+    "id": 15070952617,
+    "bytes": 203836,
+    "sha256": "a482879434959ee38c4dd991f3ed573959b5928bd8f45389d58c9b3e75dce5da"
+  },
+  "files": {
+    "result.json": {
+      "original_sha256": "382cdaae3cb90ab20bc2c8c409643a828b2cd5d4650a2a896e2f780612b6bef8",
+      "retained_sha256": "382cdaae3cb90ab20bc2c8c409643a828b2cd5d4650a2a896e2f780612b6bef8",
+      "bytes": 22657
+    },
+    "development-prefix.json": {
+      "original_sha256": "d158ab5e6948abc59084bf60b771fa0abf92f8c39d47fb77c40b2c6e5e5bee08",
+      "retained_sha256": "d158ab5e6948abc59084bf60b771fa0abf92f8c39d47fb77c40b2c6e5e5bee08",
+      "bytes": 2738
+    },
+    "base-signature.json": {
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "bytes": 1281
+    },
+    "session-result.json": {
+      "original_sha256": "fc0dbd7df8c62610b4dd7ca1330e4d3c75e7430f74d6e381dcd2561d2824bef5",
+      "retained_sha256": "fc0dbd7df8c62610b4dd7ca1330e4d3c75e7430f74d6e381dcd2561d2824bef5",
+      "bytes": 2972
+    },
+    "session-defaults-probe.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "base-Hyprland-needed-libraries.log": {
+      "original_sha256": "bbeaa1aa3b1f4a4724df09bb239ecec2645250053be51eb30882447fb6045374",
+      "retained_sha256": "bbeaa1aa3b1f4a4724df09bb239ecec2645250053be51eb30882447fb6045374",
+      "bytes": 13426
+    },
+    "cgroup-final.json": {
+      "original_sha256": "c34c31d51640140bd48d9f9e73706ae7c162751346985eeefce2604b2dee0d87",
+      "retained_sha256": "c34c31d51640140bd48d9f9e73706ae7c162751346985eeefce2604b2dee0d87",
+      "bytes": 467
+    },
+    "cgroup-limits.json": {
+      "original_sha256": "56c5eb8cc68a3a4706310eba89ecfa9f3f64a75081207f23fdea66c1f9ae5bc5",
+      "retained_sha256": "56c5eb8cc68a3a4706310eba89ecfa9f3f64a75081207f23fdea66c1f9ae5bc5",
+      "bytes": 110
+    },
+    "guest/compile.json": {
+      "original_sha256": "09963ad427fadf7aeccef03a1b925375c23d35580b52b4a7471ac4511d1c33f6",
+      "retained_sha256": "09963ad427fadf7aeccef03a1b925375c23d35580b52b4a7471ac4511d1c33f6",
+      "bytes": 15668
+    },
+    "guest/build-cgroup-final.json": {
+      "original_sha256": "7ea1aecc7a7cc8c3a643853035ef1d5104a2900988aad60ff4aa8642280efb65",
+      "retained_sha256": "7ea1aecc7a7cc8c3a643853035ef1d5104a2900988aad60ff4aa8642280efb65",
+      "bytes": 454
+    },
+    "hosted-build.log": {
+      "original_sha256": "2ecf7f29e6b70ab87bbdf9407216a67790a85df039a103471e0e60e1342f565a",
+      "retained_sha256": "2ecf7f29e6b70ab87bbdf9407216a67790a85df039a103471e0e60e1342f565a",
+      "bytes": 12215
+    }
+  },
+  "os_qualified": false,
+  "scope": "Retain passing intermediate gates and actual terminal failure; no complete acceptance claim"
+}

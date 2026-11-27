@@ -1,0 +1,30 @@
+{
+  "verified_at_utc": "2026-11-25T17:00:49.298176+00:00",
+  "binary_sha256": "912502def4baf810eaf36b210a4f51e1da214f9f6d664e2a9a2154cfc67ee0d6",
+  "source_revision": "e5a0818ca5729481095773409e9c1b60cc278e8d",
+  "release_public_key_sha256": "f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126",
+  "authentication": "OpenSSL SHA-256 verification of the release KMS signature over the exact binary",
+  "bootstrap_trust": "Publisher public key retrieved from the pinned official sigstore/cosign source via GitHub HTTPS",
+  "limits": "Initial public-key trust is the publisher HTTPS source; no independent out-of-band key confirmation claimed",
+  "transparency_verification": {
+    "passed": true,
+    "exit_code": 0,
+    "output": "Verified OK",
+    "method": "Cosign verification of the signed checksum manifest, whose exact binary digest was checked separately",
+    "manifest": "cosign_checksums.txt",
+    "bundle": "cosign_checksums.txt.sigstore.json",
+    "certificate_identity": "keyless@projectsigstore.iam.gserviceaccount.com",
+    "oidc_issuer": "https://accounts.google.com",
+    "insecure_flags": false,
+    "memory_max_bytes": 134217728,
+    "cpu_quota_fraction_of_one_core": 0.1,
+    "verified_at_utc": "2026-11-25T17:07:14.687885+00:00"
+  },
+  "contains_private_material": false,
+  "earlier_full_binary_bundle_attempt": {
+    "exit_code": 137,
+    "memory_max_bytes": 134217728,
+    "scope": "symbi-cosign-verification.scope",
+    "result": "Did not complete inside the memory cap; checksum manifest verification completed under the same cap instead"
+  }
+}

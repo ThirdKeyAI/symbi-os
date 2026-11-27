@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/inputs/compile.py", line 82, in <module>
+    main()
+    ~~~~^^
+  File "/inputs/compile.py", line 67, in main
+    run(name + '-configure', ['cmake', '-S', str(source), '-B', str(build), *common, *options], timeout=300)
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/inputs/compile.py", line 39, in run
+    result.check_returncode()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib64/python3.15/subprocess.py", line 623, in check_returncode
+    raise CalledProcessError(self.returncode, self.args, self.stdout,
+                             self.stderr)
+subprocess.CalledProcessError: Command ['cmake', '-S', '/output/sources/Hyprland', '-B', '/output/build/Hyprland', '-G', 'Ninja', '-DCMAKE_BUILD_TYPE=Release', '-DCMAKE_INSTALL_PREFIX=/usr/lib/symbi/hyprland', '-DCMAKE_INSTALL_LIBDIR=lib', '-DCMAKE_INSTALL_RPATH=/usr/lib/symbi/hyprland/lib', '-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON', '-DCMAKE_PREFIX_PATH=/usr/lib/symbi/hyprland', '-DFETCHCONTENT_FULLY_DISCONNECTED=ON', '-DFETCHCONTENT_UPDATES_DISCONNECTED=ON', '-DCMAKE_C_FLAGS_RELEASE=-O2 -DNDEBUG -g0', '-DCMAKE_CXX_FLAGS_RELEASE=-O2 -DNDEBUG -g0', '-DNO_HYPRPM=ON', '-DUSE_TRACY=OFF', '-DNO_UWSM=ON', '-Dglaze_DIR=/usr/lib/symbi/hyprland/lib/cmake/glaze'] returned non-zero exit status 1.

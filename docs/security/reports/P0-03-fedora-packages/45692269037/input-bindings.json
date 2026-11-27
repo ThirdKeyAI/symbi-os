@@ -1,0 +1,12 @@
+{
+  "source_commit": "0e0b69b6c4477c70bbec5a2ccc6fc8529a5e6bfd",
+  "files": {
+    "resolve_packages.py": "011ce376970a3854618ddb537250b37ae2be0a671b4f4d47c17c0dd03b724ff9",
+    "guest_inventory.py": "9e8d948c76c4749e3a36a38bf3b4811ff8153f74e32721df52a3b2f8f695825a",
+    "build-requirements.json": "6808a2cb110bc2d4978b7cea578e9bfe64e876b3df9046e57cca71eb5686cfc5",
+    "fedora-package-trust.json": "3801b3f6ad666bc0f762f2502fdaebac0eb051fbbadcb343fd2559e3b05ec443",
+    "fedora-45-primary.asc": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425",
+    "dnf.conf": "7efd0964186fedfa5269c023d97a94d7ad2ad4a6cbf14b0197e5d89b3b6de0f7",
+    "repos/fedora-build.repo": "535aaceeafda783decd20f72553aa4cf93f281b02555b43d93712710d7048757"
+  }
+}

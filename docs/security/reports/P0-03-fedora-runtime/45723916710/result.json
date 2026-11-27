@@ -1,0 +1,44 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "source_commit": "0a63377e4e3c38cfa1cfaafbe0dd7ac0d3a01944",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "pull",
+      "exit_code": 0
+    },
+    {
+      "name": "add-runtime-packages",
+      "exit_code": 0
+    },
+    {
+      "name": "session-defaults",
+      "exit_code": 0
+    }
+  ],
+  "scope": "Original base plus only reviewed runtime libraries and retained compiler prefix; no boot/native acceptance",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "prefix_link_rewrites": [
+    {
+      "name": "hyprland/bin/hyprland",
+      "original_target": "/usr/lib/symbi/hyprland/bin/Hyprland",
+      "relative_target": "Hyprland"
+    }
+  ],
+  "runtime_stage_image_id": "sha256:6e7abe11980b6ef32c85ee0b031c46beebfdd1c8225f40d590d9c12c811a0d5d",
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4324782080",
+    "memory.events": "low 0\nhigh 0\nmax 32921\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 196781203\nuser_usec 144719549\nsystem_usec 52061653\nnice_usec 142922000\ncore_sched.force_idle_usec 0\nnr_periods 1468\nnr_throttled 631\nthrottled_usec 80090386\nnr_bursts 0\nburst_usec 0"
+  }
+}

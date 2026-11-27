@@ -1,0 +1,104 @@
+{
+  "scope": "Candidate Fedora source inputs taken from the selected Hyprland release's own lockfile; not built or qualified",
+  "hyprland_revision": "11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947",
+  "source": "https://github.com/hyprwm/Hyprland/blob/11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947/flake.lock",
+  "libraries": [
+    {
+      "name": "aquamarine",
+      "version": "0.16.0",
+      "lastModified": 1794165596,
+      "narHash": "sha256-rK+TjHQNrIqJGAXDezduzkiO5MO5cZhkFKHRPvV8c6c=",
+      "owner": "hyprwm",
+      "repo": "aquamarine",
+      "rev": "9887f39574f2afeae3aeb6687db6cd0c030ccf94",
+      "type": "github"
+    },
+    {
+      "name": "hyprutils",
+      "version": "0.14.3",
+      "lastModified": 1792769344,
+      "narHash": "sha256-vafQgUKYqxJzob39NXf2sB+k0U2u8XuMsWFOj8d0aRw=",
+      "owner": "hyprwm",
+      "repo": "hyprutils",
+      "rev": "7e1f69209cd910615d0573a93fa970408f643539",
+      "type": "github"
+    },
+    {
+      "name": "hyprlang",
+      "version": "0.6.8",
+      "lastModified": 1786464129,
+      "narHash": "sha256-339AkTlpMYSIvFuG0rnR+8Yg4/AZKeJalshJavlnKfg=",
+      "owner": "hyprwm",
+      "repo": "hyprlang",
+      "rev": "9508458be316a0d70d37ebed1ab725ccd10411ff",
+      "type": "github"
+    },
+    {
+      "name": "hyprcursor",
+      "version": "0.1.13",
+      "lastModified": 1794162771,
+      "narHash": "sha256-SiDb0m97k8vh3CYaSLxJ3+Q0yOT4H1EsR542hVWDRWY=",
+      "owner": "hyprwm",
+      "repo": "hyprcursor",
+      "rev": "2dda8586322cfc7c03532687de248ee851a49738",
+      "type": "github"
+    },
+    {
+      "name": "hyprgraphics",
+      "version": "0.6.0",
+      "lastModified": 1793556832,
+      "narHash": "sha256-SdzBAddYgebEcMI9hnQim4SCgQJrFBi8ezyFXS5yJ40=",
+      "owner": "hyprwm",
+      "repo": "hyprgraphics",
+      "rev": "ade4ef0a887d2740efb9c9af2ddb175633365e1b",
+      "type": "github"
+    },
+    {
+      "name": "hyprwayland-scanner",
+      "version": "0.4.6",
+      "lastModified": 1786464033,
+      "narHash": "sha256-QM8Qe4/L8lpdVN4bgwahmi+jyyc4fisseDMe4afcDxA=",
+      "owner": "hyprwm",
+      "repo": "hyprwayland-scanner",
+      "rev": "62e62c1ca23da17612c6890d4ad2064f575643db",
+      "type": "github"
+    },
+    {
+      "name": "hyprland-protocols",
+      "version": "0.8.0",
+      "lastModified": 1792767066,
+      "narHash": "sha256-ucakq4Y8H5Wwr/+work1ckFVQTkpfkOTZ/+KWRfja7k=",
+      "owner": "hyprwm",
+      "repo": "hyprland-protocols",
+      "rev": "cd1aba6bd78775825eb230b3a4274c48b6705eb7",
+      "type": "github"
+    },
+    {
+      "name": "hyprwire",
+      "version": "0.3.1",
+      "lastModified": 1792081530,
+      "narHash": "sha256-SRs96bR3VbViiQ1vOhZOqy/HxczIWCoHaGKhncwr1js=",
+      "owner": "hyprwm",
+      "repo": "hyprwire",
+      "rev": "a546e42d45e161682f729ebf52375bd4800d7041",
+      "type": "github"
+    }
+  ],
+  "submodules": [
+    {
+      "path": "subprojects/tracy",
+      "revision": "05cceee0df3b8d7c6fa87e9638af311dbabc63cb"
+    },
+    {
+      "path": "subprojects/udis86",
+      "revision": "5336633af70f3917760a6d441ff02d93477b0c86"
+    }
+  ],
+  "qualified": false,
+  "glaze": {
+    "version": "7.2.0",
+    "revision": "b518eec7a22e56ffa238b072c07f47efa7cea97f",
+    "repository": "https://github.com/stephenberry/glaze",
+    "requirement": "Provide at configure time; disable FetchContent network fallback"
+  }
+}

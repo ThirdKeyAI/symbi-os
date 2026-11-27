@@ -1,0 +1,22 @@
+{
+  "passed": false,
+  "independent_reconciliation_passed": true,
+  "source": "ebb82d6ceea99f8e4280367343738ce8e3c5596b",
+  "run": 45815145937,
+  "job": 139892837263,
+  "artifact_id": 15115462713,
+  "artifact_bytes": 41602,
+  "artifact_sha256": "3a9055b7a251504a4e152d35f765e4f50a165c1b63243ae893ed881551e73b34",
+  "original_files": 24,
+  "expanded_bytes": 122263,
+  "cause": "Exact version-string guard omitted the Fedora Skopeo build commit; the verifier itself returned success with the expected version plus build metadata",
+  "observed_verifier": "skopeo version 1.25.1 commit: 849f8f0f9443e56435f4302f81ccadcf6a56da21",
+  "cleanup_verified": true,
+  "key_generation_attempted": false,
+  "installation_attempted": false,
+  "guest_booted": false,
+  "os_qualified": false,
+  "controller_memory_peak": "4294971392",
+  "controller_memory_events": "low 0\nhigh 0\nmax 32484\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+  "signer_memory_peak": "66031616"
+}

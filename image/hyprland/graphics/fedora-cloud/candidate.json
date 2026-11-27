@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "scope": "Candidate disposable hosted graphics test guest; not the selected Atomic product base",
+  "image": {
+    "url": "https://dl.fedoraproject.org/pub/fedora/linux/releases/45/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-45-1.4.x86_64.qcow2",
+    "bytes": 606732288,
+    "sha256": "50bdc5e70f6a24f540932d15411c1c6ae9fcfa40fb990d876d83c5cc823b2ad0"
+  },
+  "checksum": {
+    "url": "https://dl.fedoraproject.org/pub/fedora/linux/releases/45/Cloud/x86_64/images/Fedora-Cloud-45-1.4-x86_64-CHECKSUM",
+    "path": "image/hyprland/graphics/fedora-cloud/CHECKSUM",
+    "sha256": "8c897c38df16817db8834882bebb81597808779cdde5b691e8e3aa620327aed2",
+    "signature_verified": true,
+    "signing_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E",
+    "key_path": "image/hyprland/keys/fedora-45-primary.asc",
+    "key_sha256": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425"
+  },
+  "negative_controls": {
+    "changed_checksum_rejected": true,
+    "missing_key_rejected": true
+  },
+  "large_image_downloaded_locally": false,
+  "image_payload_verified": false,
+  "guest_booted": false,
+  "os_qualified": false
+}

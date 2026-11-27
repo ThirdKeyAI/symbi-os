@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/inputs/toolchain_guest.py", line 100, in <module>
+    main()
+    ~~~~^^
+  File "/inputs/toolchain_guest.py", line 87, in main
+    assert version == 'go version go1.27.4 linux/amd64'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

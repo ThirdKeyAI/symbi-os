@@ -1,0 +1,69 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "mode": "download",
+  "limits": {
+    "memory.max": "3221225472",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "128"
+  },
+  "source_revision": "8f1e21d6efe40b8b3953f95b9574f99f717caf91",
+  "commands": [
+    {
+      "name": "compiler-version",
+      "exit_code": 0
+    },
+    {
+      "name": "compiler-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "download-locked-modules",
+      "exit_code": 0
+    },
+    {
+      "name": "verify-downloaded-modules",
+      "exit_code": 0
+    },
+    {
+      "name": "module-inventory",
+      "exit_code": 0
+    }
+  ],
+  "environment": {
+    "PATH": "/usr/bin:/bin",
+    "HOME": "/output/home",
+    "LANG": "C.UTF-8",
+    "GOTOOLCHAIN": "local",
+    "GOENV": "off",
+    "GOFLAGS": "-mod=readonly -p=1",
+    "GOMAXPROCS": "1",
+    "GOPATH": "/output/go",
+    "GOCACHE": "/output/go-build",
+    "CGO_ENABLED": "1",
+    "TMPDIR": "/output/tmp",
+    "GOPROXY": "https://proxy.golang.org",
+    "GOSUMDB": "sum.golang.org",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_GLOBAL": "/dev/null"
+  },
+  "go_identity": {
+    "CGO_ENABLED": "1",
+    "GOARCH": "amd64",
+    "GOEXPERIMENT": "nodwarf5",
+    "GOOS": "linux",
+    "GOTOOLCHAIN": "local",
+    "GOVERSION": "go1.27.4-X:nodwarf5"
+  },
+  "module_locks_unchanged": true,
+  "cgroup_final": {
+    "memory.max": "3221225472",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "128",
+    "memory.peak": "678961152",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 3642991\nuser_usec 2819902\nsystem_usec 823089\nnice_usec 2662000\ncore_sched.force_idle_usec 0\nnr_periods 109\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+  }
+}

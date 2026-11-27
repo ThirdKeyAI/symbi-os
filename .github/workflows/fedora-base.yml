@@ -1,0 +1,62 @@
+name: Fedora base inventory
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/guest_inventory.py"
+      - "scripts/check-fedora-base.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/fedora-base.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
+  pull_request:
+    paths:
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/guest_inventory.py"
+      - "scripts/check-fedora-base.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/fedora-base.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fedora-base-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inventory:
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Check out proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Authenticate and inventory the selected Fedora base
+        run: bash scripts/check-fedora-base.sh
+      - name: Retain public input discovery evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: fedora-base-evidence
+          path: .cache/fedora-base-evidence/
+          retention-days: 14
+          if-no-files-found: error

@@ -1,0 +1,12 @@
+[
+  {
+    "path": "kitty/options/types.py",
+    "bytes": 69535,
+    "regular": true
+  },
+  {
+    "path": "kitty/options/parse.py",
+    "bytes": 73411,
+    "regular": true
+  }
+]

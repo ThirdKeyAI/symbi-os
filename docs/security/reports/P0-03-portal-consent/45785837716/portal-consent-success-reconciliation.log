@@ -1,0 +1,108 @@
+{
+  "evidence_reconciled": true,
+  "run_id": 45785837716,
+  "source_commit": "1e93208bb190e7d041aab11bdcf063cad5028a30",
+  "workflow_passed": true,
+  "os_qualified": false,
+  "consent_qualified": false,
+  "product_installation": false,
+  "original_native_formatter_failed_before_patch": true,
+  "native_test_cases": [
+    "hyprland-share-picker-data.hyprland-share-picker-data"
+  ],
+  "actual_picker_options_refused_before_display": true,
+  "native_prefix_files": 49,
+  "original_retained_files_unchanged": 46,
+  "rebuilt_original_files": 2,
+  "new_downstream_license": {
+    "source": "LICENSE",
+    "path": "image/portal/consent-reviewed/LICENSE.symbi-os",
+    "license": "Apache-2.0",
+    "sha256": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+    "bytes": 10784,
+    "installed_path": "share/licenses/symbi-os-portal-patch/LICENSE"
+  },
+  "toolkit_recompiled": false,
+  "compositor_recompiled": false,
+  "full_build_rpm_signatures": 173,
+  "real_runtime_signature_negative_controls": true,
+  "runtime_packages_before": 2178,
+  "runtime_packages_after": 2179,
+  "unchanged_crypto_slots": 40,
+  "native_probe_identity": {
+    "uid": [
+      10001,
+      10001,
+      10001,
+      10001
+    ],
+    "gid": [
+      10001,
+      10001,
+      10001,
+      10001
+    ],
+    "groups": [],
+    "capabilities": {
+      "CapInh": "0000000000000000",
+      "CapPrm": "0000000000000000",
+      "CapEff": "0000000000000000",
+      "CapAmb": "0000000000000000"
+    },
+    "no_new_privileges": 1
+  },
+  "both_containers_removed_and_absent": true,
+  "host_counters": {
+    "memory.max": "8589934592",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "8605421568",
+    "memory.events": "low 0\nhigh 0\nmax 17961\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 256781574\nuser_usec 200805780\nsystem_usec 55975793\nnice_usec 197602000\ncore_sched.force_idle_usec 0\nnr_periods 2503\nnr_throttled 471\nthrottled_usec 23819164\nnr_bursts 0\nburst_usec 0"
+  },
+  "build_counters": {
+    "memory.max": "6442450944",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "128",
+    "memory.peak": "1848508416",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 120603300\nuser_usec 105828805\nsystem_usec 14774495\nnice_usec 105682000\ncore_sched.force_idle_usec 0\nnr_periods 1252\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+  },
+  "runtime_counters": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128",
+    "memory.peak": "194068480",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 2259746\nuser_usec 1601655\nsystem_usec 658091\nnice_usec 1599000\ncore_sched.force_idle_usec 0\nnr_periods 27\nnr_throttled 10\nthrottled_usec 52039\nnr_bursts 0\nburst_usec 0"
+  },
+  "local_native_execution": false,
+  "local_native_archive_download": false,
+  "prefix_archive_consumer_must_verify_full_bytes_before_extraction": true
+}
+	Command being timed: "/usr/bin/env PYTHONDONTWRITEBYTECODE=1 python3 reconcile-portal-consent-success.py"
+	User time (seconds): 0.04
+	System time (seconds): 0.01
+	Percent of CPU this job got: 5%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.02
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 21696
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 7
+	Minor (reclaiming a frame) page faults: 3639
+	Voluntary context switches: 271
+	Involuntary context switches: 13
+	Swaps: 0
+	File system inputs: 4384
+	File system outputs: 72
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

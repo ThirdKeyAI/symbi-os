@@ -1,0 +1,32 @@
+Usage:
+  walker [OPTION…]
+
+Help Options:
+  -?, --help                Show help options
+  --help-all                Show all help options
+  --help-gapplication       Show GApplication options
+
+Application Options:
+  -v, --version             show version
+  -n, --nosearch            hide search input
+  -N, --nohints             hide keybind hints
+  -I, --inputonly           only show input. dmenu only.
+  -x, --password            use as password input. sets dmenu automatically.
+  -X, --selectsingle        auto-select single entry
+  -i, --index               prints the selected index instead of its value. dmenu only.
+  -m, --provider            exclusive provider to query
+  -s, --set                 provider set to use
+  -p, --placeholder         input placeholder.
+  -h, --height              forced height. concerned with overall box. min 1. DONT USE SHORTHAND.
+  --minheight               min height. concerned with scrolled content. min 1.
+  --maxheight               max height. concerned with scrolled content. min 1.
+  -c, --current             mark current value. dmenu only.
+  -w, --width               forced width. concerned with overall box. min 1. DONT USE SHORTHAND.
+  --minwidth                min width. concerned with scrolled content. min 1.
+  --maxwidth                max width. concerned with scrolled content. min 1.
+  -t, --theme               theme to use
+  -d, --dmenu               dmenu
+  -q, --close               closes walker when open
+  -H, --hideqa              hides quick activation buttons
+  -k, --keepopen            keep walker open after selection. only when using service. dmenu only.
+  -e, --exit                exit after this dmenu call. only when using service. dmenu only

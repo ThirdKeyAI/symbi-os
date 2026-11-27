@@ -1,0 +1,12 @@
+Running main() from /builddir/build/BUILD/gtest-1.17.0-build/googletest-1.17.0/googletest/src/gtest_main.cc
+[==========] Running 1 test from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 1 test from CEmbeddedRendererTest
+[ RUN      ] CEmbeddedRendererTest.rendersAndRestoresHostState
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] CEmbeddedRendererTest.rendersAndRestoresHostState (213 ms)
+[----------] 1 test from CEmbeddedRendererTest (213 ms total)
+
+[----------] Global test environment tear-down
+[==========] 1 test from 1 test suite ran. (213 ms total)
+[  PASSED  ] 1 test.

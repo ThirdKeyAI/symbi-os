@@ -1,0 +1,32 @@
+Running as unit: symbi-fedora-base-45683459254-1.service
+
+Verification for ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f --
+The following checks were performed on each of these signatures:
+  - The cosign claims were validated
+  - Existence of the claims in the transparency log was verified offline
+  - The signatures were verified against the specified public key
+Traceback (most recent call last):
+  File "<string>", line 8, in <module>
+    assert any(line in ('ID=fedora','ID="fedora"') for line in release.splitlines())
+           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+Traceback (most recent call last):
+  File "/home/runner/work/symbi-os/symbi-os/image/hyprland/inventory.py", line 117, in <module>
+    main()
+    ~~~~^^
+  File "/home/runner/work/symbi-os/symbi-os/image/hyprland/inventory.py", line 101, in main
+    inventory = subprocess.check_output(command, text=True, timeout=90)
+  File "/usr/lib/python3.14/subprocess.py", line 473, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+               **kwargs).stdout
+               ^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/fedora-inventory-storage/root', '--runroot', '/home/runner/work/symbi-os/symbi-os/.cache/fedora-inventory-storage/run', 'run', '--rm', '--pull=never', '--read-only', '--network=none', '--cgroup-parent=/system.slice/symbi-fedora-base-45683459254-1.service', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--pids-limit=64', '--memory=512m', '--memory-swap=512m', '--cpus=0.5', '--entrypoint=/usr/bin/python3', 'ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f', '-c', '\nimport hashlib,json,pathlib,subprocess\nroot=pathlib.Path(\'/\')\ngroup=pathlib.Path(\'/sys/fs/cgroup\')/pathlib.Path(pathlib.Path(\'/proc/self/cgroup\').read_text().strip().split(\'::\',1)[1]).relative_to(\'/\')\nlimits={name:(group/name).read_text().strip() for name in (\'memory.max\',\'memory.swap.max\',\'cpu.max\',\'pids.max\')}\nassert limits=={\'memory.max\':\'536870912\',\'memory.swap.max\':\'0\',\'cpu.max\':\'50000 100000\',\'pids.max\':\'64\'},limits\nrelease=(root/\'etc/os-release\').read_text()\nassert any(line in (\'ID=fedora\',\'ID="fedora"\') for line in release.splitlines())\nfiles={}\npaths=[root/\'etc/os-release\',root/\'etc/dnf/dnf.conf\',root/\'etc/containers/policy.json\']\npaths+=sorted((root/\'etc/yum.repos.d\').glob(\'*.repo\'))\npaths+=sorted((root/\'etc/pki/rpm-gpg\').glob(\'*\'))\nfor path in paths:\n    if not path.is_file(): continue\n    data=path.read_bytes()\n    assert len(data)<=262144,str(path)\n    assert b\'PRIVATE KEY\' not in data,str(path)\n    files[str(path)]={\'sha256\':hashlib.sha256(data).hexdigest(),\'text\':data.decode()}\npackages=subprocess.check_output([\'rpm\',\'-qa\',\'--qf\',\'%{NAME}\\t%{EPOCHNUM}\\t%{VERSION}\\t%{RELEASE}\\t%{ARCH}\\n\'],text=True)\nkeys=subprocess.run([\'rpm\',\'-q\',\'gpg-pubkey\',\'--qf\',\'%{NAME}-%{VERSION}-%{RELEASE}\\n\'],capture_output=True,text=True)\ntools={name: (root/\'usr/bin\'/name).is_file() for name in (\'dnf\',\'dnf5\',\'rpm\',\'gpg\',\'gcc\',\'g++\',\'cmake\',\'ninja\',\'Hyprland\',\'waybar\',\'walker\',\'foot\',\'bootc\')}\nprint(json.dumps({\'scope\':\'Read-only authenticated image inventory, no package installation or Fedora boot\',\n                 \'files\':files,\'installed_packages\':sorted(packages.splitlines()),\n                 \'rpm_key_query\':{\'exit_code\':keys.returncode,\'stdout\':keys.stdout,\'stderr\':keys.stderr},\'tools\':tools,\'limits\':limits,\'os_qualified\':False},indent=2))\n']' returned non-zero exit status 1.
+          Finished with result: exit-code
+Main processes terminated with: code=exited, status=1/FAILURE
+               Service runtime: 3min 56.466s
+             CPU time consumed: 2min 34.688s
+                   Memory peak: 2G (swap: 0B)

@@ -1,0 +1,22 @@
+{
+  "run_id": 45725396081,
+  "head": "984c43488ebc895ebbc8d63a9af10d79a17401d5",
+  "tested_merge": "1059a49cc57464d0e9b78e7f3b7e6439673bff67",
+  "artifact": {
+    "id": 15073433309,
+    "bytes": 1030,
+    "sha256": "87ddf52bbc5799d8b67c0d163707ec39c4d6daba910b50001b48bcb8a0c31569"
+  },
+  "conclusion": "failure",
+  "scope": "Import setup failed before base verification, image pull, compiler installation or source execution.",
+  "files": {
+    "result.json": {
+      "original_sha256": "718d29b291ec39bc9822b9a4e9799fe746ba6c0cff8044c9e3048afb550ca049",
+      "retained_sha256": "718d29b291ec39bc9822b9a4e9799fe746ba6c0cff8044c9e3048afb550ca049"
+    },
+    "hosted-build.log": {
+      "original_sha256": "00d1908b64bd21593da12476ded81990ddca67493e367c9b30e1d1143a109bac",
+      "retained_sha256": "00d1908b64bd21593da12476ded81990ddca67493e367c9b30e1d1143a109bac"
+    }
+  }
+}

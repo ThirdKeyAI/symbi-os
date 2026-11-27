@@ -1,0 +1,39 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "guest_booted": false,
+  "source_commit": "ee6f991fb1c6088989461d032b59d0fcc9cf8371",
+  "limits": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "256"
+  },
+  "scope": "Hosted graphics feasibility only; no compositor or OS boot qualification",
+  "host_tools": {
+    "Xvfb": {
+      "path": "/usr/bin/Xvfb",
+      "sha256": "0081b27338b510ec5e2068a93c6db31480872de9bb082f347f3747ef1648e794"
+    },
+    "xvfb-run": {
+      "path": "/usr/bin/xvfb-run",
+      "sha256": "48ee444c30fdaaede4cc311644b30e554162e956f949b206858e37eb8ba1ae05"
+    },
+    "xauth": {
+      "path": "/usr/bin/xauth",
+      "sha256": "ffcb5f569bf9fce94cbf37f5d61790d463508c6122511a5f4c6e280d3633086e"
+    }
+  },
+  "host_tool_packages": "xauth\t1:1.1.2-1build1\nxvfb\t2:21.1.12-1ubuntu1.9\n",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "guest_probe_sha256": "81ebe59ecf1a9301f12d52b0ad12fc437b83804392e7e176e4c42cacccdc0276",
+  "cgroup_final": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "256",
+    "memory.peak": "2169073664",
+    "memory.events": "low 0\nhigh 0\nmax 60430\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 122338737\nuser_usec 102301911\nsystem_usec 20036825\nnice_usec 99880433\ncore_sched.force_idle_usec 0\nnr_periods 1662\nnr_throttled 1176\nthrottled_usec 232248810\nnr_bursts 0\nburst_usec 0"
+  }
+}

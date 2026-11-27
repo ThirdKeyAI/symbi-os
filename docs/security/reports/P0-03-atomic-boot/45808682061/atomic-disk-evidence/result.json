@@ -1,0 +1,108 @@
+{
+  "schema": 1,
+  "passed": false,
+  "installation_attempted": true,
+  "guest_booted": false,
+  "os_qualified": false,
+  "release_qualified": false,
+  "source_commit": "5ef30a14bcd4c8f2a0e36da82cb5b7b09c347e34",
+  "image_source_commit": "23a6c721092ad77c3af33c11cab230ecaaa54cff",
+  "image_id": "sha256:54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "load-image",
+      "exit_code": 0
+    },
+    {
+      "name": "inspect-image",
+      "exit_code": 0
+    },
+    {
+      "name": "install",
+      "exit_code": 1
+    },
+    {
+      "name": "cleanup-symbi-atomic-installer",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-symbi-atomic-installer",
+      "exit_code": 1
+    },
+    {
+      "name": "disk-loops-cleanup",
+      "exit_code": 0
+    },
+    {
+      "name": "disk-loops-absent",
+      "exit_code": 0
+    },
+    {
+      "name": "remove-image",
+      "exit_code": 0
+    },
+    {
+      "name": "image-absent",
+      "exit_code": 1
+    }
+  ],
+  "scope": "Offline unsigned development artifact on a new virtual disk; no product/release qualification",
+  "preflight": {
+    "schema": 1,
+    "variant": "generic",
+    "preflight_run": 45804599421,
+    "source_commit": "97e49d111d0d71b5393f4067e713ccd39b74f55f",
+    "inspect_sha256": "98553a5e85f29abfed5f7e24ced0c4db082b2c589221967787dcab917c9e7e28",
+    "prepare_sha256": "ed98a2f5eaba232a87ca5ec57821bdce344f93203e4e30c4b76699342ac89390",
+    "manifest_digest": "sha256:9b6e8fdd9f6f98631895ccdfaaed6ffd88febd3ea6238d543935a524b572faf3"
+  },
+  "disk_free_before_load": 90312585216,
+  "loaded_image": {
+    "Id": "54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1",
+    "Digest": "sha256:9b6e8fdd9f6f98631895ccdfaaed6ffd88febd3ea6238d543935a524b572faf3",
+    "Architecture": "amd64",
+    "Os": "linux"
+  },
+  "oci": {
+    "manifest_digest": "sha256:9b6e8fdd9f6f98631895ccdfaaed6ffd88febd3ea6238d543935a524b572faf3",
+    "config_digest": "sha256:54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1",
+    "blobs": 131,
+    "layers": 129,
+    "bytes": 4088888273,
+    "root_filesystem_extracted": false
+  },
+  "disk": {
+    "device": 64512,
+    "inode": 4012501,
+    "bytes": 25769803776,
+    "uid": 0,
+    "mode": 384,
+    "links": 1
+  },
+  "failure": "CalledProcessError: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/atomic-disk-storage/root', '--runroot', '/run/symbi-atomic-disk-45808682061-1', 'run', '--rm', '--name=symbi-atomic-installer', '--pull=never', '--network=none', '--pid=private', '--cgroup-parent=/system.slice/symbi-atomic-disk-45808682061-1.service', '--env=LANG=C.UTF-8', '--env=PYTHONDONTWRITEBYTECODE=1', '--privileged', '--memory=2g', '--memory-swap=2g', '--cpus=1', '--pids-limit=128', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/atomic-disk-storage/installer-input,dst=/inputs,ro', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/atomic-disk-storage/oci,dst=/inputs/oci,ro', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/atomic-disk-storage/disk,dst=/output', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/atomic-disk-storage/installer-tmp,dst=/var/tmp', '--mount', 'type=bind,src=/run/udev,dst=/run/udev,ro', '--entrypoint=/usr/bin/python3', 'sha256:54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1', '/inputs/install.py']' returned non-zero exit status 1.",
+  "cleanup": {
+    "symbi-atomic-installer": {
+      "removed": true,
+      "absent": true
+    }
+  },
+  "loops_absent": true,
+  "image_removed": true,
+  "private_storage_removed": true,
+  "private_runroot_removed": true,
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4294971392",
+    "memory.events": "low 0\nhigh 0\nmax 30032\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 158664886\nuser_usec 129641977\nsystem_usec 29022908\nnice_usec 126997321\ncore_sched.force_idle_usec 0\nnr_periods 1462\nnr_throttled 58\nthrottled_usec 1340517\nnr_bursts 0\nburst_usec 0"
+  }
+}

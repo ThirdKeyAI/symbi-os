@@ -1,0 +1,102 @@
+name: Retained image assembly input compatibility
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "image/assembly/**"
+      - "image/runtime_packages/requirements.json"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/fedora-package-trust.json"
+      - "image/hyprland/keys/**"
+      - "image/walker/inputs.py"
+      - "image/development-builder.lock.json"
+      - "image/toolchain/reuse.py"
+      - "image/toolchain/qualify.py"
+      - "image/toolchain/bluebuild.json"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - "image/launcher/probes/bounded_process.py"
+      - "image/hyprland/inventory.py"
+      - "image/recipe.py"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "upstream/symbiont.toml"
+      - "scripts/check-assembly-inputs.sh"
+      - ".github/workflows/assembly-inputs.yml"
+      - "!image/assembly/README.md"
+  pull_request:
+    paths:
+      - "image/assembly/**"
+      - "image/runtime_packages/requirements.json"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/fedora-package-trust.json"
+      - "image/hyprland/keys/**"
+      - "image/walker/inputs.py"
+      - "image/development-builder.lock.json"
+      - "image/toolchain/reuse.py"
+      - "image/toolchain/qualify.py"
+      - "image/toolchain/bluebuild.json"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - "image/launcher/probes/bounded_process.py"
+      - "image/hyprland/inventory.py"
+      - "image/recipe.py"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "upstream/symbiont.toml"
+      - "scripts/check-assembly-inputs.sh"
+      - ".github/workflows/assembly-inputs.yml"
+      - "!image/assembly/README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: assembly-inputs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  reuse:
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Fetch exact retained development artifacts
+        id: inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache
+          timeout 300 gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15081564466/zip > .cache/bluebuild-development-tool.zip
+          echo '2ab11618c7d11c5599aa23a885fe0ad74dd8b73c7adb296e0d2427373432c3fb  .cache/bluebuild-development-tool.zip' | sha256sum --check --strict
+          timeout 300 gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15066141540/zip > .cache/symbiont-runtime.zip
+          echo 'bed79f624444c6dc0c3a5105facdcd9ad637a26f4fcd6cacb6e10544c36a0724  .cache/symbiont-runtime.zip' | sha256sum --check --strict
+          timeout 300 gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15084582682/zip > .cache/symbiont-runtime-rpms.zip
+          echo 'bea530216afb23f6c370fe4027e76740287a588d917b1ff7c09a4c9081061fa0  .cache/symbiont-runtime-rpms.zip' | sha256sum --check --strict
+      - name: Reuse retained builder on a fresh host without compiling
+        run: bash scripts/check-assembly-inputs.sh builder
+      - name: Check actual retained runtime on the authenticated original base
+        if: ${{ !cancelled() && steps.inputs.outcome == 'success' }}
+        run: bash scripts/check-assembly-inputs.sh runtime
+      - name: Retain public compatibility evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: assembly-input-evidence
+          path: .cache/assembly-input-evidence/
+          retention-days: 14
+          if-no-files-found: error

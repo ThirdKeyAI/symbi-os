@@ -1,0 +1,30 @@
+{
+  "run_id": 45722401293,
+  "head": "32b9a186e67dc49ffb83a044b3a119460068b885",
+  "tested_merge": "9902120a10e2d4c98c17c2f5c6ddd890b1caa92b",
+  "conclusion": "failure",
+  "artifact": {
+    "id": 15072168176,
+    "bytes": 7575,
+    "sha256": "6340fbda3741f68e9d418b3e47a0a56f38110200f3daf7a8074032f63e001077"
+  },
+  "scope": "Base signature and locked artifact verification succeeded; prefix-link gate failed before image pull or RPM installation. This original report does not identify the rejected link.",
+  "files": {
+    "result.json": {
+      "original_sha256": "064b7a163f061e83c0c252d6a95ac44ef283faa76b9db94faecb03c768f0dbff",
+      "retained_sha256": "064b7a163f061e83c0c252d6a95ac44ef283faa76b9db94faecb03c768f0dbff"
+    },
+    "base-signature.json": {
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    "hosted-runtime.log": {
+      "original_sha256": "ff2030b19b915b1a3c9b5f2793bcb77c689f32da71e0b19192b63f1cc426197d",
+      "retained_sha256": "ff2030b19b915b1a3c9b5f2793bcb77c689f32da71e0b19192b63f1cc426197d"
+    },
+    "cosign-bootstrap/verification.json": {
+      "original_sha256": "822329e8d7bf8c27b1a527c931c9bbab901db2f6fce88cb5f53d7dc33e547e35",
+      "retained_sha256": "822329e8d7bf8c27b1a527c931c9bbab901db2f6fce88cb5f53d7dc33e547e35"
+    }
+  }
+}

@@ -1,0 +1,323 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "source_commit": "669de4383347a17c86d4dc60060a1f238727df34",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "base-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "pull-base",
+      "exit_code": 0
+    },
+    {
+      "name": "offline-install",
+      "exit_code": 0
+    },
+    {
+      "name": "commit-compatibility-image",
+      "exit_code": 0
+    },
+    {
+      "name": "install-cleanup",
+      "exit_code": 0
+    },
+    {
+      "name": "install-exists",
+      "exit_code": 1
+    },
+    {
+      "name": "metadata",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-metadata",
+      "exit_code": 0
+    },
+    {
+      "name": "exists-metadata",
+      "exit_code": 1
+    },
+    {
+      "name": "openssl-packages",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-openssl-packages",
+      "exit_code": 0
+    },
+    {
+      "name": "exists-openssl-packages",
+      "exit_code": 1
+    },
+    {
+      "name": "ldd-symbi",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-ldd-symbi",
+      "exit_code": 0
+    },
+    {
+      "name": "exists-ldd-symbi",
+      "exit_code": 1
+    },
+    {
+      "name": "ldd-symbi-sandbox-supervisor",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-ldd-symbi-sandbox-supervisor",
+      "exit_code": 0
+    },
+    {
+      "name": "exists-ldd-symbi-sandbox-supervisor",
+      "exit_code": 1
+    },
+    {
+      "name": "version",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-version",
+      "exit_code": 0
+    },
+    {
+      "name": "exists-version",
+      "exit_code": 1
+    },
+    {
+      "name": "help",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-help",
+      "exit_code": 0
+    },
+    {
+      "name": "exists-help",
+      "exit_code": 1
+    },
+    {
+      "name": "unknown-option",
+      "exit_code": 2
+    },
+    {
+      "name": "cleanup-unknown-option",
+      "exit_code": 0
+    },
+    {
+      "name": "exists-unknown-option",
+      "exit_code": 1
+    },
+    {
+      "name": "repeated-version",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-repeated-version",
+      "exit_code": 0
+    },
+    {
+      "name": "exists-repeated-version",
+      "exit_code": 1
+    }
+  ],
+  "checks": [
+    {
+      "name": "ldd-symbi",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "ldd-symbi-sandbox-supervisor",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "version",
+      "argument": "--version",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "help",
+      "argument": "--help",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "unknown-option",
+      "argument": "--symbi-unknown-qualification-option",
+      "exit_code": 2,
+      "passed": true
+    },
+    {
+      "name": "repeated-version",
+      "argument": "--version",
+      "exit_code": 0,
+      "passed": true
+    }
+  ],
+  "containers": {
+    "symbi-runtime-offline-install": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-runtime-metadata": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-runtime-openssl-packages": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-runtime-ldd-symbi": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-runtime-ldd-symbi-sandbox-supervisor": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-runtime-version": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-runtime-help": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-runtime-unknown-option": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-runtime-repeated-version": {
+      "removed": true,
+      "absent": true
+    }
+  },
+  "scope": "Offline additive compatibility library and actual retained runtime CLI; no product installation, containment or OS qualification",
+  "artifact": {
+    "id": 15066141540,
+    "bytes": 529348296,
+    "sha256": "bed79f624444c6dc0c3a5105facdcd9ad637a26f4fcd6cacb6e10544c36a0724"
+  },
+  "binaries": {
+    "symbi": {
+      "bytes": 520712360,
+      "sha256": "1e90af1fe424ec37ad716bbc1e069c0bc7a78f59c49871b7e79506bda69f49c7"
+    },
+    "symbi-sandbox-supervisor": {
+      "bytes": 8635672,
+      "sha256": "57af2b2931c891c8ee7df21ac063aea64571acc460ababdcb09b8df7ed21c269"
+    }
+  },
+  "upstream_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+  "original_build_run": 45702056794,
+  "original_build_checked_merge": "f01100ce68df6ed31dfa0983a2ba1b59be230b6c",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "signature_verified_before_pull": true,
+  "compatibility_rpm_artifact": {
+    "id": 15084582682,
+    "bytes": 2896586,
+    "sha256": "bea530216afb23f6c370fe4027e76740287a588d917b1ff7c09a4c9081061fa0"
+  },
+  "runtime_stage_image_id": "sha256:b45f37ca917a5f4c9b884b04aaf9cbdadb4ff3790ffa0f9442087a6c56a4e7d6",
+  "installation": {
+    "passed": true,
+    "os_qualified": false,
+    "crypto_policy_qualified": false,
+    "limits": {
+      "memory.max": "2147483648",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "128"
+    },
+    "commands": [
+      {
+        "name": "installed-before",
+        "exit_code": 0
+      },
+      {
+        "name": "import-key",
+        "exit_code": 0
+      },
+      {
+        "name": "keyring",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-signature",
+        "exit_code": 0
+      },
+      {
+        "name": "rpm-identity",
+        "exit_code": 0
+      },
+      {
+        "name": "offline-install",
+        "exit_code": 0
+      },
+      {
+        "name": "installed-after",
+        "exit_code": 0
+      },
+      {
+        "name": "compatibility-owned-files",
+        "exit_code": 0
+      }
+    ],
+    "scope": "Offline additive library installation and configuration evidence; no boot, TLS policy or containment qualification",
+    "added_packages": [
+      "openssl3-libs\t1\t3.5.9\t1.fc45\tx86_64"
+    ],
+    "base_package_count": 2178,
+    "all_base_packages_unchanged": true,
+    "base_crypto_configuration_unchanged": true,
+    "compatibility_configuration_sha256": {
+      "/etc/pki/tls/openssl3.cnf": "34108f65c3c759083f6b2d8ff8c509e3504aa78e5180b197827d90827ddc663f"
+    },
+    "cgroup_final": {
+      "memory.max": "2147483648",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "128",
+      "memory.peak": "338669568",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "cpu.stat": "usage_usec 3325897\nuser_usec 2161029\nsystem_usec 1164867\nnice_usec 2152000\ncore_sched.force_idle_usec 0\nnr_periods 39\nnr_throttled 15\nthrottled_usec 105248\nnr_bursts 0\nburst_usec 0"
+    }
+  },
+  "guest_metadata": {
+    "uid": 10001,
+    "kernel": "7.0.0-1017-azure",
+    "limits": {
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "64"
+    },
+    "cap_effective": "0000000000000000",
+    "no_new_privileges": "1",
+    "root_readonly": true,
+    "network_devices": [
+      "lo"
+    ]
+  },
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4309676032",
+    "memory.events": "low 0\nhigh 0\nmax 39258\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 191458734\nuser_usec 143835602\nsystem_usec 47623131\nnice_usec 140232000\ncore_sched.force_idle_usec 0\nnr_periods 1295\nnr_throttled 637\nthrottled_usec 78773749\nnr_bursts 0\nburst_usec 0"
+  }
+}

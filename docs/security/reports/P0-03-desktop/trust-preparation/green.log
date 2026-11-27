@@ -1,0 +1,9 @@
+test_changed_public_key_is_refused_before_creating_policy (test_desktop_trust.DesktopTrust.test_changed_public_key_is_refused_before_creating_policy) ... ok
+test_existing_policy_is_not_overwritten (test_desktop_trust.DesktopTrust.test_existing_policy_is_not_overwritten) ... ok
+test_linked_payload_or_parent_cannot_redirect_policy (test_desktop_trust.DesktopTrust.test_linked_payload_or_parent_cannot_redirect_policy) ... ok
+test_payload_installs_default_reject_and_exact_release_base_trust (test_desktop_trust.DesktopTrust.test_payload_installs_default_reject_and_exact_release_base_trust) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.003s
+
+OK

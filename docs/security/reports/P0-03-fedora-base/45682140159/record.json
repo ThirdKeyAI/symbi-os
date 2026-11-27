@@ -1,0 +1,67 @@
+{
+  "run_url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45682140159",
+  "head": "613c9b6ec91b80b82dc99c4900e4248518dcab79",
+  "job_id": 139445155435,
+  "conclusion": "failure",
+  "artifact_id": 15054911685,
+  "artifact_digest": "sha256:296291398e6310ea2fbd3f66c483ebaae5f4b2338d91cd133be85d22b85341a2",
+  "observation": "Cosign authentication and exact-base signature verification passed, and the image was pulled. The container never executed: cgroupfs could not enable domain controllers while the supervisor lived in the parent cgroup. No inventory or OS qualification result.",
+  "remedy": "Use systemd DelegateSubgroup=supervisor; verify unchanged caps on the now-empty unit cgroup and keep Podman children within it.",
+  "reference": "https://www.freedesktop.org/software/systemd/man/255/systemd.resource-control.html#DelegateSubgroup=",
+  "os_qualified": false,
+  "retention_format": "Trim trailing whitespace and blank EOF lines; binary signature bytes preserved.",
+  "files": {
+    "base-signature.json": {
+      "artifact_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    "cgroup-final.json": {
+      "artifact_sha256": "6a7dfdb00ccb03f4000fa2cb440bbee9e2855cf9ac724adf069e197ca9a09c22",
+      "retained_sha256": "6a7dfdb00ccb03f4000fa2cb440bbee9e2855cf9ac724adf069e197ca9a09c22"
+    },
+    "cgroup-limits.json": {
+      "artifact_sha256": "8bd076d24f6839602a9c7787589223b61fc161814a0f952af1c54e7ebdbbff38",
+      "retained_sha256": "8bd076d24f6839602a9c7787589223b61fc161814a0f952af1c54e7ebdbbff38"
+    },
+    "cosign-bootstrap/cosign-linux-amd64-kms.sigstore.json": {
+      "artifact_sha256": "9640eb9b9f1236bbb145197cc6cf098ed1fb5f7613c6c731647a2431d0dac518",
+      "retained_sha256": "f8544777412708f16351db61792c6c39e24814beba79708e3fe9cc0e871ec93f"
+    },
+    "cosign-bootstrap/openssl-verification.txt": {
+      "artifact_sha256": "80a53f76c7ed6969dade3b6ee47cdb753162db7c00be625448999d08bae77ed8",
+      "retained_sha256": "80a53f76c7ed6969dade3b6ee47cdb753162db7c00be625448999d08bae77ed8"
+    },
+    "cosign-bootstrap/pins.json": {
+      "artifact_sha256": "c74acffb1d898498582110862650a81960afacd8f2e60916ea3cacee292591cc",
+      "retained_sha256": "c74acffb1d898498582110862650a81960afacd8f2e60916ea3cacee292591cc"
+    },
+    "cosign-bootstrap/release-cosign.pub": {
+      "artifact_sha256": "f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126",
+      "retained_sha256": "f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126"
+    },
+    "cosign-bootstrap/release-kms.sig": {
+      "artifact_sha256": "f3070066acae000e6d65060ac17903d2547fd65d26c0a4207d3809e7031ad088",
+      "retained_sha256": "f3070066acae000e6d65060ac17903d2547fd65d26c0a4207d3809e7031ad088"
+    },
+    "cosign-bootstrap/verification.json": {
+      "artifact_sha256": "822329e8d7bf8c27b1a527c931c9bbab901db2f6fce88cb5f53d7dc33e547e35",
+      "retained_sha256": "822329e8d7bf8c27b1a527c931c9bbab901db2f6fce88cb5f53d7dc33e547e35"
+    },
+    "cosign-bootstrap/version.json": {
+      "artifact_sha256": "9bf60bbeb52675a2074a4c4066bcb0710f861555e9fb5391fb6d65ce7014b3af",
+      "retained_sha256": "9bf60bbeb52675a2074a4c4066bcb0710f861555e9fb5391fb6d65ce7014b3af"
+    },
+    "hosted-inventory.log": {
+      "artifact_sha256": "3ee30517fe381579d8fc6aab5f847329546b9f71edcef6309a000fdb23b2d9db",
+      "retained_sha256": "3ee30517fe381579d8fc6aab5f847329546b9f71edcef6309a000fdb23b2d9db"
+    },
+    "image-inspect.json": {
+      "artifact_sha256": "d712296a04db6c58431cb82adf3a84743ca97dbd02c2b1a762c996652e9d1035",
+      "retained_sha256": "d712296a04db6c58431cb82adf3a84743ca97dbd02c2b1a762c996652e9d1035"
+    },
+    "pull.log": {
+      "artifact_sha256": "f65400d8a6cb80c8da588c6d3a4b55144044f6b34f68525993f6634faaaeb193",
+      "retained_sha256": "f65400d8a6cb80c8da588c6d3a4b55144044f6b34f68525993f6634faaaeb193"
+    }
+  }
+}

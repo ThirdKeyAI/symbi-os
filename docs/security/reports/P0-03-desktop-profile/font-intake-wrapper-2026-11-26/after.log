@@ -1,0 +1,17 @@
+test_host_wrapper_does_not_precreate_inspector_evidence (image.tests.test_font_intake.FontInputs.test_host_wrapper_does_not_precreate_inspector_evidence) ... ok
+test_release_assets_and_notices_are_exact_and_unselected (image.tests.test_font_intake.FontInputs.test_release_assets_and_notices_are_exact_and_unselected) ... ok
+test_hashes_flat_fonts_and_notices_without_extracting (image.tests.test_font_intake.PassiveFontArchive.test_hashes_flat_fonts_and_notices_without_extracting) ... ok
+test_pin_json_rejects_duplicate_keys_at_any_depth (image.tests.test_font_intake.PassiveFontArchive.test_pin_json_rejects_duplicate_keys_at_any_depth) ... ok
+test_rejects_bad_font_magic_missing_notices_and_limits (image.tests.test_font_intake.PassiveFontArchive.test_rejects_bad_font_magic_missing_notices_and_limits) ... ok
+test_rejects_paths_duplicates_links_special_files_and_unknown_payloads (image.tests.test_font_intake.PassiveFontArchive.test_rejects_paths_duplicates_links_special_files_and_unknown_payloads) ... ok
+test_release_checksum_index_must_agree_without_duplicate_names (image.tests.test_font_intake.PassiveFontArchive.test_release_checksum_index_must_agree_without_duplicate_names) ... ok
+test_desktop_job_prepares_fonts_before_the_image_context (image.tests.test_font_install.FontDefaults.test_desktop_job_prepares_fonts_before_the_image_context) ... ok
+test_native_font_scan_requires_every_file_and_the_default_family (image.tests.test_font_install.FontDefaults.test_native_font_scan_requires_every_file_and_the_default_family) ... ok
+test_system_defaults_match_the_observed_ombuntu_font_profile (image.tests.test_font_install.FontDefaults.test_system_defaults_match_the_observed_ombuntu_font_profile) ... ok
+test_extracts_only_fonts_config_and_reviewed_notices (image.tests.test_font_install.FontPayload.test_extracts_only_fonts_config_and_reviewed_notices) ... ok
+test_rejects_changed_inputs_wrong_commit_unsafe_config_and_linked_target_without_partial_files (image.tests.test_font_install.FontPayload.test_rejects_changed_inputs_wrong_commit_unsafe_config_and_linked_target_without_partial_files) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.068s
+
+OK

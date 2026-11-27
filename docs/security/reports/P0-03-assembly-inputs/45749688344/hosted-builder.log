@@ -1,0 +1,7 @@
+Running as unit: symbi-builder-reuse-45749688344-1.service; invocation ID: 9e9c9f2a7afe44f4a18d687a40446f4b
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 3.561s
+CPU time consumed: 2.509s
+Memory peak: 1.3M
+Memory swap peak: 0B

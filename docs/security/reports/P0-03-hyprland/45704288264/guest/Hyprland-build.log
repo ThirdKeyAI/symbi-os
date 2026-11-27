@@ -1,0 +1,1130 @@
+[0/2] Re-checking globbed directories...
+[1/1129] Generating /output/sources/Hyprland/protocols/hyprland-global-shortcuts-v1.cpp, /output/sources/Hyprland/protocols/hyprland-global-shortcuts-v1.hpp
+[2/1129] Generating /output/sources/Hyprland/protocols/text-input-unstable-v1.cpp, /output/sources/Hyprland/protocols/text-input-unstable-v1.hpp
+[3/1129] Generating /output/sources/Hyprland/protocols/hyprland-toplevel-export-v1.cpp, /output/sources/Hyprland/protocols/hyprland-toplevel-export-v1.hpp
+[4/1129] Generating /output/sources/Hyprland/protocols/wlr-screencopy-unstable-v1.cpp, /output/sources/Hyprland/protocols/wlr-screencopy-unstable-v1.hpp
+[5/1129] Generating /output/sources/Hyprland/protocols/wlr-gamma-control-unstable-v1.cpp, /output/sources/Hyprland/protocols/wlr-gamma-control-unstable-v1.hpp
+[6/1129] Generating /output/sources/Hyprland/protocols/wlr-foreign-toplevel-management-unstable-v1.cpp, /output/sources/Hyprland/protocols/wlr-foreign-toplevel-management-unstable-v1.hpp
+[7/1129] Generating /output/sources/Hyprland/protocols/wlr-output-power-management-unstable-v1.cpp, /output/sources/Hyprland/protocols/wlr-output-power-management-unstable-v1.hpp
+[8/1129] Generating /output/sources/Hyprland/protocols/virtual-keyboard-unstable-v1.cpp, /output/sources/Hyprland/protocols/virtual-keyboard-unstable-v1.hpp
+[9/1129] Generating /output/sources/Hyprland/protocols/wlr-virtual-pointer-unstable-v1.cpp, /output/sources/Hyprland/protocols/wlr-virtual-pointer-unstable-v1.hpp
+[10/1129] Generating /output/sources/Hyprland/protocols/input-method-unstable-v2.cpp, /output/sources/Hyprland/protocols/input-method-unstable-v2.hpp
+[11/1129] Generating /output/sources/Hyprland/protocols/wlr-output-management-unstable-v1.cpp, /output/sources/Hyprland/protocols/wlr-output-management-unstable-v1.hpp
+[12/1129] Generating /output/sources/Hyprland/protocols/kde-server-decoration.cpp, /output/sources/Hyprland/protocols/kde-server-decoration.hpp
+[13/1129] Generating /output/sources/Hyprland/protocols/vicinae-hotkey-v1.cpp, /output/sources/Hyprland/protocols/vicinae-hotkey-v1.hpp
+[14/1129] Generating /output/sources/Hyprland/protocols/xx-hotkey-v1.cpp, /output/sources/Hyprland/protocols/xx-hotkey-v1.hpp
+[15/1129] Generating /output/sources/Hyprland/protocols/wlr-data-control-unstable-v1.cpp, /output/sources/Hyprland/protocols/wlr-data-control-unstable-v1.hpp
+[16/1129] Generating /output/sources/Hyprland/protocols/hyprland-focus-grab-v1.cpp, /output/sources/Hyprland/protocols/hyprland-focus-grab-v1.hpp
+[17/1129] Generating /output/sources/Hyprland/protocols/wlr-layer-shell-unstable-v1.cpp, /output/sources/Hyprland/protocols/wlr-layer-shell-unstable-v1.hpp
+[18/1129] Generating /output/sources/Hyprland/protocols/wayland-drm.cpp, /output/sources/Hyprland/protocols/wayland-drm.hpp
+[19/1129] Generating /output/sources/Hyprland/protocols/hyprland-ctm-control-v1.cpp, /output/sources/Hyprland/protocols/hyprland-ctm-control-v1.hpp
+[20/1129] Generating /output/sources/Hyprland/protocols/hyprland-surface-v1.cpp, /output/sources/Hyprland/protocols/hyprland-surface-v1.hpp
+[21/1129] Generating /output/sources/Hyprland/protocols/hyprland-lock-notify-v1.cpp, /output/sources/Hyprland/protocols/hyprland-lock-notify-v1.hpp
+[22/1129] Generating /output/sources/Hyprland/protocols/hyprland-toplevel-mapping-v1.cpp, /output/sources/Hyprland/protocols/hyprland-toplevel-mapping-v1.hpp
+[23/1129] Generating /output/sources/Hyprland/protocols/hyprland-workspace-image-capture-source-v1.cpp, /output/sources/Hyprland/protocols/hyprland-workspace-image-capture-source-v1.hpp
+[24/1129] Generating /output/sources/Hyprland/protocols/tearing-control-v1.cpp, /output/sources/Hyprland/protocols/tearing-control-v1.hpp
+[25/1129] Generating /output/sources/Hyprland/protocols/fractional-scale-v1.cpp, /output/sources/Hyprland/protocols/fractional-scale-v1.hpp
+[26/1129] Generating /output/sources/Hyprland/protocols/xdg-output-unstable-v1.cpp, /output/sources/Hyprland/protocols/xdg-output-unstable-v1.hpp
+[27/1129] Generating /output/sources/Hyprland/protocols/cursor-shape-v1.cpp, /output/sources/Hyprland/protocols/cursor-shape-v1.hpp
+[28/1129] Generating /output/sources/Hyprland/protocols/idle-inhibit-unstable-v1.cpp, /output/sources/Hyprland/protocols/idle-inhibit-unstable-v1.hpp
+[29/1129] Generating /output/sources/Hyprland/protocols/relative-pointer-unstable-v1.cpp, /output/sources/Hyprland/protocols/relative-pointer-unstable-v1.hpp
+[30/1129] Generating /output/sources/Hyprland/protocols/xdg-decoration-unstable-v1.cpp, /output/sources/Hyprland/protocols/xdg-decoration-unstable-v1.hpp
+[31/1129] Generating /output/sources/Hyprland/protocols/alpha-modifier-v1.cpp, /output/sources/Hyprland/protocols/alpha-modifier-v1.hpp
+[32/1129] Generating /output/sources/Hyprland/protocols/ext-foreign-toplevel-list-v1.cpp, /output/sources/Hyprland/protocols/ext-foreign-toplevel-list-v1.hpp
+[33/1129] Generating /output/sources/Hyprland/protocols/pointer-gestures-unstable-v1.cpp, /output/sources/Hyprland/protocols/pointer-gestures-unstable-v1.hpp
+[34/1129] Generating /output/sources/Hyprland/protocols/keyboard-shortcuts-inhibit-unstable-v1.cpp, /output/sources/Hyprland/protocols/keyboard-shortcuts-inhibit-unstable-v1.hpp
+[35/1129] Generating /output/sources/Hyprland/protocols/text-input-unstable-v3.cpp, /output/sources/Hyprland/protocols/text-input-unstable-v3.hpp
+[36/1129] Generating /output/sources/Hyprland/protocols/pointer-constraints-unstable-v1.cpp, /output/sources/Hyprland/protocols/pointer-constraints-unstable-v1.hpp
+[37/1129] Generating /output/sources/Hyprland/protocols/xdg-foreign-unstable-v2.cpp, /output/sources/Hyprland/protocols/xdg-foreign-unstable-v2.hpp
+[38/1129] Generating /output/sources/Hyprland/protocols/xdg-activation-v1.cpp, /output/sources/Hyprland/protocols/xdg-activation-v1.hpp
+[39/1129] Generating /output/sources/Hyprland/protocols/ext-idle-notify-v1.cpp, /output/sources/Hyprland/protocols/ext-idle-notify-v1.hpp
+[40/1129] Generating /output/sources/Hyprland/protocols/ext-session-lock-v1.cpp, /output/sources/Hyprland/protocols/ext-session-lock-v1.hpp
+[41/1129] Generating /output/sources/Hyprland/protocols/tablet-v2.cpp, /output/sources/Hyprland/protocols/tablet-v2.hpp
+[42/1129] Generating /output/sources/Hyprland/protocols/presentation-time.cpp, /output/sources/Hyprland/protocols/presentation-time.hpp
+[43/1129] Generating /output/sources/Hyprland/protocols/xdg-shell.cpp, /output/sources/Hyprland/protocols/xdg-shell.hpp
+[44/1129] Generating /output/sources/Hyprland/protocols/primary-selection-unstable-v1.cpp, /output/sources/Hyprland/protocols/primary-selection-unstable-v1.hpp
+[45/1129] Generating /output/sources/Hyprland/protocols/xwayland-shell-v1.cpp, /output/sources/Hyprland/protocols/xwayland-shell-v1.hpp
+[46/1129] Generating /output/sources/Hyprland/protocols/viewporter.cpp, /output/sources/Hyprland/protocols/viewporter.hpp
+[47/1129] Generating /output/sources/Hyprland/protocols/linux-dmabuf-v1.cpp, /output/sources/Hyprland/protocols/linux-dmabuf-v1.hpp
+[48/1129] Generating /output/sources/Hyprland/protocols/drm-lease-v1.cpp, /output/sources/Hyprland/protocols/drm-lease-v1.hpp
+[49/1129] Generating /output/sources/Hyprland/protocols/linux-drm-syncobj-v1.cpp, /output/sources/Hyprland/protocols/linux-drm-syncobj-v1.hpp
+[50/1129] Generating /output/sources/Hyprland/protocols/xdg-dialog-v1.cpp, /output/sources/Hyprland/protocols/xdg-dialog-v1.hpp
+[51/1129] Generating /output/sources/Hyprland/protocols/single-pixel-buffer-v1.cpp, /output/sources/Hyprland/protocols/single-pixel-buffer-v1.hpp
+[52/1129] Generating /output/sources/Hyprland/protocols/security-context-v1.cpp, /output/sources/Hyprland/protocols/security-context-v1.hpp
+[53/1129] Generating /output/sources/Hyprland/protocols/content-type-v1.cpp, /output/sources/Hyprland/protocols/content-type-v1.hpp
+[54/1129] Generating /output/sources/Hyprland/protocols/color-management-v1.cpp, /output/sources/Hyprland/protocols/color-management-v1.hpp
+[55/1129] Generating /output/sources/Hyprland/protocols/xdg-toplevel-tag-v1.cpp, /output/sources/Hyprland/protocols/xdg-toplevel-tag-v1.hpp
+[56/1129] Generating /output/sources/Hyprland/protocols/xdg-system-bell-v1.cpp, /output/sources/Hyprland/protocols/xdg-system-bell-v1.hpp
+[57/1129] Generating /output/sources/Hyprland/protocols/ext-workspace-v1.cpp, /output/sources/Hyprland/protocols/ext-workspace-v1.hpp
+[58/1129] Generating /output/sources/Hyprland/protocols/ext-data-control-v1.cpp, /output/sources/Hyprland/protocols/ext-data-control-v1.hpp
+[59/1129] Generating /output/sources/Hyprland/protocols/pointer-warp-v1.cpp, /output/sources/Hyprland/protocols/pointer-warp-v1.hpp
+[60/1129] Generating /output/sources/Hyprland/protocols/fifo-v1.cpp, /output/sources/Hyprland/protocols/fifo-v1.hpp
+[61/1129] Generating /output/sources/Hyprland/protocols/commit-timing-v1.cpp, /output/sources/Hyprland/protocols/commit-timing-v1.hpp
+[62/1129] Generating /output/sources/Hyprland/protocols/ext-image-capture-source-v1.cpp, /output/sources/Hyprland/protocols/ext-image-capture-source-v1.hpp
+[63/1129] Generating /output/sources/Hyprland/protocols/ext-image-copy-capture-v1.cpp, /output/sources/Hyprland/protocols/ext-image-copy-capture-v1.hpp
+[64/1129] Generating /output/sources/Hyprland/protocols/ext-background-effect-v1.cpp, /output/sources/Hyprland/protocols/ext-background-effect-v1.hpp
+[65/1129] Generating /output/sources/Hyprland/protocols/hyprland-input-capture-v1.cpp, /output/sources/Hyprland/protocols/hyprland-input-capture-v1.hpp
+[66/1129] Generating /output/sources/Hyprland/protocols/wayland.cpp, /output/sources/Hyprland/protocols/wayland.hpp
+[67/1129] Generating Lua API stubs for LuaLS
+[lua-stubs] updated: /output/sources/Hyprland/meta/hl.meta.lua
+[68/1129] Building CXX object CMakeFiles/hyprland_lib.dir/cmake_pch.hxx.gch
+[69/1129] Scanning /output/sources/Hyprland/src/Compositor.cpp for CXX dependencies
+[70/1129] Scanning /output/sources/Hyprland/src/animation/AnimationManager.cpp for CXX dependencies
+[71/1129] Scanning /output/sources/Hyprland/src/animation/WorkspaceAnimationController.cpp for CXX dependencies
+[72/1129] Scanning /output/sources/Hyprland/src/bell/BellPlayer.cpp for CXX dependencies
+[73/1129] Scanning /output/sources/Hyprland/src/bell/impl/Canberra.cpp for CXX dependencies
+[74/1129] Scanning /output/sources/Hyprland/src/bell/impl/RotatingPlayerThread.cpp for CXX dependencies
+[75/1129] Scanning /output/sources/Hyprland/src/config/ConfigManager.cpp for CXX dependencies
+[76/1129] Scanning /output/sources/Hyprland/src/config/ConfigValue.cpp for CXX dependencies
+[77/1129] Scanning /output/sources/Hyprland/src/config/lua/ConfigManager.cpp for CXX dependencies
+[78/1129] Scanning /output/sources/Hyprland/src/config/lua/LuaBindings.cpp for CXX dependencies
+[79/1129] Scanning /output/sources/Hyprland/src/config/lua/LuaCaller.cpp for CXX dependencies
+[80/1129] Scanning /output/sources/Hyprland/src/config/lua/LuaEventHandler.cpp for CXX dependencies
+[81/1129] Scanning /output/sources/Hyprland/src/config/lua/LuaRef.cpp for CXX dependencies
+[82/1129] Scanning /output/sources/Hyprland/src/config/lua/bindings/Check.cpp for CXX dependencies
+[83/1129] Scanning /output/sources/Hyprland/src/config/lua/bindings/LuaBindingsConfigRules.cpp for CXX dependencies
+[84/1129] Scanning /output/sources/Hyprland/src/config/lua/bindings/LuaBindingsDispatcherUtils.cpp for CXX dependencies
+[85/1129] Scanning /output/sources/Hyprland/src/config/lua/bindings/LuaBindingsDispatchers.cpp for CXX dependencies
+[86/1129] Scanning /output/sources/Hyprland/src/config/lua/bindings/LuaBindingsInternal.cpp for CXX dependencies
+[87/1129] Scanning /output/sources/Hyprland/src/config/lua/bindings/LuaBindingsNotification.cpp for CXX dependencies
+[88/1129] Scanning /output/sources/Hyprland/src/config/lua/bindings/LuaBindingsQuery.cpp for CXX dependencies
+[89/1129] Scanning /output/sources/Hyprland/src/config/lua/bindings/LuaBindingsRegistration.cpp for CXX dependencies
+[90/1129] Scanning /output/sources/Hyprland/src/config/lua/bindings/LuaBindingsToplevel.cpp for CXX dependencies
+[91/1129] Scanning /output/sources/Hyprland/src/config/lua/layout/LuaLayoutContext.cpp for CXX dependencies
+[92/1129] Scanning /output/sources/Hyprland/src/config/lua/layout/LuaLayoutProvider.cpp for CXX dependencies
+[93/1129] Scanning /output/sources/Hyprland/src/config/lua/layout/LuaLayoutTarget.cpp for CXX dependencies
+[94/1129] Scanning /output/sources/Hyprland/src/config/lua/objects/LuaDevice.cpp for CXX dependencies
+[95/1129] Scanning /output/sources/Hyprland/src/config/lua/objects/LuaEventSubscription.cpp for CXX dependencies
+[96/1129] Scanning /output/sources/Hyprland/src/config/lua/objects/LuaGroup.cpp for CXX dependencies
+[97/1129] Scanning /output/sources/Hyprland/src/config/lua/objects/LuaKeybind.cpp for CXX dependencies
+[98/1129] Scanning /output/sources/Hyprland/src/config/lua/objects/LuaLayerRule.cpp for CXX dependencies
+[99/1129] Scanning /output/sources/Hyprland/src/config/lua/objects/LuaLayerSurface.cpp for CXX dependencies
+[100/1129] Scanning /output/sources/Hyprland/src/config/lua/objects/LuaMonitor.cpp for CXX dependencies
+[101/1129] Scanning /output/sources/Hyprland/src/config/lua/objects/LuaNotification.cpp for CXX dependencies
+[102/1129] Scanning /output/sources/Hyprland/src/config/lua/objects/LuaTimer.cpp for CXX dependencies
+[103/1129] Scanning /output/sources/Hyprland/src/config/lua/objects/LuaWindow.cpp for CXX dependencies
+[104/1129] Scanning /output/sources/Hyprland/src/config/lua/objects/LuaWindowRule.cpp for CXX dependencies
+[105/1129] Scanning /output/sources/Hyprland/src/config/lua/objects/LuaWorkspace.cpp for CXX dependencies
+[106/1129] Scanning /output/sources/Hyprland/src/config/lua/objects/LuaWorkspaceRule.cpp for CXX dependencies
+[107/1129] Scanning /output/sources/Hyprland/src/config/lua/types/LuaConfigBool.cpp for CXX dependencies
+[108/1129] Scanning /output/sources/Hyprland/src/config/lua/types/LuaConfigColor.cpp for CXX dependencies
+[109/1129] Scanning /output/sources/Hyprland/src/config/lua/types/LuaConfigCssGap.cpp for CXX dependencies
+[110/1129] Scanning /output/sources/Hyprland/src/config/lua/types/LuaConfigExpressionVec2.cpp for CXX dependencies
+[111/1129] Scanning /output/sources/Hyprland/src/config/lua/types/LuaConfigFloat.cpp for CXX dependencies
+[112/1129] Scanning /output/sources/Hyprland/src/config/lua/types/LuaConfigFontWeight.cpp for CXX dependencies
+[113/1129] Scanning /output/sources/Hyprland/src/config/lua/types/LuaConfigGradient.cpp for CXX dependencies
+[114/1129] Scanning /output/sources/Hyprland/src/config/lua/types/LuaConfigInt.cpp for CXX dependencies
+[115/1129] Scanning /output/sources/Hyprland/src/config/lua/types/LuaConfigString.cpp for CXX dependencies
+[116/1129] Scanning /output/sources/Hyprland/src/config/lua/types/LuaConfigUtils.cpp for CXX dependencies
+[117/1129] Scanning /output/sources/Hyprland/src/config/lua/types/LuaConfigValue.cpp for CXX dependencies
+[118/1129] Scanning /output/sources/Hyprland/src/config/lua/types/LuaConfigVec2.cpp for CXX dependencies
+[119/1129] Scanning /output/sources/Hyprland/src/config/shared/actions/ConfigActions.cpp for CXX dependencies
+[120/1129] Scanning /output/sources/Hyprland/src/config/shared/animation/AnimationTree.cpp for CXX dependencies
+[121/1129] Scanning /output/sources/Hyprland/src/config/shared/inotify/ConfigWatcher.cpp for CXX dependencies
+[122/1129] Scanning /output/sources/Hyprland/src/config/shared/monitor/MonitorRule.cpp for CXX dependencies
+[123/1129] Scanning /output/sources/Hyprland/src/config/shared/monitor/MonitorRuleManager.cpp for CXX dependencies
+[124/1129] Scanning /output/sources/Hyprland/src/config/shared/monitor/Parser.cpp for CXX dependencies
+[125/1129] Scanning /output/sources/Hyprland/src/config/shared/parserUtils/ParserUtils.cpp for CXX dependencies
+[126/1129] Scanning /output/sources/Hyprland/src/config/shared/workspace/WorkspaceRule.cpp for CXX dependencies
+[127/1129] Scanning /output/sources/Hyprland/src/config/shared/workspace/WorkspaceRuleManager.cpp for CXX dependencies
+[128/1129] Scanning /output/sources/Hyprland/src/config/supplementary/executor/Executor.cpp for CXX dependencies
+[129/1129] Scanning /output/sources/Hyprland/src/config/supplementary/jeremy/Jeremy.cpp for CXX dependencies
+[130/1129] Scanning /output/sources/Hyprland/src/config/supplementary/propRefresher/PropRefresher.cpp for CXX dependencies
+[131/1129] Scanning /output/sources/Hyprland/src/config/values/ConfigValues.cpp for CXX dependencies
+[132/1129] Scanning /output/sources/Hyprland/src/config/values/types/BoolValue.cpp for CXX dependencies
+[133/1129] Scanning /output/sources/Hyprland/src/config/values/types/ColorValue.cpp for CXX dependencies
+[134/1129] Scanning /output/sources/Hyprland/src/config/values/types/CssGapValue.cpp for CXX dependencies
+[135/1129] Scanning /output/sources/Hyprland/src/config/values/types/FloatValue.cpp for CXX dependencies
+[136/1129] Scanning /output/sources/Hyprland/src/config/values/types/FontWeightValue.cpp for CXX dependencies
+[137/1129] Scanning /output/sources/Hyprland/src/config/values/types/GradientValue.cpp for CXX dependencies
+[138/1129] Scanning /output/sources/Hyprland/src/config/values/types/IValue.cpp for CXX dependencies
+[139/1129] Scanning /output/sources/Hyprland/src/config/values/types/IntValue.cpp for CXX dependencies
+[140/1129] Scanning /output/sources/Hyprland/src/config/values/types/StringValue.cpp for CXX dependencies
+[141/1129] Scanning /output/sources/Hyprland/src/config/values/types/Vec2Value.cpp for CXX dependencies
+[142/1129] Scanning /output/sources/Hyprland/src/debug/Overlay.cpp for CXX dependencies
+[143/1129] Scanning /output/sources/Hyprland/src/debug/crash/CrashReporter.cpp for CXX dependencies
+[144/1129] Scanning /output/sources/Hyprland/src/debug/crash/SignalSafe.cpp for CXX dependencies
+[145/1129] Scanning /output/sources/Hyprland/src/debug/log/Logger.cpp for CXX dependencies
+[146/1129] Scanning /output/sources/Hyprland/src/desktop/history/WindowHistoryTracker.cpp for CXX dependencies
+[147/1129] Scanning /output/sources/Hyprland/src/desktop/history/WorkspaceHistoryTracker.cpp for CXX dependencies
+[148/1129] Scanning /output/sources/Hyprland/src/desktop/reserved/ReservedArea.cpp for CXX dependencies
+[149/1129] Scanning /output/sources/Hyprland/src/desktop/rule/Engine.cpp for CXX dependencies
+[150/1129] Scanning /output/sources/Hyprland/src/desktop/rule/Rule.cpp for CXX dependencies
+[151/1129] Scanning /output/sources/Hyprland/src/desktop/rule/layerRule/LayerRule.cpp for CXX dependencies
+[152/1129] Scanning /output/sources/Hyprland/src/desktop/rule/layerRule/LayerRuleApplicator.cpp for CXX dependencies
+[153/1129] Scanning /output/sources/Hyprland/src/desktop/rule/layerRule/LayerRuleEffectContainer.cpp for CXX dependencies
+[154/1129] Scanning /output/sources/Hyprland/src/desktop/rule/matchEngine/BoolMatchEngine.cpp for CXX dependencies
+[155/1129] Scanning /output/sources/Hyprland/src/desktop/rule/matchEngine/IntMatchEngine.cpp for CXX dependencies
+[156/1129] Scanning /output/sources/Hyprland/src/desktop/rule/matchEngine/MatchEngine.cpp for CXX dependencies
+[157/1129] Scanning /output/sources/Hyprland/src/desktop/rule/matchEngine/RegexMatchEngine.cpp for CXX dependencies
+[158/1129] Scanning /output/sources/Hyprland/src/desktop/rule/matchEngine/TagMatchEngine.cpp for CXX dependencies
+[159/1129] Scanning /output/sources/Hyprland/src/desktop/rule/matchEngine/WorkspaceMatchEngine.cpp for CXX dependencies
+[160/1129] Scanning /output/sources/Hyprland/src/desktop/rule/windowRule/WindowRule.cpp for CXX dependencies
+[161/1129] Scanning /output/sources/Hyprland/src/desktop/rule/windowRule/WindowRuleApplicator.cpp for CXX dependencies
+[162/1129] Scanning /output/sources/Hyprland/src/desktop/rule/windowRule/WindowRuleEffectContainer.cpp for CXX dependencies
+[163/1129] Scanning /output/sources/Hyprland/src/desktop/state/Fadeout.cpp for CXX dependencies
+[164/1129] Scanning /output/sources/Hyprland/src/desktop/state/FadingOutState.cpp for CXX dependencies
+[165/1129] Scanning /output/sources/Hyprland/src/desktop/state/FloatState.cpp for CXX dependencies
+[166/1129] Scanning /output/sources/Hyprland/src/desktop/state/FocusState.cpp for CXX dependencies
+[167/1129] Scanning /output/sources/Hyprland/src/desktop/state/GlobalWindowController.cpp for CXX dependencies
+[168/1129] Scanning /output/sources/Hyprland/src/desktop/state/LayerFadeout.cpp for CXX dependencies
+[169/1129] Scanning /output/sources/Hyprland/src/desktop/state/LayerState.cpp for CXX dependencies
+[170/1129] Scanning /output/sources/Hyprland/src/desktop/state/OtherViewState.cpp for CXX dependencies
+[171/1129] Scanning /output/sources/Hyprland/src/desktop/state/PopupFadeout.cpp for CXX dependencies
+[172/1129] Scanning /output/sources/Hyprland/src/desktop/state/ViewHitTester.cpp for CXX dependencies
+[173/1129] Scanning /output/sources/Hyprland/src/desktop/state/ViewQuery.cpp for CXX dependencies
+[174/1129] Scanning /output/sources/Hyprland/src/desktop/state/ViewState.cpp for CXX dependencies
+[175/1129] Scanning /output/sources/Hyprland/src/desktop/state/ViewStateTracker.cpp for CXX dependencies
+[176/1129] Scanning /output/sources/Hyprland/src/desktop/state/WindowFadeout.cpp for CXX dependencies
+[177/1129] Scanning /output/sources/Hyprland/src/desktop/state/WindowQuery.cpp for CXX dependencies
+[178/1129] Scanning /output/sources/Hyprland/src/desktop/state/WindowState.cpp for CXX dependencies
+[179/1129] Scanning /output/sources/Hyprland/src/desktop/view/GlobalViewMethods.cpp for CXX dependencies
+[180/1129] Scanning /output/sources/Hyprland/src/desktop/view/Group.cpp for CXX dependencies
+[181/1129] Scanning /output/sources/Hyprland/src/desktop/view/LayerSurface.cpp for CXX dependencies
+[182/1129] Scanning /output/sources/Hyprland/src/desktop/view/Popup.cpp for CXX dependencies
+[183/1129] Scanning /output/sources/Hyprland/src/desktop/view/SessionLock.cpp for CXX dependencies
+[184/1129] Scanning /output/sources/Hyprland/src/desktop/view/Subsurface.cpp for CXX dependencies
+[185/1129] Scanning /output/sources/Hyprland/src/desktop/view/View.cpp for CXX dependencies
+[186/1129] Scanning /output/sources/Hyprland/src/desktop/view/WLSurface.cpp for CXX dependencies
+[187/1129] Scanning /output/sources/Hyprland/src/desktop/view/animationControllers/LayerSurfaceAnimationController.cpp for CXX dependencies
+[188/1129] Scanning /output/sources/Hyprland/src/desktop/view/animationControllers/PopupAnimationController.cpp for CXX dependencies
+[189/1129] Scanning /output/sources/Hyprland/src/desktop/view/animationControllers/WindowAnimationController.cpp for CXX dependencies
+[190/1129] Scanning /output/sources/Hyprland/src/desktop/view/focusable/Focusable.cpp for CXX dependencies
+[191/1129] Scanning /output/sources/Hyprland/src/desktop/view/popup/PopupBackend.cpp for CXX dependencies
+[192/1129] Scanning /output/sources/Hyprland/src/desktop/view/popup/WaylandPopupBackend.cpp for CXX dependencies
+[193/1129] Scanning /output/sources/Hyprland/src/desktop/view/surfaceTree/PopupOwner.cpp for CXX dependencies
+[194/1129] Scanning /output/sources/Hyprland/src/desktop/view/surfaceTree/SubsurfaceOwner.cpp for CXX dependencies
+[195/1129] Scanning /output/sources/Hyprland/src/desktop/view/types/AlphaModifiable.cpp for CXX dependencies
+[196/1129] Scanning /output/sources/Hyprland/src/desktop/view/types/Geometric.cpp for CXX dependencies
+[197/1129] Scanning /output/sources/Hyprland/src/desktop/view/types/GeometricAnimated.cpp for CXX dependencies
+[198/1129] Scanning /output/sources/Hyprland/src/desktop/view/types/GeometricMovableAnimated.cpp for CXX dependencies
+[199/1129] Scanning /output/sources/Hyprland/src/desktop/view/types/GeometricMovableStatic.cpp for CXX dependencies
+[200/1129] Scanning /output/sources/Hyprland/src/desktop/view/types/GeometricStatic.cpp for CXX dependencies
+[201/1129] Scanning /output/sources/Hyprland/src/desktop/view/window/FloatingOffset.cpp for CXX dependencies
+[202/1129] Scanning /output/sources/Hyprland/src/desktop/view/window/WaylandBackend.cpp for CXX dependencies
+[203/1129] Scanning /output/sources/Hyprland/src/desktop/view/window/Window.cpp for CXX dependencies
+[204/1129] Scanning /output/sources/Hyprland/src/desktop/view/window/WindowBackend.cpp for CXX dependencies
+[205/1129] Scanning /output/sources/Hyprland/src/desktop/view/window/WindowEffectsController.cpp for CXX dependencies
+[206/1129] Scanning /output/sources/Hyprland/src/desktop/view/window/WindowFullscreenPolicy.cpp for CXX dependencies
+[207/1129] Scanning /output/sources/Hyprland/src/desktop/view/window/WindowGroupMembership.cpp for CXX dependencies
+[208/1129] Scanning /output/sources/Hyprland/src/desktop/view/window/WindowMetadata.cpp for CXX dependencies
+[209/1129] Scanning /output/sources/Hyprland/src/desktop/view/window/WindowPresentation.cpp for CXX dependencies
+[210/1129] Scanning /output/sources/Hyprland/src/desktop/view/window/WindowStateTracker.cpp for CXX dependencies
+[211/1129] Scanning /output/sources/Hyprland/src/desktop/view/window/WindowSwallowController.cpp for CXX dependencies
+[212/1129] Scanning /output/sources/Hyprland/src/desktop/view/window/X11Backend.cpp for CXX dependencies
+[213/1129] Scanning /output/sources/Hyprland/src/devices/IHID.cpp for CXX dependencies
+[214/1129] Scanning /output/sources/Hyprland/src/devices/IKeyboard.cpp for CXX dependencies
+[215/1129] Scanning /output/sources/Hyprland/src/devices/IPointer.cpp for CXX dependencies
+[216/1129] Scanning /output/sources/Hyprland/src/devices/ITouch.cpp for CXX dependencies
+[217/1129] Scanning /output/sources/Hyprland/src/devices/Keyboard.cpp for CXX dependencies
+[218/1129] Scanning /output/sources/Hyprland/src/devices/Mouse.cpp for CXX dependencies
+[219/1129] Scanning /output/sources/Hyprland/src/devices/Tablet.cpp for CXX dependencies
+[220/1129] Scanning /output/sources/Hyprland/src/devices/TouchDevice.cpp for CXX dependencies
+[221/1129] Scanning /output/sources/Hyprland/src/devices/VirtualKeyboard.cpp for CXX dependencies
+[222/1129] Scanning /output/sources/Hyprland/src/devices/VirtualPointer.cpp for CXX dependencies
+[223/1129] Scanning /output/sources/Hyprland/src/errorOverlay/Overlay.cpp for CXX dependencies
+[224/1129] Scanning /output/sources/Hyprland/src/event/EventBus.cpp for CXX dependencies
+[225/1129] Scanning /output/sources/Hyprland/src/helpers/AsyncDialogBox.cpp for CXX dependencies
+[226/1129] Scanning /output/sources/Hyprland/src/helpers/CMType.cpp for CXX dependencies
+[227/1129] Scanning /output/sources/Hyprland/src/helpers/Color.cpp for CXX dependencies
+[228/1129] Scanning /output/sources/Hyprland/src/helpers/DeformableMesh.cpp for CXX dependencies
+[229/1129] Scanning /output/sources/Hyprland/src/helpers/Drm.cpp for CXX dependencies
+[230/1129] Scanning /output/sources/Hyprland/src/helpers/Format.cpp for CXX dependencies
+[231/1129] Scanning /output/sources/Hyprland/src/helpers/MainLoopExecutor.cpp for CXX dependencies
+[232/1129] Scanning /output/sources/Hyprland/src/helpers/MiscFunctions.cpp for CXX dependencies
+[233/1129] Scanning /output/sources/Hyprland/src/helpers/MotionBlur.cpp for CXX dependencies
+[234/1129] Scanning /output/sources/Hyprland/src/helpers/SdDaemon.cpp for CXX dependencies
+[235/1129] Scanning /output/sources/Hyprland/src/helpers/SystemInfo.cpp for CXX dependencies
+[236/1129] Scanning /output/sources/Hyprland/src/helpers/TagKeeper.cpp for CXX dependencies
+[237/1129] Scanning /output/sources/Hyprland/src/helpers/TransferFunction.cpp for CXX dependencies
+[238/1129] Scanning /output/sources/Hyprland/src/helpers/WLClasses.cpp for CXX dependencies
+[239/1129] Scanning /output/sources/Hyprland/src/helpers/cm/ColorManagement.cpp for CXX dependencies
+[240/1129] Scanning /output/sources/Hyprland/src/helpers/cm/ICC.cpp for CXX dependencies
+[241/1129] Scanning /output/sources/Hyprland/src/helpers/env/Env.cpp for CXX dependencies
+[242/1129] Scanning /output/sources/Hyprland/src/helpers/fs/FsUtils.cpp for CXX dependencies
+[243/1129] Scanning /output/sources/Hyprland/src/helpers/math/Direction.cpp for CXX dependencies
+[244/1129] Scanning /output/sources/Hyprland/src/helpers/math/Expression.cpp for CXX dependencies
+[245/1129] Scanning /output/sources/Hyprland/src/helpers/math/Math.cpp for CXX dependencies
+[246/1129] Scanning /output/sources/Hyprland/src/helpers/sync/SyncReleaser.cpp for CXX dependencies
+[247/1129] Scanning /output/sources/Hyprland/src/helpers/sync/SyncTimeline.cpp for CXX dependencies
+[248/1129] Scanning /output/sources/Hyprland/src/helpers/time/Time.cpp for CXX dependencies
+[249/1129] Scanning /output/sources/Hyprland/src/helpers/time/Timer.cpp for CXX dependencies
+[250/1129] Scanning /output/sources/Hyprland/src/hotkeys/Hotkey.cpp for CXX dependencies
+[251/1129] Scanning /output/sources/Hyprland/src/hotkeys/Manager.cpp for CXX dependencies
+[252/1129] Scanning /output/sources/Hyprland/src/i18n/Engine.cpp for CXX dependencies
+[253/1129] Scanning /output/sources/Hyprland/src/init/initHelpers.cpp for CXX dependencies
+[254/1129] Scanning /output/sources/Hyprland/src/ipc/s1/Commands.cpp for CXX dependencies
+[255/1129] Scanning /output/sources/Hyprland/src/ipc/s1/S1.cpp for CXX dependencies
+[256/1129] Scanning /output/sources/Hyprland/src/ipc/s1/Unix.cpp for CXX dependencies
+[257/1129] Scanning /output/sources/Hyprland/src/ipc/s2/S2.cpp for CXX dependencies
+[258/1129] Scanning /output/sources/Hyprland/src/ipc/s2/Unix.cpp for CXX dependencies
+[259/1129] Scanning /output/sources/Hyprland/src/keybinds/Bind.cpp for CXX dependencies
+[260/1129] Scanning /output/sources/Hyprland/src/keybinds/InputState.cpp for CXX dependencies
+[261/1129] Scanning /output/sources/Hyprland/src/keybinds/Key.cpp for CXX dependencies
+[262/1129] Scanning /output/sources/Hyprland/src/keybinds/Manager.cpp for CXX dependencies
+[263/1129] Scanning /output/sources/Hyprland/src/keybinds/MatchResolver.cpp for CXX dependencies
+[264/1129] Scanning /output/sources/Hyprland/src/keybinds/Registry.cpp for CXX dependencies
+[265/1129] Scanning /output/sources/Hyprland/src/keybinds/Resolver.cpp for CXX dependencies
+[266/1129] Scanning /output/sources/Hyprland/src/layout/LayoutManager.cpp for CXX dependencies
+[267/1129] Scanning /output/sources/Hyprland/src/layout/algorithm/Algorithm.cpp for CXX dependencies
+[268/1129] Scanning /output/sources/Hyprland/src/layout/algorithm/FloatingAlgorithm.cpp for CXX dependencies
+[269/1129] Scanning /output/sources/Hyprland/src/layout/algorithm/ModeAlgorithm.cpp for CXX dependencies
+[270/1129] Scanning /output/sources/Hyprland/src/layout/algorithm/floating/default/DefaultFloatingAlgorithm.cpp for CXX dependencies
+[271/1129] Scanning /output/sources/Hyprland/src/layout/algorithm/tiled/dwindle/DwindleAlgorithm.cpp for CXX dependencies
+[272/1129] Scanning /output/sources/Hyprland/src/layout/algorithm/tiled/master/MasterAlgorithm.cpp for CXX dependencies
+[273/1129] Scanning /output/sources/Hyprland/src/layout/algorithm/tiled/monocle/MonocleAlgorithm.cpp for CXX dependencies
+[274/1129] Scanning /output/sources/Hyprland/src/layout/algorithm/tiled/scrolling/ScrollTapeController.cpp for CXX dependencies
+[275/1129] Scanning /output/sources/Hyprland/src/layout/algorithm/tiled/scrolling/ScrollingAlgorithm.cpp for CXX dependencies
+[276/1129] Scanning /output/sources/Hyprland/src/layout/algorithm/tiled/scrolling/ScrollingFullscreenHandler.cpp for CXX dependencies
+[277/1129] Scanning /output/sources/Hyprland/src/layout/space/Space.cpp for CXX dependencies
+[278/1129] Scanning /output/sources/Hyprland/src/layout/supplementary/DragController.cpp for CXX dependencies
+[279/1129] Scanning /output/sources/Hyprland/src/layout/supplementary/WorkspaceAlgoMatcher.cpp for CXX dependencies
+[280/1129] Scanning /output/sources/Hyprland/src/layout/target/Target.cpp for CXX dependencies
+[281/1129] Scanning /output/sources/Hyprland/src/layout/target/WindowGroupTarget.cpp for CXX dependencies
+[282/1129] Scanning /output/sources/Hyprland/src/layout/target/WindowTarget.cpp for CXX dependencies
+[283/1129] Scanning /output/sources/Hyprland/src/managers/ANRManager.cpp for CXX dependencies
+[284/1129] Scanning /output/sources/Hyprland/src/managers/DonationNagManager.cpp for CXX dependencies
+[285/1129] Scanning /output/sources/Hyprland/src/managers/ProtocolManager.cpp for CXX dependencies
+[286/1129] Scanning /output/sources/Hyprland/src/managers/SeatManager.cpp for CXX dependencies
+[287/1129] Scanning /output/sources/Hyprland/src/managers/SessionLockManager.cpp for CXX dependencies
+[288/1129] Scanning /output/sources/Hyprland/src/managers/TokenManager.cpp for CXX dependencies
+[289/1129] Scanning /output/sources/Hyprland/src/managers/VersionKeeperManager.cpp for CXX dependencies
+[290/1129] Scanning /output/sources/Hyprland/src/managers/WelcomeManager.cpp for CXX dependencies
+[291/1129] Scanning /output/sources/Hyprland/src/managers/XCursorManager.cpp for CXX dependencies
+[292/1129] Scanning /output/sources/Hyprland/src/managers/XWaylandManager.cpp for CXX dependencies
+[293/1129] Scanning /output/sources/Hyprland/src/managers/eventLoop/EventLoopManager.cpp for CXX dependencies
+[294/1129] Scanning /output/sources/Hyprland/src/managers/eventLoop/EventLoopTimer.cpp for CXX dependencies
+[295/1129] Scanning /output/sources/Hyprland/src/managers/fullscreen/FullscreenController.cpp for CXX dependencies
+[296/1129] Scanning /output/sources/Hyprland/src/managers/fullscreen/handler/FullscreenHandler.cpp for CXX dependencies
+[297/1129] Scanning /output/sources/Hyprland/src/managers/input/Eis.cpp for CXX dependencies
+[298/1129] Scanning /output/sources/Hyprland/src/managers/input/IdleInhibitor.cpp for CXX dependencies
+[299/1129] Scanning /output/sources/Hyprland/src/managers/input/InputManager.cpp for CXX dependencies
+[300/1129] Scanning /output/sources/Hyprland/src/managers/input/InputMethodPopup.cpp for CXX dependencies
+[301/1129] Scanning /output/sources/Hyprland/src/managers/input/InputMethodRelay.cpp for CXX dependencies
+[302/1129] Scanning /output/sources/Hyprland/src/managers/input/PointerConstraintController.cpp for CXX dependencies
+[303/1129] Scanning /output/sources/Hyprland/src/managers/input/PointerConstraintState.cpp for CXX dependencies
+[304/1129] Scanning /output/sources/Hyprland/src/managers/input/Tablets.cpp for CXX dependencies
+[305/1129] Scanning /output/sources/Hyprland/src/managers/input/TextInput.cpp for CXX dependencies
+[306/1129] Scanning /output/sources/Hyprland/src/managers/input/Touch.cpp for CXX dependencies
+[307/1129] Scanning /output/sources/Hyprland/src/managers/input/UnifiedWorkspaceSwipeGesture.cpp for CXX dependencies
+[308/1129] Scanning /output/sources/Hyprland/src/managers/input/trackpad/TrackpadGestures.cpp for CXX dependencies
+[309/1129] Scanning /output/sources/Hyprland/src/managers/input/trackpad/gestures/CloseGesture.cpp for CXX dependencies
+[310/1129] Scanning /output/sources/Hyprland/src/managers/input/trackpad/gestures/CursorZoomGesture.cpp for CXX dependencies
+[311/1129] Scanning /output/sources/Hyprland/src/managers/input/trackpad/gestures/FloatGesture.cpp for CXX dependencies
+[312/1129] Scanning /output/sources/Hyprland/src/managers/input/trackpad/gestures/FullscreenGesture.cpp for CXX dependencies
+[313/1129] Scanning /output/sources/Hyprland/src/managers/input/trackpad/gestures/ITrackpadGesture.cpp for CXX dependencies
+[314/1129] Scanning /output/sources/Hyprland/src/managers/input/trackpad/gestures/LuaFunctionGesture.cpp for CXX dependencies
+[315/1129] Scanning /output/sources/Hyprland/src/managers/input/trackpad/gestures/MoveGesture.cpp for CXX dependencies
+[316/1129] Scanning /output/sources/Hyprland/src/managers/input/trackpad/gestures/ResizeGesture.cpp for CXX dependencies
+[317/1129] Scanning /output/sources/Hyprland/src/managers/input/trackpad/gestures/ScrollMoveGesture.cpp for CXX dependencies
+[318/1129] Scanning /output/sources/Hyprland/src/managers/input/trackpad/gestures/SpecialWorkspaceGesture.cpp for CXX dependencies
+[319/1129] Scanning /output/sources/Hyprland/src/managers/input/trackpad/gestures/WorkspaceSwipeGesture.cpp for CXX dependencies
+[320/1129] Scanning /output/sources/Hyprland/src/managers/permissions/DynamicPermissionManager.cpp for CXX dependencies
+[321/1129] Scanning /output/sources/Hyprland/src/managers/screenshare/CursorshareSession.cpp for CXX dependencies
+[322/1129] Scanning /output/sources/Hyprland/src/managers/screenshare/ScreenshareFrame.cpp for CXX dependencies
+[323/1129] Scanning /output/sources/Hyprland/src/managers/screenshare/ScreenshareManager.cpp for CXX dependencies
+[324/1129] Scanning /output/sources/Hyprland/src/managers/screenshare/ScreenshareSession.cpp for CXX dependencies
+[325/1129] Scanning /output/sources/Hyprland/src/managers/screenshare/WorkspaceCaptureSource.cpp for CXX dependencies
+[326/1129] Scanning /output/sources/Hyprland/src/notification/Notification.cpp for CXX dependencies
+[327/1129] Scanning /output/sources/Hyprland/src/notification/NotificationOverlay.cpp for CXX dependencies
+[328/1129] Scanning /output/sources/Hyprland/src/output/DamageRing.cpp for CXX dependencies
+[329/1129] Scanning /output/sources/Hyprland/src/output/Monitor.cpp for CXX dependencies
+[330/1129] Scanning /output/sources/Hyprland/src/output/MonitorFrameScheduler.cpp for CXX dependencies
+[331/1129] Scanning /output/sources/Hyprland/src/output/MonitorResources.cpp for CXX dependencies
+[332/1129] Scanning /output/sources/Hyprland/src/output/MonitorZoomController.cpp for CXX dependencies
+[333/1129] Scanning /output/sources/Hyprland/src/output/OutputCommitCoordinator.cpp for CXX dependencies
+[334/1129] Scanning /output/sources/Hyprland/src/output/WorkBufferPool.cpp for CXX dependencies
+[335/1129] Scanning /output/sources/Hyprland/src/plugins/HookSystem.cpp for CXX dependencies
+[336/1129] Scanning /output/sources/Hyprland/src/plugins/PluginAPI.cpp for CXX dependencies
+[337/1129] Scanning /output/sources/Hyprland/src/plugins/PluginSystem.cpp for CXX dependencies
+[338/1129] Scanning /output/sources/Hyprland/src/pointer/PointerController.cpp for CXX dependencies
+[339/1129] Scanning /output/sources/Hyprland/src/pointer/PointerManager.cpp for CXX dependencies
+[340/1129] Scanning /output/sources/Hyprland/src/pointer/PointerTransformer.cpp for CXX dependencies
+[341/1129] Scanning /output/sources/Hyprland/src/pointer/cursor/CursorManager.cpp for CXX dependencies
+[342/1129] Scanning /output/sources/Hyprland/src/pointer/cursor/CursorShape.cpp for CXX dependencies
+[343/1129] Scanning /output/sources/Hyprland/src/pointer/cursor/CursorShapeOverrideController.cpp for CXX dependencies
+[344/1129] Scanning /output/sources/Hyprland/src/protocols/AlphaModifier.cpp for CXX dependencies
+[345/1129] Scanning /output/sources/Hyprland/src/protocols/BackgroundEffect.cpp for CXX dependencies
+[346/1129] Scanning /output/sources/Hyprland/src/protocols/CTMControl.cpp for CXX dependencies
+[347/1129] Scanning /output/sources/Hyprland/src/protocols/ColorManagement.cpp for CXX dependencies
+[348/1129] Scanning /output/sources/Hyprland/src/protocols/CommitTiming.cpp for CXX dependencies
+[349/1129] Scanning /output/sources/Hyprland/src/protocols/ContentType.cpp for CXX dependencies
+[350/1129] Scanning /output/sources/Hyprland/src/protocols/CursorShape.cpp for CXX dependencies
+[351/1129] Scanning /output/sources/Hyprland/src/protocols/DRMLease.cpp for CXX dependencies
+[352/1129] Scanning /output/sources/Hyprland/src/protocols/DRMSyncobj.cpp for CXX dependencies
+[353/1129] Scanning /output/sources/Hyprland/src/protocols/DataDeviceWlr.cpp for CXX dependencies
+[354/1129] Scanning /output/sources/Hyprland/src/protocols/ExtDataDevice.cpp for CXX dependencies
+[355/1129] Scanning /output/sources/Hyprland/src/protocols/ExtWorkspace.cpp for CXX dependencies
+[356/1129] Scanning /output/sources/Hyprland/src/protocols/Fifo.cpp for CXX dependencies
+[357/1129] Scanning /output/sources/Hyprland/src/protocols/FocusGrab.cpp for CXX dependencies
+[358/1129] Scanning /output/sources/Hyprland/src/protocols/ForeignToplevel.cpp for CXX dependencies
+[359/1129] Scanning /output/sources/Hyprland/src/protocols/ForeignToplevelWlr.cpp for CXX dependencies
+[360/1129] Scanning /output/sources/Hyprland/src/protocols/FractionalScale.cpp for CXX dependencies
+[361/1129] Scanning /output/sources/Hyprland/src/protocols/GammaControl.cpp for CXX dependencies
+[362/1129] Scanning /output/sources/Hyprland/src/protocols/GlobalShortcuts.cpp for CXX dependencies
+[363/1129] Scanning /output/sources/Hyprland/src/protocols/Hotkey.cpp for CXX dependencies
+[364/1129] Scanning /output/sources/Hyprland/src/protocols/HyprlandSurface.cpp for CXX dependencies
+[365/1129] Scanning /output/sources/Hyprland/src/protocols/IdleInhibit.cpp for CXX dependencies
+[366/1129] Scanning /output/sources/Hyprland/src/protocols/IdleNotify.cpp for CXX dependencies
+[367/1129] Scanning /output/sources/Hyprland/src/protocols/ImageCaptureSource.cpp for CXX dependencies
+[368/1129] Scanning /output/sources/Hyprland/src/protocols/ImageCopyCapture.cpp for CXX dependencies
+[369/1129] Scanning /output/sources/Hyprland/src/protocols/InputCapture.cpp for CXX dependencies
+[370/1129] Scanning /output/sources/Hyprland/src/protocols/InputMethodV2.cpp for CXX dependencies
+[371/1129] Scanning /output/sources/Hyprland/src/protocols/LayerShell.cpp for CXX dependencies
+[372/1129] Scanning /output/sources/Hyprland/src/protocols/LinuxDMABUF.cpp for CXX dependencies
+[373/1129] Scanning /output/sources/Hyprland/src/protocols/LockNotify.cpp for CXX dependencies
+[374/1129] Scanning /output/sources/Hyprland/src/protocols/MesaDRM.cpp for CXX dependencies
+[375/1129] Scanning /output/sources/Hyprland/src/protocols/OutputManagement.cpp for CXX dependencies
+[376/1129] Scanning /output/sources/Hyprland/src/protocols/OutputPower.cpp for CXX dependencies
+[377/1129] Scanning /output/sources/Hyprland/src/protocols/PointerConstraints.cpp for CXX dependencies
+[378/1129] Scanning /output/sources/Hyprland/src/protocols/PointerGestures.cpp for CXX dependencies
+[379/1129] Scanning /output/sources/Hyprland/src/protocols/PointerWarp.cpp for CXX dependencies
+[380/1129] Scanning /output/sources/Hyprland/src/protocols/PresentationTime.cpp for CXX dependencies
+[381/1129] Scanning /output/sources/Hyprland/src/protocols/PrimarySelection.cpp for CXX dependencies
+[382/1129] Scanning /output/sources/Hyprland/src/protocols/RelativePointer.cpp for CXX dependencies
+[383/1129] Scanning /output/sources/Hyprland/src/protocols/Screencopy.cpp for CXX dependencies
+[384/1129] Scanning /output/sources/Hyprland/src/protocols/SecurityContext.cpp for CXX dependencies
+[385/1129] Scanning /output/sources/Hyprland/src/protocols/ServerDecorationKDE.cpp for CXX dependencies
+[386/1129] Scanning /output/sources/Hyprland/src/protocols/SessionLock.cpp for CXX dependencies
+[387/1129] Scanning /output/sources/Hyprland/src/protocols/ShortcutsInhibit.cpp for CXX dependencies
+[388/1129] Scanning /output/sources/Hyprland/src/protocols/SinglePixel.cpp for CXX dependencies
+[389/1129] Scanning /output/sources/Hyprland/src/protocols/Tablet.cpp for CXX dependencies
+[390/1129] Scanning /output/sources/Hyprland/src/protocols/TearingControl.cpp for CXX dependencies
+[391/1129] Scanning /output/sources/Hyprland/src/protocols/TextInputV1.cpp for CXX dependencies
+[392/1129] Scanning /output/sources/Hyprland/src/protocols/TextInputV3.cpp for CXX dependencies
+[393/1129] Scanning /output/sources/Hyprland/src/protocols/ToplevelExport.cpp for CXX dependencies
+[394/1129] Scanning /output/sources/Hyprland/src/protocols/ToplevelMapping.cpp for CXX dependencies
+[395/1129] Scanning /output/sources/Hyprland/src/protocols/Viewporter.cpp for CXX dependencies
+[396/1129] Scanning /output/sources/Hyprland/src/protocols/VirtualKeyboard.cpp for CXX dependencies
+[397/1129] Scanning /output/sources/Hyprland/src/protocols/VirtualPointer.cpp for CXX dependencies
+[398/1129] Scanning /output/sources/Hyprland/src/protocols/WaylandProtocol.cpp for CXX dependencies
+[399/1129] Scanning /output/sources/Hyprland/src/protocols/XDGActivation.cpp for CXX dependencies
+[400/1129] Scanning /output/sources/Hyprland/src/protocols/XDGBell.cpp for CXX dependencies
+[401/1129] Scanning /output/sources/Hyprland/src/protocols/XDGDecoration.cpp for CXX dependencies
+[402/1129] Scanning /output/sources/Hyprland/src/protocols/XDGDialog.cpp for CXX dependencies
+[403/1129] Scanning /output/sources/Hyprland/src/protocols/XDGForeignV2.cpp for CXX dependencies
+[404/1129] Scanning /output/sources/Hyprland/src/protocols/XDGOutput.cpp for CXX dependencies
+[405/1129] Scanning /output/sources/Hyprland/src/protocols/XDGShell.cpp for CXX dependencies
+[406/1129] Scanning /output/sources/Hyprland/src/protocols/XDGTag.cpp for CXX dependencies
+[407/1129] Scanning /output/sources/Hyprland/src/protocols/XWaylandShell.cpp for CXX dependencies
+[408/1129] Scanning /output/sources/Hyprland/src/protocols/XXHotkey.cpp for CXX dependencies
+[409/1129] Scanning /output/sources/Hyprland/src/protocols/core/Compositor.cpp for CXX dependencies
+[410/1129] Scanning /output/sources/Hyprland/src/protocols/core/DataDevice.cpp for CXX dependencies
+[411/1129] Scanning /output/sources/Hyprland/src/protocols/core/Output.cpp for CXX dependencies
+[412/1129] Scanning /output/sources/Hyprland/src/protocols/core/Seat.cpp for CXX dependencies
+[413/1129] Scanning /output/sources/Hyprland/src/protocols/core/Shm.cpp for CXX dependencies
+[414/1129] Scanning /output/sources/Hyprland/src/protocols/core/Subcompositor.cpp for CXX dependencies
+[415/1129] Scanning /output/sources/Hyprland/src/protocols/types/Buffer.cpp for CXX dependencies
+[416/1129] Scanning /output/sources/Hyprland/src/protocols/types/ContentType.cpp for CXX dependencies
+[417/1129] Scanning /output/sources/Hyprland/src/protocols/types/DMABuffer.cpp for CXX dependencies
+[418/1129] Scanning /output/sources/Hyprland/src/protocols/types/DataDevice.cpp for CXX dependencies
+[419/1129] Scanning /output/sources/Hyprland/src/protocols/types/SurfaceState.cpp for CXX dependencies
+[420/1129] Scanning /output/sources/Hyprland/src/protocols/types/SurfaceStateQueue.cpp for CXX dependencies
+[421/1129] Scanning /output/sources/Hyprland/src/protocols/types/WLBuffer.cpp for CXX dependencies
+[422/1129] Scanning /output/sources/Hyprland/src/render/Context.cpp for CXX dependencies
+[423/1129] Scanning /output/sources/Hyprland/src/render/ElementRenderer.cpp for CXX dependencies
+[424/1129] Scanning /output/sources/Hyprland/src/render/Framebuffer.cpp for CXX dependencies
+[425/1129] Scanning /output/sources/Hyprland/src/render/GLRenderer.cpp for CXX dependencies
+[426/1129] Scanning /output/sources/Hyprland/src/render/OpenGL.cpp for CXX dependencies
+[427/1129] Scanning /output/sources/Hyprland/src/render/Renderbuffer.cpp for CXX dependencies
+[428/1129] Scanning /output/sources/Hyprland/src/render/Renderer.cpp for CXX dependencies
+[429/1129] Scanning /output/sources/Hyprland/src/render/SceneResources.cpp for CXX dependencies
+[430/1129] Scanning /output/sources/Hyprland/src/render/Shader.cpp for CXX dependencies
+[431/1129] Scanning /output/sources/Hyprland/src/render/ShaderLoader.cpp for CXX dependencies
+[432/1129] Scanning /output/sources/Hyprland/src/render/SurfaceBufferUse.cpp for CXX dependencies
+[433/1129] Scanning /output/sources/Hyprland/src/render/SyncFDManager.cpp for CXX dependencies
+[434/1129] Scanning /output/sources/Hyprland/src/render/Texture.cpp for CXX dependencies
+[435/1129] Scanning /output/sources/Hyprland/src/render/WindowRenderPresentation.cpp for CXX dependencies
+[436/1129] Scanning /output/sources/Hyprland/src/render/decorations/AnimatedDecorationGradient.cpp for CXX dependencies
+[437/1129] Scanning /output/sources/Hyprland/src/render/decorations/CHyprBorderDecoration.cpp for CXX dependencies
+[438/1129] Scanning /output/sources/Hyprland/src/render/decorations/CHyprDropShadowDecoration.cpp for CXX dependencies
+[439/1129] Scanning /output/sources/Hyprland/src/render/decorations/CHyprGroupBarDecoration.cpp for CXX dependencies
+[440/1129] Scanning /output/sources/Hyprland/src/render/decorations/CHyprInnerGlowDecoration.cpp for CXX dependencies
+[441/1129] Scanning /output/sources/Hyprland/src/render/decorations/DecorationPositioner.cpp for CXX dependencies
+[442/1129] Scanning /output/sources/Hyprland/src/render/decorations/IHyprWindowDecoration.cpp for CXX dependencies
+[443/1129] Scanning /output/sources/Hyprland/src/render/gl/GLElementRenderer.cpp for CXX dependencies
+[444/1129] Scanning /output/sources/Hyprland/src/render/gl/GLFramebuffer.cpp for CXX dependencies
+[445/1129] Scanning /output/sources/Hyprland/src/render/gl/GLRenderbuffer.cpp for CXX dependencies
+[446/1129] Scanning /output/sources/Hyprland/src/render/gl/GLTexture.cpp for CXX dependencies
+[447/1129] Scanning /output/sources/Hyprland/src/render/gl/blur/Acrylic.cpp for CXX dependencies
+[448/1129] Scanning /output/sources/Hyprland/src/render/gl/blur/Aurora.cpp for CXX dependencies
+[449/1129] Scanning /output/sources/Hyprland/src/render/gl/blur/BlurAnimationClock.cpp for CXX dependencies
+[450/1129] Scanning /output/sources/Hyprland/src/render/gl/blur/Drops.cpp for CXX dependencies
+[451/1129] Scanning /output/sources/Hyprland/src/render/gl/blur/Factory.cpp for CXX dependencies
+[452/1129] Scanning /output/sources/Hyprland/src/render/gl/blur/FluidJar.cpp for CXX dependencies
+[453/1129] Scanning /output/sources/Hyprland/src/render/gl/blur/Glass.cpp for CXX dependencies
+[454/1129] Scanning /output/sources/Hyprland/src/render/gl/blur/Haze.cpp for CXX dependencies
+[455/1129] Scanning /output/sources/Hyprland/src/render/gl/blur/HeatShimmer.cpp for CXX dependencies
+[456/1129] Scanning /output/sources/Hyprland/src/render/gl/blur/Kawase.cpp for CXX dependencies
+[457/1129] Scanning /output/sources/Hyprland/src/render/gl/blur/Material.cpp for CXX dependencies
+[458/1129] Scanning /output/sources/Hyprland/src/render/gl/blur/Prism.cpp for CXX dependencies
+[459/1129] Scanning /output/sources/Hyprland/src/render/gl/blur/Provider.cpp for CXX dependencies
+[460/1129] Scanning /output/sources/Hyprland/src/render/gl/blur/Ripple.cpp for CXX dependencies
+[461/1129] Scanning /output/sources/Hyprland/src/render/gl/blur/Water.cpp for CXX dependencies
+[462/1129] Scanning /output/sources/Hyprland/src/render/pass/BackdropScopePassElement.cpp for CXX dependencies
+[463/1129] Scanning /output/sources/Hyprland/src/render/pass/BorderPassElement.cpp for CXX dependencies
+[464/1129] Scanning /output/sources/Hyprland/src/render/pass/ClearPassElement.cpp for CXX dependencies
+[465/1129] Scanning /output/sources/Hyprland/src/render/pass/FramebufferElement.cpp for CXX dependencies
+[466/1129] Scanning /output/sources/Hyprland/src/render/pass/InnerGlowPassElement.cpp for CXX dependencies
+[467/1129] Scanning /output/sources/Hyprland/src/render/pass/Pass.cpp for CXX dependencies
+[468/1129] Scanning /output/sources/Hyprland/src/render/pass/PassElement.cpp for CXX dependencies
+[469/1129] Scanning /output/sources/Hyprland/src/render/pass/PreBlurElement.cpp for CXX dependencies
+[470/1129] Scanning /output/sources/Hyprland/src/render/pass/RectPassElement.cpp for CXX dependencies
+[471/1129] Scanning /output/sources/Hyprland/src/render/pass/RendererHintsPassElement.cpp for CXX dependencies
+[472/1129] Scanning /output/sources/Hyprland/src/render/pass/ShadowPassElement.cpp for CXX dependencies
+[473/1129] Scanning /output/sources/Hyprland/src/render/pass/SurfacePassElement.cpp for CXX dependencies
+[474/1129] Scanning /output/sources/Hyprland/src/render/pass/TexPassElement.cpp for CXX dependencies
+[475/1129] Scanning /output/sources/Hyprland/src/render/pass/TextureMatteElement.cpp for CXX dependencies
+[476/1129] Scanning /output/sources/Hyprland/src/render/pass/TransformedWindowPassElement.cpp for CXX dependencies
+[477/1129] Scanning /output/sources/Hyprland/src/render/scene/MonitorScene.cpp for CXX dependencies
+[478/1129] Scanning /output/sources/Hyprland/src/render/scene/SceneSelection.cpp for CXX dependencies
+[479/1129] Scanning /output/sources/Hyprland/src/render/transformer/MotionBlurTransformer.cpp for CXX dependencies
+[480/1129] Scanning /output/sources/Hyprland/src/render/transformer/Transformer.cpp for CXX dependencies
+[481/1129] Scanning /output/sources/Hyprland/src/render/transformer/TransformerList.cpp for CXX dependencies
+[482/1129] Scanning /output/sources/Hyprland/src/render/transformer/WobbleTransformer.cpp for CXX dependencies
+[483/1129] Scanning /output/sources/Hyprland/src/state/FallbackState.cpp for CXX dependencies
+[484/1129] Scanning /output/sources/Hyprland/src/state/MonitorLayoutController.cpp for CXX dependencies
+[485/1129] Scanning /output/sources/Hyprland/src/state/MonitorPositionController.cpp for CXX dependencies
+[486/1129] Scanning /output/sources/Hyprland/src/state/MonitorQuery.cpp for CXX dependencies
+[487/1129] Scanning /output/sources/Hyprland/src/state/MonitorQueryCore.cpp for CXX dependencies
+[488/1129] Scanning /output/sources/Hyprland/src/state/MonitorState.cpp for CXX dependencies
+[489/1129] Scanning /output/sources/Hyprland/src/state/MonitorStateTracker.cpp for CXX dependencies
+[490/1129] Scanning /output/sources/Hyprland/src/state/workspace/LifecyclePolicy.cpp for CXX dependencies
+[491/1129] Scanning /output/sources/Hyprland/src/state/workspace/LifecyclePolicyAdapter.cpp for CXX dependencies
+[492/1129] Scanning /output/sources/Hyprland/src/state/workspace/PlacementController.cpp for CXX dependencies
+[493/1129] Scanning /output/sources/Hyprland/src/state/workspace/Query.cpp for CXX dependencies
+[494/1129] Scanning /output/sources/Hyprland/src/state/workspace/Resolver.cpp for CXX dependencies
+[495/1129] Scanning /output/sources/Hyprland/src/state/workspace/State.cpp for CXX dependencies
+[496/1129] Scanning /output/sources/Hyprland/src/state/workspace/StateTracker.cpp for CXX dependencies
+[497/1129] Scanning /output/sources/Hyprland/src/workspace/AbstractWorkspace.cpp for CXX dependencies
+[498/1129] Scanning /output/sources/Hyprland/src/workspace/HLWorkspace.cpp for CXX dependencies
+[499/1129] Scanning /output/sources/Hyprland/src/workspace/RegularWorkspace.cpp for CXX dependencies
+[500/1129] Scanning /output/sources/Hyprland/src/workspace/SpecialWorkspace.cpp for CXX dependencies
+[501/1129] Scanning /output/sources/Hyprland/src/workspace/WorkspaceWindowFocusTracker.cpp for CXX dependencies
+[502/1129] Scanning /output/sources/Hyprland/src/workspace/filter/WorkspaceFilter.cpp for CXX dependencies
+[503/1129] Scanning /output/sources/Hyprland/src/workspace/filter/WorkspaceFilterHL.cpp for CXX dependencies
+[504/1129] Scanning /output/sources/Hyprland/src/workspace/filter/statement/DisplayNamePrefixStatement.cpp for CXX dependencies
+[505/1129] Scanning /output/sources/Hyprland/src/workspace/filter/statement/DisplayNameSuffixStatement.cpp for CXX dependencies
+[506/1129] Scanning /output/sources/Hyprland/src/workspace/filter/statement/FullscreenStatement.cpp for CXX dependencies
+[507/1129] Scanning /output/sources/Hyprland/src/workspace/filter/statement/IDStatement.cpp for CXX dependencies
+[508/1129] Scanning /output/sources/Hyprland/src/workspace/filter/statement/MonitorStatement.cpp for CXX dependencies
+[509/1129] Scanning /output/sources/Hyprland/src/workspace/filter/statement/NamedAddressableNameStatement.cpp for CXX dependencies
+[510/1129] Scanning /output/sources/Hyprland/src/workspace/filter/statement/NamedStatement.cpp for CXX dependencies
+[511/1129] Scanning /output/sources/Hyprland/src/workspace/filter/statement/RangeStatement.cpp for CXX dependencies
+[512/1129] Scanning /output/sources/Hyprland/src/workspace/filter/statement/SpecialAddressableNameStatement.cpp for CXX dependencies
+[513/1129] Scanning /output/sources/Hyprland/src/workspace/filter/statement/SpecialStatement.cpp for CXX dependencies
+[514/1129] Scanning /output/sources/Hyprland/src/workspace/filter/statement/WindowCountStatement.cpp for CXX dependencies
+[515/1129] Scanning /output/sources/Hyprland/src/workspace/query/Query.cpp for CXX dependencies
+[516/1129] Scanning /output/sources/Hyprland/src/xwayland/Dnd.cpp for CXX dependencies
+[517/1129] Scanning /output/sources/Hyprland/src/xwayland/Server.cpp for CXX dependencies
+[518/1129] Scanning /output/sources/Hyprland/src/xwayland/XDataSource.cpp for CXX dependencies
+[519/1129] Scanning /output/sources/Hyprland/src/xwayland/XSurface.cpp for CXX dependencies
+[520/1129] Scanning /output/sources/Hyprland/src/xwayland/XWM.cpp for CXX dependencies
+[521/1129] Scanning /output/sources/Hyprland/src/xwayland/XWayland.cpp for CXX dependencies
+[522/1129] Scanning /output/sources/Hyprland/protocols/hyprland-global-shortcuts-v1.cpp for CXX dependencies
+[523/1129] Scanning /output/sources/Hyprland/protocols/text-input-unstable-v1.cpp for CXX dependencies
+[524/1129] Scanning /output/sources/Hyprland/protocols/hyprland-toplevel-export-v1.cpp for CXX dependencies
+[525/1129] Scanning /output/sources/Hyprland/protocols/wlr-screencopy-unstable-v1.cpp for CXX dependencies
+[526/1129] Scanning /output/sources/Hyprland/protocols/wlr-gamma-control-unstable-v1.cpp for CXX dependencies
+[527/1129] Scanning /output/sources/Hyprland/protocols/wlr-foreign-toplevel-management-unstable-v1.cpp for CXX dependencies
+[528/1129] Scanning /output/sources/Hyprland/protocols/wlr-output-power-management-unstable-v1.cpp for CXX dependencies
+[529/1129] Scanning /output/sources/Hyprland/protocols/virtual-keyboard-unstable-v1.cpp for CXX dependencies
+[530/1129] Scanning /output/sources/Hyprland/protocols/wlr-virtual-pointer-unstable-v1.cpp for CXX dependencies
+[531/1129] Scanning /output/sources/Hyprland/protocols/input-method-unstable-v2.cpp for CXX dependencies
+[532/1129] Scanning /output/sources/Hyprland/protocols/wlr-output-management-unstable-v1.cpp for CXX dependencies
+[533/1129] Scanning /output/sources/Hyprland/protocols/kde-server-decoration.cpp for CXX dependencies
+[534/1129] Scanning /output/sources/Hyprland/protocols/vicinae-hotkey-v1.cpp for CXX dependencies
+[535/1129] Scanning /output/sources/Hyprland/protocols/xx-hotkey-v1.cpp for CXX dependencies
+[536/1129] Scanning /output/sources/Hyprland/protocols/wlr-data-control-unstable-v1.cpp for CXX dependencies
+[537/1129] Scanning /output/sources/Hyprland/protocols/hyprland-focus-grab-v1.cpp for CXX dependencies
+[538/1129] Scanning /output/sources/Hyprland/protocols/wlr-layer-shell-unstable-v1.cpp for CXX dependencies
+[539/1129] Scanning /output/sources/Hyprland/protocols/wayland-drm.cpp for CXX dependencies
+[540/1129] Scanning /output/sources/Hyprland/protocols/hyprland-ctm-control-v1.cpp for CXX dependencies
+[541/1129] Scanning /output/sources/Hyprland/protocols/hyprland-surface-v1.cpp for CXX dependencies
+[542/1129] Scanning /output/sources/Hyprland/protocols/hyprland-lock-notify-v1.cpp for CXX dependencies
+[543/1129] Scanning /output/sources/Hyprland/protocols/hyprland-toplevel-mapping-v1.cpp for CXX dependencies
+[544/1129] Scanning /output/sources/Hyprland/protocols/hyprland-workspace-image-capture-source-v1.cpp for CXX dependencies
+[545/1129] Scanning /output/sources/Hyprland/protocols/tearing-control-v1.cpp for CXX dependencies
+[546/1129] Scanning /output/sources/Hyprland/protocols/fractional-scale-v1.cpp for CXX dependencies
+[547/1129] Scanning /output/sources/Hyprland/protocols/xdg-output-unstable-v1.cpp for CXX dependencies
+[548/1129] Scanning /output/sources/Hyprland/protocols/cursor-shape-v1.cpp for CXX dependencies
+[549/1129] Scanning /output/sources/Hyprland/protocols/idle-inhibit-unstable-v1.cpp for CXX dependencies
+[550/1129] Scanning /output/sources/Hyprland/protocols/relative-pointer-unstable-v1.cpp for CXX dependencies
+[551/1129] Scanning /output/sources/Hyprland/protocols/xdg-decoration-unstable-v1.cpp for CXX dependencies
+[552/1129] Scanning /output/sources/Hyprland/protocols/alpha-modifier-v1.cpp for CXX dependencies
+[553/1129] Scanning /output/sources/Hyprland/protocols/ext-foreign-toplevel-list-v1.cpp for CXX dependencies
+[554/1129] Scanning /output/sources/Hyprland/protocols/pointer-gestures-unstable-v1.cpp for CXX dependencies
+[555/1129] Scanning /output/sources/Hyprland/protocols/keyboard-shortcuts-inhibit-unstable-v1.cpp for CXX dependencies
+[556/1129] Scanning /output/sources/Hyprland/protocols/text-input-unstable-v3.cpp for CXX dependencies
+[557/1129] Scanning /output/sources/Hyprland/protocols/pointer-constraints-unstable-v1.cpp for CXX dependencies
+[558/1129] Scanning /output/sources/Hyprland/protocols/xdg-foreign-unstable-v2.cpp for CXX dependencies
+[559/1129] Scanning /output/sources/Hyprland/protocols/xdg-activation-v1.cpp for CXX dependencies
+[560/1129] Scanning /output/sources/Hyprland/protocols/ext-idle-notify-v1.cpp for CXX dependencies
+[561/1129] Scanning /output/sources/Hyprland/protocols/ext-session-lock-v1.cpp for CXX dependencies
+[562/1129] Scanning /output/sources/Hyprland/protocols/tablet-v2.cpp for CXX dependencies
+[563/1129] Scanning /output/sources/Hyprland/protocols/presentation-time.cpp for CXX dependencies
+[564/1129] Scanning /output/sources/Hyprland/protocols/xdg-shell.cpp for CXX dependencies
+[565/1129] Scanning /output/sources/Hyprland/protocols/primary-selection-unstable-v1.cpp for CXX dependencies
+[566/1129] Scanning /output/sources/Hyprland/protocols/xwayland-shell-v1.cpp for CXX dependencies
+[567/1129] Scanning /output/sources/Hyprland/protocols/viewporter.cpp for CXX dependencies
+[568/1129] Scanning /output/sources/Hyprland/protocols/linux-dmabuf-v1.cpp for CXX dependencies
+[569/1129] Scanning /output/sources/Hyprland/protocols/drm-lease-v1.cpp for CXX dependencies
+[570/1129] Scanning /output/sources/Hyprland/protocols/linux-drm-syncobj-v1.cpp for CXX dependencies
+[571/1129] Scanning /output/sources/Hyprland/protocols/xdg-dialog-v1.cpp for CXX dependencies
+[572/1129] Scanning /output/sources/Hyprland/protocols/single-pixel-buffer-v1.cpp for CXX dependencies
+[573/1129] Scanning /output/sources/Hyprland/protocols/security-context-v1.cpp for CXX dependencies
+[574/1129] Scanning /output/sources/Hyprland/protocols/content-type-v1.cpp for CXX dependencies
+[575/1129] Scanning /output/sources/Hyprland/protocols/color-management-v1.cpp for CXX dependencies
+[576/1129] Scanning /output/sources/Hyprland/protocols/xdg-toplevel-tag-v1.cpp for CXX dependencies
+[577/1129] Scanning /output/sources/Hyprland/protocols/xdg-system-bell-v1.cpp for CXX dependencies
+[578/1129] Scanning /output/sources/Hyprland/protocols/ext-workspace-v1.cpp for CXX dependencies
+[579/1129] Scanning /output/sources/Hyprland/protocols/ext-data-control-v1.cpp for CXX dependencies
+[580/1129] Scanning /output/sources/Hyprland/protocols/pointer-warp-v1.cpp for CXX dependencies
+[581/1129] Scanning /output/sources/Hyprland/protocols/fifo-v1.cpp for CXX dependencies
+[582/1129] Scanning /output/sources/Hyprland/protocols/commit-timing-v1.cpp for CXX dependencies
+[583/1129] Scanning /output/sources/Hyprland/protocols/ext-image-capture-source-v1.cpp for CXX dependencies
+[584/1129] Scanning /output/sources/Hyprland/protocols/ext-image-copy-capture-v1.cpp for CXX dependencies
+[585/1129] Scanning /output/sources/Hyprland/protocols/ext-background-effect-v1.cpp for CXX dependencies
+[586/1129] Scanning /output/sources/Hyprland/protocols/hyprland-input-capture-v1.cpp for CXX dependencies
+[587/1129] Scanning /output/sources/Hyprland/protocols/wayland.cpp for CXX dependencies
+[588/1129] Generating CXX dyndep file CMakeFiles/hyprland_lib.dir/CXX.dd
+[589/1129] Scanning /output/sources/Hyprland/src/main.cpp for CXX dependencies
+[590/1129] Building C object subprojects/udis86/libudis86/CMakeFiles/libudis86.dir/decode.c.o
+[591/1129] Building C object subprojects/udis86/libudis86/CMakeFiles/libudis86.dir/itab.c.o
+[592/1129] Building C object subprojects/udis86/libudis86/CMakeFiles/libudis86.dir/syn-att.c.o
+[593/1129] Building C object subprojects/udis86/libudis86/CMakeFiles/libudis86.dir/syn-intel.c.o
+[594/1129] Building C object subprojects/udis86/libudis86/CMakeFiles/libudis86.dir/syn.c.o
+[595/1129] Building C object subprojects/udis86/libudis86/CMakeFiles/libudis86.dir/udis86.c.o
+[596/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/Compositor.cpp.o
+[597/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/animation/AnimationManager.cpp.o
+[598/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/animation/WorkspaceAnimationController.cpp.o
+[599/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/bell/BellPlayer.cpp.o
+[600/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/bell/impl/Canberra.cpp.o
+[601/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/bell/impl/RotatingPlayerThread.cpp.o
+[602/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/ConfigManager.cpp.o
+[603/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/ConfigValue.cpp.o
+[604/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/ConfigManager.cpp.o
+[605/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/LuaBindings.cpp.o
+[606/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/LuaCaller.cpp.o
+[607/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/LuaEventHandler.cpp.o
+[608/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/LuaRef.cpp.o
+[609/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/bindings/Check.cpp.o
+[610/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/bindings/LuaBindingsConfigRules.cpp.o
+[611/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/bindings/LuaBindingsDispatcherUtils.cpp.o
+[612/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/bindings/LuaBindingsDispatchers.cpp.o
+[613/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/bindings/LuaBindingsInternal.cpp.o
+[614/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/bindings/LuaBindingsNotification.cpp.o
+[615/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/bindings/LuaBindingsQuery.cpp.o
+[616/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/bindings/LuaBindingsRegistration.cpp.o
+[617/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/bindings/LuaBindingsToplevel.cpp.o
+[618/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/layout/LuaLayoutContext.cpp.o
+[619/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/layout/LuaLayoutProvider.cpp.o
+[620/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/layout/LuaLayoutTarget.cpp.o
+[621/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/objects/LuaDevice.cpp.o
+[622/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/objects/LuaEventSubscription.cpp.o
+[623/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/objects/LuaGroup.cpp.o
+[624/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/objects/LuaKeybind.cpp.o
+[625/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/objects/LuaLayerRule.cpp.o
+[626/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/objects/LuaLayerSurface.cpp.o
+[627/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/objects/LuaMonitor.cpp.o
+[628/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/objects/LuaNotification.cpp.o
+[629/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/objects/LuaTimer.cpp.o
+[630/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/objects/LuaWindow.cpp.o
+[631/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/objects/LuaWindowRule.cpp.o
+[632/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/objects/LuaWorkspace.cpp.o
+[633/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/objects/LuaWorkspaceRule.cpp.o
+[634/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/types/LuaConfigBool.cpp.o
+[635/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/types/LuaConfigColor.cpp.o
+[636/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/types/LuaConfigCssGap.cpp.o
+[637/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/types/LuaConfigExpressionVec2.cpp.o
+[638/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/types/LuaConfigFloat.cpp.o
+[639/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/types/LuaConfigFontWeight.cpp.o
+[640/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/types/LuaConfigGradient.cpp.o
+[641/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/types/LuaConfigInt.cpp.o
+[642/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/types/LuaConfigString.cpp.o
+[643/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/types/LuaConfigUtils.cpp.o
+[644/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/types/LuaConfigValue.cpp.o
+[645/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/lua/types/LuaConfigVec2.cpp.o
+[646/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/shared/actions/ConfigActions.cpp.o
+[647/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/shared/animation/AnimationTree.cpp.o
+[648/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/shared/inotify/ConfigWatcher.cpp.o
+[649/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/shared/monitor/MonitorRule.cpp.o
+[650/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/shared/monitor/MonitorRuleManager.cpp.o
+[651/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/shared/monitor/Parser.cpp.o
+[652/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/shared/parserUtils/ParserUtils.cpp.o
+[653/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/shared/workspace/WorkspaceRule.cpp.o
+[654/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/shared/workspace/WorkspaceRuleManager.cpp.o
+[655/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/supplementary/executor/Executor.cpp.o
+[656/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/supplementary/jeremy/Jeremy.cpp.o
+[657/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/supplementary/propRefresher/PropRefresher.cpp.o
+[658/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/values/ConfigValues.cpp.o
+[659/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/values/types/BoolValue.cpp.o
+[660/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/values/types/ColorValue.cpp.o
+[661/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/values/types/CssGapValue.cpp.o
+[662/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/values/types/FloatValue.cpp.o
+[663/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/values/types/FontWeightValue.cpp.o
+[664/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/values/types/GradientValue.cpp.o
+[665/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/values/types/IValue.cpp.o
+[666/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/values/types/IntValue.cpp.o
+[667/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/values/types/StringValue.cpp.o
+[668/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/config/values/types/Vec2Value.cpp.o
+[669/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/debug/Overlay.cpp.o
+[670/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/debug/crash/CrashReporter.cpp.o
+[671/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/debug/crash/SignalSafe.cpp.o
+[672/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/debug/log/Logger.cpp.o
+[673/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/history/WindowHistoryTracker.cpp.o
+[674/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/history/WorkspaceHistoryTracker.cpp.o
+[675/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/reserved/ReservedArea.cpp.o
+[676/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/rule/Engine.cpp.o
+[677/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/rule/Rule.cpp.o
+[678/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/rule/layerRule/LayerRule.cpp.o
+[679/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/rule/layerRule/LayerRuleApplicator.cpp.o
+[680/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/rule/layerRule/LayerRuleEffectContainer.cpp.o
+[681/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/rule/matchEngine/BoolMatchEngine.cpp.o
+[682/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/rule/matchEngine/IntMatchEngine.cpp.o
+[683/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/rule/matchEngine/MatchEngine.cpp.o
+[684/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/rule/matchEngine/RegexMatchEngine.cpp.o
+[685/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/rule/matchEngine/TagMatchEngine.cpp.o
+[686/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/rule/matchEngine/WorkspaceMatchEngine.cpp.o
+[687/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/rule/windowRule/WindowRule.cpp.o
+[688/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/rule/windowRule/WindowRuleApplicator.cpp.o
+[689/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/rule/windowRule/WindowRuleEffectContainer.cpp.o
+[690/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/state/Fadeout.cpp.o
+[691/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/state/FadingOutState.cpp.o
+[692/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/state/FloatState.cpp.o
+[693/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/state/FocusState.cpp.o
+[694/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/state/GlobalWindowController.cpp.o
+[695/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/state/LayerFadeout.cpp.o
+[696/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/state/LayerState.cpp.o
+[697/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/state/OtherViewState.cpp.o
+[698/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/state/PopupFadeout.cpp.o
+[699/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/state/ViewHitTester.cpp.o
+[700/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/state/ViewQuery.cpp.o
+[701/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/state/ViewState.cpp.o
+[702/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/state/ViewStateTracker.cpp.o
+[703/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/state/WindowFadeout.cpp.o
+[704/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/state/WindowQuery.cpp.o
+[705/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/state/WindowState.cpp.o
+[706/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/GlobalViewMethods.cpp.o
+[707/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/Group.cpp.o
+[708/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/LayerSurface.cpp.o
+[709/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/Popup.cpp.o
+[710/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/SessionLock.cpp.o
+[711/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/Subsurface.cpp.o
+[712/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/View.cpp.o
+[713/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/WLSurface.cpp.o
+[714/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/animationControllers/LayerSurfaceAnimationController.cpp.o
+[715/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/animationControllers/PopupAnimationController.cpp.o
+[716/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/animationControllers/WindowAnimationController.cpp.o
+[717/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/focusable/Focusable.cpp.o
+[718/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/popup/PopupBackend.cpp.o
+[719/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/popup/WaylandPopupBackend.cpp.o
+[720/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/surfaceTree/PopupOwner.cpp.o
+[721/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/surfaceTree/SubsurfaceOwner.cpp.o
+[722/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/types/AlphaModifiable.cpp.o
+[723/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/types/Geometric.cpp.o
+[724/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/types/GeometricAnimated.cpp.o
+[725/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/types/GeometricMovableAnimated.cpp.o
+[726/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/types/GeometricMovableStatic.cpp.o
+[727/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/types/GeometricStatic.cpp.o
+[728/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/window/FloatingOffset.cpp.o
+[729/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/window/WaylandBackend.cpp.o
+[730/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/window/Window.cpp.o
+[731/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/window/WindowBackend.cpp.o
+[732/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/window/WindowEffectsController.cpp.o
+[733/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/window/WindowFullscreenPolicy.cpp.o
+[734/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/window/WindowGroupMembership.cpp.o
+[735/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/window/WindowMetadata.cpp.o
+[736/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/window/WindowPresentation.cpp.o
+[737/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/window/WindowStateTracker.cpp.o
+[738/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/window/WindowSwallowController.cpp.o
+[739/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/desktop/view/window/X11Backend.cpp.o
+[740/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/devices/IHID.cpp.o
+[741/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/devices/IKeyboard.cpp.o
+[742/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/devices/IPointer.cpp.o
+[743/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/devices/ITouch.cpp.o
+[744/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/devices/Keyboard.cpp.o
+[745/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/devices/Mouse.cpp.o
+[746/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/devices/Tablet.cpp.o
+[747/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/devices/TouchDevice.cpp.o
+[748/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/devices/VirtualKeyboard.cpp.o
+[749/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/devices/VirtualPointer.cpp.o
+[750/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/errorOverlay/Overlay.cpp.o
+[751/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/event/EventBus.cpp.o
+[752/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/AsyncDialogBox.cpp.o
+[753/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/CMType.cpp.o
+[754/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/Color.cpp.o
+[755/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/DeformableMesh.cpp.o
+[756/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/Drm.cpp.o
+[757/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/Format.cpp.o
+[758/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/MainLoopExecutor.cpp.o
+[759/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/MiscFunctions.cpp.o
+[760/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/MotionBlur.cpp.o
+[761/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/SdDaemon.cpp.o
+[762/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/SystemInfo.cpp.o
+[763/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/TagKeeper.cpp.o
+[764/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/TransferFunction.cpp.o
+[765/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/WLClasses.cpp.o
+[766/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/cm/ColorManagement.cpp.o
+[767/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/cm/ICC.cpp.o
+[768/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/env/Env.cpp.o
+[769/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/fs/FsUtils.cpp.o
+[770/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/math/Direction.cpp.o
+[771/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/math/Expression.cpp.o
+[772/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/math/Math.cpp.o
+[773/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/sync/SyncReleaser.cpp.o
+[774/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/sync/SyncTimeline.cpp.o
+[775/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/time/Time.cpp.o
+[776/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/helpers/time/Timer.cpp.o
+[777/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/hotkeys/Hotkey.cpp.o
+[778/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/hotkeys/Manager.cpp.o
+[779/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/i18n/Engine.cpp.o
+[780/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/init/initHelpers.cpp.o
+[781/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/ipc/s1/Commands.cpp.o
+[782/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/ipc/s1/S1.cpp.o
+[783/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/ipc/s1/Unix.cpp.o
+[784/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/ipc/s2/S2.cpp.o
+[785/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/ipc/s2/Unix.cpp.o
+[786/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/keybinds/Bind.cpp.o
+[787/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/keybinds/InputState.cpp.o
+[788/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/keybinds/Key.cpp.o
+[789/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/keybinds/Manager.cpp.o
+[790/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/keybinds/MatchResolver.cpp.o
+[791/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/keybinds/Registry.cpp.o
+[792/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/keybinds/Resolver.cpp.o
+[793/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/layout/LayoutManager.cpp.o
+[794/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/layout/algorithm/Algorithm.cpp.o
+[795/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/layout/algorithm/FloatingAlgorithm.cpp.o
+[796/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/layout/algorithm/ModeAlgorithm.cpp.o
+[797/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/layout/algorithm/floating/default/DefaultFloatingAlgorithm.cpp.o
+[798/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/layout/algorithm/tiled/dwindle/DwindleAlgorithm.cpp.o
+[799/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/layout/algorithm/tiled/master/MasterAlgorithm.cpp.o
+[800/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/layout/algorithm/tiled/monocle/MonocleAlgorithm.cpp.o
+[801/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/layout/algorithm/tiled/scrolling/ScrollTapeController.cpp.o
+[802/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/layout/algorithm/tiled/scrolling/ScrollingAlgorithm.cpp.o
+[803/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/layout/algorithm/tiled/scrolling/ScrollingFullscreenHandler.cpp.o
+[804/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/layout/space/Space.cpp.o
+[805/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/layout/supplementary/DragController.cpp.o
+[806/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/layout/supplementary/WorkspaceAlgoMatcher.cpp.o
+[807/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/layout/target/Target.cpp.o
+[808/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/layout/target/WindowGroupTarget.cpp.o
+[809/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/layout/target/WindowTarget.cpp.o
+[810/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/ANRManager.cpp.o
+[811/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/DonationNagManager.cpp.o
+[812/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/ProtocolManager.cpp.o
+[813/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/SeatManager.cpp.o
+[814/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/SessionLockManager.cpp.o
+[815/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/TokenManager.cpp.o
+[816/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/VersionKeeperManager.cpp.o
+[817/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/WelcomeManager.cpp.o
+[818/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/XCursorManager.cpp.o
+[819/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/XWaylandManager.cpp.o
+[820/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/eventLoop/EventLoopManager.cpp.o
+[821/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/eventLoop/EventLoopTimer.cpp.o
+[822/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/fullscreen/FullscreenController.cpp.o
+[823/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/fullscreen/handler/FullscreenHandler.cpp.o
+[824/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/Eis.cpp.o
+[825/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/IdleInhibitor.cpp.o
+[826/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/InputManager.cpp.o
+[827/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/InputMethodPopup.cpp.o
+[828/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/InputMethodRelay.cpp.o
+[829/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/PointerConstraintController.cpp.o
+[830/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/PointerConstraintState.cpp.o
+[831/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/Tablets.cpp.o
+[832/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/TextInput.cpp.o
+[833/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/Touch.cpp.o
+[834/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/UnifiedWorkspaceSwipeGesture.cpp.o
+[835/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/trackpad/TrackpadGestures.cpp.o
+[836/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/trackpad/gestures/CloseGesture.cpp.o
+[837/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/trackpad/gestures/CursorZoomGesture.cpp.o
+[838/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/trackpad/gestures/FloatGesture.cpp.o
+[839/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/trackpad/gestures/FullscreenGesture.cpp.o
+[840/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/trackpad/gestures/ITrackpadGesture.cpp.o
+[841/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/trackpad/gestures/LuaFunctionGesture.cpp.o
+[842/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/trackpad/gestures/MoveGesture.cpp.o
+[843/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/trackpad/gestures/ResizeGesture.cpp.o
+[844/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/trackpad/gestures/ScrollMoveGesture.cpp.o
+[845/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/trackpad/gestures/SpecialWorkspaceGesture.cpp.o
+[846/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/input/trackpad/gestures/WorkspaceSwipeGesture.cpp.o
+[847/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/permissions/DynamicPermissionManager.cpp.o
+[848/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/screenshare/CursorshareSession.cpp.o
+[849/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/screenshare/ScreenshareFrame.cpp.o
+[850/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/screenshare/ScreenshareManager.cpp.o
+[851/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/screenshare/ScreenshareSession.cpp.o
+[852/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/managers/screenshare/WorkspaceCaptureSource.cpp.o
+[853/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/notification/Notification.cpp.o
+[854/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/notification/NotificationOverlay.cpp.o
+[855/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/output/DamageRing.cpp.o
+[856/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/output/Monitor.cpp.o
+[857/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/output/MonitorFrameScheduler.cpp.o
+[858/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/output/MonitorResources.cpp.o
+[859/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/output/MonitorZoomController.cpp.o
+[860/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/output/OutputCommitCoordinator.cpp.o
+[861/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/output/WorkBufferPool.cpp.o
+[862/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/plugins/HookSystem.cpp.o
+[863/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/plugins/PluginAPI.cpp.o
+[864/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/plugins/PluginSystem.cpp.o
+[865/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/pointer/PointerController.cpp.o
+[866/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/pointer/PointerManager.cpp.o
+[867/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/pointer/PointerTransformer.cpp.o
+[868/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/pointer/cursor/CursorManager.cpp.o
+[869/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/pointer/cursor/CursorShape.cpp.o
+[870/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/pointer/cursor/CursorShapeOverrideController.cpp.o
+[871/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/AlphaModifier.cpp.o
+[872/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/BackgroundEffect.cpp.o
+[873/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/CTMControl.cpp.o
+[874/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/ColorManagement.cpp.o
+[875/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/CommitTiming.cpp.o
+[876/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/ContentType.cpp.o
+[877/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/CursorShape.cpp.o
+[878/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/DRMLease.cpp.o
+[879/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/DRMSyncobj.cpp.o
+[880/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/DataDeviceWlr.cpp.o
+[881/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/ExtDataDevice.cpp.o
+[882/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/ExtWorkspace.cpp.o
+[883/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/Fifo.cpp.o
+[884/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/FocusGrab.cpp.o
+[885/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/ForeignToplevel.cpp.o
+[886/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/ForeignToplevelWlr.cpp.o
+[887/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/FractionalScale.cpp.o
+[888/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/GammaControl.cpp.o
+[889/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/GlobalShortcuts.cpp.o
+[890/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/Hotkey.cpp.o
+[891/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/HyprlandSurface.cpp.o
+[892/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/IdleInhibit.cpp.o
+[893/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/IdleNotify.cpp.o
+[894/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/ImageCaptureSource.cpp.o
+[895/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/ImageCopyCapture.cpp.o
+[896/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/InputCapture.cpp.o
+[897/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/InputMethodV2.cpp.o
+[898/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/LayerShell.cpp.o
+[899/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/LinuxDMABUF.cpp.o
+[900/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/LockNotify.cpp.o
+[901/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/MesaDRM.cpp.o
+[902/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/OutputManagement.cpp.o
+[903/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/OutputPower.cpp.o
+[904/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/PointerConstraints.cpp.o
+[905/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/PointerGestures.cpp.o
+[906/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/PointerWarp.cpp.o
+[907/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/PresentationTime.cpp.o
+[908/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/PrimarySelection.cpp.o
+[909/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/RelativePointer.cpp.o
+[910/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/Screencopy.cpp.o
+[911/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/SecurityContext.cpp.o
+[912/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/ServerDecorationKDE.cpp.o
+[913/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/SessionLock.cpp.o
+[914/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/ShortcutsInhibit.cpp.o
+[915/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/SinglePixel.cpp.o
+[916/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/Tablet.cpp.o
+[917/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/TearingControl.cpp.o
+[918/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/TextInputV1.cpp.o
+[919/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/TextInputV3.cpp.o
+[920/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/ToplevelExport.cpp.o
+[921/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/ToplevelMapping.cpp.o
+[922/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/Viewporter.cpp.o
+[923/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/VirtualKeyboard.cpp.o
+[924/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/VirtualPointer.cpp.o
+[925/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/WaylandProtocol.cpp.o
+[926/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/XDGActivation.cpp.o
+[927/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/XDGBell.cpp.o
+[928/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/XDGDecoration.cpp.o
+[929/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/XDGDialog.cpp.o
+[930/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/XDGForeignV2.cpp.o
+[931/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/XDGOutput.cpp.o
+[932/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/XDGShell.cpp.o
+[933/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/XDGTag.cpp.o
+[934/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/XWaylandShell.cpp.o
+[935/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/XXHotkey.cpp.o
+[936/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/core/Compositor.cpp.o
+[937/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/core/DataDevice.cpp.o
+[938/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/core/Output.cpp.o
+[939/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/core/Seat.cpp.o
+[940/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/core/Shm.cpp.o
+[941/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/core/Subcompositor.cpp.o
+[942/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/types/Buffer.cpp.o
+[943/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/types/ContentType.cpp.o
+[944/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/types/DMABuffer.cpp.o
+[945/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/types/DataDevice.cpp.o
+[946/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/types/SurfaceState.cpp.o
+[947/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/types/SurfaceStateQueue.cpp.o
+[948/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/protocols/types/WLBuffer.cpp.o
+[949/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/Context.cpp.o
+[950/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/ElementRenderer.cpp.o
+[951/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/Framebuffer.cpp.o
+[952/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/GLRenderer.cpp.o
+[953/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/OpenGL.cpp.o
+[954/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/Renderbuffer.cpp.o
+[955/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/Renderer.cpp.o
+[956/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/SceneResources.cpp.o
+[957/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/Shader.cpp.o
+[958/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/ShaderLoader.cpp.o
+[959/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/SurfaceBufferUse.cpp.o
+[960/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/SyncFDManager.cpp.o
+[961/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/Texture.cpp.o
+[962/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/WindowRenderPresentation.cpp.o
+[963/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/decorations/AnimatedDecorationGradient.cpp.o
+[964/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/decorations/CHyprBorderDecoration.cpp.o
+[965/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/decorations/CHyprDropShadowDecoration.cpp.o
+[966/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/decorations/CHyprGroupBarDecoration.cpp.o
+[967/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/decorations/CHyprInnerGlowDecoration.cpp.o
+[968/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/decorations/DecorationPositioner.cpp.o
+[969/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/decorations/IHyprWindowDecoration.cpp.o
+[970/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/gl/GLElementRenderer.cpp.o
+[971/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/gl/GLFramebuffer.cpp.o
+[972/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/gl/GLRenderbuffer.cpp.o
+[973/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/gl/GLTexture.cpp.o
+[974/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/gl/blur/Acrylic.cpp.o
+[975/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/gl/blur/Aurora.cpp.o
+[976/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/gl/blur/BlurAnimationClock.cpp.o
+[977/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/gl/blur/Drops.cpp.o
+[978/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/gl/blur/Factory.cpp.o
+[979/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/gl/blur/FluidJar.cpp.o
+[980/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/gl/blur/Glass.cpp.o
+[981/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/gl/blur/Haze.cpp.o
+[982/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/gl/blur/HeatShimmer.cpp.o
+[983/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/gl/blur/Kawase.cpp.o
+[984/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/gl/blur/Material.cpp.o
+[985/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/gl/blur/Prism.cpp.o
+[986/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/gl/blur/Provider.cpp.o
+[987/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/gl/blur/Ripple.cpp.o
+[988/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/gl/blur/Water.cpp.o
+[989/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/pass/BackdropScopePassElement.cpp.o
+[990/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/pass/BorderPassElement.cpp.o
+[991/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/pass/ClearPassElement.cpp.o
+[992/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/pass/FramebufferElement.cpp.o
+[993/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/pass/InnerGlowPassElement.cpp.o
+[994/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/pass/Pass.cpp.o
+[995/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/pass/PassElement.cpp.o
+[996/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/pass/PreBlurElement.cpp.o
+[997/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/pass/RectPassElement.cpp.o
+[998/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/pass/RendererHintsPassElement.cpp.o
+[999/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/pass/ShadowPassElement.cpp.o
+[1000/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/pass/SurfacePassElement.cpp.o
+[1001/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/pass/TexPassElement.cpp.o
+[1002/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/pass/TextureMatteElement.cpp.o
+[1003/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/pass/TransformedWindowPassElement.cpp.o
+[1004/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/scene/MonitorScene.cpp.o
+[1005/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/scene/SceneSelection.cpp.o
+[1006/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/transformer/MotionBlurTransformer.cpp.o
+[1007/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/transformer/Transformer.cpp.o
+[1008/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/transformer/TransformerList.cpp.o
+[1009/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/render/transformer/WobbleTransformer.cpp.o
+[1010/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/state/FallbackState.cpp.o
+[1011/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/state/MonitorLayoutController.cpp.o
+[1012/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/state/MonitorPositionController.cpp.o
+[1013/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/state/MonitorQuery.cpp.o
+[1014/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/state/MonitorQueryCore.cpp.o
+[1015/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/state/MonitorState.cpp.o
+[1016/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/state/MonitorStateTracker.cpp.o
+[1017/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/state/workspace/LifecyclePolicy.cpp.o
+[1018/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/state/workspace/LifecyclePolicyAdapter.cpp.o
+[1019/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/state/workspace/PlacementController.cpp.o
+[1020/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/state/workspace/Query.cpp.o
+[1021/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/state/workspace/Resolver.cpp.o
+[1022/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/state/workspace/State.cpp.o
+[1023/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/state/workspace/StateTracker.cpp.o
+[1024/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/workspace/AbstractWorkspace.cpp.o
+[1025/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/workspace/HLWorkspace.cpp.o
+[1026/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/workspace/RegularWorkspace.cpp.o
+[1027/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/workspace/SpecialWorkspace.cpp.o
+[1028/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/workspace/WorkspaceWindowFocusTracker.cpp.o
+[1029/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/workspace/filter/WorkspaceFilter.cpp.o
+[1030/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/workspace/filter/WorkspaceFilterHL.cpp.o
+[1031/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/workspace/filter/statement/DisplayNamePrefixStatement.cpp.o
+[1032/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/workspace/filter/statement/DisplayNameSuffixStatement.cpp.o
+[1033/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/workspace/filter/statement/FullscreenStatement.cpp.o
+[1034/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/workspace/filter/statement/IDStatement.cpp.o
+[1035/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/workspace/filter/statement/MonitorStatement.cpp.o
+[1036/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/workspace/filter/statement/NamedAddressableNameStatement.cpp.o
+[1037/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/workspace/filter/statement/NamedStatement.cpp.o
+[1038/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/workspace/filter/statement/RangeStatement.cpp.o
+[1039/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/workspace/filter/statement/SpecialAddressableNameStatement.cpp.o
+[1040/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/workspace/filter/statement/SpecialStatement.cpp.o
+[1041/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/workspace/filter/statement/WindowCountStatement.cpp.o
+[1042/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/workspace/query/Query.cpp.o
+[1043/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/xwayland/Dnd.cpp.o
+[1044/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/xwayland/Server.cpp.o
+[1045/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/xwayland/XDataSource.cpp.o
+[1046/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/xwayland/XSurface.cpp.o
+[1047/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/xwayland/XWM.cpp.o
+[1048/1129] Building CXX object CMakeFiles/hyprland_lib.dir/src/xwayland/XWayland.cpp.o
+[1049/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/hyprland-global-shortcuts-v1.cpp.o
+[1050/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/text-input-unstable-v1.cpp.o
+[1051/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/hyprland-toplevel-export-v1.cpp.o
+[1052/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/wlr-screencopy-unstable-v1.cpp.o
+[1053/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/wlr-gamma-control-unstable-v1.cpp.o
+[1054/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/wlr-foreign-toplevel-management-unstable-v1.cpp.o
+[1055/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/wlr-output-power-management-unstable-v1.cpp.o
+[1056/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/virtual-keyboard-unstable-v1.cpp.o
+[1057/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/wlr-virtual-pointer-unstable-v1.cpp.o
+[1058/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/input-method-unstable-v2.cpp.o
+[1059/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/wlr-output-management-unstable-v1.cpp.o
+[1060/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/kde-server-decoration.cpp.o
+[1061/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/vicinae-hotkey-v1.cpp.o
+[1062/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/xx-hotkey-v1.cpp.o
+[1063/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/wlr-data-control-unstable-v1.cpp.o
+[1064/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/hyprland-focus-grab-v1.cpp.o
+[1065/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/wlr-layer-shell-unstable-v1.cpp.o
+[1066/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/wayland-drm.cpp.o
+[1067/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/hyprland-ctm-control-v1.cpp.o
+[1068/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/hyprland-surface-v1.cpp.o
+[1069/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/hyprland-lock-notify-v1.cpp.o
+[1070/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/hyprland-toplevel-mapping-v1.cpp.o
+[1071/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/hyprland-workspace-image-capture-source-v1.cpp.o
+[1072/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/tearing-control-v1.cpp.o
+[1073/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/fractional-scale-v1.cpp.o
+[1074/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/xdg-output-unstable-v1.cpp.o
+[1075/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/cursor-shape-v1.cpp.o
+[1076/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/idle-inhibit-unstable-v1.cpp.o
+[1077/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/relative-pointer-unstable-v1.cpp.o
+[1078/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/xdg-decoration-unstable-v1.cpp.o
+[1079/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/alpha-modifier-v1.cpp.o
+[1080/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/ext-foreign-toplevel-list-v1.cpp.o
+[1081/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/pointer-gestures-unstable-v1.cpp.o
+[1082/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/keyboard-shortcuts-inhibit-unstable-v1.cpp.o
+[1083/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/text-input-unstable-v3.cpp.o
+[1084/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/pointer-constraints-unstable-v1.cpp.o
+[1085/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/xdg-foreign-unstable-v2.cpp.o
+[1086/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/xdg-activation-v1.cpp.o
+[1087/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/ext-idle-notify-v1.cpp.o
+[1088/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/ext-session-lock-v1.cpp.o
+[1089/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/tablet-v2.cpp.o
+[1090/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/presentation-time.cpp.o
+[1091/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/xdg-shell.cpp.o
+[1092/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/primary-selection-unstable-v1.cpp.o
+[1093/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/xwayland-shell-v1.cpp.o
+[1094/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/viewporter.cpp.o
+[1095/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/linux-dmabuf-v1.cpp.o
+[1096/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/drm-lease-v1.cpp.o
+[1097/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/linux-drm-syncobj-v1.cpp.o
+[1098/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/xdg-dialog-v1.cpp.o
+[1099/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/single-pixel-buffer-v1.cpp.o
+[1100/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/security-context-v1.cpp.o
+[1101/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/content-type-v1.cpp.o
+[1102/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/color-management-v1.cpp.o
+[1103/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/xdg-toplevel-tag-v1.cpp.o
+[1104/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/xdg-system-bell-v1.cpp.o
+[1105/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/ext-workspace-v1.cpp.o
+[1106/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/ext-data-control-v1.cpp.o
+[1107/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/pointer-warp-v1.cpp.o
+[1108/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/fifo-v1.cpp.o
+[1109/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/commit-timing-v1.cpp.o
+[1110/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/ext-image-capture-source-v1.cpp.o
+[1111/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/ext-image-copy-capture-v1.cpp.o
+[1112/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/ext-background-effect-v1.cpp.o
+[1113/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/hyprland-input-capture-v1.cpp.o
+[1114/1129] Building CXX object CMakeFiles/hyprland_lib.dir/protocols/wayland.cpp.o
+[1115/1129] Generating CXX dyndep file CMakeFiles/Hyprland.dir/CXX.dd
+[1116/1129] Linking C static library subprojects/udis86/libudis86/liblibudis86.a
+[1117/1129] Generating /output/sources/Hyprland/hyprctl/hw-protocols/hyprpaper_core-client.cpp, /output/sources/Hyprland/hyprctl/hw-protocols/hyprpaper_core-client.hpp, /output/sources/Hyprland/hyprctl/hw-protocols/hyprpaper_core-spec.hpp
+[1118/1129] Linking CXX static library libhyprland_lib.a
+[1119/1129] Building CXX object CMakeFiles/Hyprland.dir/src/main.cpp.o
+[1120/1129] Building CXX object hyprctl/CMakeFiles/hyprctl.dir/src/hyprpaper/Hyprpaper.cpp.o
+[1121/1129] Building CXX object hyprctl/CMakeFiles/hyprctl.dir/src/main.cpp.o
+[1122/1129] Building CXX object hyprctl/CMakeFiles/hyprctl.dir/hw-protocols/hyprpaper_core-client.cpp.o
+[1123/1129] Building CXX object start/CMakeFiles/start-hyprland.dir/src/core/Instance.cpp.o
+[1124/1129] Building CXX object start/CMakeFiles/start-hyprland.dir/src/helpers/Nix.cpp.o
+[1125/1129] Building CXX object start/CMakeFiles/start-hyprland.dir/src/main.cpp.o
+[1126/1129] Linking CXX executable Hyprland
+[1127/1129] Linking CXX executable hyprctl/hyprctl
+[1128/1129] Linking CXX executable start/start-hyprland

@@ -1,0 +1,20 @@
+Running as unit: symbi-runtime-rpms-45747975776-1.service
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/runner/work/symbi-os/symbi-os/image/runtime_packages/hosted_discover.py", line 148, in <module>
+    main()
+  File "/home/runner/work/symbi-os/symbi-os/image/runtime_packages/hosted_discover.py", line 119, in main
+    run('discovery', command, 1500)
+  File "/home/runner/work/symbi-os/symbi-os/image/runtime_packages/hosted_discover.py", line 60, in run
+    if check:result.check_returncode()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 502, in check_returncode
+    raise CalledProcessError(self.returncode, self.args, self.stdout,
+subprocess.CalledProcessError: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/runtime-package-storage/root', '--runroot', '/run/symbi-runtime-rpms-45747975776-1', 'run', '--rm', '--name=symbi-runtime-package-discovery', '--pull=never', '--user=0', '--read-only', '--network=bridge', '--cgroup-parent=/system.slice/symbi-runtime-rpms-45747975776-1.service', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--pids-limit=128', '--memory=2g', '--memory-swap=2g', '--cpus=1', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/runtime-package-inputs,dst=/inputs,ro', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/runtime-package-output,dst=/output', '--env=PYTHONDONTWRITEBYTECODE=1', '--env=LANG=C.UTF-8', '--entrypoint=/usr/bin/python3', 'ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f', '/inputs/resolve_packages.py']' returned non-zero exit status 127.
+Finished with result: exit-code
+Main processes terminated with: code=exited/status=1
+Service runtime: 1min 51.598s
+CPU time consumed: 1min 57.447s
+Memory peak: 2.6M
+Memory swap peak: 0B

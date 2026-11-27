@@ -1,0 +1,238 @@
+{
+  "schema": 1,
+  "binary_sha256": "5c2f24e767719d76c52de6ef7fdbfd2db980c9f0070b8fec237165ab920e9923",
+  "source_revision": "a654ee8810c637aa00356999488e97259061275d",
+  "checks": [
+    {
+      "name": "version",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-builder-reuse/tool/bluebuild",
+        "--version"
+      ],
+      "expected": "success",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "generic-validate",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-builder-reuse/tool/bluebuild",
+        "validate",
+        "--all-errors",
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/generic.json"
+      ],
+      "expected": "success",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "nvidia-validate",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-builder-reuse/tool/bluebuild",
+        "validate",
+        "--all-errors",
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/nvidia.json"
+      ],
+      "expected": "success",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "tag-only-base",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-builder-reuse/tool/bluebuild",
+        "validate",
+        "--all-errors",
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/tag-only-base.json"
+      ],
+      "expected": "recipe rejection",
+      "exit_code": 1,
+      "passed": true
+    },
+    {
+      "name": "missing-public-key",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-builder-reuse/tool/bluebuild",
+        "validate",
+        "--all-errors",
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/missing-public-key.json"
+      ],
+      "expected": "recipe rejection",
+      "exit_code": 1,
+      "passed": true
+    },
+    {
+      "name": "unknown-version",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-builder-reuse/tool/bluebuild",
+        "validate",
+        "--all-errors",
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/unknown-version.json"
+      ],
+      "expected": "recipe rejection",
+      "exit_code": 1,
+      "passed": true
+    },
+    {
+      "name": "malformed-digest",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-builder-reuse/tool/bluebuild",
+        "validate",
+        "--all-errors",
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/malformed-digest.json"
+      ],
+      "expected": "recipe rejection",
+      "exit_code": 1,
+      "passed": true
+    },
+    {
+      "name": "wrong-snippet-type",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-builder-reuse/tool/bluebuild",
+        "validate",
+        "--all-errors",
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/wrong-snippet-type.json"
+      ],
+      "expected": "recipe rejection",
+      "exit_code": 1,
+      "passed": true
+    },
+    {
+      "name": "unknown-field",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-builder-reuse/tool/bluebuild",
+        "validate",
+        "--all-errors",
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/unknown-field.json"
+      ],
+      "expected": "recipe rejection",
+      "exit_code": 1,
+      "passed": true
+    },
+    {
+      "name": "missing-version",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-builder-reuse/tool/bluebuild",
+        "validate",
+        "--all-errors",
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/missing-version.json"
+      ],
+      "expected": "recipe rejection",
+      "exit_code": 1,
+      "passed": true
+    },
+    {
+      "name": "external-module-include",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-builder-reuse/tool/bluebuild",
+        "validate",
+        "--all-errors",
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/external-module-include.json"
+      ],
+      "expected": "recipe rejection",
+      "exit_code": 1,
+      "passed": true
+    },
+    {
+      "name": "moving-tool-image",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-builder-reuse/tool/bluebuild",
+        "validate",
+        "--all-errors",
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/moving-tool-image.json"
+      ],
+      "expected": "recipe rejection",
+      "exit_code": 1,
+      "passed": true
+    },
+    {
+      "name": "zero-digest",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-builder-reuse/tool/bluebuild",
+        "validate",
+        "--all-errors",
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/zero-digest.json"
+      ],
+      "expected": "recipe rejection",
+      "exit_code": 1,
+      "passed": true
+    },
+    {
+      "name": "remote-public-key",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-builder-reuse/tool/bluebuild",
+        "validate",
+        "--all-errors",
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/remote-public-key.json"
+      ],
+      "expected": "recipe rejection",
+      "exit_code": 1,
+      "passed": true
+    },
+    {
+      "name": "escaping-public-key",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-builder-reuse/tool/bluebuild",
+        "validate",
+        "--all-errors",
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/escaping-public-key.json"
+      ],
+      "expected": "recipe rejection",
+      "exit_code": 1,
+      "passed": true
+    },
+    {
+      "name": "generic-generate",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-builder-reuse/tool/bluebuild",
+        "generate",
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/generic.json",
+        "--output",
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/generic.Containerfile",
+        "--registry",
+        "ghcr.io",
+        "--registry-namespace",
+        "thirdkeyai",
+        "--inspect-driver",
+        "oci-client",
+        "--build-driver",
+        "docker",
+        "--run-driver",
+        "docker",
+        "--platform",
+        "linux/amd64"
+      ],
+      "expected": "success",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "nvidia-generate",
+      "command": [
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-builder-reuse/tool/bluebuild",
+        "generate",
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/nvidia.json",
+        "--output",
+        "/home/runner/work/symbi-os/symbi-os/.cache/assembly-input-evidence/builder/cli/nvidia.Containerfile",
+        "--registry",
+        "ghcr.io",
+        "--registry-namespace",
+        "thirdkeyai",
+        "--inspect-driver",
+        "oci-client",
+        "--build-driver",
+        "docker",
+        "--run-driver",
+        "docker",
+        "--platform",
+        "linux/amd64"
+      ],
+      "expected": "success",
+      "exit_code": 0,
+      "passed": true
+    }
+  ],
+  "recipe_validation_passed": true,
+  "containerfiles_generated": true,
+  "os_qualified": false
+}

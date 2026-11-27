@@ -1,0 +1,16 @@
+[0/2] Re-checking globbed directories...
+[1/9] Building CXX object CMakeFiles/hyprlang.dir/src/common.cpp.o
+/output/sources/hyprlang/src/common.cpp: In constructor ‘Hyprlang::CConfigValue::CConfigValue(Hyprlang::STRING)’:
+/output/sources/hyprlang/src/common.cpp:46:12: warning: ‘char* strncpy(char*, const char*, size_t)’ output truncated before terminating nul copying as many bytes from a string as its length [-Wstringop-truncation]
+   46 |     strncpy((char*)m_pData, value, strlen(value));
+      |     ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/output/sources/hyprlang/src/common.cpp:46:12: note: length computed here
+   46 |     strncpy((char*)m_pData, value, strlen(value));
+      |     ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2/9] Building CXX object CMakeFiles/hyprlang.dir/src/config.cpp.o
+[3/9] Linking CXX shared library libhyprlang.so.0.6.8
+[4/9] Creating library symlink libhyprlang.so.2 libhyprlang.so
+[5/9] Building CXX object CMakeFiles/hyprlang_test.dir/tests/parse/main.cpp.o
+[6/9] Building CXX object CMakeFiles/hyprlang_fuzz.dir/tests/fuzz/main.cpp.o
+[7/9] Linking CXX executable hyprlang_test
+[8/9] Linking CXX executable hyprlang_fuzz

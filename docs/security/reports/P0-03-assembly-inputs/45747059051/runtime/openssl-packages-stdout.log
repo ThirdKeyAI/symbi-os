@@ -1,0 +1,3 @@
+openssl-4.0.3-1.fc45.x86_64
+openssl-libs-4.0.3-1.fc45.x86_64
+package compat-openssl3 is not installed

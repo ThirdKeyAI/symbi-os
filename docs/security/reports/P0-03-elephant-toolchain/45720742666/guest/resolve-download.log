@@ -1,0 +1,35 @@
+Package                  Arch   Version         Repository      Size
+Changing reason:
+ gcc                     x86_64 0:16.2.1-3.fc45 @System    121.8 MiB
+   External User -> User
+ glibc-devel             x86_64 0:2.44-2.fc45   @System      2.3 MiB
+   External User -> User
+Installing:
+ golang                  x86_64 0:1.27.4-2.fc45 updates     10.3 MiB
+Installing dependencies:
+ go-filesystem           x86_64 0:3.8.0-3.fc45  fedora       0.0   B
+ golang-bin              x86_64 0:1.27.4-2.fc45 updates     88.6 MiB
+ golang-src              noarch 0:1.27.4-2.fc45 updates     90.9 MiB
+
+Transaction Summary:
+ Installing:         4 packages
+ Changing reason:    2 packages
+
+No matches were found for the following plugin name patterns while disabling libdnf plugins: *
+Updating and loading repositories:
+ Fedora 45 - x86_64 - Updates           100% |  11.3 MiB/s |  18.9 MiB |  00m02s
+ Fedora 45 - x86_64                     100% |   7.2 MiB/s |  71.8 MiB |  00m10s
+Repositories loaded.
+Package "gcc-16.2.1-3.fc45.x86_64" is already installed.
+Package "glibc-devel-2.44-2.fc45.x86_64" is already installed.
+
+Total size of inbound packages is 41 MiB. Need to download 41 MiB.
+After this operation, 190 MiB extra will be used (install 190 MiB, remove 0 B).
+The operation will only download packages for the transaction.
+[1/4] golang-0:1.27.4-2.fc45.x86_64     100% |   4.5 MiB/s |   1.4 MiB |  00m00s
+[2/4] golang-bin-0:1.27.4-2.fc45.x86_64 100% |   4.8 MiB/s |  23.7 MiB |  00m05s
+[3/4] golang-src-0:1.27.4-2.fc45.noarch 100% |   4.8 MiB/s |  15.4 MiB |  00m03s
+[4/4] go-filesystem-0:3.8.0-3.fc45.x86_ 100% | 595.4 KiB/s |   8.3 KiB |  00m00s
+--------------------------------------------------------------------------------
+[4/4] Total                             100% |   4.7 MiB/s |  40.6 MiB |  00m09s
+Complete!

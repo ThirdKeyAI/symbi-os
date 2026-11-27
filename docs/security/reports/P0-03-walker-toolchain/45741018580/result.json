@@ -1,0 +1,144 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "gui_qualified": false,
+  "upstream_tests_passed": true,
+  "source_commit": "2daf90717b8a0058e2103a215db98702163bc49d",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "source-init",
+      "exit_code": 0
+    },
+    {
+      "name": "source-fetch",
+      "exit_code": 0
+    },
+    {
+      "name": "source-checkout",
+      "exit_code": 0
+    },
+    {
+      "name": "pull-base",
+      "exit_code": 0
+    },
+    {
+      "name": "compiler",
+      "exit_code": 0
+    },
+    {
+      "name": "compiler-commit",
+      "exit_code": 0
+    },
+    {
+      "name": "compiler-cleanup",
+      "exit_code": 0
+    },
+    {
+      "name": "compiler-exists",
+      "exit_code": 1
+    },
+    {
+      "name": "download",
+      "exit_code": 0
+    },
+    {
+      "name": "download-cleanup",
+      "exit_code": 0
+    },
+    {
+      "name": "download-exists",
+      "exit_code": 1
+    },
+    {
+      "name": "compile",
+      "exit_code": 0
+    },
+    {
+      "name": "compile-cleanup",
+      "exit_code": 0
+    },
+    {
+      "name": "compile-exists",
+      "exit_code": 1
+    },
+    {
+      "name": "runtime-install",
+      "exit_code": 0
+    },
+    {
+      "name": "runtime-install-commit",
+      "exit_code": 0
+    },
+    {
+      "name": "runtime-install-cleanup",
+      "exit_code": 0
+    },
+    {
+      "name": "runtime-install-exists",
+      "exit_code": 1
+    },
+    {
+      "name": "cli",
+      "exit_code": 0
+    },
+    {
+      "name": "cli-cleanup",
+      "exit_code": 0
+    },
+    {
+      "name": "cli-exists",
+      "exit_code": 1
+    }
+  ],
+  "containers": {
+    "compiler": {
+      "remove_exit": 0,
+      "exists_exit": 1,
+      "absent": true
+    },
+    "download": {
+      "remove_exit": 0,
+      "exists_exit": 1,
+      "absent": true
+    },
+    "compile": {
+      "remove_exit": 0,
+      "exists_exit": 1,
+      "absent": true
+    },
+    "runtime-install": {
+      "remove_exit": 0,
+      "exists_exit": 1,
+      "absent": true
+    },
+    "cli": {
+      "remove_exit": 0,
+      "exists_exit": 1,
+      "absent": true
+    }
+  },
+  "scope": "Exact Walker source build, upstream tests and original-base CLI compatibility only",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "source_graph": {
+    "packages": 284,
+    "registry_dependencies": 283
+  },
+  "upstream_revision": "a515085fd39fae80acc086c8fbfd9b7771a9a11d",
+  "compiler_image_id": "sha256:02ec2369ee7582de1cf1c679c16fb2957b2d0ddd05ca627b09d6c81c83da5128",
+  "runtime_image_id": "sha256:93f08b631fa6205eb9043f89a823f1840c8719e6656ee68d392f07cb844205bb",
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4383563776",
+    "memory.events": "low 0\nhigh 0\nmax 49343\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 532753077\nuser_usec 464542097\nsystem_usec 68210980\nnice_usec 461898673\ncore_sched.force_idle_usec 0\nnr_periods 7579\nnr_throttled 383\nthrottled_usec 46453605\nnr_bursts 0\nburst_usec 0"
+  }
+}

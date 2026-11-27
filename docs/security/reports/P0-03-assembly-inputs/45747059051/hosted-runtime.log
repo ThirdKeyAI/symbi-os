@@ -1,0 +1,15 @@
+Running as unit: symbi-runtime-reuse-45747059051-1.service
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/runner/work/symbi-os/symbi-os/image/assembly/runtime_compatibility.py", line 149, in <module>
+    main()
+  File "/home/runner/work/symbi-os/symbi-os/image/assembly/runtime_compatibility.py", line 137, in main
+    raise ValueError('Retained runtime is not compatible with the original base; inspect actual loader/CLI evidence')
+ValueError: Retained runtime is not compatible with the original base; inspect actual loader/CLI evidence
+Finished with result: exit-code
+Main processes terminated with: code=exited/status=1
+Service runtime: 1min 54.544s
+CPU time consumed: 1min 59.134s
+Memory peak: 2.6M
+Memory swap peak: 0B

@@ -1,0 +1,9 @@
+{
+  "memory.max": "2147483648",
+  "memory.swap.max": "0",
+  "cpu.max": "100000 100000",
+  "pids.max": "128",
+  "memory.peak": "522108928",
+  "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+  "cpu.stat": "usage_usec 10988837\nuser_usec 8726518\nsystem_usec 2262318\nnice_usec 8652000\ncore_sched.force_idle_usec 0\nnr_periods 865\nnr_throttled 26\nthrottled_usec 1022861\nnr_bursts 0\nburst_usec 0"
+}

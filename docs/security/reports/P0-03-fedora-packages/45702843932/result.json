@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "source_commit": "d5cd472345ea85d659b4c84cc84b7aae6ce8b9df",
+  "packages": 165,
+  "rpm_manifest_sha256": "9556ccf3d57f745b9de520d24d4545619a8cc3be474e93b76e96c6969e25c306",
+  "os_qualified": false,
+  "scope": "Candidate signed build inputs, not installed or compiled"
+}

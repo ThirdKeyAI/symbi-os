@@ -1,0 +1,123 @@
+{
+  "run_id": 45704288264,
+  "head_sha": "997ffa95edee4fd0b887c0691486bff8e1f3d0b9",
+  "checked_merge_sha": "ea5937416b149762104ce16bfef0530e03dd9891",
+  "artifact": {
+    "id": 15067467584,
+    "bytes": 181727,
+    "sha256": "2f705b3fbbfb670284775fe8728b7e43ebec5e42256fa17d029da69a03345dff"
+  },
+  "compilation_passed": true,
+  "development_ldd_passed": true,
+  "native_loading_passed": false,
+  "selected_base_compatibility_passed": false,
+  "os_qualified": false,
+  "native_observation": "Constructor control and initial Lua C-loading refusal passed; compositor backend initialization failed before IPC/reload acceptance. Query output was not JSON. Cleanup killpg PermissionError masked the original JSON error.",
+  "graphics_source_observation": "Pinned Headless::drmFD returns -1; Backend::start requires a primary GBM allocator from a DRM fd. Wayland fallback requires dmabuf protocol and a DRM node too. The container supplies no graphics device. HYPRLAND_HEADLESS_ONLY is not implemented by this compositor.",
+  "socket_source_observation": "Instance name contains 40-character commit, 10-digit timestamp, and random INT32_MAX. Original /output/native-work/runtime plus the instance and .socket2.sock exceeds Linux sun_path. Prepared short paths are checked before child startup.",
+  "source_records": [
+    {
+      "url": "https://github.com/hyprwm/Hyprland/blob/11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947/src/Compositor.cpp",
+      "sha256": "6b6e0f82d07755e394a1783343a8e397a5065d563115799c68a4762a8998f6d2"
+    },
+    {
+      "url": "https://github.com/hyprwm/Hyprland/blob/11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947/src/ipc/s1/Unix.cpp",
+      "sha256": "3ba8e461bd466a8a716a7a29a2a917d94a4d9af6fb87904a2c76978f4833d6cf"
+    },
+    {
+      "url": "https://github.com/hyprwm/Hyprland/blob/11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947/src/ipc/s2/Unix.cpp",
+      "sha256": "08ede5a7e1f2a2a716f7542537ad45634a3a24139d8f832dce1b9ffa35b0ac7c"
+    },
+    {
+      "url": "https://github.com/hyprwm/aquamarine/blob/9887f39574f2afeae3aeb6687db6cd0c030ccf94/src/backend/Backend.cpp",
+      "sha256": "4908c6f81e8183274c906eff4e0545555a7ac5842ba5a96df54c2383ec2620f7"
+    },
+    {
+      "url": "https://github.com/hyprwm/aquamarine/blob/9887f39574f2afeae3aeb6687db6cd0c030ccf94/src/backend/Headless.cpp",
+      "sha256": "2eb61cc650f71e0e90a95be11fbe9d93310975a2c33d42cee26b03a682446ed6"
+    },
+    {
+      "url": "https://github.com/hyprwm/aquamarine/blob/9887f39574f2afeae3aeb6687db6cd0c030ccf94/src/backend/Wayland.cpp",
+      "sha256": "3767a528e3f18680eae4c21dae6c5a8e9a5fbc128ca62d688d6c81b97cc2005d"
+    }
+  ],
+  "hosted_peak_bytes": 8609955840,
+  "compiler_peak_bytes": 4295491584,
+  "oom_events": 0,
+  "oom_kills": 0,
+  "retention": "Selected public JSON retained verbatim; text trailing whitespace normalized with both hashes. No compiled prefix artifact was produced by the old workflow because the native probe failed first.",
+  "files": {
+    "result.json": {
+      "original_sha256": "1e3e74d990e53ed15eae76083fcb018edad042905c66928f1702fe0f293a213e",
+      "retained_sha256": "1e3e74d990e53ed15eae76083fcb018edad042905c66928f1702fe0f293a213e"
+    },
+    "base-signature.json": {
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    "source-revisions.json": {
+      "original_sha256": "980d42befdcdd51fc96a5c92a8403a21710b46573705c249d0d2254d24a46fda",
+      "retained_sha256": "980d42befdcdd51fc96a5c92a8403a21710b46573705c249d0d2254d24a46fda"
+    },
+    "cgroup-limits.json": {
+      "original_sha256": "56c5eb8cc68a3a4706310eba89ecfa9f3f64a75081207f23fdea66c1f9ae5bc5",
+      "retained_sha256": "56c5eb8cc68a3a4706310eba89ecfa9f3f64a75081207f23fdea66c1f9ae5bc5"
+    },
+    "cgroup-final.json": {
+      "original_sha256": "668b80e9951b0231ec020bdaf9d2eed67183e5b6d12111b8f39573a2b6d5db3f",
+      "retained_sha256": "668b80e9951b0231ec020bdaf9d2eed67183e5b6d12111b8f39573a2b6d5db3f"
+    },
+    "systemd-result.txt": {
+      "original_sha256": "54d0177406eee6102f9994620ad1a46232dfd99886a96eb4f61edfc3c39efb8d",
+      "retained_sha256": "54d0177406eee6102f9994620ad1a46232dfd99886a96eb4f61edfc3c39efb8d"
+    },
+    "native-result.json": {
+      "original_sha256": "da197436c40bca40e45055caf0f7d1793de7c2b38507a09e79cc2d4b217ea9f7",
+      "retained_sha256": "da197436c40bca40e45055caf0f7d1793de7c2b38507a09e79cc2d4b217ea9f7"
+    },
+    "native-loading-probe.log": {
+      "original_sha256": "c2fea89f3805058eaf08641c1d779fb6485b97ca185d9ccdd66e1195558b5cb2",
+      "retained_sha256": "c2fea89f3805058eaf08641c1d779fb6485b97ca185d9ccdd66e1195558b5cb2"
+    },
+    "compositor.log": {
+      "original_sha256": "574eaf31a904f7843e64b43f3aa9900e8314ce0d473839940cfea9129a68516a",
+      "retained_sha256": "574eaf31a904f7843e64b43f3aa9900e8314ce0d473839940cfea9129a68516a"
+    },
+    "guest/compile.json": {
+      "original_sha256": "94fccb66e3df4ebdae98aad552e722c807f872084b0ff9c87e769dc5c27fe15b",
+      "retained_sha256": "94fccb66e3df4ebdae98aad552e722c807f872084b0ff9c87e769dc5c27fe15b"
+    },
+    "guest/install.json": {
+      "original_sha256": "ee9093610cd23d0c5f92d2f9a6d5a4241bb08c13074796a5a1ea642775c19d08",
+      "retained_sha256": "ee9093610cd23d0c5f92d2f9a6d5a4241bb08c13074796a5a1ea642775c19d08"
+    },
+    "guest/build-cgroup-final.json": {
+      "original_sha256": "0341cb557af5377ab917c488728ff53a4bcce2f834f4a1e7ec4e31b2efa1f0e9",
+      "retained_sha256": "0341cb557af5377ab917c488728ff53a4bcce2f834f4a1e7ec4e31b2efa1f0e9"
+    },
+    "guest/Hyprland-build.log": {
+      "original_sha256": "e121c033c4ebb34f98b4993d655ceaa1202bf1f42cf4f6cbec7b830f9bd7bab7",
+      "retained_sha256": "e121c033c4ebb34f98b4993d655ceaa1202bf1f42cf4f6cbec7b830f9bd7bab7"
+    },
+    "guest/Hyprland-install.log": {
+      "original_sha256": "8fe9e01fc4c4e7fdc49ec13d18430e41243b7524594d4bb643e2b7f48596ccec",
+      "retained_sha256": "8fe9e01fc4c4e7fdc49ec13d18430e41243b7524594d4bb643e2b7f48596ccec"
+    },
+    "guest/Hyprland-needed-libraries.log": {
+      "original_sha256": "949ac8e1bd2fa9145e7fbe6eb463561422f6f9713381d56b4d61f3d41f4bca28",
+      "retained_sha256": "949ac8e1bd2fa9145e7fbe6eb463561422f6f9713381d56b4d61f3d41f4bca28"
+    },
+    "guest/hyprctl-needed-libraries.log": {
+      "original_sha256": "00b470147ce5a13546fac9ee722cf1fd76e32c874ebba819a775d68074afd7cf",
+      "retained_sha256": "00b470147ce5a13546fac9ee722cf1fd76e32c874ebba819a775d68074afd7cf"
+    },
+    "guest/apply-check.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "guest/apply-patch.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    }
+  }
+}

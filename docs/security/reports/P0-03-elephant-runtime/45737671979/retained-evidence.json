@@ -1,0 +1,57 @@
+{
+  "run": 45737671979,
+  "head": "e6a8659036da7ea8f0d58888a925e9779df379b8",
+  "artifact": {
+    "id": 15079911924,
+    "bytes": 21256,
+    "sha256": "f84041165f4b4cc897ba3852337b2c0da252c460a94cca790457fc69239ca088"
+  },
+  "scope": "Incomplete guest startup supervision, successful provider-startup output and verified host cleanup; provider controls were not reached",
+  "normalization": "Text log trailing whitespace and trailing blank lines only; JSON unchanged",
+  "files": {
+    "result.json": {
+      "original_sha256": "34b4d1aeacc0bdd9b2a48941f3cf4457b3e7286a40154d1c3c55bf0b8d6ed200",
+      "retained_sha256": "34b4d1aeacc0bdd9b2a48941f3cf4457b3e7286a40154d1c3c55bf0b8d6ed200"
+    },
+    "base-signature.json": {
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    "compiled-manifest.json": {
+      "original_sha256": "8bf5558aa18d977cef385510e06454b47d9cdf6e501a47c7da1110e5679fc747",
+      "retained_sha256": "8bf5558aa18d977cef385510e06454b47d9cdf6e501a47c7da1110e5679fc747"
+    },
+    "ocr/result.json": {
+      "original_sha256": "eca5731a3bfdf5fb7587a51426ad7d5e840f0a44153f61e3bd7773cc00f26c35",
+      "retained_sha256": "eca5731a3bfdf5fb7587a51426ad7d5e840f0a44153f61e3bd7773cc00f26c35"
+    },
+    "ocr/loader-result.json": {
+      "original_sha256": "56961f8986e937df1f28d54e8ab9868600155ffc160124dc6e6b5dabc1e159b9",
+      "retained_sha256": "56961f8986e937df1f28d54e8ab9868600155ffc160124dc6e6b5dabc1e159b9"
+    },
+    "ocr/loader-stderr.log": {
+      "original_sha256": "c5f3770ef738f01741a883a50df027e1120ae8251e9e2f45c82d021bee23164e",
+      "retained_sha256": "c5f3770ef738f01741a883a50df027e1120ae8251e9e2f45c82d021bee23164e"
+    },
+    "ocr/loader-stdout.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "loader-cleanup-stdout.log": {
+      "original_sha256": "f1196d3208c86ef38544cfe644f5d311172a879c46f949c62665dcd006eff36b",
+      "retained_sha256": "f1196d3208c86ef38544cfe644f5d311172a879c46f949c62665dcd006eff36b"
+    },
+    "loader-cleanup-stderr.log": {
+      "original_sha256": "9815ca9a175d0d95de2b217538c57f2dbfe7a98715b2666be8c3a885410cd0d2",
+      "retained_sha256": "9815ca9a175d0d95de2b217538c57f2dbfe7a98715b2666be8c3a885410cd0d2"
+    },
+    "loader-exists-stdout.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "loader-exists-stderr.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  }
+}

@@ -1,0 +1,1 @@
+{"uid": 10001, "kernel": "7.0.0-1014-aws", "limits": {"memory.max": "536870912", "memory.swap.max": "0", "cpu.max": "100000 100000", "pids.max": "64"}, "cap_effective": "0000000000000000", "no_new_privileges": "1", "root_readonly": true, "network_devices": ["lo"]}

@@ -1,0 +1,462 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "checks": [
+    {
+      "name": "required-providers",
+      "command": [
+        "pkg-config",
+        "--exists",
+        "sdbus-c++ >= 2.0.0",
+        "hyprland-protocols >= 0.8.0",
+        "libpipewire-0.3 >= 1.1.82",
+        "libspa-0.2",
+        "iniparser",
+        "absl_flat_hash_map"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.04787621200000558
+    },
+    {
+      "name": "toolkit-debug-configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/output/sources/hyprtoolkit",
+        "-B",
+        "/output/build/toolkit-debug",
+        "-G",
+        "Ninja",
+        "-DCMAKE_INSTALL_PREFIX=/usr/lib/symbi/portal",
+        "-DCMAKE_INSTALL_LIBDIR=lib",
+        "-DCMAKE_INSTALL_LIBEXECDIR=libexec",
+        "-DCMAKE_INSTALL_DATAROOTDIR=share",
+        "-DCMAKE_INSTALL_RPATH=/usr/lib/symbi/portal/lib;/usr/lib/symbi/hyprland/lib",
+        "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON",
+        "-DCMAKE_PREFIX_PATH=/usr/lib/symbi/portal;/usr/lib/symbi/hyprland",
+        "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
+        "-DFETCHCONTENT_UPDATES_DISCONNECTED=ON",
+        "-DCMAKE_C_FLAGS_DEBUG=-O0 -g0",
+        "-DCMAKE_CXX_FLAGS_DEBUG=-O0 -g0",
+        "-DCMAKE_C_FLAGS_RELEASE=-O3 -DNDEBUG -g0",
+        "-DCMAKE_CXX_FLAGS_RELEASE=-O3 -DNDEBUG -g0",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-DCMAKE_BUILD_WITH_INSTALL_RPATH=OFF",
+        "-DCMAKE_BUILD_RPATH=/output/build/toolkit-debug;/usr/lib/symbi/hyprland/lib"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 6.136019608000083
+    },
+    {
+      "name": "toolkit-debug-build",
+      "command": [
+        "cmake",
+        "--build",
+        "/output/build/toolkit-debug",
+        "--parallel",
+        "1",
+        "--target",
+        "hyprtoolkit_tests",
+        "embeddedRendererTest"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 204.52657673499994
+    },
+    {
+      "name": "toolkit-unit",
+      "command": [
+        "/output/build/toolkit-debug/hyprtoolkit_tests",
+        "--gtest_output=xml:/output/evidence/toolkit-unit.xml"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 3.5022772999998324
+    },
+    {
+      "name": "toolkit-renderer",
+      "command": [
+        "/output/build/toolkit-debug/embeddedRendererTest",
+        "--gtest_output=xml:/output/evidence/toolkit-renderer.xml"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.260044248999975
+    },
+    {
+      "name": "toolkit-release-configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/output/sources/hyprtoolkit",
+        "-B",
+        "/output/build/toolkit-release",
+        "-G",
+        "Ninja",
+        "-DCMAKE_INSTALL_PREFIX=/usr/lib/symbi/portal",
+        "-DCMAKE_INSTALL_LIBDIR=lib",
+        "-DCMAKE_INSTALL_LIBEXECDIR=libexec",
+        "-DCMAKE_INSTALL_DATAROOTDIR=share",
+        "-DCMAKE_INSTALL_RPATH=/usr/lib/symbi/portal/lib;/usr/lib/symbi/hyprland/lib",
+        "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON",
+        "-DCMAKE_PREFIX_PATH=/usr/lib/symbi/portal;/usr/lib/symbi/hyprland",
+        "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
+        "-DFETCHCONTENT_UPDATES_DISCONNECTED=ON",
+        "-DCMAKE_C_FLAGS_DEBUG=-O0 -g0",
+        "-DCMAKE_CXX_FLAGS_DEBUG=-O0 -g0",
+        "-DCMAKE_C_FLAGS_RELEASE=-O3 -DNDEBUG -g0",
+        "-DCMAKE_CXX_FLAGS_RELEASE=-O3 -DNDEBUG -g0",
+        "-DCMAKE_BUILD_TYPE=Release"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 5.401445447000015
+    },
+    {
+      "name": "toolkit-release-build",
+      "command": [
+        "cmake",
+        "--build",
+        "/output/build/toolkit-release",
+        "--parallel",
+        "1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 217.168753314
+    },
+    {
+      "name": "toolkit-release-install",
+      "command": [
+        "cmake",
+        "--install",
+        "/output/build/toolkit-release"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.023717411000006905
+    },
+    {
+      "name": "installed-toolkit-provider",
+      "command": [
+        "pkg-config",
+        "--atleast-version=0.6.0",
+        "hyprtoolkit"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.03369440200003737
+    },
+    {
+      "name": "portal-configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/output/sources/xdg-desktop-portal-hyprland",
+        "-B",
+        "/output/build/portal",
+        "-G",
+        "Ninja",
+        "-DCMAKE_INSTALL_PREFIX=/usr/lib/symbi/portal",
+        "-DCMAKE_INSTALL_LIBDIR=lib",
+        "-DCMAKE_INSTALL_LIBEXECDIR=libexec",
+        "-DCMAKE_INSTALL_DATAROOTDIR=share",
+        "-DCMAKE_INSTALL_RPATH=/usr/lib/symbi/portal/lib;/usr/lib/symbi/hyprland/lib",
+        "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON",
+        "-DCMAKE_PREFIX_PATH=/usr/lib/symbi/portal;/usr/lib/symbi/hyprland",
+        "-DFETCHCONTENT_FULLY_DISCONNECTED=ON",
+        "-DFETCHCONTENT_UPDATES_DISCONNECTED=ON",
+        "-DCMAKE_C_FLAGS_DEBUG=-O0 -g0",
+        "-DCMAKE_CXX_FLAGS_DEBUG=-O0 -g0",
+        "-DCMAKE_C_FLAGS_RELEASE=-O3 -DNDEBUG -g0",
+        "-DCMAKE_CXX_FLAGS_RELEASE=-O3 -DNDEBUG -g0",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DBUILD_TESTING=ON",
+        "-DSYSTEMD_SERVICES=ON"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 7.028122680000024
+    },
+    {
+      "name": "portal-build",
+      "command": [
+        "cmake",
+        "--build",
+        "/output/build/portal",
+        "--parallel",
+        "1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 113.43203955199988
+    },
+    {
+      "name": "portal-tests",
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/output/build/portal",
+        "--parallel",
+        "1",
+        "--no-tests=error",
+        "--output-on-failure",
+        "--output-junit",
+        "/output/evidence/portal-tests.xml"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.017602206999981718
+    },
+    {
+      "name": "portal-install",
+      "command": [
+        "cmake",
+        "--install",
+        "/output/build/portal"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.019031026999982714
+    },
+    {
+      "name": "loader-0",
+      "command": [
+        "ldd",
+        "/usr/lib/symbi/portal/lib/libhyprtoolkit.so.0.6.0"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.01842087700015327
+    },
+    {
+      "name": "needed-0",
+      "command": [
+        "readelf",
+        "--dynamic",
+        "/usr/lib/symbi/portal/lib/libhyprtoolkit.so.0.6.0"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.007842908999919018
+    },
+    {
+      "name": "loader-1",
+      "command": [
+        "ldd",
+        "/usr/lib/symbi/portal/bin/hyprland-share-picker"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.02288851999992403
+    },
+    {
+      "name": "needed-1",
+      "command": [
+        "readelf",
+        "--dynamic",
+        "/usr/lib/symbi/portal/bin/hyprland-share-picker"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.00816331199985143
+    },
+    {
+      "name": "loader-2",
+      "command": [
+        "ldd",
+        "/usr/lib/symbi/portal/libexec/xdg-desktop-portal-hyprland"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.011039118000098824
+    },
+    {
+      "name": "needed-2",
+      "command": [
+        "readelf",
+        "--dynamic",
+        "/usr/lib/symbi/portal/libexec/xdg-desktop-portal-hyprland"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.007790720000002693
+    },
+    {
+      "name": "portal-version",
+      "command": [
+        "/usr/lib/symbi/portal/libexec/xdg-desktop-portal-hyprland",
+        "--version"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.004544414000065444
+    }
+  ],
+  "test_suites": {
+    "toolkit-unit": {
+      "cases": [
+        "Animation.opacityPolicyAppliesToFutureChanges",
+        "Animation.geometryUsesFinalLayoutAndPreviousPresentation",
+        "Animation.unconfiguredGeometryChangesImmediately",
+        "Animation.nestedGeometryUsesNearestConfiguredElement",
+        "Animation.configuredChildComposesWithParentGeometry",
+        "Animation.replacingPolicyOnlyAffectsNextChange",
+        "Animation.noAnimationRestoresImmediateOpacityChanges",
+        "Animation.noAnimationRemovesPresentationGeometry",
+        "Animation.geometryIgnoresLayoutsBeforeFirstPresentation",
+        "WaylandPlatform.keyboardEnterReplacesPressedKeys",
+        "WaylandPlatform.keyboardLeaveClearsKeyboardState",
+        "Element.buttonRebuildAppliesLabelLayout",
+        "Element.checkboxRebuildAppliesStyle",
+        "Element.radioGroupSurvivesCallbackRebuild",
+        "Element.comboboxNormalizesSelection",
+        "Element.comboboxSupportsEmptyItems",
+        "Element.imageCacheStringEncodesFitMode",
+        "Element.imageSourcesAreExclusive",
+        "Element.imageCacheEntryReportsFailure",
+        "Element.imageRecognizesScalablePaths",
+        "Element.progressBarRebuildSizesIndeterminatePulse",
+        "Element.rowLayoutRebuild",
+        "Element.scrollAreaClampsToContentOverflow",
+        "Element.scrollAreaRebuild",
+        "Element.scrollAreaRebuildClampsDisabledAxis",
+        "Element.scrollAreaRepositionClampsNewOverflow",
+        "Element.scrollAreaThumbTracksScroll",
+        "Element.scrollAreaTinyViewportDoesNotCrash",
+        "Element.scrollAreaThumbDragScrolls",
+        "Element.scrollAreaMaxScrollIsStableAcrossContentRelayout",
+        "Element.scrollAreaContentKeepsOffsetAcrossStrayRelayout",
+        "Element.sliderUsesConfiguredRange",
+        "Element.sliderReportsRangeValue",
+        "Element.sliderDegenerateRangeIsFinite",
+        "Element.spinboxArrowsMoveAndNotify",
+        "Element.spinboxRebuildNormalizesSelection",
+        "Element.spinboxRebuildAppliesFill",
+        "Element.text",
+        "Element.synchronousTextRebuildSchedulesTextureRefresh",
+        "Element.textClampRebuildSchedulesTextureRefresh",
+        "Element.textPreferredSize",
+        "Element.textGrowsAgainstNeighbor",
+        "Element.textSideBySide",
+        "Element.textShrinkingThenGrowing",
+        "Element.textChangingSize",
+        "Element.textChangingContent",
+        "Element.textClampSize",
+        "Element.textCharPosition",
+        "Element.textboxNavigation",
+        "Element.textboxEditing",
+        "Element.textBoxNewLines",
+        "Element.textboxRebuildUpdatesEyeIcon",
+        "Element.textboxRebuildClampsEditingState",
+        "Element.textboxCallbackOnlyReportsUserEdits",
+        "Element.textboxSingleLineSelectionVCentered",
+        "SliderLabel.threeDigitMaxIsThreeChars",
+        "SliderLabel.twoDigitMaxIsTwoChars",
+        "SliderLabel.snapFloatAddsTwoForFraction",
+        "SliderLabel.negativeMinAddsSign",
+        "SliderLabel.smallRangeDoesNotUnderflow",
+        "SliderLabel.zeroMaxDoesNotCrash",
+        "SliderLabel.negativeMaxDoesNotCrash",
+        "Env.enabled",
+        "UTF8.codepointLen",
+        "UTF8.codepointLenBefore",
+        "UTF8.length",
+        "UTF8.substr",
+        "UTF8.utf8ToOffset",
+        "UTF8.offsetToUTF8Len",
+        "UTF8.findFirstOf",
+        "UTF8.findLastOf",
+        "UTF8.findFirstNotOf",
+        "UTF8.findLastNotOf",
+        "Positioner.main",
+        "Positioner.align",
+        "Positioner.columnLayoutGrowFillsRemaining",
+        "Positioner.rowLayoutGrowFillsRemaining",
+        "Positioner.rowLayoutOverflowShrinkDoesNotUnderflow",
+        "CEmbeddedSurfaceTest.frameRequestsAreCoalesced",
+        "CEmbeddedSurfaceTest.mouseInputCanBeDisabled",
+        "CEmbeddedSurfaceTest.mouseAxisPreservesDelta",
+        "CEmbeddedSurfaceTest.alwaysHoveredElementReceivesPointerEventsOnce",
+        "CEmbeddedSurfaceTest.textboxFocusCanBeCleared",
+        "CEmbeddedSurfaceTest.clearingTextboxFocusDoesNotAffectAnotherTextbox",
+        "CEmbeddedSurfaceTest.textboxCallbackWaitsForIMCommit",
+        "CEmbeddedSurfaceTest.touchIsCapturedByInitialTarget",
+        "CEmbeddedSurfaceTest.cancelledPrimaryTouchDoesNotClick",
+        "CEmbeddedSurfaceTest.primaryTouchTapKeepsInitialPointerTarget",
+        "CEmbeddedSurfaceTest.invalidatedSurfaceIgnoresHostCalls",
+        "CEmbeddedSurfaceTest.repositionScheduledDuringPreRenderIsKept",
+        "CEmbeddedSurfaceTest.detachedElementDoesNotDropRootReposition"
+      ],
+      "sha256": "a2b7a3db7c3b58cb3a3a02064f217f1da644168218b54b5ac25629650e70230a"
+    },
+    "toolkit-renderer": {
+      "cases": [
+        "CEmbeddedRendererTest.rendersAndRestoresHostState"
+      ],
+      "sha256": "f2d8bfa1522cfc9566a6cc333917a6bbfb8d5cd3eb30873dde2d7ba4b0dfca75"
+    },
+    "portal-tests": {
+      "cases": [
+        "hyprland-share-picker-data.hyprland-share-picker-data"
+      ],
+      "sha256": "a4c0c7d1c54b20d10f07ec5c87bc9079b63219c5dc9dc9f4661acd088f5bd7fb"
+    }
+  },
+  "scope": "Offline development build; Debug toolkit tests, Release portal tests and build-container loader checks only",
+  "source_revisions": [
+    {
+      "name": "hyprtoolkit",
+      "lock_node": "hyprtoolkit",
+      "revision": "92646e15fb295285b10de626f2d9597216465f7b",
+      "version": "0.6.0",
+      "repository": "https://github.com/hyprwm/hyprtoolkit.git",
+      "license": "BSD-3-Clause",
+      "reviewed_files": {
+        "VERSION": {
+          "path": "image/portal/reviewed/hyprtoolkit/VERSION",
+          "bytes": 6,
+          "sha256": "97a5d6e540a6120d09c39ddb667e0e8e2bac7fcc2ffef813b82e08fd60365bce",
+          "git_blob": "a918a2aa18d5bec6a8bb93891a7a63c243111796"
+        },
+        "CMakeLists.txt": {
+          "path": "image/portal/reviewed/hyprtoolkit/CMakeLists.txt",
+          "bytes": 8506,
+          "sha256": "053653a92c0b7f6936e4a9c745d4281c6f5ac87be12d684503aba72ab3452195",
+          "git_blob": "540b8e6d7d3a0ba6fa8f66c46bd59ac6d83021df"
+        },
+        "LICENSE": {
+          "path": "image/portal/reviewed/hyprtoolkit/LICENSE",
+          "bytes": 1503,
+          "sha256": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143",
+          "git_blob": "daf5abfc33b687ea2368b58e8dd58e8180b00c47"
+        },
+        "scripts/generateShaderIncludes.sh": {
+          "path": "image/portal/reviewed/hyprtoolkit/scripts/generateShaderIncludes.sh",
+          "bytes": 829,
+          "sha256": "208b260558dd3de4519361b0ab6fb841f6736456ea430750ae8edbc43a24c17e",
+          "git_blob": "58594c9cd86873cfbb98bce29e28f7f111891c68"
+        }
+      }
+    },
+    {
+      "name": "xdg-desktop-portal-hyprland",
+      "lock_node": "xdph",
+      "revision": "85450448ea40a54ec4f10bd607e68019d8f5cc41",
+      "version": "1.5.0",
+      "repository": "https://github.com/hyprwm/xdg-desktop-portal-hyprland.git",
+      "license": "BSD-3-Clause",
+      "reviewed_files": {
+        "VERSION": {
+          "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/VERSION",
+          "bytes": 6,
+          "sha256": "acb57a7135b2d7d6e665f67f056e21353023b93835f54def1ae523bf76f1bfb3",
+          "git_blob": "bc80560fad66ca670bdfbd1e5c973a024d4d0325"
+        },
+        "CMakeLists.txt": {
+          "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/CMakeLists.txt",
+          "bytes": 6138,
+          "sha256": "b5d66bb400772968346edf61b6b568fba623bdf355bb8af8c2aa4c2a6354c450",
+          "git_blob": "51af533f24de44d4785164755f4412d3a716535b"
+        },
+        "LICENSE": {
+          "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/LICENSE",
+          "bytes": 1515,
+          "sha256": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+          "git_blob": "f18025f342e9c7043902f8dd22549d88bd6facf8"
+        },
+        "hyprland-share-picker/CMakeLists.txt": {
+          "path": "image/portal/reviewed/xdg-desktop-portal-hyprland/hyprland-share-picker/CMakeLists.txt",
+          "bytes": 904,
+          "sha256": "3f0439e00661d676cd370c496b8f9b473ef4dc362b9a40d3513f6a9e9c305c58",
+          "git_blob": "2fe614800afa9f20f34dea0ee85cd4ecb61080ef"
+        }
+      }
+    }
+  ],
+  "prefix": "/usr/lib/symbi/portal",
+  "compositor_recompiled": false,
+  "test_and_release_toolkit_are_distinct_builds": true
+}

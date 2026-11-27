@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "release": "45",
+  "architecture": "x86_64",
+  "key": {
+    "path": "image/hyprland/keys/fedora-45-primary.asc",
+    "sha256": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425",
+    "fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E",
+    "identity": "Fedora (45) <fedora-45-primary@fedoraproject.org>"
+  },
+  "source": {
+    "image": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+    "path": "/usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-45-primary",
+    "authenticated_inventory_run": 45687989184,
+    "fingerprint_reference": "https://fedoraproject.org/en/security/"
+  },
+  "trust_scope": "Public package-signing trust anchor extracted from the authenticated exact base and matched to Fedora official HTTPS fingerprint; no independent out-of-band verification claimed.",
+  "packages_selected": false,
+  "rpm_signatures_verified": false,
+  "qualified": false
+}

@@ -1,0 +1,40 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "hyprland_sha256": "0f5dc9a3bb14265516a1a7c16a90ff0ad54fda94c7caed5defb4b234ecb7f34a",
+  "defaults_sha256": {
+    "appearance.lua": "6b284715b71bb84f691ba736522b7c7b95ccb7d831812c96a2acc9c65a4bfe02",
+    "xdph.conf": "f6771ee38b331066f5b92a8bdf055092367f67f9b0be90628bbf56f5c605ef33",
+    "input.lua": "c92291506e7335a4c99c243467d8bd7f37dd25efc902119f78df8eef935eba1f",
+    "hyprland.lua": "16857dd5d0dfa102b9ad0ff429c7ceba7d8faf6178499e8708837c86798187e4"
+  },
+  "limits": {
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000"
+  },
+  "checks": [
+    {
+      "name": "shipped-session-defaults",
+      "passed": true,
+      "exit_code": 0,
+      "stdout": "\u001b[1;32mDEBUG \u001b[0m]: [main] User-specified config location: '/output/s/config/hypr/hyprland.lua'\n\u001b[1;32mDEBUG \u001b[0m]: [Config::initConfigManager] [cfg] Config is either explicit or special\n\u001b[1;32mDEBUG \u001b[0m]: [Config::Lua::CConfigManager::postConfigReload] Disabling stdout logs (debug.enable_stdout_logs = 0). Further logs will be written to /hyprland.log\n\u001b[1;31mERR \u001b[0m]: [IPC::Socket2::CUnixImpl::CUnixImpl] [Socket2::UnixImpl] Couldn't bind the Hyprland Socket 2. (3) IPC will not work.\n\n\n======== Config parsing result:\n\nconfig ok\n",
+      "stderr": ""
+    },
+    {
+      "name": "invalid-lua-control-rejected",
+      "passed": true,
+      "exit_code": 1,
+      "stdout": "\u001b[1;32mDEBUG \u001b[0m]: [main] User-specified config location: '/output/s/config/hypr/invalid-control.lua'\n\u001b[1;32mDEBUG \u001b[0m]: [Config::initConfigManager] [cfg] Config is either explicit or special\n\u001b[1;32mDEBUG \u001b[0m]: [Config::Lua::CConfigManager::postConfigReload] Disabling stdout logs (debug.enable_stdout_logs = 0). Further logs will be written to /hyprland.log\n\u001b[1;31mERR \u001b[0m]: [IPC::Socket2::CUnixImpl::CUnixImpl] [Socket2::UnixImpl] Couldn't bind the Hyprland Socket 2. (3) IPC will not work.\n\n\n======== Config parsing result:\n\n/output/s/config/hypr/invalid-control.lua:1: syntax error near 'is'\n",
+      "stderr": ""
+    },
+    {
+      "name": "shipped-session-defaults-repeat",
+      "passed": true,
+      "exit_code": 0,
+      "stdout": "\u001b[1;32mDEBUG \u001b[0m]: [main] User-specified config location: '/output/s/config/hypr/hyprland.lua'\n\u001b[1;32mDEBUG \u001b[0m]: [Config::initConfigManager] [cfg] Config is either explicit or special\n\u001b[1;32mDEBUG \u001b[0m]: [Config::Lua::CConfigManager::postConfigReload] Disabling stdout logs (debug.enable_stdout_logs = 0). Further logs will be written to /hyprland.log\n\u001b[1;31mERR \u001b[0m]: [IPC::Socket2::CUnixImpl::CUnixImpl] [Socket2::UnixImpl] Couldn't bind the Hyprland Socket 2. (3) IPC will not work.\n\n\n======== Config parsing result:\n\nconfig ok\n",
+      "stderr": ""
+    }
+  ],
+  "scope": "Real compositor configuration parsing, not a boot or desktop interaction test"
+}

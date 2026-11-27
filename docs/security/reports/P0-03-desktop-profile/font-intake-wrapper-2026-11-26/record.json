@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "card": "P0-03",
+  "date": "2026-11-26",
+  "parent_commit": "88c49ecb57fe8104c962c8a4e420bb87831dc1dd",
+  "scope": "Hosted font-intake evidence lifecycle correction",
+  "hosted_failure": {
+    "run_id": 45869526959,
+    "source_commit": "88c49ecb57fe8104c962c8a4e420bb87831dc1dd",
+    "failed_before_download": true,
+    "failure": "FileExistsError for .cache/font-intake-evidence",
+    "unit_runtime_ms": 127,
+    "unit_peak_memory": "2.8M",
+    "unit_peak_swap": "0B",
+    "candidate_artifact_produced": false
+  },
+  "correction": {
+    "inspector_creates_evidence_directory": true,
+    "separate_fresh_hosted_log": true,
+    "systemd_and_tee_statuses_checked": true,
+    "early_failure_log_retained": true,
+    "stale_or_linked_outputs_refused": true,
+    "numeric_run_identity_required": true,
+    "font_inputs_changed": false,
+    "resource_limits_changed": false,
+    "qualification_changed": false
+  },
+  "tests": {
+    "fail_first": {
+      "passed": true,
+      "expected_failures": 1,
+      "evidence": "before.log"
+    },
+    "focused": {
+      "passed": true,
+      "tests": 12,
+      "evidence": "after.log"
+    },
+    "repository_gate": {
+      "passed": true,
+      "image_tests": 278,
+      "rust_policy_tests": 6,
+      "cargo_jobs": 1,
+      "elapsed_seconds": 4.52,
+      "peak_rss_kib": 67608,
+      "swaps": 0,
+      "evidence": "repository-check.log"
+    }
+  },
+  "remaining_gate": "Hosted Nerd Font candidate intake rerun and consuming generic image run"
+}

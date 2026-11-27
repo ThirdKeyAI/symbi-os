@@ -1,0 +1,197 @@
+name: Desktop image assembly
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "image/desktop/**"
+      - "image/fonts/**"
+      - "image/portal/**"
+      - "LICENSE"
+      - "image/base-images.json"
+      - "image/release-trust.json"
+      - "image/signing.py"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/harden-image.sh"
+      - "image/overlay/**"
+      - "image/vendor/**"
+      - "image/development-builder.lock.json"
+      - "image/toolchain/reuse.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - "image/toolchain/bluebuild.json"
+      - "image/toolchain/patches/**"
+      - "image/hyprland/development-prefix.lock.json"
+      - "image/hyprland/runtime-rpms.lock.json"
+      - "image/hyprland/runtime-requirements.json"
+      - "image/hyprland/candidate-inputs.json"
+      - "image/hyprland/build-rpms.lock.json"
+      - "image/hyprland/patches/**"
+      - "image/hyprland/prefix_input.py"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/tests/qualify_session_defaults.py"
+      - "image/hyprland/keys/**"
+      - "image/hyprland/fedora-package-trust.json"
+      - "image/launcher/*lock.json"
+      - "image/launcher/*source.json"
+      - "image/launcher/provider-patch.json"
+      - "image/launcher/patches/**"
+      - "image/launcher/probes/native_marker.go"
+      - "image/launcher/probes/bounded_process.py"
+      - "image/launcher/binary_inputs.py"
+      - "image/launcher/walker_binary_inputs.py"
+      - "image/launcher/runtime-requirements.json"
+      - "image/launcher/licenses/**"
+      - "image/walker/inputs.py"
+      - "image/assembly/inputs.py"
+      - "image/assembly/runtime_install.py"
+      - "image/assembly/runtime-development.lock.json"
+      - "image/assembly/runtime-build-result.json"
+      - "image/assembly/runtime-rpms.lock.json"
+      - "image/runtime_packages/requirements.json"
+      - "upstream/symbiont.toml"
+      - "scripts/check-desktop-image.sh"
+      - "scripts/check-font-intake.sh"
+      - ".github/workflows/desktop-image.yml"
+      - "!image/desktop/README.md"
+      - "!image/portal/README.md"
+  pull_request:
+    paths:
+      - "image/desktop/**"
+      - "image/fonts/**"
+      - "image/portal/**"
+      - "LICENSE"
+      - "image/base-images.json"
+      - "image/release-trust.json"
+      - "image/signing.py"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/harden-image.sh"
+      - "image/overlay/**"
+      - "image/vendor/**"
+      - "image/development-builder.lock.json"
+      - "image/toolchain/reuse.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - "image/toolchain/bluebuild.json"
+      - "image/toolchain/patches/**"
+      - "image/hyprland/development-prefix.lock.json"
+      - "image/hyprland/runtime-rpms.lock.json"
+      - "image/hyprland/runtime-requirements.json"
+      - "image/hyprland/candidate-inputs.json"
+      - "image/hyprland/build-rpms.lock.json"
+      - "image/hyprland/patches/**"
+      - "image/hyprland/prefix_input.py"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/tests/qualify_session_defaults.py"
+      - "image/hyprland/keys/**"
+      - "image/hyprland/fedora-package-trust.json"
+      - "image/launcher/*lock.json"
+      - "image/launcher/*source.json"
+      - "image/launcher/provider-patch.json"
+      - "image/launcher/patches/**"
+      - "image/launcher/probes/native_marker.go"
+      - "image/launcher/probes/bounded_process.py"
+      - "image/launcher/binary_inputs.py"
+      - "image/launcher/walker_binary_inputs.py"
+      - "image/launcher/runtime-requirements.json"
+      - "image/launcher/licenses/**"
+      - "image/walker/inputs.py"
+      - "image/assembly/inputs.py"
+      - "image/assembly/runtime_install.py"
+      - "image/assembly/runtime-development.lock.json"
+      - "image/assembly/runtime-build-result.json"
+      - "image/assembly/runtime-rpms.lock.json"
+      - "image/runtime_packages/requirements.json"
+      - "upstream/symbiont.toml"
+      - "scripts/check-desktop-image.sh"
+      - "scripts/check-font-intake.sh"
+      - ".github/workflows/desktop-image.yml"
+      - "!image/desktop/README.md"
+      - "!image/portal/README.md"
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: Exact target base to assemble and inspect
+        required: true
+        default: generic
+        type: choice
+        options: [generic, nvidia]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: desktop-image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 85
+    env:
+      SYMBI_IMAGE_VARIANT: ${{ inputs.variant || 'generic' }}
+    steps:
+      - name: Check out proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Fetch exact retained component and signed runtime artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache
+          timeout 300 gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15081564466/zip > .cache/bluebuild-development-tool.zip
+          echo '2ab11618c7d11c5599aa23a885fe0ad74dd8b73c7adb296e0d2427373432c3fb  .cache/bluebuild-development-tool.zip' | sha256sum --check --strict
+          timeout 300 gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15070319189/zip > .cache/hyprland-development-prefix.zip
+          echo 'b86fde7463a786a5bb5763edf3ee23cfac3829e7c5b596ad829e4d4861814743  .cache/hyprland-development-prefix.zip' | sha256sum --check --strict
+          timeout 300 gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15079141579/zip > .cache/elephant-development-binaries.zip
+          echo 'dda8b3df435305f45928907b5631d6ab5547b943c65fb254df08a8d0d897df38  .cache/elephant-development-binaries.zip' | sha256sum --check --strict
+          timeout 300 gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15081693039/zip > .cache/walker-development-binary.zip
+          echo 'be2a8c621c3a99f03d8a475d7a6adb21fd6a00dbca601f79fd0f262ae213ac82  .cache/walker-development-binary.zip' | sha256sum --check --strict
+          timeout 300 gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15066141540/zip > .cache/symbiont-runtime.zip
+          echo 'bed79f624444c6dc0c3a5105facdcd9ad637a26f4fcd6cacb6e10544c36a0724  .cache/symbiont-runtime.zip' | sha256sum --check --strict
+          timeout 300 gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15072725272/zip > .cache/hyprland-runtime-rpms.zip
+          echo 'ec4f092437c10b7ef63ab6c232240bb1c21898ece79d76bf10fbf47995a2cb85  .cache/hyprland-runtime-rpms.zip' | sha256sum --check --strict
+          timeout 300 gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15068598980/zip > .cache/launcher-runtime-rpms.zip
+          echo '43ef54a307fcb72b7dd878a0930683544ed50904f5c294a32c2e236a5d614a0a  .cache/launcher-runtime-rpms.zip' | sha256sum --check --strict
+          timeout 300 gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15084582682/zip > .cache/symbiont-runtime-rpms.zip
+          echo 'bea530216afb23f6c370fe4027e76740287a588d917b1ff7c09a4c9081061fa0  .cache/symbiont-runtime-rpms.zip' | sha256sum --check --strict
+          timeout 300 gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15100886169/zip > .cache/portal-consent-prefix.zip
+          echo 'd96d07ce422a3de7f12bb75f32a77f7df3f40e6386ee4ada644b7a5d7f92aa40  .cache/portal-consent-prefix.zip' | sha256sum --check --strict
+          timeout 300 gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15092560593/zip > .cache/portal-build-rpms.zip
+          echo 'ce26dda0cab7e61de9c888503d2e5d3ff87e23f74e859fbfd270dd9de74c2565  .cache/portal-build-rpms.zip' | sha256sum --check --strict
+      - name: Authenticate and passively inventory exact font inputs
+        run: bash scripts/check-font-intake.sh
+      - name: Prepare and validate the real desktop build context
+        run: bash scripts/check-desktop-image.sh prepare
+      - name: Assemble and inspect the installed desktop image
+        run: bash scripts/check-desktop-image.sh build
+      - name: Retain bounded public image-build evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: desktop-image-evidence-${{ env.SYMBI_IMAGE_VARIANT }}
+          path: .cache/desktop-image-evidence/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Retain assembled image before later boot qualification
+        if: ${{ always() && hashFiles('.cache/desktop-image-output/manifest.json') != '' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: desktop-development-image-${{ env.SYMBI_IMAGE_VARIANT }}
+          path: .cache/desktop-image-output/
+          compression-level: 0
+          retention-days: 3
+          if-no-files-found: error

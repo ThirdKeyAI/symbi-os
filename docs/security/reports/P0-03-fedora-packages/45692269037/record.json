@@ -1,0 +1,103 @@
+{
+  "run_url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45692269037",
+  "head": "15770a7e2009c6a3397321acee3a4dd331995131",
+  "job_id": 139480518054,
+  "conclusion": "failure",
+  "artifact_id": 15059262796,
+  "artifact_digest_from_github": "sha256:7798f44a389b3ebf0cdc9633e9dbd4bc4c5ec767ad3b6110cb5e722f989fa3cf",
+  "observation": "Authenticated image and exact one-key RPM keyring passed. DNF downloaded 162 candidates (143.6 MiB reported) without installing. RPM verified the first package, but the output parser rejected RPM 6 lowercase signature/full-fingerprint formatting; no accepted package artifact was uploaded.",
+  "remedy": "Use the observed RPM 6 format and require the complete expected fingerprint. Short key IDs remain insufficient. Retain digest, status, empty-keyring and tamper requirements.",
+  "compatibility": "The proposed transaction includes six Mesa downgrades from the selected base. No package was installed. These candidates cannot be applied to the product base without compatibility review; a separate disposable build stage must not transfer downgraded system libraries into the product.",
+  "qualified": false,
+  "files": {
+    "base-signature.json": {
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    "cgroup-final.json": {
+      "original_sha256": "bc4859df7e4e001a7bc557a426bf156fbf0f922e25e43f587cda9aafb12748ae",
+      "retained_sha256": "bc4859df7e4e001a7bc557a426bf156fbf0f922e25e43f587cda9aafb12748ae"
+    },
+    "cgroup-limits.json": {
+      "original_sha256": "6cdde054006eddd51cc1d0b45e8318f559734e17478b5ebba7d0aaae069b276f",
+      "retained_sha256": "6cdde054006eddd51cc1d0b45e8318f559734e17478b5ebba7d0aaae069b276f"
+    },
+    "cosign-bootstrap/cosign-linux-amd64-kms.sigstore.json": {
+      "original_sha256": "9640eb9b9f1236bbb145197cc6cf098ed1fb5f7613c6c731647a2431d0dac518",
+      "retained_sha256": "f8544777412708f16351db61792c6c39e24814beba79708e3fe9cc0e871ec93f"
+    },
+    "cosign-bootstrap/openssl-verification.txt": {
+      "original_sha256": "80a53f76c7ed6969dade3b6ee47cdb753162db7c00be625448999d08bae77ed8",
+      "retained_sha256": "80a53f76c7ed6969dade3b6ee47cdb753162db7c00be625448999d08bae77ed8"
+    },
+    "cosign-bootstrap/pins.json": {
+      "original_sha256": "c74acffb1d898498582110862650a81960afacd8f2e60916ea3cacee292591cc",
+      "retained_sha256": "c74acffb1d898498582110862650a81960afacd8f2e60916ea3cacee292591cc"
+    },
+    "cosign-bootstrap/release-cosign.pub": {
+      "original_sha256": "f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126",
+      "retained_sha256": "f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126"
+    },
+    "cosign-bootstrap/release-kms.sig": {
+      "original_sha256": "f3070066acae000e6d65060ac17903d2547fd65d26c0a4207d3809e7031ad088",
+      "retained_sha256": "f3070066acae000e6d65060ac17903d2547fd65d26c0a4207d3809e7031ad088"
+    },
+    "cosign-bootstrap/verification.json": {
+      "original_sha256": "822329e8d7bf8c27b1a527c931c9bbab901db2f6fce88cb5f53d7dc33e547e35",
+      "retained_sha256": "822329e8d7bf8c27b1a527c931c9bbab901db2f6fce88cb5f53d7dc33e547e35"
+    },
+    "cosign-bootstrap/version.json": {
+      "original_sha256": "9bf60bbeb52675a2074a4c4066bcb0710f861555e9fb5391fb6d65ce7014b3af",
+      "retained_sha256": "9bf60bbeb52675a2074a4c4066bcb0710f861555e9fb5391fb6d65ce7014b3af"
+    },
+    "guest/cgroup-final.json": {
+      "original_sha256": "966902b38c0ca85efb9db8b8e684e33232e67c40a9028b26870b734a097f8604",
+      "retained_sha256": "966902b38c0ca85efb9db8b8e684e33232e67c40a9028b26870b734a097f8604"
+    },
+    "guest/import-key.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "guest/installed-before.log": {
+      "original_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759",
+      "retained_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759"
+    },
+    "guest/keyring.log": {
+      "original_sha256": "a2d9592731d4369c4308a823327e3b02417006bb5fb3db6e29805dc59438274d",
+      "retained_sha256": "a2d9592731d4369c4308a823327e3b02417006bb5fb3db6e29805dc59438274d"
+    },
+    "guest/public-key.log": {
+      "original_sha256": "a247b96b84cd715056b2913d10ba1248701dfbc3ac1161fd1bb9319ad28828c3",
+      "retained_sha256": "a247b96b84cd715056b2913d10ba1248701dfbc3ac1161fd1bb9319ad28828c3"
+    },
+    "guest/resolve-download.log": {
+      "original_sha256": "9bdf8c991ec52c20410f103323350100fc5330b96e3145c093004600e525a134",
+      "retained_sha256": "f2f4db24a6923fffce899eb914fbc3171c099823dd00048eabe0faed3eec832b"
+    },
+    "guest/result.json": {
+      "original_sha256": "bfda435a9880ced9cfc53299ed5f1bed8f084269b0a27e8c177a1e3d7db403b8",
+      "retained_sha256": "bfda435a9880ced9cfc53299ed5f1bed8f084269b0a27e8c177a1e3d7db403b8"
+    },
+    "guest/rpm-000-signature.log": {
+      "original_sha256": "68e60cf81d5df6b3c1fe464ad6fdab0d71913b9538f4ce44a00a565e163da549",
+      "retained_sha256": "68e60cf81d5df6b3c1fe464ad6fdab0d71913b9538f4ce44a00a565e163da549"
+    },
+    "hosted-discovery.log": {
+      "original_sha256": "ed80bdfc4294df7d781a3704f12177011560cae4a16ae5b464dccdc0d33ca3e5",
+      "retained_sha256": "ed80bdfc4294df7d781a3704f12177011560cae4a16ae5b464dccdc0d33ca3e5"
+    },
+    "input-bindings.json": {
+      "original_sha256": "5c053cc402c18dc2bbfb034475eff3e7167ba68711753bf14b2976a821428cb9",
+      "retained_sha256": "5c053cc402c18dc2bbfb034475eff3e7167ba68711753bf14b2976a821428cb9"
+    },
+    "pull.log": {
+      "original_sha256": "1540deb8de9a883aeaca9ac365f9f6279e47548c44c0e69a17753e851a133f3e",
+      "retained_sha256": "1540deb8de9a883aeaca9ac365f9f6279e47548c44c0e69a17753e851a133f3e"
+    },
+    "systemd-result.txt": {
+      "original_sha256": "adca274c82421d240b03842b103ad28772572d525a178d1e8edd1554eb976eff",
+      "retained_sha256": "adca274c82421d240b03842b103ad28772572d525a178d1e8edd1554eb976eff"
+    }
+  },
+  "retention_format": "Trailing whitespace removed; binary signature bytes preserved."
+}

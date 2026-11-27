@@ -1,0 +1,72 @@
+{
+  "run_url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45687989184",
+  "head": "baf34d314aae73f8be135416c8429639086b8076",
+  "job_id": 139465589838,
+  "conclusion": "failure",
+  "artifact_id": 15056229881,
+  "artifact_digest_from_github": "sha256:82cc7afd839308893d6ee26240aeb678aa95dd5388e6795bb87dda7bc17f15e9",
+  "observation": "Partial inventory retained as intended. Fedora 45 package manifests place repositories in /usr/share/dnf5/repos.d and Fedora keys in /usr/share/pki/rpm-gpg. The current release key was already read from distribution-gpg-keys; no repository bytes were read.",
+  "remedy": "Select only repository files and the current release public key from allowed package-owned metadata paths. Read no arbitrary package-owned path.",
+  "known_inspection_limit": "dnf5 --dump-main-config refuses the read-only /var/log; its diagnostic is retained. Repository discovery uses the actual RPM manifest, not guessed DNF output.",
+  "rpm_signatures_verified": false,
+  "os_qualified": false,
+  "retention_format": "Trailing whitespace and blank EOF lines removed; binary signature bytes preserved.",
+  "files": {
+    "base-signature.json": {
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    "cgroup-final.json": {
+      "original_sha256": "cf58cba74daa2feaa11c68fa103aeecc719f1e80c1650d1744088f87b8dab08e",
+      "retained_sha256": "cf58cba74daa2feaa11c68fa103aeecc719f1e80c1650d1744088f87b8dab08e"
+    },
+    "cgroup-limits.json": {
+      "original_sha256": "8bd076d24f6839602a9c7787589223b61fc161814a0f952af1c54e7ebdbbff38",
+      "retained_sha256": "8bd076d24f6839602a9c7787589223b61fc161814a0f952af1c54e7ebdbbff38"
+    },
+    "cosign-bootstrap/cosign-linux-amd64-kms.sigstore.json": {
+      "original_sha256": "9640eb9b9f1236bbb145197cc6cf098ed1fb5f7613c6c731647a2431d0dac518",
+      "retained_sha256": "f8544777412708f16351db61792c6c39e24814beba79708e3fe9cc0e871ec93f"
+    },
+    "cosign-bootstrap/openssl-verification.txt": {
+      "original_sha256": "80a53f76c7ed6969dade3b6ee47cdb753162db7c00be625448999d08bae77ed8",
+      "retained_sha256": "80a53f76c7ed6969dade3b6ee47cdb753162db7c00be625448999d08bae77ed8"
+    },
+    "cosign-bootstrap/pins.json": {
+      "original_sha256": "c74acffb1d898498582110862650a81960afacd8f2e60916ea3cacee292591cc",
+      "retained_sha256": "c74acffb1d898498582110862650a81960afacd8f2e60916ea3cacee292591cc"
+    },
+    "cosign-bootstrap/release-cosign.pub": {
+      "original_sha256": "f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126",
+      "retained_sha256": "f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126"
+    },
+    "cosign-bootstrap/release-kms.sig": {
+      "original_sha256": "f3070066acae000e6d65060ac17903d2547fd65d26c0a4207d3809e7031ad088",
+      "retained_sha256": "f3070066acae000e6d65060ac17903d2547fd65d26c0a4207d3809e7031ad088"
+    },
+    "cosign-bootstrap/verification.json": {
+      "original_sha256": "822329e8d7bf8c27b1a527c931c9bbab901db2f6fce88cb5f53d7dc33e547e35",
+      "retained_sha256": "822329e8d7bf8c27b1a527c931c9bbab901db2f6fce88cb5f53d7dc33e547e35"
+    },
+    "cosign-bootstrap/version.json": {
+      "original_sha256": "9bf60bbeb52675a2074a4c4066bcb0710f861555e9fb5391fb6d65ce7014b3af",
+      "retained_sha256": "9bf60bbeb52675a2074a4c4066bcb0710f861555e9fb5391fb6d65ce7014b3af"
+    },
+    "hosted-inventory.log": {
+      "original_sha256": "468158396b85ee75194ff72aee25962423c330601f03ab8c5a528578391141c1",
+      "retained_sha256": "468158396b85ee75194ff72aee25962423c330601f03ab8c5a528578391141c1"
+    },
+    "image-inspect.json": {
+      "original_sha256": "d712296a04db6c58431cb82adf3a84743ca97dbd02c2b1a762c996652e9d1035",
+      "retained_sha256": "d712296a04db6c58431cb82adf3a84743ca97dbd02c2b1a762c996652e9d1035"
+    },
+    "inventory.json": {
+      "original_sha256": "0ac9f0f5d9def3c30f11ed9d685118d91a4f018474dd4de5183b92424f638bb5",
+      "retained_sha256": "0ac9f0f5d9def3c30f11ed9d685118d91a4f018474dd4de5183b92424f638bb5"
+    },
+    "pull.log": {
+      "original_sha256": "ed0a636db2a6e2a64d3c8ac4021c4ae877195e7027621bb452d14eff9ff45e63",
+      "retained_sha256": "ed0a636db2a6e2a64d3c8ac4021c4ae877195e7027621bb452d14eff9ff45e63"
+    }
+  }
+}

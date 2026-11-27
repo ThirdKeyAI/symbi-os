@@ -1,0 +1,75 @@
+{
+  "passed": false,
+  "os_qualified": false,
+  "source_commit": "0ac654be99676004a68d965c51fe4b1b91794c69",
+  "limits": {
+    "memory.max": "3221225472",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "scope": "Signed candidate discovery only; no package installation or runtime qualification",
+  "commands": [
+    {
+      "name": "base-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "pull",
+      "exit_code": 0
+    },
+    {
+      "name": "discovery",
+      "exit_code": 127
+    },
+    {
+      "name": "cleanup",
+      "exit_code": 0
+    },
+    {
+      "name": "exists",
+      "exit_code": 1
+    }
+  ],
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "requirements": {
+    "schema": 1,
+    "scope": "Candidate Fedora compatibility libraries for the pinned Symbiont runtime; signed discovery only, no installation or OS qualification",
+    "source_inputs": "image/assembly/runtime-development.lock.json",
+    "observed_failure": "docs/security/reports/P0-03-assembly-inputs/45747059051/runtime/result.json",
+    "observed_failure_sha256": "87679468fe29d6a652c2771a6919fa5240c8dd6ed59d957f3bfde2c7b3f0abde",
+    "packages": [
+      "libssl.so.3()(64bit)",
+      "libcrypto.so.3()(64bit)"
+    ],
+    "expected_provider": "openssl3-libs",
+    "notes": [
+      "Actual original-base ldd and CLI loading found missing libssl.so.3 and libcrypto.so.3; all eight probe containers were removed",
+      "Fedora lists openssl3-libs as the OpenSSL 3 compatibility provider: https://packages.fedoraproject.org/pkgs/openssl3/openssl3-libs/fedora-45-updates.html",
+      "Resolve only the already-reviewed Fedora 45 release/updates repositories, then verify every candidate signature and pin exact bytes before a separate offline installation",
+      "Preserve the base OpenSSL 4 libraries and every installed package identity; no Ubuntu libraries, source change or new Cargo feature"
+    ],
+    "loader_output": "docs/security/reports/P0-03-assembly-inputs/45747059051/runtime/ldd-symbi-stdout.log",
+    "loader_output_sha256": "d644f5c1831dc6c2e7c16303005fff4ab8649dab11ea1afc06d1b7c1faa2898c"
+  },
+  "input_bindings": {
+    "resolve_packages.py": "9cde06bf10749202d5248b66dd0c50bf214edd08e37c12e48527b31ec2356bcd",
+    "guest_inventory.py": "c214e843b92b0bb2c7ecdef047e35162165fa30a8381e88f22fcc17aefbbd9d8",
+    "build-requirements.json": "c18922bd6a53a321d58362dd28c8ccabf11678de35e3b4386398857b603f9b96",
+    "fedora-package-trust.json": "3801b3f6ad666bc0f762f2502fdaebac0eb051fbbadcb343fd2559e3b05ec443",
+    "fedora-45-primary.asc": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425",
+    "dnf.conf": "7efd0964186fedfa5269c023d97a94d7ad2ad4a6cbf14b0197e5d89b3b6de0f7",
+    "repos/fedora-build.repo": "535aaceeafda783decd20f72553aa4cf93f281b02555b43d93712710d7048757"
+  },
+  "container_absent": true,
+  "failure": "CalledProcessError: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/runtime-package-storage/root', '--runroot', '/run/symbi-runtime-rpms-45747975776-1', 'run', '--rm', '--name=symbi-runtime-package-discovery', '--pull=never', '--user=0', '--read-only', '--network=bridge', '--cgroup-parent=/system.slice/symbi-runtime-rpms-45747975776-1.service', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--pids-limit=128', '--memory=2g', '--memory-swap=2g', '--cpus=1', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/runtime-package-inputs,dst=/inputs,ro', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/runtime-package-output,dst=/output', '--env=PYTHONDONTWRITEBYTECODE=1', '--env=LANG=C.UTF-8', '--entrypoint=/usr/bin/python3', 'ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f', '/inputs/resolve_packages.py']' returned non-zero exit status 127.",
+  "cgroup_final": {
+    "memory.max": "3221225472",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "3269062656",
+    "memory.events": "low 0\nhigh 0\nmax 40346\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 117392150\nuser_usec 99589778\nsystem_usec 17802371\nnice_usec 98026535\ncore_sched.force_idle_usec 0\nnr_periods 838\nnr_throttled 391\nthrottled_usec 50787615\nnr_bursts 0\nburst_usec 0"
+  }
+}

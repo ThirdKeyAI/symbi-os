@@ -1,0 +1,53 @@
+ARG BASE_IMAGE="ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f"
+FROM "${BASE_IMAGE}" AS symbiont-os
+
+# This stage is responsible for holding onto
+# your config without copying it directly into
+# the final image
+FROM scratch AS stage-files
+WORKDIR /files
+
+
+# Keys for pre-verified images
+# Used to copy the keys into the final image
+# and perform an ostree commit.
+#
+# Currently only holds the current image's
+# public key.
+FROM scratch AS stage-keys
+# Main image
+FROM symbiont-os
+ARG TARGETARCH
+ARG RECIPE=/home/runner/work/symbi-os/symbi-os/.cache/image-tool-evidence/generic.json
+ARG IMAGE_REGISTRY=ghcr.io/thirdkeyai
+ARG BB_BUILD_FEATURES="bootc"
+ARG CONFIG_DIRECTORY="/tmp/files"
+ARG MODULE_DIRECTORY="/tmp/modules"
+ARG IMAGE_NAME="symbiont-os"
+ARG BASE_IMAGE="ghcr.io/secureblue/sericea-main-hardened"
+RUN \
+--mount=type=bind,src=.bluebuild-scripts_a654ee88,dst=/scripts/,ro \
+  /scripts/pre_build.sh
+
+# Module RUNs
+COPY image/overlay/ /
+COPY image/vendor/ombuntu/LICENSE /usr/share/licenses/symbiont-os/Ombuntu-MIT
+COPY image/vendor/omarchy/LICENSE /usr/share/licenses/symbiont-os/Omarchy-MIT
+COPY LICENSE /usr/share/licenses/symbiont-os/Apache-2.0
+COPY image/harden-image.sh /tmp/symbi-harden-image.sh
+RUN bash /tmp/symbi-harden-image.sh && rm /tmp/symbi-harden-image.sh
+
+RUN \
+--mount=type=bind,src=.bluebuild-scripts_a654ee88,dst=/scripts/,ro \
+  /scripts/post_build.sh
+
+# Labels are added last since they cause cache misses with buildah
+LABEL io.artifacthub.package.readme-url="https://raw.githubusercontent.com/blue-build/cli/main/README.md"
+LABEL org.blue-build.build-id="0d807863-6d2f-41d0-a2df-bb4acaff5e80"
+LABEL org.opencontainers.image.base.digest="sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f"
+LABEL org.opencontainers.image.base.name="ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f"
+LABEL org.opencontainers.image.created="2026-11-25T18:23:02.235814665+00:00"
+LABEL org.opencontainers.image.description="Symbiont Fedora Atomic desktop"
+LABEL org.opencontainers.image.licenses="Apache-2.0"
+LABEL org.opencontainers.image.source="https://github.com/ThirdKeyAI/symbi-os"
+LABEL org.opencontainers.image.title="symbiont-os"

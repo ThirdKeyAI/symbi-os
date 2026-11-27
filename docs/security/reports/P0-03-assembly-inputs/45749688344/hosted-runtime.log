@@ -1,0 +1,7 @@
+Running as unit: symbi-runtime-reuse-45749688344-1.service; invocation ID: b49b213a4d564b06947e6b15aba65457
+Finished with result: success
+Main processes terminated with: code=exited/status=0
+Service runtime: 2min 34.156s
+CPU time consumed: 3min 11.467s
+Memory peak: 256.0K
+Memory swap peak: 0B

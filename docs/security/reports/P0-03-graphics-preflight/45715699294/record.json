@@ -1,0 +1,39 @@
+{
+  "run_id": 45715699294,
+  "head_sha": "6c68f6db8bf3ec00929400f4c3060cc39fb4ce26",
+  "checked_merge_sha": "b08dbf69a2436884ab2f8e8e9b59909ce5afac45",
+  "artifact": {
+    "id": 15069238325,
+    "bytes": 8544,
+    "sha256": "f3754de1fb9a51f05c3228bff1be681d77dd23080dcd6c3896def7f844cd4ac8"
+  },
+  "failure": "Podman refused runroot longer than50 characters before image pull",
+  "graphics_started": false,
+  "guest_booted": false,
+  "base_signature_verified": true,
+  "fix": "Fresh root-owned /run/symbi-graphics-RUN-ATTEMPT; enforce50-byte bound",
+  "peak_bytes": 180404224,
+  "oom_kills": 0,
+  "files": {
+    "result.json": {
+      "original_sha256": "2ead9e8ee31332fcb7d5ade2c55e039410183efa1261220ec06a81fb34109174",
+      "retained_sha256": "2ead9e8ee31332fcb7d5ade2c55e039410183efa1261220ec06a81fb34109174"
+    },
+    "pull.log": {
+      "original_sha256": "5663db1ee88273c494f2c1eba50219ef072caa751c106c4da5fed5e3ec6b335a",
+      "retained_sha256": "5663db1ee88273c494f2c1eba50219ef072caa751c106c4da5fed5e3ec6b335a"
+    },
+    "hosted-graphics.log": {
+      "original_sha256": "e8f3c55b5e8063106620d7dcb30b36f4bead70a3fdc2c4163181623555749412",
+      "retained_sha256": "e8f3c55b5e8063106620d7dcb30b36f4bead70a3fdc2c4163181623555749412"
+    },
+    "base-signature.json": {
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    "selected-base.json": {
+      "original_sha256": "889f2bc07c571e7153068644c63d0d919a1cfca0ac9d18e9adfeab45b391eedf",
+      "retained_sha256": "889f2bc07c571e7153068644c63d0d919a1cfca0ac9d18e9adfeab45b391eedf"
+    }
+  }
+}

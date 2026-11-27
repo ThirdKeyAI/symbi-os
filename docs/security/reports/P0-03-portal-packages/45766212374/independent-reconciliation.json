@@ -1,0 +1,207 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "source_commit": "d3baee9677c43e8a305c0bbc3252f07278112c13",
+  "run_id": 45766212374,
+  "original_evidence_files": 375,
+  "original_expanded_bytes": 492675,
+  "packages": 173,
+  "preserved_compositor_rpm_records": 161,
+  "added_packages": [
+    {
+      "filename": "at-spi2-atk-2.62.2-1.fc45.x86_64.rpm",
+      "bytes": 92134,
+      "sha256": "450a455228f5ca340ee3e2eff9fa5b13e9ffc17aa3a3fa7a2ece9093f0da87ec",
+      "nevra": "at-spi2-atk-2.62.2-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "at-spi2-core-2.62.2-1.fc45.x86_64.rpm",
+      "bytes": 411452,
+      "sha256": "5660978528875c2300befc61613ebb0ba78f7db8bc312c363d0e2354d5cb2f5c",
+      "nevra": "at-spi2-core-2.62.2-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "atk-2.62.2-1.fc45.x86_64.rpm",
+      "bytes": 84977,
+      "sha256": "9bf24239c80d74dc9bc1f7ef0247adad71b5af06a4f7a59e7713a8f11f0ac121",
+      "nevra": "atk-2.62.2-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "iniparser-4.2.6-5.fc45.x86_64.rpm",
+      "bytes": 26470,
+      "sha256": "8774475752a94ae62e9958819c03fa3977677d53c93b3b981a82f480b1767743",
+      "nevra": "iniparser-4.2.6-5.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "iniparser-devel-4.2.6-5.fc45.x86_64.rpm",
+      "bytes": 45220,
+      "sha256": "0dc00fb989c4bef11b98cb7065b36d6ee526472ec50b0a299613307b401ec8c2",
+      "nevra": "iniparser-devel-4.2.6-5.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libdav1d-1.5.5-1.fc45.x86_64.rpm",
+      "bytes": 681659,
+      "sha256": "7824664fae26585069f48c7d9b79154649c0341354d74f88adbe391861642921",
+      "nevra": "libdav1d-1.5.5-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-2-Clause AND ISC",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "pipewire-devel-1.6.11-1.fc45.x86_64.rpm",
+      "bytes": 243806,
+      "sha256": "68a4f64a3f131d9e15ef806639bd032268bd2bfea8f4156451aea0be6fb4215d",
+      "nevra": "pipewire-devel-1.6.11-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "sdbus-cpp-devel-2.3.1-3.fc45.x86_64.rpm",
+      "bytes": 63131,
+      "sha256": "39948ee2f0a02c27038b76c3a699e22da213f6698b5fcdd6e05b49c4c27cdbb5",
+      "nevra": "sdbus-cpp-devel-2.3.1-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-only",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    }
+  ],
+  "replaced_build_packages": [
+    {
+      "before": {
+        "filename": "at-spi2-atk-devel-2.62.1-1.fc45.x86_64.rpm",
+        "bytes": 12108,
+        "sha256": "9b2ede5961cdfddd8b2d25cebfd4a4cd8d112d620bde9ecbb9414c6efcf1495b",
+        "nevra": "at-spi2-atk-devel-2.62.1-1.fc45.x86_64",
+        "vendor": "Fedora Project",
+        "license": "LGPL-2.1-or-later",
+        "signature_verified": true,
+        "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+      },
+      "after": {
+        "filename": "at-spi2-atk-devel-2.62.2-1.fc45.x86_64.rpm",
+        "bytes": 12179,
+        "sha256": "e3f5eb5da41013710d5c4a57a764f5a5e2c8b01b9336e6313baa22633c197f23",
+        "nevra": "at-spi2-atk-devel-2.62.2-1.fc45.x86_64",
+        "vendor": "Fedora Project",
+        "license": "LGPL-2.1-or-later",
+        "signature_verified": true,
+        "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+      }
+    },
+    {
+      "before": {
+        "filename": "at-spi2-core-devel-2.62.1-1.fc45.x86_64.rpm",
+        "bytes": 371240,
+        "sha256": "a0184200ff543329464adffc0df6b665f03911512896196677beae032f50e5ed",
+        "nevra": "at-spi2-core-devel-2.62.1-1.fc45.x86_64",
+        "vendor": "Fedora Project",
+        "license": "LGPL-2.1-or-later",
+        "signature_verified": true,
+        "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+      },
+      "after": {
+        "filename": "at-spi2-core-devel-2.62.2-1.fc45.x86_64.rpm",
+        "bytes": 371330,
+        "sha256": "e49fd0fe317d570c6a4a95675d78b855359dd99de056685208ced2369b326db9",
+        "nevra": "at-spi2-core-devel-2.62.2-1.fc45.x86_64",
+        "vendor": "Fedora Project",
+        "license": "LGPL-2.1-or-later",
+        "signature_verified": true,
+        "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+      }
+    },
+    {
+      "before": {
+        "filename": "atk-devel-2.62.1-1.fc45.x86_64.rpm",
+        "bytes": 460034,
+        "sha256": "d2bc651621f2460bbae4bc4602a835411bb46780f414c35b0a6f6821e28726cd",
+        "nevra": "atk-devel-2.62.1-1.fc45.x86_64",
+        "vendor": "Fedora Project",
+        "license": "LGPL-2.1-or-later",
+        "signature_verified": true,
+        "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+      },
+      "after": {
+        "filename": "atk-devel-2.62.2-1.fc45.x86_64.rpm",
+        "bytes": 459990,
+        "sha256": "b27f2fe05d6ad490d57e71909bcd71fe32a9d588ac91759256d1a38f6eef0590",
+        "nevra": "atk-devel-2.62.2-1.fc45.x86_64",
+        "vendor": "Fedora Project",
+        "license": "LGPL-2.1-or-later",
+        "signature_verified": true,
+        "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+      }
+    },
+    {
+      "before": {
+        "filename": "libdav1d-devel-1.5.4-1.fc45.x86_64.rpm",
+        "bytes": 19701,
+        "sha256": "e9ddb78ec4f971d5f002487991512c87ac9c4d7485d88cc2f3014d58f9049557",
+        "nevra": "libdav1d-devel-1.5.4-1.fc45.x86_64",
+        "vendor": "Fedora Project",
+        "license": "BSD-2-Clause AND ISC",
+        "signature_verified": true,
+        "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+      },
+      "after": {
+        "filename": "libdav1d-devel-1.5.5-1.fc45.x86_64.rpm",
+        "bytes": 19639,
+        "sha256": "4f25a88394365c3ee2637cb4dc5fe222f3130d9f34dec84ba0239b99619759d2",
+        "nevra": "libdav1d-devel-1.5.5-1.fc45.x86_64",
+        "vendor": "Fedora Project",
+        "license": "BSD-2-Clause AND ISC",
+        "signature_verified": true,
+        "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+      }
+    }
+  ],
+  "build_only_delta_review": "Four Fedora development package updates and eight additional packages; existing compositor lock/prefix unchanged. This closure is confined to a disposable build container. Runtime ABI and product package preservation remain separate gates.",
+  "base_signature_subject_verified": true,
+  "rpm_signatures_independently_rechecked": 173,
+  "real_negative_controls_verified": true,
+  "installed_package_records_preserved": 2178,
+  "container_removed_and_absent": true,
+  "local_rpm_download": false,
+  "host_counters": {
+    "memory.max": "3221225472",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "3238993920",
+    "memory.events": "low 0\nhigh 0\nmax 53994\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 213251692\nuser_usec 126662730\nsystem_usec 86588962\nnice_usec 122110000\ncore_sched.force_idle_usec 0\nnr_periods 1842\nnr_throttled 867\nthrottled_usec 49315526\nnr_bursts 0\nburst_usec 0"
+  },
+  "guest_counters": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128",
+    "memory.peak": "529362944",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 20970661\nuser_usec 13339862\nsystem_usec 7630798\nnice_usec 13307000\ncore_sched.force_idle_usec 0\nnr_periods 501\nnr_throttled 36\nthrottled_usec 1041360\nnr_bursts 0\nburst_usec 0"
+  }
+}

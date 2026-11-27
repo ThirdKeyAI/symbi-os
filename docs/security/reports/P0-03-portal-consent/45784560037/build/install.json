@@ -1,0 +1,734 @@
+{
+  "passed": false,
+  "os_qualified": false,
+  "limits": {
+    "memory.max": "6442450944",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "128"
+  },
+  "commands": [
+    {
+      "name": "installed-before",
+      "exit_code": 0
+    },
+    {
+      "name": "import-key",
+      "exit_code": 0
+    },
+    {
+      "name": "keyring",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-000-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-001-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-002-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-003-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-004-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-005-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-006-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-007-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-008-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-009-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-010-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-011-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-012-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-013-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-014-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-015-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-016-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-017-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-018-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-019-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-020-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-021-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-022-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-023-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-024-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-025-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-026-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-027-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-028-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-029-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-030-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-031-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-032-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-033-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-034-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-035-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-036-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-037-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-038-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-039-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-040-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-041-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-042-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-043-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-044-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-045-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-046-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-047-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-048-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-049-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-050-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-051-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-052-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-053-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-054-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-055-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-056-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-057-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-058-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-059-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-060-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-061-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-062-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-063-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-064-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-065-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-066-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-067-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-068-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-069-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-070-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-071-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-072-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-073-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-074-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-075-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-076-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-077-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-078-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-079-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-080-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-081-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-082-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-083-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-084-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-085-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-086-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-087-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-088-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-089-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-090-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-091-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-092-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-093-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-094-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-095-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-096-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-097-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-098-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-099-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-100-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-101-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-102-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-103-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-104-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-105-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-106-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-107-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-108-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-109-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-110-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-111-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-112-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-113-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-114-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-115-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-116-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-117-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-118-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-119-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-120-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-121-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-122-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-123-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-124-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-125-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-126-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-127-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-128-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-129-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-130-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-131-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-132-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-133-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-134-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-135-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-136-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-137-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-138-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-139-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-140-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-141-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-142-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-143-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-144-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-145-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-146-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-147-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-148-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-149-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-150-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-151-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-152-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-153-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-154-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-155-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-156-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-157-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-158-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-159-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-160-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-161-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-162-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-163-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-164-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-165-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-166-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-167-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-168-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-169-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-170-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-171-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-172-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "offline-install",
+      "exit_code": 0
+    },
+    {
+      "name": "installed-after",
+      "exit_code": 0
+    },
+    {
+      "name": "create-build-account",
+      "exit_code": 0
+    },
+    {
+      "name": "compile-driver",
+      "exit_code": 1
+    }
+  ],
+  "scope": "Offline disposable compiler filesystem; its RPM transaction is not a product layer",
+  "failure": "CalledProcessError: Command ['runuser', '-u', 'symbi-build', '--', 'env', '-i', 'HOME=/output/home', 'PATH=/usr/lib/symbi/portal/bin:/usr/lib/symbi/hyprland/bin:/usr/bin:/bin', 'LANG=C.UTF-8', 'PYTHONDONTWRITEBYTECODE=1', 'CMAKE_BUILD_PARALLEL_LEVEL=1', 'PKG_CONFIG_PATH=/usr/lib/symbi/portal/lib/pkgconfig:/usr/lib/symbi/hyprland/lib/pkgconfig:/usr/lib/symbi/hyprland/share/pkgconfig', 'OMP_NUM_THREADS=1', 'LP_NUM_THREADS=1', 'LIBGL_ALWAYS_SOFTWARE=1', 'EGL_PLATFORM=surfaceless', 'XDG_RUNTIME_DIR=/output/runtime', 'GIT_CONFIG_NOSYSTEM=1', 'GIT_CONFIG_GLOBAL=/dev/null', 'python3', '/inputs/compile.py'] returned non-zero exit status 1."
+}

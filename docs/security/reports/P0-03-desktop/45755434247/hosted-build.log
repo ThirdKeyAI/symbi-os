@@ -1,0 +1,22 @@
+Running as unit: symbi-desktop-build-45755434247-1.service
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/runner/work/symbi-os/symbi-os/image/desktop/build.py", line 206, in <module>
+    if __name__ == '__main__': main()
+                               ^^^^^^
+  File "/home/runner/work/symbi-os/symbi-os/image/desktop/build.py", line 56, in main
+    (build_group/name).write_text(value)
+  File "/usr/lib/python3.12/pathlib.py", line 1049, in write_text
+    with self.open(mode='w', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/pathlib.py", line 1015, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/sys/fs/cgroup/system.slice/symbi-desktop-build-45755434247-1.service/image-build/memory.max'
+Finished with result: exit-code
+Main processes terminated with: code=exited/status=1
+Service runtime: 702ms
+CPU time consumed: 580ms
+Memory peak: 2.6M
+Memory swap peak: 0B

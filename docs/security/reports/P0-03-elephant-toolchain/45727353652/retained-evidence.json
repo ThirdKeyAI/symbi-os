@@ -1,0 +1,162 @@
+{
+  "run": 45727353652,
+  "job": 139600449860,
+  "head": "5f027ca76d4d51b7fad0ce8d163fed8bbf537635",
+  "tested_merge": "15201108ebb7434ff14ab088f7061c3bc90fc6ee",
+  "artifact": 15075311151,
+  "artifact_bytes": 58612,
+  "artifact_sha256": "0b5cfa8dc3133a1a7ace9abaee8b1eb0cc57b78219c26c48c9e009021bee2126",
+  "conclusion": "failure",
+  "os_qualified": false,
+  "failure": "Expected undecorated GOVERSION; authenticated Fedora compiler reports go1.27.4-X:nodwarf5 and GOEXPERIMENT=nodwarf5. No modules downloaded or source compiled.",
+  "normalization": "Only trailing whitespace and final newlines in text .log files; JSON bytes unchanged.",
+  "files": [
+    {
+      "path": "result.json",
+      "original_sha256": "3a95399f4fef10b98bfcee85f0338797293f000a7eb701f6c8465de1d660e011",
+      "retained_sha256": "3a95399f4fef10b98bfcee85f0338797293f000a7eb701f6c8465de1d660e011",
+      "original_bytes": 2430,
+      "retained_bytes": 2430
+    },
+    {
+      "path": "base-signature.json",
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "original_bytes": 1281,
+      "retained_bytes": 1281
+    },
+    {
+      "path": "install-signed-compiler.log",
+      "original_sha256": "c78298d3a3fad07fc17b603f91399a5a87426071212ff698fc7ca38fde1c5a59",
+      "retained_sha256": "c78298d3a3fad07fc17b603f91399a5a87426071212ff698fc7ca38fde1c5a59",
+      "original_bytes": 467,
+      "retained_bytes": 467
+    },
+    {
+      "path": "source-checkout.log",
+      "original_sha256": "4491686b1550a800c63c443600fb2d3af9d66abfa0f7da9e31a85520ab91227d",
+      "retained_sha256": "4491686b1550a800c63c443600fb2d3af9d66abfa0f7da9e31a85520ab91227d",
+      "original_bytes": 43,
+      "retained_bytes": 43
+    },
+    {
+      "path": "source-fetch.log",
+      "original_sha256": "40a99e31f1fa60fd4b670ec4610bcc773e8c88bf805d09aa51742ccfb5b39f5d",
+      "retained_sha256": "40a99e31f1fa60fd4b670ec4610bcc773e8c88bf805d09aa51742ccfb5b39f5d",
+      "original_bytes": 119,
+      "retained_bytes": 119
+    },
+    {
+      "path": "toolchain/go-identity.log",
+      "original_sha256": "6d79bb47b69d1cef5afc113d5d57986ef58e43ab9e2ab626d1d13450021a330e",
+      "retained_sha256": "6d79bb47b69d1cef5afc113d5d57986ef58e43ab9e2ab626d1d13450021a330e",
+      "original_bytes": 153,
+      "retained_bytes": 153
+    },
+    {
+      "path": "toolchain/go-version.log",
+      "original_sha256": "09d3e4f3f053dfc8fe20de420fa739aab7e4161e6ff3d73e1cc1d66066dd96e6",
+      "retained_sha256": "09d3e4f3f053dfc8fe20de420fa739aab7e4161e6ff3d73e1cc1d66066dd96e6",
+      "original_bytes": 43,
+      "retained_bytes": 43
+    },
+    {
+      "path": "toolchain/import-key.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "original_bytes": 0,
+      "retained_bytes": 0
+    },
+    {
+      "path": "toolchain/installed-after.log",
+      "original_sha256": "e1233b9aad5b19d56925f00849234decaf8b92bec46397be5f3ae3bfee4f74b8",
+      "retained_sha256": "e1233b9aad5b19d56925f00849234decaf8b92bec46397be5f3ae3bfee4f74b8",
+      "original_bytes": 87948,
+      "retained_bytes": 87948
+    },
+    {
+      "path": "toolchain/installed-before.log",
+      "original_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759",
+      "retained_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759",
+      "original_bytes": 87814,
+      "retained_bytes": 87814
+    },
+    {
+      "path": "toolchain/keyring.log",
+      "original_sha256": "a2d9592731d4369c4308a823327e3b02417006bb5fb3db6e29805dc59438274d",
+      "retained_sha256": "a2d9592731d4369c4308a823327e3b02417006bb5fb3db6e29805dc59438274d",
+      "original_bytes": 102,
+      "retained_bytes": 102
+    },
+    {
+      "path": "toolchain/offline-runtime-install.log",
+      "original_sha256": "9afb6d06c6c014418d91944ae06a38d4f11d97a7cb8cbaf6905b01258ffea368",
+      "retained_sha256": "9afb6d06c6c014418d91944ae06a38d4f11d97a7cb8cbaf6905b01258ffea368",
+      "original_bytes": 1088,
+      "retained_bytes": 1088
+    },
+    {
+      "path": "toolchain/result.json",
+      "original_sha256": "03c9da2054d1821b51aa609f5f486cc452c90e985d7017a1bb767f1b101f44dc",
+      "retained_sha256": "03c9da2054d1821b51aa609f5f486cc452c90e985d7017a1bb767f1b101f44dc",
+      "original_bytes": 6546,
+      "retained_bytes": 6546
+    },
+    {
+      "path": "toolchain/rpm-000-identity.log",
+      "original_sha256": "e47b0bd220bdac3f282ad95e743f7b1ec00518e3bce6c5b718095ff64d72549e",
+      "retained_sha256": "e47b0bd220bdac3f282ad95e743f7b1ec00518e3bce6c5b718095ff64d72549e",
+      "original_bytes": 36,
+      "retained_bytes": 36
+    },
+    {
+      "path": "toolchain/rpm-000-signature.log",
+      "original_sha256": "2c3a4e5b0e8fdc9ed528bacb1cd3ed09388ec4fc8850864c9238bb0cf9b9378b",
+      "retained_sha256": "2c3a4e5b0e8fdc9ed528bacb1cd3ed09388ec4fc8850864c9238bb0cf9b9378b",
+      "original_bytes": 226,
+      "retained_bytes": 226
+    },
+    {
+      "path": "toolchain/rpm-001-identity.log",
+      "original_sha256": "14a3c3d15be781eb5feb0c6da138938add44ffbc223e2453da03e5492fb6e218",
+      "retained_sha256": "14a3c3d15be781eb5feb0c6da138938add44ffbc223e2453da03e5492fb6e218",
+      "original_bytes": 30,
+      "retained_bytes": 30
+    },
+    {
+      "path": "toolchain/rpm-001-signature.log",
+      "original_sha256": "3ab5239b05427da89504e918cc36c11ba6cb98302f6a0df5bce2268e4702b4dc",
+      "retained_sha256": "3ab5239b05427da89504e918cc36c11ba6cb98302f6a0df5bce2268e4702b4dc",
+      "original_bytes": 220,
+      "retained_bytes": 220
+    },
+    {
+      "path": "toolchain/rpm-002-identity.log",
+      "original_sha256": "81b6c23c4581ec524f7930cff9a47f2f9ffdb3d429900a64f61043baa91614a4",
+      "retained_sha256": "81b6c23c4581ec524f7930cff9a47f2f9ffdb3d429900a64f61043baa91614a4",
+      "original_bytes": 34,
+      "retained_bytes": 34
+    },
+    {
+      "path": "toolchain/rpm-002-signature.log",
+      "original_sha256": "27b052b3488123c252cff27723ff2bfb74ceb4b9272f6a0e56755690572ed70e",
+      "retained_sha256": "27b052b3488123c252cff27723ff2bfb74ceb4b9272f6a0e56755690572ed70e",
+      "original_bytes": 224,
+      "retained_bytes": 224
+    },
+    {
+      "path": "toolchain/rpm-003-identity.log",
+      "original_sha256": "690e4736e11de3873929bf3021a3078c5e4555bee9bf3e6685d5bb3371bff283",
+      "retained_sha256": "690e4736e11de3873929bf3021a3078c5e4555bee9bf3e6685d5bb3371bff283",
+      "original_bytes": 34,
+      "retained_bytes": 34
+    },
+    {
+      "path": "toolchain/rpm-003-signature.log",
+      "original_sha256": "ba31ab4b659d6f2b0a91bf0d66f7e6e8afa98ebecae4bbc0ebc3172f1804c2c3",
+      "retained_sha256": "ba31ab4b659d6f2b0a91bf0d66f7e6e8afa98ebecae4bbc0ebc3172f1804c2c3",
+      "original_bytes": 224,
+      "retained_bytes": 224
+    }
+  ]
+}

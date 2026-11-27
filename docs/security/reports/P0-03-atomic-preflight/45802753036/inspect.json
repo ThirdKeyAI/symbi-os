@@ -1,0 +1,175 @@
+{
+  "schema": 1,
+  "passed": false,
+  "os_qualified": false,
+  "guest_booted": false,
+  "installation_attempted": false,
+  "source_commit": "027291a17d525a17418dd64afe71ddf9bb2781bc",
+  "image_source_commit": "23a6c721092ad77c3af33c11cab230ecaaa54cff",
+  "variant": "generic",
+  "phase": "inspect",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "load-image",
+      "exit_code": 0
+    },
+    {
+      "name": "inspect-image",
+      "exit_code": 0
+    },
+    {
+      "name": "create-kernel-copy",
+      "exit_code": 0
+    },
+    {
+      "name": "kernel-copy-before",
+      "exit_code": 0
+    },
+    {
+      "name": "copy-vmlinuz",
+      "exit_code": 0
+    },
+    {
+      "name": "copy-initramfs.img",
+      "exit_code": 0
+    },
+    {
+      "name": "kernel-copy-after",
+      "exit_code": 0
+    },
+    {
+      "name": "installed-files",
+      "exit_code": 0
+    },
+    {
+      "name": "boot-inputs",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-symbi-atomic-kernel-copy",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-symbi-atomic-kernel-copy",
+      "exit_code": 1
+    },
+    {
+      "name": "cleanup-symbi-atomic-installed-files",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-symbi-atomic-installed-files",
+      "exit_code": 1
+    },
+    {
+      "name": "cleanup-symbi-atomic-boot-inputs",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-symbi-atomic-boot-inputs",
+      "exit_code": 1
+    },
+    {
+      "name": "remove-image",
+      "exit_code": 0
+    },
+    {
+      "name": "image-absent",
+      "exit_code": 1
+    }
+  ],
+  "lock_sha256": "dba718abbbf386d36eb6f8764846533f8aa9c3c9cc175d96d394399dcf2ceadf",
+  "scope": "Read-only saved development image preflight; no disk, installation, boot or release qualification",
+  "expected_inputs": {
+    "kernel": "7.3.4-300.secureblue.1.fc45.x86_64",
+    "bootc_version": "1.17.1",
+    "packages": [
+      "bootc\t0\t1.17.1\t1.fc45\tx86_64",
+      "kernel-core\t0\t7.3.4\t300.secureblue.1.fc45\tx86_64"
+    ],
+    "trust": {
+      "etc/containers/policy.json": "974d657b12acca4cd4db7ca6f4788f65b0f366d2193bdb6f0502d6c239c1a7a5",
+      "etc/containers/registries.d/symbiont.yaml": "336ad92f00b0f2fb6954fbcab7fc6541d4333a884f6038900eb94f7300104bfa"
+    }
+  },
+  "disk_free_before_load": 87382306816,
+  "loaded_image": {
+    "Id": "54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1",
+    "Digest": "sha256:9b6e8fdd9f6f98631895ccdfaaed6ffd88febd3ea6238d543935a524b572faf3",
+    "Architecture": "amd64",
+    "Os": "linux"
+  },
+  "kernel_copy": {
+    "source_container": "symbi-atomic-kernel-copy",
+    "never_started": true,
+    "kernel": {
+      "version": "7.3.4-300.secureblue.1.fc45.x86_64",
+      "vmlinuz": {
+        "bytes": 18959192,
+        "sha256": "e288ec04ebf69635d7eaadee86461f4d60576ea5aef7dcc77d1dc32fe6d301be",
+        "uid": 0,
+        "mode": 493
+      },
+      "initramfs.img": {
+        "bytes": 247246321,
+        "sha256": "da8ed415bf1aa7edca54ce2793a31dd7bf0c7064cbaf05c46f22cea0358ba0e0",
+        "uid": 0,
+        "mode": 384
+      }
+    },
+    "private_payload_removed": true,
+    "observation_sha256": "2ab9db85f1492ddb0628b0fd8b7552a94f63d228d30a8a94660776506d94cf96"
+  },
+  "probe_hashes": {
+    "probe.py": "8e55f4a9f355662699888fec3081f9965879bbfcb205e8ff2ccc4dfd3c863633",
+    "verify.py": "af7254352c30796263481c81b2aa693d477981a3b373196e8ea3b577401278c4",
+    "expected.json": "2a8abbf5c95d0a50c96a3cd69192e9d443a2deb173e77e498fba400ccaf59f78"
+  },
+  "installed_files": {
+    "passed": true,
+    "os_qualified": false,
+    "installed_files_checked": 102,
+    "installed_package_count": 2184,
+    "all_package_identities_preserved_after_build": true,
+    "uid": 10001,
+    "limits": {
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "64"
+    },
+    "scope": "Installed bytes and packaging only; no boot or containment qualification"
+  },
+  "failure": "ValueError: Image kernel, installer, packages or SELinux configuration changed",
+  "cleanup": {
+    "symbi-atomic-kernel-copy": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-atomic-installed-files": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-atomic-boot-inputs": {
+      "removed": true,
+      "absent": true
+    }
+  },
+  "image_removed": true,
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4294971392",
+    "memory.events": "low 0\nhigh 0\nmax 31657\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 186199110\nuser_usec 151865673\nsystem_usec 34333436\nnice_usec 147843000\ncore_sched.force_idle_usec 0\nnr_periods 2352\nnr_throttled 86\nthrottled_usec 1868674\nnr_bursts 0\nburst_usec 0"
+  }
+}

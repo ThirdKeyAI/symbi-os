@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "independent_evidence_recheck_passed": true,
+  "source_commit": "3fa360ba16b065f2dacf740fb008333bc63a45f4",
+  "base_signature_subject_verified": true,
+  "rpm_signatures_and_identities_rechecked": 5,
+  "base_packages_preserved": 2178,
+  "installed_packages": 2183,
+  "original_crypto_slots_preserved": 40,
+  "installed_files_checked": 86,
+  "dynamic_loaders_checked": 6,
+  "cli_provider_controls": 3,
+  "lua_controls": 3,
+  "bootc_lint": "Lint warning: nonempty-boot: Found non-empty /boot:\n  symvers-7.3.4-300.secureblue.1.fc45.x86_64.xz\n\nChecks passed: 13\nChecks skipped: 1\nWarnings: 1\n",
+  "temporary_containers_removed_and_absent": 13,
+  "oom_or_kill": false,
+  "image_archive": {
+    "name": "symbiont-os-generic.oci.tar.gz",
+    "bytes": 4034176132,
+    "sha256": "257ded291ece71fe4d5b5c1d96ab92264617112037062834d90a1a3f1a1abed0",
+    "image_id": "sha256:a75087c3c705d707880d59bed0c489b0d4a657a79cf18cda28c1dbce75eaf885"
+  },
+  "os_qualified": false,
+  "limitations": "Evidence reconciliation only; large OCI archive stays hosted. No VM boot, desktop interaction, TLS-policy equivalence, Fedora sandbox/escape, OS signature/update or rollback qualification."
+}

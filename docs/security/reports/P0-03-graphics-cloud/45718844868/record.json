@@ -1,0 +1,108 @@
+{
+  "run_id": 45718844868,
+  "conclusion": "failure",
+  "artifact": {
+    "id": 15071646464,
+    "bytes": 70281,
+    "sha256": "a9b4be059736b7b5a7accd093efcb79c1e1883e10e8bcc32ca602baabd2b6379"
+  },
+  "files": {
+    "cloud-checksum-changed.log": {
+      "original_sha256": "f8cd46e527cf4e08e186016ce553c34bcf736fd70d73a1624617d3944acb40f4",
+      "retained_sha256": "f8cd46e527cf4e08e186016ce553c34bcf736fd70d73a1624617d3944acb40f4",
+      "bytes": 369
+    },
+    "guest-with-gpu-serial.log": {
+      "original_sha256": "56bab8b0ed2c88657dff809e7ff3eb7915e93f6becb0f7b11f9a766f6af71034",
+      "retained_sha256": "1bd348b5fca58d966d437d95da789d8279831bf3b1672750f4c519b8c257c562",
+      "bytes": 110881
+    },
+    "cloud-checksum-signature.log": {
+      "original_sha256": "9b8e377d5d453d12743afa3aa58e95b7fa08e940c09f3a9415322d70fb229322",
+      "retained_sha256": "9b8e377d5d453d12743afa3aa58e95b7fa08e940c09f3a9415322d70fb229322",
+      "bytes": 572
+    },
+    "xvfb.log": {
+      "original_sha256": "b987a262609a3720f450ab6815ed90b2069dd47b7b012959ca19c325aebf5d55",
+      "retained_sha256": "b987a262609a3720f450ab6815ed90b2069dd47b7b012959ca19c325aebf5d55",
+      "bytes": 2348
+    },
+    "guest-with-gpu-report.json": {
+      "original_sha256": "46f208b522abed69c11aa26e815f151786747b37398b29e3a02852ec4b84a10e",
+      "retained_sha256": "46f208b522abed69c11aa26e815f151786747b37398b29e3a02852ec4b84a10e",
+      "bytes": 1416
+    },
+    "selected-base.json": {
+      "original_sha256": "889f2bc07c571e7153068644c63d0d919a1cfca0ac9d18e9adfeab45b391eedf",
+      "retained_sha256": "889f2bc07c571e7153068644c63d0d919a1cfca0ac9d18e9adfeab45b391eedf",
+      "bytes": 271
+    },
+    "cloud-checksum-missing-key.log": {
+      "original_sha256": "028d93bd093f7461a96fc815e07c5784633da4719746f689e501c6ccdbb1a42a",
+      "retained_sha256": "028d93bd093f7461a96fc815e07c5784633da4719746f689e501c6ccdbb1a42a",
+      "bytes": 315
+    },
+    "probe.log": {
+      "original_sha256": "3f02890ef3ebb2b16586f563630e0ceedb610bf676d214be6ee3319b9b31f980",
+      "retained_sha256": "3f02890ef3ebb2b16586f563630e0ceedb610bf676d214be6ee3319b9b31f980",
+      "bytes": 2784
+    },
+    "guest-with-gpu-prepare.log": {
+      "original_sha256": "8b69bad3740c2e6f22f117f5be3b4b2c0fa553ed0d8b2f1b8143578999e996f8",
+      "retained_sha256": "8b69bad3740c2e6f22f117f5be3b4b2c0fa553ed0d8b2f1b8143578999e996f8",
+      "bytes": 289
+    },
+    "guest-without-gpu-qemu.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "guest-without-gpu-report.json": {
+      "original_sha256": "cd96680909b3f9a625282bbf42fa10bbbf649080bab4ac4f2e0a2e3356c2ef65",
+      "retained_sha256": "cd96680909b3f9a625282bbf42fa10bbbf649080bab4ac4f2e0a2e3356c2ef65",
+      "bytes": 1283
+    },
+    "cloud-input.json": {
+      "original_sha256": "4feb7f2c7129a036916fc676c3aaf6c57b5f5b61877221408f4b8e79ece86d63",
+      "retained_sha256": "4feb7f2c7129a036916fc676c3aaf6c57b5f5b61877221408f4b8e79ece86d63",
+      "bytes": 541
+    },
+    "guest-without-gpu-serial.log": {
+      "original_sha256": "05c95cb2f8b3960c3dd4ed32236728d9ae2df16198d2adf964211855584d0fa4",
+      "retained_sha256": "25e739f361fe331bedf5edd7433d33e811a273c77080ab9d730f0615e9a726ae",
+      "bytes": 108133
+    },
+    "guest-result.json": {
+      "original_sha256": "27f892f1bfe5011fc81218d8d844da608b2944c6952bcced938d64955675ce60",
+      "retained_sha256": "27f892f1bfe5011fc81218d8d844da608b2944c6952bcced938d64955675ce60",
+      "bytes": 3982
+    },
+    "result.json": {
+      "original_sha256": "87bdcc08ce7f682639fe9c6895ef55721534464aec6a2b9599df3b4840453608",
+      "retained_sha256": "87bdcc08ce7f682639fe9c6895ef55721534464aec6a2b9599df3b4840453608",
+      "bytes": 2090
+    },
+    "guest-with-gpu-qemu.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "hosted-cloud-boot.log": {
+      "original_sha256": "67147d26337989372cd8c8cdd79a543bc038649da143d4688cb4cb72b90bec01",
+      "retained_sha256": "67147d26337989372cd8c8cdd79a543bc038649da143d4688cb4cb72b90bec01",
+      "bytes": 1454
+    },
+    "guest-without-gpu-prepare.log": {
+      "original_sha256": "4b91dce65f35a9699655dd5693a4f80c424fbd7456e1be488da0e86e19a9338d",
+      "retained_sha256": "4b91dce65f35a9699655dd5693a4f80c424fbd7456e1be488da0e86e19a9338d",
+      "bytes": 292
+    },
+    "base-signature.json": {
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "bytes": 1281
+    }
+  },
+  "os_qualified": false,
+  "scope": "Retain passing intermediate gates and actual terminal failure; no complete acceptance claim"
+}

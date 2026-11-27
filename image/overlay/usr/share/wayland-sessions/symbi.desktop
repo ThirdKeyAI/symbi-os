@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Symbiont
+Comment=Symbiont desktop session
+Exec=/usr/libexec/symbi-desktop-session
+Type=Application
+DesktopNames=Hyprland

@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "run": 45850389621,
+  "source_commit": "79a0a063602372c60f78ec9fa6ca4e3f99aa6d1d",
+  "bootc_version": "1.17.1",
+  "bootc_revision": "d01e723ae9480fa53aa9db09a7eff0439548e9f6",
+  "bootc_cli_git_blob": "0a7c0e5987cd1888375f4c75f68fd4e1927d6d5f",
+  "observed_error": "Status: Preparing for write: Querying root privilege: This command must be executed as the root user",
+  "analysis": "get_host calls prepare_for_write for an OSTree-booted environment. prepare_for_write calls require_root(false) before ensure_self_unshared_mount_namespace. The prior claim that a non-root status query could bypass preparation was incorrect.",
+  "correction": "Use the fixed bootc command as UID 0 with only CAP_SYS_ADMIN, and add systemd PrivatePIDs=yes. The collector becomes PID 1 in a private PID namespace, so its private /proc/1 and /proc/self refer to the same process and bootc can take its documented PID-1 branch without CAP_SYS_PTRACE.",
+  "native_status": "pending",
+  "qualification": false
+}

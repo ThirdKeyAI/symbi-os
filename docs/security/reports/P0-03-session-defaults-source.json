@@ -1,0 +1,40 @@
+{
+  "hyprland_revision": "11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947",
+  "prepared_at_utc": "2026-11-25T21:36:12.942098+00:00",
+  "actual_compositor_parser_run": false,
+  "os_qualified": false,
+  "sources": {
+    "example/hyprland.lua": {
+      "url": "https://github.com/hyprwm/Hyprland/blob/11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947/example/hyprland.lua",
+      "sha256": "5553823a068db8b7a8a8db08fdb27c26fd5fda7e6f4a3b3cf059c0829dfb1148"
+    },
+    "src/main.cpp": {
+      "url": "https://github.com/hyprwm/Hyprland/blob/11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947/src/main.cpp",
+      "sha256": "80915b27a7f07e19c8f49c78dbdde41f74c0642f5a779f0e4249a8928373934c"
+    },
+    "src/config/ConfigManager.cpp": {
+      "url": "https://github.com/hyprwm/Hyprland/blob/11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947/src/config/ConfigManager.cpp",
+      "sha256": "1671eb81fbfe41218aacdd66980b183e23abdcfe1f29b23875501e83e63375fc"
+    },
+    "src/config/lua/bindings/LuaBindingsDispatchers.cpp": {
+      "url": "https://github.com/hyprwm/Hyprland/blob/11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947/src/config/lua/bindings/LuaBindingsDispatchers.cpp",
+      "sha256": "ffdc65811469685d0520cfcb70c2c4a4991c9b3625bfa9007da32893c18a16d3"
+    }
+  },
+  "local_refusal_guard": {
+    "command": [
+      "python3",
+      "image/hyprland/tests/qualify_session_defaults.py",
+      "--hyprland",
+      "/nonexistent/symbi-probe",
+      "--defaults",
+      "/nonexistent/defaults",
+      "--work-dir",
+      "/nonexistent/work",
+      "--report",
+      "/nonexistent/report"
+    ],
+    "exit_code": 1,
+    "output": "Use the disposable unprivileged Fedora probe container\n"
+  }
+}

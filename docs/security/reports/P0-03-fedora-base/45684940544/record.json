@@ -1,0 +1,77 @@
+{
+  "run_url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45684940544",
+  "head": "966d7eef38789edb4ae0be7e8636e82d439f5e5a",
+  "job_id": 139454932427,
+  "conclusion": "success",
+  "artifact_id": 15056656133,
+  "artifact_digest": "sha256:802ad1d5de3d2defe6674e4e5ca755ae8defa9e04e4cfbe457d1cde5621c5073",
+  "observation": "Authenticated secureblue Fedora 45 package inventory completed. /etc-only discovery found no repository configuration or RPM public-key files. This successful process exit does not establish complete package inputs.",
+  "source_evidence": "https://github.com/secureblue/secureblue/blob/353366bb6d031e66fc565b0b101a8a069f32fcdb/files/scripts/backupetc.sh",
+  "remedy": "Read bootc default and secureblue backup locations, record RPM-owned paths and package-manager configuration, and fail incomplete package-input discovery. Preserve partial JSON on failure.",
+  "resource_note": "The configured 2 GiB parent limit stayed unchanged. memory.events records cache-pressure limit hits and zero OOM/OOM-kill events; transient memory.peak exceeds memory.max. No higher limit is inferred or requested.",
+  "package_inputs_complete": false,
+  "os_qualified": false,
+  "retention_format": "Trim trailing whitespace and blank EOF lines; binary signature bytes preserved.",
+  "files": {
+    "base-signature.json": {
+      "artifact_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    "cgroup-final.json": {
+      "artifact_sha256": "f8a1629f7bb3d8690450dcc181c74dcbf8913f7a075c46abca2a89ee003980f7",
+      "retained_sha256": "f8a1629f7bb3d8690450dcc181c74dcbf8913f7a075c46abca2a89ee003980f7"
+    },
+    "cgroup-limits.json": {
+      "artifact_sha256": "8bd076d24f6839602a9c7787589223b61fc161814a0f952af1c54e7ebdbbff38",
+      "retained_sha256": "8bd076d24f6839602a9c7787589223b61fc161814a0f952af1c54e7ebdbbff38"
+    },
+    "cosign-bootstrap/cosign-linux-amd64-kms.sigstore.json": {
+      "artifact_sha256": "9640eb9b9f1236bbb145197cc6cf098ed1fb5f7613c6c731647a2431d0dac518",
+      "retained_sha256": "f8544777412708f16351db61792c6c39e24814beba79708e3fe9cc0e871ec93f"
+    },
+    "cosign-bootstrap/openssl-verification.txt": {
+      "artifact_sha256": "80a53f76c7ed6969dade3b6ee47cdb753162db7c00be625448999d08bae77ed8",
+      "retained_sha256": "80a53f76c7ed6969dade3b6ee47cdb753162db7c00be625448999d08bae77ed8"
+    },
+    "cosign-bootstrap/pins.json": {
+      "artifact_sha256": "c74acffb1d898498582110862650a81960afacd8f2e60916ea3cacee292591cc",
+      "retained_sha256": "c74acffb1d898498582110862650a81960afacd8f2e60916ea3cacee292591cc"
+    },
+    "cosign-bootstrap/release-cosign.pub": {
+      "artifact_sha256": "f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126",
+      "retained_sha256": "f4cea466e5e887a45da5031757fa1d32655d83420639dc1758749b744179f126"
+    },
+    "cosign-bootstrap/release-kms.sig": {
+      "artifact_sha256": "f3070066acae000e6d65060ac17903d2547fd65d26c0a4207d3809e7031ad088",
+      "retained_sha256": "f3070066acae000e6d65060ac17903d2547fd65d26c0a4207d3809e7031ad088"
+    },
+    "cosign-bootstrap/verification.json": {
+      "artifact_sha256": "822329e8d7bf8c27b1a527c931c9bbab901db2f6fce88cb5f53d7dc33e547e35",
+      "retained_sha256": "822329e8d7bf8c27b1a527c931c9bbab901db2f6fce88cb5f53d7dc33e547e35"
+    },
+    "cosign-bootstrap/version.json": {
+      "artifact_sha256": "9bf60bbeb52675a2074a4c4066bcb0710f861555e9fb5391fb6d65ce7014b3af",
+      "retained_sha256": "9bf60bbeb52675a2074a4c4066bcb0710f861555e9fb5391fb6d65ce7014b3af"
+    },
+    "hosted-inventory.log": {
+      "artifact_sha256": "d89edfc329d5e5bab5edf6de973039c714d6343a5830e61dae1d923d3d1d765f",
+      "retained_sha256": "d89edfc329d5e5bab5edf6de973039c714d6343a5830e61dae1d923d3d1d765f"
+    },
+    "image-inspect.json": {
+      "artifact_sha256": "d712296a04db6c58431cb82adf3a84743ca97dbd02c2b1a762c996652e9d1035",
+      "retained_sha256": "d712296a04db6c58431cb82adf3a84743ca97dbd02c2b1a762c996652e9d1035"
+    },
+    "inventory.json": {
+      "artifact_sha256": "d10e25c5915a67037f446db42f70f3fa4ab9270fcc8c8c4070f54baacd375cd3",
+      "retained_sha256": "d10e25c5915a67037f446db42f70f3fa4ab9270fcc8c8c4070f54baacd375cd3"
+    },
+    "pull.log": {
+      "artifact_sha256": "e1fc4242bb5d46080a4465f3f649557c00cd375ad7ef575de3b0b25dc339068f",
+      "retained_sha256": "e1fc4242bb5d46080a4465f3f649557c00cd375ad7ef575de3b0b25dc339068f"
+    },
+    "result.json": {
+      "artifact_sha256": "929dc1a7c51c09865384797ec2f65c75ad7c7315c4303f9b1e252ebc695b1ac2",
+      "retained_sha256": "929dc1a7c51c09865384797ec2f65c75ad7c7315c4303f9b1e252ebc695b1ac2"
+    }
+  }
+}

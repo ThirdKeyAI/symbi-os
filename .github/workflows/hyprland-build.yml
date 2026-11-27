@@ -1,0 +1,123 @@
+name: Offline Hyprland build
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - ".github/workflows/hyprland-build.yml"
+      - "scripts/check-hyprland-build.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - "image/recipe.py"
+      - "image/hyprland/hosted_build.py"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/candidate-inputs.json"
+      - "image/hyprland/build-requirements.json"
+      - "image/hyprland/build-rpms.lock.json"
+      - "image/hyprland/build_guest.py"
+      - "image/hyprland/compile.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/patch-inputs.json"
+      - "image/hyprland/patches/0001-disable-native-loading.patch"
+      - "image/hyprland/keys/fedora-45-primary.asc"
+      - "image/hyprland/tests/qualify_native_loading.py"
+      - "image/hyprland/tests/qualify_session_defaults.py"
+      - "image/hyprland/tests/native_probe.c"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
+  pull_request:
+    paths:
+      - ".github/workflows/hyprland-build.yml"
+      - "scripts/check-hyprland-build.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - "image/recipe.py"
+      - "image/hyprland/hosted_build.py"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/candidate-inputs.json"
+      - "image/hyprland/build-requirements.json"
+      - "image/hyprland/build-rpms.lock.json"
+      - "image/hyprland/build_guest.py"
+      - "image/hyprland/compile.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/patch-inputs.json"
+      - "image/hyprland/patches/0001-disable-native-loading.patch"
+      - "image/hyprland/keys/fedora-45-primary.asc"
+      - "image/hyprland/tests/qualify_native_loading.py"
+      - "image/hyprland/tests/qualify_session_defaults.py"
+      - "image/hyprland/tests/native_probe.c"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: hyprland-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compositor:
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 140
+    steps:
+      - name: Check out proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Require resolved RPM inputs for the current requirements
+        run: |
+          mkdir -p .cache/hyprland-build-evidence
+          python3 - <<'PY' > .cache/hyprland-build-evidence/requirements-check.log 2>&1
+          import json
+          from pathlib import Path
+          import sys
+          sys.path.insert(0, 'image/hyprland')
+          from build_inputs import require_current_requirements
+          root = Path('image/hyprland')
+          require_current_requirements(json.loads((root / 'build-rpms.lock.json').read_text()),
+                                       json.loads((root / 'build-requirements.json').read_text()))
+          print('RPM lock resolves the current build requirements')
+          PY
+      - name: Download exact previously verified RPM artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache
+          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15064875311/zip > .cache/hyprland-rpms.zip
+          echo 'b24ccbcc952c24102cf5dea0fcf5f912145d91b2f99a692a754d9474db65859a  .cache/hyprland-rpms.zip' | sha256sum --check --strict
+      - name: Build offline and test native-loading refusal
+        run: bash scripts/check-hyprland-build.sh
+      - name: Retain public build evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hyprland-build-evidence
+          path: .cache/hyprland-build-evidence/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Retain unqualified compiled prefix even when later probes fail
+        if: ${{ always() && hashFiles('.cache/hyprland-build-payload/manifest.json') != '' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hyprland-development-prefix
+          path: |
+            .cache/hyprland-build-payload/hyprland-prefix.tar.gz
+            .cache/hyprland-build-payload/manifest.json
+          retention-days: 14
+          compression-level: 0
+          if-no-files-found: error

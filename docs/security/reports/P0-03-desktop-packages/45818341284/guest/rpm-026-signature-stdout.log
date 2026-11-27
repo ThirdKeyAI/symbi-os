@@ -1,0 +1,5 @@
+/output/rpms/mplayer-common-1.5.1-0.26.r38531.20260727.f401198.fc45.x86_64.rpm:
+    Header OpenPGP V4 RSA/SHA256 signature, key fingerprint: e9a491a3de247814e7e067eae06f8ecdd651ff2e: OK
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+    Legacy OpenPGP V4 RSA/SHA256 signature, key fingerprint: e9a491a3de247814e7e067eae06f8ecdd651ff2e: OK
