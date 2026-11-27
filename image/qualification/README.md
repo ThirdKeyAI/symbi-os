@@ -132,6 +132,15 @@ that source a fixed `SYMBIQUAL` virtio serial. Systemd mounts the corresponding
 `/dev/disk/by-id` path in the main namespace with a 30-second device timeout and
 `ro,nosuid,nodev,noexec`. A bounded capability-free root service then verifies
 the exact ext4 type, label, UUID and mount before the unprivileged runner starts.
+It opens the fixed mount point with `O_PATH|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW`,
+reads its bounded canonical `mnt_id` from `/proc/self/fdinfo/<fd>` and selects
+the row carrying that exact ID from a bounded kernel mountinfo snapshot. This
+allows legitimate stacked rows at the same path without guessing by row order
+or highest ID. The selected row binds the decoded mount point, filesystem root,
+source, device major/minor and VFS flags to the direct block device. The
+unprivileged runner repeats that check and includes only the compact observation,
+total path-match count, visible and selected mount IDs and snapshot hash in its
+report; formatted `findmnt` output is not a security input.
 
 The firmware services create a disposable UID 10001 account and delegated user
 manager only in the QEMU overlay. They do not add an account to the product

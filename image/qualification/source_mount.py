@@ -8,6 +8,13 @@ import stat
 import subprocess
 import sys
 
+if __package__:
+    from .symbi_mountinfo import (observe_visible_mount,
+                                  validate_mount_observation)
+else:
+    from symbi_mountinfo import (observe_visible_mount,
+                                 validate_mount_observation)
+
 
 RUNTIME = Path("/run/symbi-qualification")
 SOURCE = RUNTIME / "source"
@@ -92,9 +99,11 @@ def main():
         raise ValueError("fixed qualification source block-device link is absent; observed "
                          + ",".join(block_devices))
     source_device = SOURCE_DEVICE.resolve(strict=True)
+    source_info = source_device.stat()
     if (re.fullmatch(r"/dev/vd[a-z]{1,3}", str(source_device)) is None
-            or not stat.S_ISBLK(source_device.stat().st_mode)):
+            or not stat.S_ISBLK(source_info.st_mode)):
         raise ValueError("fixed qualification source is not a virtio block device")
+    source_major_minor = f"{os.major(source_info.st_rdev)}:{os.minor(source_info.st_rdev)}"
     identity = validate_source_identity(
         run(["/usr/sbin/blkid", "-p", "-o", "export", str(SOURCE_DEVICE)],
             timeout=30).stdout,
@@ -110,18 +119,19 @@ def main():
             or mountpoint.st_gid != 0 or mountpoint.st_mode & 0o022
             or not os.path.ismount(SOURCE)):
         raise ValueError("qualification source mount point controls changed")
+    observation = observe_visible_mount(SOURCE)
+    print(json.dumps({"source_mount_observation": observation}, sort_keys=True), flush=True)
+    validate_mount_observation(observation, mountpoint=str(SOURCE),
+                               source=str(source_device), major_minor=source_major_minor)
+    if f"{os.major(mountpoint.st_dev)}:{os.minor(mountpoint.st_dev)}" != source_major_minor:
+        raise ValueError("qualification source mount device changed")
     flags = os.statvfs(SOURCE).f_flag
     required_flags = os.ST_RDONLY | os.ST_NOSUID
     for name in ("ST_NODEV", "ST_NOEXEC"):
         required_flags |= getattr(os, name, 0)
-    mounted = run(["/usr/bin/findmnt", "-n", "-o", "SOURCE,FSTYPE,OPTIONS",
-                   "--target", str(SOURCE)], timeout=15).stdout.split()
-    mounted_source = mounted[0].split("[", 1)[0] if mounted else ""
-    if (flags & required_flags != required_flags or len(mounted) != 3
-            or mounted_source != str(source_device) or mounted[1] != "ext4"
-            or not {"ro", "nosuid", "nodev", "noexec"}.issubset(set(mounted[2].split(",")))):
+    if flags & required_flags != required_flags:
         raise ValueError("qualification source mount controls changed")
-    record = {"path": str(source_device), **identity}
+    record = {"path": str(source_device), "major_minor": source_major_minor, **identity}
     temporary = RUNTIME / "source-device.new"
     descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL
                          | os.O_NOFOLLOW | os.O_CLOEXEC, 0o644)

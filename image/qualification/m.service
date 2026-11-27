@@ -11,6 +11,7 @@ OnFailure=poweroff.target
 Type=oneshot
 RemainAfterExit=yes
 ImportCredential=symbi-source-mount.py
+ImportCredential=symbi_mountinfo.py
 ImportCredential=symbi-expected.json
 ExecStart=/usr/bin/python3 %d/symbi-source-mount.py %d/symbi-expected.json
 Environment=PYTHONDONTWRITEBYTECODE=1

@@ -26,6 +26,12 @@ from image.qualification.hosted import (QUALIFICATION_FILES,
                                         validate_source_checkout)
 from image.qualification.hosted_process import (TIMEOUT_SECONDS,
                                                 validate_landlock_controller_command)
+from image.qualification.symbi_mountinfo import (observe_mountinfo,
+                                                 observe_visible_mount,
+                                                 parse_visible_mount_id,
+                                                 read_mountinfo,
+                                                 read_visible_mount_id,
+                                                 validate_mount_observation)
 from image.qualification.source_mount import validate_source_identity
 
 
@@ -96,9 +102,19 @@ class HostedLandlock(unittest.TestCase):
             "binary_sha256": expected["binary_sha256"],
             "image_ref": expected["image_ref"],
             "landlock_abi": 6,
-            "source_device": {"path": "/dev/vdb", "TYPE": "ext4",
+            "source_device": {"path": "/dev/vdb", "major_minor": "252:16",
+                              "TYPE": "ext4",
                               "LABEL": "SYMBIQUAL",
                               "UUID": expected["source_disk"]["uuid"]},
+            "source_mount_observation": {
+                "path_match_count": 1, "selected_match_count": 1,
+                "visible_mount_id": 36, "selected_mount_id": 36,
+                "mountpoint": "/run/symbi-qualification/source", "root": "/",
+                "fstype": "ext4", "source": "/dev/vdb",
+                "major_minor": "252:16",
+                "options": ["nodev", "noexec", "nosuid", "ro"],
+                "super_options": ["rw"], "mountinfo_sha256": "a" * 64,
+            },
             "summary": {"passed": True, "qualified": True,
                         "public_reports": {name: hashlib.sha256(content).hexdigest()}},
             "artifacts": {name: {"bytes": len(content),
@@ -123,6 +139,7 @@ class HostedLandlock(unittest.TestCase):
             "opt/io.systemd.credentials/symbi-runner.py",
             "opt/io.systemd.credentials/symbi-prepare.py",
             "opt/io.systemd.credentials/symbi-source-mount.py",
+            "opt/io.systemd.credentials/symbi_mountinfo.py",
             "opt/io.systemd.credentials/symbi-expected.json",
             "opt/io.systemd.credentials/symbi-sysusers.conf",
         })
@@ -155,7 +172,8 @@ class HostedLandlock(unittest.TestCase):
         self.assertEqual(mount["NoNewPrivileges"], ["yes"])
         self.assertEqual(mount["MemorySwapMax"], ["0"])
         self.assertEqual(set(mount["ImportCredential"]),
-                         {"symbi-source-mount.py", "symbi-expected.json"})
+                         {"symbi-source-mount.py", "symbi_mountinfo.py",
+                          "symbi-expected.json"})
         self.assertNotIn('"/usr/bin/mount"',
                          (ROOT / "image/qualification/source_mount.py").read_text())
         setup = (ROOT / "image/qualification/prepare.py").read_text()
@@ -177,7 +195,7 @@ class HostedLandlock(unittest.TestCase):
         self.assertNotIn("ExecStopPost", runner)
         self.assertEqual(set(runner["ImportCredential"]),
                          {"symbi-landlock.py", "vertical_slice.py", "symbi-runner.py",
-                          "symbi-expected.json"})
+                          "symbi_mountinfo.py", "symbi-expected.json"})
         self.assertEqual(runner["ExecStart"], [
             "/usr/bin/python3 %d/symbi-runner.py %d/symbi-landlock.py "
             "%d/vertical_slice.py %d/symbi-expected.json",
@@ -332,6 +350,221 @@ class HostedLandlock(unittest.TestCase):
             self.assertEqual(cleanup, {"attempted": True, "removed": True,
                                        "errors": []})
             self.assertFalse(overlay.exists())
+
+    def test_kernel_mountinfo_binds_the_exact_source_mount(self):
+        raw = ("36 25 252:16 / /run/symbi-qualification/source "
+               "ro,nosuid,nodev,noexec,relatime shared:7 - ext4 /dev/vdb rw\n")
+        observed = observe_mountinfo(raw, "/run/symbi-qualification/source", 36)
+        self.assertEqual(observed["path_match_count"], 1)
+        self.assertEqual(observed["selected_match_count"], 1)
+        self.assertEqual(observed["visible_mount_id"], 36)
+        self.assertEqual(observed["selected_mount_id"], 36)
+        self.assertEqual(observed["mountpoint"], "/run/symbi-qualification/source")
+        self.assertEqual(observed["root"], "/")
+        self.assertEqual(observed["fstype"], "ext4")
+        self.assertEqual(observed["source"], "/dev/vdb")
+        self.assertEqual(observed["major_minor"], "252:16")
+        self.assertEqual(observed["options"],
+                         ["nodev", "noexec", "nosuid", "relatime", "ro"])
+        self.assertRegex(observed["mountinfo_sha256"], r"^[a-f0-9]{64}$")
+        self.assertEqual(
+            validate_mount_observation(
+                observed, mountpoint="/run/symbi-qualification/source",
+                source="/dev/vdb", major_minor="252:16"),
+            observed,
+        )
+        escaped = raw.replace("/run/symbi-qualification/source",
+                              r"/run/symbi\040qualification/source")
+        self.assertEqual(
+            observe_mountinfo(escaped, "/run/symbi qualification/source", 36)["mountpoint"],
+            "/run/symbi qualification/source",
+        )
+
+    def test_kernel_mountinfo_refuses_ambiguous_or_weakened_mounts(self):
+        base = ("36 25 252:16 / /run/symbi-qualification/source "
+                "ro,nosuid,nodev,noexec,relatime shared:7 - ext4 /dev/vdb rw\n")
+        target = "/run/symbi-qualification/source"
+        observations = [
+            (base.replace("252:16", "252:17"), "/dev/vdb", "252:16"),
+            (base.replace("252:16 / /run", "252:16 /sub /run"), "/dev/vdb", "252:16"),
+            (base.replace(" - ext4 ", " - xfs "), "/dev/vdb", "252:16"),
+            (base.replace(" /dev/vdb ", " /dev/vdc "), "/dev/vdb", "252:16"),
+            (base.replace("ro,nosuid,nodev,noexec,relatime", "rw,nosuid,nodev,noexec"),
+             "/dev/vdb", "252:16"),
+        ]
+        for raw, source, major_minor in observations:
+            with self.subTest(raw=raw), self.assertRaises(ValueError):
+                validate_mount_observation(
+                    observe_mountinfo(raw, target, 36), mountpoint=target,
+                    source=source, major_minor=major_minor)
+        for option in ("ro", "nosuid", "nodev", "noexec"):
+            raw = base.replace(option + ",", "")
+            with self.subTest(option=option), self.assertRaises(ValueError):
+                validate_mount_observation(
+                    observe_mountinfo(raw, target, 36), mountpoint=target,
+                    source="/dev/vdb", major_minor="252:16")
+        for raw in (
+            base.replace("/run/symbi-qualification/source", r"/run/symbi\\04xsource"),
+            base.replace("/run/symbi-qualification/source", r"/run/symbi\\000source"),
+            base.replace("source", "source\x00", 1),
+            base.rstrip("\n"),
+            base.replace("\n", "\r\n"),
+            base.replace("36 25", "36  25"),
+            base.replace("/dev/vdb rw\n", "/dev/vdb rw extra\n"),
+            "1 1 0:1 / /other ro - tmpfs tmpfs rw\n" * 4097,
+            "x" * (1024 * 1024 + 1),
+        ):
+            with self.subTest(raw=raw[:100]), self.assertRaises(ValueError):
+                observe_mountinfo(raw, target, 36)
+        with self.assertRaises(ValueError):
+            observe_mountinfo(base, "/run/symbi-qualification/sourc\N{LATIN SMALL LETTER E WITH ACUTE}", 36)
+
+    def test_kernel_mountinfo_selects_visible_stacked_row_without_guessing(self):
+        target = "/run/symbi-qualification/source"
+        visible = ("36 25 252:16 / " + target
+                   + " ro,nosuid,nodev,noexec - ext4 /dev/vdb rw\n")
+        hidden_with_larger_id = ("99 25 0:31 / " + target
+                                 + " rw,nosuid,nodev - tmpfs tmpfs rw\n")
+        observed = observe_mountinfo(hidden_with_larger_id + visible, target, 36)
+        self.assertEqual(observed["path_match_count"], 2)
+        self.assertEqual(observed["selected_mount_id"], 36)
+        self.assertEqual(observed["source"], "/dev/vdb")
+        self.assertEqual(validate_mount_observation(
+            observed, mountpoint=target, source="/dev/vdb", major_minor="252:16"),
+            observed)
+        for raw, visible_id in (
+            (visible + visible, 36),
+            (visible, 37),
+            (visible.replace(target, "/other"), 36),
+        ):
+            with self.subTest(visible_id=visible_id), self.assertRaises(ValueError):
+                validate_mount_observation(
+                    observe_mountinfo(raw, target, visible_id), mountpoint=target,
+                    source="/dev/vdb", major_minor="252:16")
+
+    def test_fdinfo_mount_id_parser_is_bounded_and_unambiguous(self):
+        self.assertEqual(parse_visible_mount_id(b"pos:\t0\nflags:\t010000000\nmnt_id:\t36\n"), 36)
+        for raw in (
+            b"pos:\t0\n",
+            b"mnt_id:\t36\nmnt_id:\t36\n",
+            b"mnt_id:\t0\n",
+            b"mnt_id:\t036\n",
+            b"mnt_id:\t-1\n",
+            b"mnt_id:\tbad\n",
+            b"mnt_id:\t36\x00\n",
+            b"mnt_id:\t36",
+            b"x: y\n" * 65,
+            b"x" * 4097,
+        ):
+            with self.subTest(raw=raw[:40]), self.assertRaises(ValueError):
+                parse_visible_mount_id(raw)
+
+    def test_visible_mount_open_binds_fdinfo_mountinfo_and_named_path(self):
+        target = Path("/run/symbi-qualification/source")
+        raw = (b"36 25 252:16 / /run/symbi-qualification/source "
+               b"ro,nosuid,nodev,noexec - ext4 /dev/vdb rw\n")
+        directory = mock.Mock(st_mode=0o040755, st_dev=252, st_ino=7)
+        observed = observe_visible_mount(
+            target,
+            opener=mock.Mock(return_value=9),
+            descriptor_stat=mock.Mock(return_value=directory),
+            path_lstat=mock.Mock(side_effect=[directory, directory]),
+            closer=mock.Mock(),
+            fdinfo_reader=mock.Mock(return_value=36),
+            mountinfo_reader=mock.Mock(return_value=raw),
+        )
+        self.assertEqual(observed["selected_mount_id"], 36)
+        opener = mock.Mock(return_value=9)
+        observe_visible_mount(
+            target, opener=opener,
+            descriptor_stat=mock.Mock(return_value=directory),
+            path_lstat=mock.Mock(side_effect=[directory, directory]),
+            closer=mock.Mock(), fdinfo_reader=mock.Mock(return_value=36),
+            mountinfo_reader=mock.Mock(return_value=raw))
+        flags = opener.call_args.args[1]
+        self.assertEqual(flags & os.O_DIRECTORY, os.O_DIRECTORY)
+        self.assertEqual(flags & os.O_CLOEXEC, os.O_CLOEXEC)
+        self.assertEqual(flags & os.O_PATH, os.O_PATH)
+        self.assertEqual(flags & os.O_NOFOLLOW, os.O_NOFOLLOW)
+        changed = mock.Mock(st_mode=0o040755, st_dev=252, st_ino=8)
+        for before, after in ((changed, directory), (directory, changed)):
+            with self.subTest(before=before.st_ino, after=after.st_ino), \
+                    self.assertRaises(ValueError):
+                observe_visible_mount(
+                    target, opener=mock.Mock(return_value=9),
+                    descriptor_stat=mock.Mock(return_value=directory),
+                    path_lstat=mock.Mock(side_effect=[before, after]),
+                    closer=mock.Mock(), fdinfo_reader=mock.Mock(return_value=36),
+                    mountinfo_reader=mock.Mock(return_value=raw))
+        symlink = mock.Mock(st_mode=0o120777, st_dev=252, st_ino=7)
+        with self.assertRaises(ValueError):
+            observe_visible_mount(
+                target, opener=mock.Mock(return_value=9),
+                descriptor_stat=mock.Mock(return_value=directory),
+                path_lstat=mock.Mock(side_effect=[symlink, symlink]),
+                closer=mock.Mock(), fdinfo_reader=mock.Mock(return_value=36),
+                mountinfo_reader=mock.Mock(return_value=raw))
+
+    def test_real_host_fdinfo_mount_id_selects_visible_root(self):
+        descriptor = os.open("/", os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC
+                             | os.O_NOFOLLOW)
+        try:
+            visible_mount_id = read_visible_mount_id(descriptor)
+        finally:
+            os.close(descriptor)
+        observed = observe_mountinfo(
+            read_mountinfo(), "/", visible_mount_id)
+        self.assertGreaterEqual(observed["path_match_count"], 1)
+        self.assertEqual(observed["selected_match_count"], 1)
+        self.assertEqual(observed["selected_mount_id"], visible_mount_id)
+        with self.assertRaises(ValueError):
+            read_mountinfo(Path("/tmp/not-mountinfo"))
+
+    def test_mountinfo_reader_uses_fixed_bounded_no_follow_descriptor(self):
+        raw = b"1 1 0:1 / / ro - tmpfs tmpfs rw\n"
+        with mock.patch("image.qualification.symbi_mountinfo.os.open",
+                        return_value=8) as opener, \
+                mock.patch("image.qualification.symbi_mountinfo.os.read",
+                           side_effect=[raw, b""]), \
+                mock.patch("image.qualification.symbi_mountinfo.os.close") as closer:
+            self.assertEqual(read_mountinfo(), raw)
+        self.assertEqual(opener.call_args.args[0], Path("/proc/self/mountinfo"))
+        flags = opener.call_args.args[1]
+        self.assertEqual(flags, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
+        closer.assert_called_once_with(8)
+
+    def test_host_rejects_malformed_visible_mount_evidence(self):
+        changes = {
+            "path_match_count": True,
+            "selected_match_count": True,
+            "visible_mount_id": "36",
+            "selected_mount_id": True,
+            "options": ["ro", "nosuid", "nodev", "noexec", {}],
+            "super_options": [],
+            "mountinfo_sha256": 1,
+        }
+        for field, value in changes.items():
+            with self.subTest(field=field):
+                report = self.report()
+                report["source_mount_observation"][field] = value
+                with self.assertRaises(ValueError):
+                    validate_guest_report(report, self.expected(), "f" * 64,
+                                          "1" * 64, "2" * 64, "3" * 64)
+        for options in (["ro", "nosuid", "nodev", "noexec"],
+                        ["nodev", "noexec", "nosuid", "ro", "ro"]):
+            with self.subTest(options=options):
+                report = self.report()
+                report["source_mount_observation"]["options"] = options
+                with self.assertRaises(ValueError):
+                    validate_guest_report(report, self.expected(), "f" * 64,
+                                          "1" * 64, "2" * 64, "3" * 64)
+        report = self.report()
+        oversized = "12345678:16"
+        report["source_device"]["major_minor"] = oversized
+        report["source_mount_observation"]["major_minor"] = oversized
+        with self.assertRaises(ValueError):
+            validate_guest_report(report, self.expected(), "f" * 64,
+                                  "1" * 64, "2" * 64, "3" * 64)
 
     def test_guest_source_device_binding_is_required(self):
         report = self.report()
