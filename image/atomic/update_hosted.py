@@ -15,7 +15,7 @@ from image.atomic.update_contract import (NEGATIVE_CASES, NEGATIVE_UPDATE_SOURCE
                                           negative_signature_payloads,
                                           require_update_base, update_policy,
                                           validate_artifact_metadata, validate_report)
-from image.atomic.update_boot import validate_launcher_failure_report
+from image.atomic.update_boot import validate_transition_failure_report
 from image.atomic.update_process import TIMEOUT_SECONDS
 from image.boot.inputs import unpack_desktop_image
 
@@ -74,7 +74,7 @@ def _read_bounded_regular(path):
         os.close(descriptor)
 
 
-def _launcher_failure_publication(payloads):
+def _transition_failure_publication(payloads):
     """Select only safe same-path failure payloads, or the ordinary-path sentinel."""
     controller_raw = payloads.get("result.json")
     report_raw = payloads.get("same-path-positive.json")
@@ -90,11 +90,11 @@ def _launcher_failure_publication(payloads):
         report = None
     active_same_path = controller.get("active_phase") == "same-path-positive"
     report_claimed = (isinstance(report, dict)
-                      and report.get("diagnostic") == "launcher-preparation-failure")
-    embedded = controller.get("launcher_failure")
+                      and report.get("diagnostic") == "bootc-transition-probe-failure")
+    embedded = controller.get("transition_failure")
     if not active_same_path:
         if report_claimed or embedded is not None:
-            raise ValueError("launcher failure evidence escaped its controller phase")
+            raise ValueError("transition failure evidence escaped its controller phase")
         return None
     failure = controller.get("failure")
     if (controller.get("schema") != 1
@@ -113,33 +113,33 @@ def _launcher_failure_publication(payloads):
                    if isinstance(inputs, dict) else None)
     if (not isinstance(runner_hash, str) or len(runner_hash) != 64
             or any(character not in "0123456789abcdef" for character in runner_hash)):
-        raise ValueError("launcher diagnostic runner hash is absent")
+        raise ValueError("transition diagnostic runner hash is absent")
     validated_embedded = None
     if embedded is not None:
-        validated_embedded = validate_launcher_failure_report(embedded, runner_hash)
+        validated_embedded = validate_transition_failure_report(embedded, runner_hash)
     if not report_claimed:
         return [("controller-result.json",
-                 _fixed_launcher_failure_controller(runner_hash, False))]
+                 _fixed_transition_failure_controller(runner_hash, False))]
     try:
-        validated = validate_launcher_failure_report(report, runner_hash)
+        validated = validate_transition_failure_report(report, runner_hash)
     except ValueError:
         if validated_embedded is not None:
-            raise ValueError("separate launcher failure report differs from controller")
+            raise ValueError("separate transition failure report differs from controller")
         return [("controller-result.json",
-                 _fixed_launcher_failure_controller(runner_hash, False))]
+                 _fixed_transition_failure_controller(runner_hash, False))]
     if (validated_embedded != validated
             or failure
-            != "RuntimeError: launcher preparation failed; inspect bounded report"):
+            != "RuntimeError: bootc transition probe failed; inspect bounded report"):
         return [("controller-result.json",
-                 _fixed_launcher_failure_controller(runner_hash, False))]
+                 _fixed_transition_failure_controller(runner_hash, False))]
     return [
         ("controller-result.json",
-         _fixed_launcher_failure_controller(runner_hash, True)),
+         _fixed_transition_failure_controller(runner_hash, True)),
         ("same-path-positive.json", report_raw),
     ]
 
 
-def _fixed_launcher_failure_controller(runner_hash, report_validated):
+def _fixed_transition_failure_controller(runner_hash, report_validated):
     """Serialize only fixed controller facts for the diagnostic publication path."""
     result = {
         "schema": 1,
@@ -147,13 +147,13 @@ def _fixed_launcher_failure_controller(runner_hash, report_validated):
         "guest_booted": False,
         "release_qualified": False,
         "active_phase": "same-path-positive",
-        "failure": ("same-path-positive failed; bounded launcher report validated"
+        "failure": ("same-path-positive failed; bounded transition report validated"
                     if report_validated else
-                    "same-path-positive failed; bounded launcher report unavailable or rejected"),
+                    "same-path-positive failed; bounded transition report unavailable or rejected"),
         "negative_reports": [],
         "phase_reports": [],
         "inputs": {"update_boot_failure.py": runner_hash},
-        "launcher_failure_validated": report_validated,
+        "transition_failure_validated": report_validated,
     }
     return (json.dumps(result, sort_keys=True, separators=(",", ":")) + "\n").encode()
 
@@ -172,7 +172,7 @@ def retain_controller_output(output, evidence):
     cached = {name: _read_bounded_regular(output / name)
               for name in ("result.json", "same-path-positive.json")
               if name in names}
-    payloads = _launcher_failure_publication(cached)
+    payloads = _transition_failure_publication(cached)
     if payloads is None:
         payloads = []
         for name in sorted(names & public):

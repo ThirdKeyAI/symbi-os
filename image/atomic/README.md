@@ -556,25 +556,16 @@ from the Python service is rejected by the controller.
 
 Switch and rollback must see the source, overlay and temporary policy bind inside
 `update-o.service`'s existing `PrivateMounts` namespace. A separate mutation unit
-cannot inherit that arbitrary mount namespace. Instead, the fixed `b.service`
-runs only three constant-path preparation commands in `install_t`: copy
-`/usr/bin/bootc` to a new root-owned 0700 file, label it by reference to
-`/usr/bin/ostree`, and move it to `/run/symbi-update-bootc`. Before every use,
-the update service requires regular root-owned source, reference and copy files,
-exact source/copy bytes, an independent single-link copy, exact label equality
-and the `install_exec_t` type. It then executes only the fixed signed switch or
-rollback command through that copy in its own mount namespace. The copy is
-revalidated after execution and removed in `finally` on success, native
-rejection, timeout or exception; unsafe cleanup fails the report.
+cannot inherit that arbitrary mount namespace. The first attempted correction
+therefore made `b.service` copy and relabel a bootc executable for use from the
+update service. That attempt is retained here as history and is superseded below.
 
 The [pinned source review](selinux-launcher-source-review.json) records bootc
-1.17.1's own copy, `/usr/bin/ostree` label and re-exec behavior. The correction
-does not add a permissive fallback, policy exception, network interface or
-caller-selected command. Enforcing SELinux, default-reject signature policy,
-read-only source binding and all resource limits remain required. Static review
-and offline fixtures cannot establish the expected domain transition. A fresh
-hosted run must prove status, switch and rollback under the installed enforcing
-policy before any update or OS qualification.
+1.17.1's own copy, `/usr/bin/ostree` label and re-exec behavior. Enforcing SELinux,
+default-reject signature policy, read-only source binding and all resource limits
+remain required. Static review and offline fixtures cannot establish a permitted
+domain transition. A fresh hosted run must prove status, switch and rollback
+under the installed enforcing policy before any update or OS qualification.
 
 Run 45982201450 reached the fixed launcher preparation under enforcing SELinux,
 but `b.service` failed before `o.service` started. The retained artifact did not
@@ -606,4 +597,44 @@ fails validation, only the normalized controller result remains; the raw
 controller, report, serial and QEMU logs are dropped. Other update evidence
 paths are unchanged.
 After the write, or if the diagnostic fails, the guest powers off. This permits
-one bounded diagnostic rerun and does not qualify or alter the launcher.
+one bounded diagnostic rerun and does not qualify an update.
+
+Run 45994106327 at `50a90d27b9478aaf3e72d1dcf1101a1e7a084e9a` made the
+failure boundary exact. With `SELinuxContext=system_u:system_r:install_t:s0`,
+systemd failed `/usr/bin/install` at `EXEC` with status 203 and then failed the
+`/usr/bin/rm` cleanup at the same step. Neither helper started, no copy, relabel
+or move completed, and no bootc update action ran. The artifact contains no AVC,
+so the specific policy denial remains an inference; the observed failure is the
+forced-context helper execution itself.
+
+The bounded follow-up removes `SELinuxContext`, copy, `chcon`, move and cleanup
+from `b.service`. The unit now runs only
+`/usr/bin/runcon system_u:system_r:install_t:s0 /usr/bin/bootc --version`, with an
+empty capability bounding set, a read-only system view and a private temporary
+directory. `NoNewPrivileges` is intentionally absent because it can suppress the
+SELinux transition being measured. `o.service` still requires the probe, so a
+denied transition fails before any update action and `f.service` retains only the
+bounded transition-probe result and journal.
+
+The probe runs before the Python guest can hash its executables. Its success
+therefore proves only that the installed policy permits this exact explicit
+transition and that the nonmutating bootc version command returned successfully;
+it does not validate the later bytes and does not qualify an update. After the
+probe, `update_guest.py` opens `/usr/bin/runcon`, `/usr/bin/bootc` and
+`/usr/bin/ostree` without following final symlinks, requires root ownership and
+mode 0755, hashes stable file identities, and requires bootc's label to equal
+ostree's exact `install_exec_t` label. Every switch or rollback then uses the
+same fixed runcon context and bootc path inside `o.service`'s private mount
+namespace, with all three inputs revalidated before and after execution. No
+temporary launcher remains to clean up. The mutation service's capability set is
+unchanged because this diagnostic does not establish the complete capability
+requirements of bootc, ostree, mounts and deployment writes.
+
+An explicit `runcon` does not bypass SELinux authorization. Fedora policy issue
+[#3349](https://github.com/fedora-selinux/selinux-policy/issues/3349) identifies
+the missing `unconfined_service_t` install transition, while the proposed policy
+change [#3327](https://github.com/fedora-selinux/selinux-policy/pull/3327) adds the
+full domain-transition interface rather than only a default selector. The hosted
+probe may therefore fail; that failure is the intended fail-closed diagnostic.
+Only a successful probe followed by the complete switch, refusal, reboot and
+rollback sequence can advance this gate, and it still cannot qualify the OS.
