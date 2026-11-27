@@ -161,14 +161,29 @@ the fixed `query-status` and `quit` operations. It gives the same unprivileged
 controller exact QEMU shutdown authority when discretionary signals are denied.
 The socket must remain a singly linked `0700` Unix leaf with the controller's
 exact owner and group. Every connection requires `SO_PEERCRED` to match the
-captured QEMU PID, UID and GID, plus its unchanged process start time and
-executable inode; a pidfd binds exit when the kernel supplies one. Greeting,
-capability and command replies use exact schemas and IDs within 16 KiB and a
-two-second socket deadline. The socket and writable overlay are removed only
-after exact child exit is proven. If that proof fails, bounded regular evidence
-is retained without either private leaf, and the root parent removes its
-identity-bound private storage only after verifying exact Podman-container
-absence.
+captured QEMU PID, UID and GID. Before direct `Popen`, the controller pins the
+absolute executable device and inode, exact argv and inherited cgroup. With the
+default `SIGCHLD` disposition required so the direct child cannot be reaped
+before binding, it opens a mandatory pidfd before any poll or `/proc` read and
+corroborates that same task with its direct parent, start time, all UID/GID
+values, exact cmdline hash and length, and cgroup. `/proc/<pid>/exe` must match
+when readable; only `EACCES` may use the corroborating path, and a successful
+check cannot later become denied. Greeting, capability and command replies use
+exact schemas and IDs within 16 KiB and a two-second socket deadline. TERM and
+KILL target the pidfd, and exit requires both pidfd readiness and the direct
+`Popen` return code.
+The socket and writable overlay are removed only after that proof. If proof
+fails, bounded regular evidence is retained without either private leaf, and
+the root parent removes its identity-bound private storage only after verifying
+exact Podman-container absence.
+
+When executable-link access remains denied, the kernel signals above cannot
+distinguish a same-task re-exec with identical argv. The authenticated QEMU
+binary from the read-only controller image is therefore trusted controller code;
+cmdline is corroboration rather than executable identity. Expanding the threat
+boundary to an adversarial QEMU requires kernel or child cooperation, or
+restoring fail-closed rejection of `EACCES`; it does not justify ptrace or a
+container capability.
 
 Public evidence is limited to the driver's explicit allowlist. Each file is
 regular, singly linked, owned by the test user, hash-bound and at most 2 MiB; the

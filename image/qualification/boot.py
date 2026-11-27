@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """Boot the installed Atomic disk for one bounded offline Landlock qualification."""
 import base64
+import errno
 import hashlib
 import json
 import os
 from pathlib import Path, PurePosixPath
 import re
 import select
+import signal
 import socket
 import stat
 import struct
@@ -32,6 +34,8 @@ MAX_QMP_MESSAGE_BYTES = 16384
 QMP_TIMEOUT_SECONDS = 2
 QMP_SOCKET_MODE = 0o700
 QMP_CREDENTIALS = struct.Struct("=iII")
+MAX_PROCESS_CMDLINE_BYTES = 64 * 1024
+MAX_PROCESS_CGROUP_BYTES = 4096
 QMP_STATES = frozenset({
     "colo", "debug", "finish-migrate", "guest-panicked", "inmigrate",
     "internal-error", "io-error", "paused", "postmigrate", "preconfig",
@@ -156,7 +160,78 @@ def _process_starttime(raw, pid):
     return int(fields[19])
 
 
-def _read_process_state(pid, executable):
+def _process_cgroup(raw):
+    if not isinstance(raw, str):
+        raise ValueError("invalid QEMU process cgroup")
+    lines = raw.splitlines()
+    if len(lines) != 1 or not lines[0].startswith("0::/") or "\x00" in lines[0]:
+        raise ValueError("invalid QEMU process cgroup")
+    path = PurePosixPath(lines[0][3:])
+    if not path.is_absolute() or any(part in (".", "..") for part in path.parts):
+        raise ValueError("invalid QEMU process cgroup")
+    return lines[0]
+
+
+def _command_identity(command):
+    if (not isinstance(command, (list, tuple)) or not command or len(command) > 256
+            or any(type(value) is not str or "\x00" in value for value in command)
+            or not Path(command[0]).is_absolute()):
+        raise ValueError("invalid QEMU launch command")
+    raw = b"\0".join(os.fsencode(value) for value in command) + b"\0"
+    if len(raw) > MAX_PROCESS_CMDLINE_BYTES:
+        raise ValueError("oversized QEMU launch command")
+    return {"cmdline_sha256": hashlib.sha256(raw).hexdigest(),
+            "cmdline_bytes": len(raw)}
+
+
+def prepare_process_identity(command, cgroup):
+    """Bind the exact absolute executable and argv before direct Popen."""
+    command_identity = _command_identity(command)
+    executable = Path(command[0])
+    info = executable.stat()
+    if not stat.S_ISREG(info.st_mode):
+        raise ValueError("QEMU executable is not a regular file")
+    return {"executable": str(executable),
+            "executable_device": info.st_dev,
+            "executable_inode": info.st_ino,
+            **command_identity, "cgroup": _process_cgroup(cgroup)}
+
+
+def _validate_launch_identity(identity):
+    keys = {"executable", "executable_device", "executable_inode",
+            "cmdline_sha256", "cmdline_bytes", "cgroup"}
+    if (not isinstance(identity, dict) or not keys.issubset(identity)
+            or not isinstance(identity["executable"], str)
+            or not Path(identity["executable"]).is_absolute()
+            or type(identity["executable_device"]) is not int
+            or type(identity["executable_inode"]) is not int
+            or not re.fullmatch(r"[0-9a-f]{64}", identity["cmdline_sha256"])
+            or type(identity["cmdline_bytes"]) is not int
+            or not 0 < identity["cmdline_bytes"] <= MAX_PROCESS_CMDLINE_BYTES
+            or _process_cgroup(identity["cgroup"]) != identity["cgroup"]):
+        raise ValueError("invalid QEMU launch identity")
+    info = Path(identity["executable"]).stat()
+    if (not stat.S_ISREG(info.st_mode)
+            or (info.st_dev, info.st_ino) !=
+               (identity["executable_device"], identity["executable_inode"])):
+        raise ValueError("QEMU executable identity changed")
+
+
+def _verify_process_executable(process, identity):
+    try:
+        observed = (process / "exe").stat()
+    except OSError as error:
+        if error.errno == errno.EACCES:
+            return False
+        raise
+    if (not stat.S_ISREG(observed.st_mode)
+            or (observed.st_dev, observed.st_ino) !=
+               (identity["executable_device"], identity["executable_inode"])):
+        raise ValueError("QEMU executable identity changed")
+    return True
+
+
+def _read_process_state(pid, identity):
     process = Path("/proc") / str(pid)
     starttime = _process_starttime(_bounded_text(process / "stat", 4096), pid)
     status = {key: value.strip() for key, value in
@@ -165,54 +240,105 @@ def _read_process_state(pid, executable):
     try:
         uids = [int(value) for value in status["Uid"].split()]
         gids = [int(value) for value in status["Gid"].split()]
+        ppid = int(status["PPid"])
     except (KeyError, ValueError) as error:
         raise ValueError("invalid QEMU process credentials") from error
     if len(uids) != 4 or len(gids) != 4 or len(set(uids)) != 1 or len(set(gids)) != 1:
         raise ValueError("QEMU process credentials changed")
-    observed_executable = (process / "exe").stat()
-    expected_executable = Path(executable).stat()
-    if ((observed_executable.st_dev, observed_executable.st_ino)
-            != (expected_executable.st_dev, expected_executable.st_ino)):
-        raise ValueError("QEMU executable identity changed")
-    return {"pid": pid, "starttime": starttime,
-            "executable_device": observed_executable.st_dev,
-            "executable_inode": observed_executable.st_ino,
-            "uid": uids[0], "gid": gids[0]}
+    cmdline = _bounded_bytes(process / "cmdline", MAX_PROCESS_CMDLINE_BYTES)
+    cgroup = _process_cgroup(
+        _bounded_text(process / "cgroup", MAX_PROCESS_CGROUP_BYTES))
+    return {"pid": pid, "ppid": ppid, "starttime": starttime,
+            "cmdline_sha256": hashlib.sha256(cmdline).hexdigest(),
+            "cmdline_bytes": len(cmdline), "cgroup": cgroup,
+            "uid": uids[0], "gid": gids[0],
+            "proc_exe_verified": _verify_process_executable(process, identity)}
 
 
 def validate_process_state(identity, observed):
-    keys = {"pid", "starttime", "executable_device", "executable_inode", "uid", "gid"}
+    keys = {"pid", "ppid", "starttime", "cmdline_sha256", "cmdline_bytes",
+            "cgroup", "uid", "gid"}
     if (not isinstance(identity, dict) or not isinstance(observed, dict)
-            or set(observed) != keys
-            or any(observed.get(key) != identity.get(key) for key in keys)):
+            or set(observed) != keys | {"proc_exe_verified"}
+            or type(identity.get("proc_exe_verified")) is not bool
+            or type(observed["proc_exe_verified"]) is not bool
+            or any(observed.get(key) != identity.get(key) for key in keys)
+            or (identity["proc_exe_verified"]
+                and not observed["proc_exe_verified"])):
         raise ValueError("QEMU process identity changed")
 
 
-def capture_process_identity(child, executable):
-    if (type(child.pid) is not int or child.pid <= 1 or child.poll() is not None
-            or not Path(executable).is_absolute()):
-        raise ValueError("QEMU did not remain live for identity capture")
-    identity = _read_process_state(child.pid, executable)
-    if identity["uid"] != os.geteuid() or identity["gid"] != os.getegid():
-        raise ValueError("QEMU process owner changed")
-    identity.update(executable=str(executable), pidfd=None)
+def _pidfd_controls():
     opener = getattr(os, "pidfd_open", None)
+    sender = getattr(signal, "pidfd_send_signal", None)
+    if (not callable(opener) or not callable(sender)
+            or signal.getsignal(signal.SIGCHLD) != signal.SIG_DFL):
+        raise ValueError("required QEMU pidfd controls are unavailable")
+    return opener, sender
+
+
+def _pidfd_exited(identity, timeout):
+    pidfd = identity.get("pidfd") if isinstance(identity, dict) else None
+    if type(pidfd) is not int or pidfd < 0:
+        raise ValueError("QEMU pidfd is unavailable")
     try:
-        if opener is not None:
-            identity["pidfd"] = opener(child.pid, 0)
-        validate_process_state(identity, _read_process_state(child.pid, executable))
+        return bool(select.select([pidfd], [], [], timeout)[0])
+    except (OSError, ValueError) as error:
+        raise ValueError("QEMU pidfd is invalid") from error
+
+
+def _require_live_pidfd(identity):
+    if _pidfd_exited(identity, 0):
+        raise ValueError("exact QEMU process exited")
+
+
+def capture_process_identity(child, prepared, reader=_read_process_state):
+    if (type(child.pid) is not int or child.pid <= 1
+            or not isinstance(prepared, dict)):
+        raise ValueError("QEMU did not remain live for identity capture")
+    opener, _ = _pidfd_controls()
+    identity = {**prepared, "pid": child.pid, "pidfd": None}
+    try:
+        identity["pidfd"] = opener(child.pid, 0)
+        _require_live_pidfd(identity)
+        _validate_launch_identity(prepared)
+        launched = _command_identity(child.args)
+        if launched != {key: prepared[key] for key in launched}:
+            raise ValueError("QEMU Popen command identity changed")
+        observed = reader(child.pid, identity)
+        identity.update(ppid=observed["ppid"], starttime=observed["starttime"],
+                        uid=observed["uid"], gid=observed["gid"],
+                        proc_exe_verified=observed["proc_exe_verified"])
+        if (identity["ppid"] != os.getpid()
+                or identity["uid"] != os.geteuid()
+                or identity["gid"] != os.getegid()):
+            raise ValueError("QEMU direct-child identity changed")
+        validate_process_state(identity, observed)
+        observed = reader(child.pid, identity)
+        validate_process_state(identity, observed)
+        if observed["proc_exe_verified"]:
+            identity["proc_exe_verified"] = True
+        _require_live_pidfd(identity)
         if child.poll() is not None:
             raise ValueError("QEMU exited during identity capture")
     except Exception:
-        if identity["pidfd"] is not None:
-            os.close(identity["pidfd"])
+        if type(identity["pidfd"]) is int and identity["pidfd"] >= 0:
+            try:
+                os.close(identity["pidfd"])
+            except OSError:
+                pass
         raise
     return identity
 
 
 def verify_process_identity(identity, reader=_read_process_state):
-    validate_process_state(
-        identity, reader(identity["pid"], identity["executable"]))
+    _require_live_pidfd(identity)
+    _validate_launch_identity(identity)
+    observed = reader(identity["pid"], identity)
+    validate_process_state(identity, observed)
+    if observed["proc_exe_verified"]:
+        identity["proc_exe_verified"] = True
+    _require_live_pidfd(identity)
 
 
 def validate_peer_credentials(raw, identity):
@@ -282,27 +408,46 @@ def _cleanup_error(error):
 
 
 def wait_for_exact_exit(child, identity, timeout):
-    """Prove exit of the captured direct child, using its pidfd when available."""
+    """Prove exit of the captured direct child through its mandatory pidfd."""
     if identity is None or child.pid != identity.get("pid"):
         return False
+    _pidfd_controls()
     returncode = child.poll()
     if returncode is None:
-        verify_process_identity(identity)
-        pidfd = identity.get("pidfd")
-        if pidfd is not None and not select.select([pidfd], [], [], timeout)[0]:
+        try:
+            verify_process_identity(identity)
+        except Exception:
+            returncode = child.poll()
+            if _pidfd_exited(identity, timeout):
+                if returncode is None:
+                    try:
+                        returncode = child.wait(timeout=0.1)
+                    except subprocess.TimeoutExpired:
+                        pass
+                if type(returncode) is int:
+                    return True
+            raise
+        if not _pidfd_exited(identity, timeout):
             return False
         try:
-            returncode = child.wait(timeout=timeout if pidfd is None else 0.1)
+            returncode = child.wait(timeout=0.1)
         except subprocess.TimeoutExpired:
             return False
     if type(returncode) is not int:
         return False
-    pidfd = identity.get("pidfd")
-    return pidfd is None or bool(select.select([pidfd], [], [], 0)[0])
+    return _pidfd_exited(identity, 0)
+
+
+def _send_pidfd_signal(identity, number):
+    """Signal only the exact task referenced by the captured pidfd."""
+    _, sender = _pidfd_controls()
+    _require_live_pidfd(identity)
+    sender(identity["pidfd"], number, None, 0)
 
 
 def stop_child(child, identity=None, control=None, request=qmp_command,
-               prove_exit=wait_for_exact_exit, verify=verify_process_identity):
+               prove_exit=wait_for_exact_exit, verify=verify_process_identity,
+               send_signal=_send_pidfd_signal):
     """Stop only the captured QEMU child and prove its exit before cleanup."""
     result = {"attempted": False, "qmp_quit": False, "terminated": False,
               "killed": False, "exit_proven": False, "errors": []}
@@ -336,7 +481,7 @@ def stop_child(child, identity=None, control=None, request=qmp_command,
                 result["errors"].append(_cleanup_error(error))
     try:
         verify(identity)
-        child.terminate()
+        send_signal(identity, signal.SIGTERM)
         result["terminated"] = True
     except (OSError, ValueError) as error:
         result["errors"].append(_cleanup_error(error))
@@ -349,7 +494,7 @@ def stop_child(child, identity=None, control=None, request=qmp_command,
             result["errors"].append(_cleanup_error(error))
     try:
         verify(identity)
-        child.kill()
+        send_signal(identity, signal.SIGKILL)
         result["killed"] = True
     except (OSError, ValueError) as error:
         result["errors"].append(_cleanup_error(error))
@@ -407,11 +552,16 @@ def write_progress_sample(stream, sample):
 
 
 def _bounded_text(path, maximum):
+    raw = _bounded_bytes(path, maximum)
+    return raw.decode("utf-8", errors="strict").strip()
+
+
+def _bounded_bytes(path, maximum):
     with Path(path).open("rb") as stream:
         raw = stream.read(maximum + 1)
     if len(raw) > maximum:
         raise ValueError("oversized progress input")
-    return raw.decode("utf-8", errors="strict").strip()
+    return raw
 
 
 def progress_snapshot(child, control, output, group, started, sample):
@@ -647,7 +797,10 @@ def validate_guest_report(report, expected, expected_hash, runner_hash, driver_h
 def main():
     if os.geteuid() != 10001 or not Path("/run/.containerenv").exists():
         raise SystemExit("Use the unprivileged disposable hosted QEMU container")
-    group = Path("/sys/fs/cgroup") / Path(Path("/proc/self/cgroup").read_text().strip().split("::", 1)[1]).relative_to("/")
+    self_cgroup = _process_cgroup(
+        _bounded_text("/proc/self/cgroup", MAX_PROCESS_CGROUP_BYTES))
+    group = (Path("/sys/fs/cgroup") /
+             Path(self_cgroup.split("::", 1)[1]).relative_to("/"))
     limits = {name: (group / name).read_text().strip()
               for name in ("memory.max", "memory.swap.max", "cpu.max", "pids.max")}
     process = {key: value.strip() for key, value in
@@ -695,19 +848,22 @@ def main():
         started = time.monotonic()
         with (output / "qemu.log").open("x") as log, \
                 (output / "progress.jsonl").open("xb") as progress:
+            prepared_process = prepare_process_identity(command, self_cgroup)
+            _pidfd_controls()
             child = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=log,
                                      stderr=subprocess.STDOUT,
                                      env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8",
                                           "HOME": "/output", "TMPDIR": "/output"},
                                      umask=0o077)
-            process_identity = capture_process_identity(child, command[0])
+            process_identity = capture_process_identity(child, prepared_process)
             qmp_control = create_qmp_control(qmp_path, process_identity)
             record["qemu_process"] = {
                 key: process_identity[key] for key in
-                ("pid", "starttime", "executable_device", "executable_inode",
-                 "uid", "gid", "executable")
+                ("pid", "ppid", "starttime", "executable_device", "executable_inode",
+                 "uid", "gid", "executable", "cmdline_sha256", "cmdline_bytes",
+                 "cgroup", "proc_exe_verified")
             }
-            record["qemu_process"]["pidfd"] = process_identity["pidfd"] is not None
+            record["qemu_process"]["pidfd"] = True
             next_progress = started
             progress_samples = 0
             while child.poll() is None:
