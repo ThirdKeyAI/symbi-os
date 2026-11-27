@@ -323,7 +323,7 @@ def validate_retained_inputs(root, contract, lock):
             "retained Ubuntu rootfs verification record changed")
     return {
         name: {
-            "name": PurePosixPath(retained[name]).name,
+            "name": name,
             "bytes": len(payload),
             "sha256": sha256_bytes(payload),
         }
@@ -958,7 +958,7 @@ def _run_metadata(lock, contract, work, evidence, runner, verified_at,
         command, stdout, _ = runner.run(
             "inrelease-" + suite, argv,
             contract["timeouts"]["metadata_seconds"],
-            inputs_=({"name": inrelease_path.name, **inrelease},
+            inputs_=({"name": "inrelease-" + suite, **inrelease},
                      keyring_identity),
         )
         _require_success(command, "Ubuntu InRelease signature")
