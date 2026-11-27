@@ -1,0 +1,185 @@
+{
+  "schema": 1,
+  "passed": false,
+  "qualification": false,
+  "run": {
+    "id": 46011664138,
+    "attempt": 1,
+    "event": "workflow_dispatch",
+    "job_id": 140548454094,
+    "head_branch": "card/P0-03-selinux-fix",
+    "head_sha": "6aabe008d9a534c09b10adfae89fd35f66547f4b",
+    "head_tree": "be04995a18bd0abf4d351e488719ef8ccaf09f80",
+    "head_parent": "37493353f939b72eed1435835d0a796e1d3fdd1a",
+    "conclusion": "failure",
+    "started_at": "2026-11-27T13:58:11Z",
+    "completed_at": "2026-11-27T14:21:13Z",
+    "native_step_started_at": "2026-11-27T14:02:57Z",
+    "native_step_completed_at": "2026-11-27T14:21:10Z",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46011664138"
+  },
+  "artifact": {
+    "id": 15206111573,
+    "name": "atomic-development-boot-generic",
+    "bytes": 70358,
+    "digest": "sha256:838bb3f518e87aabfcf9f64fd5ccf523401977e359abc18f5d7dca6486045fb8",
+    "downloaded_zip_sha256": "838bb3f518e87aabfcf9f64fd5ccf523401977e359abc18f5d7dca6486045fb8",
+    "safe_regular_files": 95,
+    "uncompressed_bytes": 151114,
+    "zip_integrity": "pass"
+  },
+  "critical_evidence_sha256": {
+    "atomic-disk-evidence/result.json": "a472aec4b9743c40520dcf2e452265ced9e5a62633bd2ae516d5301398820040",
+    "atomic-disk-evidence/source-authentication/result.json": "7408498398c31675101340621274a985b022b64d957ca824d6aace14dd79f9b8",
+    "atomic-update-evidence/result.json": "21bc9280a3dc07e4b684f1108b83e74e7a8b05ba4417c8a5a4c429034a098432",
+    "atomic-update-evidence/controller-result.json": "f3bd45908147ca8574f6e0f1f97f8c33f047f1d577ab6322b0925559a138d4e1",
+    "atomic-update-evidence/same-path-positive.json": "7e6becda2e518470818bd2a219321de16333c7dd3a9854e54eedea41b642adfc"
+  },
+  "observation": {
+    "stage": "same-path-positive-transition-probe",
+    "enforcing_selinux_required": true,
+    "source_authentication_passed": true,
+    "source_authentication_negative_controls_passed": [
+      "unsigned",
+      "wrong-key",
+      "wrong-reference",
+      "altered-signature"
+    ],
+    "predecessor_install_passed": true,
+    "guest_booted": true,
+    "probe_command": [
+      "/usr/bin/runcon",
+      "system_u:system_r:install_t:s0",
+      "/usr/bin/bootc",
+      "--version"
+    ],
+    "probe_result": "exit-code",
+    "probe_exit_status": 126,
+    "probe_message": "runcon reported permission denied for /usr/bin/bootc",
+    "bounded_journal_lines": 7,
+    "bounded_journal_bytes": 756,
+    "bounded_journal_sha256": "a4af98bc40f4beb47a2ae40b6b9b2bedaba932cb5b706a776634d6bef18ae0c3",
+    "source_context_observed": false,
+    "avc_observed": false,
+    "avc_source_context_known": false,
+    "avc_target_context_known": false,
+    "avc_class_known": false,
+    "avc_permission_known": false,
+    "transition_failure_validated": true,
+    "update_action_ran": false,
+    "guest_update_rejection_controls_ran": false,
+    "updated_boot_ran": false,
+    "rollback_ran": false
+  },
+  "resources": {
+    "parent": {
+      "memory_max_bytes": 5368709120,
+      "memory_peak_bytes": 5368709120,
+      "memory_max_events": 168994,
+      "memory_swap_max_bytes": 0,
+      "cpu_quota": "2 CPUs",
+      "pids_max": 256
+    },
+    "controller": {
+      "memory_max_bytes": 3221225472,
+      "memory_total_with_swap_bytes": 3221225472,
+      "added_swap_bytes": 0,
+      "cpu_quota": "2 CPUs",
+      "pids_max": 64
+    },
+    "installer": {
+      "memory_max_bytes": 2147483648,
+      "memory_swap_max_bytes": 0,
+      "cpu_quota": "1 CPU",
+      "pids_max": 128
+    },
+    "oom_events": 0,
+    "oom_kill_events": 0,
+    "oom_group_kill_events": 0
+  },
+  "cleanup": {
+    "four_containers_removed_and_absent": true,
+    "image_removed_and_absent": true,
+    "loop_devices_absent": true,
+    "private_storage_removed": true,
+    "private_runroot_removed": true,
+    "passed": true
+  },
+  "local_diagnostic_correction": {
+    "status": "implemented-pending-hosted-rerun",
+    "source_capture": [
+      "/usr/bin/cat",
+      "/proc/self/attr/current"
+    ],
+    "source_capture_position": "b.service ExecStartPre immediately before the unchanged explicit runcon probe",
+    "source_capture_identity_bound": [
+      "unit",
+      "invocation ID",
+      "command name",
+      "PID",
+      "stdout transport",
+      "journal receipt timestamp"
+    ],
+    "avc_window": "current boot, exact failed main PID, and a bounded 120-second journal-receipt margin around main-process execution",
+    "avc_transports": [
+      "audit",
+      "kernel"
+    ],
+    "avc_identity_bound": [
+      "main PID",
+      "runcon command name",
+      "/usr/bin/bootc path",
+      "source or requested execution context"
+    ],
+    "retained_avc_fields": [
+      "audit serial",
+      "transport",
+      "journal receipt timestamp",
+      "PID",
+      "command name",
+      "path field",
+      "path",
+      "source context",
+      "target context",
+      "class",
+      "permissions",
+      "permissive flag",
+      "cursor hash"
+    ],
+    "structured_journal_max_bytes": 65536,
+    "structured_journal_max_line_bytes": 8192,
+    "source_records_max": 24,
+    "avc_records_max": 32,
+    "raw_journal_cursor_retained": false,
+    "raw_avc_message_retained": false,
+    "unrelated_journal_fields_retained": false,
+    "overlong_generic_journal_line_prefix_retained": false,
+    "probe_command_changed": false,
+    "enforcing_mode_changed": false,
+    "policy_allow_rule_added": false,
+    "resource_limits_changed": false,
+    "update_after_probe_failure": false
+  },
+  "local_verification": {
+    "focused_update_tests": 64,
+    "focused_peak_rss_kib": 36184,
+    "focused_swaps": 0,
+    "full_image_tests": 343,
+    "full_image_peak_rss_kib": 56260,
+    "full_image_swaps": 0,
+    "python_ast": "pass",
+    "systemd_unit_syntax": "pass",
+    "diff_check": "pass",
+    "independent_cold_review": "pass"
+  },
+  "claims": {
+    "selinux_transition_supported": false,
+    "signed_update_accepted": false,
+    "four_guest_signature_rejections_passed": false,
+    "updated_boot_passed": false,
+    "rollback_passed": false,
+    "release_qualified": false,
+    "os_qualified": false
+  },
+  "next": "Run the exact reviewed correction once. Use the bounded source-context and AVC fields to choose between a narrowly justified policy change and a service design change; do not add an allow rule from the status-126 result alone."
+}

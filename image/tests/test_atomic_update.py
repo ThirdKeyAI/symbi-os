@@ -34,7 +34,15 @@ from image.atomic.update_boot import (DISPOSABLE_PHASE_TIMEOUT_SECONDS,
 from image.atomic.update_boot_failure import (JOURNAL_MAX_BYTES,
                                               JOURNAL_MAX_LINES,
                                               JOURNAL_MAX_LINE_BYTES,
+                                              AVC_JOURNAL_COMMAND,
+                                              SOURCE_CAPTURE_COMMAND,
+                                              SOURCE_JOURNAL_COMMAND,
                                               _SENSITIVE_ASSIGNMENT as PRODUCER_SENSITIVE,
+                                              bounded_avc_evidence,
+                                              fixed_command as fixed_failure_command,
+                                              parse_avc_evidence,
+                                              parse_source_capture,
+                                              monitor_properties,
                                               bounded_journal_excerpt,
                                               service_properties,
                                               write_report as write_failure_report)
@@ -950,6 +958,9 @@ class AtomicUpdateTests(unittest.TestCase):
         excerpt = bounded_journal_excerpt(
             "b.service: /usr/bin/runcon: permission denied while executing /usr/bin/bootc: "
             "Permission denied\n")
+        source = "system_u:system_r:unconfined_service_t:s0"
+        requested = "system_u:system_r:install_t:s0"
+        invocation = "b" * 32
         return {
             "schema": 1,
             "passed": False,
@@ -962,7 +973,50 @@ class AtomicUpdateTests(unittest.TestCase):
             "service": {
                 "Result": "exit-code", "ExecMainCode": "1",
                 "ExecMainStatus": "229", "ActiveState": "failed",
-                "SubState": "failed",
+                "SubState": "failed", "InvocationID": invocation,
+                "ExecMainPID": "654",
+                "ExecMainStartTimestampMonotonic": "1001",
+                "ExecMainExitTimestampMonotonic": "1003",
+            },
+            "monitor": {
+                "unit": "b.service", "invocation_id": invocation,
+                "service_result": "exit-code", "exit_code": "exited",
+                "exit_status": "229",
+            },
+            "probe": {
+                "command": SOURCE_CAPTURE_COMMAND,
+                "journal_command": SOURCE_JOURNAL_COMMAND,
+                "source_context": source,
+                "requested_context": requested,
+                "probe_command": ["/usr/bin/runcon", requested,
+                                  "/usr/bin/bootc", "--version"],
+                "invocation_id": invocation,
+                "pid": 653,
+                "transport": "stdout",
+                "receipt_monotonic_usec": 1000,
+                "cursor_sha256": "c" * 64,
+            },
+            "avc": {
+                "command": AVC_JOURNAL_COMMAND,
+                "raw_bytes": 512,
+                "raw_sha256": "d" * 64,
+                "line_count": 1,
+                "truncated": False,
+                "records": [{
+                    "audit_serial": 42,
+                    "transport": "kernel",
+                    "receipt_monotonic_usec": 1002,
+                    "pid": 654,
+                    "comm": "runcon",
+                    "path_field": "path",
+                    "path": "/usr/bin/bootc",
+                    "source_context": source,
+                    "target_context": requested,
+                    "class": "process",
+                    "permissions": ["transition"],
+                    "permissive": False,
+                    "cursor_sha256": "e" * 64,
+                }],
             },
             "journal": excerpt,
             "scope": "Bounded explicit-transition diagnostics; no update action ran",
@@ -1003,6 +1057,32 @@ class AtomicUpdateTests(unittest.TestCase):
         changed["service"]["ExecMainStatus"] = "0"
         mutations.append(changed)
         changed = copy.deepcopy(report)
+        changed["monitor"]["invocation_id"] = "c" * 32
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["monitor"]["exit_code"] = "killed"
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["probe"]["probe_command"][-1] = "status"
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["probe"]["receipt_monotonic_usec"] = 120001002
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["avc"]["records"][0]["pid"] = 655
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["avc"]["records"][0]["source_context"] = (
+            "system_u:system_r:unrelated_t:s0")
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["avc"]["records"][0]["permissive"] = True
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["avc"]["records"].append(copy.deepcopy(changed["avc"]["records"][0]))
+        changed["avc"]["line_count"] = 2
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
         changed["journal"]["excerpt"][0] = "x" * (JOURNAL_MAX_LINE_BYTES + 1)
         changed["journal"]["bytes"] = len(changed["journal"]["excerpt"][0]) + 1
         changed["journal"]["sha256"] = hashlib.sha256(
@@ -1020,8 +1100,19 @@ class AtomicUpdateTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_transition_failure_report(report, "b" * 64)
         properties = ("Result=exit-code\nExecMainCode=1\nExecMainStatus=229\n"
-                      "ActiveState=failed\nSubState=failed\n")
+                      "ActiveState=failed\nSubState=failed\n"
+                      "InvocationID=" + "b" * 32 + "\nExecMainPID=654\n"
+                      "ExecMainStartTimestampMonotonic=1001\n"
+                      "ExecMainExitTimestampMonotonic=1003\n")
         self.assertEqual(service_properties(properties), report["service"])
+        monitor_environment = {
+            "MONITOR_UNIT": "b.service",
+            "MONITOR_INVOCATION_ID": "b" * 32,
+            "MONITOR_SERVICE_RESULT": "exit-code",
+            "MONITOR_EXIT_CODE": "exited",
+            "MONITOR_EXIT_STATUS": "229",
+        }
+        self.assertEqual(monitor_properties(monitor_environment), report["monitor"])
         with self.assertRaisesRegex(ValueError, "did not fail closed"):
             service_properties(properties.replace("ExecMainStatus=229",
                                                   "ExecMainStatus=0"))
@@ -1102,6 +1193,139 @@ class AtomicUpdateTests(unittest.TestCase):
                     raw_unredacted).hexdigest()
                 with self.assertRaisesRegex(ValueError, "excerpt is unsafe"):
                     validate_transition_failure_report(changed, "a" * 64)
+
+    def test_transition_source_and_avc_are_correlated_and_field_allowlisted(self):
+        invocation = "b" * 32
+        cursor = "s=" + "1" * 64
+        source_context = "system_u:system_r:unconfined_service_t:s0"
+        source_raw = json.dumps({
+            "MESSAGE": source_context,
+            "__CURSOR": cursor,
+            "__MONOTONIC_TIMESTAMP": "1000",
+            "_COMM": "cat",
+            "_PID": "653",
+            "_TRANSPORT": "stdout",
+            "_SYSTEMD_UNIT": "b.service",
+            "_SYSTEMD_INVOCATION_ID": invocation,
+        }) + "\n"
+        source = parse_source_capture(source_raw, invocation)
+        self.assertEqual(source["source_context"], source_context)
+        self.assertEqual(source["pid"], 653)
+        self.assertEqual(source["command"], SOURCE_CAPTURE_COMMAND)
+        service = self.transition_failure_report()["service"]
+        message = (
+            "audit: type=1400 audit(100.200:42): avc: denied { transition } for "
+            "pid=654 comm=\"runcon\" path=\"/usr/bin/bootc\" dev=\"vda3\" "
+            "scontext=" + source_context + " "
+            "tcontext=system_u:system_r:install_t:s0 tclass=process permissive=0"
+        )
+        raw = json.dumps({
+            "MESSAGE": message,
+            "__CURSOR": "s=" + "2" * 64,
+            "__MONOTONIC_TIMESTAMP": "1002",
+            "_TRANSPORT": "kernel",
+        }) + "\n"
+        observed = parse_avc_evidence(raw, source, service)
+        self.assertEqual(observed["command"], AVC_JOURNAL_COMMAND)
+        self.assertEqual(observed["records"][0]["permissions"], ["transition"])
+        self.assertEqual(observed["records"][0]["source_context"], source_context)
+        self.assertEqual(observed["records"][0]["target_context"],
+                         "system_u:system_r:install_t:s0")
+        retained = json.dumps(observed, sort_keys=True)
+        self.assertNotIn("vda3", retained)
+        self.assertNotIn("audit: type=1400", retained)
+        self.assertEqual(set(observed["records"][0]), {
+            "audit_serial", "transport", "receipt_monotonic_usec", "pid", "comm",
+            "path_field", "path", "source_context", "target_context", "class",
+            "permissions", "permissive", "cursor_sha256",
+        })
+        runner = Mock(return_value=raw)
+        bounded = bounded_avc_evidence(source, service, runner)
+        runner.assert_called_once_with(
+            AVC_JOURNAL_COMMAND, timeout=5, stdout_max=64 * 1024)
+        self.assertEqual(bounded["command"], AVC_JOURNAL_COMMAND)
+        self.assertNotIn(cursor, json.dumps(bounded, sort_keys=True))
+
+        entrypoint = raw.replace(
+            "scontext=" + source_context,
+            "scontext=system_u:system_r:install_t:s0").replace(
+                "tcontext=system_u:system_r:install_t:s0 tclass=process",
+                "tcontext=system_u:object_r:install_exec_t:s0 tclass=file")
+        self.assertEqual(
+            parse_avc_evidence(entrypoint, source, service)["records"][0]["class"],
+            "file",
+        )
+        reordered = raw.replace('"1002"', '"999"')
+        self.assertEqual(
+            parse_avc_evidence(reordered, source, service)["records"][0]
+            ["receipt_monotonic_usec"],
+            999,
+        )
+
+        reordered_report = self.transition_failure_report()
+        reordered_report["probe"]["receipt_monotonic_usec"] = 1002
+        reordered_report["avc"]["records"][0]["receipt_monotonic_usec"] = 999
+        self.assertEqual(
+            validate_transition_failure_report(reordered_report, "a" * 64),
+            reordered_report,
+        )
+
+        for changed in (
+                raw.replace("permissive=0", "permissive=1"),
+                raw.replace("pid=654", "pid=655"),
+                raw.replace(source_context,
+                            "system_u:system_r:another_service_t:s0"),
+                raw.replace('"1002"', '"120001004"')):
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                parse_avc_evidence(changed, source, service)
+        with self.assertRaisesRegex(ValueError, "empty or truncated"):
+            parse_avc_evidence(raw * 33, source, service)
+        with self.assertRaisesRegex(ValueError, "duplicated"):
+            parse_avc_evidence(raw * 2, source, service)
+        ambiguous = source_raw.replace(
+            '"MESSAGE":', '"MESSAGE":"duplicate","MESSAGE":', 1)
+        with self.assertRaises(ValueError):
+            parse_source_capture(ambiguous, invocation)
+
+    def test_transition_diagnostic_command_hard_caps_pipes(self):
+        self.assertEqual(
+            fixed_failure_command(["/usr/bin/printf", "bounded"],
+                                  timeout=2, stdout_max=16),
+            "bounded",
+        )
+        with self.assertRaisesRegex(ValueError, "exceeded its bound"):
+            fixed_failure_command(
+                ["/usr/bin/python3", "-c", "import sys;sys.stdout.write('x'*8192)"],
+                timeout=2, stdout_max=4096,
+            )
+        with self.assertRaisesRegex(ValueError, "exceeded its bound"):
+            fixed_failure_command(
+                ["/usr/bin/python3", "-c", "import sys;sys.stderr.write('x'*16384)"],
+                timeout=2, stdout_max=4096,
+            )
+
+    def test_journal_boundary_never_retains_a_partial_secret(self):
+        secret = "A" * 64
+        raw = (("x!" * 177 + "\n") * 23) + secret + "\n"
+        observed = bounded_journal_excerpt(raw)
+        rendered = "\n".join(observed["excerpt"])
+        self.assertTrue(observed["truncated"])
+        self.assertNotIn("A" * 8, rendered)
+        report = self.transition_failure_report()
+        report["journal"] = observed
+        self.assertEqual(validate_transition_failure_report(report, "a" * 64), report)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            output, evidence = root / "output", root / "evidence"
+            output.mkdir()
+            evidence.mkdir()
+            controller = self.transition_failure_controller(report)
+            (output / "result.json").write_text(json.dumps(controller) + "\n")
+            (output / "same-path-positive.json").write_text(json.dumps(report) + "\n")
+            retain_controller_output(output, evidence)
+            retained = b"".join(path.read_bytes() for path in evidence.iterdir())
+            self.assertNotIn(b"A" * 8, retained)
 
     def test_each_bootc_rejection_uses_a_distinct_disposable_overlay(self):
         commands = {case: negative_qemu_command(case) for case in (
@@ -1515,6 +1739,8 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertEqual(
             transition["ExecStart"],
             "/usr/bin/runcon system_u:system_r:install_t:s0 /usr/bin/bootc --version")
+        self.assertEqual(transition["ExecStartPre"],
+                         "/usr/bin/cat /proc/self/attr/current")
         text = (root / "image/atomic/update-b.service").read_text()
         self.assertNotIn("SELinuxContext=", text)
         self.assertNotIn("ExecStopPost=", text)
@@ -1526,6 +1752,9 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertNotIn("/run/symbi-update-bootc", text)
         self.assertNotIn("PrivateMounts=", text)
         self.assertNotIn("/bin/sh", text)
+        self.assertNotIn("/usr/bin/python3", text)
+        self.assertNotIn("ImportCredential=", text)
+        self.assertNotIn("ExecStartPre=+", text)
         conditions = [line for line in text.splitlines()
                       if line.startswith("ConditionPathExists=")]
         self.assertEqual(conditions, ["ConditionPathExists=!/etc/initrd-release"])

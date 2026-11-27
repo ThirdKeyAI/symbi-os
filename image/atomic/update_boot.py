@@ -22,6 +22,32 @@ TRANSITION_FAILURE_JOURNAL_COMMAND = [
 TRANSITION_FAILURE_JOURNAL_MAX_BYTES = 8 * 1024
 TRANSITION_FAILURE_JOURNAL_MAX_LINES = 24
 TRANSITION_FAILURE_JOURNAL_MAX_LINE_BYTES = 512
+TRANSITION_SOURCE_CAPTURE_COMMAND = ["/usr/bin/cat", "/proc/self/attr/current"]
+TRANSITION_PROBE_COMMAND = [
+    "/usr/bin/runcon", "system_u:system_r:install_t:s0",
+    "/usr/bin/bootc", "--version",
+]
+TRANSITION_SOURCE_JOURNAL_COMMAND = [
+    "/usr/bin/journalctl", "--unit=b.service", "--boot=0", "--no-pager",
+    "--quiet", "--output=json",
+    "--output-fields=MESSAGE,__CURSOR,__MONOTONIC_TIMESTAMP,_COMM,_PID,"
+    "_TRANSPORT,_SYSTEMD_UNIT,_SYSTEMD_INVOCATION_ID", "--lines=25",
+]
+TRANSITION_AVC_JOURNAL_COMMAND = [
+    "/usr/bin/journalctl", "--boot=0", "--no-pager", "--quiet",
+    "--output=json",
+    "--output-fields=MESSAGE,__CURSOR,__MONOTONIC_TIMESTAMP,_TRANSPORT",
+    "--lines=33",
+    "--grep=avc:[[:space:]]+denied.*comm=\"runcon\".*(?:path|name)=\"/usr/bin/bootc\"",
+    "_TRANSPORT=audit", "+", "_TRANSPORT=kernel",
+]
+TRANSITION_AVC_MAX_BYTES = 64 * 1024
+TRANSITION_AVC_MAX_RECORDS = 32
+TRANSITION_JOURNAL_CORRELATION_MARGIN_USEC = 120 * 1_000_000
+_SELINUX_CONTEXT = re.compile(
+    r"[A-Za-z0-9_.-]{1,64}:[A-Za-z0-9_.-]{1,64}:"
+    r"[A-Za-z0-9_.-]{1,128}:[A-Za-z0-9_.:,-]{1,192}"
+)
 _SENSITIVE_COMPONENT = (
     r"(?:(?:api|private)[_.-]key|authorization|authentication|auth|cookie|"
     r"credential|password|passwd|passphrase|secret|token|jwt|pat|key)"
@@ -85,7 +111,8 @@ def validate_transition_failure_report(report, runner_hash):
     """Accept only the hash-bound, bounded explicit-transition diagnostic."""
     required = {
         "schema", "passed", "guest_booted", "release_qualified", "product",
-        "diagnostic", "unit", "runner_sha256", "service", "journal", "scope",
+        "diagnostic", "unit", "runner_sha256", "service", "monitor", "probe",
+        "avc", "journal", "scope",
     }
     if (not isinstance(report, dict) or set(report) != required
             or report.get("schema") != 1 or report.get("passed") is not False
@@ -101,7 +128,14 @@ def validate_transition_failure_report(report, runner_hash):
     service = report.get("service")
     service_fields = {
         "Result", "ExecMainCode", "ExecMainStatus", "ActiveState", "SubState",
+        "InvocationID", "ExecMainPID", "ExecMainStartTimestampMonotonic",
+        "ExecMainExitTimestampMonotonic",
     }
+    main_pid = service.get("ExecMainPID", "") if isinstance(service, dict) else ""
+    main_started = (service.get("ExecMainStartTimestampMonotonic", "")
+                    if isinstance(service, dict) else "")
+    main_exited = (service.get("ExecMainExitTimestampMonotonic", "")
+                   if isinstance(service, dict) else "")
     if (not isinstance(service, dict) or set(service) != service_fields
             or service.get("Result") == "success"
             or service.get("ActiveState") != "failed"
@@ -109,9 +143,102 @@ def validate_transition_failure_report(report, runner_hash):
             or re.fullmatch(r"[0-9]{1,3}", service.get("ExecMainCode", "")) is None
             or re.fullmatch(r"[0-9]{1,3}", service.get("ExecMainStatus", "")) is None
             or service.get("ExecMainStatus") == "0"
+            or re.fullmatch(r"[a-f0-9]{32}", service.get("InvocationID", "")) is None
+            or re.fullmatch(r"[0-9]{1,10}", main_pid) is None
+            or not 0 < int(main_pid) <= 2**31 - 1
+            or re.fullmatch(r"[0-9]{1,20}", main_started) is None
+            or re.fullmatch(r"[0-9]{1,20}", main_exited) is None
+            or not 0 < int(main_started) <= int(main_exited) <= 2**63 - 1
             or any(not isinstance(value, str) or not value or len(value.encode()) > 128
                    for value in service.values())):
         raise ValueError("transition-probe service failure is incomplete")
+    monitor = report.get("monitor")
+    if (not isinstance(monitor, dict)
+            or set(monitor) != {"unit", "invocation_id", "service_result",
+                                "exit_code", "exit_status"}
+            or monitor.get("unit") != "b.service"
+            or monitor.get("invocation_id") != service["InvocationID"]
+            or monitor.get("service_result") != service["Result"]
+            or monitor.get("exit_code") != "exited"
+            or monitor.get("exit_status") != service["ExecMainStatus"]):
+        raise ValueError("transition-probe OnFailure activation is incomplete")
+    probe = report.get("probe")
+    probe_fields = {
+        "command", "journal_command", "source_context", "requested_context",
+        "probe_command", "invocation_id", "pid", "transport",
+        "receipt_monotonic_usec", "cursor_sha256",
+    }
+    if (not isinstance(probe, dict) or set(probe) != probe_fields
+            or probe.get("command") != TRANSITION_SOURCE_CAPTURE_COMMAND
+            or probe.get("journal_command") != TRANSITION_SOURCE_JOURNAL_COMMAND
+            or _SELINUX_CONTEXT.fullmatch(probe.get("source_context", "")) is None
+            or probe.get("requested_context") != "system_u:system_r:install_t:s0"
+            or probe.get("probe_command") != TRANSITION_PROBE_COMMAND
+            or probe.get("invocation_id") != service["InvocationID"]
+            or type(probe.get("pid")) is not int
+            or not 0 < probe["pid"] <= 2**31 - 1
+            or probe.get("transport") != "stdout"
+            or type(probe.get("receipt_monotonic_usec")) is not int
+            or probe["receipt_monotonic_usec"] <= 0
+            or abs(probe["receipt_monotonic_usec"] - int(main_started))
+               > TRANSITION_JOURNAL_CORRELATION_MARGIN_USEC
+            or re.fullmatch(r"[a-f0-9]{64}", probe.get("cursor_sha256", "")) is None):
+        raise ValueError("transition source-context observation is incomplete")
+    avc = report.get("avc")
+    avc_fields = {
+        "command", "raw_bytes", "raw_sha256", "line_count", "truncated", "records",
+    }
+    if (not isinstance(avc, dict) or set(avc) != avc_fields
+            or avc.get("command") != TRANSITION_AVC_JOURNAL_COMMAND
+            or type(avc.get("raw_bytes")) is not int
+            or not 0 < avc["raw_bytes"] <= TRANSITION_AVC_MAX_BYTES
+            or re.fullmatch(r"[a-f0-9]{64}", avc.get("raw_sha256", "")) is None
+            or type(avc.get("line_count")) is not int
+            or not 1 <= avc["line_count"] <= TRANSITION_AVC_MAX_RECORDS
+            or avc.get("truncated") is not False
+            or not isinstance(avc.get("records"), list)
+            or len(avc["records"]) != avc["line_count"]):
+        raise ValueError("transition AVC evidence is incomplete")
+    avc_record_fields = {
+        "audit_serial", "transport", "receipt_monotonic_usec", "pid", "comm",
+        "path_field", "path", "source_context", "target_context", "class",
+        "permissions", "permissive", "cursor_sha256",
+    }
+    for record in avc["records"]:
+        permissions = record.get("permissions") if isinstance(record, dict) else None
+        if (not isinstance(record, dict) or set(record) != avc_record_fields
+                or type(record.get("audit_serial")) is not int
+                or not 0 < record["audit_serial"] <= 2**63 - 1
+                or record.get("transport") not in {"audit", "kernel"}
+                or type(record.get("receipt_monotonic_usec")) is not int
+                or not max(0, int(main_started)
+                           - TRANSITION_JOURNAL_CORRELATION_MARGIN_USEC)
+                <= record["receipt_monotonic_usec"]
+                <= int(main_exited) + TRANSITION_JOURNAL_CORRELATION_MARGIN_USEC
+                or type(record.get("pid")) is not int
+                or record["pid"] != int(main_pid)
+                or record.get("comm") != "runcon"
+                or record.get("path_field") not in {"path", "name"}
+                or record.get("path") != "/usr/bin/bootc"
+                or _SELINUX_CONTEXT.fullmatch(record.get("source_context", "")) is None
+                or _SELINUX_CONTEXT.fullmatch(record.get("target_context", "")) is None
+                or re.fullmatch(r"[a-z0-9_]{1,64}", record.get("class", "")) is None
+                or not isinstance(permissions, list) or not 1 <= len(permissions) <= 16
+                or len(set(permissions)) != len(permissions)
+                or any(re.fullmatch(r"[a-z0-9_]{1,64}", value or "") is None
+                       for value in permissions)
+                or record.get("permissive") is not False
+                or re.fullmatch(r"[a-f0-9]{64}", record.get("cursor_sha256", "")) is None):
+            raise ValueError("transition AVC record is incomplete")
+    allowed_sources = {probe["source_context"], probe["requested_context"]}
+    if any(record["source_context"] not in allowed_sources
+           for record in avc["records"]):
+        raise ValueError("transition AVC source does not bind the requested transition")
+    if (len({record["audit_serial"] for record in avc["records"]})
+            != len(avc["records"])
+            or len({record["cursor_sha256"] for record in avc["records"]})
+            != len(avc["records"])):
+        raise ValueError("transition AVC records are duplicated")
     journal = report.get("journal")
     journal_fields = {
         "unit", "command", "line_count", "bytes", "sha256", "truncated", "excerpt",

@@ -614,3 +614,35 @@ absent-or-empty report identity, injected input hashes, cleanup state and bounde
 resource counters. Raw serial, QEMU output and private overlays remain excluded.
 The compact audited summary is `missing-report-review.json`; this instrumentation
 does not relax acceptance or claim that the SELinux transition succeeded.
+
+Run 46011664138 produced the bounded transition report and stopped before every
+update action. The fixed explicit `runcon` probe exited 126, but the retained
+journal contained no AVC. Status 126 alone does not identify the denied SELinux
+source, target, class or permission and must not be used to write an allow rule.
+
+For a failed probe, `b.service` now reads `/proc/self/attr/current` with a fixed
+`/usr/bin/cat` `ExecStartPre` immediately before its unchanged `ExecStart`. The
+failure reporter finds exactly one JSON journal record for that executable,
+unit and systemd invocation, identified by `cat`, its trusted PID and stdout
+transport rather than a non-guaranteed `_EXE` field. It retains the validated
+context, journal receipt time and a cursor hash. A separate query selects
+current-boot audit and kernel AVC denials whose message names both `runcon` and
+`/usr/bin/bootc`.
+
+Each AVC must be enforcing, match the failed main PID and fall between the
+main-process timestamps plus a 120-second journal receipt margin. The margin
+does not treat receipt order across stdout, audit and kernel transports as
+execution order. Its source must be either the observed service context or the
+requested `install_t` context, covering both a denied domain transition and a
+later entrypoint or file check. The report retains only the audit serial,
+transport, receipt time, PID, command, path, source and
+target contexts, class, permissions, enforcing flag and cursor hash. It retains
+no raw cursor, raw AVC message or unrelated field. More than 24 source records,
+more than 32 AVC records, duplicate JSON keys, malformed fields, an overlong
+record, a permissive denial or any identity/time mismatch rejects the report.
+
+The controller validates the same schema and correlations before publishing the
+sanitized report, then fails the phase as before. The update service cannot run
+after probe failure. This diagnostic changes no SELinux policy, signature rule,
+resource limit or qualification claim. A fresh hosted run must identify the
+actual denial before the launcher design changes.

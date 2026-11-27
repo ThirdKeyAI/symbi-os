@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import re
+import selectors
 import subprocess
 import sys
 import time
@@ -11,8 +12,14 @@ import time
 
 CHANNEL = Path("/dev/virtio-ports/org.symbi.update")
 LAUNCHER_UNIT = "b.service"
+SOURCE_CAPTURE_COMMAND = ["/usr/bin/cat", "/proc/self/attr/current"]
+BOOTC_CONTEXT = "system_u:system_r:install_t:s0"
+BOOTC_PROBE_COMMAND = [
+    "/usr/bin/runcon", BOOTC_CONTEXT, "/usr/bin/bootc", "--version",
+]
 STATUS_PROPERTIES = (
-    "Result,ExecMainCode,ExecMainStatus,ActiveState,SubState"
+    "Result,ExecMainCode,ExecMainStatus,ActiveState,SubState,InvocationID,"
+    "ExecMainPID,ExecMainStartTimestampMonotonic,ExecMainExitTimestampMonotonic"
 )
 JOURNAL_COMMAND = [
     "/usr/bin/journalctl", "--unit=b.service", "--boot=0", "--no-pager",
@@ -21,6 +28,25 @@ JOURNAL_COMMAND = [
 JOURNAL_MAX_BYTES = 8 * 1024
 JOURNAL_MAX_LINES = 24
 JOURNAL_MAX_LINE_BYTES = 512
+SOURCE_JOURNAL_COMMAND = [
+    "/usr/bin/journalctl", "--unit=b.service", "--boot=0", "--no-pager",
+    "--quiet", "--output=json",
+    "--output-fields=MESSAGE,__CURSOR,__MONOTONIC_TIMESTAMP,_COMM,_PID,"
+    "_TRANSPORT,_SYSTEMD_UNIT,_SYSTEMD_INVOCATION_ID", "--lines=25",
+]
+AVC_JOURNAL_COMMAND = [
+    "/usr/bin/journalctl", "--boot=0", "--no-pager", "--quiet",
+    "--output=json",
+    "--output-fields=MESSAGE,__CURSOR,__MONOTONIC_TIMESTAMP,_TRANSPORT",
+    "--lines=33",
+    "--grep=avc:[[:space:]]+denied.*comm=\"runcon\".*(?:path|name)=\"/usr/bin/bootc\"",
+    "_TRANSPORT=audit", "+", "_TRANSPORT=kernel",
+]
+STRUCTURED_JOURNAL_MAX_BYTES = 64 * 1024
+STRUCTURED_JOURNAL_MAX_LINE_BYTES = 8192
+SOURCE_JOURNAL_MAX_RECORDS = 24
+AVC_MAX_RECORDS = 32
+JOURNAL_CORRELATION_MARGIN_USEC = 120 * 1_000_000
 COMMAND_STDOUT_MAX_BYTES = 64 * 1024
 COMMAND_STDERR_MAX_BYTES = 8 * 1024
 REPORT_MAX_BYTES = 128 * 1024
@@ -44,6 +70,12 @@ _SENSITIVE_ASSIGNMENT = re.compile(
 )
 _BEARER_VALUE = re.compile(r"(?i)\bbearer\s+[^ ]+")
 _LONG_VALUE = re.compile(r"(?<![A-Za-z0-9])[A-Za-z0-9_+/=-]{48,}(?![A-Za-z0-9])")
+_SELINUX_CONTEXT = re.compile(
+    r"[A-Za-z0-9_.-]{1,64}:[A-Za-z0-9_.-]{1,64}:"
+    r"[A-Za-z0-9_.-]{1,128}:[A-Za-z0-9_.:,-]{1,192}"
+)
+_JOURNAL_CURSOR = re.compile(r"[A-Za-z0-9_.:;=-]{32,2048}")
+_INVOCATION_ID = re.compile(r"[a-f0-9]{32}")
 
 
 def sha256(path):
@@ -51,8 +83,79 @@ def sha256(path):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
+def _unique_json(raw, description):
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("duplicate " + description + " key")
+            result[key] = value
+        return result
+    value = json.loads(raw, object_pairs_hook=unique)
+    if not isinstance(value, dict):
+        raise ValueError(description + " must be an object")
+    return value
+
+
+def _structured_journal_lines(raw, maximum):
+    if (not isinstance(raw, str)
+            or not 0 < len(raw.encode()) <= STRUCTURED_JOURNAL_MAX_BYTES):
+        raise ValueError("invalid structured transition journal output")
+    lines = raw.splitlines()
+    if not 1 <= len(lines) <= maximum:
+        raise ValueError("structured transition journal is empty or truncated")
+    result = []
+    for line in lines:
+        if not 0 < len(line.encode()) <= STRUCTURED_JOURNAL_MAX_LINE_BYTES:
+            raise ValueError("structured transition journal record exceeded its limit")
+        try:
+            result.append(_unique_json(line, "structured transition journal record"))
+        except (UnicodeError, json.JSONDecodeError) as error:
+            raise ValueError("invalid structured transition journal record") from error
+    return result
+
+
+def parse_source_capture(raw, invocation_id):
+    """Bind the fixed pre-probe cat output to this service invocation."""
+    if _INVOCATION_ID.fullmatch(invocation_id or "") is None:
+        raise ValueError("invalid transition-probe invocation identity")
+    matches = []
+    for item in _structured_journal_lines(raw, SOURCE_JOURNAL_MAX_RECORDS):
+        if (item.get("_COMM") != "cat" or item.get("_TRANSPORT") != "stdout"
+                or item.get("_SYSTEMD_UNIT") != LAUNCHER_UNIT
+                or item.get("_SYSTEMD_INVOCATION_ID") != invocation_id):
+            continue
+        context = item.get("MESSAGE")
+        cursor = item.get("__CURSOR")
+        monotonic = item.get("__MONOTONIC_TIMESTAMP")
+        pid_text = item.get("_PID")
+        if (not isinstance(context, str) or _SELINUX_CONTEXT.fullmatch(context) is None
+                or _JOURNAL_CURSOR.fullmatch(cursor or "") is None
+                or not isinstance(monotonic, str)
+                or re.fullmatch(r"[0-9]{1,20}", monotonic) is None
+                or not isinstance(pid_text, str)
+                or re.fullmatch(r"[0-9]{1,10}", pid_text) is None
+                or not 0 < int(pid_text) <= 2**31 - 1):
+            raise ValueError("invalid transition source-context observation")
+        matches.append({
+            "command": SOURCE_CAPTURE_COMMAND,
+            "journal_command": SOURCE_JOURNAL_COMMAND,
+            "source_context": context,
+            "requested_context": BOOTC_CONTEXT,
+            "probe_command": BOOTC_PROBE_COMMAND,
+            "invocation_id": invocation_id,
+            "pid": int(pid_text),
+            "transport": "stdout",
+            "receipt_monotonic_usec": int(monotonic),
+            "cursor_sha256": hashlib.sha256(cursor.encode()).hexdigest(),
+        })
+    if len(matches) != 1:
+        raise ValueError("transition source context is absent or ambiguous")
+    return matches[0]
+
+
 def service_properties(raw):
-    """Parse exactly the five fixed systemd failure fields."""
+    """Parse the fixed systemd failure fields and invocation identity."""
     if (not isinstance(raw, str) or not raw.endswith("\n")
             or not 0 < len(raw.encode()) <= 4096):
         raise ValueError("invalid transition-probe service property output")
@@ -68,14 +171,43 @@ def service_properties(raw):
         properties[key] = value
     if set(properties) != allowed:
         raise ValueError("incomplete transition-probe service property output")
+    main_pid = properties.get("ExecMainPID", "")
+    started = properties.get("ExecMainStartTimestampMonotonic", "")
+    exited = properties.get("ExecMainExitTimestampMonotonic", "")
     if (properties["Result"] == "success"
             or properties["ActiveState"] != "failed"
             or properties["SubState"] != "failed"
             or re.fullmatch(r"[0-9]{1,3}", properties["ExecMainCode"]) is None
             or re.fullmatch(r"[0-9]{1,3}", properties["ExecMainStatus"]) is None
-            or properties["ExecMainStatus"] == "0"):
+            or properties["ExecMainStatus"] == "0"
+            or _INVOCATION_ID.fullmatch(properties["InvocationID"]) is None
+            or re.fullmatch(r"[0-9]{1,10}", main_pid) is None
+            or not 0 < int(main_pid) <= 2**31 - 1
+            or re.fullmatch(r"[0-9]{1,20}", started) is None
+            or re.fullmatch(r"[0-9]{1,20}", exited) is None
+            or not 0 < int(started) <= int(exited) <= 2**63 - 1):
         raise ValueError("transition-probe service did not fail closed")
     return properties
+
+
+def monitor_properties(environment=None):
+    """Bind the OnFailure activation to the exact failed b.service invocation."""
+    environment = os.environ if environment is None else environment
+    monitor = {
+        "unit": environment.get("MONITOR_UNIT", ""),
+        "invocation_id": environment.get("MONITOR_INVOCATION_ID", ""),
+        "service_result": environment.get("MONITOR_SERVICE_RESULT", ""),
+        "exit_code": environment.get("MONITOR_EXIT_CODE", ""),
+        "exit_status": environment.get("MONITOR_EXIT_STATUS", ""),
+    }
+    if (monitor["unit"] != LAUNCHER_UNIT
+            or _INVOCATION_ID.fullmatch(monitor["invocation_id"]) is None
+            or monitor["service_result"] == "success"
+            or monitor["exit_code"] != "exited"
+            or re.fullmatch(r"[0-9]{1,3}", monitor["exit_status"]) is None
+            or monitor["exit_status"] == "0"):
+        raise ValueError("invalid transition-probe OnFailure activation")
+    return monitor
 
 
 def _sanitize_line(line):
@@ -93,8 +225,7 @@ def bounded_journal_excerpt(raw):
         raise ValueError("invalid transition-probe journal output")
     encoded = raw.encode("utf-8", errors="strict")
     truncated = len(encoded) > JOURNAL_MAX_BYTES
-    prefix = encoded[:JOURNAL_MAX_BYTES].decode("utf-8", errors="ignore")
-    source_lines = prefix.splitlines()
+    source_lines = raw.splitlines()
     if len(source_lines) > JOURNAL_MAX_LINES:
         truncated = True
         source_lines = source_lines[:JOURNAL_MAX_LINES]
@@ -103,18 +234,19 @@ def bounded_journal_excerpt(raw):
     for source_line in source_lines:
         line = _sanitize_line(source_line)
         if len(line.encode("ascii")) > JOURNAL_MAX_LINE_BYTES:
-            line = line[:JOURNAL_MAX_LINE_BYTES - 3] + "..."
+            line = "<line omitted: over 512-byte limit>"
             truncated = True
         remaining = JOURNAL_MAX_BYTES - used
         if remaining <= 1:
             truncated = True
             break
         if len(line.encode("ascii")) + 1 > remaining:
-            if remaining <= 4:
-                truncated = True
-                break
-            line = line[:remaining - 4] + "..."
             truncated = True
+            marker = "<remaining lines omitted: output limit>"
+            if len(marker.encode("ascii")) + 1 <= remaining:
+                excerpt.append(marker)
+                used += len(marker.encode("ascii")) + 1
+            break
         excerpt.append(line)
         used += len(line.encode("ascii")) + 1
         if used >= JOURNAL_MAX_BYTES:
@@ -133,22 +265,174 @@ def bounded_journal_excerpt(raw):
     }
 
 
+def _avc_field(message, name, *, quoted=False):
+    pattern = (r'(?:^| )' + re.escape(name) + r'="([^"\x00]+)"'
+               if quoted else
+               r'(?:^| )' + re.escape(name) + r'=([^ \x00]+)')
+    matches = re.findall(pattern, message)
+    if len(matches) != 1:
+        raise ValueError("ambiguous transition AVC " + name)
+    return matches[0]
+
+
+def parse_avc_evidence(raw, source, service=None):
+    """Retain only allowlisted fields from enforcing AVCs for this exact probe."""
+    if not isinstance(source, dict):
+        raise ValueError("invalid transition source observation")
+    items = _structured_journal_lines(raw, AVC_MAX_RECORDS)
+    records = []
+    for item in items:
+        message = item.get("MESSAGE")
+        cursor = item.get("__CURSOR")
+        monotonic = item.get("__MONOTONIC_TIMESTAMP")
+        transport = item.get("_TRANSPORT")
+        if (not isinstance(message, str) or not 0 < len(message.encode()) <= 4096
+                or any(not " " <= character <= "~" for character in message)
+                or _JOURNAL_CURSOR.fullmatch(cursor or "") is None
+                or not isinstance(monotonic, str)
+                or re.fullmatch(r"[0-9]{1,20}", monotonic) is None
+                or transport not in {"audit", "kernel"}):
+            raise ValueError("incomplete transition AVC journal record")
+        denial = re.search(
+            r"avc:[ ]+denied[ ]+\{[ ]*([a-z0-9_ ]+?)[ ]*\}[ ]+for\b", message)
+        serial = re.search(r"audit\([0-9]+(?:\.[0-9]+)?:([0-9]{1,20})\)", message)
+        if denial is None or serial is None:
+            raise ValueError("malformed transition AVC denial")
+        permissions = denial.group(1).split()
+        if (not 1 <= len(permissions) <= 16 or len(set(permissions)) != len(permissions)
+                or any(re.fullmatch(r"[a-z0-9_]{1,64}", value) is None
+                       for value in permissions)):
+            raise ValueError("invalid transition AVC permissions")
+        path_matches = []
+        for field in ("path", "name"):
+            found = re.findall(r'(?:^| )' + field + r'="([^"\x00]+)"', message)
+            path_matches.extend((field, value) for value in found)
+        source_context = _avc_field(message, "scontext")
+        target_context = _avc_field(message, "tcontext")
+        target_class = _avc_field(message, "tclass")
+        permissive = _avc_field(message, "permissive")
+        pid_text = _avc_field(message, "pid")
+        timestamp = int(monotonic)
+        pid = int(pid_text) if re.fullmatch(r"[0-9]{1,10}", pid_text) else 0
+        audit_serial = int(serial.group(1))
+        if (len(path_matches) != 1 or path_matches[0][1] != "/usr/bin/bootc"
+                or _avc_field(message, "comm", quoted=True) != "runcon"
+                or _SELINUX_CONTEXT.fullmatch(source_context) is None
+                or _SELINUX_CONTEXT.fullmatch(target_context) is None
+                or re.fullmatch(r"[a-z0-9_]{1,64}", target_class) is None
+                or permissive != "0" or not 0 < pid <= 2**31 - 1
+                or not 0 < audit_serial <= 2**63 - 1
+                ):
+            raise ValueError("transition AVC does not bind the enforcing probe")
+        if (service is not None
+                and (pid != int(service["ExecMainPID"])
+                     or not max(0, int(service["ExecMainStartTimestampMonotonic"])
+                                - JOURNAL_CORRELATION_MARGIN_USEC)
+                     <= timestamp
+                     <= int(service["ExecMainExitTimestampMonotonic"])
+                        + JOURNAL_CORRELATION_MARGIN_USEC)):
+            raise ValueError("transition AVC falls outside the main process")
+        records.append({
+            "audit_serial": audit_serial,
+            "transport": transport,
+            "receipt_monotonic_usec": timestamp,
+            "pid": pid,
+            "comm": "runcon",
+            "path_field": path_matches[0][0],
+            "path": "/usr/bin/bootc",
+            "source_context": source_context,
+            "target_context": target_context,
+            "class": target_class,
+            "permissions": permissions,
+            "permissive": False,
+            "cursor_sha256": hashlib.sha256(cursor.encode()).hexdigest(),
+        })
+    allowed_sources = {source["source_context"], source["requested_context"]}
+    if any(item["source_context"] not in allowed_sources for item in records):
+        raise ValueError("transition AVC source does not bind the requested transition")
+    if (len({item["audit_serial"] for item in records}) != len(records)
+            or len({item["cursor_sha256"] for item in records}) != len(records)):
+        raise ValueError("transition AVC records are duplicated")
+    return {
+        "command": AVC_JOURNAL_COMMAND,
+        "raw_bytes": len(raw.encode()),
+        "raw_sha256": hashlib.sha256(raw.encode()).hexdigest(),
+        "line_count": len(items),
+        "truncated": False,
+        "records": records,
+    }
+
+
+def bounded_avc_evidence(source, service, run=None):
+    """Query only runcon/bootc AVC denials from the current boot."""
+    run = fixed_command if run is None else run
+    raw = run(AVC_JOURNAL_COMMAND, timeout=5,
+              stdout_max=STRUCTURED_JOURNAL_MAX_BYTES)
+    return parse_avc_evidence(raw, source, service)
+
+
 def fixed_command(command, *, timeout, stdout_max):
     if (not isinstance(command, list) or not command
             or any(not isinstance(value, str) or not value for value in command)
             or type(timeout) is not int or not 1 <= timeout <= 30
             or type(stdout_max) is not int or not 1 <= stdout_max <= COMMAND_STDOUT_MAX_BYTES):
         raise ValueError("invalid transition-probe diagnostic command")
-    result = subprocess.run(
-        command, stdin=subprocess.DEVNULL, capture_output=True, text=True,
-        timeout=timeout,
+    process = subprocess.Popen(
+        command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
         env={"PATH": "/usr/sbin:/usr/bin:/sbin:/bin", "LANG": "C.UTF-8"},
     )
-    if (len(result.stdout.encode()) > stdout_max
-            or len(result.stderr.encode()) > COMMAND_STDERR_MAX_BYTES):
-        raise ValueError("transition-probe diagnostic command output exceeded its bound")
-    result.check_returncode()
-    return result.stdout
+    deadline = time.monotonic() + timeout
+    stdout = bytearray()
+    stderr_bytes = 0
+    selector = selectors.DefaultSelector()
+    selector.register(process.stdout, selectors.EVENT_READ, "stdout")
+    selector.register(process.stderr, selectors.EVENT_READ, "stderr")
+    try:
+        while selector.get_map():
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise subprocess.TimeoutExpired(command, timeout)
+            events = selector.select(remaining)
+            if not events:
+                raise subprocess.TimeoutExpired(command, timeout)
+            for key, _mask in events:
+                chunk = os.read(key.fileobj.fileno(), 4096)
+                if not chunk:
+                    selector.unregister(key.fileobj)
+                    key.fileobj.close()
+                    continue
+                if key.data == "stdout":
+                    stdout.extend(chunk)
+                    exceeded = len(stdout) > stdout_max
+                else:
+                    stderr_bytes += len(chunk)
+                    exceeded = stderr_bytes > COMMAND_STDERR_MAX_BYTES
+                if exceeded:
+                    raise ValueError(
+                        "transition-probe diagnostic command output exceeded its bound")
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise subprocess.TimeoutExpired(command, timeout)
+        returncode = process.wait(timeout=remaining)
+    except BaseException:
+        process.kill()
+        try:
+            process.wait(timeout=1)
+        except subprocess.TimeoutExpired:
+            pass
+        raise
+    finally:
+        selector.close()
+        for stream in (process.stdout, process.stderr):
+            if stream is not None and not stream.closed:
+                stream.close()
+    if returncode != 0:
+        raise subprocess.CalledProcessError(returncode, command)
+    try:
+        return stdout.decode("utf-8", errors="strict")
+    except UnicodeDecodeError as error:
+        raise ValueError("transition-probe diagnostic output is not UTF-8") from error
 
 
 def write_report(report, channel=CHANNEL):
@@ -177,6 +461,20 @@ def main():
         "/usr/bin/systemctl", "show", LAUNCHER_UNIT,
         "--property=" + STATUS_PROPERTIES,
     ], timeout=10, stdout_max=4096))
+    source = parse_source_capture(fixed_command(
+        SOURCE_JOURNAL_COMMAND, timeout=5,
+        stdout_max=STRUCTURED_JOURNAL_MAX_BYTES), properties["InvocationID"])
+    monitor = monitor_properties()
+    if (monitor["invocation_id"] != properties["InvocationID"]
+            or monitor["service_result"] != properties["Result"]
+            or monitor["exit_status"] != properties["ExecMainStatus"]
+            or source["invocation_id"] != properties["InvocationID"]
+            or abs(source["receipt_monotonic_usec"]
+                   - int(properties["ExecMainStartTimestampMonotonic"]))
+               > JOURNAL_CORRELATION_MARGIN_USEC):
+        raise ValueError("transition diagnostic identities differ")
+    avc = bounded_avc_evidence(source, properties)
+    probe = source
     journal = bounded_journal_excerpt(fixed_command(
         JOURNAL_COMMAND, timeout=10, stdout_max=COMMAND_STDOUT_MAX_BYTES))
     report = {
@@ -189,6 +487,9 @@ def main():
         "unit": LAUNCHER_UNIT,
         "runner_sha256": sha256(Path(__file__)),
         "service": properties,
+        "monitor": monitor,
+        "probe": probe,
+        "avc": avc,
         "journal": journal,
         "scope": SCOPE,
     }
