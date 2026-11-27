@@ -502,7 +502,7 @@ class FedoraContainerController(unittest.TestCase):
         self.assertIn("CPUQuota=200%", script)
         self.assertIn("SYMBI_QUALIFICATION=containers", script)
         self.assertIn('exit "$status"', script)
-        self.assertIn("qualification not in ('','landlock','update','containers')", atomic)
+        self.assertIn("qualification not in ('','landlock','update','containers','appliance')", atomic)
         self.assertIn("CONTAINER_PARENT_LIMITS = {'memory.high':'max','memory.max':'4294967296'", atomic)
         self.assertIn("CONTAINER_PARENT_LIMITS if qualification=='containers'", atomic)
         self.assertIn("run_container_preflight", atomic)

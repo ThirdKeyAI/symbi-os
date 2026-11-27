@@ -1,0 +1,469 @@
+"""Offline contract tests for the HIGHLY EXPERIMENTAL graphical appliance."""
+import copy
+from datetime import datetime, timezone
+import hashlib
+import json
+import os
+from pathlib import Path
+import tempfile
+import unittest
+from unittest import mock
+
+import yaml
+
+from image.appliance.contract import (ARTIFACT_NAME, SCOPE, SDDM_CONFIGURATION,
+    VIRTUAL_DISK_BYTES, build_manifest, failure_record, firmware_arguments,
+    installer_arguments, provision_qemu_arguments, reboot_qemu_arguments,
+    user_launch_arguments, validate_guest_report, validate_reboot_report,
+    validate_source_binding)
+from image.appliance.hosted import (_installed_desktop_bindings,
+                                    invalidate_appliance_output, produce_appliance)
+from image.appliance.reboot import (bounded_log, ppm_observation,
+                                    require_empty_output)
+from image.appliance.verify import bound_regular, path_absent, reviewed_launcher
+from image.atomic.hosted import enforce_appliance_final_status
+
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def source_binding():
+    return {
+        "repository": "ThirdKeyAI/symbi-os", "source_commit": "a"*40,
+        "source_tree": "9"*40,
+        "image_source_commit": "b"*40, "image_run_id": 123,
+        "image_artifact_id": 456, "image_artifact_sha256": "c"*64,
+        "oci_manifest_digest": "sha256:" + "d"*64,
+        "installed_raw_sha256": "e"*64,
+    }
+
+
+def artifact():
+    return {"name": ARTIFACT_NAME, "bytes": 4096, "sha256": "f"*64,
+            "format": "qcow2", "compression": "qcow2-zlib-clusters",
+            "virtual_bytes": VIRTUAL_DISK_BYTES}
+
+
+def guest(expected):
+    return {
+        "schema": 1, "nonce": expected["nonce"], "source_binding": expected["source_binding"],
+        "probe_sha256": "1"*64, "expected_sha256": "2"*64,
+        "passed": True, "guest_booted": True, "graphical_desktop_observed": True,
+        "os_qualified": False, "release_qualified": False, "signature_qualified": False,
+        "network_interfaces": ["lo"], "default_target": "graphical.target",
+        "display_manager": "sddm.service", "session": "symbi.desktop",
+        "interactive_devices": {"virtio_gpu": True, "virtio_keyboard": True,
+                                "virtio_pointer": True},
+        "fixture_user": {"name": "symbi-test", "password_locked": True,
+                         "non_wheel": True, "authorized_keys_absent": True},
+        "fixture_cleanup": {"boot_wants_removed": True, "persistent_scripts_absent": True,
+                            "persistent_units_absent": True, "credentials_absent": True},
+        "desktop_components": {"Hyprland": True, "Waybar": True, "Walker": True,
+                               "portal": True, "first_login_seeded": True},
+        "scope": SCOPE,
+    }
+
+
+def reboot(source=None, bound_artifact=None):
+    source = source or source_binding()
+    bound_artifact = bound_artifact or artifact()
+    return {
+        "schema": 1, "passed": True, "guest_booted": True,
+        "graphical_desktop_observed": True, "artifact_retained": True,
+        "independent_reboot_passed": True, "os_qualified": False,
+        "release_qualified": False, "signature_qualified": False,
+        "source_binding": source, "artifact_before": bound_artifact,
+        "artifact_after": bound_artifact,
+        "screenshot": {"bytes": 8192, "sha256": "3"*64, "width": 800,
+                       "height": 600, "sampled_colors": 8,
+                       "boot_elapsed_seconds": 90},
+        "command": reboot_qemu_arguments(),
+        "scope": SCOPE,
+    }
+
+
+class InteractiveApplianceContract(unittest.TestCase):
+    def test_installer_selects_graphical_target_and_ephemeral_units(self):
+        command = installer_arguments("sha256:" + "a"*64)
+        self.assertIn("--karg=systemd.unit=graphical.target", command)
+        self.assertIn("--karg=systemd.wants=p.service", command)
+        self.assertIn("--karg=systemd.wants=v.service", command)
+        self.assertNotIn("--karg=systemd.unit=multi-user.target", command)
+        self.assertEqual(command[-1], "/output/atomic.raw")
+        for bad in ("latest", "sha256:abc", "sha256:" + "z"*64):
+            with self.assertRaises(ValueError):
+                installer_arguments(bad)
+
+    def test_firmware_fixture_is_bounded_and_has_no_login_secret(self):
+        arguments = firmware_arguments()
+        text = " ".join(arguments)
+        for name in ("p.service", "v.service", "provision.py", "verify.py", "expected.json"):
+            self.assertIn(name, text)
+        for forbidden in ("password", "authorized_keys", "private-key", "ssh-key"):
+            self.assertNotIn(forbidden, text.lower())
+        self.assertEqual(len(arguments), 10)
+
+    def test_both_boots_have_interactive_devices_and_no_network(self):
+        for command in (provision_qemu_arguments(), reboot_qemu_arguments(), user_launch_arguments()):
+            joined = " ".join(command)
+            self.assertIn("virtio-vga,id=symbi-display", joined)
+            self.assertIn("virtio-keyboard-pci,id=symbi-keyboard", joined)
+            self.assertIn("virtio-tablet-pci,id=symbi-pointer", joined)
+            self.assertIn("-net none", joined)
+            self.assertNotIn("-nic ", joined)
+            self.assertNotIn("user,", joined)
+        self.assertIn("gtk,gl=off", user_launch_arguments())
+
+    def test_reboot_uses_overlay_instead_of_writable_retained_disk(self):
+        joined = " ".join(reboot_qemu_arguments())
+        self.assertIn("file=/output/reboot-overlay.qcow2", joined)
+        self.assertNotIn("retained.qcow2", joined)
+        hosted = (ROOT / "image/appliance/hosted.py").read_text()
+        self.assertIn("dst=/inputs/retained.qcow2,ro", hosted)
+        self.assertIn("artifact_before != artifact_after", hosted)
+
+    def test_locked_non_admin_fixture_is_appliance_only(self):
+        provision = (ROOT / "image/appliance/provision.py").read_text()
+        verify = (ROOT / "image/appliance/verify.py").read_text()
+        verifier_unit = (ROOT / "image/appliance/v.service").read_text()
+        self.assertIn('"--lock", USERNAME', provision)
+        self.assertNotIn("chpasswd", provision)
+        self.assertNotIn("authorized_keys", provision)
+        self.assertIn('USERNAME not in wheel.gr_mem', verify)
+        self.assertIn("wheel.gr_gid not in group_ids", verify)
+        self.assertIn("path_absent(ssh_directory)", verify)
+        self.assertIn('matches[0] in {"!", "!!", "*", "!*"}', verify)
+        self.assertIn(
+            "CapabilityBoundingSet=CAP_DAC_READ_SEARCH CAP_SETGID CAP_SETUID",
+            verifier_unit,
+        )
+        self.assertNotIn("CAP_SYS_ADMIN", verifier_unit)
+        self.assertIn("persistent_scripts_absent", verify)
+        self.assertIn("persistent_units_absent", verify)
+        self.assertIn("HIGHLY EXPERIMENTAL disposable development appliance only", SDDM_CONFIGURATION)
+        self.assertIn("no password or key", SDDM_CONFIGURATION)
+
+    def test_source_binding_rejects_every_identity_change(self):
+        original = source_binding()
+        validate_source_binding(original)
+        for key in original:
+            changed = copy.deepcopy(original)
+            changed[key] = 0 if isinstance(changed[key], int) else "wrong"
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                validate_source_binding(changed)
+
+    def test_guest_report_is_bound_to_all_desktop_and_cleanup_claims(self):
+        expected = {"nonce": "0"*32, "source_binding": source_binding()}
+        report = guest(expected)
+        validate_guest_report(report, expected, "1"*64, "2"*64)
+        changes = [
+            ("network_interfaces", ["eth0", "lo"]),
+            ("default_target", "multi-user.target"),
+            ("display_manager", "gdm.service"),
+            ("session", "other.desktop"),
+            ("interactive_devices", {**report["interactive_devices"], "virtio_pointer": False}),
+            ("fixture_user", {**report["fixture_user"], "password_locked": False}),
+            ("fixture_cleanup", {**report["fixture_cleanup"], "persistent_units_absent": False}),
+            ("desktop_components", {**report["desktop_components"], "portal": False}),
+        ]
+        for key, value in changes:
+            changed = copy.deepcopy(report); changed[key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                validate_guest_report(changed, expected, "1"*64, "2"*64)
+
+    def test_failure_record_keeps_every_claim_false(self):
+        record = failure_record(source_binding(), "fixture failure")
+        for key in ("passed", "guest_booted", "graphical_desktop_observed",
+                    "artifact_retained", "independent_reboot_passed", "os_qualified",
+                    "release_qualified", "signature_qualified"):
+            self.assertIs(record[key], False, key)
+
+    def test_early_controller_failure_is_source_bound_path_free_and_all_false(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            def partial_output(*arguments):
+                evidence, stage, artifact_output = arguments[8:11]
+                stage.mkdir(parents=True)
+                artifact_output.mkdir(parents=True)
+                (artifact_output / ARTIFACT_NAME).write_bytes(b"partial")
+                (evidence / "display.ppm").write_bytes(b"stale screenshot")
+                raise ValueError("/home/runner/private/fixture")
+
+            with mock.patch("image.appliance.hosted._produce_appliance",
+                            side_effect=partial_output):
+                with self.assertRaises(ValueError):
+                    produce_appliance(root, Path("/sys/fs/cgroup/test"), ["podman"],
+                                      "image", Path("disk"), source_binding(), [], mock.Mock())
+            result = json.loads(
+                (root / ".cache/interactive-appliance-evidence/result.json").read_text())
+            for key in ("passed", "guest_booted", "graphical_desktop_observed",
+                        "artifact_retained", "independent_reboot_passed", "os_qualified",
+                        "release_qualified", "signature_qualified"):
+                self.assertIs(result[key], False, key)
+            self.assertEqual(result["stage"], "initialization")
+            self.assertEqual(result["source"], {
+                "commit": source_binding()["source_commit"],
+                "tree": source_binding()["source_tree"],
+            })
+            self.assertEqual(result["failure"], "ValueError")
+            self.assertNotIn("/home/runner", json.dumps(result))
+            self.assertEqual(result["cleanup"], {
+                "stage_directory_removed": True, "user_artifact_absent": True,
+                "screenshot_artifact_absent": True,
+                "non_controller_evidence_removed": True,
+            })
+            self.assertEqual(result["resources"], {})
+            self.assertFalse((root / ".cache/interactive-appliance-artifact").exists())
+            self.assertFalse((root / ".cache/interactive-appliance-evidence/display.ppm").exists())
+
+    def test_outer_failure_revokes_success_artifacts_and_receipt(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence = root / ".cache/interactive-appliance-evidence"
+            artifact_output = root / ".cache/interactive-appliance-artifact"
+            evidence.mkdir(parents=True)
+            artifact_output.mkdir()
+            (evidence / "result.json").write_text('{"passed":true}\n')
+            (evidence / "display.ppm").write_bytes(b"screenshot")
+            (artifact_output / ARTIFACT_NAME).write_bytes(b"qcow2")
+            result = invalidate_appliance_output(root, source_binding())
+            self.assertFalse(result["passed"])
+            self.assertEqual(result["stage"], "cleanup")
+            self.assertFalse(artifact_output.exists())
+            self.assertFalse((evidence / "display.ppm").exists())
+            retained = json.loads((evidence / "result.json").read_text())
+            self.assertEqual(retained, result)
+            self.assertTrue(all(retained["cleanup"].values()))
+            self.assertEqual([path.name for path in evidence.iterdir()], ["result.json"])
+
+    def test_failure_sanitizer_replaces_stale_positive_child_evidence(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence = root / ".cache/interactive-appliance-evidence"
+            artifact_output = root / ".cache/interactive-appliance-artifact"
+            evidence.mkdir(parents=True)
+            artifact_output.mkdir()
+            stale = {"passed": True, "source_binding": source_binding(),
+                     "host_path": "/home/runner/private"}
+            (evidence / "result.json").write_text(json.dumps(stale))
+            (evidence / "producer-result.json").write_text('{"passed":true}')
+            (artifact_output / ARTIFACT_NAME).write_bytes(b"qcow2")
+            from image.appliance.hosted import finalize_failed_appliance_evidence
+            self.assertTrue(finalize_failed_appliance_evidence(root))
+            retained = json.loads((evidence / "result.json").read_text())
+            self.assertFalse(retained["passed"])
+            self.assertNotIn("/home/runner", json.dumps(retained))
+            self.assertEqual([path.name for path in evidence.iterdir()], ["result.json"])
+            self.assertFalse(artifact_output.exists())
+
+    def test_outer_finally_failure_cancels_pending_success_return(self):
+        def pending_return(record):
+            try:
+                return "should-not-escape"
+            finally:
+                enforce_appliance_final_status("appliance", record)
+
+        with self.assertRaises(RuntimeError):
+            pending_return({"passed": False})
+        self.assertEqual(pending_return({"passed": True}), "should-not-escape")
+        enforce_appliance_final_status("", {"passed": False})
+
+    def test_failed_qcow_removal_retains_no_positive_claim(self):
+        from image.appliance import hosted as appliance_hosted
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence = root / ".cache/interactive-appliance-evidence"
+            artifact_output = root / ".cache/interactive-appliance-artifact"
+            evidence.mkdir(parents=True)
+            artifact_output.mkdir()
+            (artifact_output / ARTIFACT_NAME).write_bytes(b"qcow2")
+            original_remove = appliance_hosted._remove_local_output
+
+            def fail_artifact_removal(path):
+                if path == artifact_output:
+                    return False
+                return original_remove(path)
+
+            with mock.patch.object(appliance_hosted, "_remove_local_output",
+                                   side_effect=fail_artifact_removal):
+                result = invalidate_appliance_output(root, source_binding())
+            self.assertFalse(result["passed"])
+            self.assertFalse(result["cleanup"]["user_artifact_absent"])
+            self.assertTrue(artifact_output.exists())
+            with self.assertRaises(RuntimeError):
+                enforce_appliance_final_status("appliance", result)
+
+    def test_source_bound_nonblank_reboot_is_required(self):
+        source, disk = source_binding(), artifact()
+        report = reboot(source, disk)
+        validate_reboot_report(report, source, disk)
+        cases = []
+        changed = copy.deepcopy(report); changed["source_binding"]["source_commit"] = "9"*40; cases.append(changed)
+        changed = copy.deepcopy(report); changed["artifact_after"]["sha256"] = "8"*64; cases.append(changed)
+        changed = copy.deepcopy(report); changed["screenshot"]["sampled_colors"] = 1; cases.append(changed)
+        changed = copy.deepcopy(report); changed["screenshot"]["boot_elapsed_seconds"] = 89; cases.append(changed)
+        changed = copy.deepcopy(report); changed["command"] = ["qemu-system-x86_64"]; cases.append(changed)
+        changed = copy.deepcopy(report); changed["artifact_retained"] = False; cases.append(changed)
+        changed = copy.deepcopy(report); changed["independent_reboot_passed"] = False; cases.append(changed)
+        for index, changed in enumerate(cases):
+            with self.subTest(case=index), self.assertRaises(ValueError):
+                validate_reboot_report(changed, source, disk)
+
+    def test_ppm_observation_rejects_blank_display(self):
+        path = Path("/unopened/reboot.ppm")
+        blank = b"P6\n320 200\n255\n" + b"\0\0\0"*(320*200)
+        with mock.patch.object(Path, "read_bytes", return_value=blank):
+            with self.assertRaises(ValueError):
+                ppm_observation(path)
+        pixels = bytearray(b"\0\0\0"*(320*200)); pixels[:3] = b"\xff\xff\xff"
+        with mock.patch.object(Path, "read_bytes",
+                               return_value=b"P6\n320 200\n255\n" + pixels):
+            self.assertGreaterEqual(ppm_observation(path)["sampled_colors"], 2)
+
+    def test_reboot_refuses_stale_outputs_and_oversized_logs(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary)
+            require_empty_output(output)
+            stale = output / "reboot.ppm"
+            stale.write_bytes(b"old")
+            with self.assertRaises(ValueError):
+                require_empty_output(output)
+            stale.unlink()
+            log = output / "reboot-qemu.log"
+            log.write_bytes(b"x" * 17)
+            bounded_log(log, 17, required=True)
+            with self.assertRaises(ValueError):
+                bounded_log(log, 16, required=True)
+
+    def test_reviewed_launcher_cannot_escape_or_change_target(self):
+        binding = {"sha256": "", "bytes": 7, "mode": 0o755}
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            launcher = root / "usr/bin/Hyprland"
+            target = root / "usr/lib/symbi/hyprland/bin/Hyprland"
+            launcher.parent.mkdir(parents=True)
+            target.parent.mkdir(parents=True)
+            target.write_bytes(b"desktop")
+            target.chmod(0o755)
+            binding["sha256"] = hashlib.sha256(b"desktop").hexdigest()
+            launcher.symlink_to("../lib/symbi/hyprland/bin/Hyprland")
+            expected = {"link": "../lib/symbi/hyprland/bin/Hyprland"}
+            self.assertTrue(reviewed_launcher(root, expected))
+            self.assertTrue(bound_regular(target, binding, os.getuid()))
+            target.write_bytes(b"changed")
+            self.assertFalse(bound_regular(target, binding, os.getuid()))
+            launcher.unlink(); target.write_bytes(b"desktop")
+            launcher.symlink_to("/etc/passwd")
+            self.assertFalse(reviewed_launcher(root, expected))
+            launcher.unlink(); target.unlink()
+            target.symlink_to("/etc/passwd")
+            launcher.symlink_to("../lib/symbi/hyprland/bin/Hyprland")
+            self.assertFalse(reviewed_launcher(root, expected))
+
+    def test_broken_key_link_is_not_absent(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "authorized_keys"
+            self.assertTrue(path_absent(path))
+            path.symlink_to("missing")
+            self.assertFalse(path_absent(path))
+
+    def test_component_bindings_come_from_exact_retained_image(self):
+        lock = json.loads((ROOT / "image/desktop-images.lock.json").read_text())
+        selected = lock["images"]["generic"]
+        source = source_binding()
+        source.update({
+            "image_source_commit": selected["tested_commit"],
+            "image_run_id": selected["run_id"],
+            "image_artifact_id": selected["artifact"]["id"],
+            "image_artifact_sha256": selected["artifact"]["sha256"],
+        })
+        bindings = _installed_desktop_bindings(ROOT, source)
+        self.assertEqual(
+            bindings["files"]["/usr/bin/Hyprland"],
+            {"link": "../lib/symbi/hyprland/bin/Hyprland"},
+        )
+        self.assertEqual(
+            bindings["files"]["/usr/lib/symbi/hyprland/bin/Hyprland"]["sha256"],
+            "0f5dc9a3bb14265516a1a7c16a90ff0ad54fda94c7caed5defb4b234ecb7f34a",
+        )
+        self.assertEqual(bindings["packages"]["waybar"], "waybar\t0\t0.16.0\t1.fc45\tx86_64")
+
+    def test_manifest_is_short_lived_unsigned_and_exact(self):
+        source, disk = source_binding(), artifact()
+        producer = {"passed": True, "guest_booted": True, "graphical_desktop_observed": True,
+                    "artifact_retained": True, "os_qualified": False,
+                    "independent_reboot_passed": False,
+                    "release_qualified": False, "signature_qualified": False,
+                    "source_binding": source}
+        manifest = build_manifest(source, disk, producer, reboot(source, disk),
+                                  datetime(2026, 11, 27, tzinfo=timezone.utc))
+        self.assertTrue(manifest["highly_experimental"])
+        self.assertEqual(manifest["expires_at"], "2026-11-29T00:00:00Z")
+        self.assertEqual(manifest["retention_days"], 2)
+        self.assertEqual(manifest["network"], "none")
+        self.assertFalse(manifest["signed"])
+        for key in ("os_qualified", "release_qualified", "signature_qualified"):
+            self.assertIs(manifest[key], False)
+
+    def test_manifest_refuses_any_artifact_or_reboot_mismatch(self):
+        source, disk = source_binding(), artifact()
+        producer = {"passed": True, "guest_booted": True, "graphical_desktop_observed": True,
+                    "artifact_retained": True, "os_qualified": False,
+                    "independent_reboot_passed": False,
+                    "release_qualified": False, "signature_qualified": False,
+                    "source_binding": source}
+        for mutation in ("name", "sha256", "virtual_bytes"):
+            changed = copy.deepcopy(disk)
+            changed[mutation] = "wrong" if mutation != "virtual_bytes" else 1
+            with self.subTest(field=mutation), self.assertRaises(ValueError):
+                build_manifest(source, changed, producer, reboot(source, disk))
+
+    def test_workflow_is_manual_only_source_checked_and_short_lived(self):
+        path = ROOT / ".github/workflows/interactive-appliance.yml"
+        document = yaml.safe_load(path.read_text())
+        self.assertEqual(set(document[True]), {"workflow_dispatch"})
+        self.assertEqual(document["permissions"], {"contents": "read", "actions": "read"})
+        workflow = path.read_text()
+        self.assertIn("sha256sum --check --strict", workflow)
+        self.assertIn("retention-days: 2", workflow)
+        self.assertIn("if: success()", workflow)
+        self.assertIn("SYMBI_QUALIFICATION: appliance", workflow)
+        self.assertIn("!.cache/interactive-appliance-evidence/display.ppm", workflow)
+        self.assertNotIn(".cache/interactive-appliance-hosted.log", workflow)
+        self.assertNotIn(".cache/atomic-disk-evidence/", workflow)
+        self.assertNotIn(".cache/atomic-image-evidence/", workflow)
+        self.assertNotIn("pull_request:", workflow)
+        self.assertNotIn("push:", workflow)
+        evidence_step = workflow.index("Retain bounded appliance evidence including failures")
+        qcow2_step = workflow.index("Retain the compressed HIGHLY EXPERIMENTAL qcow2")
+        self.assertLess(evidence_step, qcow2_step)
+        script = (ROOT / "scripts/check-interactive-appliance.sh").read_text()
+        self.assertNotIn("| tee", script)
+        self.assertIn("--sanitize-failure", script)
+        self.assertIn("> 4096", script)
+
+    def test_hosted_hook_never_changes_the_production_oci(self):
+        hosted = (ROOT / "image/atomic/hosted.py").read_text()
+        appliance = (ROOT / "image/appliance/hosted.py").read_text()
+        self.assertIn("image/appliance/install.py", hosted)
+        self.assertIn("os.chmod(disk,0o444", hosted)
+        self.assertIn("production_oci_before", hosted)
+        self.assertIn("production_oci_after", hosted)
+        self.assertIn("Retained production OCI bytes changed", hosted)
+        self.assertIn(
+            "save()\n        enforce_appliance_final_status(qualification,record)", hosted)
+        self.assertIn("dst=/inputs/atomic.raw,ro", appliance)
+        self.assertIn("sha256(disk) != raw_before", appliance)
+        self.assertNotIn("image/overlay", (ROOT / "image/appliance/producer.py").read_text())
+
+    def test_documentation_never_overstates_runtime_evidence(self):
+        readme = (ROOT / "image/appliance/README.md").read_text()
+        card = (ROOT / "docs/cards/P0-06.md").read_text()
+        for text in (readme, card):
+            self.assertIn("HIGHLY EXPERIMENTAL", text)
+            self.assertIn("no NIC", text)
+        self.assertIn("Hosted runtime evidence is\nstill required", card)
+
+
+if __name__ == "__main__":
+    unittest.main()

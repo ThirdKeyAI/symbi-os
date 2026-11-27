@@ -1,0 +1,31 @@
+[Unit]
+Description=HIGHLY EXPERIMENTAL graphical appliance verifier
+ConditionPathExists=!/etc/initrd-release
+Wants=sddm.service
+After=p.service sddm.service graphical.target
+OnFailure=poweroff.target
+
+[Service]
+Type=oneshot
+ImportCredential=symbi-verify.py
+ImportCredential=symbi-expected.json
+ExecStart=/usr/bin/python3 %d/symbi-verify.py %d/symbi-expected.json
+ExecStopPost=/usr/bin/systemctl --no-block poweroff
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=LANG=C.UTF-8
+UMask=0077
+NoNewPrivileges=yes
+CapabilityBoundingSet=CAP_DAC_READ_SEARCH CAP_SETGID CAP_SETUID
+AmbientCapabilities=
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+MemoryMax=256M
+MemorySwapMax=0
+CPUQuota=100%
+TasksMax=64
+TimeoutStartSec=420
+TimeoutStopSec=15
+StandardOutput=journal+console
+StandardError=journal+console

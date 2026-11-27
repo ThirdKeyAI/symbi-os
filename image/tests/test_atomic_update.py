@@ -2076,7 +2076,7 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertIn("CONTAINER_PARENT_LIMITS if qualification=='containers'", hosted)
         self.assertIn("else DEFAULT_PARENT_LIMITS", hosted)
         self.assertIn(
-            "qualification not in ('','landlock','update','containers')", hosted)
+            "qualification not in ('','landlock','update','containers','appliance')", hosted)
         self.assertIn("qualification=='landlock'", hosted)
         self.assertIn("qualification=='update'", hosted)
 
