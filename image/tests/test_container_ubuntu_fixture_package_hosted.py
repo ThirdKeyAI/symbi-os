@@ -173,12 +173,49 @@ class UbuntuHostedProducerTests(unittest.TestCase):
         observed = hosted.validate_retained_inputs(
             ROOT, self.contract, self.lock)
         self.assertEqual(
+            {name: row["name"] for name, row in observed.items()},
+            {name: name for name in self.contract["retained_inputs"]},
+        )
+        self.assertEqual(
             observed["archive_keyring"]["sha256"],
             self.lock["rootfs"]["keyring"]["sha256"],
         )
         self.assertEqual(
             observed["checksum_signature"]["sha256"],
             self.lock["rootfs"]["checksum"]["signature_sha256"],
+        )
+
+    def test_metadata_command_uses_stable_logical_input_names(self):
+        class InputsObserved(Exception):
+            pass
+
+        class Runner:
+            inputs = None
+
+            def run(self, _name, _argv, _timeout, *, inputs_=()):
+                self.inputs = list(inputs_)
+                raise InputsObserved
+
+        retained = hosted.validate_retained_inputs(
+            ROOT, self.contract, self.lock)
+        runner = Runner()
+        with tempfile.TemporaryDirectory() as directory, \
+                mock.patch.object(
+                    hosted, "fetch_exact",
+                    return_value={"bytes": 1, "sha256": "a" * 64}), \
+                mock.patch.object(
+                    hosted.build, "inrelease_verification_command",
+                    return_value=["/usr/bin/gpgv"]), \
+                self.assertRaises(InputsObserved):
+            base = Path(directory)
+            hosted._run_metadata(
+                self.lock, self.contract, base, base, runner, None,
+                ROOT / self.contract["retained_inputs"]["archive_keyring"],
+                retained["archive_keyring"],
+            )
+        self.assertEqual(
+            [row["name"] for row in runner.inputs],
+            ["inrelease-noble", "archive_keyring"],
         )
 
     def test_checkout_binding_requires_exact_head_tree_and_clean_state(self):
@@ -295,7 +332,11 @@ class UbuntuHostedProducerTests(unittest.TestCase):
                 "bytes": len(b"retained stderr"),
                 "sha256": hashlib.sha256(b"retained stderr").hexdigest(),
             },
-            "inputs": [],
+            "inputs": [{
+                "name": "checksum_signature",
+                "bytes": 1,
+                "sha256": "2" * 64,
+            }],
         }
 
     def test_command_evidence_reopens_tools_and_raw_outputs(self):
@@ -322,6 +363,15 @@ class UbuntuHostedProducerTests(unittest.TestCase):
             changed["inputs"] = [{
                 "name": "input", "bytes": True, "sha256": "2" * 64,
             }]
+            cases.append(changed)
+            for unsafe_name in (
+                    "SHA256SUMS.gpg", "../checksum", "checksum/signature",
+                    "checksum signature"):
+                changed = copy.deepcopy(row)
+                changed["inputs"][0]["name"] = unsafe_name
+                cases.append(changed)
+            changed = copy.deepcopy(row)
+            changed["inputs"].append(copy.deepcopy(changed["inputs"][0]))
             cases.append(changed)
             for changed in cases:
                 with self.subTest(changed=changed), \
