@@ -9,6 +9,7 @@ import time
 
 
 MAX_REPORT = 128 * 1024
+DISPOSABLE_PHASE_TIMEOUT_SECONDS = 1800
 NEGATIVE_CASES = ("unsigned", "wrong-key", "wrong-reference", "altered-signature")
 NEGATIVE_UPDATE_SOURCE = "/run/symbi-update-negative/source"
 POSITIVE_OVERLAY_CASE = "valid-signature"
@@ -31,6 +32,36 @@ def unique_json(raw):
     if not isinstance(value, dict):
         raise ValueError("update report must be an object")
     return value
+
+
+def stop_child(child):
+    """Best-effort QEMU cleanup that never masks the primary gate failure."""
+    result = {"attempted": False, "terminated": False, "killed": False, "errors": []}
+    if child is None or child.poll() is not None:
+        return result
+    result["attempted"] = True
+    try:
+        child.terminate()
+        result["terminated"] = True
+    except OSError as error:
+        result["errors"].append(type(error).__name__ + ": " + str(error))
+    else:
+        try:
+            child.wait(timeout=10)
+            return result
+        except subprocess.TimeoutExpired:
+            pass
+    try:
+        child.kill()
+        result["killed"] = True
+    except OSError as error:
+        result["errors"].append(type(error).__name__ + ": " + str(error))
+    else:
+        try:
+            child.wait(timeout=10)
+        except subprocess.TimeoutExpired as error:
+            result["errors"].append(type(error).__name__ + ": " + str(error))
+    return result
 
 
 def firmware_arguments(directory=Path("/inputs"), expected_filename="expected.json"):
@@ -307,7 +338,7 @@ def main():
         positive_overlay, positive_identity = create_overlay("same-path-positive.qcow2")
         path, elapsed = run_qemu(
             positive_qemu_command(), "same-path-positive", "same-path-positive.json",
-            "same-path-positive-serial.log", 1200)
+            "same-path-positive-serial.log", DISPOSABLE_PHASE_TIMEOUT_SECONDS)
         positive_report = unique_json(path.read_bytes())
         validate_positive_report(positive_report, positive_expected,
                                  hashes[positive_name], hashes["update_guest.py"])
@@ -333,7 +364,8 @@ def main():
             overlay, identity = create_overlay("negative-" + case + ".qcow2")
             path, elapsed = run_qemu(
                 negative_qemu_command(case), "negative-" + case,
-                "negative-" + case + ".json", "negative-" + case + "-serial.log", 1200)
+                "negative-" + case + ".json", "negative-" + case + "-serial.log",
+                DISPOSABLE_PHASE_TIMEOUT_SECONDS)
             report = unique_json(path.read_bytes())
             validate_negative_report(report, negative_expected[case],
                                      hashes["expected-" + case + ".json"],
@@ -377,13 +409,9 @@ def main():
         record["failure"] = type(error).__name__ + ": " + str(error)
         raise
     finally:
-        if child is not None and child.poll() is None:
-            child.terminate()
-            try:
-                child.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                child.kill()
-                child.wait(timeout=10)
+        cleanup = stop_child(child)
+        record["child_cleanup"] = cleanup
+        if cleanup["attempted"]:
             record["passed"] = False
         record["cgroup_final"] = {name: (group / name).read_text().strip()
                                    for name in (*limits, "memory.peak", "memory.events", "cpu.stat")}

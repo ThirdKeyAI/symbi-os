@@ -15,6 +15,7 @@ SOURCE = Path("/var/lib/symbi-update/source")
 NEGATIVE_SOURCE = Path("/run/symbi-update-negative/source")
 NEGATIVE_CASES = ("unsigned", "wrong-key", "wrong-reference", "altered-signature")
 POSITIVE_OVERLAY_CASE = "valid-signature"
+UPDATE_COMMAND_TIMEOUT_SECONDS = 1200
 STATE = Path("/var/lib/symbi-update-test/phase")
 CHANNEL = Path("/dev/virtio-ports/org.symbi.update")
 
@@ -147,7 +148,7 @@ def main():
               "scope": "Offline ephemeral fixture-signed update and rollback only"}
 
     def run(command, *, timeout=120, check=True):
-        if type(timeout) is not int or not 1 <= timeout <= 1200:
+        if type(timeout) is not int or not 1 <= timeout <= UPDATE_COMMAND_TIMEOUT_SECONDS:
             raise ValueError("invalid update command timeout")
         result = subprocess.run(command, stdin=subprocess.DEVNULL, capture_output=True,
                                 timeout=timeout, text=True,
@@ -263,7 +264,7 @@ def main():
                 raise ValueError("guest update policy bind changed")
             switch = ["/usr/bin/bootc", "switch", "--transport", "dir",
                       "--enforce-container-sigpolicy", str(NEGATIVE_SOURCE)]
-            run(switch, timeout=1200, check=False)
+            run(switch, timeout=UPDATE_COMMAND_TIMEOUT_SECONDS, check=False)
             switch_exit = record["commands"][-1]["exit_code"]
             if is_positive:
                 after = staged_deployment_snapshot(raw_status(), old, new)
@@ -305,7 +306,8 @@ def main():
             if sha256(Path("/etc/containers/policy.json")) != expected["policy_sha256"]:
                 raise ValueError("guest update policy bind changed")
             run(["/usr/bin/bootc", "switch", "--transport", "dir",
-                 "--enforce-container-sigpolicy", str(SOURCE)], timeout=1200)
+                 "--enforce-container-sigpolicy", str(SOURCE)],
+                timeout=UPDATE_COMMAND_TIMEOUT_SECONDS)
             phase_status(raw_status(), old, staged=new)
             write_state("updated")
             record["phase"] = {"name": "installed", "booted_digest": old,

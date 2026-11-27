@@ -474,7 +474,7 @@ def main():
             or not group.name.endswith('.service') or (group/'cgroup.procs').read_text().strip()):
         raise ValueError('Unexpected delegated installer controller')
     limits={n:(group/n).read_text().strip() for n in ('memory.max','memory.swap.max','cpu.max','pids.max')}
-    if limits!={'memory.max':'4294967296','memory.swap.max':'0','cpu.max':'200000 100000','pids.max':'256'}:
+    if limits!={'memory.max':'5368709120','memory.swap.max':'0','cpu.max':'200000 100000','pids.max':'256'}:
         raise ValueError('Hosted Atomic resource limits changed')
     required={'cpu','memory','pids'}
     if not required.issubset((group/'cgroup.controllers').read_text().split()): raise ValueError('Missing delegation')
