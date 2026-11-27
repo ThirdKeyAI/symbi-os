@@ -701,6 +701,24 @@ class UbuntuHostedProducerTests(unittest.TestCase):
             ledger, evidence, run, _, inrelease = self.ledger_fixture(
                 Path(directory), full=False)
             try:
+                with self.assertRaises(ValueError):
+                    ledger.reject_release(
+                        "noble", inrelease,
+                        packages.EXPECTED_SOURCES[0]["metadata"][
+                            "signer_fingerprint"],
+                        "index-inventory-rejected")
+                with self.assertRaises(ValueError):
+                    ledger.reject_release(
+                        "noble", inrelease,
+                        packages.EXPECTED_SOURCES[0]["metadata"][
+                            "signer_fingerprint"],
+                        "valid-until-rejected", "sha256-size-syntax")
+                with self.assertRaises(ValueError):
+                    ledger.reject_release(
+                        "noble", inrelease,
+                        packages.EXPECTED_SOURCES[0]["metadata"][
+                            "signer_fingerprint"],
+                        "index-inventory-rejected", {})
                 ledger.reject_release(
                     "noble", inrelease,
                     packages.EXPECTED_SOURCES[0]["metadata"][
@@ -713,12 +731,58 @@ class UbuntuHostedProducerTests(unittest.TestCase):
                 self.assertEqual(terminal["kind"], "release-rejected")
                 self.assertEqual(
                     terminal["diagnostics"]["inrelease"], inrelease)
+                self.assertIsNone(terminal["diagnostics"]["predicate"])
+                changed = copy.deepcopy(ledger.value)
+                changed["phases"][-1]["diagnostics"].update(
+                    reason="index-inventory-rejected")
+                with self.assertRaises(ValueError):
+                    hosted.validate_phase_ledger(
+                        changed, "discover", self.contract, self.lock,
+                        evidence, ROOT, run)
+                changed["phases"][-1]["diagnostics"].update(
+                    predicate={})
+                with self.assertRaises(ValueError):
+                    hosted.validate_phase_ledger(
+                        changed, "discover", self.contract, self.lock,
+                        evidence, ROOT, run)
                 self.assertFalse(ledger.value["passed"])
                 self.assertFalse((evidence / "producer-result.json").exists())
                 self.assertEqual(
                     hosted.build.release_rejection_reason(ValueError(
                         "Ubuntu Release Valid-Until is missing or oversized")),
                     "valid-until-rejected")
+            finally:
+                ledger.close()
+
+        with tempfile.TemporaryDirectory() as directory:
+            ledger, evidence, run, _, inrelease = self.ledger_fixture(
+                Path(directory), full=False)
+            try:
+                ledger.reject_release(
+                    "noble", inrelease,
+                    packages.EXPECTED_SOURCES[0]["metadata"][
+                        "signer_fingerprint"],
+                    "index-inventory-rejected", "sha256-size-syntax")
+                hosted.validate_phase_ledger(
+                    ledger.value, "discover", self.contract, self.lock,
+                    evidence, ROOT, run)
+                terminal = ledger.value["phases"][-1]
+                self.assertEqual(
+                    terminal["diagnostics"]["predicate"],
+                    "sha256-size-syntax")
+
+                legacy = copy.deepcopy(ledger.value)
+                legacy["schema"] = hosted.LEGACY_PHASE_LEDGER_SCHEMA
+                del legacy["phases"][-1]["diagnostics"]["predicate"]
+                hosted.validate_phase_ledger(
+                    legacy, "discover", self.contract, self.lock,
+                    evidence, ROOT, run)
+                legacy["phases"][-1]["diagnostics"]["predicate"] = \
+                    "sha256-size-syntax"
+                with self.assertRaises(ValueError):
+                    hosted.validate_phase_ledger(
+                        legacy, "discover", self.contract, self.lock,
+                        evidence, ROOT, run)
             finally:
                 ledger.close()
 
@@ -775,7 +839,39 @@ class UbuntuHostedProducerTests(unittest.TestCase):
         self.assertEqual(ledger.calls[-1][1], "noble-updates")
         self.assertEqual(ledger.calls[-1][2], identity)
         self.assertEqual(
-            ledger.calls[-1][-1], "valid-until-rejected")
+            ledger.calls[-1][-2], "valid-until-rejected")
+        self.assertIsNone(ledger.calls[-1][-1])
+
+        inventory_release = release.replace(
+            b"Architectures: amd64\n",
+            b"Valid-Until: Sat, 28 Nov 2026 12:00:00 GMT\n"
+            b"Architectures: amd64\n",
+        ).replace(
+            b" 1 main/binary-amd64/Packages.xz\n",
+            b" 0 main/binary-amd64/Packages.xz\n",
+        )
+        inventory_ledger = Ledger()
+        with tempfile.TemporaryDirectory() as directory, \
+                mock.patch.object(hosted, "fetch_exact", return_value=identity), \
+                mock.patch.object(
+                    hosted.packages, "read_bounded_control_file",
+                    return_value=inventory_release), \
+                self.assertRaisesRegex(
+                    hosted.build.ReleaseInventoryRejection, "size syntax"):
+            hosted._run_metadata(
+                lock, contract, Path(directory), Path(directory), Runner(),
+                hosted.datetime(2026, 11, 27, 12, 0,
+                                tzinfo=hosted.timezone.utc),
+                ROOT / self.contract["retained_inputs"]["archive_keyring"],
+                retained["archive_keyring"], inventory_ledger)
+        self.assertEqual(
+            [row[0] for row in inventory_ledger.calls],
+            ["inrelease-download", "inrelease-signature", "reject"],
+        )
+        self.assertEqual(
+            inventory_ledger.calls[-1][-2], "index-inventory-rejected")
+        self.assertEqual(
+            inventory_ledger.calls[-1][-1], "sha256-size-syntax")
 
     def test_phase_ledger_rejects_mutation_order_duplicates_and_cross_binding(self):
         with tempfile.TemporaryDirectory() as directory:

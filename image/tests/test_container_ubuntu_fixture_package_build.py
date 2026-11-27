@@ -306,28 +306,73 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         target = (
             f" {digest} {len(self.index)} main/binary-amd64/Packages.xz\n"
         ).encode()
-        oversized = (
-            f" {digest} {packages.MAX_INDEX_BYTES + 1} "
-            "main/binary-amd64/Packages.xz\n"
-        ).encode()
-        with self.assertRaises(ValueError):
-            build.validate_signed_release(
-                self.release.replace(target, oversized), self.source, NOW,
-                build.expected_freshness_policy(self.source))
+        for size_text in (str(packages.MAX_INDEX_BYTES + 1), "9" * 5000):
+            oversized = (
+                f" {digest} {size_text} main/binary-amd64/Packages.xz\n"
+            ).encode()
+            with self.subTest(digits=len(size_text)), \
+                    self.assertRaises(
+                        build.ReleaseInventoryRejection) as caught:
+                build.validate_signed_release(
+                    self.release.replace(target, oversized), self.source, NOW,
+                    build.expected_freshness_policy(self.source))
+            self.assertEqual(
+                build.release_rejection_reason(caught.exception),
+                "index-inventory-rejected")
+            self.assertEqual(
+                build.release_rejection_predicate(caught.exception),
+                "target-index-byte-bound")
+            self.assertNotIn(size_text, str(caught.exception))
 
     def test_release_rejects_invalid_irrelevant_sha256_rows(self):
         digest = "f" * 64
         valid = f" {digest} 1 main/binary-arm64/Packages.xz\n"
         cases = (
-            f" {digest} malformed main/binary-arm64/Packages.xz\n",
-            f" {digest} 1 ../main/binary-arm64/Packages.xz\n",
-            valid + valid,
+            (f" {digest} malformed main/binary-arm64/Packages.xz\n",
+             "sha256-size-syntax"),
+            (f" {digest} 1 ../main/binary-arm64/Packages.xz\n",
+             "sha256-path-safety"),
+            (valid + valid, "sha256-duplicate-path"),
         )
-        for row in cases:
-            with self.subTest(row=row), self.assertRaises(ValueError):
+        for row, predicate in cases:
+            with self.subTest(predicate=predicate), \
+                    self.assertRaises(build.ReleaseInventoryRejection) as caught:
                 build.validate_signed_release(
                     self.release + row.encode(), self.source, NOW,
                     build.expected_freshness_policy(self.source))
+            self.assertEqual(
+                build.release_rejection_predicate(caught.exception), predicate)
+            self.assertNotIn(row.strip(), str(caught.exception))
+
+    def test_release_inventory_rejection_subtypes_are_fixed_and_content_free(self):
+        digest = hashlib.sha256(self.index).hexdigest()
+        target = f" {digest} {len(self.index)} main/binary-amd64/Packages.xz\n"
+        cases = (
+            (self.release + b" malformed\n", "sha256-columns"),
+            (self.release +
+             f" {'g' * 64} 1 main/binary-arm64/Packages.xz\n".encode(),
+             "sha256-digest-syntax"),
+            (self.release.replace(target.encode(), b"")
+             + f" {digest} 1 main/binary-arm64/Packages.xz\n".encode(),
+             "target-index-membership"),
+        )
+        for raw, predicate in cases:
+            with self.subTest(predicate=predicate), \
+                    self.assertRaises(build.ReleaseInventoryRejection) as caught:
+                build.validate_signed_release(
+                    raw, self.source, NOW,
+                    build.expected_freshness_policy(self.source))
+            self.assertEqual(
+                build.release_rejection_reason(caught.exception),
+                "index-inventory-rejected")
+            self.assertEqual(
+                build.release_rejection_predicate(caught.exception), predicate)
+            self.assertIn(predicate, build.RELEASE_INVENTORY_PREDICATES)
+        ordinary = ValueError("Ubuntu Release SHA256 parser failed")
+        self.assertEqual(
+            build.release_rejection_reason(ordinary),
+            "release-structure-rejected")
+        self.assertIsNone(build.release_rejection_predicate(ordinary))
 
     def test_stale_future_wrong_suite_and_ambiguous_release_metadata_fail(self):
         duplicate = self.release + (
