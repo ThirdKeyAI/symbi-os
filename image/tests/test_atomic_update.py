@@ -23,13 +23,17 @@ from image.atomic.update_boot import (DISPOSABLE_PHASE_TIMEOUT_SECONDS,
                                       positive_qemu_command,
                                       firmware_arguments,
                                       stop_child,
+                                      validate_phase_report,
                                       validate_negative_report,
                                       validate_positive_report,
                                       validate_shared_baseline)
 from image.atomic.update_process import TIMEOUT_SECONDS, validate_update_controller_command
 from image.atomic.update_guest import (UPDATE_COMMAND_TIMEOUT_SECONDS,
+                                       SOURCE, STATE,
                                        phase_status, deployment_snapshot,
-                                       staged_deployment_snapshot)
+                                       staged_deployment_snapshot,
+                                       validate_source_identity,
+                                       device_settle_command)
 from image.atomic.update_hosted import retain_controller_output, run_update
 from image.atomic.hosted import (RETAINED_REPORT_MAX_BYTES,
                                  validate_retained_preflight)
@@ -485,6 +489,7 @@ class AtomicUpdateTests(unittest.TestCase):
 
     old = "sha256:" + "1" * 64
     new = "sha256:" + "2" * 64
+    source_uuid = "88888888-8888-4888-8888-888888888888"
 
     def entry(self, digest, transport="registry"):
         return {"incompatible": False, "image": {
@@ -565,8 +570,8 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertEqual(result["default"], [{"type": "reject"}])
         self.assertEqual(result["transports"]["docker"], original["transports"]["docker"])
         self.assertEqual(set(result["transports"]["dir"]),
-                         {"/var/lib/symbi-update/source", NEGATIVE_UPDATE_SOURCE})
-        rule = result["transports"]["dir"]["/var/lib/symbi-update/source"][0]
+                         {"/run/symbi-update/source", NEGATIVE_UPDATE_SOURCE})
+        rule = result["transports"]["dir"]["/run/symbi-update/source"][0]
         self.assertEqual(rule["type"], "signedBy")
         self.assertEqual(rule["signedIdentity"]["dockerReference"],
                          "localhost/symbi-ci/development@" + self.new)
@@ -593,7 +598,7 @@ class AtomicUpdateTests(unittest.TestCase):
         switch = update_command()
         self.assertEqual(switch[:3], ["/usr/bin/bootc", "switch", "--transport"])
         self.assertIn("--enforce-container-sigpolicy", switch)
-        self.assertEqual(switch[-1], "/var/lib/symbi-update/source")
+        self.assertEqual(switch[-1], "/run/symbi-update/source")
         self.assertEqual(rollback_command(), ["/usr/bin/bootc", "rollback"])
         forbidden = {"--target-no-signature-verification", "--disable-selinux",
                      "--allow-missing-verity"}
@@ -610,12 +615,17 @@ class AtomicUpdateTests(unittest.TestCase):
         joined = " ".join(command)
         self.assertIn("file=/output/guest.qcow2,format=qcow2,if=virtio", joined)
         self.assertNotIn("snapshot=on", joined)
-        self.assertIn("file=/inputs/update.raw,format=raw,if=virtio,readonly=on", joined)
+        self.assertIn(
+            "file=/inputs/update.raw,format=raw,if=none,id=symbi-update-source,readonly=on",
+            joined)
+        self.assertIn(
+            "virtio-blk-pci,drive=symbi-update-source,serial=SYMBIUPDATE", joined)
+        self.assertNotIn("file=/inputs/update.raw,format=raw,if=virtio", joined)
         self.assertIn("-net none", joined)
         self.assertIn("phase-1.json", joined)
         firmware = firmware_arguments()
         self.assertIn("systemd.extra-unit.o.service", " ".join(firmware))
-        self.assertIn("fstab.extra", " ".join(firmware))
+        self.assertNotIn("fstab.extra", " ".join(firmware))
 
     def test_each_bootc_rejection_uses_a_distinct_disposable_overlay(self):
         commands = {case: negative_qemu_command(case) for case in (
@@ -625,7 +635,11 @@ class AtomicUpdateTests(unittest.TestCase):
             self.assertIn(f"file=/output/negative-{case}.qcow2,format=qcow2,if=virtio", joined)
             self.assertIn(f"path=/output/negative-{case}.json", joined)
             self.assertIn(f"file=/inputs/expected-{case}.json", joined)
-            self.assertIn("file=/inputs/update.raw,format=raw,if=virtio,readonly=on", joined)
+            self.assertIn(
+                "file=/inputs/update.raw,format=raw,if=none,id=symbi-update-source,readonly=on",
+                joined)
+            self.assertIn(
+                "virtio-blk-pci,drive=symbi-update-source,serial=SYMBIUPDATE", joined)
             self.assertNotIn("file=/output/guest.qcow2", joined)
         self.assertEqual(len({tuple(command) for command in commands.values()}), 4)
         positive = " ".join(positive_qemu_command())
@@ -694,6 +708,8 @@ class AtomicUpdateTests(unittest.TestCase):
             "release_qualified": False, "product": "Symbi-Hosted-Update-Probe",
             "nonce": "4" * 32, "expected_sha256": "5" * 64,
             "runner_sha256": "6" * 64, "source_mounted_readonly": True,
+            "source_device": {"path": "/dev/vdb", "TYPE": "ext4",
+                              "LABEL": "SYMBIUPDATE", "UUID": self.source_uuid},
             "same_path_positive_control": {
                 "case": POSITIVE_OVERLAY_CASE, "switch_accepted": True,
                 "switch_exit_code": 0, "booted_unchanged": True,
@@ -710,7 +726,9 @@ class AtomicUpdateTests(unittest.TestCase):
         }
 
     def test_same_path_positive_report_binds_success_and_controlled_state(self):
-        expected = {"nonce": "4" * 32, "new_digest": self.new}
+        expected = {"nonce": "4" * 32, "new_digest": self.new,
+                    "source_disk": {"filesystem": "ext4", "label": "SYMBIUPDATE",
+                                    "uuid": self.source_uuid}}
         report = self.positive_report()
         validate_positive_report(report, expected, "5" * 64, "6" * 64)
         validate_shared_baseline(report, self.negative_report())
@@ -724,6 +742,9 @@ class AtomicUpdateTests(unittest.TestCase):
         mutations.append(changed)
         changed = copy.deepcopy(report)
         changed["same_path_positive_control"]["source"] = "/tmp/other"
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["source_device"]["UUID"] = "9" * 32
         mutations.append(changed)
         for changed in mutations:
             with self.subTest(changed=changed), self.assertRaises(ValueError):
@@ -741,6 +762,8 @@ class AtomicUpdateTests(unittest.TestCase):
             "release_qualified": False, "product": "Symbi-Hosted-Update-Probe",
             "nonce": "4" * 32, "expected_sha256": "5" * 64,
             "runner_sha256": "6" * 64, "source_mounted_readonly": True,
+            "source_device": {"path": "/dev/vdb", "TYPE": "ext4",
+                              "LABEL": "SYMBIUPDATE", "UUID": self.source_uuid},
             "negative_control": {
                 "case": case, "switch_rejected": True, "switch_exit_code": 1,
                 "deployment_unchanged": True, "default_unchanged": True,
@@ -756,8 +779,10 @@ class AtomicUpdateTests(unittest.TestCase):
 
     def test_negative_report_requires_failed_real_switch_and_unchanged_state(self):
         report = self.negative_report()
-        validate_negative_report(report, {"nonce": "4" * 32}, "5" * 64,
-                                 "6" * 64, "unsigned")
+        expected = {"nonce": "4" * 32,
+                    "source_disk": {"filesystem": "ext4", "label": "SYMBIUPDATE",
+                                    "uuid": self.source_uuid}}
+        validate_negative_report(report, expected, "5" * 64, "6" * 64, "unsigned")
         mutations = []
         changed = copy.deepcopy(report)
         changed["commands"][1]["exit_code"] = 0
@@ -769,24 +794,81 @@ class AtomicUpdateTests(unittest.TestCase):
         changed = copy.deepcopy(report)
         changed["commands"][1]["command"][-1] = "/tmp/other"
         mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["source_device"]["LABEL"] = "OTHER"
+        mutations.append(changed)
         for changed in mutations:
             with self.subTest(changed=changed), self.assertRaises(ValueError):
-                validate_negative_report(changed, {"nonce": "4" * 32},
-                                         "5" * 64, "6" * 64, "unsigned")
+                validate_negative_report(changed, expected, "5" * 64,
+                                         "6" * 64, "unsigned")
+
+    def test_phase_report_binds_the_exact_source_device(self):
+        expected = {"nonce": "4" * 32,
+                    "source_disk": {"filesystem": "ext4", "label": "SYMBIUPDATE",
+                                    "uuid": self.source_uuid}}
+        phase = {"name": "installed", "booted_digest": self.old,
+                 "operation": "signed-update-staged", "staged_digest": self.new}
+        report = {
+            "schema": 1, "passed": True, "guest_booted": True,
+            "release_qualified": False, "product": "Symbi-Hosted-Update-Probe",
+            "nonce": "4" * 32, "expected_sha256": "5" * 64,
+            "runner_sha256": "6" * 64, "source_mounted_readonly": True,
+            "source_device": {"path": "/dev/vdb", "TYPE": "ext4",
+                              "LABEL": "SYMBIUPDATE", "UUID": self.source_uuid},
+            "phase": phase,
+            "commands": [{"command": ["/usr/bin/bootc", "status", "--json"],
+                          "exit_code": 0}],
+        }
+        validate_phase_report(report, expected, "5" * 64, "6" * 64, phase)
+        for field in ("path", "TYPE", "LABEL", "UUID"):
+            changed = copy.deepcopy(report)
+            changed["source_device"].pop(field)
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                validate_phase_report(changed, expected, "5" * 64, "6" * 64, phase)
 
     def test_update_service_and_mount_are_bounded_and_offline(self):
         root = Path(__file__).resolve().parents[2]
         settings = dict(line.split("=", 1) for line in
                         (root / "image/atomic/update-o.service").read_text().splitlines()
                         if "=" in line and not line.startswith("#"))
-        self.assertEqual(settings["RequiresMountsFor"], "/var/lib/symbi-update/source")
+        self.assertNotIn("RequiresMountsFor", settings)
+        self.assertEqual(settings["After"], "local-fs.target systemd-udev-trigger.service")
+        self.assertEqual(settings["RuntimeDirectory"], "symbi-update")
+        self.assertEqual(settings["RuntimeDirectoryMode"], "0700")
         self.assertEqual(settings["StateDirectory"], "symbi-update-test")
         self.assertEqual(settings["PrivateMounts"], "yes")
         self.assertEqual(settings["MemorySwapMax"], "0")
         self.assertEqual(settings["TasksMax"], "128")
-        mount = (root / "image/atomic/update-fstab.extra").read_text().split()
-        self.assertEqual(mount[:3], ["LABEL=SYMBIUPDATE", "/var/lib/symbi-update", "ext4"])
-        self.assertEqual(set(mount[3].split(",")), {"ro", "nosuid", "nodev", "noexec"})
+        self.assertFalse((root / "image/atomic/update-fstab.extra").exists())
+
+    def test_update_device_readiness_wait_is_fixed_and_bounded(self):
+        self.assertEqual(device_settle_command(), [
+            "/usr/bin/udevadm", "settle", "--timeout=30",
+            "--exit-if-exists=/dev/disk/by-id/virtio-SYMBIUPDATE"])
+
+    def test_source_mount_is_boot_ephemeral_while_phase_state_persists(self):
+        self.assertEqual(SOURCE, Path("/run/symbi-update/source"))
+        self.assertEqual(STATE, Path("/var/lib/symbi-update-test/phase"))
+        self.assertNotEqual(SOURCE.parent, STATE.parent)
+
+    def test_update_source_identity_is_exact_and_rejects_ambiguity(self):
+        expected = {"filesystem": "ext4", "label": "SYMBIUPDATE",
+                    "uuid": "1d3a0ad0-0fdb-4338-a56d-12061df7b091"}
+        raw = ("DEVNAME=/dev/vdb\nLABEL=SYMBIUPDATE\n"
+               "UUID=1d3a0ad0-0fdb-4338-a56d-12061df7b091\nTYPE=ext4\n")
+        self.assertEqual(validate_source_identity(raw, expected), {
+            "TYPE": "ext4", "LABEL": "SYMBIUPDATE",
+            "UUID": "1d3a0ad0-0fdb-4338-a56d-12061df7b091"})
+        mutations = [
+            raw.replace("TYPE=ext4", "TYPE=xfs"),
+            raw.replace("LABEL=SYMBIUPDATE", "LABEL=OTHER"),
+            raw.replace(expected["uuid"], "2d3a0ad0-0fdb-4338-a56d-12061df7b091"),
+            raw + "TYPE=ext4\n",
+            raw + "malformed\n",
+        ]
+        for changed in mutations:
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                validate_source_identity(changed, expected)
 
     def test_existing_atomic_workflow_downloads_both_exact_artifacts(self):
         root = Path(__file__).resolve().parents[2]

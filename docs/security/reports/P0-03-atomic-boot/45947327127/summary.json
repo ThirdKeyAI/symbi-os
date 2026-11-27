@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "passed": false,
+  "qualification": false,
+  "run": {
+    "id": 45947327127,
+    "attempt": 1,
+    "event": "workflow_dispatch",
+    "workflow_id": 431513082,
+    "repository_id": 1472078858,
+    "head_repository_id": 1472078858,
+    "head_branch": "card/P0-03-update-proof",
+    "head_sha": "ce770f5f894774a654b37b8ed397156b2fe0dfab",
+    "job_id": 140334917872,
+    "job_name": "install-and-boot",
+    "conclusion": "failure",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45947327127"
+  },
+  "artifact": {
+    "id": 15176091574,
+    "name": "atomic-development-boot-generic",
+    "bytes": 78718,
+    "digest": "sha256:11a0598cf0a64facdc5afb8456fb65b44b9ad86c74e85fd864a8962b58f3643d",
+    "expires_at": "2026-12-11T05:54:59Z"
+  },
+  "retained_evidence_sha256": {
+    "atomic-disk-evidence/result.json": "170c4be77a0d98eb9dd24caa7f8bd56b2565ded055d1d94ab2e6420abdac235b",
+    "atomic-update-evidence/result.json": "bac64865279445960a5b03ec1fe906046fa8d12d7d3cdd5cfd11cef474bef650",
+    "atomic-disk-evidence/systemd-result.txt": "ef71ff459fea9fb0af4966b537ee254da7bab210b314189f9493f313718ad78f"
+  },
+  "observation": {
+    "stage": "same-path-positive",
+    "qemu_exit_code": 0,
+    "guest_report_bytes": 0,
+    "qemu_log_bytes": 0,
+    "serial_log_bytes": 63039,
+    "primary_cause": "the guest never observed /dev/disk/by-label/SYMBIUPDATE, so its mount and update service dependency failed",
+    "attachment_vs_identification_distinguished": false,
+    "controller_memory_max_bytes": 3221225472,
+    "controller_memory_peak_bytes": 3221225472,
+    "controller_memory_max_events": 2959,
+    "hosted_parent_memory_max_bytes": 5368709120,
+    "hosted_parent_memory_peak_bytes": 5368713216,
+    "hosted_parent_memory_max_events": 168275,
+    "oom_events": 0,
+    "oom_kill_events": 0,
+    "swap_max_bytes": 0,
+    "cleanup_complete": true
+  },
+  "correction": {
+    "explicit_read_only_block_backend": true,
+    "explicit_virtio_block_device": true,
+    "fixed_device_serial": "SYMBIUPDATE",
+    "fixed_device_link": "/dev/disk/by-id/virtio-SYMBIUPDATE",
+    "bounded_udev_settle_seconds": 30,
+    "exact_blkid_type_label_uuid": true,
+    "ephemeral_source": "/run/symbi-update/source",
+    "persistent_phase_state": "/var/lib/symbi-update-test/phase",
+    "private_read_only_mount": true,
+    "mount_options": [
+      "ro",
+      "nosuid",
+      "nodev",
+      "noexec"
+    ],
+    "boot_time_mount_dependency_removed": true,
+    "bounded_guest_block_inventory": true
+  },
+  "local_verification": {
+    "focused_contract_tests": 11,
+    "full_update_tests": 38,
+    "full_image_tests": 317,
+    "full_suite_seconds": 2.080,
+    "full_suite_peak_rss_kib": 54992,
+    "swaps": 0,
+    "vendor_hashes": "pass",
+    "shell_syntax": "pass",
+    "json": "pass",
+    "diff_check": "pass",
+    "cold_review": "no blockers"
+  },
+  "next": "A fresh exact-head hosted run must pass before update or rollback qualification."
+}

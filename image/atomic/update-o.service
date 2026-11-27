@@ -1,12 +1,13 @@
 [Unit]
 Description=Disposable hosted signed update and rollback phase
 ConditionPathExists=!/etc/initrd-release
-RequiresMountsFor=/var/lib/symbi-update/source
 After=local-fs.target systemd-udev-trigger.service
 OnFailure=poweroff.target
 
 [Service]
 Type=oneshot
+RuntimeDirectory=symbi-update
+RuntimeDirectoryMode=0700
 StateDirectory=symbi-update-test
 StateDirectoryMode=0700
 ImportCredential=symbi-update.py

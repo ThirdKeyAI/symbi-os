@@ -12,7 +12,7 @@ from image.boot.inputs import require_desktop_image
 from image.toolchain.reuse import exact_hash
 
 
-UPDATE_SOURCE = "/var/lib/symbi-update/source"
+UPDATE_SOURCE = "/run/symbi-update/source"
 NEGATIVE_UPDATE_SOURCE = "/run/symbi-update-negative/source"
 NEGATIVE_CASES = ("unsigned", "wrong-key", "wrong-reference", "altered-signature")
 POSITIVE_OVERLAY_CASE = "valid-signature"
