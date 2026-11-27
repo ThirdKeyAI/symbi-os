@@ -305,7 +305,8 @@ def validate_transition(report):
     if (not isinstance(transition, dict)
             or set(transition) != {
                 "unit", "service", "context", "probe_command", "scope",
-                "runcon", "runcon_sha256", "source", "source_sha256",
+                "runcon", "runcon_sha256", "runcon_selinux_label",
+                "source", "source_sha256",
                 "label_reference", "label_reference_sha256", "selinux_label", "mode",
             }
             or transition.get("unit") != "b.service"
@@ -315,6 +316,8 @@ def validate_transition(report):
             or transition.get("scope")
                != "Explicit transition availability only; no update qualification"
             or transition.get("runcon") != "/usr/bin/runcon"
+            or transition.get("runcon_selinux_label")
+               != "system_u:object_r:bin_t:s0"
             or transition.get("source") != "/usr/bin/bootc"
             or transition.get("label_reference") != "/usr/bin/ostree"
             or any(re.fullmatch(r"[a-f0-9]{64}", transition.get(key, "")) is None

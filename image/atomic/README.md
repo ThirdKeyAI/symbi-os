@@ -622,13 +622,18 @@ transition and that the nonmutating bootc version command returned successfully;
 it does not validate the later bytes and does not qualify an update. After the
 probe, `update_guest.py` opens `/usr/bin/runcon`, `/usr/bin/bootc` and
 `/usr/bin/ostree` without following final symlinks, requires root ownership and
-mode 0755, hashes stable file identities, and requires bootc's label to equal
-ostree's exact `install_exec_t` label. Every switch or rollback then uses the
-same fixed runcon context and bootc path inside `o.service`'s private mount
-namespace, with all three inputs revalidated before and after execution. No
-temporary launcher remains to clean up. The mutation service's capability set is
-unchanged because this diagnostic does not establish the complete capability
-requirements of bootc, ostree, mounts and deployment writes.
+mode 0755, and hashes stable file identities. From the already-open runcon file
+descriptor it also reads `security.selinux` and requires the exact generic
+executable label `system_u:object_r:bin_t:s0`; bootc's label must equal ostree's
+exact `install_exec_t` label. A different or malformed runcon label prevents a
+successful transition record and any mutation. This rules out a
+transition-bearing runcon executable making the service probe appear to prove an
+explicit transition from its original domain. Every switch or rollback then
+uses the same fixed runcon context and bootc path inside `o.service`'s private
+mount namespace, with all three inputs revalidated before and after execution.
+No temporary launcher remains to clean up. The mutation service's capability
+set is unchanged because this diagnostic does not establish the complete
+capability requirements of bootc, ostree, mounts and deployment writes.
 
 An explicit `runcon` does not bypass SELinux authorization. Fedora policy issue
 [#3349](https://github.com/fedora-selinux/selinux-policy/issues/3349) identifies
@@ -636,5 +641,9 @@ the missing `unconfined_service_t` install transition, while the proposed policy
 change [#3327](https://github.com/fedora-selinux/selinux-policy/pull/3327) adds the
 full domain-transition interface rather than only a default selector. The hosted
 probe may therefore fail; that failure is the intended fail-closed diagnostic.
+Red Hat Bugzilla
+[#1413536](https://bugzilla.redhat.com/show_bug.cgi?id=1413536) documents that
+runcon should retain the generic executable label rather than a special
+transition-bearing label.
 Only a successful probe followed by the complete switch, refusal, reboot and
 rollback sequence can advance this gate, and it still cannot qualify the OS.

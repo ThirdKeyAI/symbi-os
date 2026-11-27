@@ -1047,6 +1047,7 @@ class AtomicUpdateTests(unittest.TestCase):
             ],
             "scope": "Explicit transition availability only; no update qualification",
             "runcon": "/usr/bin/runcon", "runcon_sha256": "7" * 64,
+            "runcon_selinux_label": "system_u:object_r:bin_t:s0",
             "source": "/usr/bin/bootc",
             "label_reference": "/usr/bin/ostree",
             "source_sha256": "8" * 64, "label_reference_sha256": "9" * 64,
@@ -1169,6 +1170,8 @@ class AtomicUpdateTests(unittest.TestCase):
                 ("scope", "Update qualified"),
                 ("runcon", "/tmp/runcon"),
                 ("runcon_sha256", "0" * 63),
+                ("runcon_selinux_label", "system_u:object_r:install_exec_t:s0"),
+                ("runcon_selinux_label", "not-a-selinux-label"),
                 ("source", "/tmp/bootc"),
                 ("source_sha256", "0" * 63),
                 ("label_reference", "/tmp/ostree"),
@@ -1178,6 +1181,9 @@ class AtomicUpdateTests(unittest.TestCase):
             changed = copy.deepcopy(report)
             changed["bootc_transition"][field] = value
             mutations.append(changed)
+        changed = copy.deepcopy(report)
+        del changed["bootc_transition"]["runcon_selinux_label"]
+        mutations.append(changed)
         changed = copy.deepcopy(report)
         changed["bootc_operation"]["command"][0] = "/tmp/runcon"
         changed["commands"][3]["command"][0] = "/tmp/runcon"
@@ -1403,12 +1409,18 @@ class AtomicUpdateTests(unittest.TestCase):
     def test_fixed_transition_binds_runcon_bootc_owner_mode_bytes_and_label(self):
         real_fstat = os.fstat
         label = b"system_u:object_r:install_exec_t:s0\0"
+        runcon_label = b"system_u:object_r:bin_t:s0\0"
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             source, reference, runcon = self.bootc_fixture(root)
             root_stat = self.root_file_stat(real_fstat)
+
+            def labels(descriptor, _name):
+                target = Path(os.readlink(f"/proc/self/fd/{descriptor}"))
+                return runcon_label if target == runcon else label
+
             with patch("image.atomic.update_guest.os.fstat", side_effect=root_stat), \
-                    patch("image.atomic.update_guest.os.getxattr", return_value=label):
+                    patch("image.atomic.update_guest.os.getxattr", side_effect=labels):
                 observation = _bootc_file_observation(source, reference, runcon)
             self.assertEqual(observation["source_sha256"],
                              hashlib.sha256(source.read_bytes()).hexdigest())
@@ -1418,10 +1430,13 @@ class AtomicUpdateTests(unittest.TestCase):
                              hashlib.sha256(runcon.read_bytes()).hexdigest())
             self.assertEqual(observation["mode"], "0755")
             self.assertEqual(observation["selinux_label"], label[:-1].decode())
+            self.assertEqual(observation["runcon_selinux_label"],
+                             runcon_label[:-1].decode())
 
             mutations = (
                 "source-gid", "reference-gid", "runcon-gid",
                 "source-mode", "reference-mode", "runcon-mode", "label",
+                "runcon-label-transition", "runcon-label-malformed",
                 "source-symlink", "reference-symlink", "runcon-symlink",
             )
             for mutation in mutations:
@@ -1432,7 +1447,11 @@ class AtomicUpdateTests(unittest.TestCase):
                         "reference-gid": reference,
                         "runcon-gid": runcon,
                     }.get(mutation)
-                    getxattr = Mock(return_value=label)
+                    def fixed_labels(descriptor, _name):
+                        target = Path(os.readlink(f"/proc/self/fd/{descriptor}"))
+                        return runcon_label if target == runcon else label
+
+                    getxattr = Mock(side_effect=fixed_labels)
                     original = None
                     if mutation == "source-mode":
                         source.chmod(0o775)
@@ -1443,9 +1462,19 @@ class AtomicUpdateTests(unittest.TestCase):
                     elif mutation == "label":
                         def labels(descriptor, _name):
                             target = Path(os.readlink(f"/proc/self/fd/{descriptor}"))
+                            if target == runcon:
+                                return runcon_label
                             return (b"system_u:object_r:bin_t:s0\0"
                                     if target == source else label)
                         getxattr.side_effect = labels
+                    elif mutation == "runcon-label-transition":
+                        getxattr.side_effect = lambda _descriptor, _name: label
+                    elif mutation == "runcon-label-malformed":
+                        def malformed_label(descriptor, _name):
+                            target = Path(os.readlink(f"/proc/self/fd/{descriptor}"))
+                            return (b"system_u:object_r:bin_t:s0\0junk"
+                                    if target == runcon else label)
+                        getxattr.side_effect = malformed_label
                     elif mutation.endswith("-symlink"):
                         target = {"source-symlink": source,
                                   "reference-symlink": reference,
@@ -1512,7 +1541,8 @@ class AtomicUpdateTests(unittest.TestCase):
         record = {"bootc_transition": transition}
         current = {key: transition[key] for key in {
             "runcon", "runcon_sha256", "source", "source_sha256",
-            "label_reference", "label_reference_sha256", "selinux_label", "mode",
+            "runcon_selinux_label", "label_reference", "label_reference_sha256",
+            "selinux_label", "mode",
         }}
         result = SimpleNamespace(returncode=0, stderr="")
         runner = Mock(return_value=result)

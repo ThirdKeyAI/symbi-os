@@ -15,10 +15,11 @@
     "The first observed hosted failure occurred at the fallback copy's fsetxattr(security.selinux), before any bootc switch.",
     "A later copied-launcher attempt forced every b.service command into install_t; systemd then rejected /usr/bin/install and /usr/bin/rm at EXEC before either helper started.",
     "The bounded follow-up removes the forced service context and copied launcher, then uses one exact runcon install_t bootc --version command only as a fail-closed transition-availability probe.",
-    "Before each mutation, update_guest.py requires stable root-owned 0755 runcon, bootc and ostree files, records their hashes, requires exact bootc/ostree install_exec_t label equality, executes a fixed runcon context and bootc path, and revalidates the files afterward.",
+    "Before producing a successful transition record or starting a mutation, update_guest.py requires stable root-owned 0755 runcon, bootc and ostree files, records their hashes, reads runcon's security.selinux label from its already-open O_NOFOLLOW descriptor and requires exactly system_u:object_r:bin_t:s0, and requires exact bootc/ostree install_exec_t label equality.",
+    "Each mutation executes the fixed runcon context and bootc path and revalidates all three files afterward; a transition-bearing or malformed runcon label fails closed.",
     "The correction does not enable BOOTC_SETENFORCE0_FALLBACK and continues to require enforcing SELinux."
   ],
   "namespace_reason": "The switch source, overlay and temporary policy bind exist only in update-o.service's PrivateMounts namespace. Executing the validated fixed runcon and bootc paths from that service preserves those exact inputs; a separate mutation service would observe the wrong mount namespace.",
-  "probe_limit": "b.service runs before update_guest.py can hash the executables, so probe success proves only that the installed policy permits the exact explicit transition and that bootc --version returned successfully; it does not validate later bytes or qualify an update.",
+  "probe_limit": "b.service runs before update_guest.py can validate the executables, so the service result alone proves only that the installed policy permitted the exact command and that bootc --version returned successfully. update_guest.py does not produce a successful transition record or mutate until it binds runcon to the exact generic system_u:object_r:bin_t:s0 label, stable bytes, root ownership and mode; this still does not qualify an update.",
   "pending": "A native hosted rerun must first establish whether the exact runcon transition is authorized under the installed enforcing policy. Only after that probe succeeds can the same run exercise status, switch and rollback without a fallback or policy relaxation."
 }
