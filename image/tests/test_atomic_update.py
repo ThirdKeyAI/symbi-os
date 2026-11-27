@@ -2,7 +2,10 @@
 import copy
 import hashlib
 import json
+import os
 from pathlib import Path
+import signal
+import shutil
 import tempfile
 import unittest
 
@@ -22,11 +25,328 @@ from image.atomic.update_process import TIMEOUT_SECONDS, validate_update_control
 from image.atomic.update_guest import (phase_status, deployment_snapshot,
                                        staged_deployment_snapshot)
 from image.atomic.update_hosted import run_update
+from image.atomic.hosted import (RETAINED_REPORT_MAX_BYTES,
+                                 validate_retained_preflight)
+from image.boot.inputs import require_desktop_image
+from image.boot.preflight import expected_inputs
 
 
 class AtomicUpdateTests(unittest.TestCase):
+    def retained_preflight_context(self):
+        root = Path(__file__).resolve().parents[2]
+        lock = json.loads((root / "image/desktop-images.lock.json").read_text())
+        pins = json.loads((root / "image/base-images.json").read_text())
+        selected = lock["images"]["generic"]
+        manifest = require_desktop_image(lock, pins, "generic")
+        expected = expected_inputs(root, lock, pins, "generic")
+        readiness = json.loads((root / "image/atomic/preflight.lock.json").read_text())
+        return root, selected, manifest, expected, readiness
+
+    def retained_preflight_fixture(self, destination):
+        source, selected, manifest, expected, readiness = self.retained_preflight_context()
+        root = Path(destination)
+        (root / "image").mkdir()
+        shutil.copyfile(source / "image/desktop-images.lock.json",
+                        root / "image/desktop-images.lock.json")
+        for relative in ("image/boot/probe.py", "image/desktop/verify.py",
+                         "image/fonts/verify.py"):
+            target = root / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source / relative, target)
+        evidence = (root / "docs/security/reports/P0-03-atomic-preflight"
+                    / str(readiness["preflight_run"]))
+        evidence.mkdir(parents=True)
+        source_evidence = (source / "docs/security/reports/P0-03-atomic-preflight"
+                           / str(readiness["preflight_run"]))
+        for name in ("inspect.json", "prepare.json", "independent-check.json"):
+            shutil.copyfile(source_evidence / name, evidence / name)
+        validate_retained_preflight(root, readiness, selected, manifest, expected)
+        return root, selected, manifest, expected, copy.deepcopy(readiness), evidence
+
+    def replace_retained_report(self, evidence, readiness, phase, item):
+        raw = (json.dumps(item, indent=2) + "\n").encode()
+        (evidence / (phase + ".json")).write_bytes(raw)
+        report_sha256 = hashlib.sha256(raw).hexdigest()
+        readiness[phase + "_sha256"] = report_sha256
+        check_path = evidence / "independent-check.json"
+        check = json.loads(check_path.read_text())
+        check["retained_reports"][phase + ".json"] = report_sha256
+        check_raw = (json.dumps(check, indent=2) + "\n").encode()
+        check_path.write_bytes(check_raw)
+        readiness["independent_check_sha256"] = hashlib.sha256(check_raw).hexdigest()
+
     def test_hosted_controller_imports(self):
         self.assertTrue(callable(run_update))
+
+    def test_retained_preflight_matches_the_complete_current_image_lock(self):
+        root, selected, manifest, expected, readiness = self.retained_preflight_context()
+        reports = validate_retained_preflight(
+            root, readiness, selected, manifest, expected)
+        current_lock_sha256 = hashlib.sha256(
+            (root / "image/desktop-images.lock.json").read_bytes()).hexdigest()
+        self.assertEqual(reports["prepare"]["lock_sha256"], current_lock_sha256)
+
+        stale_run = 45901694620
+        stale_path = root / "docs/security/reports/P0-03-atomic-preflight" / str(stale_run)
+        stale = {
+            **readiness,
+            "preflight_run": stale_run,
+            "source_commit": "370ac0af566cd94d7452fd415c59d3def9619b85",
+            "inspect_sha256": hashlib.sha256(
+                (stale_path / "inspect.json").read_bytes()).hexdigest(),
+            "prepare_sha256": hashlib.sha256(
+                (stale_path / "prepare.json").read_bytes()).hexdigest(),
+        }
+        with self.assertRaisesRegex(ValueError, "Exact saved-image preflight"):
+            validate_retained_preflight(root, stale, selected, manifest, expected)
+
+        mismatched_report = {**readiness, "inspect_sha256": "0" * 64}
+        with self.assertRaisesRegex(ValueError, "evidence bytes changed"):
+            validate_retained_preflight(
+                root, mismatched_report, selected, manifest, expected)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.retained_preflight_fixture(temporary)
+            fixture_root, fixture_selected, fixture_manifest, fixture_expected, \
+                fixture_readiness, evidence = fixture
+            item = json.loads((evidence / "inspect.json").read_text())
+            item["cgroup_final"]["cpu.stat"] += "\n"
+            (evidence / "inspect.json").write_text(json.dumps(item) + "\n")
+            with self.assertRaisesRegex(ValueError, "evidence bytes changed"):
+                validate_retained_preflight(
+                    fixture_root, fixture_readiness, fixture_selected,
+                    fixture_manifest, fixture_expected)
+
+        boolean_schema = {**readiness, "schema": True}
+        with self.assertRaisesRegex(ValueError, "Unknown preflight readiness"):
+            validate_retained_preflight(
+                root, boolean_schema, selected, manifest, expected)
+        for field, value in (("preflight_run", -1),
+                             ("preflight_run", "../../45910498271"),
+                             ("repository_id", True),
+                             ("evidence_artifact_id", True),
+                             ("evidence_artifact_bytes", -1),
+                             ("evidence_artifact_sha256", 1),
+                             ("inspect_sha256", 1),
+                             ("kernel_observation_sha256", True),
+                             ("manifest_digest", True)):
+            with self.subTest(field=field), self.assertRaisesRegex(
+                    ValueError, "Unknown preflight readiness"):
+                validate_retained_preflight(
+                    root, {**readiness, field: value}, selected, manifest, expected)
+
+    def test_retained_preflight_rejects_envelope_and_resource_mutations(self):
+        mutations = (
+            ("boolean schema", "inspect", lambda item: item.__setitem__("schema", True)),
+            ("wrong phase", "prepare", lambda item: item.__setitem__("phase", "inspect")),
+            ("wrong base", "inspect", lambda item: item.__setitem__("base", "wrong")),
+            ("wrong limits", "prepare", lambda item: item["limits"].__setitem__(
+                "memory.max", "1")),
+            ("wrong final limits", "inspect", lambda item: item["cgroup_final"].__setitem__(
+                "pids.max", "1")),
+            ("oom event", "inspect", lambda item: item["cgroup_final"].__setitem__(
+                "memory.events", item["cgroup_final"]["memory.events"].replace(
+                    "oom 0", "oom 1", 1))),
+            ("missing oom event", "inspect", lambda item: item[
+                "cgroup_final"].__setitem__("memory.events", item["cgroup_final"][
+                    "memory.events"].replace("oom 0\n", "", 1))),
+            ("duplicate oom event", "inspect", lambda item: item[
+                "cgroup_final"].__setitem__("memory.events", item["cgroup_final"][
+                    "memory.events"].replace("oom 0\n", "oom 0\noom 0\n", 1))),
+            ("empty cpu stat", "prepare", lambda item: item[
+                "cgroup_final"].__setitem__("cpu.stat", "")),
+            ("boot input oom event", "inspect", lambda item: item["boot_inputs"][
+                "cgroup_final"].__setitem__("memory.events", item["boot_inputs"][
+                    "cgroup_final"]["memory.events"].replace("oom 0", "oom 1", 1))),
+            ("changed command result", "inspect", lambda item: item["commands"][0].__setitem__(
+                "exit_code", 1)),
+            ("qualification scope", "inspect", lambda item: item.__setitem__(
+                "scope", "Release qualified")),
+            ("qualification field", "inspect", lambda item: item.__setitem__(
+                "release_qualified", True)),
+            ("nonstandard JSON number", "inspect", lambda item: item.__setitem__(
+                "disk_free_before_load", float("nan"))),
+        )
+        for name, phase, mutate in mutations:
+            with self.subTest(name), tempfile.TemporaryDirectory() as temporary:
+                root, selected, manifest, expected, readiness, evidence = \
+                    self.retained_preflight_fixture(temporary)
+                item = json.loads((evidence / (phase + ".json")).read_text())
+                mutate(item)
+                self.replace_retained_report(evidence, readiness, phase, item)
+                with self.assertRaises(ValueError):
+                    validate_retained_preflight(
+                        root, readiness, selected, manifest, expected)
+
+    def test_retained_preflight_rejects_artifact_archive_and_boot_input_mutations(self):
+        mutations = (
+            ("artifact", "prepare", lambda item: item["artifact"].__setitem__(
+                "id", item["artifact"]["id"] + 1)),
+            ("artifact workflow", "prepare", lambda item: item["artifact"][
+                "workflow_run"].__setitem__("head_sha", "0" * 40)),
+            ("artifact repository", "prepare", lambda item: item["artifact"][
+                "workflow_run"].__setitem__("repository_id", 1)),
+            ("verified archive", "prepare", lambda item: item[
+                "verified_archive"].__setitem__("image_id", "sha256:" + "0" * 64)),
+            ("boot inputs", "inspect", lambda item: item["boot_inputs"][
+                "os"].__setitem__("ID", "fedora")),
+            ("boot command", "inspect", lambda item: item["boot_inputs"][
+                "commands"][0].__setitem__("exit_code", 77)),
+            ("boot backend", "inspect", lambda item: item["boot_inputs"].__setitem__(
+                "backend_files", {})),
+            ("boot tools", "inspect", lambda item: item["boot_inputs"][
+                "tools"]["bootc"].__setitem__("present", False)),
+            ("boot install configuration", "inspect", lambda item: item[
+                "boot_inputs"]["install_configuration"].__setitem__("filesystem", "xfs")),
+            ("boot memory peak", "inspect", lambda item: item["boot_inputs"][
+                "cgroup_final"].__setitem__("memory.peak", "999999999999")),
+        )
+        for name, phase, mutate in mutations:
+            with self.subTest(name), tempfile.TemporaryDirectory() as temporary:
+                root, selected, manifest, expected, readiness, evidence = \
+                    self.retained_preflight_fixture(temporary)
+                item = json.loads((evidence / (phase + ".json")).read_text())
+                mutate(item)
+                self.replace_retained_report(evidence, readiness, phase, item)
+                with self.assertRaises(ValueError):
+                    validate_retained_preflight(
+                        root, readiness, selected, manifest, expected)
+
+    def test_retained_preflight_run_is_bound_to_independent_reconciliation(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root, selected, manifest, expected, readiness, evidence = \
+                self.retained_preflight_fixture(temporary)
+            relabeled = evidence.parent / "1"
+            shutil.copytree(evidence, relabeled)
+            readiness["preflight_run"] = 1
+            with self.assertRaisesRegex(ValueError, "Independent preflight reconciliation"):
+                validate_retained_preflight(
+                    root, readiness, selected, manifest, expected)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root, selected, manifest, expected, readiness, evidence = \
+                self.retained_preflight_fixture(temporary)
+            path = evidence / "independent-check.json"
+            check = json.loads(path.read_text())
+            check["evidence_artifact"].update({
+                "id": 1, "bytes": 1, "sha256": "0" * 64})
+            raw = (json.dumps(check, indent=2) + "\n").encode()
+            path.write_bytes(raw)
+            readiness["independent_check_sha256"] = hashlib.sha256(raw).hexdigest()
+            with self.assertRaisesRegex(ValueError, "Independent preflight reconciliation"):
+                validate_retained_preflight(
+                    root, readiness, selected, manifest, expected)
+
+    def test_retained_preflight_rejects_loaded_image_mutations(self):
+        mutations = {
+            "Id": "0" * 64,
+            "Digest": "sha256:" + "0" * 64,
+            "Architecture": "arm64",
+            "Os": "windows",
+        }
+        for field, value in mutations.items():
+            with self.subTest(field), tempfile.TemporaryDirectory() as temporary:
+                root, selected, manifest, expected, readiness, evidence = \
+                    self.retained_preflight_fixture(temporary)
+                item = json.loads((evidence / "inspect.json").read_text())
+                item["loaded_image"][field] = value
+                self.replace_retained_report(evidence, readiness, "inspect", item)
+                with self.assertRaises(ValueError):
+                    validate_retained_preflight(
+                        root, readiness, selected, manifest, expected)
+
+    def test_retained_preflight_rejects_incomplete_payload_kernel_and_cleanup(self):
+        def forge_both_kernel_observations(item):
+            forged = "0" * 64
+            item["boot_inputs"]["kernel"]["vmlinuz"]["sha256"] = forged
+            item["kernel_copy"]["kernel"]["vmlinuz"]["sha256"] = forged
+            observation = hashlib.sha256((json.dumps(
+                item["boot_inputs"]["kernel"], sort_keys=True) + "\n").encode()).hexdigest()
+            item["boot_inputs"]["kernel_source_sha256"] = observation
+            item["kernel_copy"]["observation_sha256"] = observation
+
+        mutations = (
+            ("installed files", lambda item: item["installed_files"].__setitem__(
+                "installed_files_checked", 211)),
+            ("package identities", lambda item: item["installed_files"].__setitem__(
+                "all_package_identities_preserved_after_build", False)),
+            ("font verification", lambda item: item["installed_files"].__setitem__(
+                "fonts", {"checked": False, "scanned_fonts": 0, "families": []})),
+            ("kernel observation", lambda item: item["kernel_copy"].__setitem__(
+                "observation_sha256", "0" * 64)),
+            ("dual kernel observation", forge_both_kernel_observations),
+            ("container cleanup", lambda item: item["cleanup"][
+                "symbi-atomic-boot-inputs"].__setitem__("absent", False)),
+            ("image cleanup", lambda item: item.__setitem__("image_removed", False)),
+        )
+        for name, mutate in mutations:
+            with self.subTest(name), tempfile.TemporaryDirectory() as temporary:
+                root, selected, manifest, expected, readiness, evidence = \
+                    self.retained_preflight_fixture(temporary)
+                item = json.loads((evidence / "inspect.json").read_text())
+                mutate(item)
+                self.replace_retained_report(evidence, readiness, "inspect", item)
+                with self.assertRaises(ValueError):
+                    validate_retained_preflight(
+                        root, readiness, selected, manifest, expected)
+
+    def test_retained_preflight_rejects_unsafe_report_files(self):
+        for case in ("symlink", "hardlink", "fifo", "oversize", "parent-symlink"):
+            with self.subTest(case), tempfile.TemporaryDirectory() as temporary:
+                root, selected, manifest, expected, readiness, evidence = \
+                    self.retained_preflight_fixture(temporary)
+                path = evidence / "inspect.json"
+                if case == "symlink":
+                    target = evidence / "inspect-target.json"
+                    path.rename(target)
+                    path.symlink_to(target.name)
+                elif case == "hardlink":
+                    os.link(path, evidence / "inspect-hardlink.json")
+                elif case == "fifo":
+                    path.unlink()
+                    os.mkfifo(path)
+                elif case == "oversize":
+                    item = json.loads(path.read_text())
+                    item["cgroup_final"]["cpu.stat"] = "x" * RETAINED_REPORT_MAX_BYTES
+                    raw = (json.dumps(item) + "\n").encode()
+                    path.write_bytes(raw)
+                    readiness["inspect_sha256"] = hashlib.sha256(raw).hexdigest()
+                else:
+                    target = evidence.with_name(evidence.name + "-target")
+                    evidence.rename(target)
+                    evidence.symlink_to(target.name, target_is_directory=True)
+                messages = {"symlink": "direct regular file",
+                            "hardlink": "bounded regular file",
+                            "fifo": "bounded regular file",
+                            "oversize": "bounded regular file",
+                            "parent-symlink": "Linked preflight evidence"}
+                previous_handler = signal.getsignal(signal.SIGALRM)
+                if case == "fifo":
+                    signal.signal(signal.SIGALRM,
+                                  lambda *_: (_ for _ in ()).throw(TimeoutError()))
+                    signal.setitimer(signal.ITIMER_REAL, 1)
+                try:
+                    with self.assertRaisesRegex(ValueError, messages[case]):
+                        validate_retained_preflight(
+                            root, readiness, selected, manifest, expected)
+                finally:
+                    if case == "fifo":
+                        signal.setitimer(signal.ITIMER_REAL, 0)
+                        signal.signal(signal.SIGALRM, previous_handler)
+
+    def test_retained_preflight_rejects_duplicate_report_keys(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root, selected, manifest, expected, readiness, evidence = \
+                self.retained_preflight_fixture(temporary)
+            item = json.loads((evidence / "inspect.json").read_text())
+            needle = '"Digest": ' + json.dumps(item["loaded_image"]["Digest"])
+            text = (evidence / "inspect.json").read_text()
+            raw = text.replace(needle, needle + ",\n    " + needle, 1).encode()
+            (evidence / "inspect.json").write_bytes(raw)
+            readiness["inspect_sha256"] = hashlib.sha256(raw).hexdigest()
+            with self.assertRaisesRegex(ValueError, "Duplicate JSON key"):
+                validate_retained_preflight(
+                    root, readiness, selected, manifest, expected)
 
     old = "sha256:" + "1" * 64
     new = "sha256:" + "2" * 64
