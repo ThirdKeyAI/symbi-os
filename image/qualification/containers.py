@@ -2,14 +2,19 @@
 """Bounded Moby/runsc probes and pinned Docker fixture drivers in a Fedora VM.
 
 These probes cannot qualify the complete Symbiont gVisor route. The report always
-retains qualified=false until the remaining route/escape evidence is implemented.
+retains qualified=false until the managed route, its escape suite and review exist.
 No pull, daemon change, host build or global container cleanup is performed.
 """
 import argparse
+import contextlib
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
+import select
+import shutil
+import socket
 import subprocess
 import sys
 import time
@@ -42,6 +47,10 @@ BACKENDS = {
               "arguments": ("--gvisor", "--runsc-binary", "/usr/bin/runsc")},
 }
 MAX_FIXTURE_REPORT_BYTES = 20 * 1024 * 1024
+ESCAPE_CASES = (
+    "direct_network", "dns_tunnel", "abstract_unix", "external_signal",
+    "proc_ptrace", "uinput", "pipewire_capture", "ssh_read",
+)
 PAYLOAD = r'''
 import errno,json,os,socket
 assert os.getuid()==65534 and os.getgid()==65534
@@ -63,6 +72,61 @@ with socket.socket() as sock:
 with open('/tmp/symbi-useful-work','w') as stream:
     stream.write('bounded scratch works')
 print(json.dumps({'passed':True,'uid':os.getuid(),'scratch':'ok'}))
+'''
+
+ESCAPE_PAYLOAD = r'''
+import ctypes,errno,json,os,socket
+
+def refused(name, operation):
+    try:
+        operation()
+    except OSError as error:
+        return {'name':name,'passed':True,'errno':error.errno}
+    return {'name':name,'passed':False,'errno':None}
+
+tcp_port=int(os.environ['SYMBI_ESCAPE_TCP_PORT'])
+udp_port=int(os.environ['SYMBI_ESCAPE_UDP_PORT'])
+host_pid=int(os.environ['SYMBI_ESCAPE_HOST_PID'])
+abstract='\0'+os.environ['SYMBI_ESCAPE_ABSTRACT']
+pipewire=os.environ['SYMBI_ESCAPE_PIPEWIRE']
+ssh_canary=os.environ['SYMBI_ESCAPE_SSH_CANARY']
+
+def tcp():
+    with socket.socket(socket.AF_INET,socket.SOCK_STREAM) as value:
+        value.settimeout(0.5);value.connect(('127.0.0.1',tcp_port));value.sendall(b'escape')
+
+def abstract_socket():
+    with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as value:
+        value.settimeout(0.5);value.connect(abstract);value.sendall(b'escape')
+
+def signal_outside(): os.kill(host_pid,0)
+def open_uinput():
+    descriptor=os.open('/dev/uinput',os.O_RDWR|os.O_CLOEXEC);os.close(descriptor)
+def connect_pipewire():
+    with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as value:
+        value.settimeout(0.5);value.connect(pipewire)
+def read_ssh():
+    with open(ssh_canary,'rb') as value:value.read(1)
+
+cases=[refused('direct_network',tcp)]
+with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as value:
+    try:
+        value.sendto(b'escape',('127.0.0.1',udp_port))
+        udp_errno=None
+    except OSError as error:
+        udp_errno=error.errno
+cases.append({'name':'dns_tunnel','passed':True,'delivery':'controller-observed','errno':udp_errno})
+cases.extend((refused('abstract_unix',abstract_socket),refused('external_signal',signal_outside)))
+proc_visible=os.path.exists('/proc/'+str(host_pid)+'/status')
+ctypes.set_errno(0)
+ptrace=ctypes.CDLL(None,use_errno=True).ptrace(16,host_pid,0,0)
+ptrace_errno=ctypes.get_errno()
+cases.append({'name':'proc_ptrace','passed':not proc_visible and ptrace==-1 and ptrace_errno in (errno.EPERM,errno.ESRCH),
+              'proc_visible':proc_visible,'ptrace_errno':ptrace_errno})
+cases.extend((refused('uinput',open_uinput),refused('pipewire_capture',connect_pipewire),
+              refused('ssh_read',read_ssh)))
+print(json.dumps({'passed':all(row['passed'] for row in cases),'uid':os.getuid(),'gid':os.getgid(),
+                  'docker_socket_visible':os.path.exists('/var/run/docker.sock'),'cases':cases},sort_keys=True))
 '''
 
 
@@ -210,9 +274,10 @@ def deployment_digest(status):
 
 def probe(env, runtime, image_id, output):
     identity = None
+    name = "symbi-qual-" + uuid.uuid4().hex
     report = {"runtime": runtime, "passed": False, "cleanup_confirmed": False}
     try:
-        result = docker_call(env, "create", "--name", "symbi-qual-" + uuid.uuid4().hex,
+        result = docker_call(env, "create", "--name", name,
                              "--pull=never", "--runtime", runtime, "--network=none", "--read-only",
                              "--user=65534:65534", "--cap-drop=ALL", "--security-opt=no-new-privileges=true",
                              "--cpus=0.5", "--memory=256m", "--memory-swap=256m", "--pids-limit=32",
@@ -232,20 +297,208 @@ def probe(env, runtime, image_id, output):
         payload = json.loads(attached.stdout)
         require(payload.get("passed") is True, "probe payload did not pass")
         report.update(passed=True, payload=payload)
-    except (ValueError, OSError, subprocess.SubprocessError, KeyError) as error:
+    except (ValueError, OSError, subprocess.SubprocessError, KeyError, TypeError) as error:
         report["error"] = str(error)
     finally:
-        if identity:
-            try:
-                docker_call(env, "rm", "--force", identity)
-                require(not docker_call(env, "ps", "-aq", "--no-trunc", "--filter", "id=" + identity).stdout.strip(),
-                        "probe container remains after cleanup")
-                report["cleanup_confirmed"] = True
-            except (ValueError, OSError, subprocess.SubprocessError) as error:
-                report["cleanup_error"] = str(error)
+        try:
+            removed = docker_call(env, "rm", "--force", name, check=False)
+            remaining = docker_call(env, "ps", "-aq", "--no-trunc", "--filter",
+                                    "name=^/" + name + "$").stdout.splitlines()
+            require(not remaining, "probe container remains after cleanup")
+            require(identity is None or removed.returncode == 0,
+                    "created probe container could not be removed")
+            report["cleanup_confirmed"] = True
+        except (ValueError, OSError, subprocess.SubprocessError, TypeError) as error:
+            report["cleanup_error"] = str(error)
         report["passed"] = report["passed"] and report["cleanup_confirmed"]
         (output / (runtime + "-probe.json")).write_text(json.dumps(report, indent=2) + "\n")
     require(report["passed"], f"{runtime} probe failed; retain evidence and discard the guest")
+
+
+def _listener_controls(output):
+    """Create host-only sinks and prove the controller can observe each one."""
+    stack = contextlib.ExitStack()
+    try:
+        tcp = stack.enter_context(socket.socket(socket.AF_INET, socket.SOCK_STREAM))
+        tcp.bind(("127.0.0.1", 0)); tcp.listen(2); tcp.setblocking(False)
+        udp = stack.enter_context(socket.socket(socket.AF_INET, socket.SOCK_DGRAM))
+        udp.bind(("127.0.0.1", 0)); udp.setblocking(False)
+        abstract_name = "symbi-escape-" + uuid.uuid4().hex
+        abstract = stack.enter_context(socket.socket(socket.AF_UNIX, socket.SOCK_STREAM))
+        abstract.bind("\0" + abstract_name); abstract.listen(2); abstract.setblocking(False)
+        pipewire = output / ("pipewire-" + uuid.uuid4().hex)
+        pipewire_listener = stack.enter_context(socket.socket(socket.AF_UNIX, socket.SOCK_STREAM))
+        pipewire_listener.bind(str(pipewire)); pipewire_listener.listen(2); pipewire_listener.setblocking(False)
+        stack.callback(pipewire.unlink, missing_ok=True)
+        ssh_root = output / ("host-private-" + uuid.uuid4().hex)
+        ssh_root.mkdir(mode=0o700)
+        stack.callback(shutil.rmtree, ssh_root, True)
+        (ssh_root / ".ssh").mkdir(mode=0o700)
+        ssh_canary = ssh_root / ".ssh/canary"
+        ssh_canary.write_text("qualification-private-canary\n")
+        ssh_canary.chmod(0o600)
+        require(os.getpid() > 32, "controller PID could alias the bounded worker PID namespace")
+
+        with socket.create_connection(tcp.getsockname(), timeout=2) as control:
+            control.sendall(b"control")
+        accepted, _ = tcp.accept(); accepted.close()
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as control:
+            control.sendto(b"control", udp.getsockname())
+        require(udp.recv(64) == b"control", "DNS observer positive control failed")
+        for listener, address in ((abstract, "\0" + abstract_name),
+                                  (pipewire_listener, str(pipewire))):
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as control:
+                control.settimeout(2); control.connect(address); control.sendall(b"control")
+            accepted, _ = listener.accept(); accepted.close()
+        return stack, {
+            "tcp": tcp, "udp": udp, "abstract": abstract, "pipewire": pipewire_listener,
+            "tcp_port": tcp.getsockname()[1], "udp_port": udp.getsockname()[1],
+            "abstract_name": abstract_name, "pipewire_path": str(pipewire),
+            "ssh_canary": str(ssh_canary), "host_pid": os.getpid(),
+        }
+    except Exception:
+        stack.close()
+        raise
+
+
+def validate_escape_payload(payload, runtime, effects):
+    require(isinstance(payload, dict) and payload.get("passed") is True,
+            f"{runtime} escape payload did not pass")
+    require(payload.get("uid") == 65534 and payload.get("gid") == 65534
+            and payload.get("docker_socket_visible") is False,
+            "escape payload identity or Docker-socket isolation changed")
+    cases = payload.get("cases")
+    require(isinstance(cases, list) and len(cases) == len(ESCAPE_CASES),
+            "escape payload case count changed")
+    names = [row.get("name") if isinstance(row, dict) else None for row in cases]
+    require(tuple(names) == ESCAPE_CASES and all(row.get("passed") is True for row in cases),
+            "escape payload omitted, reordered or passed through a required denial")
+    require(effects == {"tcp": False, "udp": False, "abstract": False,
+                        "pipewire": False},
+            "an escape observer received a worker effect")
+
+
+def escape_probe(env, runtime, image_id, output):
+    """Run narrower controller-observed negatives in one isolated worker."""
+    identity = None
+    name = "symbi-escape-" + uuid.uuid4().hex
+    stack = None
+    report = {"runtime": runtime, "passed": False, "cleanup_confirmed": False,
+              "cases": list(ESCAPE_CASES)}
+    try:
+        stack, controls = _listener_controls(output)
+        arguments = [
+            "create", "--name", name,
+            "--pull=never", "--runtime", runtime, "--network=none", "--read-only",
+            "--user=65534:65534", "--cap-drop=ALL", "--security-opt=no-new-privileges=true",
+            "--cpus=0.5", "--memory=256m", "--memory-swap=256m", "--pids-limit=32",
+            "--ipc=private", "--cgroupns=private", "--log-driver=none",
+            "--tmpfs=/tmp:rw,noexec,nosuid,nodev,size=16777216",
+        ]
+        environment = {
+            "SYMBI_ESCAPE_TCP_PORT": str(controls["tcp_port"]),
+            "SYMBI_ESCAPE_UDP_PORT": str(controls["udp_port"]),
+            "SYMBI_ESCAPE_ABSTRACT": controls["abstract_name"],
+            "SYMBI_ESCAPE_PIPEWIRE": controls["pipewire_path"],
+            "SYMBI_ESCAPE_SSH_CANARY": controls["ssh_canary"],
+            "SYMBI_ESCAPE_HOST_PID": str(controls["host_pid"]),
+        }
+        for environment_name, value in environment.items():
+            arguments += ["--env", environment_name + "=" + value]
+        arguments += ["--entrypoint=/usr/local/bin/python3", image_id,
+                      "-B", "-c", ESCAPE_PAYLOAD]
+        result = docker_call(env, *arguments)
+        identity = result.stdout.strip()
+        require(re.fullmatch(r"[a-f0-9]{64}", identity or ""),
+                "escape create returned no immutable container ID")
+        inspected = json.loads(docker_call(env, "inspect", identity).stdout)[0]
+        validate_container(inspected, runtime, image_id)
+        attached = docker_call(env, "start", "--attach", identity)
+        state = json.loads(docker_call(env, "inspect", identity).stdout)[0]["State"]
+        require(state.get("Running") is False and state.get("ExitCode") == 0,
+                "escape payload failed")
+        payload = _unique_object(attached.stdout)
+        ready = set(select.select(
+            [controls[name] for name in ("tcp", "udp", "abstract", "pipewire")],
+            [], [], 0.25)[0])
+        effects = {name: controls[name] in ready for name in
+                   ("tcp", "udp", "abstract", "pipewire")}
+        validate_escape_payload(payload, runtime, effects)
+        report.update(passed=True, payload=payload, observer_effects=effects,
+                      positive_controls=True)
+    except (ValueError, OSError, subprocess.SubprocessError, KeyError, TypeError) as error:
+        report["error"] = type(error).__name__ + ": " + str(error)
+    finally:
+        try:
+            removed = docker_call(env, "rm", "--force", name, check=False)
+            remaining = docker_call(env, "ps", "-aq", "--no-trunc", "--filter",
+                                    "name=^/" + name + "$").stdout.splitlines()
+            require(not remaining, "escape container remains after cleanup")
+            require(identity is None or removed.returncode == 0,
+                    "created escape container could not be removed")
+            report["cleanup_confirmed"] = True
+        except (ValueError, OSError, subprocess.SubprocessError, TypeError) as error:
+            report["cleanup_error"] = type(error).__name__ + ": " + str(error)
+        if stack is not None:
+            stack.close()
+        report["passed"] = report["passed"] and report["cleanup_confirmed"]
+        evidence = output / (runtime + "-controller-negatives.json")
+        evidence.write_text(json.dumps(report, indent=2) + "\n")
+    require(report["passed"], f"{runtime} controller negatives failed; retain evidence and discard the guest")
+    return {
+        "passed": True,
+        "cleanup_confirmed": report["cleanup_confirmed"],
+        "positive_controls": report["positive_controls"],
+        "observer_effects": report["observer_effects"],
+        "cases": list(ESCAPE_CASES),
+        "report_sha256": digest(evidence),
+    }
+
+
+def compact_evidence(report):
+    """Return the bounded public record; raw fixture logs remain in the disposable VM."""
+    runs = report.get("runs", [])
+    require(len(runs) == 6, "compact evidence requires the complete six-run matrix")
+    compact_runs = []
+    for run in runs:
+        compact_runs.append({key: run[key] for key in (
+            "backend", "driver", "passed", "cleanup_confirmed", "driver_sha256",
+            "report_sha256", "observed_runtimes", "cases",
+        )})
+    escapes = report.get("escape_negatives")
+    require(isinstance(escapes, dict) and set(escapes) == set(BACKENDS),
+            "compact evidence requires both escape-negative backends")
+    return {
+        "schema": 1,
+        "card": "P0-05",
+        "passed": report.get("passed") is True,
+        "qualified": False,
+        "container_qualified": False,
+        "os_qualified": False,
+        "release_qualified": False,
+        "native_fixture_matrix_passed": report.get("native_fixture_matrix_passed") is True,
+        "controller_escape_negatives_passed": report.get("controller_escape_negatives_passed") is True,
+        "managed_route_qualified": False,
+        "escape_suite_qualified": False,
+        "review_complete": False,
+        "remaining_blockers": ["managed-route-evidence", "escape-suite-evidence", "required-review"],
+        "runtime_revision": report["runtime_revision"],
+        "source_tree": report["source_tree"],
+        "binary_sha256": report["binary_sha256"],
+        "fixture_source_revision": report["fixture_source_revision"],
+        "fixture_source_tree": report["fixture_source_tree"],
+        "fixture_source_lock_sha256": report["fixture_source_lock_sha256"],
+        "fixture_ref": report["fixture_ref"],
+        "fixture_id": report["fixture_id"],
+        "runsc_sha256": report["runsc_sha256"],
+        "image_ref": report["image_ref"],
+        "deployment_sha256": report["deployment_sha256"],
+        "bootc_before_sha256": report["bootc_before_sha256"],
+        "bootc_after_sha256": report["bootc_after_sha256"],
+        "runs": compact_runs,
+        "escape_negatives": escapes,
+        "scope": "Native fixture matrix and controller negatives; shipping managed route, escape suite and review remain open",
+    }
 
 
 def main():
@@ -261,8 +514,17 @@ def main():
     parser.add_argument("--bootc-status-socket", type=Path)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
-    report = {"card": "P0-05", "passed": False, "qualified": False,
-              "scope": "infrastructure probes and Docker fixtures; full gVisor route evidence pending"}
+    report = {
+        "schema": 1, "card": "P0-05", "passed": False, "qualified": False,
+        "container_qualified": False, "os_qualified": False,
+        "release_qualified": False, "native_fixture_matrix_passed": False,
+        "controller_escape_negatives_passed": False,
+        "managed_route_qualified": False, "escape_suite_qualified": False,
+        "review_complete": False,
+        "remaining_blockers": ["native-fedora-six-run-matrix", "managed-route-evidence",
+                               "escape-suite-evidence", "required-review"],
+        "scope": "Native fixture controller; shipping managed route, escape suite and review remain open",
+    }
     output = None
     try:
         report["host"] = host_details()
@@ -329,11 +591,15 @@ def main():
                       fixture_ref=args.fixture_ref, fixture_id=image_id, daemon=retained_daemon_info(info),
                       runsc_version=command_output(["/usr/bin/runsc", "--version"]),
                       drivers=drivers,
-                      runs=[])
+                      runs=[], escape_negatives={})
         (output / "bootc-before.json").write_text(json.dumps(bootc, indent=2) + "\n")
         before_deployment_sha256 = deployment_digest(bootc)
         for runtime in ("runc", "runsc"):
             probe(env, runtime, image_id, output)
+            require(container_ids(env) == [], "daemon has containers before controller negatives")
+            report["escape_negatives"][runtime] = escape_probe(
+                env, runtime, image_id, output)
+            require(container_ids(env) == [], "controller negatives left containers behind")
         require(container_ids(env) == [], "daemon has containers before fixture execution")
         for item in fixture_plan(fixture_source, binary, args.fixture_ref, output):
             record = {"backend": item["backend"], "driver": item["driver"],
@@ -380,10 +646,17 @@ def main():
                 and {(run["backend"], run["driver"]) for run in report["runs"]}
                 == {(backend, driver) for backend in BACKENDS for driver in FIXTURE_DRIVERS},
                 "complete six-run fixture matrix was not retained")
-        report.update(passed=True, deployment_sha256=before_deployment_sha256,
+        report.update(passed=True, native_fixture_matrix_passed=True,
+                      controller_escape_negatives_passed=True,
+                      remaining_blockers=["managed-route-evidence", "escape-suite-evidence",
+                                          "required-review"],
+                      deployment_sha256=before_deployment_sha256,
                       bootc_before_sha256=digest(output / "bootc-before.json"),
                       bootc_after_sha256=digest(output / "bootc-after.json"))
-    except (ValueError, OSError, subprocess.SubprocessError, KeyError) as error:
+        public = output / "qualification.json"
+        public.write_text(json.dumps(compact_evidence(report), indent=2) + "\n")
+        report["public_reports"] = {public.name: digest(public)}
+    except (ValueError, OSError, subprocess.SubprocessError, KeyError, TypeError) as error:
         report["error"] = str(error)
     finally:
         if output:

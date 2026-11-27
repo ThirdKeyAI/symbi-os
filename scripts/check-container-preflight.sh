@@ -35,6 +35,7 @@ result = run_container_preflight(
     root, os.environ["GITHUB_SHA"], lock["images"]["generic"]["tested_commit"])
 if (result.get("passed") is not True
         or result.get("fedora_runtime_ready") is not True
+        or result.get("native_fixture_image_ready") is not True
         or result.get("qualified") is not False
         or result.get("os_qualified") is not False
         or result.get("release_qualified") is not False):

@@ -203,6 +203,24 @@ an explicit gVisor selector and must observe runsc; the daemon default remains
 runc. This still does not exercise the shipping managed route, its broker socket
 transport or the OS escape suite.
 
+The controller source now pairs each backend with a narrower observed-negative
+probe. It owns positive-control TCP, UDP, abstract Unix and filesystem Unix
+listeners plus synthetic private-file controls, then independently requires no
+worker delivery or access and confirms removal by its exact container name.
+`controller_escape_negatives_passed` is intentionally separate from
+`escape_suite_qualified`: only the former can be set by these probes. A compact
+`qualification.json` retains the matrix, observations, hashes and cleanup; raw
+reports and private controls remain on the discarded guest overlay.
+
+The native fixture OCI itself is not preserved yet. The reviewed
+`native-fixture-image.lock.json` slot is therefore `pending`, with null producer,
+artifact, archive and image identities. It is bound to merge
+`cd4b34282ade880c8ac3d5136d31ff80cde92794`, its tree and the three driver
+hashes. Preflight refuses to pass until a reviewed successful producer supplies
+the exact offline archive, image ID and repository digest and those bytes are
+present locally. No hosted fixture-image digest is inferred from the earlier
+evidence-only run.
+
 The manual `containers` choice in the shared Fedora runtime workflow is a
 preflight skeleton. It verifies the retained signed gVisor Debian repository
 metadata with the pinned full publisher fingerprint and uses the complete
