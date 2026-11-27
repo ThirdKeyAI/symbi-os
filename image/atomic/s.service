@@ -21,5 +21,5 @@ MemoryMax=256M
 MemorySwapMax=0
 CPUQuota=50%
 TasksMax=32
-TimeoutStartSec=90
+TimeoutStartSec=180
 TimeoutStopSec=15

@@ -85,6 +85,8 @@ class AtomicStatus(unittest.TestCase):
         self.assertEqual(collector['MemorySwapMax'], '0')
         self.assertEqual(collector['CPUQuota'], '50%')
         self.assertEqual(collector['TasksMax'], '32')
+        self.assertEqual(collector['TimeoutStartSec'], '180')
+        self.assertEqual(collector['TimeoutStopSec'], '15')
         self.assertNotIn('ImportCredential', collector)
         self.assertEqual(observer['CapabilityBoundingSet'], '')
         self.assertEqual(observer['AmbientCapabilities'], '')
