@@ -1,4 +1,5 @@
 """Fail closed before executing reused runtime binaries or signed inputs."""
+import copy
 import hashlib
 import importlib.util
 import json
@@ -9,12 +10,58 @@ import warnings
 import zipfile
 
 
-SPEC = importlib.util.spec_from_file_location('fixture_inputs', Path(__file__).parents[1] / 'container/hosted/inputs.py')
+ROOT = Path(__file__).resolve().parents[2]
+SPEC = importlib.util.spec_from_file_location(
+    'fixture_inputs', ROOT / 'image/container/hosted/inputs.py')
 inputs = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(inputs)
 
 
 class RuntimeArchive(unittest.TestCase):
+    def test_hosted_source_exactly_matches_native_lock(self):
+        hosted = json.loads((
+            ROOT / 'image/container/hosted/inputs.lock.json').read_text())
+        native = json.loads((
+            ROOT / 'image/container/native-fixture.lock.json').read_text())
+        selected = inputs.validate_fixture_source_lock(hosted, native)
+        self.assertEqual(selected['revision'], native['revision'])
+        self.assertEqual(selected['tree'], native['tree'])
+        self.assertEqual(selected['drivers'], native['drivers'])
+        self.assertEqual(hosted['fixture_execution'], {
+            'state': 'pending',
+            'run_id': None,
+            'head': None,
+            'source_revision': native['revision'],
+            'source_tree': native['tree'],
+        })
+
+        variants = []
+        for field in ('fixture_commit', 'fixture_tree', 'source_revision'):
+            changed = copy.deepcopy(hosted)
+            changed[field] = '0' * 40
+            variants.append((changed, native))
+        changed = copy.deepcopy(hosted)
+        changed['fixture_drivers']['test-git-source.py'] = '0' * 64
+        variants.append((changed, native))
+        changed_native = copy.deepcopy(native)
+        changed_native['qualified'] = True
+        variants.append((hosted, changed_native))
+        changed_native = copy.deepcopy(native)
+        changed_native['drivers']['extra.py'] = '0' * 64
+        variants.append((hosted, changed_native))
+        changed = copy.deepcopy(hosted)
+        changed['fixture_execution'].update(
+            state='passed', run_id=1, head='1' * 40)
+        variants.append((changed, native))
+        changed = copy.deepcopy(hosted)
+        changed['runtime_artifact_validation']['run_id'] = 0
+        variants.append((changed, native))
+        for changed_hosted, changed_native in variants:
+            with self.subTest(hosted=changed_hosted, native=changed_native), \
+                    self.assertRaises(ValueError):
+                inputs.validate_fixture_source_lock(
+                    changed_hosted, changed_native)
+
     def fixture(self, directory, extra=None):
         payload = b'fixture bytes; not an executable'
         archive = directory / 'binaries.zip'

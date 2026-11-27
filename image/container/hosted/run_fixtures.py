@@ -45,10 +45,15 @@ def main():
     setup = json.loads((work / 'public/setup.json').read_text())
     source, binary = work / 'source', work / 'bin/symbi'
     image_id, runsc = setup['image_id'], setup['runsc']
+    fixture_source = setup['fixture_source']
+    assert setup['fixture_commit'] == fixture_source['revision']
+    assert set(CASES) == set(fixture_source['drivers'])
     binary_hash = digest(binary)
     assert binary_hash == setup['binary_sha256']
     result = {'passed': False, 'qualified': False, 'runs': [], 'source_revision': setup['source_revision'],
               'fixture_commit': setup['fixture_commit'], 'patch_sha256': setup['patch_sha256'],
+              'fixture_source': fixture_source,
+              'fixture_source_lock_sha256': setup['fixture_source_lock_sha256'],
               'binary_sha256': binary_hash, 'image_id': image_id,
               'scope': 'Hosted Ubuntu container tool-worker fixtures; no Fedora, managed-CLI or escape-suite qualification'}
     evidence = work / 'public/fixtures'
@@ -72,6 +77,8 @@ def main():
             for driver, expected in CASES.items():
                 stem = backend + '-' + Path(driver).stem
                 report_path, log_path = evidence / (stem + '.json'), evidence / (stem + '.log')
+                driver_hash = digest(source / 'scripts' / driver)
+                assert driver_hash == fixture_source['drivers'][driver]
                 command = ['python3', '-B', 'scripts/' + driver, '--binary', str(binary),
                            '--image', image_id, '--report', str(report_path)]
                 if backend == 'gvisor':
@@ -90,7 +97,7 @@ def main():
                     row['report_sha256'] = digest(report_path)
                     assert completed.returncode == 0 and report['passed'] is True
                     assert report['backend'] == backend and report['binary_sha256'] == binary_hash
-                    assert report['image'] == image_id and report['driver_sha256'] == digest(source / 'scripts' / driver)
+                    assert report['image'] == image_id and report['driver_sha256'] == driver_hash
                     assert [case['name'] for case in report['cases']] == expected
                     assert all(case['passed'] is True for case in report['cases'])
                     assert report['remaining_workers'] == [] and report['remaining_leases'] == []

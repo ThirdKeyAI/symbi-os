@@ -2,14 +2,19 @@
 
 This is Ubuntu development evidence for P0-05. It does not qualify Fedora,
 managed CLI brokers, the escape suite or a release image. The OS runtime pin is
-unchanged. The exact fixture-only upstream commit is
-`c1fac8aab6c5d399abb39036ba35b9636212e17f`, in
-[draft PR 24](https://github.com/ThirdKeyAI/Symbiont/pull/24).
+unchanged. Retained passing evidence used fixture-only commit
+`c1fac8aab6c5d399abb39036ba35b9636212e17f` from
+[PR 24](https://github.com/ThirdKeyAI/Symbiont/pull/24). New hosted runs select
+merge `cd4b34282ade880c8ac3d5136d31ff80cde92794`, its exact tree and the same
+three driver hashes through `native-fixture.lock.json`.
 
 The workflow reuses the immutable development-binary artifact from passing run
-45702056794. Its ZIP, both executable hashes, source, Cargo.lock and six-file
-patch are bound in `inputs.lock.json`. Every binary is checked before receiving
-executable permission; no local rebuild or large download is performed.
+45702056794. Its ZIP, both executable hashes, source, Cargo.lock and cumulative
+reviewed patch are bound in `inputs.lock.json`. Every binary is checked before
+receiving executable permission; no local rebuild or large download is performed.
+The lock records that run under `runtime_artifact_validation`; the distinct
+`fixture_execution` record remains `pending` with null run and head fields until
+the selected merge actually completes all six profiles.
 
 The gVisor 20261123.0 Debian package is authenticated through the retained
 publisher-signed repository metadata and full key fingerprint. Its complete
@@ -47,8 +52,9 @@ daemon is stopped on completion or failure. No workstation Docker configuration
 or VM is changed.
 
 The source checkout fetches the baseline and fixture revisions explicitly and
-verifies their cumulative full-index patch, allowing multiple reviewed fixture
-commits without assuming the immediate parent is the runtime baseline. A fresh
+verifies their cumulative full-index patch, merge tree and three driver hashes
+against both source locks. This allows multiple reviewed fixture commits
+without assuming the immediate parent is the runtime baseline. A fresh
 0700 `/tmp/sf-*` directory owned by the test account keeps supervisor Unix socket
 paths below their bound. It holds private fixture state and is never uploaded.
 
@@ -81,10 +87,12 @@ acceptance, plus required reviews, are not established by these six drivers.
 ## Native fixture OCI export remains disabled
 
 The prepared exporter is not an extension of the passing evidence above. The
-current Dockerfile resolves Python, Git and CA packages live, and this workflow
-tested fixture commit `c1fac8aab6c5d399abb39036ba35b9636212e17f`; the native
-contract binds merge `cd4b34282ade880c8ac3d5136d31ff80cde92794`. The
-`native-fixture-build.lock.json` prerequisite slot therefore remains pending.
+current Dockerfile resolves Python, Git and CA packages live, and retained
+evidence tested fixture commit `c1fac8aab6c5d399abb39036ba35b9636212e17f`.
+The hosted source contract now selects merge
+`cd4b34282ade880c8ac3d5136d31ff80cde92794`, but no fresh hosted run has
+exercised that selection. The `native-fixture-build.lock.json` prerequisite
+slot therefore remains pending.
 Activation requires a reviewed full package closure authenticated by signed
 Ubuntu Release/InRelease and Packages metadata, exact package identities,
 sizes and hashes, sequential verified downloads, and an offline
