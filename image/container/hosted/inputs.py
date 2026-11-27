@@ -8,9 +8,71 @@ import stat
 import zipfile
 
 
+FIXTURE_DRIVERS = {
+    'test-filesystem-grants.py',
+    'test-source-broker.py',
+    'test-git-source.py',
+}
+
+
 def digest(path):
     with Path(path).open('rb') as stream:
         return hashlib.file_digest(stream, 'sha256').hexdigest()
+
+
+def validate_fixture_source_lock(lock, native):
+    """Require the hosted checkout to use the exact reviewed native source."""
+    native_fields = {
+        'schema', 'repository', 'revision', 'tree', 'runtime_source_revision',
+        'pull_request', 'reviewed_head', 'drivers', 'qualified', 'scope',
+    }
+    runtime_validation = (
+        lock.get('runtime_artifact_validation') if isinstance(lock, dict)
+        else None)
+    execution = (
+        lock.get('fixture_execution') if isinstance(lock, dict) else None)
+    if (not isinstance(lock, dict) or not isinstance(native, dict)
+            or set(native) != native_fields
+            or type(native.get('schema')) is not int or native['schema'] != 1
+            or native.get('repository')
+            != 'https://github.com/ThirdKeyAI/Symbiont'
+            or native.get('qualified') is not False
+            or not isinstance(native.get('drivers'), dict)
+            or set(native['drivers']) != FIXTURE_DRIVERS
+            or not all(isinstance(value, str)
+                       and re.fullmatch(r'[a-f0-9]{64}', value)
+                       for value in native['drivers'].values())
+            or not all(isinstance(native.get(field), str)
+                       and re.fullmatch(r'[a-f0-9]{40}', native[field])
+                       for field in ('revision', 'tree',
+                                     'runtime_source_revision', 'reviewed_head'))
+            or lock.get('fixture_commit') != native['revision']
+            or lock.get('fixture_tree') != native['tree']
+            or lock.get('source_revision') != native['runtime_source_revision']
+            or lock.get('fixture_drivers') != native['drivers']
+            or not isinstance(runtime_validation, dict)
+            or set(runtime_validation) != {'run_id', 'head', 'checked_merge'}
+            or type(runtime_validation.get('run_id')) is not int
+            or runtime_validation['run_id'] <= 0
+            or not all(isinstance(runtime_validation.get(field), str)
+                       and re.fullmatch(
+                           r'[a-f0-9]{40}', runtime_validation[field])
+                       for field in ('head', 'checked_merge'))
+            or execution != {
+                'state': 'pending',
+                'run_id': None,
+                'head': None,
+                'source_revision': native['revision'],
+                'source_tree': native['tree'],
+            }):
+        raise ValueError('Hosted fixture source differs from the native source lock')
+    return {
+        'repository': native['repository'],
+        'revision': native['revision'],
+        'tree': native['tree'],
+        'runtime_source_revision': native['runtime_source_revision'],
+        'drivers': dict(native['drivers']),
+    }
 
 
 def require_signature(status, output, fingerprint):

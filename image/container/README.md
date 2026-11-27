@@ -233,9 +233,11 @@ independently passes the result through
 the same bounded OCI unpacker as the consumer, and permits at most a 64 KiB
 manifest, 512 MiB compressed OCI and 1 GiB expanded OCI. It remains disabled.
 The current hosted image performs live `apt-get` resolution and the retained
-six-run evidence used upstream fixture commit `c1fac8aab6c5d399abb39036ba35b9636212e17f`,
-while the native contract requires merge
-`cd4b34282ade880c8ac3d5136d31ff80cde92794`. Before activation, a separately
+six-run evidence used upstream fixture commit
+`c1fac8aab6c5d399abb39036ba35b9636212e17f`. The hosted source lock now selects
+the native contract's merge
+`cd4b34282ade880c8ac3d5136d31ff80cde92794`, exact tree and driver hashes, but
+that selection has not run. Before activation, a separately
 reviewed signed Ubuntu package closure must be downloaded sequentially and the
 image built offline, the six profiles must run from the required merge, and a
 cold Docker load must resolve the image by its exact manifest digest. Artifact

@@ -11,7 +11,8 @@ import subprocess
 import tempfile
 import time
 
-from inputs import digest, require_signature, unpack_runtime
+from inputs import (digest, require_signature, unpack_runtime,
+                    validate_fixture_source_lock)
 
 
 def main():
@@ -22,6 +23,9 @@ def main():
     root = Path.cwd()
     configuration = root / 'image/container/hosted'
     lock = json.loads((configuration / 'inputs.lock.json').read_text())
+    native_source_path = root / 'image/container/native-fixture.lock.json'
+    native_source = json.loads(native_source_path.read_text())
+    fixture_source = validate_fixture_source_lock(lock, native_source)
     work = root / '.cache/container-fixture-work'
     work.mkdir()
     public = work / 'public'
@@ -79,16 +83,22 @@ def main():
         source.mkdir()
         git = ['git', '-c', 'core.hooksPath=/dev/null', '-c', 'protocol.file.allow=never', '-C', str(source)]
         run('source-init', git + ['init'])
-        run('source-fetch-baseline', git + ['fetch', '--depth=1', '--no-tags', 'https://github.com/ThirdKeyAI/Symbiont.git', lock['source_revision']])
-        run('source-fetch', git + ['fetch', '--depth=1', '--no-tags', 'https://github.com/ThirdKeyAI/Symbiont.git', lock['fixture_commit']])
+        run('source-fetch-baseline', git + ['fetch', '--depth=1', '--no-tags', fixture_source['repository'], lock['source_revision']])
+        run('source-fetch', git + ['fetch', '--depth=1', '--no-tags', fixture_source['repository'], lock['fixture_commit']])
         run('source-checkout', git + ['checkout', '--detach', 'FETCH_HEAD'])
         assert subprocess.check_output(git + ['rev-parse', 'HEAD'], text=True).strip() == lock['fixture_commit']
+        assert subprocess.check_output(
+            git + ['rev-parse', 'HEAD^{tree}'], text=True).strip() == lock['fixture_tree']
         assert subprocess.check_output(git + ['rev-parse', lock['source_revision'] + '^{commit}'], text=True).strip() == lock['source_revision']
         patch = subprocess.check_output(git + ['diff', lock['source_revision'], 'HEAD', '--binary', '--full-index',
                                                '--src-prefix=a/', '--dst-prefix=b/'])
         import hashlib
         assert hashlib.sha256(patch).hexdigest() == lock['patch_sha256']
         assert digest(source / 'Cargo.lock') == lock['cargo_lock_sha256']
+        assert {
+            name: digest(source / 'scripts' / name)
+            for name in sorted(lock['fixture_drivers'])
+        } == lock['fixture_drivers']
         gvisor = configuration / 'gvisor'
         provenance = json.loads((gvisor / 'verified-metadata.json').read_text())
         authenticate('gvisor', gvisor, 'Release.gpg', 'Release', provenance['signing_fingerprint'])
@@ -201,6 +211,8 @@ def main():
         os.chown(fixture_tmp, account.pw_uid, account.pw_gid)
         setup = {'fixture_tmp': str(fixture_tmp), 'image_id': image_id, 'runsc': str(runsc), 'binary_sha256': lock['binaries']['symbi']['sha256'],
                  'source_revision': lock['source_revision'], 'fixture_commit': lock['fixture_commit'],
+                 'fixture_source': fixture_source,
+                 'fixture_source_lock_sha256': digest(native_source_path),
                  'patch_sha256': lock['patch_sha256'], 'source_lock_sha256': lock['cargo_lock_sha256']}
         (public / 'setup.json').write_text(json.dumps(setup, indent=2) + '\n')
         run('complete-fixtures', ['/usr/sbin/runuser', '-u', account.pw_name, '--', 'env', '-i',

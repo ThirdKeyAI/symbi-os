@@ -2,11 +2,27 @@
   "schema": 1,
   "scope": "Hosted Ubuntu development fixtures only; no Fedora or release qualification",
   "source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
-  "fixture_commit": "c1fac8aab6c5d399abb39036ba35b9636212e17f",
-  "patch_sha256": "a4545649b1c83f0a3402781f815ebc66ea2b507128d17f61e76c4febb5017bda",
+  "fixture_commit": "cd4b34282ade880c8ac3d5136d31ff80cde92794",
+  "fixture_tree": "2b2379d0de4eaaf4a57cf52c96355015bb3dc25d",
+  "fixture_drivers": {
+    "test-filesystem-grants.py": "c5dc5d798c285f99e8db72b64d55749f127aa4139645425b7bd69d48dd7e9ded",
+    "test-source-broker.py": "ae2b6490cca43924e0f14aa84e71943c4684f298103db72b62eef534a16d1d2e",
+    "test-git-source.py": "82a02079c1a13799d03295e33ea4bc6f6120af7b8c4d25a840dcf023b4e0a075"
+  },
+  "patch_sha256": "544ff04152827cedd78aeaf2ef697d9637721f15937a00064e9f0ecbd85ad215",
   "cargo_lock_sha256": "d189b27d99bfc7fafeb8b6a37c0cfe36c1beb3472a6d5ae6f41dca8883fbb59d",
-  "validation_run": 45702056794,
-  "validation_head": "19e77c1b3c3001a135e8f86355adc70670b7fedf",
+  "runtime_artifact_validation": {
+    "run_id": 45702056794,
+    "head": "19e77c1b3c3001a135e8f86355adc70670b7fedf",
+    "checked_merge": "f01100ce68df6ed31dfa0983a2ba1b59be230b6c"
+  },
+  "fixture_execution": {
+    "state": "pending",
+    "run_id": null,
+    "head": null,
+    "source_revision": "cd4b34282ade880c8ac3d5136d31ff80cde92794",
+    "source_tree": "2b2379d0de4eaaf4a57cf52c96355015bb3dc25d"
+  },
   "artifact": {
     "id": 15066141540,
     "bytes": 529348296,
@@ -35,6 +51,5 @@
     "gvisor/Release": "c0a763c56538eaeb83f92bbb2225d54389d570efa2393a6427c545832bdb749a",
     "fixture/Dockerfile": "bba59089ebfec6fbfb2b686a54391fac9c367739cca73a9b37f226e80755552c",
     "fixture/.dockerignore": "d6ea7e57b51a8ce6c6614f631c68468f0cfdf5abce11be497fcf16f224791559"
-  },
-  "validation_checked_merge": "f01100ce68df6ed31dfa0983a2ba1b59be230b6c"
+  }
 }
