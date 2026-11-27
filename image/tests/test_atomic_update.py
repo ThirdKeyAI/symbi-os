@@ -613,7 +613,11 @@ class AtomicUpdateTests(unittest.TestCase):
     def test_three_boot_vm_uses_one_persistent_overlay_and_read_only_source(self):
         command = qemu_command(1)
         joined = " ".join(command)
-        self.assertIn("file=/output/guest.qcow2,format=qcow2,if=virtio", joined)
+        self.assertIn(
+            "file=/output/guest.qcow2,format=qcow2,if=none,id=symbi-boot-disk",
+            joined)
+        self.assertIn(
+            "virtio-blk-pci,drive=symbi-boot-disk,bootindex=1", joined)
         self.assertNotIn("snapshot=on", joined)
         self.assertIn(
             "file=/inputs/update.raw,format=raw,if=none,id=symbi-update-source,readonly=on",
@@ -632,7 +636,9 @@ class AtomicUpdateTests(unittest.TestCase):
             "unsigned", "wrong-key", "wrong-reference", "altered-signature")}
         for case, command in commands.items():
             joined = " ".join(command)
-            self.assertIn(f"file=/output/negative-{case}.qcow2,format=qcow2,if=virtio", joined)
+            self.assertIn(
+                f"file=/output/negative-{case}.qcow2,format=qcow2,"
+                "if=none,id=symbi-boot-disk", joined)
             self.assertIn(f"path=/output/negative-{case}.json", joined)
             self.assertIn(f"file=/inputs/expected-{case}.json", joined)
             self.assertIn(
@@ -643,13 +649,45 @@ class AtomicUpdateTests(unittest.TestCase):
             self.assertNotIn("file=/output/guest.qcow2", joined)
         self.assertEqual(len({tuple(command) for command in commands.values()}), 4)
         positive = " ".join(positive_qemu_command())
-        self.assertIn("file=/output/same-path-positive.qcow2,format=qcow2,if=virtio", positive)
+        self.assertIn(
+            "file=/output/same-path-positive.qcow2,format=qcow2,"
+            "if=none,id=symbi-boot-disk", positive)
         self.assertIn("path=/output/same-path-positive.json", positive)
         self.assertIn("file=/inputs/expected-positive.json", positive)
         self.assertNotIn("file=/output/guest.qcow2", positive)
         self.assertNotIn("file=/output/negative-", positive)
         with self.assertRaises(ValueError):
             negative_qemu_command("caller-selected")
+
+    def test_all_update_vms_boot_only_the_explicit_overlay(self):
+        commands = [
+            positive_qemu_command(),
+            *(negative_qemu_command(case) for case in (
+                "unsigned", "wrong-key", "wrong-reference", "altered-signature")),
+            *(qemu_command(index) for index in range(3)),
+        ]
+        for command in commands:
+            with self.subTest(report=command[command.index("-chardev") + 1]):
+                drives = [command[index + 1] for index, value in enumerate(command)
+                          if value == "-drive"]
+                devices = [command[index + 1] for index, value in enumerate(command)
+                           if value == "-device"]
+                self.assertEqual(len(drives), 2)
+                self.assertEqual(len(set(drives)), 2)
+                self.assertTrue(any(
+                    value.endswith("if=none,id=symbi-boot-disk") for value in drives))
+                self.assertIn(
+                    "file=/inputs/update.raw,format=raw,if=none,"
+                    "id=symbi-update-source,readonly=on", drives)
+                self.assertEqual(
+                    [value for value in devices if "bootindex=" in value],
+                    ["virtio-blk-pci,drive=symbi-boot-disk,bootindex=1"])
+                self.assertIn(
+                    "virtio-blk-pci,drive=symbi-update-source,serial=SYMBIUPDATE",
+                    devices)
+                self.assertEqual(command.count("-boot"), 1)
+                self.assertEqual(command[command.index("-boot") + 1], "strict=on")
+                self.assertFalse(any("if=virtio" in value for value in command))
 
     def test_guest_status_requires_exact_signed_slots_and_rollback_queue(self):
         phase_status(self.status(self.old), self.old)
