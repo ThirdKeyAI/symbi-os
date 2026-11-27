@@ -11,8 +11,8 @@ are not a qualification of Symbiont, Fedora or any sandbox.
    binary was built from `6e93a5f4a88b1a8d70a31df214c6ddf8993d6f0e`, not the plan's
    `deddb9e997244d2289c217ad76b8fde0e9b0339b`; its version string is insufficient.
    Do not reuse the large, older local debug binary as evidence.
-2. Provision one disposable QEMU/KVM guest: **one vCPU, 2 GiB RAM, no additional
-   swap, no host filesystem shares**. Keep its disk on `/vmstore`, not tmpfs.
+2. Provision one disposable QEMU/KVM guest: **two non-SMT vCPUs, 2 GiB RAM, no
+   additional swap, no host filesystem shares**. Keep its disk on `/vmstore`, not tmpfs.
    Disconnect external networking after verified artifacts are staged. A localhost
    control connection may remain; the upstream providers are synthetic. Do not
    run an image build or another guest alongside it on this workstation.
@@ -149,7 +149,7 @@ the fixed driver and public expectations. The status collector retains its sole
 `bootc status --json` authority. Systemd powers off the VM after either success
 or failure.
 
-The second boot keeps its 2 GiB guest, 3 GiB controller, zero-swap and one-vCPU
+The second boot uses a 2 GiB guest, 3 GiB controller, zero-swap and two-vCPU
 qualification bounds. Its parent unit starts memory pressure at 4 GiB and has a
 5 GiB hard ceiling, leaving one bounded GiB for launch and reclaim after the
 first boot and the installed/source-disk hashes. While QEMU runs, the controller

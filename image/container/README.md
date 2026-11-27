@@ -43,7 +43,7 @@ fallback to unconfined Docker/Podman or permissive SELinux is allowed.
 
 ## Prepared guest probes
 
-Use the same one-vCPU, 2 GiB, isolated Fedora guest procedure as
+Use the same two-vCPU, 2 GiB, isolated Fedora guest procedure as
 [Landlock qualification](../qualification/README.md). Stage an authenticated
 fixture OCI image containing `/usr/local/bin/python3` and Git; it must have no
 anonymous image volumes or secrets. The scripts never pull an image themselves.

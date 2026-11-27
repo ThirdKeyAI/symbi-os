@@ -340,6 +340,97 @@ class HostedLandlock(unittest.TestCase):
         for forbidden in ("-virtfs", "-fsdev", "hostfwd", "-nic", "-kernel", "-initrd"):
             self.assertNotIn(forbidden, command)
 
+    def test_guest_host_contract_requires_exactly_two_cpus(self):
+        def inspect_host(cpu_count=2, system="Linux", machine="x86_64",
+                         euid=10001, virt="qemu", container_return=1,
+                         memory_kib=2 * 1024 * 1024, cgroup_v2=True,
+                         selinux="Enforcing", release=None):
+            release = (dict(landlock_driver.EXPECTED_OS_RELEASE)
+                       if release is None else release)
+            meminfo = mock.Mock()
+            meminfo.read_text.return_value = f"MemTotal: {memory_kib} kB\n"
+            controllers = mock.Mock()
+            controllers.is_file.return_value = cgroup_v2
+
+            def path(value):
+                if value == "/proc/meminfo":
+                    return meminfo
+                if value == "/sys/fs/cgroup/cgroup.controllers":
+                    return controllers
+                raise AssertionError("unexpected host-details path: " + str(value))
+
+            def output(command, cwd=None):
+                self.assertIsNone(cwd)
+                if command == ["systemd-detect-virt", "--vm"]:
+                    return virt
+                if command == ["getenforce"]:
+                    return selinux
+                raise AssertionError("unexpected host-details command: "
+                                     + repr(command))
+
+            def run(command, timeout):
+                self.assertEqual(command, [
+                    "systemd-detect-virt", "--container", "--quiet"])
+                self.assertEqual(timeout, 10)
+                return mock.Mock(returncode=container_return)
+
+            observed_cpus = mock.Mock(return_value=cpu_count)
+            with mock.patch.object(landlock_driver.platform, "system",
+                                   return_value=system), \
+                    mock.patch.object(landlock_driver.platform, "machine",
+                                      return_value=machine), \
+                    mock.patch.object(landlock_driver.platform,
+                                      "freedesktop_os_release",
+                                      return_value=release), \
+                    mock.patch.object(landlock_driver.platform, "release",
+                                      return_value="6.12.0-test"), \
+                    mock.patch.object(landlock_driver.os, "geteuid",
+                                      return_value=euid), \
+                    mock.patch.object(landlock_driver.os, "cpu_count",
+                                      observed_cpus), \
+                    mock.patch.object(landlock_driver, "Path",
+                                      side_effect=path), \
+                    mock.patch.object(landlock_driver, "command_output",
+                                      side_effect=output), \
+                    mock.patch.object(landlock_driver.subprocess, "run",
+                                      side_effect=run):
+                try:
+                    return landlock_driver.host_details()
+                finally:
+                    if system == "Linux" and machine == "x86_64" and euid != 0 \
+                            and release == landlock_driver.EXPECTED_OS_RELEASE \
+                            and virt in ("qemu", "kvm") and container_return == 1:
+                        observed_cpus.assert_called_once_with()
+
+        observed = inspect_host()
+        self.assertEqual(observed["cpus"], 2)
+        self.assertEqual(observed["memory_kib"], 2 * 1024 * 1024)
+        self.assertEqual(observed["virtualization"], "qemu")
+        self.assertEqual(observed["selinux"], "Enforcing")
+        for value in (1, 3, 2.0, None, True, False):
+            with self.subTest(cpu_count=value), self.assertRaisesRegex(
+                    ValueError, "guest must expose exactly two CPUs"):
+                inspect_host(cpu_count=value)
+
+        prerequisites = (
+            ({"system": "Darwin"}, "Linux x86-64 required"),
+            ({"machine": "aarch64"}, "Linux x86-64 required"),
+            ({"euid": 0}, "qualification must run as the non-root runtime user"),
+            ({"release": {"ID": "fedora"}},
+             "selected secureblue Fedora 45 generic image required"),
+            ({"virt": "none"}, "disposable QEMU/KVM guest required"),
+            ({"container_return": 0},
+             "containers are not Fedora boot qualification"),
+            ({"memory_kib": 2 * 1024 * 1024 + 1},
+             "guest exceeds the 2 GiB memory ceiling"),
+            ({"cgroup_v2": False}, "cgroup v2 required"),
+            ({"selinux": "Permissive"}, "SELinux must remain enforcing"),
+        )
+        for changes, message in prerequisites:
+            with self.subTest(changes=changes), self.assertRaisesRegex(
+                    ValueError, message):
+                inspect_host(**changes)
+
     def test_source_identity_and_controller_cleanup_fail_closed(self):
         expected = self.expected()["source_disk"]
         raw = ("DEVNAME=/dev/vdb\nTYPE=ext4\nLABEL=SYMBIQUAL\nUUID="
