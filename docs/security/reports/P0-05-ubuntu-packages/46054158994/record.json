@@ -1,0 +1,135 @@
+{
+  "artifact": {
+    "bytes": 6909,
+    "digest": "sha256:67d09f2b7c9a59a7eac75a869b446af9e505b72df0e2eddc2265547c39428423",
+    "entries": 17,
+    "name": "container-ubuntu-fixture-package-evidence",
+    "safe_zip": {
+      "all_entries_regular_mode_0600": true,
+      "no_absolute_or_parent_paths": true,
+      "no_duplicate_paths": true,
+      "no_links_or_special_nodes": true
+    },
+    "uncompressed_bytes": 15015
+  },
+  "authenticated_inputs": {
+    "noble_inrelease": {
+      "bytes": 255850,
+      "sha256": "cdb2f31d809f589719a53c6ad15f255b27569c4059542ada282aaa21b8e164b0",
+      "signing_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C",
+      "status_stdout_sha256": "7ec5b58ee1da8ade1dcc942f55d19b5efab3bfd6dd671434e12f1716f8a687cc"
+    },
+    "noble_release": {
+      "bytes": 254968,
+      "codename_matches": true,
+      "control_fields_valid": true,
+      "date_fields": 1,
+      "label_matches": true,
+      "origin_matches": true,
+      "sha256": "26758a13cecfaff9ff274d31ea9a4633674a999bd130c09f6ecd66a4b8071184",
+      "sha256_fields": 1,
+      "suite_matches": true,
+      "valid_until_fields": 0
+    },
+    "rootfs": {
+      "bytes": 30028293,
+      "sha256": "e77b6f10c2590cef872b33ee9f635a0e3fd1f57fb074c0e52b5c7f56147a0c86"
+    },
+    "rootfs_checksums": {
+      "signing_fingerprint": "843938DF228D22F7B3742BC0D94AA3F0EFE21092",
+      "status_stdout_sha256": "b6d4d35b3ca11dfd61000a00036f39778f02f849df0b273b75a36cab9d665739"
+    }
+  },
+  "claims": {
+    "authoritative": false,
+    "candidate_emitted": false,
+    "container_qualified": false,
+    "discovery_emitted": false,
+    "os_qualified": false,
+    "pins_emitted": false,
+    "producer_passed": false,
+    "qualified": false,
+    "release_qualified": false,
+    "selected": false,
+    "signature_qualified": false
+  },
+  "failure": {
+    "diagnosis": "The parser applied the target Packages.xz byte ceiling to every authenticated SHA256 inventory row. It rejected an irrelevant oversized row before downloading the exact target index.",
+    "error": "ValueError: Ubuntu Release index size exceeds its bound",
+    "evidence_limit": "The retained content-free Release diagnostics do not disclose the rejected irrelevant path or size.",
+    "later_suites_started": false,
+    "packages_xz_downloaded": false,
+    "phase": "noble-release-index-inventory"
+  },
+  "independent_review": "pending",
+  "ledger": {
+    "bytes": 11163,
+    "last_kind": "release-rejected",
+    "last_reason": "release-structure-rejected",
+    "sha256": "f5067400ef57232ea3cd6e46f5564e2e11dce3d498d839f7e8c0292c1dbcebc2",
+    "strict_sequences": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ]
+  },
+  "resources": {
+    "fallback": {
+      "cpu_usage_nsec": 553418000,
+      "exec_main_code": 1,
+      "exec_main_status": 1,
+      "memory_max_bytes": 2147483648,
+      "memory_peak_bytes": 262144,
+      "memory_swap_current": "[not set]",
+      "memory_swap_max_bytes": 0,
+      "memory_swap_peak_bytes": 0,
+      "oom_auditable": true,
+      "oom_observed": false,
+      "zero_swap": false
+    },
+    "primary": {
+      "cpu_usage_usec": 538610,
+      "memory_current_bytes": 50270208,
+      "memory_events": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "memory_max_bytes": 2147483648,
+      "memory_peak_bytes": 51077120,
+      "memory_swap_current_bytes": 0,
+      "memory_swap_max_bytes": 0,
+      "memory_swap_peak_bytes": 0,
+      "pids_current": 1,
+      "pids_max": 128,
+      "pids_peak": 16,
+      "zero_swap": true
+    }
+  },
+  "retention": {
+    "candidate_present": false,
+    "post_unit_candidate_validated": false,
+    "private_work_retained": true,
+    "producer_exit_status": 1,
+    "recursive_path_cleanup_performed": false
+  },
+  "run": {
+    "attempt": 1,
+    "branch": "card/P0-05-package-producer",
+    "conclusion": "failure",
+    "event": "workflow_dispatch",
+    "head_sha": "3a403233ce477f98ba5f234617877a687a24ecbd",
+    "head_tree": "83c31edb15ad895b464f59285749d04bf21b5fe5",
+    "id": 46054158994,
+    "mode": "discover",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46054158994"
+  },
+  "schema": 1
+}

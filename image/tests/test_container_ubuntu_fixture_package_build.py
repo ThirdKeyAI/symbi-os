@@ -291,6 +291,44 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         self.assertLess(self.binding["date"], self.binding["verified_at"])
         self.assertIsNone(self.binding["valid_until"])
 
+    def test_release_ignores_oversized_irrelevant_sha256_row(self):
+        irrelevant = (
+            f" {'f' * 64} {packages.MAX_INDEX_BYTES + 1} "
+            "main/binary-arm64/Packages.xz\n"
+        ).encode()
+        binding = build.validate_signed_release(
+            self.release + irrelevant, self.source, NOW,
+            build.expected_freshness_policy(self.source))
+        self.assertEqual(binding["index"], self.binding["index"])
+
+    def test_release_rejects_oversized_exact_target_sha256_row(self):
+        digest = hashlib.sha256(self.index).hexdigest()
+        target = (
+            f" {digest} {len(self.index)} main/binary-amd64/Packages.xz\n"
+        ).encode()
+        oversized = (
+            f" {digest} {packages.MAX_INDEX_BYTES + 1} "
+            "main/binary-amd64/Packages.xz\n"
+        ).encode()
+        with self.assertRaises(ValueError):
+            build.validate_signed_release(
+                self.release.replace(target, oversized), self.source, NOW,
+                build.expected_freshness_policy(self.source))
+
+    def test_release_rejects_invalid_irrelevant_sha256_rows(self):
+        digest = "f" * 64
+        valid = f" {digest} 1 main/binary-arm64/Packages.xz\n"
+        cases = (
+            f" {digest} malformed main/binary-arm64/Packages.xz\n",
+            f" {digest} 1 ../main/binary-arm64/Packages.xz\n",
+            valid + valid,
+        )
+        for row in cases:
+            with self.subTest(row=row), self.assertRaises(ValueError):
+                build.validate_signed_release(
+                    self.release + row.encode(), self.source, NOW,
+                    build.expected_freshness_policy(self.source))
+
     def test_stale_future_wrong_suite_and_ambiguous_release_metadata_fail(self):
         duplicate = self.release + (
             f" {hashlib.sha256(self.index).hexdigest()} {len(self.index)} "
