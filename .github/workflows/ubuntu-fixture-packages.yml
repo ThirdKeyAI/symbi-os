@@ -1,0 +1,32 @@
+name: Ubuntu fixture package candidate
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Authenticate current metadata or produce from reviewed pins
+        required: true
+        default: discover
+        type: choice
+        options:
+          - discover
+          - produce
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ubuntu-fixture-packages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  registration-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Refuse package production from the registration stub
+        shell: bash
+        run: |
+          echo 'The default-branch workflow only registers this manual entry point.' >&2
+          echo 'Select an independently reviewed producer branch; this stub never produces packages.' >&2
+          exit 1
