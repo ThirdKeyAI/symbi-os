@@ -105,6 +105,8 @@ LEDGER_PHASE_FIELDS = {
     "sequence", "kind", "suite", "commands", "payloads", "diagnostics",
 }
 LEDGER_PAYLOAD_FIELDS = {"name", "url", "bytes", "sha256"}
+LEGACY_PHASE_LEDGER_SCHEMA = 1
+PHASE_LEDGER_SCHEMA = 2
 LEDGER_SCOPE = (
     "Bounded partial hosted evidence only; never a producer result, candidate, "
     "selection or qualification"
@@ -968,7 +970,9 @@ def validate_phase_ledger(value, mode, contract, lock, evidence, source_root,
     evidence = Path(evidence).resolve(strict=True)
     source_root = Path(source_root).resolve(strict=True)
     require(type(value) is dict and set(value) == LEDGER_FIELDS
-            and type(value.get("schema")) is int and value["schema"] == 1
+            and type(value.get("schema")) is int
+            and value["schema"] in {
+                LEGACY_PHASE_LEDGER_SCHEMA, PHASE_LEDGER_SCHEMA}
             and value.get("state") == "partial-evidence"
             and value.get("passed") is False
             and value.get("authoritative") is False
@@ -1039,11 +1043,27 @@ def validate_phase_ledger(value, mode, contract, lock, evidence, source_root,
             signature_phase = prior[("inrelease-signature", expected_suite)]
             inrelease = download_phase["payloads"][0]
             diagnostics = phase["diagnostics"]
+            diagnostics_fields = {
+                "reason", "inrelease", "signer_fingerprint"}
+            if value["schema"] == PHASE_LEDGER_SCHEMA:
+                diagnostics_fields.add("predicate")
+            predicate = diagnostics.get("predicate")
             require(command_by_name == {} and payloads == []
                     and type(diagnostics) is dict
-                    and set(diagnostics) == {
-                        "reason", "inrelease", "signer_fingerprint"}
-                    and diagnostics.get("reason") in LEDGER_REJECTION_REASONS
+                    and set(diagnostics) == diagnostics_fields
+                    and type(diagnostics.get("reason")) is str
+                    and diagnostics["reason"] in LEDGER_REJECTION_REASONS
+                    and ((value["schema"] == LEGACY_PHASE_LEDGER_SCHEMA
+                          and predicate is None)
+                         or (value["schema"] == PHASE_LEDGER_SCHEMA
+                             and ((diagnostics["reason"]
+                                   == "index-inventory-rejected"
+                                   and type(predicate) is str
+                                   and predicate
+                                   in build.RELEASE_INVENTORY_PREDICATES)
+                                  or (diagnostics["reason"]
+                                      != "index-inventory-rejected"
+                                      and predicate is None))))
                     and diagnostics.get("inrelease") == {
                         "bytes": inrelease["bytes"],
                         "sha256": inrelease["sha256"],
@@ -1262,7 +1282,7 @@ class PhaseLedger:
         self.published = False
         self.fd = _open_private_evidence_directory(self.evidence)
         self.value = {
-            "schema": 1,
+            "schema": PHASE_LEDGER_SCHEMA,
             "state": "partial-evidence",
             "passed": False,
             "authoritative": False,
@@ -1394,7 +1414,8 @@ class PhaseLedger:
         })
         self._persist()
 
-    def reject_release(self, suite, inrelease, signer_fingerprint, reason):
+    def reject_release(self, suite, inrelease, signer_fingerprint, reason,
+                       predicate=None):
         expected = LEDGER_PHASE_ORDER[len(self.value["phases"])]
         require(expected == ("release-validated", suite)
                 and type(inrelease) is dict
@@ -1403,7 +1424,12 @@ class PhaseLedger:
                     inrelease.get("bytes"), packages.MAX_METADATA_BYTES)
                 and packages.exact_hash(inrelease.get("sha256"))
                 and packages.full_fingerprint(signer_fingerprint)
-                and reason in LEDGER_REJECTION_REASONS,
+                and type(reason) is str and reason in LEDGER_REJECTION_REASONS
+                and ((reason == "index-inventory-rejected"
+                      and type(predicate) is str
+                      and predicate in build.RELEASE_INVENTORY_PREDICATES)
+                     or (reason != "index-inventory-rejected"
+                         and predicate is None)),
                 "Ubuntu phase-ledger Release rejection is malformed")
         self.value["phases"].append({
             "sequence": len(self.value["phases"]) + 1,
@@ -1413,6 +1439,7 @@ class PhaseLedger:
             "payloads": [],
             "diagnostics": {
                 "reason": reason,
+                "predicate": predicate,
                 "inrelease": inrelease,
                 "signer_fingerprint": signer_fingerprint,
             },
@@ -1745,7 +1772,8 @@ def _run_metadata(lock, contract, work, evidence, runner, verified_at,
                 ledger.reject_release(
                     suite, inrelease,
                     signature_record["signing_fingerprint"],
-                    build.release_rejection_reason(error))
+                    build.release_rejection_reason(error),
+                    build.release_rejection_predicate(error))
             raise
         if contract["state"] == "ready":
             require(inrelease == pin["inrelease"]

@@ -76,6 +76,11 @@ FRESHNESS_POLICY_FIELDS = {
     "maximum_age_days",
 }
 SIGNATURE_RECORD_FIELDS = {"signing_fingerprint", "status_sha256"}
+RELEASE_INVENTORY_PREDICATES = frozenset({
+    "sha256-columns", "sha256-digest-syntax", "sha256-size-syntax",
+    "sha256-path-safety", "sha256-duplicate-path",
+    "target-index-byte-bound", "target-index-membership",
+})
 TOOL_FIELDS = {"version", "sha256"}
 TOOL_NAMES = {"apt_get", "dpkg", "gpgv"}
 COMMAND_NAMES = {
@@ -106,6 +111,17 @@ _OPEN_EXACT_URL = build_opener(_RejectRedirects).open
 
 class _DownloadDeadlineExpired(TimeoutError):
     """Raised from SIGALRM so a blocking response read cannot outlive the plan."""
+
+
+class ReleaseInventoryRejection(ValueError):
+    """A fixed content-free signed-inventory predicate rejection."""
+
+    def __init__(self, predicate, message):
+        require(type(predicate) is str
+                and predicate in RELEASE_INVENTORY_PREDICATES,
+                "Ubuntu Release inventory rejection predicate is invalid")
+        super().__init__(message)
+        self.predicate = predicate
 
 
 @contextmanager
@@ -575,6 +591,8 @@ def release_rejection_reason(error):
     require(isinstance(error, ValueError),
             "Ubuntu Release rejection is not a validation error")
     message = str(error)
+    if isinstance(error, ReleaseInventoryRejection):
+        return "index-inventory-rejected"
     if "Valid-Until" in message or "validity window" in message:
         return "valid-until-rejected"
     if ("freshness" in message or "stale" in message
@@ -585,9 +603,19 @@ def release_rejection_reason(error):
         return "identity-rejected"
     if "architecture" in message or "component" in message:
         return "content-scope-rejected"
-    if "SHA256" in message or "Packages.xz" in message:
-        return "index-inventory-rejected"
     return "release-structure-rejected"
+
+
+def release_rejection_predicate(error):
+    """Return only the fixed inventory predicate, never rejected row content."""
+    require(isinstance(error, ValueError),
+            "Ubuntu Release rejection is not a validation error")
+    if not isinstance(error, ReleaseInventoryRejection):
+        return None
+    require(type(error.predicate) is str
+            and error.predicate in RELEASE_INVENTORY_PREDICATES,
+            "Ubuntu Release inventory rejection predicate is invalid")
+    return error.predicate
 
 
 def _control_fields(raw, description, maximum):
@@ -693,24 +721,52 @@ def validate_signed_release(raw, source, verified_at, freshness_policy):
     _validate_release_freshness(released, valid_until, now, policy)
     checksum_rows = [row for row in fields.get("sha256", "").splitlines()
                      if row]
-    require(checksum_rows, "Ubuntu Release has no SHA256 inventory")
+    if not checksum_rows:
+        raise ReleaseInventoryRejection(
+            "target-index-membership",
+            "Ubuntu Release lacks one exact amd64 Packages.xz membership row")
     seen = set()
     selected = []
     for row in checksum_rows:
         columns = row.split()
-        require(len(columns) == 3 and packages.exact_hash(columns[0])
-                and re.fullmatch(r"[1-9][0-9]*", columns[1]) is not None
-                and packages._safe_filename(columns[2]),
-                "Ubuntu Release has a malformed SHA256 row")
+        if len(columns) != 3:
+            raise ReleaseInventoryRejection(
+                "sha256-columns", "Ubuntu Release SHA256 columns changed")
+        if not packages.exact_hash(columns[0]):
+            raise ReleaseInventoryRejection(
+                "sha256-digest-syntax",
+                "Ubuntu Release SHA256 digest syntax changed")
+        if re.fullmatch(r"[1-9][0-9]*", columns[1]) is None:
+            raise ReleaseInventoryRejection(
+                "sha256-size-syntax",
+                "Ubuntu Release SHA256 size syntax changed")
+        if not packages._safe_filename(columns[2]):
+            raise ReleaseInventoryRejection(
+                "sha256-path-safety",
+                "Ubuntu Release SHA256 path safety changed")
         digest, size_text, path = columns
-        require(path not in seen, "Ubuntu Release has a duplicate SHA256 path")
+        if path in seen:
+            raise ReleaseInventoryRejection(
+                "sha256-duplicate-path",
+                "Ubuntu Release has a duplicate SHA256 path")
         seen.add(path)
         if path == "main/binary-amd64/Packages.xz":
+            maximum_size = str(packages.MAX_INDEX_BYTES)
+            if (len(size_text) > len(maximum_size)
+                    or (len(size_text) == len(maximum_size)
+                        and size_text > maximum_size)):
+                raise ReleaseInventoryRejection(
+                    "target-index-byte-bound",
+                    "Ubuntu Release index size exceeds its bound")
             size = int(size_text)
-            require(0 < size <= packages.MAX_INDEX_BYTES,
+            if not 0 < size <= packages.MAX_INDEX_BYTES:
+                raise ReleaseInventoryRejection(
+                    "target-index-byte-bound",
                     "Ubuntu Release index size exceeds its bound")
             selected.append({"path": path, "bytes": size, "sha256": digest})
-    require(len(selected) == 1,
+    if len(selected) != 1:
+        raise ReleaseInventoryRejection(
+            "target-index-membership",
             "Ubuntu Release lacks one exact amd64 Packages.xz membership row")
     return {
         "origin": "Ubuntu",
