@@ -8,6 +8,8 @@ import json
 import os
 from pathlib import Path
 import shutil
+import socket
+import struct
 import subprocess
 import sys
 import tempfile
@@ -18,13 +20,18 @@ import zlib
 from image.atomic.hosted import LANDLOCK_PARENT_LIMITS, run_hosted_command
 from image.launcher.probes.bounded_process import run_bounded
 from image.qualification import landlock as landlock_driver
-from image.qualification.boot import (discard_control_socket, discard_overlay,
+from image.qualification.boot import (MAX_QMP_MESSAGE_BYTES,
+                                      discard_control_socket, discard_overlay,
                                       firmware_arguments, overlay_command,
-                                      qemu_command, qmp_request, stop_child,
-                                      validate_guest_report,
+                                      path_identity, qemu_command, qmp_request,
+                                      stop_child, validate_guest_report,
+                                      validate_peer_credentials,
+                                      validate_process_state,
+                                      validate_socket_info,
                                       write_progress_sample)
 from image.qualification.guest import collect_public_artifacts
 from image.qualification.hosted import (QUALIFICATION_FILES,
+                                        retain_deferred_landlock_output,
                                         validate_source_checkout)
 from image.qualification.hosted_process import (TIMEOUT_SECONDS,
                                                 validate_landlock_controller_command)
@@ -336,51 +343,89 @@ class HostedLandlock(unittest.TestCase):
             with self.subTest(raw=changed), self.assertRaises(ValueError):
                 validate_source_identity(changed, expected)
 
-        child = mock.Mock()
+        identity = {"pid": 4242, "starttime": 777,
+                    "executable_device": 8, "executable_inode": 9,
+                    "uid": 10001, "gid": 10001, "pidfd": None}
+        child = mock.Mock(pid=4242)
         child.poll.return_value = None
         child.terminate.side_effect = PermissionError("synthetic refusal")
         child.kill.side_effect = PermissionError("synthetic refusal")
         failure = "TimeoutError: Landlock guest did not report"
         qmp = mock.Mock(side_effect=FileNotFoundError("synthetic absent socket"))
+        prove_exit = mock.Mock(return_value=False)
         record = {"failure": failure,
-                  "child_cleanup": stop_child(child, Path("/output/qmp.sock"), qmp)}
+                  "child_cleanup": stop_child(
+                      child, identity, {"path": Path("/output/qmp.sock")},
+                      request=qmp, prove_exit=prove_exit,
+                      verify=mock.Mock(return_value=None))}
         self.assertEqual(record["failure"], failure)
         self.assertTrue(record["child_cleanup"]["attempted"])
         self.assertFalse(record["child_cleanup"]["qmp_quit"])
+        self.assertFalse(record["child_cleanup"]["exit_proven"])
         self.assertEqual(len(record["child_cleanup"]["errors"]), 3)
-        qmp.assert_called_once_with(Path("/output/qmp.sock"), "quit")
+        qmp.assert_called_once_with({"path": Path("/output/qmp.sock")}, "quit")
 
-        controlled = mock.Mock()
+        controlled = mock.Mock(pid=4242)
         controlled.poll.return_value = None
-        controlled.wait.return_value = 0
         qmp = mock.Mock(return_value={})
-        cleanup = stop_child(controlled, Path("/output/qmp.sock"), qmp)
+        cleanup = stop_child(
+            controlled, identity, {"path": Path("/output/qmp.sock")},
+            request=qmp, prove_exit=mock.Mock(side_effect=(False, True)),
+            verify=mock.Mock(return_value=None))
         self.assertTrue(cleanup["qmp_quit"])
+        self.assertTrue(cleanup["exit_proven"])
         self.assertFalse(cleanup["terminated"])
         self.assertFalse(cleanup["killed"])
         controlled.terminate.assert_not_called()
         controlled.kill.assert_not_called()
+
+        reused = mock.Mock(pid=4242)
+        reused.poll.return_value = None
+        cleanup = stop_child(
+            reused, identity, {"path": Path("/output/qmp.sock")},
+            request=mock.Mock(), prove_exit=mock.Mock(return_value=False),
+            verify=mock.Mock(side_effect=ValueError("PID identity changed")))
+        self.assertFalse(cleanup["exit_proven"])
+        reused.terminate.assert_not_called()
+        reused.kill.assert_not_called()
+
         with tempfile.TemporaryDirectory() as directory:
+            qmp_path = Path(directory) / "qmp.sock"
+            channel = socket.socket(socket.AF_UNIX)
+            channel.bind(str(qmp_path))
+            os.chmod(qmp_path, 0o700)
+            qmp_identity = path_identity(qmp_path.lstat())
             overlay = Path(directory) / "guest.qcow2"
             overlay.write_bytes(b"synthetic overlay")
-            info = overlay.stat()
-            cleanup = discard_overlay(overlay, (info.st_dev, info.st_ino))
+            overlay_identity = path_identity(overlay.stat())
+            self.assertFalse(discard_control_socket(
+                qmp_path, qmp_identity, exit_proven=False)["removed"])
+            self.assertFalse(discard_overlay(
+                overlay, overlay_identity, exit_proven=False)["removed"])
+            self.assertTrue(qmp_path.exists())
+            self.assertTrue(overlay.exists())
+            channel.close()
+            cleanup = discard_control_socket(
+                qmp_path, qmp_identity, exit_proven=True)
+            self.assertEqual(cleanup, {"attempted": True, "removed": True,
+                                       "errors": []})
+            cleanup = discard_overlay(
+                overlay, overlay_identity, exit_proven=True)
             self.assertEqual(cleanup, {"attempted": True, "removed": True,
                                        "errors": []})
             self.assertFalse(overlay.exists())
 
-    def test_qmp_control_and_progress_evidence_are_fixed_and_bounded(self):
+    def test_qmp_protocol_is_exact_and_bounded(self):
         class Stream:
-            def __init__(self):
-                self.lines = iter([
-                    b'{"return":{},"id":"qmp_capabilities"}\n',
-                    b'{"event":"STOP"}\n',
-                    b'{"return":{"running":true,"status":"running"},"id":"query-status"}\n',
-                ])
+            def __init__(self, lines):
+                self.lines = iter(lines)
                 self.writes = []
 
             def readline(self, _maximum):
-                return next(self.lines, b"")
+                value = next(self.lines, b"")
+                if isinstance(value, Exception):
+                    raise value
+                return value
 
             def write(self, raw):
                 self.writes.append(raw)
@@ -388,11 +433,125 @@ class HostedLandlock(unittest.TestCase):
             def flush(self):
                 pass
 
-        stream = Stream()
-        self.assertEqual(qmp_request(stream, "qmp_capabilities"), {})
+        greeting = (b'{"QMP":{"version":{"qemu":{"major":9,"minor":2,'
+                    b'"micro":0},"package":""},"capabilities":["oob"]}}\n')
+        capabilities = b'{"return":{},"id":"symbi-qmp-capabilities"}\n'
+        status = (b'{"return":{"running":true,"singlestep":false,'
+                  b'"status":"running"},"id":"symbi-query-status"}\n')
+        stream = Stream([greeting, capabilities, status])
         self.assertEqual(qmp_request(stream, "query-status"),
-                         {"running": True, "status": "running"})
+                         {"running": True, "singlestep": False,
+                          "status": "running"})
         self.assertEqual(len(stream.writes), 2)
+        quit_stream = Stream([
+            greeting, capabilities, b'{"return":{},"id":"symbi-quit"}\n'])
+        self.assertEqual(qmp_request(quit_stream, "quit"), {})
+        for forbidden in ("qmp_capabilities", "stop", "cont", "system_reset"):
+            with self.subTest(forbidden=forbidden), self.assertRaises(ValueError):
+                qmp_request(Stream([]), forbidden)
+
+        invalid = {
+            "extra greeting field": (
+                greeting.replace(b'"QMP":', b'"extra":1,"QMP":'),
+                capabilities, status),
+            "extra capabilities field": (
+                greeting, b'{"return":{},"id":"symbi-qmp-capabilities","extra":1}\n',
+                status),
+            "wrong response id": (
+                greeting, capabilities,
+                status.replace(b"symbi-query-status", b"other")),
+            "extra status field": (
+                greeting, capabilities,
+                status.replace(b'"status":"running"',
+                               b'"status":"running","extra":1')),
+            "inconsistent state": (
+                greeting, capabilities,
+                status.replace(b'"running":true', b'"running":false')),
+            "malformed json": (b'{not-json}\n',),
+            "truncated json": (greeting.removesuffix(b"\n"),),
+            "oversized json": (b"{" + b"x" * MAX_QMP_MESSAGE_BYTES + b"}\n",),
+            "timeout": (TimeoutError("synthetic timeout"),),
+        }
+        for name, lines in invalid.items():
+            with self.subTest(name=name), self.assertRaises((ValueError, TimeoutError)):
+                qmp_request(Stream(lines), "query-status")
+
+    def test_qmp_peer_socket_and_process_identity_are_exact(self):
+        identity = {"pid": 4242, "starttime": 777,
+                    "executable_device": 8, "executable_inode": 9,
+                    "uid": 10001, "gid": 10001, "pidfd": None}
+        raw = struct.pack("=iII", 4242, 10001, 10001)
+        self.assertEqual(validate_peer_credentials(raw, identity),
+                         {"pid": 4242, "uid": 10001, "gid": 10001})
+        for values in ((4243, 10001, 10001), (4242, 10002, 10001),
+                       (4242, 10001, 10002)):
+            with self.subTest(values=values), self.assertRaises(ValueError):
+                validate_peer_credentials(struct.pack("=iII", *values), identity)
+        validate_process_state(identity, {
+            "pid": 4242, "starttime": 777,
+            "executable_device": 8, "executable_inode": 9,
+            "uid": 10001, "gid": 10001,
+        })
+        changed = {key: identity[key] for key in
+                   ("pid", "starttime", "executable_device", "executable_inode",
+                    "uid", "gid")}
+        changed["starttime"] = 778
+        with self.assertRaises(ValueError):
+            validate_process_state(identity, changed)
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "qmp.sock"
+            with socket.socket(socket.AF_UNIX) as channel:
+                channel.bind(str(path))
+                os.chmod(path, 0o700)
+                info = path.lstat()
+                expected = path_identity(info)
+                self.assertEqual(validate_socket_info(
+                    info, os.geteuid(), os.getegid(), expected), expected)
+                os.chmod(path, 0o770)
+                with self.assertRaises(ValueError):
+                    validate_socket_info(path.lstat(), os.geteuid(),
+                                         os.getegid(), expected)
+                os.chmod(path, 0o700)
+                swapped = tuple(value + 1 if index == 1 else value
+                                for index, value in enumerate(expected))
+                with self.assertRaises(ValueError):
+                    validate_socket_info(path.lstat(), os.geteuid(),
+                                         os.getegid(), swapped)
+
+    def test_failed_cleanup_residue_does_not_hide_regular_evidence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "source"
+            evidence = Path(directory) / "evidence"
+            destination = evidence / "guest"
+            source.mkdir(mode=0o700)
+            evidence.mkdir(mode=0o700)
+            (evidence / "result.json").write_text(json.dumps({
+                "passed": False,
+                "retention_deferred_until_outer_container_absence": True,
+            }))
+            (source / "result.json").write_text('{"passed":false}\n')
+            (source / "progress.jsonl").write_text('{"sample":0}\n')
+            expected_bytes = sum((source / name).stat().st_size
+                                 for name in ("result.json", "progress.jsonl"))
+            (source / "guest.qcow2").write_bytes(b"private overlay")
+            with socket.socket(socket.AF_UNIX) as channel:
+                channel.bind(str(source / "qmp.sock"))
+                retained = retain_deferred_landlock_output(source, evidence)
+            self.assertTrue(retained["attempted"])
+            self.assertEqual(retained["bytes"], expected_bytes)
+            self.assertEqual(set(retained["cleanup_residue"]),
+                             {"guest.qcow2", "qmp.sock"})
+            self.assertTrue((destination / "result.json").is_file())
+            self.assertTrue((destination / "progress.jsonl").is_file())
+            self.assertFalse((destination / "guest.qcow2").exists())
+            self.assertFalse((destination / "qmp.sock").exists())
+            outer = json.loads((evidence / "result.json").read_text())
+            self.assertTrue(outer["outer_container_absence_proven"])
+            self.assertFalse(
+                outer["retention_deferred_until_outer_container_absence"])
+
+    def test_progress_evidence_is_bounded(self):
 
         progress = io.BytesIO()
         sample = {"schema": 1, "sample": 0, "elapsed_seconds": 0,
@@ -401,16 +560,6 @@ class HostedLandlock(unittest.TestCase):
         self.assertLess(len(progress.getvalue()), 8192)
         with self.assertRaises(ValueError):
             write_progress_sample(progress, {"oversized": "x" * 8192})
-
-        with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "qmp.sock"
-            import socket
-            with socket.socket(socket.AF_UNIX) as channel:
-                channel.bind(str(path))
-                self.assertEqual(discard_control_socket(path), {
-                    "attempted": True, "removed": True, "errors": [],
-                })
-            self.assertFalse(path.exists())
 
     def test_landlock_parent_keeps_four_gib_pressure_threshold_with_headroom(self):
         self.assertEqual(LANDLOCK_PARENT_LIMITS, {

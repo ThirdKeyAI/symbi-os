@@ -6,8 +6,10 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import re
+import select
 import socket
 import stat
+import struct
 import subprocess
 import time
 import zlib
@@ -27,6 +29,15 @@ MAX_PROGRESS_BYTES = 1024 * 1024
 MAX_PROGRESS_SAMPLE_BYTES = 8192
 PROGRESS_INTERVAL_SECONDS = 30
 MAX_QMP_MESSAGE_BYTES = 16384
+QMP_TIMEOUT_SECONDS = 2
+QMP_SOCKET_MODE = 0o700
+QMP_CREDENTIALS = struct.Struct("=iII")
+QMP_STATES = frozenset({
+    "colo", "debug", "finish-migrate", "guest-panicked", "inmigrate",
+    "internal-error", "io-error", "paused", "postmigrate", "preconfig",
+    "prelaunch", "restore-vm", "running", "save-vm", "shutdown",
+    "suspended", "watchdog",
+})
 
 
 def sha256(path):
@@ -50,98 +61,319 @@ def unique_json(raw):
 
 def _qmp_message(stream):
     raw = stream.readline(MAX_QMP_MESSAGE_BYTES + 1)
-    if (not raw or len(raw) > MAX_QMP_MESSAGE_BYTES
+    if (not isinstance(raw, bytes) or not raw or len(raw) > MAX_QMP_MESSAGE_BYTES
             or not raw.endswith(b"\n")):
         raise ValueError("missing or oversized QMP response")
     return unique_json(raw)
 
 
-def qmp_request(stream, name):
-    """Issue one of the controller's fixed, bounded QMP operations."""
-    if name not in {"qmp_capabilities", "query-status", "quit"}:
-        raise ValueError("unexpected QMP operation")
-    stream.write(json.dumps({"execute": name, "id": name}, separators=(",", ":")).encode()
-                 + b"\n")
+def _exact_keys(value, keys, description):
+    if not isinstance(value, dict) or set(value) != set(keys):
+        raise ValueError("unexpected " + description + " schema")
+
+
+def _validate_qmp_greeting(greeting):
+    _exact_keys(greeting, {"QMP"}, "QMP greeting")
+    qmp = greeting["QMP"]
+    _exact_keys(qmp, {"version", "capabilities"}, "QMP greeting")
+    version = qmp["version"]
+    _exact_keys(version, {"qemu", "package"}, "QMP version")
+    qemu = version["qemu"]
+    _exact_keys(qemu, {"major", "minor", "micro"}, "QMP version")
+    if (any(type(qemu[name]) is not int or not 0 <= qemu[name] <= 2**31 - 1
+            for name in ("major", "minor", "micro"))
+            or not isinstance(version["package"], str)
+            or len(version["package"].encode("utf-8")) > 1024
+            or not isinstance(qmp["capabilities"], list)
+            or any(not isinstance(item, str) or not item or len(item.encode("utf-8")) > 128
+                   for item in qmp["capabilities"])
+            or len(qmp["capabilities"]) != len(set(qmp["capabilities"]))):
+        raise ValueError("invalid QMP greeting values")
+
+
+def _qmp_call(stream, name, request_id):
+    raw = (json.dumps({"execute": name, "id": request_id},
+                      separators=(",", ":")) + "\n").encode()
+    if len(raw) > 1024:
+        raise ValueError("oversized QMP request")
+    stream.write(raw)
     stream.flush()
-    for _ in range(20):
-        response = _qmp_message(stream)
-        if "event" in response:
-            continue
-        if (response.get("id") != name or "error" in response
-                or "return" not in response):
-            raise ValueError("unexpected QMP response")
-        return response["return"]
-    raise ValueError("QMP response exceeded its event bound")
+    response = _qmp_message(stream)
+    _exact_keys(response, {"return", "id"}, "QMP response")
+    if response["id"] != request_id:
+        raise ValueError("unexpected QMP response id")
+    return response["return"]
 
 
-def qmp_command(path, name):
-    """Connect only to the controller-owned QEMU socket and issue a fixed command."""
+def qmp_request(stream, name, stable=lambda: None):
+    """Perform one strict handshake and one allowed, bounded QMP operation."""
+    if name not in {"query-status", "quit"}:
+        raise ValueError("unexpected QMP operation")
+    _validate_qmp_greeting(_qmp_message(stream))
+    capabilities = _qmp_call(
+        stream, "qmp_capabilities", "symbi-qmp-capabilities")
+    if capabilities != {}:
+        raise ValueError("unexpected QMP capabilities response")
+    stable()
+    result = _qmp_call(stream, name, "symbi-" + name)
+    if name == "quit":
+        if result != {}:
+            raise ValueError("unexpected QMP quit response")
+        return result
+    _exact_keys(result, {"running", "singlestep", "status"},
+                "QMP query-status response")
+    if (type(result["running"]) is not bool
+            or type(result["singlestep"]) is not bool
+            or not isinstance(result["status"], str)
+            or result["status"] not in QMP_STATES
+            or result["running"] is not (result["status"] == "running")):
+        raise ValueError("invalid QMP query-status values")
+    return result
+
+
+def path_identity(info):
+    """Return the complete identity used for one private cleanup leaf."""
+    return (info.st_dev, info.st_ino, stat.S_IFMT(info.st_mode),
+            stat.S_IMODE(info.st_mode), info.st_uid, info.st_gid, info.st_nlink)
+
+
+def validate_socket_info(info, expected_uid, expected_gid, expected=None):
+    identity = path_identity(info)
+    if (not stat.S_ISSOCK(info.st_mode) or stat.S_IMODE(info.st_mode) != QMP_SOCKET_MODE
+            or info.st_uid != expected_uid or info.st_gid != expected_gid
+            or info.st_nlink != 1 or (expected is not None and identity != expected)):
+        raise ValueError("unsafe or replaced QMP control socket")
+    return identity
+
+
+def _process_starttime(raw, pid):
+    if not isinstance(raw, str) or not raw.startswith(str(pid) + " ("):
+        raise ValueError("invalid QEMU process stat")
+    end = raw.rfind(")")
+    fields = raw[end + 2:].split() if end >= 0 else []
+    if len(fields) < 20 or not fields[19].isdigit():
+        raise ValueError("invalid QEMU process start time")
+    return int(fields[19])
+
+
+def _read_process_state(pid, executable):
+    process = Path("/proc") / str(pid)
+    starttime = _process_starttime(_bounded_text(process / "stat", 4096), pid)
+    status = {key: value.strip() for key, value in
+              (line.split(":", 1) for line in
+               _bounded_text(process / "status", 65536).splitlines() if ":" in line)}
+    try:
+        uids = [int(value) for value in status["Uid"].split()]
+        gids = [int(value) for value in status["Gid"].split()]
+    except (KeyError, ValueError) as error:
+        raise ValueError("invalid QEMU process credentials") from error
+    if len(uids) != 4 or len(gids) != 4 or len(set(uids)) != 1 or len(set(gids)) != 1:
+        raise ValueError("QEMU process credentials changed")
+    observed_executable = (process / "exe").stat()
+    expected_executable = Path(executable).stat()
+    if ((observed_executable.st_dev, observed_executable.st_ino)
+            != (expected_executable.st_dev, expected_executable.st_ino)):
+        raise ValueError("QEMU executable identity changed")
+    return {"pid": pid, "starttime": starttime,
+            "executable_device": observed_executable.st_dev,
+            "executable_inode": observed_executable.st_ino,
+            "uid": uids[0], "gid": gids[0]}
+
+
+def validate_process_state(identity, observed):
+    keys = {"pid", "starttime", "executable_device", "executable_inode", "uid", "gid"}
+    if (not isinstance(identity, dict) or not isinstance(observed, dict)
+            or set(observed) != keys
+            or any(observed.get(key) != identity.get(key) for key in keys)):
+        raise ValueError("QEMU process identity changed")
+
+
+def capture_process_identity(child, executable):
+    if (type(child.pid) is not int or child.pid <= 1 or child.poll() is not None
+            or not Path(executable).is_absolute()):
+        raise ValueError("QEMU did not remain live for identity capture")
+    identity = _read_process_state(child.pid, executable)
+    if identity["uid"] != os.geteuid() or identity["gid"] != os.getegid():
+        raise ValueError("QEMU process owner changed")
+    identity.update(executable=str(executable), pidfd=None)
+    opener = getattr(os, "pidfd_open", None)
+    try:
+        if opener is not None:
+            identity["pidfd"] = opener(child.pid, 0)
+        validate_process_state(identity, _read_process_state(child.pid, executable))
+        if child.poll() is not None:
+            raise ValueError("QEMU exited during identity capture")
+    except Exception:
+        if identity["pidfd"] is not None:
+            os.close(identity["pidfd"])
+        raise
+    return identity
+
+
+def verify_process_identity(identity, reader=_read_process_state):
+    validate_process_state(
+        identity, reader(identity["pid"], identity["executable"]))
+
+
+def validate_peer_credentials(raw, identity):
+    if not isinstance(raw, bytes) or len(raw) != QMP_CREDENTIALS.size:
+        raise ValueError("invalid QMP peer credentials")
+    pid, uid, gid = QMP_CREDENTIALS.unpack(raw)
+    if (pid, uid, gid) != (identity["pid"], identity["uid"], identity["gid"]):
+        raise ValueError("QMP peer is not the launched QEMU process")
+    return {"pid": pid, "uid": uid, "gid": gid}
+
+
+def create_qmp_control(path, process):
     path = Path(path)
-    info = path.lstat()
-    if (not stat.S_ISSOCK(info.st_mode) or info.st_uid != os.geteuid()
-            or info.st_nlink != 1):
-        raise ValueError("unsafe QMP control socket")
-    identity = (info.st_dev, info.st_ino)
-    with socket.socket(socket.AF_UNIX) as channel:
-        channel.settimeout(2)
-        channel.connect(str(path))
-        current = path.lstat()
-        if (current.st_dev, current.st_ino) != identity:
+    parent = path.parent.lstat()
+    if (not path.is_absolute() or path.name != "qmp.sock"
+            or not stat.S_ISDIR(parent.st_mode)
+            or stat.S_IMODE(parent.st_mode) != 0o700
+            or parent.st_uid != process["uid"] or parent.st_gid != process["gid"]):
+        raise ValueError("QMP path is not the exact private output leaf")
+    return {"path": path, "directory_identity": path_identity(parent),
+            "socket_identity": None, "process": process}
+
+
+def _control_socket_info(control, expected=None):
+    path = control["path"]
+    if path_identity(path.parent.lstat()) != control["directory_identity"]:
+        raise ValueError("QMP private directory identity changed")
+    return validate_socket_info(
+        path.lstat(), control["process"]["uid"], control["process"]["gid"],
+        expected if expected is not None else control["socket_identity"])
+
+
+def qmp_command(control, name):
+    """Issue one strict operation to the exact launched QEMU Unix peer."""
+    if name not in {"query-status", "quit"}:
+        raise ValueError("unexpected QMP operation")
+    verify_process_identity(control["process"])
+    before = _control_socket_info(control)
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as channel:
+        channel.settimeout(QMP_TIMEOUT_SECONDS)
+        channel.connect(str(control["path"]))
+        if not hasattr(socket, "SO_PEERCRED"):
+            raise ValueError("QMP peer credentials are unavailable")
+        validate_peer_credentials(
+            channel.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED,
+                               QMP_CREDENTIALS.size),
+            control["process"],
+        )
+        if _control_socket_info(control, before) != before:
             raise ValueError("QMP control socket identity changed")
+        control["socket_identity"] = before
+
+        def stable():
+            verify_process_identity(control["process"])
+            if _control_socket_info(control, before) != before:
+                raise ValueError("QMP control socket identity changed")
+
         with channel.makefile("rwb") as stream:
-            if "QMP" not in _qmp_message(stream):
-                raise ValueError("missing QMP greeting")
-            qmp_request(stream, "qmp_capabilities")
-            return qmp_request(stream, name)
+            result = qmp_request(stream, name, stable)
+        if name == "query-status":
+            stable()
+        return result
 
 
 def _cleanup_error(error):
     return (type(error).__name__ + ": " + str(error))[:512]
 
 
-def stop_child(child, qmp_path=None, request=qmp_command):
-    """Best-effort QEMU cleanup that never masks the primary gate failure."""
+def wait_for_exact_exit(child, identity, timeout):
+    """Prove exit of the captured direct child, using its pidfd when available."""
+    if identity is None or child.pid != identity.get("pid"):
+        return False
+    returncode = child.poll()
+    if returncode is None:
+        verify_process_identity(identity)
+        pidfd = identity.get("pidfd")
+        if pidfd is not None and not select.select([pidfd], [], [], timeout)[0]:
+            return False
+        try:
+            returncode = child.wait(timeout=timeout if pidfd is None else 0.1)
+        except subprocess.TimeoutExpired:
+            return False
+    if type(returncode) is not int:
+        return False
+    pidfd = identity.get("pidfd")
+    return pidfd is None or bool(select.select([pidfd], [], [], 0)[0])
+
+
+def stop_child(child, identity=None, control=None, request=qmp_command,
+               prove_exit=wait_for_exact_exit, verify=verify_process_identity):
+    """Stop only the captured QEMU child and prove its exit before cleanup."""
     result = {"attempted": False, "qmp_quit": False, "terminated": False,
-              "killed": False, "errors": []}
-    if child is None or child.poll() is not None:
+              "killed": False, "exit_proven": False, "errors": []}
+    if child is None:
+        result["exit_proven"] = True
+        return result
+    if identity is None or child.pid != identity.get("pid"):
+        result["errors"].append("ValueError: missing exact QEMU process identity")
+        return result
+    try:
+        if prove_exit(child, identity, 0):
+            result["exit_proven"] = True
+            return result
+        verify(identity)
+    except Exception as error:
+        result["errors"].append(_cleanup_error(error))
         return result
     result["attempted"] = True
-    if qmp_path is not None:
+    if control is not None:
         try:
-            request(Path(qmp_path), "quit")
+            request(control, "quit")
             result["qmp_quit"] = True
-            child.wait(timeout=10)
-            return result
+        except Exception as error:
+            result["errors"].append(_cleanup_error(error))
+        else:
+            try:
+                if prove_exit(child, identity, 10):
+                    result["exit_proven"] = True
+                    return result
+            except Exception as error:
+                result["errors"].append(_cleanup_error(error))
+    try:
+        verify(identity)
+        child.terminate()
+        result["terminated"] = True
+    except (OSError, ValueError) as error:
+        result["errors"].append(_cleanup_error(error))
+    else:
+        try:
+            if prove_exit(child, identity, 10):
+                result["exit_proven"] = True
+                return result
         except Exception as error:
             result["errors"].append(_cleanup_error(error))
     try:
-        child.terminate()
-        result["terminated"] = True
-    except OSError as error:
-        result["errors"].append(_cleanup_error(error))
-    else:
-        try:
-            child.wait(timeout=10)
-            return result
-        except subprocess.TimeoutExpired:
-            pass
-    try:
+        verify(identity)
         child.kill()
         result["killed"] = True
-    except OSError as error:
+    except (OSError, ValueError) as error:
         result["errors"].append(_cleanup_error(error))
     else:
         try:
-            child.wait(timeout=10)
-        except subprocess.TimeoutExpired as error:
+            if prove_exit(child, identity, 10):
+                result["exit_proven"] = True
+                return result
+        except Exception as error:
             result["errors"].append(_cleanup_error(error))
+    try:
+        result["exit_proven"] = prove_exit(child, identity, 0)
+    except Exception as error:
+        result["errors"].append(_cleanup_error(error))
     return result
 
 
-def discard_control_socket(path):
-    """Remove only the fixed controller-owned QMP socket before retention."""
+def discard_control_socket(path, identity=None, exit_proven=False):
+    """Remove the pinned QMP leaf only after exact QEMU exit was proven."""
     path = Path(path)
     result = {"attempted": False, "removed": False, "errors": []}
+    if not exit_proven:
+        result["errors"].append("ValueError: exact QEMU exit not proven")
+        return result
     try:
         info = path.lstat()
     except FileNotFoundError:
@@ -149,9 +381,10 @@ def discard_control_socket(path):
         return result
     result["attempted"] = True
     try:
-        if (not stat.S_ISSOCK(info.st_mode) or info.st_uid != os.geteuid()
-                or info.st_nlink != 1):
-            raise ValueError("QMP control socket identity changed before discard")
+        if identity is None:
+            raise ValueError("QMP socket identity was not bound to its peer")
+        validate_socket_info(info, identity[4], identity[5], identity)
+        validate_socket_info(path.lstat(), identity[4], identity[5], identity)
         path.unlink()
         if path.exists() or path.is_symlink():
             raise ValueError("QMP control socket remains after discard")
@@ -181,7 +414,7 @@ def _bounded_text(path, maximum):
     return raw.decode("utf-8", errors="strict").strip()
 
 
-def progress_snapshot(child, output, group, started, sample):
+def progress_snapshot(child, control, output, group, started, sample):
     """Capture fixed process, cgroup, output and QMP liveness fields."""
     snapshot = {"schema": 1, "sample": sample,
                 "elapsed_seconds": int(max(0, time.monotonic() - started)),
@@ -210,12 +443,8 @@ def progress_snapshot(child, output, group, started, sample):
             snapshot["qemu"]["wchan"] = _bounded_text(process / "wchan", 256)
         except (OSError, UnicodeError, ValueError) as error:
             snapshot["qemu"]["wchan_error"] = _cleanup_error(error)
-    qmp_path = Path(output) / "qmp.sock"
     try:
-        status = qmp_command(qmp_path, "query-status")
-        if (not isinstance(status, dict) or len(json.dumps(status)) > 2048):
-            raise ValueError("invalid QMP status")
-        snapshot["qmp"] = status
+        snapshot["qmp"] = qmp_command(control, "query-status")
     except (OSError, TimeoutError, ValueError) as error:
         snapshot["qmp"] = {"error": _cleanup_error(error)}
     snapshot["cgroup"] = {}
@@ -229,10 +458,13 @@ def progress_snapshot(child, output, group, started, sample):
     return snapshot
 
 
-def discard_overlay(path, identity=None):
-    """Remove only the controller-owned overlay without masking other failures."""
+def discard_overlay(path, identity=None, exit_proven=False):
+    """Remove the pinned overlay only after exact QEMU exit was proven."""
     path = Path(path)
     result = {"attempted": False, "removed": False, "errors": []}
+    if not exit_proven:
+        result["errors"].append("ValueError: exact QEMU exit not proven")
+        return result
     try:
         info = path.lstat()
     except FileNotFoundError:
@@ -240,9 +472,10 @@ def discard_overlay(path, identity=None):
         return result
     result["attempted"] = True
     try:
-        if (not stat.S_ISREG(info.st_mode) or info.st_uid != os.geteuid()
-                or info.st_nlink != 1
-                or (identity is not None and (info.st_dev, info.st_ino) != identity)):
+        if (identity is None or not stat.S_ISREG(info.st_mode)
+                or info.st_uid != os.geteuid() or info.st_gid != os.getegid()
+                or info.st_nlink != 1 or path_identity(info) != identity
+                or path_identity(path.lstat()) != identity):
             raise ValueError("qualification overlay identity changed before discard")
         path.unlink()
         if path.exists() or path.is_symlink():
@@ -444,6 +677,8 @@ def main():
               "source_disk": source_disk,
               "scope": "Offline Landlock qualification on the exact installed development image"}
     child = None
+    process_identity = None
+    qmp_control = None
     overlay = output / "guest.qcow2"
     overlay_identity = None
     qmp_path = output / "qmp.sock"
@@ -451,7 +686,7 @@ def main():
         with (output / "prepare-overlay.log").open("x") as log:
             subprocess.run(overlay_command(inputs, output), stdin=subprocess.DEVNULL,
                            stdout=log, stderr=subprocess.STDOUT, check=True, timeout=30)
-        overlay_identity = (overlay.stat().st_dev, overlay.stat().st_ino)
+        overlay_identity = path_identity(overlay.stat())
         record["overlay"] = {"path": str(overlay), "backing": "/inputs/atomic.raw",
                              "format": "qcow2"}
         command = qemu_command(inputs, output)
@@ -463,7 +698,16 @@ def main():
             child = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=log,
                                      stderr=subprocess.STDOUT,
                                      env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8",
-                                          "HOME": "/output", "TMPDIR": "/output"})
+                                          "HOME": "/output", "TMPDIR": "/output"},
+                                     umask=0o077)
+            process_identity = capture_process_identity(child, command[0])
+            qmp_control = create_qmp_control(qmp_path, process_identity)
+            record["qemu_process"] = {
+                key: process_identity[key] for key in
+                ("pid", "starttime", "executable_device", "executable_inode",
+                 "uid", "gid", "executable")
+            }
+            record["qemu_process"]["pidfd"] = process_identity["pidfd"] is not None
             next_progress = started
             progress_samples = 0
             while child.poll() is None:
@@ -477,7 +721,8 @@ def main():
                 if now >= next_progress:
                     write_progress_sample(
                         progress,
-                        progress_snapshot(child, output, group, started, progress_samples),
+                        progress_snapshot(
+                            child, qmp_control, output, group, started, progress_samples),
                     )
                     progress_samples += 1
                     next_progress += PROGRESS_INTERVAL_SECONDS
@@ -486,7 +731,8 @@ def main():
                 time.sleep(0.5)
             write_progress_sample(
                 progress,
-                progress_snapshot(child, output, group, started, progress_samples),
+                progress_snapshot(
+                    child, qmp_control, output, group, started, progress_samples),
             )
         record["exit_code"] = child.returncode
         record["elapsed_seconds"] = time.monotonic() - started
@@ -508,7 +754,7 @@ def main():
         (evidence / "summary.json").write_text(json.dumps(report["summary"], indent=2) + "\n")
         if sha256(inputs / "source.raw") != source_disk["sha256"]:
             raise ValueError("read-only source disk changed during qualification")
-        if (overlay.stat().st_dev, overlay.stat().st_ino) != overlay_identity:
+        if path_identity(overlay.stat()) != overlay_identity:
             raise ValueError("qualification overlay identity changed")
         record.update(passed=True, guest_booted=True, qualification_qualified=True,
                       source_revision=report["source_revision"],
@@ -518,18 +764,28 @@ def main():
         record["failure"] = type(error).__name__ + ": " + str(error)
         raise
     finally:
-        cleanup = stop_child(child, qmp_path)
+        cleanup = stop_child(child, process_identity, qmp_control)
         record["child_cleanup"] = cleanup
         if cleanup["attempted"]:
             record["passed"] = False
-        qmp_cleanup = discard_control_socket(qmp_path)
+        socket_identity = (qmp_control or {}).get("socket_identity")
+        qmp_cleanup = discard_control_socket(
+            qmp_path, socket_identity, cleanup["exit_proven"])
         record["qmp_cleanup"] = qmp_cleanup
         if not qmp_cleanup["removed"] or qmp_cleanup["errors"]:
             record["passed"] = False
-        overlay_cleanup = discard_overlay(overlay, overlay_identity)
+        overlay_cleanup = discard_overlay(
+            overlay, overlay_identity, cleanup["exit_proven"])
         record["overlay_cleanup"] = overlay_cleanup
         if not overlay_cleanup["removed"] or overlay_cleanup["errors"]:
             record["passed"] = False
+        if process_identity is not None and process_identity["pidfd"] is not None:
+            try:
+                os.close(process_identity["pidfd"])
+                process_identity["pidfd"] = None
+            except OSError as error:
+                record["pidfd_cleanup_error"] = _cleanup_error(error)
+                record["passed"] = False
         record["cgroup_final"] = {name: (group / name).read_text().strip()
                                     for name in (*limits, "memory.peak", "memory.events", "cpu.stat")}
         events = dict(line.split() for line in record["cgroup_final"]["memory.events"].splitlines())

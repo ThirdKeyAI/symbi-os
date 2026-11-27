@@ -184,9 +184,22 @@ def prepare_source_disk(source, expected_revision, storage, run):
 def _copy_bounded_output(source, destination):
     destination.mkdir(mode=0o700, parents=True, exist_ok=False)
     total = 0
+    residue = {}
     for path in sorted(source.rglob("*")):
         relative = path.relative_to(source)
         info = path.lstat()
+        if relative.parts[0] in {"guest.qcow2", "qmp.sock"}:
+            if len(relative.parts) == 1:
+                kind = ("regular" if stat.S_ISREG(info.st_mode) else
+                        "socket" if stat.S_ISSOCK(info.st_mode) else
+                        "directory" if stat.S_ISDIR(info.st_mode) else "unexpected")
+                residue[relative.name] = {
+                    "type": kind, "device": info.st_dev, "inode": info.st_ino,
+                    "mode": stat.S_IMODE(info.st_mode), "uid": info.st_uid,
+                    "gid": info.st_gid, "links": info.st_nlink,
+                    "bytes": info.st_size,
+                }
+            continue
         if stat.S_ISDIR(info.st_mode):
             (destination / relative).mkdir(mode=0o700, exist_ok=True)
             continue
@@ -198,7 +211,38 @@ def _copy_bounded_output(source, destination):
         target = destination / relative
         target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
         shutil.copyfile(path, target)
-    return total
+    return {"bytes": total, "cleanup_residue": residue}
+
+
+def _controller_exit_proven(output):
+    path = Path(output) / "result.json"
+    try:
+        info = path.lstat()
+        if (not stat.S_ISREG(info.st_mode) or info.st_nlink != 1
+                or info.st_size > 1024 * 1024):
+            return False
+        result = json.loads(path.read_text())
+    except (OSError, ValueError):
+        return False
+    return result.get("child_cleanup", {}).get("exit_proven") is True
+
+
+def retain_deferred_landlock_output(output, evidence):
+    """Retain regular evidence only after the root parent proved container absence."""
+    output, evidence = Path(output), Path(evidence)
+    result_path = evidence / "result.json"
+    result = json.loads(result_path.read_text())
+    if result.get("retention_deferred_until_outer_container_absence") is not True:
+        return {"attempted": False}
+    if not output.is_dir() or (evidence / "guest").exists():
+        raise ValueError("deferred Landlock evidence boundary changed")
+    retained = _copy_bounded_output(output, evidence / "guest")
+    result.update(retained_bytes=retained["bytes"],
+                  outer_cleanup_residue=retained["cleanup_residue"],
+                  outer_container_absence_proven=True,
+                  retention_deferred_until_outer_container_absence=False)
+    result_path.write_text(json.dumps(result, indent=2) + "\n")
+    return {"attempted": True, **retained}
 
 
 def run_landlock(root, group, podman, image_id, atomic_disk, storage, containers,
@@ -277,16 +321,25 @@ def run_landlock(root, group, podman, image_id, atomic_disk, storage, containers
         if sha256(atomic_disk) != atomic_record["disk_sha256"]:
             raise ValueError("read-only installed Atomic disk changed during qualification")
         retained = _copy_bounded_output(output, evidence / "guest")
+        if retained["cleanup_residue"]:
+            raise ValueError("qualified controller left private cleanup residue")
         result.update(passed=True, qualified=True, landlock_abi=controller["landlock_abi"],
-                      public_reports=controller["public_reports"], retained_bytes=retained)
+                      public_reports=controller["public_reports"],
+                      retained_bytes=retained["bytes"])
         return result
     except Exception as error:
         result["failure"] = type(error).__name__ + ": " + str(error)
         raise
     finally:
         if output is not None and output.is_dir() and not (evidence / "guest").exists():
-            try:
-                result["retained_bytes"] = _copy_bounded_output(output, evidence / "guest")
-            except Exception as error:
-                result["retention_failure"] = type(error).__name__ + ": " + str(error)
+            if not _controller_exit_proven(output):
+                result["retention_deferred_until_outer_container_absence"] = True
+            else:
+                try:
+                    retained = _copy_bounded_output(output, evidence / "guest")
+                    result["retained_bytes"] = retained["bytes"]
+                    if retained["cleanup_residue"]:
+                        result["outer_cleanup_residue"] = retained["cleanup_residue"]
+                except Exception as error:
+                    result["retention_failure"] = type(error).__name__ + ": " + str(error)
         (evidence / "result.json").write_text(json.dumps(result, indent=2) + "\n")

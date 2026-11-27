@@ -6,6 +6,7 @@ from pathlib import Path
 import secrets
 import shutil
 import re
+import stat
 
 from image.atomic.contract import (create_disk,require_disk,sha256,unique_json,
                                    unpack_oci,validate_report,installer_mounts,
@@ -77,7 +78,7 @@ def main():
         record['commands'].append({'name':name,'exit_code':result.returncode});del record['active_command'];save()
         if check: result.check_returncode()
         return result
-    podman=None;containers=[];storage=None;disk=None;identity=None;boot_output=None;runroot=None;disk_readonly=False;signing_output=None
+    podman=None;containers=[];storage=None;storage_identity=None;disk=None;identity=None;boot_output=None;runroot=None;disk_readonly=False;signing_output=None
     try:
         readiness=unique_json((root/'image/atomic/preflight.lock.json').read_bytes())
         if readiness['schema']!=1 or readiness['variant']!='generic' or type(readiness['preflight_run']) is not int:
@@ -119,6 +120,9 @@ def main():
                 or sha256(archive)!=manifest['archive']['sha256']):
             raise ValueError('Verified development archive changed')
         storage=root/'.cache/atomic-disk-storage';storage.mkdir(mode=0o700)
+        info=storage.lstat()
+        storage_identity=(info.st_dev,info.st_ino,stat.S_IFMT(info.st_mode),
+                          stat.S_IMODE(info.st_mode),info.st_uid,info.st_gid)
         record['disk_free_before_load']=shutil.disk_usage(storage).free
         if record['disk_free_before_load']<60*1024**3: raise ValueError('Need 60 GiB free for isolated install and boot')
         runroot=Path('/run')/group.name.removesuffix('.service');runroot.mkdir(mode=0o700)
@@ -275,6 +279,16 @@ def main():
                 if path.is_file() and not path.is_symlink() and path.stat().st_size<=65536:
                     shutil.copyfile(path,evidence/('source-'+name))
         stopped=all(v['removed'] and v['absent'] for v in record['cleanup'].values())
+        landlock_evidence=root/'.cache/landlock-qualification-evidence'
+        if (qualification=='landlock' and stopped and storage is not None
+                and (landlock_evidence/'result.json').is_file()):
+            from image.qualification.hosted import retain_deferred_landlock_output
+            try:
+                record['landlock_outer_retention']=retain_deferred_landlock_output(
+                    storage/'landlock-output',landlock_evidence)
+            except (OSError,ValueError) as error:
+                record['landlock_outer_retention_error']=type(error).__name__+': '+str(error)
+                record['passed']=False
         if disk is not None and stopped:
             # Cleanup may detach only devices still associated with this exact new
             # file, after every installer/VM container has stopped. Never use -D.
@@ -298,9 +312,19 @@ def main():
         # Large private artifacts are never uploaded; only the bounded evidence is.
         if storage is not None and stopped:
             if disk is None or record.get('loops_absent'):
-                shutil.rmtree(storage);record['private_storage_removed']=not storage.exists()
-                if runroot is not None:
-                    shutil.rmtree(runroot);record['private_runroot_removed']=not runroot.exists()
+                try:
+                    info=storage.lstat()
+                    current=(info.st_dev,info.st_ino,stat.S_IFMT(info.st_mode),
+                             stat.S_IMODE(info.st_mode),info.st_uid,info.st_gid)
+                    if (current!=storage_identity or not stat.S_ISDIR(info.st_mode)
+                            or info.st_nlink<2):
+                        raise ValueError('Private storage identity changed before cleanup')
+                    shutil.rmtree(storage);record['private_storage_removed']=not storage.exists()
+                    if runroot is not None:
+                        shutil.rmtree(runroot);record['private_runroot_removed']=not runroot.exists()
+                except (OSError,ValueError) as error:
+                    record['private_storage_cleanup_error']=type(error).__name__+': '+str(error)
+                    record['passed']=False
         record['cgroup_final']={n:(group/n).read_text().strip() for n in (*limits,'memory.peak','memory.events','cpu.stat')}
         events=dict(line.split() for line in record['cgroup_final']['memory.events'].splitlines())
         if (any(record['cgroup_final'][n]!=v for n,v in limits.items())

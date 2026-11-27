@@ -159,8 +159,16 @@ file capped at 1 MiB; each sample is capped at 8 KiB.
 A private QMP socket under the controller-owned output directory accepts only
 the fixed `query-status` and `quit` operations. It gives the same unprivileged
 controller exact QEMU shutdown authority when discretionary signals are denied.
-The socket and writable overlay must both be removed before output retention;
-the root parent still verifies exact Podman-container absence afterward.
+The socket must remain a singly linked `0700` Unix leaf with the controller's
+exact owner and group. Every connection requires `SO_PEERCRED` to match the
+captured QEMU PID, UID and GID, plus its unchanged process start time and
+executable inode; a pidfd binds exit when the kernel supplies one. Greeting,
+capability and command replies use exact schemas and IDs within 16 KiB and a
+two-second socket deadline. The socket and writable overlay are removed only
+after exact child exit is proven. If that proof fails, bounded regular evidence
+is retained without either private leaf, and the root parent removes its
+identity-bound private storage only after verifying exact Podman-container
+absence.
 
 Public evidence is limited to the driver's explicit allowlist. Each file is
 regular, singly linked, owned by the test user, hash-bound and at most 2 MiB; the
