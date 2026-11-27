@@ -29,9 +29,12 @@ from image.qualification.boot import (MAX_QMP_MESSAGE_BYTES,
                                       firmware_arguments, overlay_command,
                                       observe_qmp_topology,
                                       path_identity, qemu_command, qmp_request,
+                                      qmp_topology_observation,
                                       prepare_process_identity,
+                                      retain_qmp_topology_failure,
                                       stop_child, validate_guest_report,
                                       validate_qmp_block_topology,
+                                      validate_qmp_topology_observation,
                                       validate_qmp_topology_record,
                                       validate_peer_credentials,
                                       validate_process_state,
@@ -812,6 +815,177 @@ class HostedLandlock(unittest.TestCase):
                 {"path": existing_socket}, request=mock.Mock(
                     side_effect=FileNotFoundError(
                         errno.ENOENT, "synthetic process gone")))
+
+    def test_qmp_topology_failures_retain_only_fixed_predicate_results(self):
+        blocks = [
+            {"device": "symbi-atomic-root", "qdev": "symbi-atomic-root-device",
+             "inserted": {"file": "/output/guest.qcow2", "drv": "qcow2",
+                          "ro": False, "backing_file": "/inputs/atomic.raw"}},
+            {"device": "symbi-qualification-source",
+             "qdev": "symbi-qualification-source-device",
+             "inserted": {"file": "/inputs/source.raw", "drv": "raw",
+                          "ro": True}},
+        ]
+        expected = qmp_topology_observation(blocks, 1, -1)
+        self.assertEqual(validate_qmp_topology_observation(expected), expected)
+        for section in ("inventory", "root", "source"):
+            self.assertEqual(set(expected[section].values()), {"pass"})
+
+        mapping_mutations = {
+            ("root", "qdev"): [
+                {**blocks[0], "qdev": "unreviewed-sensitive-value"}, blocks[1]],
+            ("root", "inserted"): [
+                {**blocks[0], "inserted": []}, blocks[1]],
+            ("root", "file"): [
+                {**blocks[0], "inserted": {
+                    **blocks[0]["inserted"], "file": "/unreviewed/root"}}, blocks[1]],
+            ("root", "format"): [
+                {**blocks[0], "inserted": {
+                    **blocks[0]["inserted"], "drv": "unreviewed-format"}}, blocks[1]],
+            ("root", "read_only_type"): [
+                {**blocks[0], "inserted": {
+                    **blocks[0]["inserted"], "ro": 0}}, blocks[1]],
+            ("root", "read_only"): [
+                {**blocks[0], "inserted": {
+                    **blocks[0]["inserted"], "ro": True}}, blocks[1]],
+            ("root", "backing_file"): [
+                {**blocks[0], "inserted": {
+                    **blocks[0]["inserted"],
+                    "backing_file": "/unreviewed/backing"}}, blocks[1]],
+            ("source", "qdev"): [
+                blocks[0], {**blocks[1], "qdev": "unreviewed-sensitive-value"}],
+            ("source", "inserted"): [
+                blocks[0], {**blocks[1], "inserted": None}],
+            ("source", "file"): [
+                blocks[0], {**blocks[1], "inserted": {
+                    **blocks[1]["inserted"], "file": "/unreviewed/source"}}],
+            ("source", "format"): [
+                blocks[0], {**blocks[1], "inserted": {
+                    **blocks[1]["inserted"], "drv": "unreviewed-format"}}],
+            ("source", "read_only_type"): [
+                blocks[0], {**blocks[1], "inserted": {
+                    **blocks[1]["inserted"], "ro": 1}}],
+            ("source", "read_only"): [
+                blocks[0], {**blocks[1], "inserted": {
+                    **blocks[1]["inserted"], "ro": False}}],
+            ("source", "backing_file"): [
+                blocks[0], {**blocks[1], "inserted": {
+                    **blocks[1]["inserted"],
+                    "backing_file": "/unreviewed/backing"}}],
+        }
+        for (section, predicate), changed in mapping_mutations.items():
+            with self.subTest(section=section, predicate=predicate):
+                with self.assertRaisesRegex(ValueError, "mapping differs") as caught:
+                    validate_qmp_block_topology(changed, 1, -1)
+                observation = caught.exception.qmp_topology_observation
+                self.assertEqual(observation[section][predicate], "fail")
+                retained = json.dumps(observation, sort_keys=True)
+                self.assertNotIn("unreviewed", retained)
+                self.assertEqual(
+                    validate_qmp_topology_observation(observation), observation)
+
+        index_mutations = (
+            ("root", "bootindex_type", True, -1),
+            ("root", "bootindex", 2, -1),
+            ("source", "bootindex_type", 1, False),
+            ("source", "bootindex", 1, 2),
+        )
+        for section, predicate, root_index, source_index in index_mutations:
+            with self.subTest(section=section, predicate=predicate):
+                with self.assertRaisesRegex(ValueError, "boot indexes differ") as caught:
+                    validate_qmp_block_topology(blocks, root_index, source_index)
+                self.assertEqual(
+                    caught.exception.qmp_topology_observation[section][predicate],
+                    "fail")
+
+    def test_qmp_topology_row_failures_are_distinct_and_content_free(self):
+        root = {"device": "symbi-atomic-root",
+                "qdev": "symbi-atomic-root-device",
+                "inserted": {"file": "/output/guest.qcow2", "drv": "qcow2",
+                             "ro": False,
+                             "backing_file": "/inputs/atomic.raw"}}
+        source = {"device": "symbi-qualification-source",
+                  "qdev": "symbi-qualification-source-device",
+                  "inserted": {"file": "/inputs/source.raw", "drv": "raw",
+                               "ro": True}}
+        cases = (
+            ("not-list", {}, (("inventory", "is_list"),)),
+            ("absent", [root], (
+                ("inventory", "count"),
+                ("inventory", "exact_devices"),
+                ("source", "drive"),
+            )),
+            ("duplicate", [root, root], (
+                ("inventory", "devices_unique"),
+                ("inventory", "exact_devices"),
+                ("root", "drive"),
+                ("source", "drive"),
+            )),
+            ("unexpected", [root, {**source, "device": "unreviewed-device"}],
+             (("inventory", "only_expected_devices"),
+              ("inventory", "exact_devices"),
+              ("source", "drive"))),
+            ("non-object", [root, []],
+             (("inventory", "rows_are_objects"),)),
+            ("non-string-device", [root, {**source, "device": []}],
+             (("inventory", "device_fields_are_strings"),)),
+        )
+        for name, changed, expected_failures in cases:
+            with self.subTest(name=name):
+                with self.assertRaises(ValueError) as caught:
+                    validate_qmp_block_topology(changed, 1, -1)
+                observation = caught.exception.qmp_topology_observation
+                for section, predicate in expected_failures:
+                    self.assertEqual(observation[section][predicate], "fail")
+                self.assertNotIn(
+                    "unreviewed", json.dumps(observation, sort_keys=True))
+                validate_qmp_topology_observation(observation)
+
+    def test_qmp_topology_observation_schema_rejects_mutations(self):
+        blocks = [
+            {"device": "symbi-atomic-root", "qdev": "symbi-atomic-root-device",
+             "inserted": {"file": "/output/guest.qcow2", "drv": "qcow2",
+                          "ro": False, "backing_file": "/inputs/atomic.raw"}},
+            {"device": "symbi-qualification-source",
+             "qdev": "symbi-qualification-source-device",
+             "inserted": {"file": "/inputs/source.raw", "drv": "raw",
+                          "ro": True}},
+        ]
+        valid = qmp_topology_observation(blocks, 1, -1)
+        mutations = (
+            {**valid, "schema": True},
+            {**valid, "extra": "fail"},
+            {**valid, "inventory": {**valid["inventory"], "raw": "/secret"}},
+            {**valid, "root": {**valid["root"], "file": True}},
+            {**valid, "source": {**valid["source"], "format": "unknown"}},
+        )
+        for changed in mutations:
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                validate_qmp_topology_observation(changed)
+
+    def test_qmp_topology_failure_is_retained_before_result_write(self):
+        blocks = [
+            {"device": "symbi-atomic-root", "qdev": "changed-qdev",
+             "inserted": {"file": "/output/guest.qcow2", "drv": "qcow2",
+                          "ro": False, "backing_file": "/inputs/atomic.raw"}},
+            {"device": "symbi-qualification-source",
+             "qdev": "symbi-qualification-source-device",
+             "inserted": {"file": "/inputs/source.raw", "drv": "raw",
+                          "ro": True}},
+        ]
+        with self.assertRaisesRegex(ValueError, "mapping differs") as caught:
+            validate_qmp_block_topology(blocks, 1, -1)
+        record = {"passed": False}
+        self.assertTrue(retain_qmp_topology_failure(record, caught.exception))
+        self.assertEqual(record["block_topology_observation"]["root"]["qdev"],
+                         "fail")
+        self.assertNotIn("changed-qdev", json.dumps(record, sort_keys=True))
+        self.assertFalse(retain_qmp_topology_failure({}, ValueError("other")))
+        with self.assertRaisesRegex(ValueError, "duplicate"):
+            retain_qmp_topology_failure(record, caught.exception)
+        caught.exception.qmp_topology_observation["root"]["qdev"] = []
+        with self.assertRaisesRegex(ValueError, "invalid QMP topology"):
+            retain_qmp_topology_failure({}, caught.exception)
 
     def test_host_acceptance_requires_exact_qmp_boot_topology(self):
         source_revision = "a" * 40

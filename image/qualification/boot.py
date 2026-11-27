@@ -69,6 +69,15 @@ QMP_TOPOLOGY = {
         "bootindex": -1,
     },
 }
+QMP_PREDICATE_RESULTS = frozenset({"pass", "fail", "blocked"})
+QMP_INVENTORY_PREDICATES = frozenset({
+    "is_list", "count", "rows_are_objects", "device_fields_are_strings",
+    "devices_unique", "only_expected_devices", "exact_devices",
+})
+QMP_DEVICE_PREDICATES = frozenset({
+    "drive", "qdev", "inserted", "file", "format", "read_only_type",
+    "read_only", "backing_file", "bootindex_type", "bootindex",
+})
 
 
 def sha256(path):
@@ -182,6 +191,126 @@ def _exact_fixed_record(observed, expected):
         raise ValueError("QMP block topology record differs")
 
 
+def _predicate(value, available=True):
+    if not available:
+        return "blocked"
+    return "pass" if value else "fail"
+
+
+def _qmp_device_predicates(rows, devices_valid, drive, qdev, filename,
+                           driver, read_only, backing, bootindex,
+                           expected_bootindex):
+    matches = ([row for row in rows if row.get("device") == drive]
+               if devices_valid else [])
+    row_available = devices_valid and len(matches) == 1
+    row = matches[0] if row_available else None
+    inserted = row.get("inserted") if row_available else None
+    inserted_valid = row_available and isinstance(inserted, dict)
+    read_only_value = inserted.get("ro") if inserted_valid else None
+    read_only_valid = inserted_valid and type(read_only_value) is bool
+    bootindex_valid = type(bootindex) is int
+    return {
+        "drive": _predicate(len(matches) == 1, devices_valid),
+        "qdev": _predicate(
+            row.get("qdev") == qdev if row_available else False,
+            row_available),
+        "inserted": _predicate(inserted_valid, row_available),
+        "file": _predicate(
+            inserted.get("file") == filename if inserted_valid else False,
+            inserted_valid),
+        "format": _predicate(
+            inserted.get("drv") == driver if inserted_valid else False,
+            inserted_valid),
+        "read_only_type": _predicate(read_only_valid, inserted_valid),
+        "read_only": _predicate(read_only_value is read_only, read_only_valid),
+        "backing_file": _predicate(
+            inserted.get("backing_file") == backing
+            if inserted_valid else False, inserted_valid),
+        "bootindex_type": _predicate(bootindex_valid),
+        "bootindex": _predicate(
+            bootindex == expected_bootindex, bootindex_valid),
+    }
+
+
+def qmp_topology_observation(blocks, root_bootindex, source_bootindex):
+    """Return only fixed predicate outcomes for one live QMP observation."""
+    is_list = type(blocks) is list
+    rows = blocks if is_list else []
+    rows_valid = is_list and all(isinstance(row, dict) for row in rows)
+    devices_valid = (rows_valid
+                     and all(type(row.get("device")) is str for row in rows))
+    devices = [row["device"] for row in rows] if devices_valid else []
+    expected_devices = {QMP_ROOT_DRIVE, QMP_SOURCE_DRIVE}
+    inventory = {
+        "is_list": _predicate(is_list),
+        "count": _predicate(len(rows) == 2, is_list),
+        "rows_are_objects": _predicate(rows_valid, is_list),
+        "device_fields_are_strings": _predicate(devices_valid, rows_valid),
+        "devices_unique": _predicate(
+            len(set(devices)) == len(devices), devices_valid),
+        "only_expected_devices": _predicate(
+            all(device in expected_devices for device in devices),
+            devices_valid),
+        "exact_devices": _predicate(
+            len(devices) == 2 and set(devices) == expected_devices,
+            devices_valid),
+    }
+    return {
+        "schema": 1,
+        "inventory": inventory,
+        "root": _qmp_device_predicates(
+            rows, devices_valid, QMP_ROOT_DRIVE, QMP_ROOT_DEVICE,
+            "/output/guest.qcow2", "qcow2", False, "/inputs/atomic.raw",
+            root_bootindex, 1),
+        "source": _qmp_device_predicates(
+            rows, devices_valid, QMP_SOURCE_DRIVE, QMP_SOURCE_DEVICE,
+            "/inputs/source.raw", "raw", True, None,
+            source_bootindex, -1),
+    }
+
+
+def validate_qmp_topology_observation(record):
+    """Require the fixed content-free failure-observation schema."""
+    if (type(record) is not dict
+            or set(record) != {"schema", "inventory", "root", "source"}
+            or type(record.get("schema")) is not int
+            or record["schema"] != 1):
+        raise ValueError("invalid QMP topology observation")
+    result = {"schema": 1}
+    for name, predicates in (("inventory", QMP_INVENTORY_PREDICATES),
+                             ("root", QMP_DEVICE_PREDICATES),
+                             ("source", QMP_DEVICE_PREDICATES)):
+        section = record.get(name)
+        if (type(section) is not dict or set(section) != predicates
+                or any(type(value) is not str
+                       or value not in QMP_PREDICATE_RESULTS
+                       for value in section.values())):
+            raise ValueError("invalid QMP topology observation")
+        result[name] = {key: section[key] for key in sorted(predicates)}
+    return result
+
+
+def _qmp_topology_failure(message, observation):
+    error = ValueError(message)
+    error.qmp_topology_observation = validate_qmp_topology_observation(
+        observation)
+    return error
+
+
+def retain_qmp_topology_failure(record, error):
+    """Copy one validated predicate-only topology diagnostic into the result."""
+    if type(record) is not dict:
+        raise ValueError("invalid qualification result record")
+    observation = getattr(error, "qmp_topology_observation", None)
+    if observation is None:
+        return False
+    if "block_topology_observation" in record:
+        raise ValueError("duplicate QMP topology observation")
+    record["block_topology_observation"] = (
+        validate_qmp_topology_observation(observation))
+    return True
+
+
 def validate_qmp_topology_record(record):
     """Require the fixed content-free topology summary at every trust boundary."""
     _exact_fixed_record(record, QMP_TOPOLOGY)
@@ -190,17 +319,23 @@ def validate_qmp_topology_record(record):
 
 def validate_qmp_block_topology(blocks, root_bootindex, source_bootindex):
     """Bind live QMP block nodes and boot indexes to the fixed launch argv."""
+    observation = qmp_topology_observation(
+        blocks, root_bootindex, source_bootindex)
     if type(blocks) is not list or len(blocks) != 2:
-        raise ValueError("unexpected QMP block device inventory")
+        raise _qmp_topology_failure(
+            "unexpected QMP block device inventory", observation)
     indexed = {}
     for block in blocks:
         if not isinstance(block, dict) or type(block.get("device")) is not str:
-            raise ValueError("invalid QMP block device")
+            raise _qmp_topology_failure(
+                "invalid QMP block device", observation)
         if block["device"] in indexed:
-            raise ValueError("duplicate QMP block device")
+            raise _qmp_topology_failure(
+                "duplicate QMP block device", observation)
         indexed[block["device"]] = block
     if set(indexed) != {QMP_ROOT_DRIVE, QMP_SOURCE_DRIVE}:
-        raise ValueError("unexpected QMP block device inventory")
+        raise _qmp_topology_failure(
+            "unexpected QMP block device inventory", observation)
 
     for drive, device, filename, driver, read_only, backing in (
         (QMP_ROOT_DRIVE, QMP_ROOT_DEVICE, "/output/guest.qcow2",
@@ -216,10 +351,12 @@ def validate_qmp_block_topology(blocks, root_bootindex, source_bootindex):
                 or type(inserted.get("ro")) is not bool
                 or inserted["ro"] is not read_only
                 or inserted.get("backing_file") != backing):
-            raise ValueError("QMP block device mapping differs")
+            raise _qmp_topology_failure(
+                "QMP block device mapping differs", observation)
     if (type(root_bootindex) is not int or root_bootindex != 1
             or type(source_bootindex) is not int or source_bootindex != -1):
-        raise ValueError("QMP firmware boot indexes differ")
+        raise _qmp_topology_failure(
+            "QMP firmware boot indexes differ", observation)
     return {key: (dict(value) if isinstance(value, dict) else value)
             for key, value in QMP_TOPOLOGY.items()}
 
@@ -1085,6 +1222,7 @@ def main():
                       binary_sha256=report["binary_sha256"], landlock_abi=report["landlock_abi"],
                       public_reports=report["summary"]["public_reports"])
     except Exception as error:
+        retain_qmp_topology_failure(record, error)
         record["failure"] = type(error).__name__ + ": " + str(error)
         raise
     finally:
