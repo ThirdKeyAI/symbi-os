@@ -16,8 +16,10 @@ runs continue to use the `hyprland` profile. The workflow validates the selected
 choice before passing it as a quoted argument to the wrapper, which also checks
 its profile allowlist. Because the selected base already contains the three
 requested engine packages, this profile uses `dnf5 download --resolve --alldeps`
-with a private destination. That downloads the complete repository closure even
-when packages are installed and performs no RPM transaction.
+with a private destination and the exact installed root NEVRAs. The downloaded
+set remains a candidate until its roots match, every RPM signature passes, and
+an RPM test transaction resolves against an empty private RPM database using
+only that set. The test transaction executes no scripts and installs nothing.
 
 `gvisor-inputs.json` fixes release `release-20261123.1`, its commit and tag
 object, the complete x86_64 bzip2 archive, the publisher checksum list, license,

@@ -219,14 +219,46 @@ class ContainerRuntimeInputs(unittest.TestCase):
             "resolve_packages", ROOT / "image/hyprland/resolve_packages.py")
         resolver = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(resolver)
-        command = resolver.resolve_command(requirements)
+        roots = {
+            "moby-engine": "moby-engine-29.9.3-1.fc45.x86_64",
+            "docker-cli": "docker-cli-29.9.3-1.fc45.x86_64",
+            "container-selinux": "container-selinux-4:2.251.0-1.fc45.noarch",
+        }
+        command = resolver.resolve_command(requirements, roots)
+        self.assertTrue(resolver.requires_offline_closure(requirements))
         self.assertEqual(
             command[-9:],
             ["download", "--resolve", "--alldeps", "--destdir", "/output/rpms", "--",
-             *requirements["packages"]],
+             *roots.values()],
         )
         self.assertNotIn("install", command)
         self.assertNotIn("--downloadonly", command)
+        self.assertEqual(
+            resolver.require_downloaded_roots(roots, [*roots.values(), "bash-5.3-2.fc45.x86_64"]),
+            sorted(roots.values()),
+        )
+        with self.assertRaises(ValueError):
+            resolver.resolve_command(requirements, {**roots, "extra": "extra-1-1.x86_64"})
+        with self.assertRaises(ValueError):
+            resolver.require_downloaded_roots(roots, list(roots.values())[:-1])
+        closure_result = {
+            "passed": True,
+            "installed_packages_unchanged": True,
+            "os_qualified": False,
+            "requirements": requirements,
+            "packages": [{"filename": name + ".rpm"} for name in roots],
+            "installed_root_nevras": roots,
+            "downloaded_root_nevras": sorted(roots.values()),
+            "offline_closure_verified": True,
+            "closure_package_count": len(roots),
+        }
+        self.assertIs(
+            inventory.validate_discovery_result("container-runtime", closure_result),
+            closure_result,
+        )
+        with self.assertRaises(ValueError):
+            inventory.validate_discovery_result(
+                "container-runtime", {**closure_result, "offline_closure_verified": False})
         hyprland = {"profile": "hyprland", "packages": ["cmake"]}
         self.assertEqual(
             resolver.resolve_command(hyprland)[-4:],
@@ -256,6 +288,45 @@ class ContainerRuntimeInputs(unittest.TestCase):
         self.assertNotIn("extract_archive(", intake)
         self.assertIn('"archive_extracted": False', intake)
         self.assertIn('"candidate_executed": False', intake)
+
+    def test_non_container_versioned_profile_keeps_download_only_semantics(self):
+        resolver_spec = importlib.util.spec_from_file_location(
+            "resolve_packages_shared", ROOT / "image/hyprland/resolve_packages.py")
+        resolver = importlib.util.module_from_spec(resolver_spec)
+        resolver_spec.loader.exec_module(resolver)
+        inventory_spec = importlib.util.spec_from_file_location(
+            "package_inventory_shared", ROOT / "image/hyprland/package_inventory.py")
+        inventory = importlib.util.module_from_spec(inventory_spec)
+        inventory_spec.loader.exec_module(inventory)
+
+        profile = "walker-build"
+        requirements_path = ROOT / inventory.requirements_input(ROOT, profile)
+        requirements = json.loads(requirements_path.read_text())
+        self.assertIn("rust >= 1.92.0", requirements["packages"])
+        self.assertIn("pkgconfig(gtk4) >= 4.12", requirements["packages"])
+
+        command = resolver.resolve_command(requirements)
+        self.assertFalse(resolver.requires_offline_closure(requirements))
+        expected_tail = ["install", "--downloadonly", "--", *requirements["packages"]]
+        self.assertEqual(command[-len(expected_tail):], expected_tail)
+        self.assertNotIn("download", command)
+        self.assertNotIn("--alldeps", command)
+
+        result = {
+            "passed": True,
+            "installed_packages_unchanged": True,
+            "os_qualified": False,
+            "requirements": requirements,
+            "packages": [{"filename": "candidate.rpm"}],
+        }
+        self.assertIs(inventory.validate_discovery_result(profile, result), result)
+        self.assertTrue(
+            inventory.CONTAINER_CLOSURE_FIELDS.isdisjoint(result),
+            "ordinary package discovery must not claim the container closure proof",
+        )
+        with self.assertRaises(ValueError):
+            inventory.validate_discovery_result(
+                profile, {**result, "offline_closure_verified": True})
 
     def test_daemon_uses_fixed_explicit_runsc_without_runtime_installer(self):
         daemon = json.loads((ROOT / "image/container/daemon.json").read_text())

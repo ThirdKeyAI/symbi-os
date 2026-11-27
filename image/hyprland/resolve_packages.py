@@ -37,23 +37,65 @@ def require_verified_rpm(status, output, fingerprint):
             raise ValueError('Unexpected RPM signing key')
 
 
-def resolve_command(requirements):
-    """Return the fixed no-transaction command for one reviewed package profile."""
+def package_specs(requirements):
+    """Return the reviewed package specs accepted by the shared DNF workflow."""
     packages = requirements.get('packages')
     if (not isinstance(packages, list) or not packages
-            or any(not isinstance(name, str) or not name or name.startswith('-')
-                   for name in packages)):
+            or any(not isinstance(spec, str) or not spec or spec.startswith('-')
+                   for spec in packages)):
         raise ValueError('Package requirements are invalid')
+    return packages
+
+
+def container_package_names(requirements):
+    """Return strict package names suitable for installed-root RPM queries."""
+    packages = package_specs(requirements)
+    if (len(packages) != len(set(packages))
+            or any(any(character.isspace() for character in name) for name in packages)):
+        raise ValueError('Container runtime requirements must be duplicate-free package names')
+    return packages
+
+
+def validate_installed_roots(requirements, roots):
+    """Bind candidate roots to the exact NEVRAs already in the selected base."""
+    packages = container_package_names(requirements)
+    if not isinstance(roots, dict) or list(roots) != packages:
+        raise ValueError('Installed package roots are incomplete or reordered')
+    for name, nevra in roots.items():
+        if (not isinstance(nevra, str) or not nevra.startswith(name + '-')
+                or any(character.isspace() for character in nevra)):
+            raise ValueError('Installed package root is not an exact NEVRA')
+    return roots
+
+
+def requires_offline_closure(requirements):
+    """Select the stricter retained-closure path only for the runtime profile."""
+    return requirements.get('profile') == 'container-runtime'
+
+
+def resolve_command(requirements, installed_roots=None):
+    """Return the fixed no-transaction command for one reviewed package profile."""
+    packages = package_specs(requirements)
     command = ['dnf5', '--config=/inputs/dnf.conf', '--releasever=45', '--assumeyes',
                '--disable-plugin=*']
-    if requirements.get('profile') == 'container-runtime':
+    if requires_offline_closure(requirements):
         # The selected Secureblue base already contains the engine packages.
         # `install --downloadonly` therefore resolves an empty transaction.
         # DNF5's download command with --alldeps intentionally retains the
         # complete repository closure even when those packages are installed.
+        roots = validate_installed_roots(requirements, installed_roots)
         return command + ['download', '--resolve', '--alldeps',
-                          '--destdir', '/output/rpms', '--', *packages]
+                          '--destdir', '/output/rpms', '--', *roots.values()]
     return command + ['install', '--downloadonly', '--', *packages]
+
+
+def require_downloaded_roots(installed_roots, downloaded_nevras):
+    """Require every exact installed root in the signed downloaded set."""
+    expected = set(installed_roots.values())
+    observed = set(downloaded_nevras)
+    if not expected.issubset(observed):
+        raise ValueError('Downloaded RPM roots differ from the selected base')
+    return sorted(expected)
 
 
 def main():
@@ -107,23 +149,70 @@ def main():
     try:
         run('import-key', rpmkeys + ['--import', str(key)])
         require_keyring(run('keyring', rpmkeys + ['--list']).stdout, fingerprint)
+        container_runtime = requires_offline_closure(requirements)
+        installed_roots = None
+        if container_runtime:
+            installed_roots = {}
+            for index, name in enumerate(container_package_names(requirements)):
+                query = run(f'installed-root-{index:03}',
+                            ['rpm', '-q', '--qf', '%{NEVRA}\n', '--', name])
+                rows = [line.strip() for line in query.stdout.splitlines() if line.strip()]
+                if len(rows) != 1:
+                    raise ValueError('Selected base does not contain exactly one requested root')
+                installed_roots[name] = rows[0]
+            validate_installed_roots(requirements, installed_roots)
+            record['installed_root_nevras'] = installed_roots
+            save()
         # The root filesystem is read-only. DNF gets only the two reviewed Fedora
         # repos and private cache/log/state paths. Both command forms only download.
-        command = resolve_command(requirements)
+        command = resolve_command(requirements, installed_roots)
         run('resolve-download', command, timeout=1200)
         packages = sorted(rpms.glob('*.rpm'))
         if not packages or len(packages) > 512 or sum(p.stat().st_size for p in packages) > 2 * 1024**3:
             raise ValueError('Unexpected empty or excessive candidate package set')
+        downloaded_nevras = []
         for index, package in enumerate(packages):
             assert package.is_file() and not package.is_symlink()
             verified = run(f'rpm-{index:03}-signature', rpmkeys + ['--checksig', '--verbose', str(package)], check=False)
             require_verified_rpm(verified.returncode, verified.stdout, fingerprint)
             query = run(f'rpm-{index:03}-identity', ['rpm', '-qp', '--qf', '%{NEVRA}\t%{VENDOR}\t%{LICENSE}\n', str(package)])
             nevra, vendor, license_name = query.stdout.strip().split('\t')
+            if nevra in downloaded_nevras:
+                raise ValueError('Candidate closure contains a duplicate NEVRA')
+            downloaded_nevras.append(nevra)
             record['packages'].append({'filename': package.name, 'bytes': package.stat().st_size,
                                        'sha256': digest(package), 'nevra': nevra, 'vendor': vendor,
                                        'license': license_name, 'signature_verified': True,
                                        'key_fingerprint': fingerprint})
+            save()
+        if container_runtime:
+            record['downloaded_root_nevras'] = require_downloaded_roots(
+                installed_roots, downloaded_nevras)
+            closure_root = output / 'closure-root'
+            closure_root.mkdir(mode=0o700)
+            run('closure-rpmdb-init', ['rpm', '--root', str(closure_root),
+                                      '--dbpath', '/var/lib/rpm', '--initdb'])
+            closure_before = run(
+                'closure-installed-before',
+                ['rpm', '--root', str(closure_root), '--dbpath', '/var/lib/rpm',
+                 '-qa', '--qf', '%{NEVRA}\n']).stdout
+            if closure_before:
+                raise ValueError('Offline closure root is not empty')
+            run('offline-closure-test',
+                ['rpm', '--root', str(closure_root), '--dbpath', '/var/lib/rpm',
+                 '--test', '--noscripts', '--notriggers', '--nosignature', '-Uvh',
+                 *[str(package) for package in packages]], timeout=1200)
+            closure_after = run(
+                'closure-installed-after',
+                ['rpm', '--root', str(closure_root), '--dbpath', '/var/lib/rpm',
+                 '-qa', '--qf', '%{NEVRA}\n']).stdout
+            if closure_after:
+                raise ValueError('Offline closure test installed packages')
+            for package, row in zip(packages, record['packages'], strict=True):
+                if package.stat().st_size != row['bytes'] or digest(package) != row['sha256']:
+                    raise ValueError('Candidate RPM changed after closure verification')
+            record['offline_closure_verified'] = True
+            record['closure_package_count'] = len(packages)
             save()
         probe = max(packages, key=lambda p: p.stat().st_size)
         empty = rpmkeys.copy()
