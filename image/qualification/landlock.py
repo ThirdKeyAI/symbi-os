@@ -126,14 +126,16 @@ def host_details():
     require(virt in ("kvm", "qemu"), "disposable QEMU/KVM guest required")
     require(subprocess.run(["systemd-detect-virt", "--container", "--quiet"],
                            timeout=10).returncode == 1, "containers are not Fedora boot qualification")
-    require(os.cpu_count() == 1, "guest must expose exactly one CPU")
+    cpus = os.cpu_count()
+    require(type(cpus) is int and cpus == 2,
+            "guest must expose exactly two CPUs")
     mem_kib = int(next(line.split()[1] for line in Path("/proc/meminfo").read_text().splitlines()
                        if line.startswith("MemTotal:")))
     require(mem_kib <= 2 * 1024 * 1024, "guest exceeds the 2 GiB memory ceiling")
     require(Path("/sys/fs/cgroup/cgroup.controllers").is_file(), "cgroup v2 required")
     require(command_output(["getenforce"]) == "Enforcing", "SELinux must remain enforcing")
     return {"os_release": release, "virtualization": virt, "memory_kib": mem_kib,
-            "cpus": os.cpu_count(), "kernel": platform.release(), "selinux": "Enforcing"}
+            "cpus": cpus, "kernel": platform.release(), "selinux": "Enforcing"}
 
 
 def validate_source(source, revision):
