@@ -218,6 +218,9 @@ class FedoraContainerController(unittest.TestCase):
         self.assertFalse(result["managed_route_qualified"])
         self.assertFalse(result["escape_suite_qualified"])
         self.assertIn("pending-container-runtime-image", result["blockers"])
+        self.assertIn("pending-native-fixture-image", result["blockers"])
+        self.assertFalse(result["native_fixture_image_ready"])
+        self.assertEqual(len(result["native_fixture_image_selector_sha256"]), 64)
         self.assertEqual(set(result["shared_boot_status_inputs"]),
                          set(self.module.SHARED_BOOT_STATUS_INPUTS))
         self.assertTrue(all(len(value) == 64 for value in result["shared_boot_status_inputs"].values()))
@@ -228,6 +231,73 @@ class FedoraContainerController(unittest.TestCase):
                          "2b2379d0de4eaaf4a57cf52c96355015bb3dc25d")
         self.assertEqual(result["fixture_source"]["runtime_source_revision"],
                          "deddb9e997244d2289c217ad76b8fde0e9b0339b")
+
+    def test_native_fixture_selector_is_pending_without_invented_identity(self):
+        source = self.module.load_fixture_pin(ROOT)
+        selected = self.module.load_native_fixture_image(ROOT, "1" * 40, source)
+        self.assertFalse(selected["ready"])
+        self.assertEqual(selected["blocker"], "pending-native-fixture-image")
+        self.assertEqual(len(selected["selector_sha256"]), 64)
+
+    def test_native_fixture_selector_rejects_fabricated_pending_fields(self):
+        source = self.module.load_fixture_pin(ROOT)
+        original = json.loads(
+            (ROOT / "image/container/native-fixture-image.lock.json").read_text())
+        changes = [
+            ("selected", True),
+            ("qualified", True),
+            ("workflow", {**original["workflow"], "id": 1}),
+            ("producer", {**original["producer"], "run_id": 1}),
+            ("archive", {**original["archive"], "sha256": "0" * 64}),
+            ("fixture_source", {**original["fixture_source"], "tree": "0" * 40}),
+            ("scope", "ready"),
+            ("unexpected", True),
+        ]
+        for field, value in changes:
+            with self.subTest(field=field), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                path = root / "image/container/native-fixture-image.lock.json"
+                path.parent.mkdir(parents=True)
+                candidate = copy.deepcopy(original)
+                candidate[field] = value
+                path.write_text(json.dumps(candidate))
+                with self.assertRaises(ValueError):
+                    self.module.load_native_fixture_image(root, "1" * 40, source)
+
+    def test_selected_native_fixture_requires_exact_preserved_oci(self):
+        source = self.module.load_fixture_pin(ROOT)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            archive = root / ".cache/container-native-fixture-inputs/symbi-native-fixture.oci.tar"
+            archive.parent.mkdir(parents=True)
+            archive.write_bytes(b"synthetic offline OCI fixture\n")
+            selected = json.loads(
+                (ROOT / "image/container/native-fixture-image.lock.json").read_text())
+            selected.update(state="selected", selected=True)
+            selected["workflow"]["id"] = 123
+            selected["producer"].update(run_id=456, run_attempt=1,
+                                        head_sha="1" * 40, status="completed",
+                                        conclusion="success")
+            selected["artifact"].update(id=789, bytes=1024, sha256="2" * 64)
+            selected["archive"].update(
+                bytes=archive.stat().st_size,
+                sha256=self.module.sha256(archive),
+                image_id="sha256:" + "3" * 64,
+                repo_digest="ghcr.io/thirdkeyai/symbi-native-fixture@sha256:" + "4" * 64,
+            )
+            path = root / "image/container/native-fixture-image.lock.json"
+            path.parent.mkdir(parents=True)
+            path.write_text(json.dumps(selected))
+            observed = self.module.load_native_fixture_image(root, "1" * 40, source)
+            self.assertTrue(observed["ready"])
+            self.assertEqual(observed["path"], archive)
+            archive.unlink()
+            missing = self.module.load_native_fixture_image(root, "1" * 40, source)
+            self.assertFalse(missing["ready"])
+            self.assertEqual(missing["blocker"], "missing-native-fixture-image")
+            archive.write_bytes(b"changed\n")
+            with self.assertRaises(ValueError):
+                self.module.load_native_fixture_image(root, "1" * 40, source)
 
     def test_reviewed_fixture_checkout_requires_merge_revision_tree_and_driver_hashes(self):
         pin = self.module.load_fixture_pin(ROOT)
@@ -259,6 +329,7 @@ class FedoraContainerController(unittest.TestCase):
             "managed_route_qualified": False,
             "escape_suite_qualified": False,
             "fedora_runtime_ready": True,
+            "native_fixture_image_ready": True,
             "container_boot": {
                 "qualified": False,
                 "os_qualified": False,
@@ -414,6 +485,7 @@ class FedoraContainerController(unittest.TestCase):
         self.assertIn("env.SYMBI_REQUESTED_QUALIFICATION == 'containers'", workflow)
         self.assertIn("run_container_preflight", preflight_script)
         self.assertIn('result.get("passed") is not True', preflight_script)
+        self.assertIn('result.get("native_fixture_image_ready") is not True', preflight_script)
         self.assertIn('result.get("qualified") is not False', preflight_script)
         self.assertNotIn("gh api", preflight_script)
         self.assertIn("MemoryMax=4G", script)

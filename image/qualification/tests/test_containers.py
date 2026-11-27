@@ -56,6 +56,17 @@ class ContainerEvidence(unittest.TestCase):
             }
         return result
 
+    def escape_payload(self):
+        return {
+            "passed": True,
+            "uid": 65534,
+            "gid": 65534,
+            "docker_socket_visible": False,
+            "cases": [
+                {"name": name, "passed": True} for name in self.module.ESCAPE_CASES
+            ],
+        }
+
     def test_complete_synthetic_inspection_passes(self):
         self.module.validate_daemon(self.info)
         self.module.validate_container(self.container, "runsc", self.container["Image"])
@@ -152,6 +163,102 @@ class ContainerEvidence(unittest.TestCase):
                 "prepare_crash", "crash",
             ),
         })
+
+    def test_controller_escape_negative_inventory_is_exact(self):
+        self.assertEqual(self.module.ESCAPE_CASES, (
+            "direct_network", "dns_tunnel", "abstract_unix", "external_signal",
+            "proc_ptrace", "uinput", "pipewire_capture", "ssh_read",
+        ))
+        effects = {"tcp": False, "udp": False, "abstract": False,
+                   "pipewire": False}
+        self.module.validate_escape_payload(self.escape_payload(), "runsc", effects)
+
+    def test_controller_escape_negatives_reject_changed_case_effect_or_identity(self):
+        effects = {"tcp": False, "udp": False, "abstract": False,
+                   "pipewire": False}
+        variants = []
+        changed = self.escape_payload()
+        changed["cases"] = changed["cases"][:-1]
+        variants.append((changed, effects))
+        changed = self.escape_payload()
+        changed["cases"][0]["name"] = "changed"
+        variants.append((changed, effects))
+        changed = self.escape_payload()
+        changed["cases"][2]["passed"] = False
+        variants.append((changed, effects))
+        changed = self.escape_payload()
+        changed["uid"] = 0
+        variants.append((changed, effects))
+        changed = self.escape_payload()
+        changed["docker_socket_visible"] = True
+        variants.append((changed, effects))
+        changed_effects = dict(effects, udp=True)
+        variants.append((self.escape_payload(), changed_effects))
+        for payload, observed in variants:
+            with self.subTest(payload=payload, effects=observed), self.assertRaises(ValueError):
+                self.module.validate_escape_payload(payload, "runsc", observed)
+
+    def test_controller_observer_private_paths_are_removed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)
+            stack, controls = self.module._listener_controls(output)
+            pipewire = Path(controls["pipewire_path"])
+            private = Path(controls["ssh_canary"]).parents[1]
+            self.assertTrue(pipewire.exists())
+            self.assertTrue(Path(controls["ssh_canary"]).is_file())
+            stack.close()
+            self.assertFalse(pipewire.exists())
+            self.assertFalse(private.exists())
+
+    def test_compact_evidence_never_promotes_narrow_negatives_to_qualification(self):
+        runs = []
+        for backend in ("runc", "runsc"):
+            for driver in self.module.FIXTURE_DRIVERS:
+                runs.append({
+                    "backend": backend, "driver": driver, "passed": True,
+                    "cleanup_confirmed": True, "driver_sha256": "1" * 64,
+                    "report_sha256": "2" * 64,
+                    "observed_runtimes": [self.module.BACKENDS[backend]["runtime"]],
+                    "cases": list(self.module.SUPPORTED_CASES[driver]),
+                })
+        report = {
+            "passed": True, "native_fixture_matrix_passed": True,
+            "controller_escape_negatives_passed": True,
+            "runtime_revision": "3" * 40, "source_tree": "4" * 40,
+            "binary_sha256": "5" * 64, "fixture_source_revision": "6" * 40,
+            "fixture_source_tree": "7" * 40, "fixture_source_lock_sha256": "8" * 64,
+            "fixture_ref": "example.invalid/fixture@sha256:" + "9" * 64,
+            "fixture_id": "sha256:" + "a" * 64, "runsc_sha256": "b" * 64,
+            "image_ref": "example.invalid/os@sha256:" + "c" * 64,
+            "deployment_sha256": "d" * 64, "bootc_before_sha256": "e" * 64,
+            "bootc_after_sha256": "f" * 64, "runs": runs,
+            "escape_negatives": {
+                backend: {"passed": True, "cleanup_confirmed": True,
+                          "positive_controls": True,
+                          "observer_effects": {"tcp": False, "udp": False,
+                                               "abstract": False, "pipewire": False},
+                          "cases": list(self.module.ESCAPE_CASES),
+                          "report_sha256": "0" * 64}
+                for backend in ("runc", "runsc")
+            },
+        }
+        evidence = self.module.compact_evidence(report)
+        self.assertTrue(evidence["passed"])
+        self.assertTrue(evidence["native_fixture_matrix_passed"])
+        self.assertTrue(evidence["controller_escape_negatives_passed"])
+        self.assertFalse(evidence["managed_route_qualified"])
+        self.assertFalse(evidence["escape_suite_qualified"])
+        self.assertFalse(evidence["review_complete"])
+        self.assertFalse(evidence["qualified"])
+        self.assertEqual(evidence["remaining_blockers"], [
+            "managed-route-evidence", "escape-suite-evidence", "required-review",
+        ])
+
+    def test_probe_cleanup_uses_owned_names_even_when_create_is_uncertain(self):
+        source = (ROOT / "image/qualification/containers.py").read_text()
+        self.assertIn('removed = docker_call(env, "rm", "--force", name, check=False)', source)
+        self.assertEqual(source.count('"name=^/" + name + "$"'), 2)
+        self.assertNotIn('"--pid=private"', source)
 
     def test_complete_fixture_report_binds_cases_runtime_and_hashes(self):
         report = self.fixture_report()

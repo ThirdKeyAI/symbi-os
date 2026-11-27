@@ -9,6 +9,7 @@ on:
       - "image/assembly/runtime-development.lock.json"
       - "image/desktop-images.lock.json"
       - "image/container/fedora-runtime-image.lock.json"
+      - "image/container/native-fixture-image.lock.json"
       - "image/container/native_image_inputs.py"
       - "image/base-images.json"
       - "image/release-trust.json"

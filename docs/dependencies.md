@@ -168,6 +168,13 @@ the retained signed Debian repository metadata and complete package inventory as
 a development input. A separate selected Fedora runtime lock and native evidence
 are still required before product use.
 
+`image/container/native-fixture-image.lock.json` is the independent offline OCI
+selector for those reviewed drivers. It is intentionally pending: producer run,
+artifact, archive, image ID and repository digest are null. Native preflight
+binds it back to the merge, tree and driver hashes above and refuses both
+invented pending values and changed selected bytes. The earlier hosted fixture
+evidence did not preserve an OCI archive, so no digest is inferred from it.
+
 ## P0-05 Fedora container candidate inputs
 
 `image/container/gvisor-inputs.json` fixes gVisor `release-20261123.1` at commit
