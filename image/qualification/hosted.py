@@ -12,6 +12,7 @@ import tomllib
 import uuid
 
 from image.qualification.hosted_process import TIMEOUT_SECONDS
+from image.qualification.boot import validate_qmp_topology_record
 
 
 SOURCE_DISK_BYTES = 2 * 1024**3
@@ -227,6 +228,19 @@ def _controller_exit_proven(output):
     return result.get("child_cleanup", {}).get("exit_proven") is True
 
 
+def validate_landlock_controller_result(exit_code, controller, source_revision,
+                                        binary_sha256):
+    """Bind a successful controller result to source, binary and boot topology."""
+    if (type(exit_code) is not int or exit_code != 0
+            or not isinstance(controller, dict)
+            or controller.get("passed") is not True
+            or controller.get("qualification_qualified") is not True
+            or controller.get("source_revision") != source_revision
+            or controller.get("binary_sha256") != binary_sha256):
+        raise ValueError("hosted Landlock qualification did not pass")
+    validate_qmp_topology_record(controller.get("block_topology"))
+
+
 def retain_deferred_landlock_output(output, evidence):
     """Retain regular evidence only after the root parent proved container absence."""
     output, evidence = Path(output), Path(evidence)
@@ -311,11 +325,8 @@ def run_landlock(root, group, podman, image_id, atomic_disk, storage, containers
         if not (output / "result.json").is_file():
             raise ValueError("hosted qualification controller produced no result")
         controller = json.loads((output / "result.json").read_text())
-        if (status.returncode != 0 or controller.get("passed") is not True
-                or controller.get("qualification_qualified") is not True
-                or controller.get("source_revision") != pin
-                or controller.get("binary_sha256") != binary_hash):
-            raise ValueError("hosted Landlock qualification did not pass")
+        validate_landlock_controller_result(
+            status.returncode, controller, pin, binary_hash)
         if sha256(disk) != source_disk["sha256"]:
             raise ValueError("read-only qualification source disk changed")
         if sha256(atomic_disk) != atomic_record["disk_sha256"]:

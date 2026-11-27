@@ -1,0 +1,153 @@
+{
+  "schema": 1,
+  "passed": false,
+  "qualified": false,
+  "run": {
+    "id": 46047970716,
+    "attempt": 1,
+    "head_branch": "card/P0-04-hosted-fix",
+    "head_sha": "53ae4af9c8320cf48b10b7c87e3292625e8832b1",
+    "head_tree": "b4b17297c5ba13ea387424b460ecff0ca1839341",
+    "job_id": 140671894814,
+    "job_name": "qualify",
+    "conclusion": "failure",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46047970716"
+  },
+  "artifact": {
+    "id": 15228602394,
+    "name": "fedora-landlock-qualification",
+    "bytes": 90986,
+    "digest": "sha256:e81769a09134195af7c104d48ebc5f9683cc89115d9302e0b87ea3efbcc0b9a0",
+    "downloaded_zip_digest_matched": true,
+    "safe_unique_regular_relative_members": 106,
+    "expanded_bytes": 381008,
+    "unsafe_duplicate_encrypted_or_crc_failed_members": 0
+  },
+  "bindings": {
+    "image_source_commit": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+    "image_manifest_digest": "sha256:1dcf72c2e3eda7e5480269b1559e3b5527c77fdb70d28983d4e29baa03b8de6e",
+    "container_image_id": "sha256:46561dc6a11f404965d63aa3065017f94d37cc3ac3a261a9e5579ffba0f4cc40",
+    "installed_disk_sha256": "0ef8881cd5e4e01d87f3ef24a6e10034599b3d4936253118a451bce46ec9b1df",
+    "runtime_source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+    "runtime_binary_sha256": "1e90af1fe424ec37ad716bbc1e069c0bc7a78f59c49871b7e79506bda69f49c7",
+    "source_disk_sha256": "f21bfcf24db04ae9437eb8b6bd93d9e738e7ceecd34b832dc555be22f08b0c67",
+    "expected_sha256": "5a70925203e7b540c3a81518af1729b20bbe250608e0ef5d0715beaaf5c45602"
+  },
+  "retained_evidence_sha256": {
+    "atomic-disk-evidence/result.json": "6980dbd1c85ef3cdac1100230cfa0a1b6df46d77e60ffbc5b35525d44de24586",
+    "atomic-disk-evidence/guest-result.json": "b4d9c40eb863e91550e65478d8566a30042000af632fb2326a6e6c3f7b5a7dee",
+    "atomic-disk-evidence/guest-report.json": "42bca1080ab911c7e55975ec28f6c2c3d3013105fbdb55fd20501119a3d86c7b",
+    "atomic-disk-evidence/systemd-result.txt": "5cecf8a0f4f2eadc64c982e0d5e2ea6e0f175b098fab6d780c2ee4b1e3a50c51",
+    "atomic-disk-evidence/source-authentication/result.json": "1df06c14aba068350e844b14d036bce64130f260363ef8c53e6652df96271f30",
+    "landlock-qualification-evidence/result.json": "a839912d00b502b00737c238c2f554329582b7c34bb724c56b46721f77fd0a45",
+    "landlock-qualification-evidence/guest/result.json": "ea1af0413deaab4b9dec9c02cd829ee9f9a8da45c815ed7e62210c735a07a4eb",
+    "landlock-qualification-evidence/source-manifest.json": "3a410322c097d7c2ce96e90da2dadfa4e37e676da178fffb6ed50b07554be21e",
+    "landlock-qualification-evidence/guest/progress.jsonl": "9615ab29f46eebbee8cec6df1ead026fc5061e8da4589d1ee802f1f0052e3f61"
+  },
+  "observation": {
+    "source_authentication_passed": true,
+    "source_negative_controls": {
+      "unsigned_rejected": true,
+      "wrong_key_rejected": true,
+      "wrong_reference_rejected": true,
+      "altered_signature_rejected": true
+    },
+    "installation_completed": true,
+    "first_guest": {
+      "accepted": true,
+      "qemu_exit_code": 0,
+      "elapsed_seconds": 257.136973637,
+      "inventory_count": 2184,
+      "inventory_sha256": "7af38020fc34399648c491a007e089982395582ad2f79448fb853a57c93effc4",
+      "payload_count": 212,
+      "payload_verified": true
+    },
+    "failure_stage": "second guest before serial, report or overlay writes",
+    "failure": "TimeoutError: Landlock guest did not report and power off within 95 minutes",
+    "second_guest": {
+      "qemu_started": true,
+      "qmp_status_running_through_seconds": 5700,
+      "qemu_log_bytes": 0,
+      "serial_log_bytes": 0,
+      "report_bytes": 0,
+      "overlay_bytes": 196992,
+      "guest_booted": false,
+      "landlock_acceptance_started": false,
+      "launch_block_topology_recorded": false
+    },
+    "root_cause": "not proven; the implicit root disk and unindexed source disk left firmware selection ambiguous"
+  },
+  "resources": {
+    "hosted_parent": {
+      "memory_high_bytes": 4294967296,
+      "memory_max_bytes": 5368709120,
+      "memory_peak_bytes": 4297322496,
+      "memory_high_events": 66817,
+      "memory_max_events": 118505,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0,
+      "swap_max_bytes": 0,
+      "cpu_quota": "200000 100000",
+      "pids_max": 256
+    },
+    "second_guest_controller": {
+      "memory_max_bytes": 3221225472,
+      "memory_peak_bytes": 75776000,
+      "memory_max_events": 0,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0,
+      "swap_max_bytes": 0,
+      "cpu_quota": "200000 100000",
+      "cpu_usage_usec": 44914381,
+      "pids_max": 64
+    }
+  },
+  "cleanup": {
+    "qmp_quit_sent": true,
+    "exact_qemu_exit_proven": true,
+    "terminate_or_kill_used": false,
+    "qmp_socket_removed": true,
+    "overlay_removed": true,
+    "all_four_containers_removed_and_absent": true,
+    "loop_devices_absent": true,
+    "loaded_image_removed": true,
+    "private_storage_removed": true,
+    "private_runroot_removed": true
+  },
+  "correction": {
+    "installed_overlay_drive": "if=none,id=symbi-atomic-root",
+    "installed_overlay_device": "id=symbi-atomic-root-device,bootindex=1",
+    "source_device": "id=symbi-qualification-source-device with no bootindex option",
+    "required_source_qmp_bootindex": -1,
+    "strict_boot": true,
+    "bounded_qmp_topology_observation": true,
+    "host_revalidation_required": true,
+    "native_rerun_required": true
+  },
+  "local_verification": {
+    "focused_hosted_landlock_tests": 39,
+    "focused_seconds": 0.199,
+    "focused_peak_rss_kib": 35204,
+    "focused_address_limit_bytes": 134217728,
+    "focused_swaps": 0,
+    "full_image_tests": 403,
+    "qualification_tests": 35,
+    "full_check_seconds": 2.69,
+    "full_check_peak_rss_kib": 61864,
+    "full_check_address_limit_bytes": 201326592,
+    "full_check_swaps": 0,
+    "python_syntax": true,
+    "json_parse": true,
+    "diff_check": true,
+    "local_image_vm_container_package_manager_network_cargo_or_build_run": false
+  },
+  "claims": {
+    "accepted_second_guest_boot": false,
+    "landlock_qualified": false,
+    "containment_qualified": false,
+    "os_qualified": false,
+    "release_qualified": false
+  }
+}

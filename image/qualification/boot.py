@@ -43,6 +43,32 @@ QMP_STATES = frozenset({
     "prelaunch", "restore-vm", "running", "save-vm", "shutdown",
     "suspended", "watchdog",
 })
+QMP_ROOT_DRIVE = "symbi-atomic-root"
+QMP_ROOT_DEVICE = "symbi-atomic-root-device"
+QMP_SOURCE_DRIVE = "symbi-qualification-source"
+QMP_SOURCE_DEVICE = "symbi-qualification-source-device"
+QMP_TOPOLOGY = {
+    "schema": 1,
+    "strict_boot": True,
+    "root": {
+        "drive": QMP_ROOT_DRIVE,
+        "device": QMP_ROOT_DEVICE,
+        "file": "/output/guest.qcow2",
+        "format": "qcow2",
+        "backing_file": "/inputs/atomic.raw",
+        "read_only": False,
+        "bootindex": 1,
+    },
+    "source": {
+        "drive": QMP_SOURCE_DRIVE,
+        "device": QMP_SOURCE_DEVICE,
+        "file": "/inputs/source.raw",
+        "format": "raw",
+        "backing_file": None,
+        "read_only": True,
+        "bootindex": -1,
+    },
+}
 
 
 def sha256(path):
@@ -120,8 +146,13 @@ def _validate_qmp_event(message):
         raise ValueError("invalid QMP event values")
 
 
-def _qmp_call(stream, name, request_id, allow_events=False):
-    raw = (json.dumps({"execute": name, "id": request_id},
+def _qmp_call(stream, name, request_id, allow_events=False, arguments=None):
+    request = {"execute": name, "id": request_id}
+    if arguments is not None:
+        if not isinstance(arguments, dict):
+            raise ValueError("invalid QMP request arguments")
+        request["arguments"] = arguments
+    raw = (json.dumps(request,
                       separators=(",", ":")) + "\n").encode()
     if len(raw) > 1024:
         raise ValueError("oversized QMP request")
@@ -139,9 +170,63 @@ def _qmp_call(stream, name, request_id, allow_events=False):
     raise ValueError("too many QMP events before response")
 
 
+def _exact_fixed_record(observed, expected):
+    if type(observed) is not type(expected):
+        raise ValueError("QMP block topology record differs")
+    if isinstance(expected, dict):
+        if set(observed) != set(expected):
+            raise ValueError("QMP block topology record differs")
+        for key in expected:
+            _exact_fixed_record(observed[key], expected[key])
+    elif observed != expected:
+        raise ValueError("QMP block topology record differs")
+
+
+def validate_qmp_topology_record(record):
+    """Require the fixed content-free topology summary at every trust boundary."""
+    _exact_fixed_record(record, QMP_TOPOLOGY)
+    return record
+
+
+def validate_qmp_block_topology(blocks, root_bootindex, source_bootindex):
+    """Bind live QMP block nodes and boot indexes to the fixed launch argv."""
+    if type(blocks) is not list or len(blocks) != 2:
+        raise ValueError("unexpected QMP block device inventory")
+    indexed = {}
+    for block in blocks:
+        if not isinstance(block, dict) or type(block.get("device")) is not str:
+            raise ValueError("invalid QMP block device")
+        if block["device"] in indexed:
+            raise ValueError("duplicate QMP block device")
+        indexed[block["device"]] = block
+    if set(indexed) != {QMP_ROOT_DRIVE, QMP_SOURCE_DRIVE}:
+        raise ValueError("unexpected QMP block device inventory")
+
+    for drive, device, filename, driver, read_only, backing in (
+        (QMP_ROOT_DRIVE, QMP_ROOT_DEVICE, "/output/guest.qcow2",
+         "qcow2", False, "/inputs/atomic.raw"),
+        (QMP_SOURCE_DRIVE, QMP_SOURCE_DEVICE, "/inputs/source.raw",
+         "raw", True, None),
+    ):
+        block = indexed[drive]
+        inserted = block.get("inserted")
+        if (block.get("qdev") != device or not isinstance(inserted, dict)
+                or inserted.get("file") != filename
+                or inserted.get("drv") != driver
+                or type(inserted.get("ro")) is not bool
+                or inserted["ro"] is not read_only
+                or inserted.get("backing_file") != backing):
+            raise ValueError("QMP block device mapping differs")
+    if (type(root_bootindex) is not int or root_bootindex != 1
+            or type(source_bootindex) is not int or source_bootindex != -1):
+        raise ValueError("QMP firmware boot indexes differ")
+    return {key: (dict(value) if isinstance(value, dict) else value)
+            for key, value in QMP_TOPOLOGY.items()}
+
+
 def qmp_request(stream, name, stable=lambda: None):
     """Perform one strict handshake and one allowed, bounded QMP operation."""
-    if name not in {"query-status", "quit"}:
+    if name not in {"query-status", "query-block-topology", "quit"}:
         raise ValueError("unexpected QMP operation")
     _validate_qmp_greeting(_qmp_message(stream))
     capabilities = _qmp_call(
@@ -149,6 +234,22 @@ def qmp_request(stream, name, stable=lambda: None):
     if capabilities != {}:
         raise ValueError("unexpected QMP capabilities response")
     stable()
+    if name == "query-block-topology":
+        blocks = _qmp_call(
+            stream, "query-block", "symbi-query-block", allow_events=True)
+        stable()
+        root_bootindex = _qmp_call(
+            stream, "qom-get", "symbi-root-bootindex", allow_events=True,
+            arguments={"path": "/machine/peripheral/" + QMP_ROOT_DEVICE,
+                       "property": "bootindex"})
+        stable()
+        source_bootindex = _qmp_call(
+            stream, "qom-get", "symbi-source-bootindex", allow_events=True,
+            arguments={"path": "/machine/peripheral/" + QMP_SOURCE_DEVICE,
+                       "property": "bootindex"})
+        stable()
+        return validate_qmp_block_topology(
+            blocks, root_bootindex, source_bootindex)
     result = _qmp_call(stream, name, "symbi-" + name, allow_events=True)
     if name == "quit":
         if result != {}:
@@ -406,7 +507,7 @@ def _control_socket_info(control, expected=None):
 
 def qmp_command(control, name):
     """Issue one strict operation to the exact launched QEMU Unix peer."""
-    if name not in {"query-status", "quit"}:
+    if name not in {"query-status", "query-block-topology", "quit"}:
         raise ValueError("unexpected QMP operation")
     verify_process_identity(control["process"])
     before = _control_socket_info(control)
@@ -431,9 +532,34 @@ def qmp_command(control, name):
 
         with channel.makefile("rwb") as stream:
             result = qmp_request(stream, name, stable)
-        if name == "query-status":
+        if name in {"query-status", "query-block-topology"}:
             stable()
         return result
+
+
+def observe_qmp_topology(control, timeout=30, clock=time.monotonic,
+                         sleep=time.sleep, request=qmp_command):
+    """Wait only for the private QMP socket, then bind the live block topology."""
+    if type(timeout) is not int or not 1 <= timeout <= 30:
+        raise ValueError("invalid QMP topology deadline")
+    started = clock()
+    while True:
+        try:
+            return validate_qmp_topology_record(
+                request(control, "query-block-topology"))
+        except OSError as error:
+            startup_error = error.errno == errno.ECONNREFUSED
+            if error.errno == errno.ENOENT:
+                try:
+                    control["path"].lstat()
+                except FileNotFoundError:
+                    startup_error = True
+            if not startup_error:
+                raise
+            if clock() - started >= timeout:
+                raise TimeoutError(
+                    "QMP block topology was not observable within 30 seconds") from error
+            sleep(0.1)
 
 
 def _cleanup_error(error):
@@ -714,11 +840,16 @@ def qemu_command(inputs=Path("/inputs"), output=Path("/output")):
         "-accel", "tcg,thread=multi", "-cpu", "max", "-m", "2048M",
         "-smp", "cpus=2,sockets=1,cores=2,threads=1",
         "-nodefaults", "-no-user-config", "-no-reboot", "-net", "none",
+        "-boot", "strict=on",
         "-smbios", "type=1,manufacturer=Symbi-Test,product=Symbi-Hosted-Landlock-Probe",
-        "-drive", "file=/output/guest.qcow2,format=qcow2,if=virtio",
+        "-drive", "file=/output/guest.qcow2,format=qcow2,if=none,"
+                  "id=symbi-atomic-root",
+        "-device", "virtio-blk-pci,drive=symbi-atomic-root,"
+                   "id=symbi-atomic-root-device,serial=SYMBIROOT,bootindex=1",
         "-drive", "file=/inputs/source.raw,format=raw,if=none,"
                   "id=symbi-qualification-source,readonly=on",
-        "-device", "virtio-blk-pci,drive=symbi-qualification-source,serial=SYMBIQUAL",
+        "-device", "virtio-blk-pci,drive=symbi-qualification-source,"
+                   "id=symbi-qualification-source-device,serial=SYMBIQUAL",
         "-device", "virtio-rng-pci", "-device", "virtio-serial-pci",
         "-chardev", "file,id=report,path=/output/report.json",
         "-device", "virtserialport,chardev=report,name=org.symbi.qualification",
@@ -900,6 +1031,7 @@ def main():
                  "cgroup", "proc_exe_verified")
             }
             record["qemu_process"]["pidfd"] = True
+            record["block_topology"] = observe_qmp_topology(qmp_control)
             next_progress = started
             progress_samples = 0
             while child.poll() is None:
