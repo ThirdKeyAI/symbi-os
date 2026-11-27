@@ -6,9 +6,12 @@ import io
 import lzma
 import os
 from pathlib import Path
+import signal
 import stat
 import tarfile
 import tempfile
+import threading
+import time
 import unittest
 from unittest import mock
 
@@ -693,8 +696,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                 self.assertEqual(calls, [])
 
             calls = []
-            with mock.patch.object(
-                    build.time, "monotonic", side_effect=(100.0, 701.0)), \
+            with mock.patch.object(build, "MAX_DOWNLOAD_SECONDS", -1), \
                     self.assertRaises(ValueError):
                 build.download_package_plan(
                     plan, rows, downloads,
@@ -703,6 +705,118 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                 )
             self.assertEqual(calls, [])
             self.assertEqual(list(downloads.iterdir()), [])
+
+    def test_aggregate_deadline_interrupts_blocking_read_and_restores_signal(self):
+        plan, rows = self.download_fixture()
+        calls = []
+        read_fd, write_fd = os.pipe()
+
+        class BlockingResponse:
+            status = 200
+
+            def __init__(self, payload, url):
+                self.url = url
+                self.headers = {"Content-Length": str(len(payload))}
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_):
+                os.close(read_fd)
+
+            def geturl(self):
+                return self.url
+
+            def read(self, size=-1):
+                return os.read(read_fd, size)
+
+        def opener(request, timeout):
+            calls.append((request.full_url, timeout))
+            payload = self.payloads[rows[0]["package"]]
+            return BlockingResponse(payload, request.full_url)
+
+        def unblock_regressed_reader():
+            try:
+                os.write(write_fd, b"x")
+            except OSError:
+                pass
+            try:
+                os.close(write_fd)
+            except OSError:
+                pass
+
+        unblocker = threading.Timer(1.0, unblock_regressed_reader)
+
+        previous_handler = signal.getsignal(signal.SIGALRM)
+        previous_timer = signal.getitimer(signal.ITIMER_REAL)
+        self.assertEqual(previous_timer, (0.0, 0.0))
+
+        def sentinel_handler(_signum, _frame):
+            raise AssertionError("restored handler should not run")
+
+        signal.signal(signal.SIGALRM, sentinel_handler)
+        unblocker.start()
+        try:
+            with tempfile.TemporaryDirectory() as directory:
+                downloads = Path(directory) / "downloads"
+                mkdir_private(downloads)
+                started = time.monotonic()
+                with mock.patch.object(build, "MAX_DOWNLOAD_SECONDS", 0.05), \
+                        self.assertRaises(TimeoutError):
+                    build.download_package_plan(
+                        plan, rows, downloads, opener=opener)
+                elapsed = time.monotonic() - started
+                self.assertLess(elapsed, 0.5)
+                self.assertEqual(len(calls), 1)
+                partial = downloads / (
+                    "0000-" + Path(rows[0]["filename"]).name)
+                self.assertTrue(partial.exists())
+                self.assertEqual(partial.read_bytes(), b"")
+                self.assertIs(signal.getsignal(signal.SIGALRM), sentinel_handler)
+                self.assertEqual(
+                    signal.getitimer(signal.ITIMER_REAL), (0.0, 0.0))
+        finally:
+            unblocker.cancel()
+            unblocker.join()
+            signal.setitimer(signal.ITIMER_REAL, 0.0)
+            signal.signal(signal.SIGALRM, previous_handler)
+            for descriptor in (read_fd, write_fd):
+                try:
+                    os.close(descriptor)
+                except OSError:
+                    pass
+
+    def test_aggregate_deadline_rejects_active_timer_without_disturbing_it(self):
+        plan, rows = self.download_fixture()
+        calls = []
+        previous_handler = signal.getsignal(signal.SIGALRM)
+        previous_timer = signal.getitimer(signal.ITIMER_REAL)
+        self.assertEqual(previous_timer, (0.0, 0.0))
+
+        def sentinel_handler(_signum, _frame):
+            raise AssertionError("pre-existing timer unexpectedly expired")
+
+        signal.signal(signal.SIGALRM, sentinel_handler)
+        signal.setitimer(signal.ITIMER_REAL, 5.0)
+        try:
+            with tempfile.TemporaryDirectory() as directory:
+                downloads = Path(directory) / "downloads"
+                mkdir_private(downloads)
+                with self.assertRaisesRegex(ValueError, "active process timer"):
+                    build.download_package_plan(
+                        plan, rows, downloads,
+                        opener=lambda *args, **kwargs: calls.append(
+                            (args, kwargs)),
+                    )
+                active = signal.getitimer(signal.ITIMER_REAL)
+                self.assertGreater(active[0], 4.0)
+                self.assertEqual(active[1], 0.0)
+                self.assertIs(signal.getsignal(signal.SIGALRM), sentinel_handler)
+                self.assertEqual(calls, [])
+                self.assertEqual(list(downloads.iterdir()), [])
+        finally:
+            signal.setitimer(signal.ITIMER_REAL, 0.0)
+            signal.signal(signal.SIGALRM, previous_handler)
 
     def test_apt_simulation_must_match_every_planned_identity_and_remove_nothing(self):
         rows = [
@@ -760,7 +874,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         self.assertIn("--unpack", commands["dpkg"])
         self.assertNotIn("--force-depends", commands["dpkg"])
 
-    def test_exact_download_is_streamed_and_partial_or_redirected_bytes_are_removed(self):
+    def test_exact_download_is_streamed_and_failed_private_bytes_are_retained(self):
         url = "https://archive.ubuntu.com/ubuntu/pool/main/p/pkg.deb"
         payload = b"0123456789" * 10000
         digest = hashlib.sha256(payload).hexdigest()
@@ -787,16 +901,23 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                     opener=lambda request, timeout: FakeResponse(
                         payload, "https://mirror.invalid/pkg.deb"),
                 )
-            self.assertFalse(redirected.exists())
+            self.assertTrue(redirected.exists())
+            self.assertEqual(redirected.read_bytes(), b"")
 
             truncated = Path(directory) / "truncated.deb"
+
+            def truncated_response(request, timeout):
+                response = FakeResponse(payload[:-1], request.full_url)
+                response.headers["Content-Length"] = str(len(payload))
+                return response
+
             with self.assertRaises(ValueError):
                 build.download_exact(
                     url, truncated, len(payload), digest,
-                    opener=lambda request, timeout: FakeResponse(
-                        payload[:-1], request.full_url),
+                    opener=truncated_response,
                 )
-            self.assertFalse(truncated.exists())
+            self.assertTrue(truncated.exists())
+            self.assertEqual(truncated.read_bytes(), payload[:-1])
 
     def test_exact_download_rejects_a_named_leaf_swap_while_fd_stays_open(self):
         url = "https://archive.ubuntu.com/ubuntu/pool/main/p/pkg.deb"
@@ -825,6 +946,48 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                 )
             self.assertEqual(destination.read_bytes(), b"hostile replacement")
             self.assertEqual(displaced.read_bytes(), payload)
+
+    def test_failed_download_never_enters_a_name_deletion_race(self):
+        url = "https://archive.ubuntu.com/ubuntu/pool/main/p/pkg.deb"
+        payload = b"descriptor-bound package"
+        digest = hashlib.sha256(payload).hexdigest()
+        deletion_attempts = []
+        real_unlink = os.unlink
+
+        def replace_at_unlink(name, *, dir_fd=None):
+            deletion_attempts.append(name)
+            saved = name + ".saved"
+            os.rename(
+                name, saved, src_dir_fd=dir_fd, dst_dir_fd=dir_fd)
+            descriptor = os.open(
+                name,
+                os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+                0o600,
+                dir_fd=dir_fd,
+            )
+            try:
+                os.write(descriptor, b"unrelated replacement")
+            finally:
+                os.close(descriptor)
+            return real_unlink(name, dir_fd=dir_fd)
+
+        with tempfile.TemporaryDirectory() as directory:
+            destination = Path(directory) / "pkg.deb"
+
+            def truncated_response(request, timeout):
+                response = FakeResponse(payload[:-1], request.full_url)
+                response.headers["Content-Length"] = str(len(payload))
+                return response
+
+            with mock.patch.object(build.os, "unlink", side_effect=replace_at_unlink), \
+                    self.assertRaises(ValueError):
+                build.download_exact(
+                    url, destination, len(payload), digest,
+                    opener=truncated_response,
+                )
+            self.assertEqual(deletion_attempts, [])
+            self.assertTrue(destination.exists())
+            self.assertEqual(destination.read_bytes(), payload[:-1])
 
     def test_authenticated_rootfs_status_is_read_without_extracting_the_archive(self):
         status = b"Package: base-files\nStatus: install ok installed\n"
@@ -959,7 +1122,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                 build.write_candidate_output(
                     output, lock, manifest, metadata_inputs, package_inputs)
             self.assertEqual(output.read_bytes(), b"raced destination")
-            self.assertFalse((base / stage_name).exists())
+            self.assertTrue((base / stage_name / "candidate").is_dir())
 
     def test_candidate_post_publish_mismatch_leaves_both_names_untouched(self):
         lock, manifest, metadata_contents, package_rows = self.candidate_fixture()
@@ -990,7 +1153,45 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             self.assertEqual(output.read_bytes(), b"post-publish replacement")
             self.assertEqual(
                 build.validate_candidate_output(displaced, lock), manifest)
-            self.assertFalse((base / stage_name).exists())
+            self.assertTrue((base / stage_name).is_dir())
+            self.assertEqual(list((base / stage_name).iterdir()), [])
+
+    def test_candidate_post_publish_nested_substitution_is_rejected(self):
+        lock, manifest, metadata_contents, package_rows = self.candidate_fixture()
+        token = "9" * 32
+        stage_name = ".ubuntu-package-candidate-" + token
+        real_publish = build._rename_noreplace
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            metadata_inputs, package_inputs = self.stage_candidate_inputs(
+                base, metadata_contents, package_rows)
+            output = base / "candidate"
+            displaced = base / "displaced-package.deb"
+
+            def replace_nested_after_publish(source_fd, source_name,
+                                             destination_fd, destination_name):
+                result = real_publish(
+                    source_fd, source_name, destination_fd, destination_name)
+                leaf = next((output / "packages").iterdir())
+                original = leaf.read_bytes()
+                leaf.rename(displaced)
+                replacement = bytes([original[0] ^ 1]) + original[1:]
+                write_private(leaf, replacement)
+                return result
+
+            with mock.patch.object(build.secrets, "token_hex", return_value=token), \
+                    mock.patch.object(
+                        build, "_rename_noreplace",
+                        replace_nested_after_publish), \
+                    self.assertRaises(ValueError):
+                build.write_candidate_output(
+                    output, lock, manifest, metadata_inputs, package_inputs)
+            self.assertTrue(output.is_dir())
+            self.assertTrue(displaced.is_file())
+            with self.assertRaises(ValueError):
+                build.validate_candidate_output(output, lock)
+            self.assertTrue((base / stage_name).is_dir())
+            self.assertEqual(list((base / stage_name).iterdir()), [])
 
     def test_candidate_cleanup_leaves_replacement_objects_untouched(self):
         lock, manifest, metadata_contents, package_rows = self.candidate_fixture()
@@ -1067,6 +1268,80 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                     else:
                         self.assertTrue(stat.S_ISFIFO(
                             replacement_path.lstat().st_mode))
+
+    def test_candidate_failure_after_preflight_never_deletes_by_name(self):
+        lock, manifest, metadata_contents, package_rows = self.candidate_fixture()
+        token = "a" * 32
+        stage_name = ".ubuntu-package-candidate-" + token
+        deletion_attempts = []
+        real_unlink = os.unlink
+
+        def replace_at_unlink(name, *, dir_fd=None):
+            deletion_attempts.append(name)
+            saved = name + ".race-saved"
+            os.rename(
+                name, saved, src_dir_fd=dir_fd, dst_dir_fd=dir_fd)
+            descriptor = os.open(
+                name,
+                os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+                0o600,
+                dir_fd=dir_fd,
+            )
+            try:
+                os.write(descriptor, b"unrelated replacement")
+            finally:
+                os.close(descriptor)
+            return real_unlink(name, dir_fd=dir_fd)
+
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            metadata_inputs, package_inputs = self.stage_candidate_inputs(
+                base, metadata_contents, package_rows)
+            output = base / "candidate"
+            with mock.patch.object(build.secrets, "token_hex", return_value=token), \
+                    mock.patch.object(
+                        build, "_rename_noreplace",
+                        side_effect=ValueError("injected publish failure")), \
+                    mock.patch.object(
+                        build.os, "unlink", side_effect=replace_at_unlink), \
+                    self.assertRaisesRegex(ValueError, "injected publish failure"):
+                build.write_candidate_output(
+                    output, lock, manifest, metadata_inputs, package_inputs)
+            self.assertEqual(deletion_attempts, [])
+            self.assertTrue((base / stage_name / "candidate").is_dir())
+            self.assertFalse(output.exists())
+
+    def test_successful_candidate_retains_stage_without_rmdir_race(self):
+        lock, manifest, metadata_contents, package_rows = self.candidate_fixture()
+        token = "b" * 32
+        stage_name = ".ubuntu-package-candidate-" + token
+        removal_attempts = []
+        real_rmdir = os.rmdir
+
+        def replace_at_rmdir(name, *, dir_fd=None):
+            removal_attempts.append(name)
+            saved = name + ".race-saved"
+            os.rename(
+                name, saved, src_dir_fd=dir_fd, dst_dir_fd=dir_fd)
+            os.mkdir(name, 0o700, dir_fd=dir_fd)
+            return real_rmdir(name, dir_fd=dir_fd)
+
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            metadata_inputs, package_inputs = self.stage_candidate_inputs(
+                base, metadata_contents, package_rows)
+            output = base / "candidate"
+            with mock.patch.object(build.secrets, "token_hex", return_value=token), \
+                    mock.patch.object(
+                        build.os, "rmdir", side_effect=replace_at_rmdir):
+                result = build.write_candidate_output(
+                    output, lock, manifest, metadata_inputs, package_inputs)
+            self.assertEqual(result, manifest)
+            self.assertEqual(removal_attempts, [])
+            self.assertTrue((base / stage_name).is_dir())
+            self.assertEqual(list((base / stage_name).iterdir()), [])
+            self.assertEqual(
+                build.validate_candidate_output(output, lock), manifest)
 
     def test_candidate_manifest_is_unverified_and_ineligible_for_consumption(self):
         lock, manifest, metadata_contents, package_rows = self.candidate_fixture()

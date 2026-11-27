@@ -274,7 +274,8 @@ file-only offline plan to exact signed package rows. It also provides bounded
 sequential no-redirect downloads, exact pending-lock Ubuntu Base dpkg-status
 binding, a no-act dpkg plan, and exact candidate-directory validation. Download
 rows are fully checked before an opener can run, and all payloads share one
-aggregate deadline in addition to their per-operation timeout. Its
+Linux real-time aggregate deadline that interrupts a blocking read, in addition
+to their per-operation timeout. Its
 manifest is always `candidate-unselected`; `producer_passed`, every verification
 field and every qualification claim remain false, and the pending public input
 contract still refuses it. All staged paths are private and descriptor-relative:
@@ -282,9 +283,11 @@ every component is opened without following links and each file is hashed,
 parsed or copied through the same stable single-link descriptor. No workflow,
 Dockerfile, native producer or artifact upload consumes this code yet.
 Candidate output is moved from an isolated held staging directory with atomic
-no-replace semantics and accepted only after the destination inode matches.
-Cleanup removes only the exact recorded tree; replacement or renamed members
-are left untouched and make the operation fail.
+no-replace semantics and accepted only after the complete nested identity and
+content binding is revalidated through the held destination root. Failure paths
+do not remove pathnames: private partial downloads and staging trees are retained
+for explicit operator disposal, as is the empty private staging parent after a
+successful publication.
 
 ## Required remaining evidence
 

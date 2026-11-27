@@ -159,7 +159,8 @@ Ubuntu Base dpkg status and requires a separate `dpkg --no-act --unpack` plan.
 Before any opener call, every plan/package row, reviewed source, identity,
 sequence, size, hash, uniqueness constraint and aggregate byte bound is checked.
 Package payloads are then downloaded one at a time without redirects, under one
-aggregate deadline and a per-operation timeout, and hashed while streaming.
+Linux real-time aggregate deadline that interrupts an in-progress blocking read,
+plus a per-operation timeout, and hashed while streaming.
 The exact metadata and package bytes can be written only beside a manifest whose state is
 `candidate-unselected`; `producer_passed`, all verification fields, `selected`
 and every signature, container, OS and release qualification field remain
@@ -169,17 +170,19 @@ The staging root and every child directory must be owned by the current uid and
 gid with mode `0700`; every retained input and output is mode `0600`, regular,
 single-link and exact-sized. The validators open every absolute component from
 the filesystem root with `O_NOFOLLOW|O_CLOEXEC`, hold that descriptor chain,
-and hash, parse, copy, validate, clean and rename through held directory and
+and hash, parse, copy, validate and rename through held directory and
 file descriptors. A symlink, hardlink, mode/owner/size change, leaf replacement
 or changed named identity fails closed.
 
 Candidate output is built under a new unpredictable private staging parent held
 by descriptor. Publication uses `renameat2(RENAME_NOREPLACE)` from that isolated
-descriptor and accepts success only after the destination inode matches the
-held candidate root. Cleanup deletes a partial tree only when its complete
-recorded root, subdirectory and leaf identity inventory still matches. A
-replacement, link, FIFO or renamed member leaves the ambiguous tree untouched
-and fails the operation.
+descriptor and accepts success only after the destination name still matches
+the held root and the complete nested identity, byte, hash and manifest binding
+has been revalidated. The Linux main-thread download timer restores its prior
+signal handler and rejects an already active process timer. Cleanup does not
+unlink or remove pathnames because a same-user replacement can race any separate
+identity check. Private partial downloads and staging trees remain for explicit
+operator disposal, including the empty staging parent after successful publish.
 
 This preparation is not wired to `container-fixtures.yml` or
 `native_fixture_build.py`. The current Dockerfile still performs its historical

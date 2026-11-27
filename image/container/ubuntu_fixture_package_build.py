@@ -7,6 +7,7 @@ The resulting manifest is always an unselected candidate with every
 qualification claim false.  No consumer imports this module and no workflow
 currently invokes it, builds an image, or uploads an artifact.
 """
+from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 from email.utils import format_datetime, parsedate_to_datetime
 import ctypes
@@ -19,8 +20,10 @@ from pathlib import Path, PurePosixPath
 import re
 import secrets
 import shlex
+import signal
 import stat
 import tarfile
+import threading
 import time
 from urllib.parse import quote, unquote, urlsplit
 from urllib.request import build_opener, HTTPRedirectHandler, Request
@@ -93,6 +96,50 @@ class _RejectRedirects(HTTPRedirectHandler):
 
 
 _OPEN_EXACT_URL = build_opener(_RejectRedirects).open
+
+
+class _DownloadDeadlineExpired(TimeoutError):
+    """Raised from SIGALRM so a blocking response read cannot outlive the plan."""
+
+
+@contextmanager
+def _hard_download_deadline(deadline):
+    """Arm one Linux process timer without disturbing existing timer state."""
+    require(type(deadline) in (int, float),
+            "Ubuntu package aggregate download deadline is invalid")
+    require(hasattr(os, "uname") and os.uname().sysname == "Linux"
+            and hasattr(signal, "SIGALRM")
+            and hasattr(signal, "ITIMER_REAL")
+            and threading.current_thread() is threading.main_thread(),
+            "Ubuntu package hard deadline requires the Linux main thread")
+    previous_timer = signal.getitimer(signal.ITIMER_REAL)
+    require(previous_timer == (0.0, 0.0),
+            "Ubuntu package hard deadline found an active process timer")
+    remaining = deadline - time.monotonic()
+    require(remaining > 0,
+            "Ubuntu package aggregate download deadline expired")
+    previous_handler = signal.getsignal(signal.SIGALRM)
+    handler_installed = False
+    timer_armed = False
+
+    def expire(_signum, _frame):
+        raise _DownloadDeadlineExpired(
+            "Ubuntu package aggregate download deadline expired")
+
+    try:
+        signal.signal(signal.SIGALRM, expire)
+        handler_installed = True
+        remaining = deadline - time.monotonic()
+        require(remaining > 0,
+                "Ubuntu package aggregate download deadline expired")
+        signal.setitimer(signal.ITIMER_REAL, remaining)
+        timer_armed = True
+        yield
+    finally:
+        if timer_armed:
+            signal.setitimer(signal.ITIMER_REAL, 0.0)
+        if handler_installed:
+            signal.signal(signal.SIGALRM, previous_handler)
 
 
 def require(condition, message):
@@ -336,21 +383,6 @@ def _finish_private_output(directory_fd, name, descriptor, created,
             and _file_identity(named) == _file_identity(before),
             description + " changed while hashing or writing")
     return {"bytes": expected_bytes, "sha256": digest}
-
-
-def _unlink_created_at(directory_fd, name, created):
-    try:
-        named = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
-    except FileNotFoundError:
-        return False
-    if (stat.S_ISREG(named.st_mode) and named.st_nlink == 1
-            and named.st_uid == os.geteuid() and named.st_gid == os.getegid()
-            and stat.S_IMODE(named.st_mode) == PRIVATE_FILE_MODE
-            and named.st_dev == created.st_dev
-            and named.st_ino == created.st_ino):
-        os.unlink(name, dir_fd=directory_fd)
-        return True
-    return False
 
 
 def _finish_regular_at(directory_fd, name, descriptor, before, description):
@@ -1100,9 +1132,6 @@ def _download_exact_at(url, directory_fd, name, expected_bytes,
             directory_fd, name, descriptor, created, expected_bytes,
             expected_sha256, "Ubuntu package download")
         return result, created
-    except BaseException:
-        _unlink_created_at(directory_fd, name, created)
-        raise
     finally:
         os.close(descriptor)
 
@@ -1115,11 +1144,12 @@ def download_exact(url, destination, expected_bytes, expected_sha256,
         destination, "Ubuntu package download destination")
     anchor = _DirectoryAnchor(
         destination.parent, "Ubuntu package download parent")
+    deadline = time.monotonic() + MAX_DOWNLOAD_SECONDS
     try:
-        result, _ = _download_exact_at(
-            url, anchor.fd, destination.name, expected_bytes,
-            expected_sha256, opener,
-            time.monotonic() + MAX_DOWNLOAD_SECONDS)
+        with _hard_download_deadline(deadline):
+            result, _ = _download_exact_at(
+                url, anchor.fd, destination.name, expected_bytes,
+                expected_sha256, opener, deadline)
         anchor.verify()
         return result
     finally:
@@ -1137,32 +1167,24 @@ def download_package_plan(plan, package_rows, destination,
         destination, "Ubuntu sequential package download directory")
     outputs = []
     try:
-        for sequence, (planned, package) in enumerate(
-                zip(plan, package_rows, strict=True)):
-            name = f"{sequence:04d}-" + PurePosixPath(
-                package["filename"]).name
-            require(packages._safe_filename(name, ".deb"),
-                    "Ubuntu package staging filename is unsafe")
-            result, created = _download_exact_at(
-                package["url"], anchor.fd, name, package["bytes"],
-                package["sha256"], opener, deadline)
-            outputs.append({
-                "sequence": sequence,
-                "path": destination / name,
-                "sha256": result["sha256"],
-                "bytes": result["bytes"],
-                "_name": name,
-                "_created": created,
-            })
+        with _hard_download_deadline(deadline):
+            for sequence, (planned, package) in enumerate(
+                    zip(plan, package_rows, strict=True)):
+                name = f"{sequence:04d}-" + PurePosixPath(
+                    package["filename"]).name
+                require(packages._safe_filename(name, ".deb"),
+                        "Ubuntu package staging filename is unsafe")
+                result, _ = _download_exact_at(
+                    package["url"], anchor.fd, name, package["bytes"],
+                    package["sha256"], opener, deadline)
+                outputs.append({
+                    "sequence": sequence,
+                    "path": destination / name,
+                    "sha256": result["sha256"],
+                    "bytes": result["bytes"],
+                })
         anchor.verify()
-        return [
-            {key: value for key, value in row.items() if not key.startswith("_")}
-            for row in outputs
-        ]
-    except BaseException:
-        for row in outputs:
-            _unlink_created_at(anchor.fd, row["_name"], row["_created"])
-        raise
+        return outputs
     finally:
         anchor.close()
 
@@ -1277,10 +1299,6 @@ def _copy_exact(source, destination_fd, destination_name, expected_bytes,
         _close_private_path(
             source, anchor, source_fd, before, "Ubuntu candidate input payload")
         return output_identity
-    except BaseException:
-        if created is not None:
-            _unlink_created_at(destination_fd, destination_name, created)
-        raise
     finally:
         if output_fd is not None:
             os.close(output_fd)
@@ -1497,46 +1515,6 @@ def _candidate_tree_matches(stage_fd, root_name, root_fd, metadata_fd,
         return False
 
 
-def _cleanup_candidate_tree(stage_fd, root_name, root_fd, metadata_fd,
-                            payloads_fd, identities):
-    """Delete only the complete, isolated tree with recorded exact identities."""
-    if not _candidate_tree_matches(
-            stage_fd, root_name, root_fd, metadata_fd, payloads_fd,
-            identities):
-        return False
-    for name in sorted(identities["metadata"]):
-        os.unlink(name, dir_fd=metadata_fd)
-    for name in sorted(identities["packages"]):
-        os.unlink(name, dir_fd=payloads_fd)
-    if identities["manifest"] is not None:
-        os.unlink("manifest.json", dir_fd=root_fd)
-    if (os.listdir(metadata_fd) or os.listdir(payloads_fd)
-            or not _named_directory_is_held(
-                root_fd, "metadata", metadata_fd,
-                identities["metadata_dir"])
-            or not _named_directory_is_held(
-                root_fd, "packages", payloads_fd,
-                identities["packages_dir"])):
-        return False
-    os.rmdir("metadata", dir_fd=root_fd)
-    os.rmdir("packages", dir_fd=root_fd)
-    if (os.listdir(root_fd)
-            or not _named_directory_is_held(
-                stage_fd, root_name, root_fd, identities["root"])):
-        return False
-    os.rmdir(root_name, dir_fd=stage_fd)
-    return True
-
-
-def _remove_empty_stage(parent_fd, name, stage_fd, identity):
-    if (os.listdir(stage_fd)
-            or not _named_directory_is_held(
-                parent_fd, name, stage_fd, identity)):
-        return False
-    os.rmdir(name, dir_fd=parent_fd)
-    return True
-
-
 def write_candidate_output(destination, lock, manifest, metadata_inputs,
                            package_inputs):
     """Write exact candidate bytes without selecting, zipping or uploading them."""
@@ -1637,46 +1615,37 @@ def write_candidate_output(destination, lock, manifest, metadata_inputs,
         _rename_noreplace(
             stage_fd, root_name, anchor.fd, destination.name)
         renamed = True
+        before_publish_exact = identities["root_exact"]
+        after_publish_exact = _exact_directory_identity(os.fstat(root_fd))
+        require(after_publish_exact[:-1] == before_publish_exact[:-1],
+                "Ubuntu candidate root changed beyond the rename ctime")
+        identities["root_exact"] = after_publish_exact
         named = os.stat(
             destination.name, dir_fd=anchor.fd, follow_symlinks=False)
         require(stat.S_ISDIR(named.st_mode)
                 and _directory_identity(named) == identities["root"]
-                and _directory_identity(os.fstat(root_fd)) == identities["root"],
+                and _directory_identity(os.fstat(root_fd)) == identities["root"]
+                and _named_directory_is_held(
+                    anchor.fd, stage_name, stage_fd, stage_identity)
+                and not os.listdir(stage_fd),
                 "Ubuntu candidate output identity changed during rename")
-        published = True
+        published_validation = _validate_candidate_output_fd(
+            root_fd, lock, identities)
+        named = os.stat(
+            destination.name, dir_fd=anchor.fd, follow_symlinks=False)
+        require(published_validation == validated
+                and stat.S_ISDIR(named.st_mode)
+                and _directory_identity(named) == identities["root"]
+                and _directory_identity(os.fstat(root_fd)) == identities["root"]
+                and _named_directory_is_held(
+                    anchor.fd, stage_name, stage_fd, stage_identity)
+                and not os.listdir(stage_fd),
+                "Ubuntu candidate output changed after publication")
         anchor.verify()
-        require(_remove_empty_stage(
-                    anchor.fd, stage_name, stage_fd, stage_identity),
-                "Ubuntu candidate staging directory changed after publish")
-        return validated
-    except BaseException:
-        if (manifest_fd is not None and manifest_created is not None
-                and identities["manifest"] is None):
-            _unlink_created_at(
-                root_fd, "manifest.json", manifest_created)
-        cleaned = False
-        if (not renamed and stage_fd is not None and root_fd is not None
-                and metadata_fd is not None and payloads_fd is not None
-                and all(identities[field] is not None for field in (
-                    "root", "metadata_dir", "packages_dir"))):
-            for field, descriptor in (
-                    ("root_exact", root_fd),
-                    ("metadata_dir_exact", metadata_fd),
-                    ("packages_dir_exact", payloads_fd)):
-                if identities[field] is None:
-                    identities[field] = _exact_directory_identity(
-                        os.fstat(descriptor))
-            cleaned = _cleanup_candidate_tree(
-                stage_fd, "candidate", root_fd, metadata_fd, payloads_fd,
-                identities)
-        if (stage_fd is not None and stage_name is not None
-                and stage_identity is not None
-                and (cleaned or renamed)):
-            _remove_empty_stage(
-                anchor.fd, stage_name, stage_fd, stage_identity)
-        require(not published or renamed,
+        published = True
+        require(renamed and published,
                 "Ubuntu candidate publication state is inconsistent")
-        raise
+        return published_validation
     finally:
         for descriptor in (
                 manifest_fd, payloads_fd, metadata_fd, root_fd, stage_fd):
