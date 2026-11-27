@@ -198,7 +198,8 @@ class AtomicUpdateTests(unittest.TestCase):
             "limits": limits,
             "cgroup_final": {**limits, "memory.peak": "2147483648",
                              "memory.events": ("low 0\nhigh 0\nmax 17\noom 0\n"
-                                               "oom_kill 0\noom_group_kill 0\n"),
+                                               "oom_kill 0\noom_group_kill 0\n"
+                                               "sock_throttled 0\n"),
                              "cpu.stat": "usage_usec 1\n"},
         }
 
@@ -227,6 +228,8 @@ class AtomicUpdateTests(unittest.TestCase):
             self.assertEqual(diagnostic["diagnostic"], "missing-update-phase-report")
             self.assertEqual(diagnostic["process"]["exit_code"], 0)
             self.assertEqual(diagnostic["report"]["state"], "empty")
+            self.assertEqual(diagnostic["resources"]["cpu.max"], "200000 100000")
+            self.assertEqual(diagnostic["resources"]["pids.max"], "64")
             self.assertEqual(diagnostic["resources"]["memory.events"], {
                 "max": "17", "oom": "0", "oom_group_kill": "0", "oom_kill": "0"})
             retained_raw = b"".join(path.read_bytes() for path in evidence.iterdir())
@@ -236,8 +239,15 @@ class AtomicUpdateTests(unittest.TestCase):
             self.assertFalse((evidence / "qemu-same-path-positive.log").exists())
             self.assertFalse((evidence / "same-path-positive.qcow2").exists())
 
-    def test_missing_report_diagnostic_rejects_identity_mutations(self):
-        for case in ("command", "exit", "report", "input", "cleanup", "resource"):
+    def test_missing_report_diagnostic_rejects_identity_and_type_mutations(self):
+        cases = (
+            "command", "exit", "exit-false", "exit-float", "report",
+            "report-bytes-false", "input", "cleanup", "cleanup-int",
+            "schema-true", "resource", "cpu-max", "pids-max",
+            "duplicate-events", "integer-peak", "integer-events",
+            "malformed-counter", "extra-counter",
+        )
+        for case in cases:
             with self.subTest(case=case), tempfile.TemporaryDirectory() as temporary:
                 root = Path(temporary)
                 output, evidence = root / "output", root / "evidence"
@@ -248,14 +258,38 @@ class AtomicUpdateTests(unittest.TestCase):
                     controller["commands"][0][-1] = "--help"
                 elif case == "exit":
                     controller["phase_failure"]["exit_code"] = 1
+                elif case == "exit-false":
+                    controller["phase_failure"]["exit_code"] = False
+                elif case == "exit-float":
+                    controller["phase_failure"]["exit_code"] = 0.0
                 elif case == "report":
                     controller["phase_failure"]["report"]["sha256"] = "b" * 64
+                elif case == "report-bytes-false":
+                    controller["phase_failure"]["report"]["bytes"] = False
                 elif case == "input":
                     controller["inputs"]["update_guest.py"] = "not-a-hash"
                 elif case == "cleanup":
                     controller["child_cleanup"]["attempted"] = True
-                else:
+                elif case == "cleanup-int":
+                    controller["child_cleanup"]["attempted"] = 0
+                elif case == "schema-true":
+                    controller["schema"] = True
+                elif case == "resource":
                     controller["cgroup_final"]["memory.peak"] = "not-a-number"
+                elif case == "cpu-max":
+                    controller["cgroup_final"]["cpu.max"] = "max 100000"
+                elif case == "pids-max":
+                    controller["cgroup_final"]["pids.max"] = "max"
+                elif case == "duplicate-events":
+                    controller["cgroup_final"]["memory.events"] += "max 17\n"
+                elif case == "integer-peak":
+                    controller["cgroup_final"]["memory.peak"] = 2147483648
+                elif case == "integer-events":
+                    controller["cgroup_final"]["memory.events"] = 0
+                elif case == "malformed-counter":
+                    controller["cgroup_final"]["memory.events"] = "max 17 extra\n"
+                elif case == "extra-counter":
+                    controller["cgroup_final"]["memory.events"] += "unexpected 0\n"
                 (output / "result.json").write_text(json.dumps(controller) + "\n")
                 (output / "same-path-positive.json").write_bytes(b"")
                 (output / "same-path-positive-serial.log").write_text(
