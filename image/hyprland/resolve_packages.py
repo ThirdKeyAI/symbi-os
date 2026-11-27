@@ -98,6 +98,27 @@ def require_downloaded_roots(installed_roots, downloaded_nevras):
     return sorted(expected)
 
 
+def offline_closure_commands(packages):
+    """Build the fixed empty-database transaction without requiring chroot."""
+    rpm_directory = Path('/output/rpms')
+    database = Path('/output/closure-rpmdb')
+    if (not isinstance(packages, list) or not packages
+            or any(not isinstance(package, Path) or package.parent != rpm_directory
+                   or package.name == '' or not package.name.endswith('.rpm')
+                   for package in packages)):
+        raise ValueError('Offline closure package paths changed')
+    prefix = ['rpm', '--dbpath', str(database)]
+    query = prefix + ['-qa', '--qf', '%{NEVRA}\n']
+    return {
+        'init': prefix + ['--initdb'],
+        'query': query,
+        'test': prefix + [
+            '--test', '--noscripts', '--notriggers', '--nosignature', '-Uvh',
+            *[str(package) for package in packages],
+        ],
+    }
+
+
 def main():
     if not Path('/run/.containerenv').exists() or os.geteuid() != 0:
         raise SystemExit('Use the disposable hosted Fedora discovery container')
@@ -188,24 +209,15 @@ def main():
         if container_runtime:
             record['downloaded_root_nevras'] = require_downloaded_roots(
                 installed_roots, downloaded_nevras)
-            closure_root = output / 'closure-root'
-            closure_root.mkdir(mode=0o700)
-            run('closure-rpmdb-init', ['rpm', '--root', str(closure_root),
-                                      '--dbpath', '/var/lib/rpm', '--initdb'])
-            closure_before = run(
-                'closure-installed-before',
-                ['rpm', '--root', str(closure_root), '--dbpath', '/var/lib/rpm',
-                 '-qa', '--qf', '%{NEVRA}\n']).stdout
+            closure_database = output / 'closure-rpmdb'
+            closure_database.mkdir(mode=0o700)
+            closure = offline_closure_commands(packages)
+            run('closure-rpmdb-init', closure['init'])
+            closure_before = run('closure-installed-before', closure['query']).stdout
             if closure_before:
-                raise ValueError('Offline closure root is not empty')
-            run('offline-closure-test',
-                ['rpm', '--root', str(closure_root), '--dbpath', '/var/lib/rpm',
-                 '--test', '--noscripts', '--notriggers', '--nosignature', '-Uvh',
-                 *[str(package) for package in packages]], timeout=1200)
-            closure_after = run(
-                'closure-installed-after',
-                ['rpm', '--root', str(closure_root), '--dbpath', '/var/lib/rpm',
-                 '-qa', '--qf', '%{NEVRA}\n']).stdout
+                raise ValueError('Offline closure database is not empty')
+            run('offline-closure-test', closure['test'], timeout=1200)
+            closure_after = run('closure-installed-after', closure['query']).stdout
             if closure_after:
                 raise ValueError('Offline closure test installed packages')
             for package, row in zip(packages, record['packages'], strict=True):

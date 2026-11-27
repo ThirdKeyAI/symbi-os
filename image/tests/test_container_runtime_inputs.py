@@ -241,6 +241,27 @@ class ContainerRuntimeInputs(unittest.TestCase):
             resolver.resolve_command(requirements, {**roots, "extra": "extra-1-1.x86_64"})
         with self.assertRaises(ValueError):
             resolver.require_downloaded_roots(roots, list(roots.values())[:-1])
+        packages = [Path("/output/rpms/root.rpm"), Path("/output/rpms/dependency.rpm")]
+        closure = resolver.offline_closure_commands(packages)
+        self.assertEqual(
+            closure["init"],
+            ["rpm", "--dbpath", "/output/closure-rpmdb", "--initdb"],
+        )
+        self.assertEqual(
+            closure["query"],
+            ["rpm", "--dbpath", "/output/closure-rpmdb",
+             "-qa", "--qf", "%{NEVRA}\n"],
+        )
+        self.assertEqual(
+            closure["test"],
+            ["rpm", "--dbpath", "/output/closure-rpmdb", "--test", "--noscripts",
+             "--notriggers", "--nosignature", "-Uvh", *[str(path) for path in packages]],
+        )
+        self.assertTrue(all("--root" not in command for command in closure.values()))
+        with self.assertRaises(ValueError):
+            resolver.offline_closure_commands([Path("/tmp/unreviewed.rpm")])
+        with self.assertRaises(ValueError):
+            resolver.offline_closure_commands([Path("/output/rpms/not-an-rpm")])
         closure_result = {
             "passed": True,
             "installed_packages_unchanged": True,
