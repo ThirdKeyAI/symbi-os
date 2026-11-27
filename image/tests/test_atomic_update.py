@@ -153,6 +153,18 @@ class AtomicUpdateTests(unittest.TestCase):
         }
 
     @staticmethod
+    def avc_parser_predicates(*, record_index=0, record_count=1,
+                              denial_pattern_matched=False,
+                              audit_serial_pattern_matched=True):
+        return {
+            "schema": 1,
+            "record_index": record_index,
+            "record_count": record_count,
+            "denial_pattern_matched": denial_pattern_matched,
+            "audit_serial_pattern_matched": audit_serial_pattern_matched,
+        }
+
+    @staticmethod
     def avc_journal_raw(**changes):
         source_context = "system_u:system_r:unconfined_service_t:s0"
         message = (
@@ -556,6 +568,141 @@ class AtomicUpdateTests(unittest.TestCase):
                 sequence=2, stage="source-journal",
                 failure_kind="invalid-evidence", failure_detail=detail,
                 reason="source-journal-rejected", command_observation=None)
+
+    def test_malformed_avc_retains_only_exact_parser_predicates(self):
+        source = {
+            "source_context": "system_u:system_r:unconfined_service_t:s0",
+            "requested_context": BOOTC_CONTEXT,
+        }
+        record = json.loads(self.avc_journal_raw())
+        message = record["MESSAGE"]
+        messages = (
+            (message.replace("avc: denied", "avc: rejected"),
+             self.avc_parser_predicates()),
+            (message.replace("audit(100.200:42):", "audit:"),
+             self.avc_parser_predicates(
+                 denial_pattern_matched=True,
+                 audit_serial_pattern_matched=False)),
+            (message.replace("audit(100.200:42):", "audit:")
+                    .replace("avc: denied", "avc: rejected"),
+             self.avc_parser_predicates(
+                 audit_serial_pattern_matched=False)),
+        )
+        for malformed, predicates in messages:
+            changed = copy.deepcopy(record)
+            changed["MESSAGE"] = malformed + " API_TOKEN=must-not-be-retained"
+            raw = (json.dumps(changed) + "\n").encode()
+            result = self.avc_command_result(exit_code=0, stdout=raw)
+            with self.subTest(predicates=predicates), \
+                    self.assertRaises(AvcEvidenceError) as caught:
+                bounded_avc_evidence(source, None, Mock(return_value=result))
+            self.assertEqual(caught.exception.reason, "denial-malformed")
+            self.assertEqual(caught.exception.parser_predicates, predicates)
+            detail = collector_failure_detail(caught.exception)
+            self.assertEqual(detail, {
+                "reason": "denial-malformed",
+                "command": self.avc_command_observation(
+                    exit_code=0, stdout=raw),
+                "parser_predicates": predicates,
+            })
+            encoded = json.dumps(detail, sort_keys=True)
+            self.assertNotIn("API_TOKEN", encoded)
+            self.assertNotIn("must-not-be-retained", encoded)
+            stream = self.collector_stream(
+                failure_kind="invalid-evidence", failure_detail=detail)
+            observed = validate_collector_diagnostic(stream, "a" * 64)
+            self.assertEqual(
+                observed["terminal"]["failure_detail"], detail)
+
+        first = self.avc_journal_raw()
+        second = copy.deepcopy(record)
+        second["MESSAGE"] = message.replace("avc: denied", "avc: rejected")
+        second["__CURSOR"] = "s=" + "3" * 64
+        raw = first + (json.dumps(second) + "\n").encode()
+        with self.assertRaises(AvcEvidenceError) as caught:
+            bounded_avc_evidence(
+                source, None, Mock(return_value=self.avc_command_result(
+                    exit_code=0, stdout=raw)))
+        self.assertEqual(caught.exception.parser_predicates,
+                         self.avc_parser_predicates(
+                             record_index=1, record_count=2))
+
+    def test_avc_parser_predicate_receipt_rejects_every_schema_mutation(self):
+        observation = self.avc_command_observation()
+        predicates = self.avc_parser_predicates()
+        error = AvcEvidenceError(
+            "denial-malformed", observation,
+            parser_predicates=predicates)
+        detail = collector_failure_detail(error)
+        raw = self.collector_stream(
+            failure_kind="invalid-evidence", failure_detail=detail)
+        terminal = json.loads(raw.splitlines()[-1])
+        prefix = b"\n".join(raw.splitlines()[:-1]) + b"\n"
+        mutations = []
+        invalid_values = (None, [], {}, "1", True, 1.0)
+        for key in predicates:
+            for value in invalid_values:
+                if type(value) is type(predicates[key]) and value == predicates[key]:
+                    continue
+                changed = copy.deepcopy(terminal)
+                changed["failure_detail"]["parser_predicates"][key] = value
+                mutations.append((key, value, changed))
+        for key, value in (
+                ("record_count", 0), ("record_count", 33),
+                ("record_index", -1), ("record_index", 1),
+                ("denial_pattern_matched", True)):
+            changed = copy.deepcopy(terminal)
+            changed["failure_detail"]["parser_predicates"][key] = value
+            mutations.append((key, value, changed))
+        for label in ("missing", "extra"):
+            changed = copy.deepcopy(terminal)
+            if label == "missing":
+                del changed["failure_detail"]["parser_predicates"]["schema"]
+            else:
+                changed["failure_detail"]["parser_predicates"]["raw"] = "forbidden"
+            mutations.append((label, None, changed))
+        changed = copy.deepcopy(terminal)
+        del changed["failure_detail"]["parser_predicates"]
+        mutations.append(("predicates-absent", None, changed))
+        changed = copy.deepcopy(terminal)
+        del changed["failure_detail"]
+        mutations.append(("detail-absent", None, changed))
+        changed = copy.deepcopy(terminal)
+        changed["reason"] = "permissions-invalid"
+        mutations.append(("detail-reason-mismatch", None, changed))
+
+        for label, value, changed in mutations:
+            candidate = prefix + (json.dumps(
+                changed, sort_keys=True, separators=(",", ":")) + "\n").encode()
+            with self.subTest(host=label, value=value):
+                rejected = validate_collector_diagnostic(candidate, "a" * 64)
+                self.assertIsNone(rejected["terminal"])
+                self.assertEqual(rejected["suffix"]["state"], "invalid")
+            with self.subTest(producer=label, value=value), \
+                    self.assertRaises(ValueError):
+                write_collector_event(
+                    self.ShortWriter(4096), "collector-failed", "a" * 64,
+                    sequence=6, stage="avc-journal",
+                    failure_kind=changed["failure_kind"],
+                    failure_detail=changed.get("failure_detail"),
+                    reason=changed["reason"],
+                    command_observation=changed["command_result"])
+
+        with self.assertRaises(ValueError):
+            AvcEvidenceError("denial-malformed", observation)
+        with self.assertRaises(ValueError):
+            AvcEvidenceError(
+                "stderr-truncated", observation,
+                parser_predicates=predicates)
+
+        with self.assertRaises(ValueError):
+            write_collector_event(
+                self.ShortWriter(4096), "collector-failed", "a" * 64,
+                sequence=6, stage="avc-journal",
+                failure_kind="invalid-evidence", failure_detail=None,
+                reason="denial-malformed",
+                command_observation=self.stage_command_observation(
+                    "avc-journal", stdout_bytes=1))
 
     def test_avc_receipt_without_detail_binds_exit_and_output_precedence(self):
         exit_zero_nonempty = self.stage_command_observation("avc-journal")

@@ -154,15 +154,51 @@ _JOURNAL_CURSOR = re.compile(r"[A-Za-z0-9_.:;=-]{32,2048}")
 _INVOCATION_ID = re.compile(r"[a-f0-9]{32}")
 
 
+def _valid_avc_parser_predicates(value):
+    """Validate one bounded, content-free malformed-denial observation."""
+    fields = {
+        "schema", "record_index", "record_count",
+        "denial_pattern_matched", "audit_serial_pattern_matched",
+    }
+    return (isinstance(value, dict) and set(value) == fields
+            and type(value.get("schema")) is int and value["schema"] == 1
+            and type(value.get("record_index")) is int
+            and type(value.get("record_count")) is int
+            and 1 <= value["record_count"] <= AVC_MAX_RECORDS
+            and 0 <= value["record_index"] < value["record_count"]
+            and type(value.get("denial_pattern_matched")) is bool
+            and type(value.get("audit_serial_pattern_matched")) is bool
+            and not (value["denial_pattern_matched"]
+                     and value["audit_serial_pattern_matched"]))
+
+
+class AvcParserPredicateError(ValueError):
+    """Carry fixed parser predicates without retaining a journal record."""
+
+    def __init__(self, predicates):
+        if not _valid_avc_parser_predicates(predicates):
+            raise ValueError("invalid AVC parser predicate observation")
+        self.predicates = dict(predicates)
+        super().__init__("malformed transition AVC denial")
+
+
 class AvcEvidenceError(ValueError):
     """Carry one fixed content-free AVC rejection observation."""
 
-    def __init__(self, reason, observation, failure_kind="invalid-evidence"):
+    def __init__(self, reason, observation, failure_kind="invalid-evidence",
+                 parser_predicates=None):
         if not isinstance(reason, str) or reason not in AVC_FAILURE_REASONS:
             raise ValueError("invalid AVC failure reason")
+        if ((reason == "denial-malformed")
+                != (parser_predicates is not None)
+                or (parser_predicates is not None
+                    and not _valid_avc_parser_predicates(parser_predicates))):
+            raise ValueError("invalid AVC parser predicate binding")
         self.reason = reason
         self.observation = observation
         self.failure_kind = failure_kind
+        self.parser_predicates = (None if parser_predicates is None
+                                  else dict(parser_predicates))
         super().__init__("AVC evidence rejected: " + reason)
 
 
@@ -386,7 +422,7 @@ def parse_avc_evidence(raw, source, service=None):
         raise ValueError("invalid transition source observation")
     items = _structured_journal_lines(raw, AVC_MAX_RECORDS)
     records = []
-    for item in items:
+    for record_index, item in enumerate(items):
         message = item.get("MESSAGE")
         cursor = item.get("__CURSOR")
         monotonic = item.get("__MONOTONIC_TIMESTAMP")
@@ -404,7 +440,13 @@ def parse_avc_evidence(raw, source, service=None):
             r"avc:[ ]+denied[ ]+\{[ ]*([a-z0-9_ ]+?)[ ]*\}[ ]+for\b", message)
         serial = re.search(r"audit\([0-9]+(?:\.[0-9]+)?:([0-9]{1,20})\)", message)
         if denial is None or serial is None:
-            raise ValueError("malformed transition AVC denial")
+            raise AvcParserPredicateError({
+                "schema": 1,
+                "record_index": record_index,
+                "record_count": len(items),
+                "denial_pattern_matched": denial is not None,
+                "audit_serial_pattern_matched": serial is not None,
+            })
         permissions = denial.group(1).split()
         if (not 1 <= len(permissions) <= 16 or len(set(permissions)) != len(permissions)
                 or any(re.fullmatch(r"[a-z0-9_]{1,64}", value) is None
@@ -736,7 +778,6 @@ def _avc_parse_reason(error):
             "journal-record-oversized",
         "invalid structured transition journal record": "journal-record-invalid-json",
         "incomplete transition AVC journal record": "journal-record-incomplete",
-        "malformed transition AVC denial": "denial-malformed",
         "invalid transition AVC permissions": "permissions-invalid",
         "transition AVC does not bind the enforcing probe": "probe-binding-mismatch",
         "transition AVC falls outside the main process":
@@ -754,8 +795,11 @@ def _avc_parse_reason(error):
     return "records-invalid"
 
 
-def _raise_avc(reason, observation, failure_kind="invalid-evidence"):
-    raise AvcEvidenceError(reason, observation, failure_kind)
+def _raise_avc(reason, observation, failure_kind="invalid-evidence",
+               parser_predicates=None):
+    raise AvcEvidenceError(
+        reason, observation, failure_kind,
+        parser_predicates=parser_predicates)
 
 
 def bounded_avc_evidence(source, service, run=None):
@@ -809,6 +853,10 @@ def bounded_avc_evidence(source, service, run=None):
         _raise_avc("stdout-invalid-utf8", observation)
     try:
         parsed = parse_avc_evidence(raw, source, service)
+    except AvcParserPredicateError as error:
+        _raise_avc(
+            "denial-malformed", observation,
+            parser_predicates=error.predicates)
     except (UnicodeError, ValueError, TypeError, RecursionError) as error:
         _raise_avc(_avc_parse_reason(error), observation)
     parsed["command_observation"] = observation
@@ -1026,12 +1074,20 @@ def _collector_observation_from_avc(observation):
 
 
 def _valid_avc_failure_detail(detail):
-    if (not isinstance(detail, dict) or set(detail) != {"reason", "command"}
+    if (not isinstance(detail, dict)
             or not isinstance(detail.get("reason"), str)
-            or detail["reason"] not in AVC_FAILURE_REASONS
-            or not _valid_avc_command_observation(detail.get("command"))):
+            or detail["reason"] not in AVC_FAILURE_REASONS):
         return False
     reason = detail["reason"]
+    fields = {"reason", "command"}
+    if reason == "denial-malformed":
+        fields.add("parser_predicates")
+    if (set(detail) != fields
+            or not _valid_avc_command_observation(detail.get("command"))
+            or (reason == "denial-malformed"
+                and not _valid_avc_parser_predicates(
+                    detail.get("parser_predicates")))):
+        return False
     observation = detail["command"]
     parser_reasons = AVC_FAILURE_REASONS - {
         "command-timeout", "spawn-permission", "spawn-os-error",
@@ -1084,6 +1140,8 @@ def collector_failure_detail(error):
     if not isinstance(error, AvcEvidenceError):
         return None
     detail = {"reason": error.reason, "command": error.observation}
+    if error.parser_predicates is not None:
+        detail["parser_predicates"] = error.parser_predicates
     if not _valid_avc_failure_detail(detail):
         return None
     return detail
@@ -1237,6 +1295,10 @@ def write_collector_event(output, event, runner_hash, *, sequence, stage=None,
             record["service_exit_code"] = service_exit_code
         elif service_exit_code is not None:
             raise ValueError("stage failure cannot name a service exit code")
+        if (event == "collector-failed" and stage == "avc-journal"
+                and reason == "denial-malformed"
+                and failure_detail is None):
+            raise ValueError("malformed AVC denial requires predicate detail")
         if failure_detail is not None:
             if (event != "collector-failed" or stage != "avc-journal"
                     or not _valid_avc_failure_detail(failure_detail)

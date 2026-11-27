@@ -227,14 +227,40 @@ def _valid_transition_avc_command_observation(observation):
                     != (observation["stderr_sha256"] == empty_hash)))
 
 
+def _valid_transition_avc_parser_predicates(value):
+    """Validate one bounded, content-free malformed-denial observation."""
+    fields = {
+        "schema", "record_index", "record_count",
+        "denial_pattern_matched", "audit_serial_pattern_matched",
+    }
+    return (isinstance(value, dict) and set(value) == fields
+            and type(value.get("schema")) is int and value["schema"] == 1
+            and type(value.get("record_index")) is int
+            and type(value.get("record_count")) is int
+            and 1 <= value["record_count"] <= TRANSITION_AVC_MAX_RECORDS
+            and 0 <= value["record_index"] < value["record_count"]
+            and type(value.get("denial_pattern_matched")) is bool
+            and type(value.get("audit_serial_pattern_matched")) is bool
+            and not (value["denial_pattern_matched"]
+                     and value["audit_serial_pattern_matched"]))
+
+
 def _valid_transition_avc_failure_detail(detail):
-    if (not isinstance(detail, dict) or set(detail) != {"reason", "command"}
+    if (not isinstance(detail, dict)
             or not isinstance(detail.get("reason"), str)
-            or detail["reason"] not in TRANSITION_AVC_FAILURE_REASONS
-            or not _valid_transition_avc_command_observation(
-                detail.get("command"))):
+            or detail["reason"] not in TRANSITION_AVC_FAILURE_REASONS):
         return False
     reason = detail["reason"]
+    fields = {"reason", "command"}
+    if reason == "denial-malformed":
+        fields.add("parser_predicates")
+    if (set(detail) != fields
+            or not _valid_transition_avc_command_observation(
+                detail.get("command"))
+            or (reason == "denial-malformed"
+                and not _valid_transition_avc_parser_predicates(
+                    detail.get("parser_predicates")))):
+        return False
     observation = detail["command"]
     parser_reasons = TRANSITION_AVC_FAILURE_REASONS - {
         "command-timeout", "spawn-permission", "spawn-os-error",
@@ -666,6 +692,8 @@ def validate_collector_diagnostic(raw, runner_hash):
                      and _valid_transition_stage_receipt(
                          event["stage"], event.get("reason"),
                          event.get("command_result"))
+                     and (event.get("reason") != "denial-malformed"
+                          or detail_present)
                      and (not detail_present
                           or (event["stage"] == "avc-journal"
                               and detail is not None

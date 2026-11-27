@@ -1,0 +1,235 @@
+{
+  "artifact": {
+    "bytes": 71567,
+    "created_utc": "2026-11-27T22:02:02Z",
+    "downloaded_zip_sha256": "a8a8c341fbc12a8fb0992731010f18051294e2b717309a2fac826030a0d24d81",
+    "expires_utc": "2026-12-11T22:02:02Z",
+    "github_digest": "sha256:a8a8c341fbc12a8fb0992731010f18051294e2b717309a2fac826030a0d24d81",
+    "id": 15233189652,
+    "largest_member_bytes": 88681,
+    "name": "atomic-development-boot-generic",
+    "safe_regular_relative_members": 95,
+    "strict_json_documents": 7,
+    "uncompressed_bytes": 154147,
+    "zip_integrity": true
+  },
+  "card": "P0-03",
+  "claims": {
+    "four_guest_signature_rejections_passed": false,
+    "guest_booted": false,
+    "os_qualified": false,
+    "p0_03_qualified": false,
+    "passed": false,
+    "release_qualified": false,
+    "rollback_passed": false,
+    "selinux_transition_supported": false,
+    "signed_update_accepted": false,
+    "updated_boot_passed": false
+  },
+  "cleanup": {
+    "containers": {
+      "symbi-atomic-signer": {
+        "absent": true,
+        "removed": true
+      },
+      "symbi-atomic-update-old-installer": {
+        "absent": true,
+        "removed": true
+      },
+      "symbi-atomic-update-old-signer": {
+        "absent": true,
+        "removed": true
+      },
+      "symbi-atomic-update-qemu": {
+        "absent": true,
+        "removed": true
+      }
+    },
+    "loaded_image_absent": true,
+    "loaded_image_removed": true,
+    "loop_list_empty": true,
+    "private_runroot_removed": true,
+    "private_storage_removed": true
+  },
+  "critical_evidence_sha256": {
+    "atomic-disk-evidence/hosted.log": "c233c205d27e97f893a4a6d674b3f08be4092984ffb6f9de3e5550cb629b6c00",
+    "atomic-disk-evidence/result.json": "d8a50f3f1f38b066f36a98d332ba5bdbeb7540ab121f2866623e987c282261c1",
+    "atomic-disk-evidence/signed-update-and-rollback-stderr.log": "660fb178815b69aae1f2b67129807dc816914989bea2447c7a1eaf1cbc109be8",
+    "atomic-disk-evidence/source-authentication/result.json": "05e7bab3041d569a5f9a5c3a7abc0f425ffa095bc962014ba4b3829467400647",
+    "atomic-disk-evidence/systemd-result.txt": "e2c463fe9050a9c5b79ac879ddbcc64e4609be181211071f9816af98f4a22ed2",
+    "atomic-disk-evidence/update-old-loops-stdout.log": "3f1d39e826503300542203478b61c9393220197f672114f5813fa484380802ed",
+    "atomic-update-evidence/controller-result.json": "59d3311c102fb3183b0d09ad4f80e38fd070911473cad98fa22036728858371d",
+    "atomic-update-evidence/result.json": "3a11cf282ccd6cc8ddf9e2947d118505d677e9116e980ab3c6207baa180f0d3b",
+    "atomic-update-evidence/same-path-positive-diagnostic.json": "1d53f71a43835004345f64cc6327f3f09f2baf44e62c8841e4f6760dd6002e50"
+  },
+  "failure": {
+    "collector": {
+      "bytes": 5480,
+      "completed_stages": [
+        "service-properties",
+        "source-journal",
+        "monitor",
+        "identity-correlation"
+      ],
+      "failure_kind": "invalid-evidence",
+      "name": "same-path-positive-collector.jsonl",
+      "prefix_validated": true,
+      "reason": "denial-malformed",
+      "sha256": "017ded5928eb757b0ab78f21de1f4f6d7645981ded53254433e23427bb57ae24",
+      "stage": "avc-journal",
+      "state": "ready",
+      "stream_validated": true,
+      "suffix": null
+    },
+    "interpretation": "The exact bounded journal command returned one or more nonempty records and the parser reached its combined denial-or-audit-serial test. The retained reason does not distinguish which of those two predicates failed, so it establishes neither an AVC record nor AVC absence.",
+    "journal_command": {
+      "command_sha256": "7373554e2c9520bd806bdd03945655f471493d5ddbff36f09c7743a348061978",
+      "exit_code": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_truncated": false,
+      "stdout_bytes": 590,
+      "stdout_sha256": "b578fb563e3b0ac913f2d8b3aa12eda51abb65574d05767d7d3e5363bdf127ce",
+      "stdout_truncated": false,
+      "timed_out": false
+    },
+    "lifecycle": {
+      "boundary": "invalid",
+      "events": [],
+      "last_event": null,
+      "marker_count": 3,
+      "state": "invalid"
+    },
+    "phase_diagnostic_validated": true,
+    "predecessor_install_passed": true,
+    "qemu_exit_code": 0,
+    "qemu_log": {
+      "bytes": 0,
+      "name": "qemu-same-path-positive.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "state": "empty"
+    },
+    "report": {
+      "bytes": 0,
+      "name": "same-path-positive.json",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "state": "empty"
+    },
+    "serial": {
+      "bytes": 77479,
+      "name": "same-path-positive-serial.log",
+      "sha256": "0f6d343bd481f78727f37aee77f28a5e1bde21ee0e3c9f8bdfbeb2b928f274ae",
+      "state": "ready"
+    },
+    "stage": "same-path-positive-avc-journal-denial-malformed",
+    "transition_failure_validated": false
+  },
+  "local_correction": {
+    "acceptance_predicate_changed": false,
+    "denial_malformed_requires_failed_predicate": true,
+    "enforcing_mode_changed": false,
+    "maximum_record_count": 32,
+    "parser_predicate_fields": [
+      "schema",
+      "record_index",
+      "record_count",
+      "denial_pattern_matched",
+      "audit_serial_pattern_matched"
+    ],
+    "policy_allow_rule_added": false,
+    "raw_journal_content_retained": false,
+    "resource_limits_changed": false,
+    "status": "instrumented-pending-hosted-rerun",
+    "update_after_transition_failure": false
+  },
+  "local_verification": {
+    "complete_address_space_cap_bytes": 201326592,
+    "complete_image_tests": 373,
+    "complete_peak_rss_kib": 61660,
+    "complete_process_swaps": 0,
+    "diff_check": "pass",
+    "focused_address_space_cap_bytes": 201326592,
+    "focused_peak_rss_kib": 38424,
+    "focused_process_swaps": 0,
+    "focused_update_tests": 94,
+    "independent_cold_review": "pending",
+    "json_parse": "pass",
+    "local_image_vm_container_build_or_network": false,
+    "python_ast": "pass",
+    "status": "pass"
+  },
+  "reachability": {
+    "in_guest_update_negative_reports": [],
+    "installed_update_phase_reports": [],
+    "rollback_observed": false,
+    "rollback_phase_reports": [],
+    "same_path_qemu_process_completed": true,
+    "source_authentication_positive": true,
+    "source_signature_negative_controls": {
+      "altered-signature": true,
+      "unsigned": true,
+      "wrong-key": true,
+      "wrong-reference": true
+    },
+    "update_acceptance_observed": false,
+    "update_action_observed": false,
+    "updated_boot_observed": false,
+    "updated_boot_phase_reports": []
+  },
+  "resources": {
+    "added_swap": false,
+    "outer": {
+      "cpu_max": "200000 100000",
+      "memory_events": {
+        "max": 172315,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "memory_max": 5368709120,
+      "memory_peak": 5368713216,
+      "memory_swap_max": 0,
+      "pids_max": 256
+    },
+    "update_controller": {
+      "cpu_max": "200000 100000",
+      "memory_events": {
+        "max": 6785,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "memory_max": 3221225472,
+      "memory_peak": 3221225472,
+      "memory_swap_max": 0,
+      "pids_max": 64
+    }
+  },
+  "retention": {
+    "disk_images_committed": false,
+    "downloaded_artifact_path": "/tmp/symbi-p003-run-46072354657-aOVp2y/artifact.zip",
+    "note": "Only compact content-free facts and hashes are retained in Git; raw evidence remains outside the repository.",
+    "private_keys_committed": false,
+    "raw_collector_committed": false,
+    "raw_journal_committed": false,
+    "raw_logs_committed": false,
+    "raw_serial_committed": false
+  },
+  "run": {
+    "artifact_created_utc": "2026-11-27T22:02:02Z",
+    "attempt": 1,
+    "branch": "card/P0-03-selinux-fix",
+    "conclusion": "failure",
+    "event": "workflow_dispatch",
+    "evidence_upload_succeeded": true,
+    "head": "ac71d6fc43ff3c0da3493fd18bb963d54a12ba2e",
+    "id": 46072354657,
+    "job_completed_utc": "2026-11-27T22:02:04Z",
+    "job_id": 140752048603,
+    "job_name": "install-and-boot",
+    "job_started_utc": "2026-11-27T21:45:41Z",
+    "parent": "e94ba633ea249e2e204bf496007a52f94571aa96",
+    "tree": "72a04eaf6d6114b4f73c91d8c2d80cfebd0ab672"
+  },
+  "schema": 1
+}
