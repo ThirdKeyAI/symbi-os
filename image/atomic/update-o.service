@@ -3,7 +3,6 @@ Description=Disposable hosted signed update and rollback phase
 ConditionPathExists=!/etc/initrd-release
 Requires=b.service
 After=local-fs.target b.service
-OnFailure=poweroff.target
 
 [Service]
 Type=oneshot

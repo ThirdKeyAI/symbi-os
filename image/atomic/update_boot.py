@@ -13,6 +13,14 @@ DISPOSABLE_PHASE_TIMEOUT_SECONDS = 1800
 NEGATIVE_CASES = ("unsigned", "wrong-key", "wrong-reference", "altered-signature")
 NEGATIVE_UPDATE_SOURCE = "/run/symbi-update-negative/source"
 POSITIVE_OVERLAY_CASE = "valid-signature"
+LAUNCHER_FAILURE_SCOPE = "Bounded launcher-preparation diagnostics; no update action ran"
+LAUNCHER_FAILURE_JOURNAL_COMMAND = [
+    "/usr/bin/journalctl", "--unit=b.service", "--boot=0", "--no-pager",
+    "--output=short-monotonic", "--lines=24",
+]
+LAUNCHER_FAILURE_JOURNAL_MAX_BYTES = 8 * 1024
+LAUNCHER_FAILURE_JOURNAL_MAX_LINES = 24
+LAUNCHER_FAILURE_JOURNAL_MAX_LINE_BYTES = 512
 
 
 def sha256(path):
@@ -32,6 +40,72 @@ def unique_json(raw):
     if not isinstance(value, dict):
         raise ValueError("update report must be an object")
     return value
+
+
+def validate_launcher_failure_report(report, runner_hash):
+    """Accept only the hash-bound, bounded launcher failure diagnostic."""
+    required = {
+        "schema", "passed", "guest_booted", "release_qualified", "product",
+        "diagnostic", "unit", "runner_sha256", "service", "journal", "scope",
+    }
+    if (not isinstance(report, dict) or set(report) != required
+            or report.get("schema") != 1 or report.get("passed") is not False
+            or report.get("guest_booted") is not True
+            or report.get("release_qualified") is not False
+            or report.get("product") != "Symbi-Hosted-Update-Probe"
+            or report.get("diagnostic") != "launcher-preparation-failure"
+            or report.get("unit") != "b.service"
+            or report.get("runner_sha256") != runner_hash
+            or re.fullmatch(r"[a-f0-9]{64}", runner_hash or "") is None
+            or report.get("scope") != LAUNCHER_FAILURE_SCOPE):
+        raise ValueError("unbound launcher-preparation failure report")
+    service = report.get("service")
+    service_fields = {
+        "Result", "ExecMainCode", "ExecMainStatus", "ActiveState", "SubState",
+    }
+    if (not isinstance(service, dict) or set(service) != service_fields
+            or service.get("Result") == "success"
+            or service.get("ActiveState") != "failed"
+            or service.get("SubState") != "failed"
+            or re.fullmatch(r"[0-9]{1,3}", service.get("ExecMainCode", "")) is None
+            or re.fullmatch(r"[0-9]{1,3}", service.get("ExecMainStatus", "")) is None
+            or any(not isinstance(value, str) or not value or len(value.encode()) > 128
+                   for value in service.values())):
+        raise ValueError("launcher-preparation service failure is incomplete")
+    journal = report.get("journal")
+    journal_fields = {
+        "unit", "command", "line_count", "bytes", "sha256", "truncated", "excerpt",
+    }
+    if (not isinstance(journal, dict) or set(journal) != journal_fields
+            or journal.get("unit") != "b.service"
+            or journal.get("command") != LAUNCHER_FAILURE_JOURNAL_COMMAND
+            or type(journal.get("line_count")) is not int
+            or not 0 <= journal["line_count"] <= LAUNCHER_FAILURE_JOURNAL_MAX_LINES
+            or type(journal.get("bytes")) is not int
+            or not 0 <= journal["bytes"] <= LAUNCHER_FAILURE_JOURNAL_MAX_BYTES
+            or type(journal.get("truncated")) is not bool
+            or re.fullmatch(r"[a-f0-9]{64}", journal.get("sha256", "")) is None
+            or not isinstance(journal.get("excerpt"), list)
+            or len(journal["excerpt"]) != journal["line_count"]):
+        raise ValueError("launcher-preparation journal metadata is incomplete")
+    for line in journal["excerpt"]:
+        if (not isinstance(line, str)
+                or len(line.encode("ascii", errors="ignore")) != len(line)
+                or len(line.encode("ascii")) > LAUNCHER_FAILURE_JOURNAL_MAX_LINE_BYTES
+                or any(not " " <= character <= "~" for character in line)
+                or re.search(
+                    r"(?i)\b(?:authorization|cookie|credential|password|secret|token)"
+                    r"\s*[:=]\s*(?!<redacted>)[^ ]+", line)
+                or re.search(r"(?i)\bbearer\s+(?!<redacted>)[^ ]+", line)
+                or re.search(r"(?<![A-Za-z0-9])[A-Za-z0-9_+/=-]{48,}(?![A-Za-z0-9])",
+                             line)):
+            raise ValueError("launcher-preparation journal excerpt is unsafe")
+    payload = ("\n".join(journal["excerpt"])
+               + ("\n" if journal["excerpt"] else "")).encode("ascii")
+    if (len(payload) != journal["bytes"]
+            or hashlib.sha256(payload).hexdigest() != journal["sha256"]):
+        raise ValueError("launcher-preparation journal digest differs")
+    return report
 
 
 def stop_child(child):
@@ -73,7 +147,9 @@ def firmware_arguments(directory=Path("/inputs"), expected_filename="expected.js
         ("systemd.extra-unit.o.service", "update-o.service"),
         ("systemd.extra-unit.s.service", "s.service"),
         ("systemd.extra-unit.b.service", "update-b.service"),
+        ("systemd.extra-unit.f.service", "update-f.service"),
         ("symbi-update.py", "update_guest.py"),
+        ("symbi-update-failure.py", "update_boot_failure.py"),
         ("symbi-update-expected.json", expected_filename),
         ("symbi-update-policy.json", "update-policy.json"),
     ]
@@ -407,8 +483,9 @@ def main():
             or (inputs / "update.raw").stat().st_size != source.get("bytes")
             or sha256(inputs / "update.raw") != source.get("sha256")):
         raise ValueError("authenticated update source disk changed")
-    names = ["update_guest.py", "expected.json", "update-policy.json",
-             "update-o.service", "s.service", "update-b.service"]
+    names = ["update_guest.py", "update_boot_failure.py", "expected.json",
+             "update-policy.json", "update-o.service", "s.service",
+             "update-b.service", "update-f.service"]
     positive_name = "expected-positive.json"
     positive_raw = (inputs / positive_name).read_bytes()
     if len(positive_raw) > 128 * 1024:
@@ -500,6 +577,10 @@ def main():
             positive_qemu_command(), "same-path-positive", "same-path-positive.json",
             "same-path-positive-serial.log", DISPOSABLE_PHASE_TIMEOUT_SECONDS)
         positive_report = unique_json(path.read_bytes())
+        if positive_report.get("diagnostic") == "launcher-preparation-failure":
+            record["launcher_failure"] = validate_launcher_failure_report(
+                positive_report, hashes["update_boot_failure.py"])
+            raise RuntimeError("launcher preparation failed; inspect bounded report")
         validate_positive_report(positive_report, positive_expected,
                                  hashes[positive_name], hashes["update_guest.py"])
         baseline_hash = positive_report["same_path_positive_control"]["state_before_sha256"]

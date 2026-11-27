@@ -1,0 +1,111 @@
+{
+  "schema": 1,
+  "passed": false,
+  "qualification": false,
+  "run": {
+    "id": 45982201450,
+    "job_id": 140448664885,
+    "head_branch": "card/P0-03-selinux-fix",
+    "head_sha": "3690fcda9ea2ae47e7024f58449dac407a0b23f7",
+    "conclusion": "failure",
+    "duration_seconds": 875,
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45982201450"
+  },
+  "artifact": {
+    "id": 15190491849,
+    "name": "atomic-development-boot-generic",
+    "bytes": 80304,
+    "digest": "sha256:530191427ff5754235e2bd1637badaf9e00ef2dae5684dc9a7657142897ccfc6",
+    "downloaded_zip_sha256": "530191427ff5754235e2bd1637badaf9e00ef2dae5684dc9a7657142897ccfc6",
+    "files": 98,
+    "uncompressed_bytes": 214443,
+    "created_at": "2026-11-27T10:41:41Z",
+    "expires_at": "2026-12-11T10:41:41Z",
+    "expired_at_review": false
+  },
+  "critical_evidence_sha256": {
+    "atomic-disk-evidence/result.json": "a1f8ec24ce8e49f75bf46f4d66cd952832ba7e8416d77119850235eda6d11fa8",
+    "atomic-disk-evidence/source-authentication/result.json": "4d7e65668b04aad3d34b7ec4abd021147299ef4513eda36a67c677633b1eb7c9",
+    "atomic-update-evidence/result.json": "18409063c7d282d662e4b56b183bfadc324133cbf09a335ba8ae7e86a9f9483c",
+    "atomic-update-evidence/controller-result.json": "a503f187273564a1706edd2c147d9d944f2c63904d81c55d00a18f9041210feb",
+    "atomic-update-evidence/same-path-positive.json": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "atomic-update-evidence/same-path-positive-serial.log": "5029bea82c2d8b7a4c0c7a02a11a5bdfca960a5a67752e13d3f4550e2edc2ab3"
+  },
+  "observation": {
+    "stage": "same-path-positive",
+    "source_fixture_authentication_passed": true,
+    "guest_reached_system_services": true,
+    "structured_guest_booted": false,
+    "failing_unit": "b.service",
+    "dependent_update_unit_started": false,
+    "bounded_phase_report_bytes": 0,
+    "bootc_switch_attempted": false,
+    "negative_controls_attempted": false,
+    "update_boot_attempted": false,
+    "rollback_attempted": false,
+    "failure": "The launcher-preparation unit failed before o.service could start. The retained serial stream contains the unit and dependency failure, but the artifact lacks b.service result fields and journal details needed to identify the failed systemd step."
+  },
+  "resources": {
+    "controller": {
+      "memory_max_bytes": 3221225472,
+      "memory_peak_bytes": 3221225472,
+      "memory_max_events": 6544
+    },
+    "parent": {
+      "memory_max_bytes": 5368709120,
+      "memory_peak_bytes": 5368709120,
+      "memory_max_events": 172088
+    },
+    "oom_events": 0,
+    "oom_kill_events": 0,
+    "oom_group_kill_events": 0,
+    "swap_max_bytes": 0
+  },
+  "cleanup": {
+    "containers_removed_and_absent": true,
+    "image_removed": true,
+    "private_storage_removed": true,
+    "private_runroot_removed": true,
+    "qemu_exited_before_controller_cleanup": true,
+    "passed": true
+  },
+  "local_diagnostic": {
+    "status": "implemented-pending-independent-review",
+    "failure_unit": "f.service",
+    "failure_trigger": "b.service OnFailure only; not wanted by the ordinary boot target",
+    "failure_precheck": "ExecStartPre=/usr/bin/systemctl --quiet is-failed b.service",
+    "failure_precheck_clean_skip_possible": false,
+    "service_properties": [
+      "Result",
+      "ExecMainCode",
+      "ExecMainStatus",
+      "ActiveState",
+      "SubState"
+    ],
+    "journal_unit": "b.service",
+    "journal_max_lines": 24,
+    "journal_max_line_bytes": 512,
+    "journal_max_bytes": 8192,
+    "journal_control_characters_removed": true,
+    "journal_secret_shapes_redacted": true,
+    "runner_hash_bound": true,
+    "report_max_bytes": 131072,
+    "poweroff_after_report": true,
+    "poweroff_on_reporter_failure": true,
+    "update_success_path_semantics_changed": false,
+    "root_cause_fix_included": false
+  },
+  "local_verification": {
+    "focused_update_tests": 57,
+    "focused_seconds": 0.134,
+    "focused_peak_rss_kib": 35096,
+    "full_image_tests": 336,
+    "full_image_seconds": 2.065,
+    "full_image_peak_rss_kib": 55556,
+    "swaps": 0,
+    "python_syntax": "pass",
+    "systemd_unit_syntax": "pass with expected local /usr/bin/bootc absence warning",
+    "diff_check": "pass"
+  },
+  "next": "Review the bounded diagnostic, then run the exact reviewed head once. Use the retained service result and journal excerpt to identify the failed launcher-preparation step before changing the SELinux mechanism; no update or OS qualification is claimed."
+}

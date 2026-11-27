@@ -525,3 +525,23 @@ read-only source binding and all resource limits remain required. Static review
 and offline fixtures cannot establish the expected domain transition. A fresh
 hosted run must prove status, switch and rollback under the installed enforcing
 policy before any update or OS qualification.
+
+Run 45982201450 reached the fixed launcher preparation under enforcing SELinux,
+but `b.service` failed before `o.service` started. The retained artifact did not
+include the unit's result fields or journal, so changing the label mechanism
+from that observation alone would guess at the failing systemd step.
+
+The next run injects `f.service` as a failure-only diagnostic. `b.service`'s
+`OnFailure` starts it; the ordinary boot target does not. Its `ExecStartPre`
+requires `b.service` to be in the failed state, then the reporter records exactly
+five systemd result fields and a sanitized `b.service` journal excerpt through
+the existing virtio report channel. A failed precheck is a unit failure rather
+than a clean condition skip, so `OnFailure=poweroff.target` and `ExecStopPost`
+retain fail-safe shutdown if reporter validation fails. The excerpt is limited
+to 24 lines, 512 bytes per line and 8 KiB overall; control characters and
+secret-shaped assignments or long values are redacted. The report is limited to
+128 KiB and bound to the diagnostic script's SHA-256. The controller validates
+this exact schema and still fails the run. After the write, or if the diagnostic
+fails, the guest powers off. The ordinary update path and its existing
+`ExecStopPost` shutdown remain unchanged. This permits one bounded diagnostic
+rerun and does not qualify or alter the launcher.
