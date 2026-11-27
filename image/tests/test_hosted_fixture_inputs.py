@@ -28,12 +28,36 @@ class RuntimeArchive(unittest.TestCase):
         self.assertEqual(selected['tree'], native['tree'])
         self.assertEqual(selected['drivers'], native['drivers'])
         self.assertEqual(hosted['fixture_execution'], {
+            'state': 'passed',
+            'event': 'pull_request',
+            'pull_request': 6,
+            'conclusion': 'success',
+            'run_id': 45995824985,
+            'run_attempt': 1,
+            'head': 'cdd8e7d931ddf90f1fe8afb22d12df9c539320b4',
+            'checked_merge': '2189acad039387cd48116c11934da383bea8e653',
+            'job_id': 140494839919,
+            'source_revision': native['revision'],
+            'source_tree': native['tree'],
+            'artifact': {
+                'id': 15196575712,
+                'name': 'container-fixture-evidence',
+                'bytes': 293698,
+                'sha256': '8b9d8f59f66348ff42625cb313bffc21cead77bb0b152563c6b236313aa99ad0',
+            },
+            'passed': True,
+            'qualified': False,
+        })
+
+        pending = copy.deepcopy(hosted)
+        pending['fixture_execution'] = {
             'state': 'pending',
             'run_id': None,
             'head': None,
             'source_revision': native['revision'],
             'source_tree': native['tree'],
-        })
+        }
+        inputs.validate_fixture_source_lock(pending, native)
 
         variants = []
         for field in ('fixture_commit', 'fixture_tree', 'source_revision'):
@@ -50,11 +74,43 @@ class RuntimeArchive(unittest.TestCase):
         changed_native['drivers']['extra.py'] = '0' * 64
         variants.append((hosted, changed_native))
         changed = copy.deepcopy(hosted)
-        changed['fixture_execution'].update(
-            state='passed', run_id=1, head='1' * 40)
+        changed['runtime_artifact_validation']['run_id'] = 0
+        variants.append((changed, native))
+
+        execution_mutations = (
+            (('state',), 'pending'),
+            (('event',), 'push'),
+            (('pull_request',), 7),
+            (('conclusion',), 'failure'),
+            (('run_id',), 45995824986),
+            (('run_attempt',), 2),
+            (('head',), '0' * 40),
+            (('checked_merge',), '0' * 40),
+            (('job_id',), 140494839920),
+            (('source_revision',), '0' * 40),
+            (('source_tree',), '0' * 40),
+            (('artifact', 'id'), 15196575713),
+            (('artifact', 'name'), 'other-evidence'),
+            (('artifact', 'bytes'), 293699),
+            (('artifact', 'sha256'), '0' * 64),
+            (('passed',), False),
+            (('passed',), 1),
+            (('qualified',), True),
+            (('qualified',), 0),
+        )
+        for path, value in execution_mutations:
+            changed = copy.deepcopy(hosted)
+            target = changed['fixture_execution']
+            for key in path[:-1]:
+                target = target[key]
+            target[path[-1]] = value
+            variants.append((changed, native))
+
+        changed = copy.deepcopy(pending)
+        changed['fixture_execution']['unexpected'] = None
         variants.append((changed, native))
         changed = copy.deepcopy(hosted)
-        changed['runtime_artifact_validation']['run_id'] = 0
+        changed['fixture_execution']['unexpected'] = None
         variants.append((changed, native))
         for changed_hosted, changed_native in variants:
             with self.subTest(hosted=changed_hosted, native=changed_native), \

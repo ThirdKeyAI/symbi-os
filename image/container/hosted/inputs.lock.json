@@ -17,11 +17,25 @@
     "checked_merge": "f01100ce68df6ed31dfa0983a2ba1b59be230b6c"
   },
   "fixture_execution": {
-    "state": "pending",
-    "run_id": null,
-    "head": null,
+    "state": "passed",
+    "event": "pull_request",
+    "pull_request": 6,
+    "conclusion": "success",
+    "run_id": 45995824985,
+    "run_attempt": 1,
+    "head": "cdd8e7d931ddf90f1fe8afb22d12df9c539320b4",
+    "checked_merge": "2189acad039387cd48116c11934da383bea8e653",
+    "job_id": 140494839919,
     "source_revision": "cd4b34282ade880c8ac3d5136d31ff80cde92794",
-    "source_tree": "2b2379d0de4eaaf4a57cf52c96355015bb3dc25d"
+    "source_tree": "2b2379d0de4eaaf4a57cf52c96355015bb3dc25d",
+    "artifact": {
+      "id": 15196575712,
+      "name": "container-fixture-evidence",
+      "bytes": 293698,
+      "sha256": "8b9d8f59f66348ff42625cb313bffc21cead77bb0b152563c6b236313aa99ad0"
+    },
+    "passed": true,
+    "qualified": false
   },
   "artifact": {
     "id": 15066141540,

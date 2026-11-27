@@ -2,19 +2,20 @@
 
 This is Ubuntu development evidence for P0-05. It does not qualify Fedora,
 managed CLI brokers, the escape suite or a release image. The OS runtime pin is
-unchanged. Retained passing evidence used fixture-only commit
+unchanged. Current selected passing evidence uses merge
+`cd4b34282ade880c8ac3d5136d31ff80cde92794`, its exact tree and the three driver
+hashes bound through `native-fixture.lock.json`. Earlier retained passing
+evidence used fixture-only commit
 `c1fac8aab6c5d399abb39036ba35b9636212e17f` from
-[PR 24](https://github.com/ThirdKeyAI/Symbiont/pull/24). New hosted runs select
-merge `cd4b34282ade880c8ac3d5136d31ff80cde92794`, its exact tree and the same
-three driver hashes through `native-fixture.lock.json`.
+[PR 24](https://github.com/ThirdKeyAI/Symbiont/pull/24) and remains historical.
 
 The workflow reuses the immutable development-binary artifact from passing run
 45702056794. Its ZIP, both executable hashes, source, Cargo.lock and cumulative
 reviewed patch are bound in `inputs.lock.json`. Every binary is checked before
 receiving executable permission; no local rebuild or large download is performed.
 The lock records that run under `runtime_artifact_validation`; the distinct
-`fixture_execution` record remains `pending` with null run and head fields until
-the selected merge actually completes all six profiles.
+`fixture_execution` record selects the separate successful current-source run
+described below. The old binary validation evidence remains a separate binding.
 
 The gVisor 20261123.0 Debian package is authenticated through the retained
 publisher-signed repository metadata and full key fingerprint. Its complete
@@ -58,6 +59,39 @@ without assuming the immediate parent is the runtime baseline. A fresh
 0700 `/tmp/sf-*` directory owned by the test account keeps supervisor Unix socket
 paths below their bound. It holds private fixture state and is never uploaded.
 
+## Selected current-source execution passed
+
+[Run 45995824985](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45995824985),
+pull-request attempt 1 for PR 6, passed all steps in job 140494839919. The API
+head was `cdd8e7d931ddf90f1fe8afb22d12df9c539320b4`; the checked synthetic merge
+was `2189acad039387cd48116c11934da383bea8e653`. It exercised runtime source
+`deddb9e997244d2289c217ad76b8fde0e9b0339b` and fixture revision
+`cd4b34282ade880c8ac3d5136d31ff80cde92794` at tree
+`2b2379d0de4eaaf4a57cf52c96355015bb3dc25d`. The cumulative patch SHA-256 was
+`544ff04152827cedd78aeaf2ef697d9637721f15937a00064e9f0ecbd85ad215`, and the
+fixture-source lock SHA-256 was
+`6223b18f5d24878a6455a85d7617f7fe7d5f5d9086f75308870b3664db22fbfa`.
+
+Docker/runc and gVisor/runsc each passed the nine filesystem-grant, nine
+source-broker and fourteen Git-source cases: six profiles and 64 cases total.
+The selected binary SHA-256 was
+`1e90af1fe424ec37ad716bbc1e069c0bc7a78f59c49871b7e79506bda69f49c7`, and the
+fixture image was
+`sha256:c1b6646800da097ddfe04abbe965f07694eac7562bb68e2d0eebb8b19cae2d33`.
+Reports retained no workers, leases or containers, and the daemon stopped.
+
+The sole artifact was ID 15196575712, `container-fixture-evidence`: a
+293,698-byte ZIP with SHA-256
+`8b9d8f59f66348ff42625cb313bffc21cead77bb0b152563c6b236313aa99ad0`, 57
+regular entries and 1,531,115 uncompressed bytes. The 4 GiB cgroup used no swap,
+peaked at 1,708,941,312 bytes, recorded 361 `memory.events` max events and zero
+OOM, OOM-kill or OOM-group-kill events. The outer systemd unit finished with
+result `success` and status `0/SUCCESS`.
+
+The retained result is `passed: true` and `qualified: false`. It is Ubuntu
+development fixture evidence only; it does not qualify Fedora, a release,
+the managed CLI route or the escape suite, and P0-05 remains open.
+
 
 ## Complete Docker and gVisor fixture execution passed
 
@@ -87,12 +121,11 @@ acceptance, plus required reviews, are not established by these six drivers.
 ## Native fixture OCI export remains disabled
 
 The prepared exporter is not an extension of the passing evidence above. The
-current Dockerfile resolves Python, Git and CA packages live, and retained
-evidence tested fixture commit `c1fac8aab6c5d399abb39036ba35b9636212e17f`.
-The hosted source contract now selects merge
-`cd4b34282ade880c8ac3d5136d31ff80cde92794`, but no fresh hosted run has
-exercised that selection. The `native-fixture-build.lock.json` prerequisite
-slot therefore remains pending.
+current Dockerfile resolves Python, Git and CA packages live. The hosted source
+contract now selects merge `cd4b34282ade880c8ac3d5136d31ff80cde92794`, and
+run 45995824985 exercised that selection, but it produced evidence only: no OCI
+was exported or cold-loaded. The `native-fixture-build.lock.json` prerequisite
+slot remains pending and unchanged; the producer and upload stay disabled.
 Activation requires a reviewed full package closure authenticated by signed
 Ubuntu Release/InRelease and Packages metadata, exact package identities,
 sizes and hashes, sequential verified downloads, and an offline
