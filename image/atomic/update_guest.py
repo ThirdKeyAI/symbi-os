@@ -21,6 +21,10 @@ MOUNTINFO = Path("/proc/self/mountinfo")
 MOUNTINFO_MAX_BYTES = 256 * 1024
 MOUNTINFO_MAX_LINES = 4096
 MOUNTINFO_MAX_LINE_BYTES = 8192
+FDINFO = Path("/proc/self/fdinfo")
+FDINFO_MAX_BYTES = 4096
+FDINFO_MAX_LINES = 64
+FDINFO_MAX_LINE_BYTES = 512
 NEGATIVE_SOURCE = Path("/run/symbi-update-negative/source")
 NEGATIVE_CASES = ("unsigned", "wrong-key", "wrong-reference", "altered-signature")
 POSITIVE_OVERLAY_CASE = "valid-signature"
@@ -108,10 +112,12 @@ def _mountinfo_options(value):
     return options
 
 
-def source_mount_observation(raw, mountpoint=SOURCE.parent):
-    """Return one bounded kernel mount observation without accepting its controls."""
-    if Path(mountpoint) != SOURCE.parent or not isinstance(raw, str):
-        raise ValueError("fixed update mountpoint required")
+def mount_observation(raw, mountpoint, visible_mount_id):
+    """Select the kernel row named by an opened directory's visible mount ID."""
+    mountpoint = Path(mountpoint)
+    if (not mountpoint.is_absolute() or not isinstance(raw, str)
+            or type(visible_mount_id) is not int or not 1 <= visible_mount_id <= 9999999999):
+        raise ValueError("invalid visible mount observation input")
     try:
         encoded = raw.encode("utf-8")
     except UnicodeEncodeError as error:
@@ -149,6 +155,7 @@ def source_mount_observation(raw, mountpoint=SOURCE.parent):
         super_options = _mountinfo_options(fields[separator + 3])
         if observed_mountpoint == str(mountpoint):
             matches.append({
+                "mount_id": int(fields[0]),
                 "mountpoint": observed_mountpoint,
                 "root": root,
                 "fstype": fields[separator + 1],
@@ -157,22 +164,39 @@ def source_mount_observation(raw, mountpoint=SOURCE.parent):
                 "options": options,
                 "super_options": super_options,
             })
+    selected = [entry for entry in matches if entry["mount_id"] == visible_mount_id]
     observation = {
         "mountinfo_sha256": hashlib.sha256(encoded).hexdigest(),
-        "match_count": len(matches),
+        "path_match_count": len(matches),
+        "selected_match_count": len(selected),
+        "visible_mount_id": visible_mount_id,
+        "selected_mount_id": visible_mount_id if selected else None,
     }
-    if len(matches) == 1:
-        observation.update(matches[0])
+    if len(selected) == 1:
+        selected_entry = dict(selected[0])
+        observation["selected_mount_id"] = selected_entry.pop("mount_id")
+        observation.update(selected_entry)
     return observation
+
+
+def source_mount_observation(raw, visible_mount_id, mountpoint=SOURCE.parent):
+    """Observe only the fixed update mountpoint selected by its open descriptor."""
+    if Path(mountpoint) != SOURCE.parent:
+        raise ValueError("fixed update mountpoint required")
+    return mount_observation(raw, mountpoint, visible_mount_id)
 
 
 def validate_source_mount(observation, source_device, device_number):
     """Bind one mountinfo entry to the exact direct block node and controls."""
-    required = {"mountinfo_sha256", "match_count", "mountpoint", "root",
+    required = {"mountinfo_sha256", "path_match_count", "selected_match_count",
+                "visible_mount_id", "selected_mount_id", "mountpoint", "root",
                 "fstype", "source", "major_minor", "options", "super_options"}
     source_device = Path(source_device)
     if (not isinstance(observation, dict) or set(observation) != required
-            or observation.get("match_count") != 1
+            or type(observation.get("path_match_count")) is not int
+            or observation.get("path_match_count") < 1
+            or observation.get("selected_match_count") != 1
+            or observation.get("visible_mount_id") != observation.get("selected_mount_id")
             or re.fullmatch(r"[a-f0-9]{64}",
                             observation.get("mountinfo_sha256", "")) is None
             or not isinstance(device_number, tuple) or len(device_number) != 2
@@ -196,6 +220,99 @@ def validate_source_mount(observation, source_device, device_number):
             or not {"ro", "nosuid", "nodev", "noexec"}.issubset(set(options))):
         raise ValueError("update source mount controls changed")
     return observation
+
+
+def parse_visible_mount_id(raw):
+    """Parse one canonical mnt_id from a bounded procfs fdinfo record."""
+    if not isinstance(raw, str):
+        raise ValueError("invalid fdinfo input")
+    try:
+        encoded = raw.encode("ascii")
+    except UnicodeEncodeError as error:
+        raise ValueError("invalid fdinfo encoding") from error
+    if (not 0 < len(encoded) <= FDINFO_MAX_BYTES or not raw.endswith("\n")
+            or "\x00" in raw or "\r" in raw):
+        raise ValueError("invalid or oversized fdinfo")
+    lines = raw[:-1].split("\n")
+    if not 1 <= len(lines) <= FDINFO_MAX_LINES:
+        raise ValueError("invalid fdinfo line count")
+    mount_ids = []
+    for line in lines:
+        if (not line or len(line.encode("ascii")) > FDINFO_MAX_LINE_BYTES
+                or ":" not in line):
+            raise ValueError("malformed fdinfo line")
+        key, value = line.split(":", 1)
+        if re.fullmatch(r"[a-z_]{1,64}", key) is None or len(value) > 4096:
+            raise ValueError("invalid fdinfo field")
+        if key == "mnt_id":
+            match = re.fullmatch(r"[\t ]+(0|[1-9][0-9]{0,9})", value)
+            if match is None:
+                raise ValueError("invalid fdinfo mount ID")
+            mount_ids.append(int(match.group(1)))
+    if len(mount_ids) != 1 or mount_ids[0] < 1:
+        raise ValueError("ambiguous fdinfo mount ID")
+    return mount_ids[0]
+
+
+def read_visible_mount_id(descriptor):
+    """Read the fixed procfs fdinfo record for one still-open descriptor."""
+    if type(descriptor) is not int or descriptor < 0:
+        raise ValueError("invalid visible mount descriptor")
+    path = FDINFO / str(descriptor)
+    flags = os.O_RDONLY | os.O_CLOEXEC
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    fdinfo = os.open(path, flags)
+    try:
+        chunks = []
+        total = 0
+        while total <= FDINFO_MAX_BYTES:
+            chunk = os.read(fdinfo, min(4096, FDINFO_MAX_BYTES + 1 - total))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            total += len(chunk)
+    finally:
+        os.close(fdinfo)
+    if total > FDINFO_MAX_BYTES:
+        raise ValueError("oversized fdinfo")
+    try:
+        raw = b"".join(chunks).decode("ascii")
+    except UnicodeDecodeError as error:
+        raise ValueError("invalid fdinfo encoding") from error
+    return parse_visible_mount_id(raw)
+
+
+def observe_visible_source_mount(*, opener=None, descriptor_stat=None,
+                                 path_lstat=None, closer=None,
+                                 fdinfo_reader=None, mountinfo_reader=None):
+    """Open the fixed path and select the row the kernel exposes through that fd."""
+    opener = os.open if opener is None else opener
+    descriptor_stat = os.fstat if descriptor_stat is None else descriptor_stat
+    path_lstat = os.lstat if path_lstat is None else path_lstat
+    closer = os.close if closer is None else closer
+    fdinfo_reader = read_visible_mount_id if fdinfo_reader is None else fdinfo_reader
+    mountinfo_reader = read_mountinfo if mountinfo_reader is None else mountinfo_reader
+    required_flags = (getattr(os, "O_PATH", 0) | os.O_DIRECTORY | os.O_CLOEXEC
+                      | getattr(os, "O_NOFOLLOW", 0))
+    if not getattr(os, "O_PATH", 0) or not getattr(os, "O_NOFOLLOW", 0):
+        raise ValueError("kernel path-only no-follow open is unavailable")
+    descriptor = opener(SOURCE.parent, required_flags)
+    try:
+        opened = descriptor_stat(descriptor)
+        before = path_lstat(SOURCE.parent)
+        identity = lambda info: (info.st_dev, info.st_ino, stat.S_IFMT(info.st_mode))
+        if (not stat.S_ISDIR(opened.st_mode) or not stat.S_ISDIR(before.st_mode)
+                or identity(opened) != identity(before)):
+            raise ValueError("visible update mount path differs from its descriptor")
+        visible_mount_id = fdinfo_reader(descriptor)
+        observation = source_mount_observation(mountinfo_reader(), visible_mount_id)
+        after = path_lstat(SOURCE.parent)
+        if not stat.S_ISDIR(after.st_mode) or identity(after) != identity(opened):
+            raise ValueError("visible update mount path changed during observation")
+        return observation
+    finally:
+        closer(descriptor)
 
 
 def validate_mounted_device(source_device, mountpoint, *, device_lstat=None,
@@ -522,7 +639,7 @@ def main():
              str(source_device), str(SOURCE.parent)])
         if not os.statvfs(SOURCE).f_flag & os.ST_RDONLY:
             raise ValueError("update source is writable")
-        observation = source_mount_observation(read_mountinfo())
+        observation = observe_visible_source_mount()
         record["source_mount_observation"] = observation
         device_number = validate_mounted_device(source_device, SOURCE.parent)
         validate_source_mount(observation, source_device, device_number)

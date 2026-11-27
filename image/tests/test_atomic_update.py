@@ -30,6 +30,7 @@ from image.atomic.update_boot import (DISPOSABLE_PHASE_TIMEOUT_SECONDS,
                                       validate_shared_baseline)
 from image.atomic.update_process import TIMEOUT_SECONDS, validate_update_controller_command
 from image.atomic.update_guest import (UPDATE_COMMAND_TIMEOUT_SECONDS,
+                                       FDINFO_MAX_BYTES,
                                        MOUNTINFO_MAX_BYTES,
                                        SOURCE, STATE, SOURCE_SERIAL,
                                        SOURCE_DEVICE_TIMEOUT_SECONDS,
@@ -38,7 +39,11 @@ from image.atomic.update_guest import (UPDATE_COMMAND_TIMEOUT_SECONDS,
                                        validate_source_identity,
                                        discover_source_device,
                                        wait_for_source_device,
+                                       mount_observation,
+                                       parse_visible_mount_id,
+                                       read_visible_mount_id,
                                        source_mount_observation,
+                                       observe_visible_source_mount,
                                        validate_source_mount,
                                        validate_mounted_device)
 from image.atomic.update_hosted import retain_controller_output, run_update
@@ -1038,12 +1043,17 @@ class AtomicUpdateTests(unittest.TestCase):
     def test_source_mount_observation_binds_kernel_mountinfo_to_the_device(self):
         raw = (r"46 23 0:1 /cache\040root /run/other\040mount ro - tmpfs "
                "tmpfs\\134name rw\n"
+               "99 23 0:44 / /run/symbi-update "
+               "rw,nosuid,nodev,noexec - tmpfs runtime rw\n"
                "47 23 252:16 / /run/symbi-update "
                "ro,nosuid,nodev,noexec,relatime - ext4 /dev/vdb ro,seclabel\n")
-        observation = source_mount_observation(raw)
+        observation = source_mount_observation(raw, 47)
         self.assertEqual(observation, {
             "mountinfo_sha256": hashlib.sha256(raw.encode()).hexdigest(),
-            "match_count": 1,
+            "path_match_count": 2,
+            "selected_match_count": 1,
+            "visible_mount_id": 47,
+            "selected_mount_id": 47,
             "mountpoint": "/run/symbi-update",
             "root": "/",
             "fstype": "ext4",
@@ -1072,13 +1082,13 @@ class AtomicUpdateTests(unittest.TestCase):
         for name, raw in mutations.items():
             with self.subTest(name=name), self.assertRaises(ValueError):
                 validate_source_mount(
-                    source_mount_observation(raw), Path("/dev/vdb"), (252, 16))
+                    source_mount_observation(raw, 47), Path("/dev/vdb"), (252, 16))
 
     def test_source_mount_observation_rejects_ambiguous_or_unsafe_input(self):
         valid = ("47 23 252:16 / /run/symbi-update "
                  "ro,nosuid,nodev,noexec - ext4 /dev/vdb ro,seclabel\n")
         cases = {
-            "duplicate target": valid + valid.replace("47 23", "48 23"),
+            "duplicate selected ID": valid + valid,
             "malformed escape": valid.replace("symbi-update", r"symbi\041update"),
             "unknown escape": valid.replace("/dev/vdb", r"/dev/vd\142"),
             "nul": valid.replace("ext4", "ext4\x00"),
@@ -1086,8 +1096,90 @@ class AtomicUpdateTests(unittest.TestCase):
         }
         for name, raw in cases.items():
             with self.subTest(name=name), self.assertRaises(ValueError):
-                observation = source_mount_observation(raw)
+                observation = source_mount_observation(raw, 47)
                 validate_source_mount(observation, Path("/dev/vdb"), (252, 16))
+
+    def test_visible_mount_id_selection_fails_closed_without_guessing(self):
+        visible = ("47 23 252:16 / /run/symbi-update "
+                   "ro,nosuid,nodev,noexec - ext4 /dev/vdb ro,seclabel\n")
+        hidden = ("99 23 0:44 / /run/symbi-update "
+                  "rw,nosuid,nodev,noexec - tmpfs runtime rw\n")
+        selected = source_mount_observation(visible + hidden, 47)
+        self.assertEqual(selected["path_match_count"], 2)
+        self.assertEqual(selected["visible_mount_id"], 47)
+        self.assertEqual(selected["selected_mount_id"], 47)
+        self.assertEqual(selected["source"], "/dev/vdb")
+        for raw, visible_id in (
+            (visible + visible, 47),
+            (visible + hidden, 48),
+        ):
+            with self.subTest(visible_id=visible_id), self.assertRaises(ValueError):
+                validate_source_mount(
+                    source_mount_observation(raw, visible_id),
+                    Path("/dev/vdb"), (252, 16))
+
+    def test_fdinfo_mount_id_parser_is_bounded_and_unambiguous(self):
+        raw = "pos:\t0\nflags:\t012000000\nmnt_id:\t47\nino:\t123\n"
+        self.assertEqual(parse_visible_mount_id(raw), 47)
+        mutations = {
+            "missing": raw.replace("mnt_id:\t47\n", ""),
+            "duplicate": raw + "mnt_id:\t47\n",
+            "negative": raw.replace("mnt_id:\t47", "mnt_id:\t-1"),
+            "leading zero": raw.replace("mnt_id:\t47", "mnt_id:\t047"),
+            "non-numeric": raw.replace("mnt_id:\t47", "mnt_id:\tabc"),
+            "nul": raw.replace("mnt_id", "mnt\x00_id"),
+            "no newline": raw.rstrip("\n"),
+            "oversized": raw + ("x" * FDINFO_MAX_BYTES),
+        }
+        for name, changed in mutations.items():
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                parse_visible_mount_id(changed)
+
+    def test_visible_mount_open_binds_fdinfo_mountinfo_and_named_path(self):
+        raw = ("47 23 252:16 / /run/symbi-update "
+               "ro,nosuid,nodev,noexec - ext4 /dev/vdb ro,seclabel\n")
+        opened = Mock(st_mode=stat.S_IFDIR | 0o700, st_dev=11, st_ino=22)
+        named = Mock(st_mode=stat.S_IFDIR | 0o700, st_dev=11, st_ino=22)
+        close = Mock()
+        opener = Mock(return_value=9)
+        observation = observe_visible_source_mount(
+            opener=opener, descriptor_stat=Mock(return_value=opened),
+            path_lstat=Mock(side_effect=[named, named]), closer=close,
+            fdinfo_reader=Mock(return_value=47), mountinfo_reader=Mock(return_value=raw))
+        self.assertEqual(observation["selected_mount_id"], 47)
+        opened_path, opened_flags = opener.call_args.args
+        self.assertEqual(opened_path, SOURCE.parent)
+        self.assertTrue(opened_flags & os.O_PATH)
+        self.assertTrue(opened_flags & os.O_DIRECTORY)
+        self.assertTrue(opened_flags & os.O_NOFOLLOW)
+        close.assert_called_once_with(9)
+
+        symlink = Mock(st_mode=stat.S_IFLNK | 0o777, st_dev=11, st_ino=22)
+        changed = Mock(st_mode=stat.S_IFDIR | 0o700, st_dev=11, st_ino=23)
+        for name, named_states in {
+            "symlink": [symlink],
+            "descriptor mismatch": [changed],
+            "changed path": [named, changed],
+        }.items():
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                observe_visible_source_mount(
+                    opener=Mock(return_value=9),
+                    descriptor_stat=Mock(return_value=opened),
+                    path_lstat=Mock(side_effect=named_states), closer=Mock(),
+                    fdinfo_reader=Mock(return_value=47),
+                    mountinfo_reader=Mock(return_value=raw))
+
+    def test_real_host_fdinfo_mount_id_selects_the_visible_root_mount(self):
+        descriptor = os.open("/", os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC)
+        try:
+            visible_mount_id = read_visible_mount_id(descriptor)
+        finally:
+            os.close(descriptor)
+        observation = mount_observation(
+            Path("/proc/self/mountinfo").read_text(), Path("/"), visible_mount_id)
+        self.assertEqual(observation["selected_match_count"], 1)
+        self.assertEqual(observation["selected_mount_id"], visible_mount_id)
+        self.assertEqual(observation["mountpoint"], "/")
 
     def test_mounted_device_binding_requires_one_real_mount_of_the_block_node(self):
         source = Mock(st_mode=stat.S_IFBLK | 0o600,
