@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 import time
 
-from contract import firmware_arguments, sha256, unique_json, validate_report
+from contract import qemu_arguments, sha256, unique_json, validate_report
 
 
 def main():
@@ -35,15 +35,7 @@ def main():
             subprocess.run(['/usr/bin/qemu-img','create','-f','qcow2','-F','raw','-b',
                             '/inputs/atomic.raw','/output/guest.qcow2'],stdout=log,stderr=subprocess.STDOUT,
                            check=True,timeout=30)
-        command=['/usr/bin/qemu-system-x86_64','-machine','q35,dump-guest-core=off',
-                 '-accel','tcg,thread=single','-cpu','max','-m','1536M','-smp','1',
-                 '-nodefaults','-no-user-config','-no-reboot','-net','none',
-                 '-smbios','type=1,manufacturer=Symbi-Test,product=Symbi-Hosted-Atomic-Probe',
-                 '-drive','file=/output/guest.qcow2,format=qcow2,if=virtio',
-                 '-device','virtio-rng-pci','-device','virtio-serial-pci',
-                 '-chardev','file,id=report,path=/output/report.json',
-                 '-device','virtserialport,chardev=report,name=org.symbi.atomic',
-                 '-serial','file:/output/serial.log','-monitor','none','-display','none']+firmware_arguments(inputs)
+        command=qemu_arguments(inputs)
         record['command']=command
         (output/'result.json').write_text(json.dumps(record,indent=2)+'\n')
         start=time.monotonic()

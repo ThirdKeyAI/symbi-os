@@ -244,6 +244,24 @@ def firmware_arguments(directory):
     return result
 
 
+def qemu_arguments(directory):
+    """Use both allotted CPUs without presenting SMT to the hardened guest."""
+    if directory!=Path('/inputs'): raise ValueError('Fixed read-only QEMU input mount required')
+    return [
+        '/usr/bin/qemu-system-x86_64','-machine','q35,dump-guest-core=off',
+        '-accel','tcg,thread=multi','-cpu','max','-m','1536M','-smp',
+        'cpus=2,sockets=1,cores=2,threads=1','-nodefaults','-no-user-config',
+        '-no-reboot','-net','none','-smbios',
+        'type=1,manufacturer=Symbi-Test,product=Symbi-Hosted-Atomic-Probe',
+        '-drive','file=/output/guest.qcow2,format=qcow2,if=virtio',
+        '-device','virtio-rng-pci','-device','virtio-serial-pci',
+        '-chardev','file,id=report,path=/output/report.json',
+        '-device','virtserialport,chardev=report,name=org.symbi.atomic',
+        '-serial','file:/output/serial.log','-monitor','none','-display','none',
+        *firmware_arguments(directory),
+    ]
+
+
 def validate_report(report,expected,nonce,probe_hash,expected_hash):
     def require(condition,reason):
         if not condition: raise ValueError(reason)
