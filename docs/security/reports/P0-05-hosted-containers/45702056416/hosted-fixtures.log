@@ -1,0 +1,26 @@
+Running as unit: symbi-container-fixtures-45702056416-1.service; invocation ID: 76c89fefba874c3e9f18a7f66859a4c6
+Traceback (most recent call last):
+  File "/home/runner/work/symbi-os/symbi-os/image/container/hosted/check.py", line 225, in <module>
+    main()
+    ~~~~^^
+  File "/home/runner/work/symbi-os/symbi-os/image/container/hosted/check.py", line 200, in main
+    run('complete-fixtures', ['/usr/sbin/runuser', '-u', account.pw_name, '--', 'env', '-i',
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                              'PATH=/usr/bin:/bin', 'GITHUB_ACTIONS=true', 'RUNNER_ENVIRONMENT=github-hosted',
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                              'PYTHONDONTWRITEBYTECODE=1', 'python3', str(configuration / 'run_fixtures.py'),
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                              '--work', str(work)], 5400)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/symbi-os/symbi-os/image/container/hosted/check.py", line 52, in run
+    result.check_returncode()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.14/subprocess.py", line 509, in check_returncode
+    raise CalledProcessError(self.returncode, self.args, self.stdout,
+                             self.stderr)
+subprocess.CalledProcessError: Command '['/usr/sbin/runuser', '-u', 'runner', '--', 'env', '-i', 'PATH=/usr/bin:/bin', 'GITHUB_ACTIONS=true', 'RUNNER_ENVIRONMENT=github-hosted', 'PYTHONDONTWRITEBYTECODE=1', 'python3', '/home/runner/work/symbi-os/symbi-os/image/container/hosted/run_fixtures.py', '--work', '/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work']' returned non-zero exit status 1.
+          Finished with result: exit-code
+Main processes terminated with: code=exited, status=1/FAILURE
+               Service runtime: 1min 4.777s
+             CPU time consumed: 21.521s
+                   Memory peak: 1.5G (swap: 0B)

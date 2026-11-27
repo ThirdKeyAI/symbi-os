@@ -1,0 +1,192 @@
+{
+  "recorded_at_utc": "2026-11-25T22:06:55.556051+00:00",
+  "run_id": 45708951490,
+  "head_sha": "f5d922ac3e9bf7e78acbe2d503df2145cdf6a789",
+  "checked_merge_sha": "55b97b8e3846dfd7420bf7fab852f15f887dae79",
+  "artifact": {
+    "id": 15066762080,
+    "bytes": 291995,
+    "sha256": "67bf41d73eb4be57fb8964c931bb1b5b3ae2135b33993fbbf6febdfe07957520"
+  },
+  "upstream_fixture_commit": "c1fac8aab6c5d399abb39036ba35b9636212e17f",
+  "patch_sha256": "a4545649b1c83f0a3402781f815ebc66ea2b507128d17f61e76c4febb5017bda",
+  "binary_sha256": "1e90af1fe424ec37ad716bbc1e069c0bc7a78f59c49871b7e79506bda69f49c7",
+  "image_id": "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc",
+  "drivers": [
+    {
+      "backend": "docker",
+      "driver": "test-filesystem-grants.py",
+      "cases": 9,
+      "passed": true,
+      "observed_runtimes": [
+        "runc"
+      ]
+    },
+    {
+      "backend": "docker",
+      "driver": "test-source-broker.py",
+      "cases": 9,
+      "passed": true,
+      "observed_runtimes": [
+        "runc"
+      ]
+    },
+    {
+      "backend": "docker",
+      "driver": "test-git-source.py",
+      "cases": 14,
+      "passed": true,
+      "observed_runtimes": [
+        "runc"
+      ]
+    },
+    {
+      "backend": "gvisor",
+      "driver": "test-filesystem-grants.py",
+      "cases": 9,
+      "passed": true,
+      "observed_runtimes": [
+        "runsc"
+      ]
+    },
+    {
+      "backend": "gvisor",
+      "driver": "test-source-broker.py",
+      "cases": 9,
+      "passed": true,
+      "observed_runtimes": [
+        "runsc"
+      ]
+    },
+    {
+      "backend": "gvisor",
+      "driver": "test-git-source.py",
+      "cases": 14,
+      "passed": true,
+      "observed_runtimes": [
+        "runsc"
+      ]
+    }
+  ],
+  "total_passing_cases": 64,
+  "remaining_workers_leases_containers": [],
+  "peak_hosted_cgroup_bytes": 1708797952,
+  "memory_max_events": 361,
+  "oom_events": 0,
+  "oom_kills": 0,
+  "fedora_qualified": false,
+  "managed_cli_qualified": false,
+  "escape_suite_qualified": false,
+  "release_qualified": false,
+  "retention": "Selected public records only; JSON verbatim, text/log trailing whitespace normalized. Original/retained hashes recorded. Private fixture trees were not uploaded.",
+  "files": {
+    "public/fixtures/gvisor-test-filesystem-grants.json": {
+      "original_sha256": "9821c2adc5fe42ddf1739739e0d3be1111f717f24250e95d866f4e4104eb4d09",
+      "retained_sha256": "9821c2adc5fe42ddf1739739e0d3be1111f717f24250e95d866f4e4104eb4d09"
+    },
+    "public/fixtures/docker-test-filesystem-grants.log": {
+      "original_sha256": "56adaea32d22d09519e1ffe0b8589b86ec6c5502c7eee7a6197ca7f7eca4a9d2",
+      "retained_sha256": "56adaea32d22d09519e1ffe0b8589b86ec6c5502c7eee7a6197ca7f7eca4a9d2"
+    },
+    "public/fixtures/docker-test-git-source.json": {
+      "original_sha256": "c112fd1c233e6d3d6ba4c372e7b85792bf17f9ab4486c00ecc541f231aac0f33",
+      "retained_sha256": "c112fd1c233e6d3d6ba4c372e7b85792bf17f9ab4486c00ecc541f231aac0f33"
+    },
+    "public/fixtures/gvisor-test-source-broker.log": {
+      "original_sha256": "143d0092cc6c0e3747ae4d5b8e0fec0407cdb4660559d1a5d877a35a38829b50",
+      "retained_sha256": "143d0092cc6c0e3747ae4d5b8e0fec0407cdb4660559d1a5d877a35a38829b50"
+    },
+    "public/fixtures/gvisor-test-source-broker.json": {
+      "original_sha256": "45364ea51bd8a21d9ad1898f019deb084798f4c13393377967d987fbb26f50cc",
+      "retained_sha256": "45364ea51bd8a21d9ad1898f019deb084798f4c13393377967d987fbb26f50cc"
+    },
+    "public/fixtures/docker-test-source-broker.json": {
+      "original_sha256": "64a40e0afa50a4bddc90bd124fe5b6ee7e7ef9c016bdd8b378577b36e2580ffc",
+      "retained_sha256": "64a40e0afa50a4bddc90bd124fe5b6ee7e7ef9c016bdd8b378577b36e2580ffc"
+    },
+    "public/fixtures/gvisor-test-git-source.json": {
+      "original_sha256": "975d331c3a548ef8662650b4a70df45d2a9d5dd0536ba94e2c72fc67170309ac",
+      "retained_sha256": "975d331c3a548ef8662650b4a70df45d2a9d5dd0536ba94e2c72fc67170309ac"
+    },
+    "public/fixtures/docker-test-filesystem-grants.json": {
+      "original_sha256": "842a852eb6bc205c34669c2c8554d6591458ee4e2f38157b17bc0fc2873b7f5a",
+      "retained_sha256": "842a852eb6bc205c34669c2c8554d6591458ee4e2f38157b17bc0fc2873b7f5a"
+    },
+    "public/fixtures/result.json": {
+      "original_sha256": "9613551ee3bc58b5a513a5c6e01a2085dcb7a7e2da7e1ea657e528386adc422e",
+      "retained_sha256": "9613551ee3bc58b5a513a5c6e01a2085dcb7a7e2da7e1ea657e528386adc422e"
+    },
+    "public/fixtures/docker-test-source-broker.log": {
+      "original_sha256": "83387fcd9726cf62a23fab61c283209e6664ba0b6bd15f213c96cdcc2ce30770",
+      "retained_sha256": "83387fcd9726cf62a23fab61c283209e6664ba0b6bd15f213c96cdcc2ce30770"
+    },
+    "public/fixtures/gvisor-test-git-source.log": {
+      "original_sha256": "89f31b751d1b3166657dcf624015ed71aced32674b97ad7effb0b87d1ba2d25f",
+      "retained_sha256": "89f31b751d1b3166657dcf624015ed71aced32674b97ad7effb0b87d1ba2d25f"
+    },
+    "public/fixtures/gvisor-test-filesystem-grants.log": {
+      "original_sha256": "d491a294ec3ce3d2fd6bf727c5e3b6822485702ed24fdc133c011beb28c470c8",
+      "retained_sha256": "d491a294ec3ce3d2fd6bf727c5e3b6822485702ed24fdc133c011beb28c470c8"
+    },
+    "public/fixtures/docker-test-git-source.log": {
+      "original_sha256": "e3d6a9b4d3fce7a865013b1dd46ac7255f643eb3f1ac08713902587cee9146f6",
+      "retained_sha256": "e3d6a9b4d3fce7a865013b1dd46ac7255f643eb3f1ac08713902587cee9146f6"
+    },
+    "public/result.json": {
+      "original_sha256": "4d50c6f3ca1f6e39397e6474f29aa39aa64756c20d7e47478a2cff15cafdce1f",
+      "retained_sha256": "4d50c6f3ca1f6e39397e6474f29aa39aa64756c20d7e47478a2cff15cafdce1f"
+    },
+    "public/setup.json": {
+      "original_sha256": "3564b1a363d584b3dae94bdb7278a83a21536f20bbcf1b17ca0fc302534322cb",
+      "retained_sha256": "3564b1a363d584b3dae94bdb7278a83a21536f20bbcf1b17ca0fc302534322cb"
+    },
+    "public/cgroup-final.json": {
+      "original_sha256": "0bede731e6dffcb923c7facd026702110823a13be395c88a0062b6a6492d5ae2",
+      "retained_sha256": "0bede731e6dffcb923c7facd026702110823a13be395c88a0062b6a6492d5ae2"
+    },
+    "public/daemon.json": {
+      "original_sha256": "48c4ba9ddfc70438041627c49a52ca6c127e6d19739754868bef6d152623b37d",
+      "retained_sha256": "48c4ba9ddfc70438041627c49a52ca6c127e6d19739754868bef6d152623b37d"
+    },
+    "public/docker-info.log": {
+      "original_sha256": "4ec690da2ed94f2ed1cd769668d4a678f2538ff9e3b44c6e3c211f75d4f4907d",
+      "retained_sha256": "4ec690da2ed94f2ed1cd769668d4a678f2538ff9e3b44c6e3c211f75d4f4907d"
+    },
+    "public/docker-version.log": {
+      "original_sha256": "275f3f94580c221580b4348ea7f51d798b7486ffab6724bc278b93f2a8fe622d",
+      "retained_sha256": "275f3f94580c221580b4348ea7f51d798b7486ffab6724bc278b93f2a8fe622d"
+    },
+    "public/runsc-version.log": {
+      "original_sha256": "f660e07f86e5155a3d4fea7f36d8a9ff0d2817079b81422d031691f1c777f83c",
+      "retained_sha256": "f660e07f86e5155a3d4fea7f36d8a9ff0d2817079b81422d031691f1c777f83c"
+    },
+    "public/gvisor-signature.log": {
+      "original_sha256": "09ace6375f00e6b2ccd8f5df427f45483d81a276e576e32a90ce8449723d39a8",
+      "retained_sha256": "09ace6375f00e6b2ccd8f5df427f45483d81a276e576e32a90ce8449723d39a8"
+    },
+    "public/ubuntu-signature.log": {
+      "original_sha256": "d433fb717a7422eddf3ae068bbc2ef29dbb25f01e7e0bf7bd4ababa03dafd5b7",
+      "retained_sha256": "d433fb717a7422eddf3ae068bbc2ef29dbb25f01e7e0bf7bd4ababa03dafd5b7"
+    },
+    "public/probe-cgroup-runc.txt": {
+      "original_sha256": "f11409081cff2feb1996b473e9220e5cc8344418511f07007510b657eb09a13a",
+      "retained_sha256": "f11409081cff2feb1996b473e9220e5cc8344418511f07007510b657eb09a13a"
+    },
+    "public/probe-cgroup-runsc.txt": {
+      "original_sha256": "88769817e0c47959ba0562f090c394c9df41bbef65be10ee824a3a07a1eacfe8",
+      "retained_sha256": "88769817e0c47959ba0562f090c394c9df41bbef65be10ee824a3a07a1eacfe8"
+    },
+    "public/fixture-image-inspect.log": {
+      "original_sha256": "f0c1b148167deb7451c165614f5fcb46e4777a52ca23ff6e443989fc511687f5",
+      "retained_sha256": "f0c1b148167deb7451c165614f5fcb46e4777a52ca23ff6e443989fc511687f5"
+    },
+    "hosted-fixtures.log": {
+      "original_sha256": "b3af99404a88c9d8cec2efe4ad419b0510bb4d948af02efda8c49d25f4e3cec7",
+      "retained_sha256": "b3af99404a88c9d8cec2efe4ad419b0510bb4d948af02efda8c49d25f4e3cec7"
+    },
+    "systemd-result.txt": {
+      "original_sha256": "d784ec47aea61758a23b88a530af2cd9f581e9ff640691f374c4dd5aa40d48f8",
+      "retained_sha256": "d784ec47aea61758a23b88a530af2cd9f581e9ff640691f374c4dd5aa40d48f8"
+    }
+  }
+}

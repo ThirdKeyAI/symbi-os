@@ -26,6 +26,8 @@ require_version "cargo-vet $SYMBI_VET_VERSION" cargo vet --version
 
 bash -n scripts/bootstrap-tools.sh scripts/check.sh scripts/tool-versions.sh
 
+bash scripts/check-image.sh
+
 # Always build and lint the workspace with its MSRV, even if stable is newer.
 cargo +"$SYMBI_RUST_VERSION" fmt --all -- --check
 cargo +"$SYMBI_RUST_VERSION" clippy --workspace --all-targets --locked -- -D warnings

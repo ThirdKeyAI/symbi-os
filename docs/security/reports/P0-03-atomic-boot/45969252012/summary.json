@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "passed": false,
+  "qualification": false,
+  "run": {
+    "id": 45969252012,
+    "head_branch": "card/P0-03-update-proof",
+    "head_sha": "da491a1302443e66b6ac1133c4f36273ecf5a41e",
+    "conclusion": "failure",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45969252012"
+  },
+  "artifact": {
+    "id": 15184299946,
+    "name": "atomic-development-boot-generic",
+    "bytes": 82429,
+    "digest": "sha256:c418f970de8a0a3a7b27ef3089fdd78681c43bab710307793e45c627786279c3",
+    "downloaded_zip_sha256": "c418f970de8a0a3a7b27ef3089fdd78681c43bab710307793e45c627786279c3",
+    "files": 98,
+    "uncompressed_bytes": 229187,
+    "expires_at": "2026-12-11T09:09:54Z"
+  },
+  "observation": {
+    "stage": "same-path-positive",
+    "guest_booted": true,
+    "guest_service_ran": true,
+    "source_fixture_authentication_passed": true,
+    "source_mountpoint": "/run/symbi-update",
+    "mountinfo_path_match_count": 2,
+    "bootc_switch_attempted": false,
+    "failure_scope": "The strict kernel mount observation rejected two stacked rows for the fixed path before bootc switch."
+  },
+  "resources": {
+    "controller": {
+      "memory_max_bytes": 3221225472,
+      "memory_peak_bytes": 3221225472,
+      "memory_max_events": 6898
+    },
+    "oom_events": 0,
+    "oom_kill_events": 0,
+    "oom_group_kill_events": 0,
+    "swap_max_bytes": 0
+  },
+  "cleanup": {
+    "passed": true
+  },
+  "local_preflight_correction": {
+    "status": "reviewed-pending-hosted-rerun",
+    "fixed_mountpoint_open_flags": ["O_PATH", "O_DIRECTORY", "O_CLOEXEC", "O_NOFOLLOW"],
+    "visible_mount_id_source": "/proc/self/fdinfo/<fd>",
+    "fdinfo_bytes_bounded": true,
+    "mountinfo_bytes_bounded": true,
+    "total_path_matches_retained": true,
+    "visible_and_selected_mount_ids_retained": true,
+    "highest_mount_id_heuristic_allowed": false,
+    "duplicate_selected_mount_ids_rejected": true,
+    "required_vfs_options": ["ro", "nosuid", "nodev", "noexec"],
+    "resource_limits_changed": false
+  },
+  "local_verification": {
+    "focused_update_tests": 50,
+    "focused_seconds": 0.125,
+    "focused_peak_rss_kib": 34484,
+    "swaps": 0,
+    "real_host_fdinfo_mountinfo_smoke": "pass",
+    "python_syntax": "pass",
+    "diff_check": "pass"
+  },
+  "next": "Require a fresh exact-head hosted run to pass the signed switch, four guest refusal controls, updated boot and rollback before qualification."
+}

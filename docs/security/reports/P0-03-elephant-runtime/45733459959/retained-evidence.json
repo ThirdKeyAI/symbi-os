@@ -1,0 +1,69 @@
+{
+  "run_id": 45733459959,
+  "job_id": 139620917695,
+  "head": "60a7d9f658995190e1650c0a842bb671c98faafc",
+  "artifact": {
+    "id": 15077393115,
+    "bytes": 20107,
+    "sha256": "bad5e64a0da8f439ae02cc84301fc51c55b5f2a267236f5b62632a785a20a7e6"
+  },
+  "selected_files": [
+    {
+      "path": "result.json",
+      "original_sha256": "a41a6dbd63eaafbb364d9212f789b23fa5027f51df26e5eab917ce8d5986b6d2",
+      "retained_sha256": "a41a6dbd63eaafbb364d9212f789b23fa5027f51df26e5eab917ce8d5986b6d2"
+    },
+    {
+      "path": "base-signature.json",
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    {
+      "path": "compiled-manifest.json",
+      "original_sha256": "ddf3e7f8b7a85992eb7c3612a3b6ebc3593b3e089e0e5187c8b04ae05d17868d",
+      "retained_sha256": "ddf3e7f8b7a85992eb7c3612a3b6ebc3593b3e089e0e5187c8b04ae05d17868d"
+    },
+    {
+      "path": "loader-diagnostic.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "loader-cleanup-stdout.log",
+      "original_sha256": "f1196d3208c86ef38544cfe644f5d311172a879c46f949c62665dcd006eff36b",
+      "retained_sha256": "f1196d3208c86ef38544cfe644f5d311172a879c46f949c62665dcd006eff36b"
+    },
+    {
+      "path": "loader-cleanup-stderr.log",
+      "original_sha256": "b10f1d8915c71bf8a55e0a7721acc8125612075a5d6692b4f122203a0302ea37",
+      "retained_sha256": "b10f1d8915c71bf8a55e0a7721acc8125612075a5d6692b4f122203a0302ea37"
+    },
+    {
+      "path": "loader-exists-stdout.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "loader-exists-stderr.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "ocr/result.json",
+      "original_sha256": "4092d341157ee8d8e3db01da5d846e7733f5128de2766e8f8b78142fc0613ff3",
+      "retained_sha256": "4092d341157ee8d8e3db01da5d846e7733f5128de2766e8f8b78142fc0613ff3"
+    },
+    {
+      "path": "ocr/loader-stdout.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "ocr/loader-stderr.log",
+      "original_sha256": "d84c354a8d1d8e40190ab196a6f67e892b3aaaded5597706ec0150925db964c6",
+      "retained_sha256": "d84c354a8d1d8e40190ab196a6f67e892b3aaaded5597706ec0150925db964c6"
+    }
+  ],
+  "scope": "Actual Go plugin compatibility error retained; loader diagnostic subsequently timed out, guest final report absent, container removed; not an acceptance pass",
+  "os_qualified": false
+}

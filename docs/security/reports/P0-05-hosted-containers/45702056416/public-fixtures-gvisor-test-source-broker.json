@@ -1,0 +1,81 @@
+{
+  "passed": false,
+  "fixture": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-source-e2e-yzc1fcl8",
+  "binary_sha256": "69a22494f74451e73806eaeb71ace5dc3a95098c7961f7200716b05ad666a98c",
+  "driver_sha256": "ae2b6490cca43924e0f14aa84e71943c4684f298103db72b62eef534a16d1d2e",
+  "cases": [
+    {
+      "name": "read",
+      "passed": false,
+      "config_sha256": "cf009bb0253598cfa5229ab83df14895e5210c9ed6ed2bfa2e103a2d3c66e4cd",
+      "policy_sha256": "ae6f3bbc10d4275226be91b066f1cc3f381fdfef0924005ad6d9c410c2f9d5df",
+      "workers": [],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Loaded environment from /home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-source-e2e-yzc1fcl8/.env\nInvocation ID: 84881e42-3002-4890-8436-8b1c292cc84d\nAudit run: fb126de5-ce4d-4105-8bee-634eca19dbea\nAudit journal: /home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-source-e2e-yzc1fcl8/.symbiont/governed/0ce4b27c-61f0-484e-9751-209fe24695f3.fb126de5-ce4d-4105-8bee-634eca19dbea.jsonl\nAudit public key: 581da7302f58881693d594d9eaeaf65018a55922cc930b458fc60fe07f8fefb1\n\u2717 Agent sandbox selection failed: supervisor socket path exceeds the supported Unix path length\n",
+      "requests": []
+    }
+  ],
+  "provider_errors": [],
+  "image": "sha256:783ce4ad87bd72e5e4a45915562c87ce81213d45f95792ae1855228590c2b633",
+  "manifests": {
+    "read_file": "a39dcea5a34440edada97b3366c66e3e4fe19993a5152981399a7871e559fe86",
+    "list_files": "ab74a30975d00cb8029c5ed551d5ecff121f17397d2a7faf1383079d6ea56c29",
+    "grep_files": "d3dd036cb5e581cef8ff7b1e2f3184dd2bceffb55146e244de8f8292675ec549"
+  },
+  "public_key": "581da7302f58881693d594d9eaeaf65018a55922cc930b458fc60fe07f8fefb1",
+  "verifier_sha256": "9e975bf4d8c55c8925dfd730adbd20bee77e81f05170715f23085a9acb135374",
+  "backend": "gvisor",
+  "container_profile_sha256": "b9f4d369e513f86d622ada90f3fb0aa3185fd022af719ec9b7170f710793d2be",
+  "runsc": {
+    "path": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/runsc/usr/bin/runsc",
+    "registered_path": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/runsc/usr/bin/runsc",
+    "sha256": "fcf27497492d44de3d1406d64bd72e038822bed74dea429efb338edf0b2ceeb8",
+    "mode": 493,
+    "bundle": {
+      "path": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/runsc/usr/bin/gvisor-bin",
+      "mode": 493,
+      "entries": {
+        "checkpointgofer": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "28d25c1b7e1b3c4e99364c4c06898185ddf653a81409d25502db475166e49c23"
+        },
+        "gvisor-proc-umounter": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "b3bbbaef5ddc62084e5febd19d3acca14f3d42b2a25d8552fb40def699467019"
+        },
+        "gvisor-sentry-prewarmer": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "046e3ec1de3aa7b7ec7ce53b4f0d1e08db15987847606a8e361133d5c5bd3d73"
+        },
+        "gvisor_sentry": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "fdc9c6bcfb59af3a2ebb499f0b63d548b8ffb11c44f0861a794e10de823da62c"
+        },
+        "runsc-fd-parking": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "03af90d07ea466c10ecc3e3ba839b2a59540959dd3286aea3886917cba850c11"
+        },
+        "runsc-metric-server": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "76bf2c18c5a2122145fdc38cb84bab20216703620fbe4dd1a4a23a579d30615a"
+        },
+        "runsc-netgofer": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "31b983f86020fa0caa0301e5dda1b9bd1ecfe6178819e2ba93dbefbea344719d"
+        }
+      }
+    }
+  },
+  "error": "AssertionError: {'name': 'read', 'passed': False, 'config_sha256': 'cf009bb0253598cfa5229ab83df14895e5210c9ed6ed2bfa2e103a2d3c66e4cd', 'policy_sha256': 'ae6f3bbc10d4275226be91b066f1cc3f381fdfef0924005ad6d9c410c2f9d5df', 'workers': [], 'exit_code': 1, 'stdout': '', 'stderr': 'Loaded environment from /home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-source-e2e-yzc1fcl8/.env\\nInvocation ID: 84881e42-3002-4890-8436-8b1c292cc84d\\nAudit run: fb126de5-ce4d-4105-8bee-634eca19dbea\\nAudit journal: /home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-source-e2e-yzc1fcl8/.symbiont/governed/0ce4b27c-61f0-484e-9751-209fe24695f3.fb126de5-ce4d-4105-8bee-634eca19dbea.jsonl\\nAudit public key: 581da7302f58881693d594d9eaeaf65018a55922cc930b458fc60fe07f8fefb1\\n\u2717 Agent sandbox selection failed: supervisor socket path exceeds the supported Unix path length\\n', 'requests': []}",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/source/scripts/test-source-broker.py\", line 202, in main\n    assert row['exit_code'] == 0 and len(requests) == 2 and not report['provider_errors'], row\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: {'name': 'read', 'passed': False, 'config_sha256': 'cf009bb0253598cfa5229ab83df14895e5210c9ed6ed2bfa2e103a2d3c66e4cd', 'policy_sha256': 'ae6f3bbc10d4275226be91b066f1cc3f381fdfef0924005ad6d9c410c2f9d5df', 'workers': [], 'exit_code': 1, 'stdout': '', 'stderr': 'Loaded environment from /home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-source-e2e-yzc1fcl8/.env\\nInvocation ID: 84881e42-3002-4890-8436-8b1c292cc84d\\nAudit run: fb126de5-ce4d-4105-8bee-634eca19dbea\\nAudit journal: /home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-source-e2e-yzc1fcl8/.symbiont/governed/0ce4b27c-61f0-484e-9751-209fe24695f3.fb126de5-ce4d-4105-8bee-634eca19dbea.jsonl\\nAudit public key: 581da7302f58881693d594d9eaeaf65018a55922cc930b458fc60fe07f8fefb1\\n\u2717 Agent sandbox selection failed: supervisor socket path exceeds the supported Unix path length\\n', 'requests': []}\n",
+  "remaining_workers": [],
+  "remaining_leases": []
+}

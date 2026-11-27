@@ -1,0 +1,10 @@
+{"case": "read", "passed": true}
+{"case": "list", "passed": true}
+{"case": "grep", "passed": true}
+{"case": "traversal", "passed": true}
+{"case": "symlink", "passed": true}
+{"case": "hardlink", "passed": true}
+{"case": "no_ceiling", "passed": true}
+{"case": "denied", "passed": true}
+{"case": "scratch", "passed": true}
+{"passed": true, "report": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/public/fixtures/docker-test-source-broker.json", "error": null}

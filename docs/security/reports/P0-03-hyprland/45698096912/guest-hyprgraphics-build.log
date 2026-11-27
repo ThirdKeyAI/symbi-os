@@ -1,0 +1,34 @@
+[0/2] Re-checking globbed directories...
+[1/22] Building CXX object CMakeFiles/hyprgraphics.dir/src/cairo/CairoSurface.cpp.o
+[2/22] Building CXX object CMakeFiles/hyprgraphics.dir/src/color/Color.cpp.o
+[3/22] Building CXX object CMakeFiles/hyprgraphics.dir/src/egl/Egl.cpp.o
+[4/22] Building CXX object CMakeFiles/hyprgraphics.dir/src/image/Image.cpp.o
+[5/22] Building CXX object CMakeFiles/hyprgraphics.dir/src/image/formats/Bmp.cpp.o
+[6/22] Building CXX object CMakeFiles/hyprgraphics.dir/src/image/formats/Jpeg.cpp.o
+In file included from /usr/include/c++/16/bits/shared_ptr_base.h:66,
+                 from /usr/include/c++/16/bits/shared_ptr.h:53,
+                 from /usr/include/c++/16/bits/fs_path.h:46,
+                 from /usr/include/c++/16/filesystem:55,
+                 from /output/sources/hyprgraphics/src/image/formats/Jpeg.cpp:4:
+/usr/include/c++/16/bits/stl_uninitialized.h: In function ‘std::expected<_cairo_surface*, std::__cxx11::basic_string<char> > JPEG::createSurfaceFromJPEG(const std::string&)’:
+/usr/include/c++/16/bits/stl_uninitialized.h:982:5: warning: variable ‘__first’ might be clobbered by ‘longjmp’ or ‘vfork’ [-Wclobbered]
+  982 |     __uninitialized_default_n(_ForwardIterator __first, _Size __n)
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~
+/output/sources/hyprgraphics/src/image/formats/Jpeg.cpp:15:46: warning: variable ‘__first’ might be clobbered by ‘longjmp’ or ‘vfork’ [-Wclobbered]
+   15 | std::expected<cairo_surface_t*, std::string> JPEG::createSurfaceFromJPEG(const std::string& path) {
+      |                                              ^~~~
+[7/22] Building CXX object CMakeFiles/hyprgraphics.dir/src/image/formats/Png.cpp.o
+[8/22] Building CXX object CMakeFiles/hyprgraphics.dir/src/image/formats/Svg.cpp.o
+[9/22] Building CXX object CMakeFiles/hyprgraphics.dir/src/image/formats/Webp.cpp.o
+[10/22] Building CXX object CMakeFiles/hyprgraphics.dir/src/image/utils/Format.cpp.o
+[11/22] Building CXX object CMakeFiles/hyprgraphics.dir/src/resource/AsyncResourceGatherer.cpp.o
+[12/22] Building CXX object CMakeFiles/hyprgraphics.dir/src/resource/resources/AsyncResource.cpp.o
+[13/22] Building CXX object CMakeFiles/hyprgraphics.dir/src/resource/resources/ImageResource.cpp.o
+[14/22] Building CXX object CMakeFiles/hyprgraphics.dir/src/resource/resources/StaticImageResource.cpp.o
+[15/22] Building CXX object CMakeFiles/hyprgraphics.dir/src/resource/resources/TextResource.cpp.o
+[16/22] Linking CXX shared library libhyprgraphics.so.0.6.0
+[17/22] Creating library symlink libhyprgraphics.so.5 libhyprgraphics.so
+[18/22] Building CXX object CMakeFiles/hyprgraphics_image.dir/tests/image.cpp.o
+[19/22] Building CXX object CMakeFiles/hyprgraphics_arg.dir/tests/arg.cpp.o
+[20/22] Linking CXX executable hyprgraphics_image
+[21/22] Linking CXX executable hyprgraphics_arg

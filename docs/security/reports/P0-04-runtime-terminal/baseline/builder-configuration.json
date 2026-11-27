@@ -1,0 +1,29 @@
+{
+  "purpose": "Disposable Ubuntu runtime build helper; not Fedora or runtime qualification",
+  "guest_ram_mib": 704,
+  "guest_vcpus": 1,
+  "guest_disk_gib": 64,
+  "guest_swap_gib": 8,
+  "host_memory_max_bytes": 1073741824,
+  "host_swap_max_bytes": 0,
+  "host_cpu_quota_percent_of_one_core": 25,
+  "host_cpu_affinity": [
+    23
+  ],
+  "ssh_bind": "127.0.0.1:22225",
+  "ssh_host_key_pinned": true,
+  "host_filesystem_shares": [],
+  "base_image": {
+    "filename": "noble-server-cloudimg-amd64.img",
+    "sha256": "04e8f2461a16a44e78a370284471f29616cdd9baf1893df25807b71f985b6c94",
+    "signer_fingerprint": "D2EB44626FDDC30B513D5BB71A5D6C4C7DB87C81",
+    "signature_verified": true,
+    "source_url": "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img",
+    "fingerprint_source": "https://ubuntu.com/docs/public-images/public-images-how-to/verify-image-checksum/",
+    "image_verified": true,
+    "size_bytes": 621284352
+  },
+  "host_unit": "symbi-p0-runtime-builder-ssd.service",
+  "working_disk": "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/.cache/runtime-builder-ssd-20261125/disk.qcow2",
+  "working_disk_storage": "NVMe ext4, outside tmpfs"
+}

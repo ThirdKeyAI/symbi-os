@@ -1,0 +1,51 @@
+   Compiling walker v2.17.2 (/output/source)
+warning: unused dependency `dirs`
+  --> Cargo.toml:20:1
+   |
+20 | dirs = "6.0.0"
+   | ^^^^^^^^^^^^^^
+   |
+   = note: `cargo::unused_dependencies` is set to `warn` by default
+help: consider removing the dependency on `dirs`
+warning: unused dependency `gdk-pixbuf`
+  --> Cargo.toml:24:1
+   |
+24 | gdk-pixbuf = "0.21.1"
+   | ^^^^^^^^^^^^^^^^^^^^^
+   |
+help: consider removing the dependency on `gdk-pixbuf`
+warning: unused dependency `notify`
+  --> Cargo.toml:21:1
+   |
+21 | notify = "8.2.0"
+   | ^^^^^^^^^^^^^^^^
+   |
+help: consider removing the dependency on `notify`
+warning: unused dependency `protoc-bin-vendored`
+  --> Cargo.toml:36:1
+   |
+36 | protoc-bin-vendored = "3.0"
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+help: consider removing the dependency on `protoc-bin-vendored`
+warning: `walker` (manifest) generated 4 warnings
+    Finished `release` profile [optimized] target(s) in 3.64s
+     Running unittests src/main.rs (/output/target/x86_64-unknown-linux-gnu/release/build/walker/188bf4b60a105930/out/walker-188bf4b60a105930)
+
+running 14 tests
+test niri::tests::closing_last_window_makes_workspace_empty ... ok
+test niri::tests::configured_empty_initial_workspace_triggers_once ... ok
+test niri::tests::deferred_launch_is_cancelled_if_workspace_is_no_longer_empty ... ok
+test niri::tests::empty_focused_workspace_triggers ... ok
+test niri::tests::empty_workspace_launch_waits_for_overview_to_close ... ok
+test niri::tests::inactive_empty_workspace_does_not_trigger ... ok
+test niri::tests::initial_workspace_does_not_trigger_when_disabled ... ok
+test niri::tests::moving_window_updates_both_workspaces ... ok
+test niri::tests::populated_focused_workspace_does_not_trigger ... ok
+test niri::tests::populated_initial_workspace_does_not_trigger ... ok
+test niri::tests::snapshots_must_be_initialized_before_triggering ... ok
+test niri::tests::startup_launch_is_deferred_if_overview_is_initially_open ... ok
+test niri::tests::startup_launch_waits_for_initial_overview_state ... ok
+test niri::tests::unknown_workspace_does_not_trigger ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

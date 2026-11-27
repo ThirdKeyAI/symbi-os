@@ -1,0 +1,30 @@
+test_booted_or_future_update_reference_cannot_lose_signature_policy (test_atomic_boot.AtomicBoot.test_booted_or_future_update_reference_cannot_lose_signature_policy) ... ok
+test_corrupt_wrong_or_unreferenced_oci_blob_is_refused_and_cleaned (test_atomic_boot.AtomicBoot.test_corrupt_wrong_or_unreferenced_oci_blob_is_refused_and_cleaned) ... ok
+test_directory_source_keeps_exact_manifest_and_opaque_blob_bytes (test_atomic_boot.AtomicBoot.test_directory_source_keeps_exact_manifest_and_opaque_blob_bytes) ... ok
+test_directory_source_refuses_tampered_manifest_and_blob_paths (test_atomic_boot.AtomicBoot.test_directory_source_refuses_tampered_manifest_and_blob_paths) ... ok
+test_disk_links_shared_parents_and_identity_changes_are_refused (test_atomic_boot.AtomicBoot.test_disk_links_shared_parents_and_identity_changes_are_refused) ... ok
+test_exact_booted_deployment_is_checked_without_release_claim (test_atomic_boot.AtomicBoot.test_exact_booted_deployment_is_checked_without_release_claim) ... ok
+test_existing_oci_destination_is_never_replaced (test_atomic_boot.AtomicBoot.test_existing_oci_destination_is_never_replaced) ... ok
+test_firmware_names_fit_qemu_and_do_not_add_login_credentials (test_atomic_boot.AtomicBoot.test_firmware_names_fit_qemu_and_do_not_add_login_credentials) ... ok
+test_installer_has_one_file_target_and_enforcing_update_policy (test_atomic_boot.AtomicBoot.test_installer_has_one_file_target_and_enforcing_update_policy) ... ok
+test_installer_observes_live_devices_through_readonly_mounts (test_atomic_boot.AtomicBoot.test_installer_observes_live_devices_through_readonly_mounts) ... ok
+test_installer_rejects_shared_or_linked_host_input_directories (test_atomic_boot.AtomicBoot.test_installer_rejects_shared_or_linked_host_input_directories) ... ok
+test_oci_data_blobs_are_verified_without_extracting_layers (test_atomic_boot.AtomicBoot.test_oci_data_blobs_are_verified_without_extracting_layers) ... ok
+test_only_a_new_private_regular_disk_is_accepted (test_atomic_boot.AtomicBoot.test_only_a_new_private_regular_disk_is_accepted) ... ok
+test_packaged_verifier_identity_includes_exact_version_build_and_rpm (test_atomic_boot.AtomicBoot.test_packaged_verifier_identity_includes_exact_version_build_and_rpm) ... ERROR
+test_source_policy_requires_a_signature_and_preserves_all_release_rules (test_atomic_boot.AtomicBoot.test_source_policy_requires_a_signature_and_preserves_all_release_rules) ... ok
+test_tar_paths_links_duplicates_and_oversize_are_refused (test_atomic_boot.AtomicBoot.test_tar_paths_links_duplicates_and_oversize_are_refused) ... ok
+test_wrong_guest_replayed_report_and_unenforced_boot_are_refused (test_atomic_boot.AtomicBoot.test_wrong_guest_replayed_report_and_unenforced_boot_are_refused) ... ok
+
+======================================================================
+ERROR: test_packaged_verifier_identity_includes_exact_version_build_and_rpm (test_atomic_boot.AtomicBoot.test_packaged_verifier_identity_includes_exact_version_build_and_rpm)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-desktop-packages-stage/image/tests/test_atomic_boot.py", line 224, in test_packaged_verifier_identity_includes_exact_version_build_and_rpm
+    from image.atomic.contract import require_verifier_identity
+ImportError: cannot import name 'require_verifier_identity' from 'image.atomic.contract' (/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-desktop-packages-stage/image/atomic/contract.py)
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.197s
+
+FAILED (errors=1)

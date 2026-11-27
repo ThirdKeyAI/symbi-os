@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "selected_configuration_sha256": "7c42917600cbe56e8c694533cca8737140309c8a26c79cd8530947f4f9e47176",
+  "reviewed_public_sources": {
+    "ombuntu-packages.list": {
+      "url": "https://github.com/Ombuntu/Ombuntu/blob/8f2085cb73520fc3558f1248dadd1fca5e69cfcc/install/packages.list",
+      "bytes": 1325,
+      "sha256": "563f07603ae08c1396d34d270ffa77ba432d6819af89fd6532adfbd4a3197745",
+      "git_blob": "a647887eee7828e0143dbf872e5eca47a69070d1"
+    },
+    "mplayer.spec": {
+      "url": "https://github.com/rpmfusion/mplayer/blob/089ddb72b8f41415036a1a837b3aeda6e976d823/mplayer.spec",
+      "bytes": 46671,
+      "sha256": "b66085a63e492600776cb3fe4953d0e2ec56f077b9c58db0e9efd7831e2ca115",
+      "git_blob": "15d83ae0a470b870ba8cad7627936755c1168c58"
+    },
+    "rpmfusion-free-release.spec": {
+      "url": "https://github.com/rpmfusion/rpmfusion-free-release/blob/455da393b8e1d3bad80a7d3c8617ef343ebb2c1a/rpmfusion-free-release.spec",
+      "bytes": 13541,
+      "sha256": "724aa20646537afa498790212d9a255c0e25ba3c1944b5549cfc012fec44bc33",
+      "git_blob": "3d4b4cbe8796cb52b7c381d3b0d5118ad80f67db"
+    },
+    "RPM-GPG-KEY-rpmfusion-free-fedora-2020": {
+      "url": "https://github.com/rpmfusion/rpmfusion-free-release/blob/455da393b8e1d3bad80a7d3c8617ef343ebb2c1a/RPM-GPG-KEY-rpmfusion-free-fedora-2020",
+      "bytes": 1704,
+      "sha256": "10fc0a3e1a0307e8088357a31a9c5e4e3d9f9e0b01db2b03b5790d949a47f3b3",
+      "git_blob": "86f36222f54d9fe5924f272960b27608968b109f"
+    },
+    "rpmfusion-free.repo": {
+      "url": "https://github.com/rpmfusion/rpmfusion-free-release/blob/455da393b8e1d3bad80a7d3c8617ef343ebb2c1a/rpmfusion-free.repo",
+      "bytes": 1266,
+      "sha256": "9a51fd0682a556b8d3880e7aa5e2f2ff1bd34a293e8ca33a13251daafcf5321b",
+      "git_blob": "8f6d698e8f49cabced3f44e16f5e2b2c7346903b"
+    },
+    "rpmfusion-free-updates.repo": {
+      "url": "https://github.com/rpmfusion/rpmfusion-free-release/blob/455da393b8e1d3bad80a7d3c8617ef343ebb2c1a/rpmfusion-free-updates.repo",
+      "git_blob": "12b59cee2c3b805f699bdfd1807eafbee313df52",
+      "bytes": 1282,
+      "sha256": "5ff9b7101380f4062dd459305de7d379db54dc07c9df240eff08ae061c047998"
+    }
+  },
+  "changes": [
+    "Keep only Fedora45/x86_64 binary release and stable-update repositories",
+    "Use two isolated pinned public package keys, required package/payload verification and TLS verification",
+    "Request HTTPS mirror URLs; disable telemetry, source/debug/testing/nonfree/tainted repositories"
+  ],
+  "metadata_signature_scope": "Preserve upstream repo_gpgcheck=0; HTTPS metalinks and independently verified exact RPM signatures. Metadata freshness does not establish a vulnerability fix or select a release package.",
+  "packages_pinned": false
+}

@@ -1,0 +1,81 @@
+test_changed_payload_or_binary_does_not_leave_a_reusable_prefix (test_prefix_input.PrefixInput.test_changed_payload_or_binary_does_not_leave_a_reusable_prefix) ... ok
+test_development_artifact_cannot_self_assert_qualification (test_prefix_input.PrefixInput.test_development_artifact_cannot_self_assert_qualification) ... ok
+test_exact_prefix_preserves_internal_library_links_and_normalizes_modes (test_prefix_input.PrefixInput.test_exact_prefix_preserves_internal_library_links_and_normalizes_modes) ... ok
+test_only_reviewed_absolute_executable_alias_is_relocated (test_prefix_input.PrefixInput.test_only_reviewed_absolute_executable_alias_is_relocated) ... ERROR
+test_other_absolute_aliases_keep_failing_with_bounded_diagnostics (test_prefix_input.PrefixInput.test_other_absolute_aliases_keep_failing_with_bounded_diagnostics) ...
+  test_other_absolute_aliases_keep_failing_with_bounded_diagnostics (test_prefix_input.PrefixInput.test_other_absolute_aliases_keep_failing_with_bounded_diagnostics) (name='hyprland/bin/hyprland') ... FAIL
+  test_other_absolute_aliases_keep_failing_with_bounded_diagnostics (test_prefix_input.PrefixInput.test_other_absolute_aliases_keep_failing_with_bounded_diagnostics) (name='hyprland/bin/hyprland') ... FAIL
+  test_other_absolute_aliases_keep_failing_with_bounded_diagnostics (test_prefix_input.PrefixInput.test_other_absolute_aliases_keep_failing_with_bounded_diagnostics) (name='hyprland/bin/other') ... FAIL
+  test_other_absolute_aliases_keep_failing_with_bounded_diagnostics (test_prefix_input.PrefixInput.test_other_absolute_aliases_keep_failing_with_bounded_diagnostics) (name='hyprland/bin/hyprland') ... FAIL
+  test_other_absolute_aliases_keep_failing_with_bounded_diagnostics (test_prefix_input.PrefixInput.test_other_absolute_aliases_keep_failing_with_bounded_diagnostics) (name='hyprland/bin/escape') ... FAIL
+  test_other_absolute_aliases_keep_failing_with_bounded_diagnostics (test_prefix_input.PrefixInput.test_other_absolute_aliases_keep_failing_with_bounded_diagnostics) (name='hyprland/bin/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx') ... FAIL
+test_tar_path_escape_special_files_duplicate_and_link_parent_are_refused (test_prefix_input.PrefixInput.test_tar_path_escape_special_files_duplicate_and_link_parent_are_refused) ... ok
+
+======================================================================
+ERROR: test_only_reviewed_absolute_executable_alias_is_relocated (test_prefix_input.PrefixInput.test_only_reviewed_absolute_executable_alias_is_relocated)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-prefix-alias-stage/image/tests/test_prefix_input.py", line 72, in test_only_reviewed_absolute_executable_alias_is_relocated
+    manifest = prefix.unpack_prefix(archive, lock, target)
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-prefix-alias-stage/image/hyprland/prefix_input.py", line 76, in unpack_prefix
+    raise ValueError('Library link escapes the private prefix')
+ValueError: Library link escapes the private prefix
+
+======================================================================
+FAIL: test_other_absolute_aliases_keep_failing_with_bounded_diagnostics (test_prefix_input.PrefixInput.test_other_absolute_aliases_keep_failing_with_bounded_diagnostics) (name='hyprland/bin/hyprland')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-prefix-alias-stage/image/tests/test_prefix_input.py", line 96, in test_other_absolute_aliases_keep_failing_with_bounded_diagnostics
+    self.assertIn(repr(name[:160]), str(failure.exception))
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "'hyprland/bin/hyprland'" not found in 'Library link escapes the private prefix'
+
+======================================================================
+FAIL: test_other_absolute_aliases_keep_failing_with_bounded_diagnostics (test_prefix_input.PrefixInput.test_other_absolute_aliases_keep_failing_with_bounded_diagnostics) (name='hyprland/bin/hyprland')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-prefix-alias-stage/image/tests/test_prefix_input.py", line 96, in test_other_absolute_aliases_keep_failing_with_bounded_diagnostics
+    self.assertIn(repr(name[:160]), str(failure.exception))
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "'hyprland/bin/hyprland'" not found in 'Library link escapes the private prefix'
+
+======================================================================
+FAIL: test_other_absolute_aliases_keep_failing_with_bounded_diagnostics (test_prefix_input.PrefixInput.test_other_absolute_aliases_keep_failing_with_bounded_diagnostics) (name='hyprland/bin/other')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-prefix-alias-stage/image/tests/test_prefix_input.py", line 96, in test_other_absolute_aliases_keep_failing_with_bounded_diagnostics
+    self.assertIn(repr(name[:160]), str(failure.exception))
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "'hyprland/bin/other'" not found in 'Library link escapes the private prefix'
+
+======================================================================
+FAIL: test_other_absolute_aliases_keep_failing_with_bounded_diagnostics (test_prefix_input.PrefixInput.test_other_absolute_aliases_keep_failing_with_bounded_diagnostics) (name='hyprland/bin/hyprland')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-prefix-alias-stage/image/tests/test_prefix_input.py", line 96, in test_other_absolute_aliases_keep_failing_with_bounded_diagnostics
+    self.assertIn(repr(name[:160]), str(failure.exception))
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "'hyprland/bin/hyprland'" not found in 'Library link escapes the private prefix'
+
+======================================================================
+FAIL: test_other_absolute_aliases_keep_failing_with_bounded_diagnostics (test_prefix_input.PrefixInput.test_other_absolute_aliases_keep_failing_with_bounded_diagnostics) (name='hyprland/bin/escape')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-prefix-alias-stage/image/tests/test_prefix_input.py", line 96, in test_other_absolute_aliases_keep_failing_with_bounded_diagnostics
+    self.assertIn(repr(name[:160]), str(failure.exception))
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "'hyprland/bin/escape'" not found in 'Library link escapes the private prefix'
+
+======================================================================
+FAIL: test_other_absolute_aliases_keep_failing_with_bounded_diagnostics (test_prefix_input.PrefixInput.test_other_absolute_aliases_keep_failing_with_bounded_diagnostics) (name='hyprland/bin/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-prefix-alias-stage/image/tests/test_prefix_input.py", line 96, in test_other_absolute_aliases_keep_failing_with_bounded_diagnostics
+    self.assertIn(repr(name[:160]), str(failure.exception))
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "'hyprland/bin/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'" not found in 'Library link escapes the private prefix'
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.201s
+
+FAILED (failures=6, errors=1)

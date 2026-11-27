@@ -1,0 +1,100 @@
+name: Hyprland runtime compatibility
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "image/hyprland/hosted_runtime.py"
+      - "image/hyprland/runtime_guest.py"
+      - "image/hyprland/prefix_input.py"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/runtime-requirements.json"
+      - "image/hyprland/runtime-rpms.lock.json"
+      - "image/hyprland/development-prefix.lock.json"
+      - "image/hyprland/build-rpms.lock.json"
+      - "image/hyprland/candidate-inputs.json"
+      - "image/hyprland/patches/0001-disable-native-loading.patch"
+      - "image/hyprland/keys/**"
+      - "image/hyprland/tests/qualify_session_defaults.py"
+      - "image/overlay/usr/share/symbiont/defaults/hypr/**"
+      - "scripts/check-hyprland-runtime.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/hyprland-runtime.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
+  pull_request:
+    paths:
+      - "image/hyprland/hosted_runtime.py"
+      - "image/hyprland/runtime_guest.py"
+      - "image/hyprland/prefix_input.py"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/runtime-requirements.json"
+      - "image/hyprland/runtime-rpms.lock.json"
+      - "image/hyprland/development-prefix.lock.json"
+      - "image/hyprland/build-rpms.lock.json"
+      - "image/hyprland/candidate-inputs.json"
+      - "image/hyprland/patches/0001-disable-native-loading.patch"
+      - "image/hyprland/keys/**"
+      - "image/hyprland/tests/qualify_session_defaults.py"
+      - "image/overlay/usr/share/symbiont/defaults/hypr/**"
+      - "scripts/check-hyprland-runtime.sh"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/hyprland-runtime.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: hyprland-runtime-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  runtime:
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Check out proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Fetch exact retained compiled prefix and signed runtime RPM bundle
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache
+          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15070319189/zip > .cache/hyprland-development-prefix.zip
+          echo 'b86fde7463a786a5bb5763edf3ee23cfac3829e7c5b596ad829e4d4861814743  .cache/hyprland-development-prefix.zip' | sha256sum --check --strict
+          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15072725272/zip > .cache/hyprland-runtime-rpms.zip
+          echo 'ec4f092437c10b7ef63ab6c232240bb1c21898ece79d76bf10fbf47995a2cb85  .cache/hyprland-runtime-rpms.zip' | sha256sum --check --strict
+      - name: Check additive offline runtime packaging and actual configuration parsing
+        run: bash scripts/check-hyprland-runtime.sh
+      - name: Retain public runtime evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hyprland-runtime-evidence
+          path: .cache/hyprland-runtime-evidence/
+          retention-days: 14
+          if-no-files-found: error

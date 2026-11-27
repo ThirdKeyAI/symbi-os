@@ -1,0 +1,21 @@
+test_actual_worker_runtime_cannot_fall_back_to_runc (__main__.ContainerFixtureProfile.test_actual_worker_runtime_cannot_fall_back_to_runc) ... ok
+test_added_or_removed_sidecars_are_rejected (__main__.ContainerFixtureProfile.test_added_or_removed_sidecars_are_rejected) ... ok
+test_backend_selectors_are_mutually_exclusive (__main__.ContainerFixtureProfile.test_backend_selectors_are_mutually_exclusive) ... ok
+test_bundle_appearing_after_single_binary_selection_is_rejected (__main__.ContainerFixtureProfile.test_bundle_appearing_after_single_binary_selection_is_rejected) ... ok
+test_bundle_directory_link_is_rejected (__main__.ContainerFixtureProfile.test_bundle_directory_link_is_rejected) ... ok
+test_changed_runsc_is_rejected_at_completion_and_between_cases (__main__.ContainerFixtureProfile.test_changed_runsc_is_rejected_at_completion_and_between_cases) ... ok
+test_completion_rechecks_the_daemon_runtime_registration (__main__.ContainerFixtureProfile.test_completion_rechecks_the_daemon_runtime_registration) ... ok
+test_default_keeps_the_docker_profile (__main__.ContainerFixtureProfile.test_default_keeps_the_docker_profile) ... ok
+test_existing_fixture_backend_selects_and_checks_gvisor (__main__.ContainerFixtureProfile.test_existing_fixture_backend_selects_and_checks_gvisor) ... ok
+test_gvisor_uses_its_own_profile_and_explicit_runtime (__main__.ContainerFixtureProfile.test_gvisor_uses_its_own_profile_and_explicit_runtime) ... ok
+test_incomplete_or_cross_backend_vm_artifacts_are_rejected (__main__.ContainerFixtureProfile.test_incomplete_or_cross_backend_vm_artifacts_are_rejected) ... ok
+test_registered_runsc_must_match_the_selected_binary (__main__.ContainerFixtureProfile.test_registered_runsc_must_match_the_selected_binary) ... ok
+test_runsc_must_exist_and_be_executable (__main__.ContainerFixtureProfile.test_runsc_must_exist_and_be_executable) ... ok
+test_sidecar_bytes_are_bound_and_changes_cannot_pass (__main__.ContainerFixtureProfile.test_sidecar_bytes_are_bound_and_changes_cannot_pass) ... ok
+test_sidecar_links_and_special_files_are_rejected (__main__.ContainerFixtureProfile.test_sidecar_links_and_special_files_are_rejected) ... ok
+test_sidecar_permissions_are_bound (__main__.ContainerFixtureProfile.test_sidecar_permissions_are_bound) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.018s
+
+OK

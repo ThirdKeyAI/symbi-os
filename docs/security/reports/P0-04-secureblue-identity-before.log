@@ -1,0 +1,15 @@
+test_host_identity_requires_the_selected_secureblue_fedora_image (image.qualification.tests.test_landlock.Qualification.test_host_identity_requires_the_selected_secureblue_fedora_image) ... ERROR
+
+======================================================================
+ERROR: test_host_identity_requires_the_selected_secureblue_fedora_image (image.qualification.tests.test_landlock.Qualification.test_host_identity_requires_the_selected_secureblue_fedora_image)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/vmstore/repos2/symbi-os/.cache/p0-landlock-followup/image/qualification/tests/test_landlock.py", line 40, in test_host_identity_requires_the_selected_secureblue_fedora_image
+    self.module.validate_os_release(selected)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'landlock' has no attribute 'validate_os_release'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.006s
+
+FAILED (errors=1)

@@ -1,0 +1,38 @@
+{
+  "base": {
+    "image": {
+      "registry": "ghcr.io",
+      "repository": "secureblue/sericea-main-hardened",
+      "digest": "sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f"
+    },
+    "public-key": "image/keys/secureblue-2026.pub"
+  },
+  "metadata": {
+    "name": "symbiont-os",
+    "description": "Symbiont Fedora Atomic desktop",
+    "labels": {
+      "org.opencontainers.image.licenses": "Apache-2.0"
+    }
+  },
+  "spec": {
+    "platforms": [
+      "linux/amd64"
+    ],
+    "tool-versions": {
+      "bluebuild": "none"
+    }
+  },
+  "modules": [
+    {
+      "type": "containerfile",
+      "snippets": [
+        "COPY image/overlay/ /",
+        "COPY image/vendor/ombuntu/LICENSE /usr/share/licenses/symbiont-os/Ombuntu-MIT",
+        "COPY image/vendor/omarchy/LICENSE /usr/share/licenses/symbiont-os/Omarchy-MIT",
+        "COPY LICENSE /usr/share/licenses/symbiont-os/Apache-2.0",
+        "COPY image/harden-image.sh /tmp/symbi-harden-image.sh",
+        "RUN bash /tmp/symbi-harden-image.sh && rm /tmp/symbi-harden-image.sh"
+      ]
+    }
+  ]
+}

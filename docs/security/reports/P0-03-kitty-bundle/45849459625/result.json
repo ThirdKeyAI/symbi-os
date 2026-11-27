@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "passed": true,
+  "selected": false,
+  "security_qualified": false,
+  "os_qualified": false,
+  "scope": "Signature and archive inventory only; no extraction, candidate execution, installation or release claim",
+  "source_commit": "b25ef5cac1e3932d7f6f87266815ff0ef2f641f8",
+  "limits": {
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "32"
+  },
+  "commands": [
+    {
+      "name": "gpgv-version",
+      "exit_code": 0
+    },
+    {
+      "name": "valid-bundle",
+      "exit_code": 0
+    },
+    {
+      "name": "missing-key",
+      "exit_code": 2
+    },
+    {
+      "name": "altered-bundle",
+      "exit_code": 1
+    }
+  ],
+  "downloads": [
+    {
+      "name": "kitty-0.51.0-x86_64.txz",
+      "id": 763989527,
+      "url": "https://github.com/kovidgoyal/kitty/releases/download/v0.51.0/kitty-0.51.0-x86_64.txz",
+      "bytes": 47103100,
+      "sha256": "c285daaf1b699997614939c8d1cd92dd8b99302ff12f18efcc3f69382aa72b1d"
+    },
+    {
+      "name": "kitty-0.51.0-x86_64.txz.sig",
+      "id": 763993726,
+      "url": "https://github.com/kovidgoyal/kitty/releases/download/v0.51.0/kitty-0.51.0-x86_64.txz.sig",
+      "bytes": 566,
+      "sha256": "9131a2df2f75ed8860d2f0479eee4b68f8df4b913fbeb336d8a1cca71c353624"
+    }
+  ],
+  "inputs_sha256": "72fb59e3804e27c13526d51c8bb07ef3c0ffc54ba83ea1195f8c2c31fcbaadcb",
+  "public_key_sha256": "46b6b81f4cf237010916cf3324140fe0ed5a1da98eb73051578f01be6237c8bf",
+  "publisher": "3CE1780F78DD88DF45194FD706BC317B515ACE7C",
+  "verifier": {
+    "version": "gpgv (GnuPG) 2.4.4",
+    "sha256": "f14d026b9eae172c432e015bce227483293b4966f2f3fdcfa582f71d3dbb2ae8"
+  },
+  "signature_controls": {
+    "valid_bundle": true,
+    "missing_key_rejected": true,
+    "altered_bundle_rejected": true
+  },
+  "members": 764,
+  "regular_bytes": 169261985,
+  "inventory_sha256": "b2cb029cf974c1f899cb882331c38c715ca61e411f6175f19197e38bcc6e30f0",
+  "candidate_executed": false,
+  "archive_extracted": false,
+  "private_downloads_removed": true,
+  "cgroup_final": {
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "32",
+    "memory.peak": "181805056",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 2817853\nuser_usec 2676459\nsystem_usec 141394\nnice_usec 2669000\ncore_sched.force_idle_usec 0\nnr_periods 42\nnr_throttled 3\nthrottled_usec 642\nnr_bursts 0\nburst_usec 0"
+  }
+}

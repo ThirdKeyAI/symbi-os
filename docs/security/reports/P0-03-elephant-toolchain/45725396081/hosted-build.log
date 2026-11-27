@@ -1,0 +1,13 @@
+Running as unit: symbi-elephant-45725396081-1.service
+Traceback (most recent call last):
+  File "/home/runner/work/symbi-os/symbi-os/image/launcher/hosted_build.py", line 167, in <module>
+    main()
+  File "/home/runner/work/symbi-os/symbi-os/image/launcher/hosted_build.py", line 62, in main
+    from inventory import require_subject
+ModuleNotFoundError: No module named 'inventory'
+Finished with result: exit-code
+Main processes terminated with: code=exited/status=1
+Service runtime: 115ms
+CPU time consumed: 90ms
+Memory peak: 2.6M
+Memory swap peak: 0B

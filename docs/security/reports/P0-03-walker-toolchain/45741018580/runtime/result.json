@@ -1,0 +1,53 @@
+{
+  "passed": true,
+  "gui_qualified": false,
+  "os_qualified": false,
+  "limits": {
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "64"
+  },
+  "binary_sha256": "4566e3710ef9c04752e5268b472a88325ed813cd8846318315496bbd422ab31f",
+  "cli": {
+    "passed": true,
+    "gui_qualified": false,
+    "os_qualified": false,
+    "cases": [
+      {
+        "name": "version",
+        "argument": "--version",
+        "exit_code": 0,
+        "passed": true
+      },
+      {
+        "name": "help",
+        "argument": "--help",
+        "exit_code": 0,
+        "passed": true
+      },
+      {
+        "name": "unknown-option",
+        "argument": "--symbi-unknown-qualification-option",
+        "exit_code": 1,
+        "passed": true
+      },
+      {
+        "name": "repeated-version",
+        "argument": "--version",
+        "exit_code": 0,
+        "passed": true
+      }
+    ],
+    "scope": "Actual version/help/parser controls only; no graphical or desktop acceptance"
+  },
+  "cgroup_final": {
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "64",
+    "memory.peak": "33017856",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 189980\nuser_usec 123685\nsystem_usec 66295\nnice_usec 125000\ncore_sched.force_idle_usec 0\nnr_periods 2\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "source_parent": "ba6ce674e4bafb2adc250755f215655ba386f610",
+  "scope": "Offline first-login desktop defaults and passive Nerd Font candidate intake; no candidate executable, font parser, image build, VM, installation or release action",
+  "desktop_defaults": {
+    "bindings": 69,
+    "active_bindings": 56,
+    "reserved_bindings": 13,
+    "tests_before": "failed",
+    "tests_after": 10,
+    "kitty_selected": false,
+    "native_session_qualified": false
+  },
+  "font_intake": {
+    "tag": "v3.5.1",
+    "tests_before": "failed",
+    "tests_after": 6,
+    "duplicate_json_keys_rejected": true,
+    "notice_paths_confined": true,
+    "download_host_confined": true,
+    "archives": {
+      "JetBrainsMono.tar.xz": {
+        "members": 98,
+        "fonts": 96,
+        "expanded_bytes": 243185440
+      },
+      "NerdFontsSymbolsOnly.tar.xz": {
+        "members": 5,
+        "fonts": 2,
+        "expanded_bytes": 5206217
+      }
+    },
+    "archives_extracted": false,
+    "font_parser_executed": false,
+    "selected": false,
+    "os_qualified": false
+  },
+  "integrated_image_tests": 272,
+  "integrated_image_tests_passed": true,
+  "integrated_peak_rss_kib": 53464,
+  "full_repository_check_passed": true,
+  "full_repository_check_wall_seconds": 4.58,
+  "full_repository_check_peak_rss_kib": 70236,
+  "swap_operations": 0,
+  "qualified": false
+}

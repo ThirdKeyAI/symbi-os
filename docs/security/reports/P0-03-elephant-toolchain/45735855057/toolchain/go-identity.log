@@ -1,0 +1,8 @@
+{
+	"CGO_ENABLED": "1",
+	"GOARCH": "amd64",
+	"GOEXPERIMENT": "nodwarf5",
+	"GOOS": "linux",
+	"GOTOOLCHAIN": "local",
+	"GOVERSION": "go1.27.4-X:nodwarf5"
+}

@@ -1,0 +1,10 @@
+/output/binaries/marker: go1.27.4-X:nodwarf5
+	path	command-line-arguments
+	build	-buildmode=plugin
+	build	-compiler=gc
+	build	-trimpath=true
+	build	CGO_ENABLED=1
+	build	GOARCH=amd64
+	build	GOEXPERIMENT=nodwarf5
+	build	GOOS=linux
+	build	GOAMD64=v1

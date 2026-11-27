@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "scope": "Candidate signed Fedora toolchain and native headers for the exact patched Tolaria source; resolve and review before installation",
+  "source_inputs": "image/tolaria/source.json",
+  "source_revision": "a87d074c0f35acd6475b6e37145ccbfd6fbecffd",
+  "cargo_lock_sha256": "130ee33ea734efc9cf65816258f4bf8b84f7dd6f50c8c6cd832bd6f404d854f1",
+  "pnpm_lock_sha256": "517c7037c139b40978c185b8326793d0a4c3b6096a435089d41127add4379c2d",
+  "patch_sha256": "f3a2d1bddd4323831ec28c83516766a7cebfbcaebe4f6264d7217f202e0cb687",
+  "packages": [
+    "rust >= 1.100.0",
+    "cargo >= 1.100.0",
+    "nodejs >= 22",
+    "nodejs-npm",
+    "gcc",
+    "gcc-c++",
+    "glibc-devel",
+    "make",
+    "pkgconf-pkg-config",
+    "rpm-build",
+    "cpio",
+    "file",
+    "patchelf",
+    "desktop-file-utils",
+    "pkgconfig(webkit2gtk-4.1)",
+    "pkgconfig(libsoup-3.0)",
+    "pkgconfig(gtk+-3.0)",
+    "pkgconfig(openssl)",
+    "pkgconfig(ayatana-appindicator3-0.1)",
+    "pkgconfig(librsvg-2.0)",
+    "libxdo-devel"
+  ],
+  "notes": [
+    "The upstream release build uses Node 22 and pnpm 10; pnpm 10.34.9 is separately hash-pinned and passively inventoried",
+    "JavaScript and Rust dependencies remain bound by the unchanged pnpm and Cargo lockfiles and are fetched only in the disposable dependency stage",
+    "Compilation and upstream tests run later with no network, two CPUs, at most 6 GiB of memory and one Cargo job",
+    "The Tauri RPM is an intermediate source-built payload; it is never trusted as a signed Fedora package or installed through the product package database",
+    "The selected secureblue image supplies the final runtime. Loader closure and a real desktop launch must pass on that unchanged image before selection",
+    "Discovery does not install packages, fetch language dependencies, compile the application or qualify the OS"
+  ]
+}

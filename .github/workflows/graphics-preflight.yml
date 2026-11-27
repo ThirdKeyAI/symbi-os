@@ -1,0 +1,62 @@
+name: Hosted virtual graphics preflight
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "image/hyprland/graphics/**"
+      - "scripts/check-hosted-graphics.sh"
+      - "image/hyprland/inventory.py"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/graphics-preflight.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
+  pull_request:
+    paths:
+      - "image/hyprland/graphics/**"
+      - "scripts/check-hosted-graphics.sh"
+      - "image/hyprland/inventory.py"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - ".github/workflows/graphics-preflight.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: graphics-preflight-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  graphics:
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Probe software GL virtual graphics in the authenticated Fedora base
+        run: bash scripts/check-hosted-graphics.sh
+      - name: Retain public graphics evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hosted-graphics-evidence
+          path: .cache/hyprland-graphics-evidence/
+          retention-days: 14
+          if-no-files-found: error

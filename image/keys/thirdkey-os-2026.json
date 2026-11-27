@@ -1,0 +1,33 @@
+{
+  "created_at_utc": "2026-11-25T17:08:01.819914+00:00",
+  "public_key": "thirdkey-os-2026.pub",
+  "public_key_sha256": "f95a39bcd37e640d179a1f8f2cb2baeb44162e8d19f5b75e0fe1553f3ef777ac",
+  "algorithm": "Cosign default ECDSA P-256",
+  "cosign_binary_sha256": "912502def4baf810eaf36b210a4f51e1da214f9f6d664e2a9a2154cfc67ee0d6",
+  "custody": {
+    "repository": "ThirdKeyAI/symbi-os",
+    "environment": "symbi-os-release",
+    "required_reviewer": "jaschadub",
+    "required_reviewer_id": 768841,
+    "prevent_self_review": true,
+    "allowed_ref_type": "tag",
+    "allowed_ref_pattern": "v*"
+  },
+  "stored_secret_metadata": {
+    "COSIGN_PASSWORD": {
+      "created_at": "2026-11-25T17:07:59Z",
+      "updated_at": "2026-11-25T17:07:59Z"
+    },
+    "COSIGN_PRIVATE_KEY": {
+      "created_at": "2026-11-25T17:07:57Z",
+      "updated_at": "2026-11-25T17:07:57Z"
+    }
+  },
+  "public_key_round_trip_passed": true,
+  "private_material_retained_locally": false,
+  "limitations": [
+    "No image has been signed or released",
+    "A release initiated by the required reviewer cannot be self-approved",
+    "Environment administrators retain their normal GitHub administration powers"
+  ]
+}

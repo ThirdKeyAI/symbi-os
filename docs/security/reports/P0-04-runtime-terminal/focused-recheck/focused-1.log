@@ -1,0 +1,45 @@
+
+running 1 test
+test scheduler::tests::registration_has_no_effect_and_repeated_runs_release_exact_resources ... FAILED
+
+failures:
+
+---- scheduler::tests::registration_has_no_effect_and_repeated_runs_release_exact_resources stdout ----
+
+thread 'scheduler::tests::registration_has_no_effect_and_repeated_runs_release_exact_resources' (18401) panicked at crates/runtime/src/scheduler/mod.rs:1521:10:
+called `Result::unwrap()` on an `Err` value: Elapsed(())
+stack backtrace:
+   0: __rustc::rust_begin_unwind
+   1: core::panicking::panic_fmt
+   2: core::result::unwrap_failed
+   3: symbi_runtime::scheduler::tests::wait_started::{{closure}}
+   4: symbi_runtime::scheduler::tests::registration_has_no_effect_and_repeated_runs_release_exact_resources::{{closure}}
+   5: <core::pin::Pin<P> as core::future::future::Future>::poll
+   6: <core::pin::Pin<P> as core::future::future::Future>::poll
+   7: tokio::runtime::scheduler::current_thread::CoreGuard::block_on::{{closure}}::{{closure}}::{{closure}}
+   8: tokio::runtime::scheduler::current_thread::CoreGuard::block_on::{{closure}}::{{closure}}
+   9: tokio::runtime::scheduler::current_thread::Context::enter
+  10: tokio::runtime::scheduler::current_thread::CoreGuard::block_on::{{closure}}
+  11: tokio::runtime::scheduler::current_thread::CoreGuard::enter::{{closure}}
+  12: tokio::runtime::context::scoped::Scoped<T>::set
+  13: tokio::runtime::context::set_scheduler::{{closure}}
+  14: std::thread::local::LocalKey<T>::try_with
+  15: std::thread::local::LocalKey<T>::with
+  16: tokio::runtime::context::set_scheduler
+  17: tokio::runtime::scheduler::current_thread::CoreGuard::enter
+  18: tokio::runtime::scheduler::current_thread::CoreGuard::block_on
+  19: tokio::runtime::scheduler::current_thread::CurrentThread::block_on::{{closure}}
+  20: tokio::runtime::context::runtime::enter_runtime
+  21: tokio::runtime::scheduler::current_thread::CurrentThread::block_on
+  22: tokio::runtime::runtime::Runtime::block_on_inner
+  23: tokio::runtime::runtime::Runtime::block_on
+  24: symbi_runtime::scheduler::tests::registration_has_no_effect_and_repeated_runs_release_exact_resources
+  25: symbi_runtime::scheduler::tests::registration_has_no_effect_and_repeated_runs_release_exact_resources::{{closure}}
+  26: core::ops::function::FnOnce::call_once
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+
+
+failures:
+    scheduler::tests::registration_has_no_effect_and_repeated_runs_release_exact_resources
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1534 filtered out; finished in 3.25s

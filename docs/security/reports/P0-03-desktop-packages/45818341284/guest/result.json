@@ -1,0 +1,1125 @@
+{
+  "schema": 1,
+  "passed": true,
+  "os_qualified": false,
+  "packages_selected": false,
+  "security_qualified": false,
+  "requirements": {
+    "schema": 1,
+    "scope": "Initial requested terminal/media candidates. Full Ombuntu menus, fonts, compositor bindings and source-only tooling remain separate integration work.",
+    "packages": [
+      "kitty",
+      "mplayer",
+      "mpv",
+      "bat",
+      "fd-find",
+      "eza",
+      "zoxide",
+      "fzf",
+      "ripgrep",
+      "btop",
+      "fastfetch",
+      "lazygit",
+      "tmux",
+      "neovim",
+      "jq",
+      "bash-completion",
+      "wl-clipboard",
+      "grim",
+      "slurp",
+      "playerctl",
+      "pamixer",
+      "brightnessctl",
+      "imv",
+      "ffmpegthumbnailer"
+    ],
+    "packages_selected": false,
+    "security_review": {
+      "kitty": {
+        "minimum_upstream_version": "0.51.0",
+        "cves": [
+          "CVE-2026-134823",
+          "CVE-2026-95835"
+        ],
+        "fixed_package_verified": false,
+        "evidence": "docs/security/reports/P0-03-cve-bz/2026-11-26/desktop-profile/README.md",
+        "rule": "Signatures authenticate candidate origin only. Before selection inspect exact signed Fedora source/patches for both reviewed fixes and assess remaining advisories; upstream version alone does not establish backports or security clearance."
+      }
+    },
+    "unresolved_tooling": [
+      "starship",
+      "mise",
+      "gum"
+    ],
+    "not_installed_by_this_step": true
+  },
+  "trust": {
+    "schema": 1,
+    "release": "45",
+    "architecture": "x86_64",
+    "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+    "keys": [
+      {
+        "file": "fedora-45-primary.asc",
+        "fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E",
+        "sha256": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425",
+        "identity": "Fedora (45) <fedora-45-primary@fedoraproject.org>"
+      },
+      {
+        "file": "rpmfusion-free-2020.asc",
+        "fingerprint": "E9A491A3DE247814E7E067EAE06F8ECDD651FF2E",
+        "sha256": "10fc0a3e1a0307e8088357a31a9c5e4e3d9f9e0b01db2b03b5790d949a47f3b3",
+        "identity": "RPM Fusion free repository for Fedora (2020) <rpmfusion-buildsys@lists.rpmfusion.org>",
+        "source": "https://github.com/rpmfusion/rpmfusion-free-release/blob/455da393b8e1d3bad80a7d3c8617ef343ebb2c1a/RPM-GPG-KEY-rpmfusion-free-fedora-2020",
+        "second_source": "https://github.com/rpm-software-management/distribution-gpg-keys/blob/b7cc71f1c253f12a5b9e9172258b5e52ab281a81/keys/rpmfusion/RPM-GPG-KEY-rpmfusion-free-fedora-2020"
+      }
+    ],
+    "scope": "Public keys used only in isolated disposable discovery keyrings; no new installed OS/release trust; no private key; no package selection"
+  },
+  "limits": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128"
+  },
+  "commands": [
+    {
+      "name": "installed-before",
+      "exit_code": 0
+    },
+    {
+      "name": "public-key-0",
+      "exit_code": 0
+    },
+    {
+      "name": "import-keyring-0",
+      "exit_code": 0
+    },
+    {
+      "name": "import-fedora-keyring-0",
+      "exit_code": 0
+    },
+    {
+      "name": "public-key-1",
+      "exit_code": 0
+    },
+    {
+      "name": "import-keyring-1",
+      "exit_code": 0
+    },
+    {
+      "name": "import-fusion-keyring-1",
+      "exit_code": 0
+    },
+    {
+      "name": "list-keyring",
+      "exit_code": 0
+    },
+    {
+      "name": "list-fedora-keyring",
+      "exit_code": 0
+    },
+    {
+      "name": "list-fusion-keyring",
+      "exit_code": 0
+    },
+    {
+      "name": "unresolved-tooling",
+      "exit_code": 0
+    },
+    {
+      "name": "resolve-download",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-000-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-000-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-001-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-001-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-002-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-002-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-003-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-003-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-004-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-004-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-005-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-005-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-006-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-006-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-007-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-007-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-008-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-008-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-009-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-009-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-010-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-010-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-011-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-011-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-012-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-012-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-013-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-013-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-014-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-014-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-015-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-015-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-016-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-016-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-017-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-017-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-018-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-018-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-019-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-019-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-020-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-020-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-021-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-021-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-022-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-022-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-023-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-023-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-024-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-024-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-025-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-025-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-026-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-026-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-027-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-027-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-028-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-028-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-029-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-029-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-030-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-030-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-031-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-031-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-032-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-032-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-033-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-033-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-034-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-034-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-035-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-035-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-036-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-036-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-037-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-037-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-038-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-038-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "missing-key-0",
+      "exit_code": 1
+    },
+    {
+      "name": "wrong-key-0",
+      "exit_code": 1
+    },
+    {
+      "name": "tampered-0",
+      "exit_code": 1
+    },
+    {
+      "name": "missing-key-1",
+      "exit_code": 1
+    },
+    {
+      "name": "wrong-key-1",
+      "exit_code": 1
+    },
+    {
+      "name": "tampered-1",
+      "exit_code": 1
+    },
+    {
+      "name": "installed-after",
+      "exit_code": 0
+    }
+  ],
+  "packages": [
+    {
+      "name": "aalib-libs",
+      "epoch": "0",
+      "version": "1.4.0",
+      "release": "0.59.rc5.fc45",
+      "arch": "x86_64",
+      "nevra": "aalib-libs-1.4.0-0.59.rc5.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "source_rpm": "aalib-1.4.0-0.59.rc5.fc45.src.rpm",
+      "filename": "aalib-libs-1.4.0-0.59.rc5.fc45.x86_64.rpm",
+      "bytes": 68937,
+      "sha256": "0473b1a36297d7ff8c170f2b8219788c279925da1792107f4b8e2cb2d403869e",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "bat",
+      "epoch": "0",
+      "version": "0.26.1",
+      "release": "4.fc45",
+      "arch": "x86_64",
+      "nevra": "bat-0.26.1-4.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0 AND BSD-2-Clause AND BSD-2-Clause-Views AND BSD-3-Clause AND CC-BY-SA-3.0 AND LGPL-3.0-or-later AND GPL-2.0-only WITH GCC-exception-2.0 AND MIT AND Unicode-3.0 AND Unicode-DFS-2016 AND Unlicense AND WTFPL AND (0BSD OR MIT OR Apache-2.0) AND (Apache-2.0 OR BSL-1.0) AND (Apache-2.0 OR MIT) AND (Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT) AND (MIT OR Apache-2.0 OR Zlib) AND (Unlicense OR MIT)",
+      "source_rpm": "rust-bat-0.26.1-4.fc45.src.rpm",
+      "filename": "bat-0.26.1-4.fc45.x86_64.rpm",
+      "bytes": 2621694,
+      "sha256": "d8de41d3eb4a5fa2696b012c39e26659f8e1a269d73e273bb17fe95d6209a00c",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "btop",
+      "epoch": "0",
+      "version": "1.4.7",
+      "release": "2.fc45",
+      "arch": "x86_64",
+      "nevra": "btop-1.4.7-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0 AND ISC AND MIT AND LicenseRef-Fedora-Public-Domain",
+      "source_rpm": "btop-1.4.7-2.fc45.src.rpm",
+      "filename": "btop-1.4.7-2.fc45.x86_64.rpm",
+      "bytes": 668749,
+      "sha256": "17fe232f0b7d87d20707bd44a66d1b5d0f78ea9b07737703020a230739b51fcc",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "compat-lua-libs",
+      "epoch": "0",
+      "version": "5.1.5",
+      "release": "32.fc45",
+      "arch": "x86_64",
+      "nevra": "compat-lua-libs-5.1.5-32.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "source_rpm": "compat-lua-5.1.5-32.fc45.src.rpm",
+      "filename": "compat-lua-libs-5.1.5-32.fc45.x86_64.rpm",
+      "bytes": 171355,
+      "sha256": "7bc3ca2d79044fe690866c05b0d16b2436b3f2c215bf63d8a590288345e65932",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "eza",
+      "epoch": "0",
+      "version": "0.23.5",
+      "release": "1.fc45",
+      "arch": "x86_64",
+      "nevra": "eza-0.23.5-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "EUPL-1.2",
+      "source_rpm": "rust-eza-0.23.5-1.fc45.src.rpm",
+      "filename": "eza-0.23.5-1.fc45.x86_64.rpm",
+      "bytes": 802912,
+      "sha256": "59976d800a2cbf695a6cfd55771f00f24630a28af56f936e08223735472d4e94",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "fastfetch",
+      "epoch": "0",
+      "version": "2.68.1",
+      "release": "1.fc45",
+      "arch": "x86_64",
+      "nevra": "fastfetch-2.68.1-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "source_rpm": "fastfetch-2.68.1-1.fc45.src.rpm",
+      "filename": "fastfetch-2.68.1-1.fc45.x86_64.rpm",
+      "bytes": 720673,
+      "sha256": "1a99e9901744f43a3f4d348b96d03facb5f1bff492be7a12039630ca464b42db",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "fd-find",
+      "epoch": "0",
+      "version": "10.5.2",
+      "release": "1.fc45",
+      "arch": "x86_64",
+      "nevra": "fd-find-10.5.2-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "(MIT OR Apache-2.0) AND MIT AND Unicode-DFS-2016 AND (Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT) AND (Unlicense OR MIT)",
+      "source_rpm": "rust-fd-find-10.5.2-1.fc45.src.rpm",
+      "filename": "fd-find-10.5.2-1.fc45.x86_64.rpm",
+      "bytes": 1327274,
+      "sha256": "a2e1a3cef9aceaac86d37f8dd90b5798c73d387f2ce95a6eed5c1010d5a29d27",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "jemalloc",
+      "epoch": "0",
+      "version": "5.3.0",
+      "release": "14.fc44",
+      "arch": "x86_64",
+      "nevra": "jemalloc-5.3.0-14.fc44.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LicenseRef-Callaway-BSD",
+      "source_rpm": "jemalloc-5.3.0-14.fc44.src.rpm",
+      "filename": "jemalloc-5.3.0-14.fc44.x86_64.rpm",
+      "bytes": 304125,
+      "sha256": "3159390bdbcf46c3269fd499855e95421f92b3b6a155b68d5b641fb6cc7f7a88",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "kitty",
+      "epoch": "0",
+      "version": "0.48.2",
+      "release": "1.fc45",
+      "arch": "x86_64",
+      "nevra": "kitty-0.48.2-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-only AND LGPL-2.1-or-later AND Zlib AND (MIT AND CC0-1.0) AND BSD-2-Clause AND CC0-1.0 AND MIT",
+      "source_rpm": "kitty-0.48.2-1.fc45.src.rpm",
+      "filename": "kitty-0.48.2-1.fc45.x86_64.rpm",
+      "bytes": 5149485,
+      "sha256": "661e153b9af644197fcf2104c29446e022a17c8a65626bf75a71b4a5af84ca81",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "kitty-kitten",
+      "epoch": "0",
+      "version": "0.48.2",
+      "release": "1.fc45",
+      "arch": "x86_64",
+      "nevra": "kitty-kitten-0.48.2-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0 AND BSD-2-Clause AND BSD-3-Clause AND GPL-3.0-only AND MIT AND OFL-1.1",
+      "source_rpm": "kitty-0.48.2-1.fc45.src.rpm",
+      "filename": "kitty-kitten-0.48.2-1.fc45.x86_64.rpm",
+      "bytes": 8367016,
+      "sha256": "1e1d794d4c4eaa63cc4b803863a1abd44283441319018d8c33f4c6817a8fdbae",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "kitty-shell-integration",
+      "epoch": "0",
+      "version": "0.48.2",
+      "release": "1.fc45",
+      "arch": "noarch",
+      "nevra": "kitty-shell-integration-0.48.2-1.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-only AND MIT",
+      "source_rpm": "kitty-0.48.2-1.fc45.src.rpm",
+      "filename": "kitty-shell-integration-0.48.2-1.fc45.noarch.rpm",
+      "bytes": 47566,
+      "sha256": "24adaa5b0fbee3af4983e935fdee9ff3a638a45a87a496845d89c666b8546473",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "kitty-terminfo",
+      "epoch": "0",
+      "version": "0.48.2",
+      "release": "1.fc45",
+      "arch": "noarch",
+      "nevra": "kitty-terminfo-0.48.2-1.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-only",
+      "source_rpm": "kitty-0.48.2-1.fc45.src.rpm",
+      "filename": "kitty-terminfo-0.48.2-1.fc45.noarch.rpm",
+      "bytes": 23970,
+      "sha256": "1e9cdcbb7fa9f99c295e90ed2c442a3ccb67ca9cfee11cf5ba99a1b6ef69e8a7",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "lazygit",
+      "epoch": "0",
+      "version": "0.66.3",
+      "release": "1.fc45",
+      "arch": "x86_64",
+      "nevra": "lazygit-0.66.3-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0 AND BSD-2-Clause AND BSD-3-Clause AND ISC AND MIT AND Unlicense",
+      "source_rpm": "lazygit-0.66.3-1.fc45.src.rpm",
+      "filename": "lazygit-0.66.3-1.fc45.x86_64.rpm",
+      "bytes": 6466767,
+      "sha256": "75b5fb88ebc3f2bdc28dbf3b7bcac044aa96239a99a76237827897e2011c4944",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "libXpresent",
+      "epoch": "0",
+      "version": "1.0.0",
+      "release": "29.fc45",
+      "arch": "x86_64",
+      "nevra": "libXpresent-1.0.0-29.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "source_rpm": "libXpresent-1.0.0-29.fc45.src.rpm",
+      "filename": "libXpresent-1.0.0-29.fc45.x86_64.rpm",
+      "bytes": 17492,
+      "sha256": "fbfcde5e3d6f35a943712dca4a101df5005d89369979ac15e93d7dd09fcdaa38",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "libgit2_1.9",
+      "epoch": "0",
+      "version": "1.9.7",
+      "release": "3.fc45",
+      "arch": "x86_64",
+      "nevra": "libgit2_1.9-1.9.7-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-2.0-only WITH GCC-exception-2.0 AND MIT AND LicenseRef-Fedora-Public-Domain AND Apache-2.0 AND SSLeay-standalone AND BSD-2-Clause AND NCSA AND Unlicense",
+      "source_rpm": "libgit2_1.9-1.9.7-3.fc45.src.rpm",
+      "filename": "libgit2_1.9-1.9.7-3.fc45.x86_64.rpm",
+      "bytes": 626727,
+      "sha256": "b751bc432c027f110d505993e3123e4150510c18298b28c595a786b37c066290",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "libluv",
+      "epoch": "0",
+      "version": "1.53.0.0",
+      "release": "1.fc45",
+      "arch": "x86_64",
+      "nevra": "libluv-1.53.0.0-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0",
+      "source_rpm": "lua-luv-1.53.0.0-1.fc45.src.rpm",
+      "filename": "libluv-1.53.0.0-1.fc45.x86_64.rpm",
+      "bytes": 80692,
+      "sha256": "9f3ebd0bbfc70d8cf86675df83930293fce600aaee96140acac83653b8c740aa",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "libtree-sitter",
+      "epoch": "0",
+      "version": "0.26.13",
+      "release": "1.fc45",
+      "arch": "x86_64",
+      "nevra": "libtree-sitter-0.26.13-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "source_rpm": "tree-sitter-0.26.13-1.fc45.src.rpm",
+      "filename": "libtree-sitter-0.26.13-1.fc45.x86_64.rpm",
+      "bytes": 121463,
+      "sha256": "7e7065fd52e4454dc1750844223c53abde11a69dd91f70b38ac7840fbcfbca99",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "libusb-compat-0.1",
+      "epoch": "0",
+      "version": "0.1.9",
+      "release": "2.fc45",
+      "arch": "x86_64",
+      "nevra": "libusb-compat-0.1-0.1.9-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LicenseRef-Callaway-LGPLv2+",
+      "source_rpm": "libusb-compat-0.1-0.1.9-2.fc45.src.rpm",
+      "filename": "libusb-compat-0.1-0.1.9-2.fc45.x86_64.rpm",
+      "bytes": 30721,
+      "sha256": "19372e10d1f271bbd13fd530880105aa22acfa2239434a9cf047d18c428cb143",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "libutempter",
+      "epoch": "0",
+      "version": "1.2.1",
+      "release": "21.fc45",
+      "arch": "x86_64",
+      "nevra": "libutempter-1.2.1-21.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later AND LGPL-2.1-only AND BSD-2-Clause",
+      "source_rpm": "libutempter-1.2.1-21.fc45.src.rpm",
+      "filename": "libutempter-1.2.1-21.fc45.x86_64.rpm",
+      "bytes": 27174,
+      "sha256": "ecf248ae591affd49c23f58cff043061e1c189cab82e30549a20d0f9129957fa",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "libvterm",
+      "epoch": "0",
+      "version": "0.3.3",
+      "release": "9.fc45",
+      "arch": "x86_64",
+      "nevra": "libvterm-0.3.3-9.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "source_rpm": "libvterm-0.3.3-9.fc45.src.rpm",
+      "filename": "libvterm-0.3.3-9.fc45.x86_64.rpm",
+      "bytes": 47147,
+      "sha256": "bf65c439befdf4f62041e7250bd1f49e867b2747b22b7d4d3b7e34e99e386415",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "lirc-libs",
+      "epoch": "0",
+      "version": "0.10.2",
+      "release": "8.fc45",
+      "arch": "x86_64",
+      "nevra": "lirc-libs-0.10.2-8.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-2.0-only AND LicenseRef-Callaway-BSD",
+      "source_rpm": "lirc-0.10.2-8.fc45.src.rpm",
+      "filename": "lirc-libs-0.10.2-8.fc45.x86_64.rpm",
+      "bytes": 131466,
+      "sha256": "3520e156b19e80e77f790a098542b501264db129f7786c7fb9524eb238e7fca9",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "llhttp",
+      "epoch": "0",
+      "version": "9.4.4",
+      "release": "1.fc45",
+      "arch": "x86_64",
+      "nevra": "llhttp-9.4.4-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "source_rpm": "llhttp-9.4.4-1.fc45.src.rpm",
+      "filename": "llhttp-9.4.4-1.fc45.x86_64.rpm",
+      "bytes": 39451,
+      "sha256": "5c225c5e94d2febdbd76a54e8786614dd44ec66c24a0ed96b9190dd5abc11f43",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "lua5.1-lpeg",
+      "epoch": "0",
+      "version": "1.1.0",
+      "release": "10.fc45",
+      "arch": "x86_64",
+      "nevra": "lua5.1-lpeg-1.1.0-10.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "source_rpm": "lua-lpeg-1.1.0-10.fc45.src.rpm",
+      "filename": "lua5.1-lpeg-1.1.0-10.fc45.x86_64.rpm",
+      "bytes": 38412,
+      "sha256": "17c17f59381391f8dcf49033abdaadbf0f39ceb9bb9df77182d4d36c080a7fbc",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "luajit",
+      "epoch": "0",
+      "version": "2.1.1767980792",
+      "release": "2.fc45",
+      "arch": "x86_64",
+      "nevra": "luajit-2.1.1767980792-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "source_rpm": "luajit-2.1.1767980792-2.fc45.src.rpm",
+      "filename": "luajit-2.1.1767980792-2.fc45.x86_64.rpm",
+      "bytes": 452430,
+      "sha256": "eee0608e34c17e7e199a88a8140296fd419899e3809a7fe1b2903c55bb339c63",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "luajit2.1-luv",
+      "epoch": "0",
+      "version": "1.53.0.0",
+      "release": "1.fc45",
+      "arch": "x86_64",
+      "nevra": "luajit2.1-luv-1.53.0.0-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0",
+      "source_rpm": "lua-luv-1.53.0.0-1.fc45.src.rpm",
+      "filename": "luajit2.1-luv-1.53.0.0-1.fc45.x86_64.rpm",
+      "bytes": 73644,
+      "sha256": "3745f07383148ef28ecae2b49613df6fe93095943f7c3c0d2b282ce4cb218ec1",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "mplayer",
+      "epoch": "0",
+      "version": "1.5.1",
+      "release": "0.26.r38531.20260727.f401198.fc45",
+      "arch": "x86_64",
+      "nevra": "mplayer-1.5.1-0.26.r38531.20260727.f401198.fc45.x86_64",
+      "vendor": "RPM Fusion",
+      "license": "GPL-3.0-or-later",
+      "source_rpm": "mplayer-1.5.1-0.26.r38531.20260727.f401198.fc45.src.rpm",
+      "filename": "mplayer-1.5.1-0.26.r38531.20260727.f401198.fc45.x86_64.rpm",
+      "bytes": 1168032,
+      "sha256": "141890e808e37bff2ca6c40c62cc9a1b2a9a38e80015ec2aaa8357f3fd794311",
+      "signature_verified": true,
+      "key_fingerprint": "E9A491A3DE247814E7E067EAE06F8ECDD651FF2E"
+    },
+    {
+      "name": "mplayer-common",
+      "epoch": "0",
+      "version": "1.5.1",
+      "release": "0.26.r38531.20260727.f401198.fc45",
+      "arch": "x86_64",
+      "nevra": "mplayer-common-1.5.1-0.26.r38531.20260727.f401198.fc45.x86_64",
+      "vendor": "RPM Fusion",
+      "license": "GPL-3.0-or-later",
+      "source_rpm": "mplayer-1.5.1-0.26.r38531.20260727.f401198.fc45.src.rpm",
+      "filename": "mplayer-common-1.5.1-0.26.r38531.20260727.f401198.fc45.x86_64.rpm",
+      "bytes": 1215687,
+      "sha256": "cdd6e9b991293260f0481be1e100eb717cc0ea7705d0e26dcec933f6f452329e",
+      "signature_verified": true,
+      "key_fingerprint": "E9A491A3DE247814E7E067EAE06F8ECDD651FF2E"
+    },
+    {
+      "name": "mpv",
+      "epoch": "0",
+      "version": "0.41.0",
+      "release": "10.fc45",
+      "arch": "x86_64",
+      "nevra": "mpv-0.41.0-10.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-2.0-or-later AND LGPL-2.1-or-later AND BSD-2-Clause AND BSD-3-Clause AND ISC AND MIT",
+      "source_rpm": "mpv-0.41.0-10.fc45.src.rpm",
+      "filename": "mpv-0.41.0-10.fc45.x86_64.rpm",
+      "bytes": 1726413,
+      "sha256": "f19dc077e31763530aac2e0825e01e3b8b4ac9db0f49d4d6ec88bff704a7a1de",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "mujs",
+      "epoch": "0",
+      "version": "1.3.7",
+      "release": "3.fc45",
+      "arch": "x86_64",
+      "nevra": "mujs-1.3.7-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "ISC",
+      "source_rpm": "mujs-1.3.7-3.fc45.src.rpm",
+      "filename": "mujs-1.3.7-3.fc45.x86_64.rpm",
+      "bytes": 344461,
+      "sha256": "6cb689d6dee33afb3bf9c3ae4bcce60be364fe46bda7b390e9796947772f54ab",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "neovim",
+      "epoch": "0",
+      "version": "0.12.6",
+      "release": "1.fc45",
+      "arch": "x86_64",
+      "nevra": "neovim-0.12.6-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0 AND Vim AND MIT",
+      "source_rpm": "neovim-0.12.6-1.fc45.src.rpm",
+      "filename": "neovim-0.12.6-1.fc45.x86_64.rpm",
+      "bytes": 8655897,
+      "sha256": "a7696c49ffcdc55f1f322e6ab1ed5bf050827a90e17c55d902251172603581b5",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "pamixer",
+      "epoch": "0",
+      "version": "1.6",
+      "release": "8.fc45",
+      "arch": "x86_64",
+      "nevra": "pamixer-1.6-8.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later",
+      "source_rpm": "pamixer-1.6-8.fc45.src.rpm",
+      "filename": "pamixer-1.6-8.fc45.x86_64.rpm",
+      "bytes": 134929,
+      "sha256": "69c31bbfbd8fbe55f19d06df244d6c3c2034d74e43a9668315d50349d0787b4b",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "ripgrep",
+      "epoch": "0",
+      "version": "15.2.0",
+      "release": "1.fc45",
+      "arch": "x86_64",
+      "nevra": "ripgrep-15.2.0-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "(Unlicense OR MIT) AND BSD-3-Clause AND MIT AND Unicode-DFS-2016 AND (MIT OR Apache-2.0)",
+      "source_rpm": "rust-ripgrep-15.2.0-1.fc45.src.rpm",
+      "filename": "ripgrep-15.2.0-1.fc45.x86_64.rpm",
+      "bytes": 1604259,
+      "sha256": "7d47ff06cf359cf978c58f5a952036ee546381bb6d905440c30093f992ff2f7c",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "sdl12-compat",
+      "epoch": "0",
+      "version": "1.2.76",
+      "release": "1.fc45",
+      "arch": "x86_64",
+      "nevra": "sdl12-compat-1.2.76-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Zlib AND (MIT-0 OR Unlicense OR CC0-1.0) AND MIT AND LicenseRef-Fedora-Public-Domain",
+      "source_rpm": "sdl12-compat-1.2.76-1.fc45.src.rpm",
+      "filename": "sdl12-compat-1.2.76-1.fc45.x86_64.rpm",
+      "bytes": 98713,
+      "sha256": "1154aa7870cf5de1b783fd67b4698735af6223e9d0394d2d668efe5caef816c9",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "tmux",
+      "epoch": "0",
+      "version": "3.8",
+      "release": "2.fc45",
+      "arch": "x86_64",
+      "nevra": "tmux-3.8-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "ISC AND BSD-2-Clause AND BSD-3-Clause AND SSH-short AND LicenseRef-Fedora-Public-Domain",
+      "source_rpm": "tmux-3.8-2.fc45.src.rpm",
+      "filename": "tmux-3.8-2.fc45.x86_64.rpm",
+      "bytes": 723743,
+      "sha256": "db932759b4a4d214aaa7a0d6611be9ebabd9d7c5b5d31fd8562999bec12ad289",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "uchardet",
+      "epoch": "0",
+      "version": "0.0.8",
+      "release": "11.fc45",
+      "arch": "x86_64",
+      "nevra": "uchardet-0.0.8-11.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MPL-1.1 OR GPL-2.0-or-later OR LGPL-2.0-or-later",
+      "source_rpm": "uchardet-0.0.8-11.fc45.src.rpm",
+      "filename": "uchardet-0.0.8-11.fc45.x86_64.rpm",
+      "bytes": 109301,
+      "sha256": "5f67889008bb684ebdd06f52e5733cc094a45b1ec3af63d3c33b55fa49c78da9",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "unibilium",
+      "epoch": "0",
+      "version": "2.1.4",
+      "release": "1.fc45",
+      "arch": "x86_64",
+      "nevra": "unibilium-2.1.4-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-3.0-or-later",
+      "source_rpm": "unibilium-2.1.4-1.fc45.src.rpm",
+      "filename": "unibilium-2.1.4-1.fc45.x86_64.rpm",
+      "bytes": 34996,
+      "sha256": "f6b226967995b9d17228126c491fc2d5b043e4eba233f48193ecbb0f33c141e5",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "vapoursynth-libs",
+      "epoch": "0",
+      "version": "79",
+      "release": "3.fc45",
+      "arch": "x86_64",
+      "nevra": "vapoursynth-libs-79-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-only",
+      "source_rpm": "vapoursynth-79-3.fc45.src.rpm",
+      "filename": "vapoursynth-libs-79-3.fc45.x86_64.rpm",
+      "bytes": 1759818,
+      "sha256": "900a03bfc9c58b881a76f5418d699cc6117cc51a24f8a30b7448acf74bf9e6a4",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "yyjson",
+      "epoch": "0",
+      "version": "0.12.0",
+      "release": "3.fc45",
+      "arch": "x86_64",
+      "nevra": "yyjson-0.12.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "source_rpm": "yyjson-0.12.0-3.fc45.src.rpm",
+      "filename": "yyjson-0.12.0-3.fc45.x86_64.rpm",
+      "bytes": 124572,
+      "sha256": "41fd531e999a3f2b4c8dc09a6e50cfd7b2b9f3a8c72452a485f9796746ef6999",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "name": "zoxide",
+      "epoch": "0",
+      "version": "0.9.8",
+      "release": "3.fc45",
+      "arch": "x86_64",
+      "nevra": "zoxide-0.9.8-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND MPL-2.0 AND (Apache-2.0 OR MIT) AND (MIT-0 OR Apache-2.0)",
+      "source_rpm": "rust-zoxide-0.9.8-3.fc45.src.rpm",
+      "filename": "zoxide-0.9.8-3.fc45.x86_64.rpm",
+      "bytes": 478374,
+      "sha256": "e436f7bade11f70f3bf1b395c411f378a99ce6294858c08a002aced248db64e5",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    }
+  ],
+  "negative_controls": {
+    "4F50A6114CD5C6976A7F1179655A4B02F577861E": {
+      "missing_key_rejected": true,
+      "wrong_key_rejected": true,
+      "tampered_package_rejected": true
+    },
+    "E9A491A3DE247814E7E067EAE06F8ECDD651FF2E": {
+      "missing_key_rejected": true,
+      "wrong_key_rejected": true,
+      "tampered_package_rejected": true
+    }
+  },
+  "scope": "Signed candidate discovery only; no package transaction or candidate program execution",
+  "installed_packages_unchanged": true,
+  "installed_inventory_sha256": "51ef5b0dbf4691453c947e9c06fe09ab5d2c58d39488693b2814e11e16914640",
+  "cgroup_final": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128",
+    "memory.peak": "412282880",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 12230075\nuser_usec 8803480\nsystem_usec 3426594\nnice_usec 8748000\ncore_sched.force_idle_usec 0\nnr_periods 295\nnr_throttled 41\nthrottled_usec 1041344\nnr_bursts 0\nburst_usec 0"
+  }
+}

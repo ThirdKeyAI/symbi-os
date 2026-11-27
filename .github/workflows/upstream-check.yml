@@ -1,0 +1,158 @@
+name: Qualified upstream base check
+
+on:
+  workflow_dispatch:
+    inputs:
+      evidence_run_id:
+        description: Run ID containing a fully built and qualified base candidate
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qualified-upstream-base
+  cancel-in-progress: true
+
+jobs:
+  qualify-candidate:
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      actions: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 70
+    env:
+      EVIDENCE_RUN_ID: ${{ inputs.evidence_run_id || vars.SYMBI_UPSTREAM_EVIDENCE_RUN_ID }}
+      EXPECTED_WORKFLOW_REF: https://github.com/ThirdKeyAI/symbi-os/.github/workflows/release-candidate.yml@refs/heads/main
+      EXPECTED_GATE_REF: https://github.com/ThirdKeyAI/symbi-os/.github/workflows/upstream-check.yml@refs/heads/main
+    steps:
+      - name: Check out current main without persisted credentials
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verify the checked-out upstream gate revision
+        run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - name: Require a configured candidate evidence run
+        # upstream.py accepts artifacts only from the reviewed
+        # .github/workflows/release-candidate.yml producer at this exact commit.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          case "$EVIDENCE_RUN_ID" in
+            ''|*[!0-9]*) echo 'A numeric candidate evidence run ID is required.' >&2; exit 1 ;;
+          esac
+          mkdir -p .cache/upstream-origin
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$EVIDENCE_RUN_ID" \
+            > .cache/upstream-origin/run.json
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$EVIDENCE_RUN_ID/artifacts?per_page=100" \
+            > .cache/upstream-origin/artifacts.json
+      - name: Download the exact same-repository candidate artifact
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: symbi-os-upstream-candidate
+          path: .cache/upstream-candidate
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.EVIDENCE_RUN_ID }}
+      - name: Reconcile the candidate bases and complete native evidence
+        run: |
+          python3 image/release/upstream.py \
+            --candidate-base .cache/upstream-candidate/base-images.json \
+            --manifest .cache/upstream-candidate/release-evidence/manifest.json \
+            --evidence-root .cache/upstream-candidate/release-evidence \
+            --source-commit "$GITHUB_SHA" \
+            --workflow-ref "$EXPECTED_WORKFLOW_REF" \
+            --gate-workflow-ref "$EXPECTED_GATE_REF" \
+            --artifact-metadata \
+              .cache/upstream-origin/run.json \
+              .cache/upstream-origin/artifacts.json \
+            --artifact-run-id "$EVIDENCE_RUN_ID" \
+            --artifact-source-ref "$GITHUB_REF" \
+            --output .cache/verified-upstream
+      - name: Run the complete serial repository gate against the candidate pins
+        run: |
+          cp -- .cache/verified-upstream/base-images.json image/base-images.json
+          bash scripts/bootstrap-tools.sh
+          bash scripts/check.sh
+          git diff --check
+      - name: Retain only the candidate needed for independent PR revalidation
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: verified-upstream-candidate-${{ github.run_id }}
+          path: |
+            .cache/upstream-candidate/
+            .cache/upstream-origin/
+            .cache/verified-upstream/
+          if-no-files-found: error
+          retention-days: 7
+
+  propose-bump:
+    needs: qualify-candidate
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      EXPECTED_WORKFLOW_REF: https://github.com/ThirdKeyAI/symbi-os/.github/workflows/release-candidate.yml@refs/heads/main
+      EXPECTED_GATE_REF: https://github.com/ThirdKeyAI/symbi-os/.github/workflows/upstream-check.yml@refs/heads/main
+      BRANCH: automation/upstream-base-${{ github.run_id }}
+    steps:
+      - name: Check out current main for the reviewed proposal
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Verify the checked-out proposal revision
+        run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+      - name: Download the independently retained candidate
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: verified-upstream-candidate-${{ github.run_id }}
+          path: .cache/proposal-input
+      - name: Revalidate all evidence before changing Git
+        run: |
+          python3 image/release/upstream.py \
+            --candidate-base .cache/proposal-input/upstream-candidate/base-images.json \
+            --manifest .cache/proposal-input/upstream-candidate/release-evidence/manifest.json \
+            --evidence-root .cache/proposal-input/upstream-candidate/release-evidence \
+            --source-commit "$GITHUB_SHA" \
+            --workflow-ref "$EXPECTED_WORKFLOW_REF" \
+            --gate-workflow-ref "$EXPECTED_GATE_REF" \
+            --artifact-metadata \
+              .cache/proposal-input/upstream-origin/run.json \
+              .cache/proposal-input/upstream-origin/artifacts.json \
+            --artifact-source-ref "$GITHUB_REF" \
+            --output .cache/reverified-upstream
+          cmp --silent \
+            .cache/proposal-input/verified-upstream/base-images.json \
+            .cache/reverified-upstream/base-images.json
+      - name: Open a review PR for the exact qualified digest change
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp -- .cache/reverified-upstream/base-images.json image/base-images.json
+          git diff --exit-code -- image/keys image/release-trust.json
+          git diff --check
+          git switch -c "$BRANCH"
+          git config user.name thirdkey-release-bot
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          gh auth setup-git
+          git add -- image/base-images.json
+          git commit -m 'P0-03: propose authenticated base digest update'
+          git push origin "HEAD:refs/heads/$BRANCH"
+          cat > "$RUNNER_TEMP/upstream-base-pr.md" <<'EOF'
+          This proposes only the authenticated generic and/or NVIDIA base digest
+          changes that passed the complete candidate evidence contract and the
+          serial repository gate. Review the retained workflow evidence before
+          merging; this PR does not publish or promote an OS image.
+          EOF
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title 'P0-03: review qualified upstream base digest update' \
+            --body-file "$RUNNER_TEMP/upstream-base-pr.md"

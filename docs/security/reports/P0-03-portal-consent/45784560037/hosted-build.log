@@ -1,0 +1,26 @@
+Running as unit: symbi-portal-consent-45784560037-1.service
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/runner/work/symbi-os/symbi-os/image/portal/hosted_consent.py", line 198, in <module>
+    if __name__ == '__main__': main()
+                               ~~~~^^
+  File "/home/runner/work/symbi-os/symbi-os/image/portal/hosted_consent.py", line 137, in main
+    run('offline-build', podman+['run', '--name='+container, '--memory=6g', '--memory-swap=6g', '--cpus=2', *common,
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        '--mount', f'type=bind,src={output},dst=/output', '--mount', f'type=bind,src={output / "portal"},dst=/usr/lib/symbi/portal',
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        '--entrypoint=/usr/bin/python3', base['image'], '/inputs/build_guest.py'], 2400)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/symbi-os/symbi-os/image/portal/hosted_consent.py", line 60, in run
+    if check: result.check_returncode()
+              ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.14/subprocess.py", line 509, in check_returncode
+    raise CalledProcessError(self.returncode, self.args, self.stdout,
+                             self.stderr)
+subprocess.CalledProcessError: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/portal-consent-storage/root', '--runroot', '/run/symbi-portal-consent-45784560037-1', 'run', '--name=symbi-consent-build', '--memory=6g', '--memory-swap=6g', '--cpus=2', '--pull=never', '--network=none', '--security-opt=no-new-privileges', '--user=0', '--cap-drop=ALL', '--cap-add=CHOWN,DAC_OVERRIDE,FOWNER,FSETID,SETGID,SETUID,SETFCAP', '--pids-limit=128', '--cgroup-parent=/system.slice/symbi-portal-consent-45784560037-1.service', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/portal-consent-inputs,dst=/inputs,ro', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/portal-consent-inputs/hyprland-prefix/hyprland,dst=/usr/lib/symbi/hyprland,ro', '--env=PYTHONDONTWRITEBYTECODE=1', '--env=LANG=C.UTF-8', '--env=GITHUB_ACTIONS=true', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/portal-consent-output,dst=/output', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/portal-consent-output/portal,dst=/usr/lib/symbi/portal', '--entrypoint=/usr/bin/python3', 'ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f', '/inputs/build_guest.py']' returned non-zero exit status 1.
+          Finished with result: exit-code
+Main processes terminated with: code=exited, status=1/FAILURE
+               Service runtime: 2min 53.765s
+             CPU time consumed: 3min 13.838s
+                   Memory peak: 8G (swap: 0B)

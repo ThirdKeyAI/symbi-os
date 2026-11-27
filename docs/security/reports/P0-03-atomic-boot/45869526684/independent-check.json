@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "independent_evidence_recheck_passed": true,
+  "run_id": 45869526684,
+  "source_commit": "88c49ecb57fe8104c962c8a4e420bb87831dc1dd",
+  "image_source_commit": "23a6c721092ad77c3af33c11cab230ecaaa54cff",
+  "evidence_artifact": {
+    "id": 15142549147,
+    "bytes": 76130,
+    "sha256": "820a903b8f72eb1c32ae58ba709ab98e721aea4e8299287da05aadc753418724",
+    "files": 87
+  },
+  "exact_image_loaded": "sha256:54519537609810dae056e0dd17696f123f8ca1900ab64c6af1af458c80c768a1",
+  "offline_fixture_signature_controls_passed": true,
+  "installation_completed": true,
+  "installed_disk_bytes": 25769803776,
+  "qemu_exited_cleanly": true,
+  "guest_boot_observed": true,
+  "selinux_enforcing": true,
+  "booted_deployment_signature_policy": "containerPolicy",
+  "usr_readonly": true,
+  "sysroot": {
+    "filesystem": "btrfs",
+    "readonly": true
+  },
+  "guest_network_interfaces": [
+    "lo"
+  ],
+  "probe_completed": false,
+  "failure": "TimeoutExpired: Command '['/usr/bin/rpm', '-qa', '--qf', '%{NAME}\\t%{EPOCHNUM}\\t%{VERSION}\\t%{RELEASE}\\t%{ARCH}\\n']' timed out after 60 seconds",
+  "cleanup_complete": true,
+  "disk_or_overlay_retained": false,
+  "oom_or_kill": false,
+  "swap_enabled": false,
+  "os_qualified": false,
+  "release_qualified": false,
+  "limitations": "The installed image booted, but the full RPM inventory exceeded the generic 60-second command timeout under single-threaded TCG. Payload and inventory verification did not complete, so this is not boot or OS acceptance."
+}

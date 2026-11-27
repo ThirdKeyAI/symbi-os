@@ -1,0 +1,34 @@
+test_release_assets_and_notices_are_exact_and_unselected (image.tests.test_font_intake.FontInputs.test_release_assets_and_notices_are_exact_and_unselected) ... ok
+test_hashes_flat_fonts_and_notices_without_extracting (image.tests.test_font_intake.PassiveFontArchive.test_hashes_flat_fonts_and_notices_without_extracting) ... ok
+test_pin_json_rejects_duplicate_keys_at_any_depth (image.tests.test_font_intake.PassiveFontArchive.test_pin_json_rejects_duplicate_keys_at_any_depth) ... ok
+test_rejects_bad_font_magic_missing_notices_and_limits (image.tests.test_font_intake.PassiveFontArchive.test_rejects_bad_font_magic_missing_notices_and_limits) ... ok
+test_rejects_paths_duplicates_links_special_files_and_unknown_payloads (image.tests.test_font_intake.PassiveFontArchive.test_rejects_paths_duplicates_links_special_files_and_unknown_payloads) ... ok
+test_release_checksum_index_must_agree_without_duplicate_names (image.tests.test_font_intake.PassiveFontArchive.test_release_checksum_index_must_agree_without_duplicate_names) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.036s
+
+OK
+	Command being timed: "python3 -m unittest -v image.tests.test_font_intake"
+	User time (seconds): 0.04
+	System time (seconds): 0.02
+	Percent of CPU this job got: 98%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.07
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 43668
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 12898
+	Voluntary context switches: 1
+	Involuntary context switches: 6
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 0
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

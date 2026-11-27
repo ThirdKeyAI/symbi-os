@@ -1,0 +1,28 @@
+test_candidate_requirements_do_not_claim_security_clearance (test_desktop_packages.DesktopPackages.test_candidate_requirements_do_not_claim_security_clearance) ... ok
+test_changed_linked_or_mismatched_host_inputs_are_rejected_before_staging (test_desktop_packages.DesktopPackages.test_changed_linked_or_mismatched_host_inputs_are_rejected_before_staging) ... ERROR
+test_exact_two_keyring_identities (test_desktop_packages.DesktopPackages.test_exact_two_keyring_identities) ... ok
+test_host_inputs_bind_public_keys_and_private_repository_configuration (test_desktop_packages.DesktopPackages.test_host_inputs_bind_public_keys_and_private_repository_configuration) ... ERROR
+test_repo_policy_cannot_enable_unsigned_or_unrelated_repositories (test_desktop_packages.DesktopPackages.test_repo_policy_cannot_enable_unsigned_or_unrelated_repositories) ... ok
+test_untrusted_incomplete_or_failed_signature_is_rejected (test_desktop_packages.DesktopPackages.test_untrusted_incomplete_or_failed_signature_is_rejected) ... ok
+test_verified_payload_reports_exact_allowed_signer (test_desktop_packages.DesktopPackages.test_verified_payload_reports_exact_allowed_signer) ... ok
+
+======================================================================
+ERROR: test_changed_linked_or_mismatched_host_inputs_are_rejected_before_staging (test_desktop_packages.DesktopPackages.test_changed_linked_or_mismatched_host_inputs_are_rejected_before_staging)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-desktop-packages-stage/image/tests/test_desktop_packages.py", line 120, in test_changed_linked_or_mismatched_host_inputs_are_rejected_before_staging
+    from image.desktop_packages.hosted import prepare_inputs
+ModuleNotFoundError: No module named 'image.desktop_packages.hosted'
+
+======================================================================
+ERROR: test_host_inputs_bind_public_keys_and_private_repository_configuration (test_desktop_packages.DesktopPackages.test_host_inputs_bind_public_keys_and_private_repository_configuration)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-desktop-packages-stage/image/tests/test_desktop_packages.py", line 109, in test_host_inputs_bind_public_keys_and_private_repository_configuration
+    from image.desktop_packages.hosted import prepare_inputs
+ModuleNotFoundError: No module named 'image.desktop_packages.hosted'
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.003s
+
+FAILED (errors=2)

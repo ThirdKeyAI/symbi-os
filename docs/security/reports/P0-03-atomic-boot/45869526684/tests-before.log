@@ -1,0 +1,18 @@
+test_full_inventory_has_a_dedicated_bounded_slow_guest_budget (image.tests.test_atomic_status.AtomicStatus.test_full_inventory_has_a_dedicated_bounded_slow_guest_budget) ... FAIL
+
+======================================================================
+FAIL: test_full_inventory_has_a_dedicated_bounded_slow_guest_budget (image.tests.test_atomic_status.AtomicStatus.test_full_inventory_has_a_dedicated_bounded_slow_guest_budget)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/vmstore/repos2/symbi-os/.cache/p0-image-followup/image/tests/test_atomic_status.py", line 102, in test_full_inventory_has_a_dedicated_bounded_slow_guest_budget
+    self.assertEqual(settings['CPUQuota'], '100%')
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '50%' != '100%'
+- 50%
++ 100%
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (failures=1)

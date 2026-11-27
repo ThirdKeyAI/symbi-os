@@ -1,0 +1,77 @@
+{
+  "passed": false,
+  "fixture": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-file-grants-7taaw7hx",
+  "binary_sha256": "69a22494f74451e73806eaeb71ace5dc3a95098c7961f7200716b05ad666a98c",
+  "driver_sha256": "c5dc5d798c285f99e8db72b64d55749f127aa4139645425b7bd69d48dd7e9ded",
+  "cases": [
+    {
+      "name": "granted",
+      "passed": false,
+      "manifest_sha256": "7763bdf3b0850d4a3ed0be98f9f9e5f177c2a6c69fa5bc6bb5e9ee4662028f53",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Loaded environment from /home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-file-grants-7taaw7hx/.env\nInvocation ID: e450a14c-c099-48cf-8281-bea4bd470748\nAudit run: 402f3b32-ef29-40f7-b156-6584b3794e4e\nAudit journal: /home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-file-grants-7taaw7hx/.symbiont/governed/52c0470b-28d7-47c6-b2c5-bb8cca6b5ba4.402f3b32-ef29-40f7-b156-6584b3794e4e.jsonl\nAudit public key: 4ccbe6475ac7b313b5dea28c99b093e7dcde07094f195ae0c29ee92d3991db94\n\u2717 Agent sandbox selection failed: supervisor socket path exceeds the supported Unix path length\n",
+      "requests": [],
+      "workers": []
+    }
+  ],
+  "provider_errors": [],
+  "backend_observer_sha256": "549a22e4da6d18beeaa991cba3123d0573e782d3f05724c44c4dec4510e197d5",
+  "origin_observer_sha256": "89a8042c49f89244bb4adbdad8a654cec23800f8bfae3086890555a29b6d35c7",
+  "image": "sha256:783ce4ad87bd72e5e4a45915562c87ce81213d45f95792ae1855228590c2b633",
+  "backend": "gvisor",
+  "container_profile_sha256": "b9f4d369e513f86d622ada90f3fb0aa3185fd022af719ec9b7170f710793d2be",
+  "runsc": {
+    "path": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/runsc/usr/bin/runsc",
+    "registered_path": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/runsc/usr/bin/runsc",
+    "sha256": "fcf27497492d44de3d1406d64bd72e038822bed74dea429efb338edf0b2ceeb8",
+    "mode": 493,
+    "bundle": {
+      "path": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/runsc/usr/bin/gvisor-bin",
+      "mode": 493,
+      "entries": {
+        "checkpointgofer": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "28d25c1b7e1b3c4e99364c4c06898185ddf653a81409d25502db475166e49c23"
+        },
+        "gvisor-proc-umounter": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "b3bbbaef5ddc62084e5febd19d3acca14f3d42b2a25d8552fb40def699467019"
+        },
+        "gvisor-sentry-prewarmer": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "046e3ec1de3aa7b7ec7ce53b4f0d1e08db15987847606a8e361133d5c5bd3d73"
+        },
+        "gvisor_sentry": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "fdc9c6bcfb59af3a2ebb499f0b63d548b8ffb11c44f0861a794e10de823da62c"
+        },
+        "runsc-fd-parking": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "03af90d07ea466c10ecc3e3ba839b2a59540959dd3286aea3886917cba850c11"
+        },
+        "runsc-metric-server": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "76bf2c18c5a2122145fdc38cb84bab20216703620fbe4dd1a4a23a579d30615a"
+        },
+        "runsc-netgofer": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "31b983f86020fa0caa0301e5dda1b9bd1ecfe6178819e2ba93dbefbea344719d"
+        }
+      }
+    }
+  },
+  "config_sha256": "b145f851aecdcf05d5400c9cbad7460a45ba2f514e104f4f86aa775382757c04",
+  "public_key": "4ccbe6475ac7b313b5dea28c99b093e7dcde07094f195ae0c29ee92d3991db94",
+  "error": "AssertionError: {'name': 'granted', 'passed': False, 'manifest_sha256': '7763bdf3b0850d4a3ed0be98f9f9e5f177c2a6c69fa5bc6bb5e9ee4662028f53', 'exit_code': 1, 'stdout': '', 'stderr': 'Loaded environment from /home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-file-grants-7taaw7hx/.env\\nInvocation ID: e450a14c-c099-48cf-8281-bea4bd470748\\nAudit run: 402f3b32-ef29-40f7-b156-6584b3794e4e\\nAudit journal: /home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-file-grants-7taaw7hx/.symbiont/governed/52c0470b-28d7-47c6-b2c5-bb8cca6b5ba4.402f3b32-ef29-40f7-b156-6584b3794e4e.jsonl\\nAudit public key: 4ccbe6475ac7b313b5dea28c99b093e7dcde07094f195ae0c29ee92d3991db94\\n\u2717 Agent sandbox selection failed: supervisor socket path exceeds the supported Unix path length\\n', 'requests': [], 'workers': []}",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/source/scripts/test-filesystem-grants.py\", line 184, in main\n    assert len(requests) == (1 if name == 'oversize' else 2) and not report['provider_errors'], row\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: {'name': 'granted', 'passed': False, 'manifest_sha256': '7763bdf3b0850d4a3ed0be98f9f9e5f177c2a6c69fa5bc6bb5e9ee4662028f53', 'exit_code': 1, 'stdout': '', 'stderr': 'Loaded environment from /home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-file-grants-7taaw7hx/.env\\nInvocation ID: e450a14c-c099-48cf-8281-bea4bd470748\\nAudit run: 402f3b32-ef29-40f7-b156-6584b3794e4e\\nAudit journal: /home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-file-grants-7taaw7hx/.symbiont/governed/52c0470b-28d7-47c6-b2c5-bb8cca6b5ba4.402f3b32-ef29-40f7-b156-6584b3794e4e.jsonl\\nAudit public key: 4ccbe6475ac7b313b5dea28c99b093e7dcde07094f195ae0c29ee92d3991db94\\n\u2717 Agent sandbox selection failed: supervisor socket path exceeds the supported Unix path length\\n', 'requests': [], 'workers': []}\n",
+  "remaining_workers": [],
+  "remaining_leases": []
+}

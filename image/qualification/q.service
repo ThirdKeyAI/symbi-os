@@ -1,0 +1,35 @@
+[Unit]
+Description=Fixed bootc status service for hosted runtime qualification
+ConditionPathExists=!/etc/initrd-release
+Requires=p.service
+After=local-fs.target p.service
+Before=l.service
+
+[Service]
+Type=simple
+ImportCredential=symbi-status-server.py
+ExecStart=/usr/bin/python3 %d/symbi-status-server.py
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=LANG=C.UTF-8
+RuntimeDirectory=symbi-qualification
+RuntimeDirectoryMode=0755
+UMask=0077
+User=root
+Group=root
+NoNewPrivileges=yes
+CapabilityBoundingSet=CAP_SYS_ADMIN
+AmbientCapabilities=
+PrivatePIDs=yes
+PrivateMounts=yes
+PrivateNetwork=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+MemoryMax=256M
+MemorySwapMax=0
+CPUQuota=50%
+TasksMax=32
+RuntimeMaxSec=100min
+TimeoutStopSec=15
+StandardOutput=journal+console
+StandardError=journal+console

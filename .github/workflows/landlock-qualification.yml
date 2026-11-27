@@ -1,0 +1,143 @@
+name: Fedora Landlock qualification
+
+on:
+  push:
+    branches: [main, card/P0-04-hosted-fix]
+    paths:
+      - "image/qualification/**"
+      - "image/atomic/**"
+      - "image/assembly/runtime-development.lock.json"
+      - "image/desktop-images.lock.json"
+      - "image/container/fedora-runtime-image.lock.json"
+      - "image/container/native-fixture.lock.json"
+      - "image/container/native-fixture-image.lock.json"
+      - "image/container/native_fixture_inputs.py"
+      - "image/container/native_image_inputs.py"
+      - "image/tests/test_container_native_fixture_input.py"
+      - "image/base-images.json"
+      - "image/release-trust.json"
+      - "image/keys/**"
+      - "image/boot/inputs.py"
+      - "image/boot/preflight.py"
+      - "image/boot/hosted.py"
+      - "upstream/symbiont.toml"
+      - "scripts/check-atomic-image.sh"
+      - "scripts/check-landlock-qualification.sh"
+      - "scripts/check-container-preflight.sh"
+      - "scripts/check-container-qualification.sh"
+      - "scripts/check-container-fixture-native-transfer.sh"
+      - "scripts/check-container-fixture-native-input.sh"
+      - "scripts/check-container-runtime-native-transfer.sh"
+      - "scripts/check-container-runtime-native-input.sh"
+      - ".github/workflows/landlock-qualification.yml"
+      - "!image/qualification/README.md"
+  workflow_dispatch:
+    inputs:
+      qualification:
+        description: Bounded native qualification gate
+        required: true
+        default: landlock
+        type: choice
+        options:
+          - landlock
+          - containers
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: fedora-landlock-qualification-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env:
+      SYMBI_IMAGE_VARIANT: generic
+      SYMBI_QUALIFICATION: landlock
+      SYMBI_REQUESTED_QUALIFICATION: ${{ github.event_name == 'workflow_dispatch' && inputs.qualification || 'landlock' }}
+    steps:
+      - name: Check out the proposed qualification harness
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Check out the exact upstream runtime source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          repository: ThirdKeyAI/Symbiont
+          ref: deddb9e997244d2289c217ad76b8fde0e9b0339b
+          path: .cache/runtime-source
+          submodules: recursive
+          persist-credentials: false
+      - name: Check out the reviewed merged container fixture drivers
+        if: env.SYMBI_REQUESTED_QUALIFICATION == 'containers'
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          repository: ThirdKeyAI/Symbiont
+          ref: cd4b34282ade880c8ac3d5136d31ff80cde92794
+          path: .cache/container-fixture-source
+          persist-credentials: false
+      - name: Download the exact retained development image
+        if: env.SYMBI_REQUESTED_QUALIFICATION != 'containers'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache
+          artifact=$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from image.boot.inputs import require_desktop_image
+          lock=json.loads(Path('image/desktop-images.lock.json').read_text())
+          pins=json.loads(Path('image/base-images.json').read_text())
+          require_desktop_image(lock,pins,'generic')
+          print(lock['images']['generic']['artifact']['id'])
+          PY
+          )
+          timeout 30 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/$artifact" > .cache/atomic-image-artifact.json
+          timeout 900 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/$artifact/zip" > .cache/atomic-development-image.zip
+      - name: Validate and download the exact retained native fixture image
+        if: env.SYMBI_REQUESTED_QUALIFICATION == 'containers'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/check-container-fixture-native-transfer.sh
+      - name: Validate and download the exact retained container-runtime image
+        if: env.SYMBI_REQUESTED_QUALIFICATION == 'containers'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/check-container-runtime-native-transfer.sh
+      - name: Verify metadata and stream the exact retained image
+        if: env.SYMBI_REQUESTED_QUALIFICATION != 'containers'
+        run: bash scripts/check-atomic-image.sh prepare
+      - name: Authenticate and inspect the exact retained native fixture image
+        if: env.SYMBI_REQUESTED_QUALIFICATION == 'containers'
+        run: bash scripts/check-container-fixture-native-input.sh
+      - name: Authenticate and stream the exact retained container-runtime image
+        if: env.SYMBI_REQUESTED_QUALIFICATION == 'containers'
+        run: bash scripts/check-container-runtime-native-input.sh
+      - name: Validate the generated Fedora runtime contract
+        if: env.SYMBI_REQUESTED_QUALIFICATION == 'containers'
+        run: bash scripts/check-container-preflight.sh
+      - name: Run the selected fail-closed native gate
+        run: |
+          case "$SYMBI_REQUESTED_QUALIFICATION" in
+            landlock) bash scripts/check-landlock-qualification.sh ;;
+            containers) SYMBI_QUALIFICATION=containers bash scripts/check-container-qualification.sh ;;
+            *) exit 2 ;;
+          esac
+      - name: Retain bounded public installation and qualification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: fedora-${{ env.SYMBI_REQUESTED_QUALIFICATION }}-qualification
+          path: |
+            .cache/atomic-image-evidence
+            .cache/atomic-disk-evidence
+            .cache/landlock-qualification-evidence
+            .cache/container-runtime-native-evidence
+            .cache/container-fixture-native-evidence
+            .cache/container-qualification-evidence
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 14

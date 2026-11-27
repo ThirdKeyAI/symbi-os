@@ -1,0 +1,20 @@
+test_changed_review_or_patch_preimage_is_refused (test_portal_consent_inputs.PortalConsentInputs.test_changed_review_or_patch_preimage_is_refused) ... ok
+test_changed_sources_scope_order_or_qualification_are_refused (test_portal_consent_inputs.PortalConsentInputs.test_changed_sources_scope_order_or_qualification_are_refused) ... ok
+test_each_patch_phase_requires_the_exact_transformed_files (test_portal_consent_inputs.PortalConsentInputs.test_each_patch_phase_requires_the_exact_transformed_files) ... ok
+test_exact_scope_and_parent_bindings_are_accepted (test_portal_consent_inputs.PortalConsentInputs.test_exact_scope_and_parent_bindings_are_accepted) ... ok
+test_linked_or_oversized_reviewed_source_is_refused (test_portal_consent_inputs.PortalConsentInputs.test_linked_or_oversized_reviewed_source_is_refused) ... ok
+test_only_portal_and_picker_binaries_may_change_in_retained_prefix (test_portal_consent_inputs.PortalConsentInputs.test_only_portal_and_picker_binaries_may_change_in_retained_prefix) ... ok
+test_prefix_inventory_refuses_external_links_and_special_files (test_portal_consent_inputs.PortalConsentInputs.test_prefix_inventory_refuses_external_links_and_special_files) ... ERROR
+
+======================================================================
+ERROR: test_prefix_inventory_refuses_external_links_and_special_files (test_portal_consent_inputs.PortalConsentInputs.test_prefix_inventory_refuses_external_links_and_special_files)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-portal-consent-stage/image/tests/test_portal_consent_inputs.py", line 115, in test_prefix_inventory_refuses_external_links_and_special_files
+    from image.portal.consent_inputs import prefix_inventory
+ImportError: cannot import name 'prefix_inventory' from 'image.portal.consent_inputs' (/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-portal-consent-stage/image/portal/consent_inputs.py)
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.004s
+
+FAILED (errors=1)

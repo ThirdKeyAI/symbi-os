@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/qualification/probe.py", line 88, in <module>
+    if __name__=='__main__': main()
+                             ~~~~^^
+  File "/qualification/probe.py", line 66, in main
+    report['kernel'] = {'version':kernel, **{name:regular(Path('/usr/lib/modules')/kernel/name)
+                                                  ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/qualification/probe.py", line 16, in regular
+    with path.open('rb') as stream: digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+         ~~~~~~~~~^^^^^^
+  File "/usr/lib64/python3.15/pathlib/__init__.py", line 970, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: '/usr/lib/modules/7.3.4-300.secureblue.1.fc45.x86_64/initramfs.img'

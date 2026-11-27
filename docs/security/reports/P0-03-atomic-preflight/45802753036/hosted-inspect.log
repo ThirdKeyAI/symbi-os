@@ -1,0 +1,19 @@
+Running as unit: symbi-atomic-inspect-45802753036-1.service
+Atomic preflight: loading the exact retained OCI image into private storage
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/runner/work/symbi-os/symbi-os/image/boot/hosted.py", line 183, in <module>
+    if __name__=='__main__': main()
+                             ^^^^^^
+  File "/home/runner/work/symbi-os/symbi-os/image/boot/hosted.py", line 152, in main
+    validate_report(result,expected)
+  File "/home/runner/work/symbi-os/symbi-os/image/boot/preflight.py", line 45, in validate_report
+    raise ValueError('Image kernel, installer, packages or SELinux configuration changed')
+ValueError: Image kernel, installer, packages or SELinux configuration changed
+Finished with result: exit-code
+Main processes terminated with: code=exited/status=1
+Service runtime: 4min 25.080s
+CPU time consumed: 3min 6.272s
+Memory peak: 2.6M
+Memory swap peak: 0B

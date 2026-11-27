@@ -1,0 +1,37 @@
+Running as unit: symbi-container-fixtures-45700723066-1.service
+Traceback (most recent call last):
+  File "/home/runner/work/symbi-os/symbi-os/image/container/hosted/check.py", line 225, in <module>
+    main()
+    ~~~~^^
+  File "/home/runner/work/symbi-os/symbi-os/image/container/hosted/check.py", line 200, in main
+    run('complete-fixtures', ['runuser', '-u', account.pw_name, '--', 'env', '-i',
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                              'PATH=/usr/bin:/bin', 'GITHUB_ACTIONS=true', 'RUNNER_ENVIRONMENT=github-hosted',
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                              'PYTHONDONTWRITEBYTECODE=1', 'python3', str(configuration / 'run_fixtures.py'),
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                              '--work', str(work)], 5400)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/symbi-os/symbi-os/image/container/hosted/check.py", line 46, in run
+    result = subprocess.run(command, cwd=cwd, env=env, capture_output=True, text=True, timeout=timeout)
+  File "/usr/lib/python3.14/subprocess.py", line 555, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 1039, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        pass_fds, cwd, env,
+                        ^^^^^^^^^^^^^^^^^^^
+    ...<5 lines>...
+                        gid, gids, uid, umask,
+                        ^^^^^^^^^^^^^^^^^^^^^^
+                        start_new_session, process_group)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 1990, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: 'runuser'
+          Finished with result: exit-code
+Main processes terminated with: code=exited, status=1/FAILURE
+               Service runtime: 57.701s
+             CPU time consumed: 13.369s
+                   Memory peak: 1.5G (swap: 0B)

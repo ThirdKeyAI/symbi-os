@@ -1,0 +1,105 @@
+{
+  "passed": false,
+  "os_qualified": false,
+  "mode": "compile",
+  "limits": {
+    "memory.max": "3221225472",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "128"
+  },
+  "source_revision": "8f1e21d6efe40b8b3953f95b9574f99f717caf91",
+  "commands": [
+    {
+      "name": "compiler-version",
+      "exit_code": 0
+    },
+    {
+      "name": "compiler-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "verify-offline-modules",
+      "exit_code": 0
+    },
+    {
+      "name": "build-environment",
+      "exit_code": 0
+    },
+    {
+      "name": "build-baseline",
+      "exit_code": 0
+    },
+    {
+      "name": "build-desktopapplications",
+      "exit_code": 0
+    },
+    {
+      "name": "build-constructor-control",
+      "exit_code": 0
+    },
+    {
+      "name": "check-provider-patch",
+      "exit_code": 0
+    },
+    {
+      "name": "apply-provider-patch",
+      "exit_code": 0
+    },
+    {
+      "name": "provider-format",
+      "exit_code": 0
+    },
+    {
+      "name": "build-patched",
+      "exit_code": 0
+    },
+    {
+      "name": "upstream-tests",
+      "exit_code": 1
+    }
+  ],
+  "environment": {
+    "PATH": "/usr/bin:/bin",
+    "HOME": "/output/home",
+    "LANG": "C.UTF-8",
+    "GOTOOLCHAIN": "local",
+    "GOENV": "off",
+    "GOFLAGS": "-mod=readonly -p=1",
+    "GOMAXPROCS": "1",
+    "GOPATH": "/output/go",
+    "GOCACHE": "/output/go-build",
+    "CGO_ENABLED": "1",
+    "TMPDIR": "/output/tmp",
+    "GOPROXY": "off",
+    "GOSUMDB": "off",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_CONFIG_GLOBAL": "/dev/null"
+  },
+  "go_identity": {
+    "CGO_ENABLED": "1",
+    "GOARCH": "amd64",
+    "GOEXPERIMENT": "nodwarf5",
+    "GOOS": "linux",
+    "GOTOOLCHAIN": "local",
+    "GOVERSION": "go1.27.4-X:nodwarf5"
+  },
+  "compiled": true,
+  "binaries": {
+    "desktopapplications": "e36812a7685056a720361f0a7964b05b06121f21a5415dec98b1605fe75e123c",
+    "marker": "3b0a60e377f02d62e4cf2680f878aecea5966580be2db705e38c742fb47563fb",
+    "baseline": "ab6dc81562753880b0fc1df65e8c030a38a5118a9d63bfd67c382f060f117615",
+    "patched": "e2c52e8db172d31e39531da945349855354a327b330bc572ccd27569c6f8d15f"
+  },
+  "patch_sha256": "9d46941a0540df0162772b04055bf306298e48f3bdcae2c5f3ec97ebb51a7204",
+  "failure": "CalledProcessError: Command ['go', 'test', '-p=1', '-parallel=1', '-count=1', './...'] returned non-zero exit status 1.",
+  "cgroup_final": {
+    "memory.max": "3221225472",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "128",
+    "memory.peak": "2096025600",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 216707114\nuser_usec 192137179\nsystem_usec 24569934\nnice_usec 191198394\ncore_sched.force_idle_usec 0\nnr_periods 2199\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+  }
+}

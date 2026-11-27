@@ -1,0 +1,14 @@
+Updating and loading repositories:
+Repositories loaded.
+Total size of inbound packages is 3 MiB. Need to download 0 B.
+After this operation, 10 MiB extra will be used (install 10 MiB, remove 0 B).
+Running transaction
+[1/8] Verify package files              100% | 545.0   B/s |   6.0   B |  00m00s
+[2/8] Prepare transaction               100% |  25.0   B/s |   6.0   B |  00m00s
+[3/8] Installing tomlplusplus-0:3.4.0-8 100% |  51.5 MiB/s | 263.5 KiB |  00m00s
+[4/8] Installing openssl3-libs-1:3.5.9- 100% | 288.0 MiB/s |   9.2 MiB |  00m00s
+[5/8] Installing muParser-0:2.3.5-6.fc4 100% | 137.9 MiB/s | 564.9 KiB |  00m00s
+[6/8] Installing libeis-0:1.6.0-3.fc45. 100% |  41.8 MiB/s | 128.5 KiB |  00m00s
+[7/8] Installing iniparser-0:4.2.6-5.fc 100% |  19.3 MiB/s |  39.5 KiB |  00m00s
+[8/8] Installing gtk4-layer-shell-0:1.3 100% | 106.3 KiB/s |  71.0 KiB |  00m01s
+Complete!

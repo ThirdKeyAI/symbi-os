@@ -1,0 +1,26 @@
+Running as unit: symbi-hyprland-build-45697383997-1.service; invocation ID: af9c6d27e90a4abaac42fd6a30b6de9c
+
+Verification for ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f --
+The following checks were performed on each of these signatures:
+  - The cosign claims were validated
+  - Existence of the claims in the transparency log was verified offline
+  - The signatures were verified against the specified public key
+Traceback (most recent call last):
+  File "/home/runner/work/symbi-os/symbi-os/image/hyprland/hosted_build.py", line 153, in <module>
+    main()
+    ~~~~^^
+  File "/home/runner/work/symbi-os/symbi-os/image/hyprland/hosted_build.py", line 118, in main
+    run('offline-build', build, 7200)
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/symbi-os/symbi-os/image/hyprland/hosted_build.py", line 52, in run
+    result.check_returncode()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.14/subprocess.py", line 509, in check_returncode
+    raise CalledProcessError(self.returncode, self.args, self.stdout,
+                             self.stderr)
+subprocess.CalledProcessError: Command '['podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-storage/root', '--runroot', '/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-storage/run', 'run', '--name=symbi-hyprland-build', '--user=0', '--cap-drop=ALL', '--cap-add=CHOWN,DAC_OVERRIDE,FOWNER,FSETID,SETGID,SETUID,SETFCAP', '--memory=6g', '--memory-swap=6g', '--cpus=2', '--pids-limit=128', '--pull=never', '--network=none', '--security-opt=no-new-privileges', '--cgroup-parent=/system.slice/symbi-hyprland-build-45697383997-1.service', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-inputs,dst=/inputs,ro', '--mount', 'type=bind,src=/home/runner/work/symbi-os/symbi-os/.cache/hyprland-build-output,dst=/output', '--env=PYTHONDONTWRITEBYTECODE=1', '--env=LANG=C.UTF-8', '--entrypoint=/usr/bin/python3', 'ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f', '/inputs/build_guest.py']' returned non-zero exit status 1.
+          Finished with result: exit-code
+Main processes terminated with: code=exited, status=1/FAILURE
+               Service runtime: 2min 25.551s
+             CPU time consumed: 3min 18.148s
+                   Memory peak: 8G (swap: 0B)

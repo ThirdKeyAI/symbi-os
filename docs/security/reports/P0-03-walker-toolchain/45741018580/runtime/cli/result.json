@@ -1,0 +1,32 @@
+{
+  "passed": true,
+  "gui_qualified": false,
+  "os_qualified": false,
+  "cases": [
+    {
+      "name": "version",
+      "argument": "--version",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "help",
+      "argument": "--help",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "name": "unknown-option",
+      "argument": "--symbi-unknown-qualification-option",
+      "exit_code": 1,
+      "passed": true
+    },
+    {
+      "name": "repeated-version",
+      "argument": "--version",
+      "exit_code": 0,
+      "passed": true
+    }
+  ],
+  "scope": "Actual version/help/parser controls only; no graphical or desktop acceptance"
+}

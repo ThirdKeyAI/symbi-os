@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Tolaria
+GenericName=Second Brain
+Comment=Git-backed Markdown notes for people and governed agents
+TryExec=/usr/bin/tolaria
+Exec=/usr/bin/tolaria
+Icon=tolaria
+Terminal=false
+Categories=Utility;TextEditor;
+StartupNotify=true
+StartupWMClass=Tolaria

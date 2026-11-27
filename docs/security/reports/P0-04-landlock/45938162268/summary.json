@@ -1,0 +1,92 @@
+{
+  "schema": 1,
+  "passed": false,
+  "qualified": false,
+  "run": {
+    "id": 45938162268,
+    "attempt": 1,
+    "event": "workflow_dispatch",
+    "head_branch": "card/P0-04-hosted-fix",
+    "head_sha": "d6b9089cc4271af3135d1ef62873539dd21fd134",
+    "job_id": 140306064206,
+    "job_name": "qualify",
+    "conclusion": "failure",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45938162268"
+  },
+  "artifact": {
+    "id": 15175573405,
+    "name": "fedora-landlock-qualification",
+    "bytes": 86422,
+    "digest": "sha256:a9835c55d44e01ccc88353515a041cc9bf3a7957339f1400ce898357157e779c",
+    "expires_at": "2026-12-11T06:05:33Z"
+  },
+  "bindings": {
+    "image_source_commit": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+    "image_manifest_digest": "sha256:1dcf72c2e3eda7e5480269b1559e3b5527c77fdb70d28983d4e29baa03b8de6e",
+    "installed_disk_sha256": "57a57493721b07a2744d6295a759a551fc930160547ccfb8c5ae9d2a808b6c82",
+    "runtime_source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+    "runtime_binary_sha256": "1e90af1fe424ec37ad716bbc1e069c0bc7a78f59c49871b7e79506bda69f49c7",
+    "source_disk_sha256": "f2cff5fcb9effd27c085a60c399fedbd53bfcd0923bcccf68b7147ce3a6408e4",
+    "source_disk_filesystem": "ext4",
+    "source_disk_label": "SYMBIQUAL",
+    "source_disk_uuid": "063e2f21-b6db-44bd-93e4-618a4baf3834"
+  },
+  "retained_evidence_sha256": {
+    "atomic-disk-evidence/result.json": "5e6b1706ea04eaf89d60e2a8d33baf458de7c8a2fbdc106d646c9ad90590ace7",
+    "atomic-disk-evidence/landlock-qualification-stderr.log": "b4207a6924ef53d710588c710df320357d7e0f1a5707d5ce112882697a6d41f4",
+    "landlock-qualification-evidence/result.json": "2a14fb025f9ade90f0483b5a39e104f07b83d507d0ce0cced4671b9bd5db200e",
+    "landlock-qualification-evidence/guest/result.json": "945412fdba97f9042da9f2db24fd6ce2300b36f01c96679236356aabed90749f",
+    "landlock-qualification-evidence/guest/serial.log": "ef1ac8af2324ead289c70b506ec9036a8d985587e24e252ee829c4967ab9246c"
+  },
+  "observation": {
+    "authenticated_install_passed": true,
+    "ordinary_atomic_boot_passed": true,
+    "qualification_controller_exit_code": 1,
+    "qualification_guest_booted": false,
+    "landlock_service_started": false,
+    "primary_cause": "The installed disk was exposed guest-read-only, so ostree-remount could not remount /etc writable and the guest entered emergency mode.",
+    "secondary_device_risk": "The source used a label-only shorthand attachment and no stable virtio identity appeared in retained evidence.",
+    "cleanup_masked_primary_failure": true,
+    "controller_memory_max_bytes": 3221225472,
+    "controller_final_resource_counters_retained": false,
+    "hosted_parent_memory_max_bytes": 4294967296,
+    "hosted_parent_memory_peak_bytes": 4294971392,
+    "hosted_parent_memory_max_events": 188781,
+    "oom_events": 0,
+    "oom_kill_events": 0,
+    "swap_max_bytes": 0,
+    "cleanup_complete": true
+  },
+  "correction": {
+    "explicit_qcow2_overlay": "/output/guest.qcow2",
+    "read_only_raw_backing": "/inputs/atomic.raw",
+    "overlay_discarded_before_evidence_retention": true,
+    "explicit_read_only_source_backend": true,
+    "fixed_source_serial": "SYMBIQUAL",
+    "fixed_source_link": "/dev/disk/by-id/virtio-SYMBIQUAL",
+    "bounded_udev_settle_seconds": 30,
+    "exact_blkid_type_label_uuid": true,
+    "ephemeral_source_mount": "/run/symbi-qualification/source",
+    "mount_options": [
+      "ro",
+      "nosuid",
+      "nodev",
+      "noexec"
+    ],
+    "label_only_fstab_source_removed": true,
+    "fixed_device_fstab_timeout_seconds": 30,
+    "cleanup_errors_cannot_replace_primary_failure": true
+  },
+  "local_verification": {
+    "focused_contract_tests": 5,
+    "hosted_landlock_tests": 19,
+    "hosted_landlock_seconds": 0.198,
+    "hosted_landlock_peak_rss_kib": 31896,
+    "full_image_tests": 382,
+    "full_image_seconds": 2.339,
+    "full_image_peak_rss_kib": 58224,
+    "systemd_unit_verify": "pass",
+    "swaps": 0
+  },
+  "next": "A fresh exact-head hosted run must produce a bound guest report before any Landlock, runtime-route, containment or OS qualification claim."
+}

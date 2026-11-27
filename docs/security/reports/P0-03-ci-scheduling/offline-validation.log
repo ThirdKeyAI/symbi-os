@@ -1,0 +1,19 @@
+docs/cards/P0-03.md -> no heavy workflow
+image/launcher/README.md -> no heavy workflow
+image/launcher/walker-source.json -> walker-packages.yml
+image/launcher/walker-build-requirements.json -> walker-packages.yml
+image/launcher/go_identity.py -> elephant-build.yml
+image/launcher/provider-patch.json -> elephant-build.yml
+image/launcher/build-rpms.lock.json -> elephant-build.yml
+image/hyprland/graphics/cloud_boot.py -> graphics-cloud-boot.yml, graphics-preflight.yml
+image/overlay/usr/share/symbiont/defaults/hypr/hyprland.lua -> hyprland-runtime.yml
+image/hyprland/runtime-rpms.lock.json -> hyprland-runtime.yml
+image/hyprland/patches/0001-disable-native-loading.patch -> hyprland-build.yml, hyprland-runtime.yml
+image/toolchain/bluebuild.json -> image-tools.yml
+image/base-images.json -> elephant-build.yml, elephant-packages.yml, fedora-base.yml, fedora-packages.yml, graphics-cloud-boot.yml, graphics-preflight.yml, hyprland-build.yml, hyprland-runtime-packages.yml, hyprland-runtime.yml, image-tools.yml, launcher-packages.yml, walker-packages.yml
+image/recipe.py -> elephant-build.yml, elephant-packages.yml, fedora-base.yml, fedora-packages.yml, graphics-cloud-boot.yml, graphics-preflight.yml, hyprland-build.yml, hyprland-runtime-packages.yml, hyprland-runtime.yml, image-tools.yml, launcher-packages.yml, walker-packages.yml
+image/hyprland/package_inventory.py -> elephant-packages.yml, fedora-packages.yml, hyprland-runtime-packages.yml, launcher-packages.yml, walker-packages.yml
+All 12 step lists, runner types, timeouts, and permissions unchanged.
+Internal PR jobs skipped; repository pushes, external PRs and manual dispatch remain eligible.
+Workspace/formal workflow unchanged.
+Validation models selected simple path patterns; actual GitHub scheduling still requires observation.

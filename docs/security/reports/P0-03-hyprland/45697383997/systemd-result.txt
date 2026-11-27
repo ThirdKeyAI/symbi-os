@@ -1,0 +1,9 @@
+LoadState=loaded
+RuntimeMaxUSec=2h 10min
+Result=exit-code
+ExecMainStatus=1
+MemoryPeak=8595111936
+CPUUsageNSec=198148932000
+CPUQuotaPerSecUSec=2s
+MemoryMax=8589934592
+MemorySwapMax=0

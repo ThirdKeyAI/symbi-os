@@ -1,0 +1,64 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "crypto_policy_qualified": false,
+  "limits": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128"
+  },
+  "commands": [
+    {
+      "name": "installed-before",
+      "exit_code": 0
+    },
+    {
+      "name": "import-key",
+      "exit_code": 0
+    },
+    {
+      "name": "keyring",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "offline-install",
+      "exit_code": 0
+    },
+    {
+      "name": "installed-after",
+      "exit_code": 0
+    },
+    {
+      "name": "compatibility-owned-files",
+      "exit_code": 0
+    }
+  ],
+  "scope": "Offline additive library installation and configuration evidence; no boot, TLS policy or containment qualification",
+  "added_packages": [
+    "openssl3-libs\t1\t3.5.9\t1.fc45\tx86_64"
+  ],
+  "base_package_count": 2178,
+  "all_base_packages_unchanged": true,
+  "base_crypto_configuration_unchanged": true,
+  "compatibility_configuration_sha256": {
+    "/etc/pki/tls/openssl3.cnf": "34108f65c3c759083f6b2d8ff8c509e3504aa78e5180b197827d90827ddc663f"
+  },
+  "cgroup_final": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128",
+    "memory.peak": "338669568",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 3325897\nuser_usec 2161029\nsystem_usec 1164867\nnice_usec 2152000\ncore_sched.force_idle_usec 0\nnr_periods 39\nnr_throttled 15\nthrottled_usec 105248\nnr_bursts 0\nburst_usec 0"
+  }
+}

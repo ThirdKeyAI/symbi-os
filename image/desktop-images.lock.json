@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "os_qualified": false,
+  "signature_qualified": false,
+  "images": {
+    "generic": {
+      "tested_commit": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+      "run_id": 45870354828,
+      "manifest_sha256": "6b3a870acd8998a5dad72eb9629bbe15976f7a65f93362cea5cc38aeec2516f8",
+      "manifest": {
+        "schema": 1,
+        "built": true,
+        "os_qualified": false,
+        "source_commit": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+        "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+        "variant": "generic",
+        "archive": {
+          "name": "symbiont-os-generic.oci.tar.gz",
+          "bytes": 4177410458,
+          "sha256": "f6a61f4b2c2dd1b78994161443ae5707ba3335bcab37379acfea03cc0569c31c",
+          "image_id": "sha256:46561dc6a11f404965d63aa3065017f94d37cc3ac3a261a9e5579ffba0f4cc40"
+        },
+        "preparation_sha256": "b3b27a6ceec959cd49cb82c49c8a9e15dfc82bcd65b0b5c94f0f778091111ef0"
+      },
+      "artifact": {
+        "id": 15142163489,
+        "name": "desktop-development-image-generic",
+        "bytes": 4177411378,
+        "sha256": "0bcc28c23b186794a3874e8b051b1f425939c5940f340a4dc59c4f9ffe23757d"
+      },
+      "expires_at": "2026-11-29T17:51:44Z",
+      "evidence": "docs/security/reports/P0-03-desktop/45870354828/independent-check.json"
+    },
+    "nvidia": {
+      "tested_commit": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+      "run_id": 45908299514,
+      "manifest_sha256": "1d5b9aad9c01179cd14e6054d72f83678af043a4672c15f1deba01032367f423",
+      "manifest": {
+        "schema": 1,
+        "built": true,
+        "os_qualified": false,
+        "source_commit": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+        "base": "ghcr.io/secureblue/sericea-nvidia-hardened@sha256:9b8053d581db16d47b1df18698ffe8cc3f70c45a3758363fdc8d85c1b0fcaf5e",
+        "variant": "nvidia",
+        "archive": {
+          "name": "symbiont-os-nvidia.oci.tar.gz",
+          "bytes": 5165612454,
+          "sha256": "732221d7ca5792a15c80755f98060701cb53040bfb8f9172d0054add5286a9b6",
+          "image_id": "sha256:3de540c7c7829546b4e65263c9299141ecd06d5b9858844f0ac42c4f4c5700c4"
+        },
+        "preparation_sha256": "3beabba843e724b9fd6cb76c46dd7ee3099479494da8ea1e05d939e434d9607e"
+      },
+      "artifact": {
+        "id": 15158529973,
+        "name": "desktop-development-image-nvidia",
+        "bytes": 5165613484,
+        "sha256": "0f17c7201fd01fd1d8cc00efd7ae95aecb65ae00e197aef2cf56894b2b7777c4"
+      },
+      "expires_at": "2026-11-29T23:10:24Z",
+      "evidence": "docs/security/reports/P0-03-desktop/45908299514/independent-check.json"
+    }
+  },
+  "scope": "Explicitly retained development images for hosted boot testing. Exact artifact verification is required before use; no release signature, boot or OS qualification."
+}

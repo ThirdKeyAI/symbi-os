@@ -1,0 +1,17 @@
+Selected lines from https://github.com/ThirdKeyAI/Symbiont/actions/runs/45304116676
+Source revision: deddb9e997244d2289c217ad76b8fde0e9b0339b
+Job: 138143616379 (test), conclusion: success
+Scope: compiler and test observations; no OS qualification or reusable runtime artifact.
+
+2026-11-24T01:20:55.7092196Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.100.0 (0ef1bc386 2026-11-09)
+2026-11-24T01:20:55.7418737Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.100.0 (0ef1bc386 2026-11-09)
+2026-11-24T01:20:55.9214262Z rustc 1.100.0 (0ef1bc386 2026-11-09)
+2026-11-24T01:21:54.3297345Z ##[group]Run cargo clippy --workspace --all-targets -- -D warnings
+2026-11-24T01:34:41.6476353Z test api::coordinator_tests::delegated_turns_link_distinct_child_runs_before_inference ... ok
+2026-11-24T01:35:12.6866957Z test scheduler::tests::registration_has_no_effect_and_repeated_runs_release_exact_resources ... ok
+2026-11-24T01:46:31.8399297Z ##[group]Run cargo clippy -p symbi-runtime --no-default-features --all-targets -- -D warnings
+2026-11-24T01:49:30.4515024Z test scheduler::tests::registration_has_no_effect_and_repeated_runs_release_exact_resources ... ok
+2026-11-24T01:50:04.5941669Z ##[group]Run cargo clippy -p symbi-runtime --all-features -- -D warnings
+2026-11-24T02:01:04.2637058Z test api::coordinator_tests::delegated_turns_link_distinct_child_runs_before_inference ... ok
+2026-11-24T02:01:33.6206650Z test scheduler::tests::registration_has_no_effect_and_repeated_runs_release_exact_resources ... ok
+2026-11-24T02:05:20.0846924Z test scheduler::tests::registration_has_no_effect_and_repeated_runs_release_exact_resources ... ok

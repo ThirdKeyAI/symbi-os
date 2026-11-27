@@ -1,0 +1,42 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "guest_booted": true,
+  "source_commit": "943be8905da5dc1e3dace4b5bf5f9f5f648dd88b",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "scope": "Disposable Fedora cloud boot/DRM development test; no Atomic product qualification",
+  "host_tools": {
+    "Xvfb": {
+      "path": "/usr/bin/Xvfb",
+      "sha256": "0081b27338b510ec5e2068a93c6db31480872de9bb082f347f3747ef1648e794"
+    },
+    "xvfb-run": {
+      "path": "/usr/bin/xvfb-run",
+      "sha256": "48ee444c30fdaaede4cc311644b30e554162e956f949b206858e37eb8ba1ae05"
+    },
+    "xauth": {
+      "path": "/usr/bin/xauth",
+      "sha256": "ffcb5f569bf9fce94cbf37f5d61790d463508c6122511a5f4c6e280d3633086e"
+    }
+  },
+  "host_tool_packages": "xauth\t1:1.1.2-1build1\nxvfb\t2:21.1.12-1ubuntu1.9\n",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "probe_hashes": {
+    "cloud_boot.py": "c8321730c5c011aa1fea24f8f11030e797b1e078ed2192000d2a59c967dc0ca2",
+    "cloud_probe.py": "419b3b550fc7e3cbb215b3a6025e2999ac307da4db110c00c0b40c5e29d425de"
+  },
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4337225728",
+    "memory.events": "low 0\nhigh 0\nmax 46715\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 357118925\nuser_usec 309779556\nsystem_usec 47339368\nnice_usec 300269000\ncore_sched.force_idle_usec 0\nnr_periods 3223\nnr_throttled 366\nthrottled_usec 41417319\nnr_bursts 0\nburst_usec 0"
+  }
+}

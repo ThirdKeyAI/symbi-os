@@ -1,0 +1,35 @@
+{
+  "scope": "One diagnostic pass after the retained unchanged baseline failed two tests; not Fedora qualification",
+  "source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+  "source_clean_before": true,
+  "checks": [
+    {
+      "name": "focused-0",
+      "command": [
+        "/home/builder/work/target/debug/deps/symbi_runtime-50387084a5f4576e",
+        "--exact",
+        "api::coordinator_tests::delegated_turns_link_distinct_child_runs_before_inference",
+        "--test-threads=1"
+      ],
+      "exit_code": 101,
+      "passed": false,
+      "elapsed_seconds": 21.328148
+    },
+    {
+      "name": "focused-1",
+      "command": [
+        "/home/builder/work/target/debug/deps/symbi_runtime-50387084a5f4576e",
+        "--exact",
+        "scheduler::tests::registration_has_no_effect_and_repeated_runs_release_exact_resources",
+        "--test-threads=1"
+      ],
+      "exit_code": 101,
+      "passed": false,
+      "elapsed_seconds": 3.300636
+    }
+  ],
+  "full_workspace_checks_passed": false,
+  "started_at_utc": "2026-11-25T18:58:43.229500+00:00",
+  "runtime_test_binary_sha256": "86e2ec3f04f2dfad83af47b4723de32f3b8a484d6282db03ebca39a74c084ff5",
+  "full_test_retry": "Not run: an unchanged focused failure reproduced"
+}

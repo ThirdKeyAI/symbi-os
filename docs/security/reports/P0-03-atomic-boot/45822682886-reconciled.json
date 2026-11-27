@@ -1,0 +1,449 @@
+{
+  "passed": false,
+  "independent_reconciliation_passed": true,
+  "source_commit": "3a2600af847a3438c81aaf0b5cf284265cbaa011",
+  "run": 45822682886,
+  "job": 139918695812,
+  "artifact_id": 15120326758,
+  "artifact_bytes": 69666,
+  "artifact_sha256": "f96e21701c502adb28bc98ca92f9e0b1af8f5a3b2e53498772c0ee6c11358abe",
+  "original_files": 87,
+  "expanded_bytes": 193041,
+  "installation_completed": true,
+  "native_source_signature_controls_passed": true,
+  "accepted_guest_report": false,
+  "os_qualified": false,
+  "release_qualified": false,
+  "cause": "Serial output records failure of s.service and consequent observer dependency failure. The native collector error is not retained, so its underlying cause remains unknown.",
+  "observation_limits": "No structured guest report was produced. Prior-run kernel/SELinux/read-only observations must not be attributed to this attempt. No after-boot source disk digest was accepted.",
+  "cleanup_verified": true,
+  "qemu_elapsed_seconds": 213.59687981600018,
+  "resources": {
+    "prepare": {
+      "limits": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "cpu.max": "100000 100000",
+        "pids.max": "64"
+      },
+      "peak": "26832896",
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      },
+      "cpu_stat": "usage_usec 7847281\nuser_usec 5776985\nsystem_usec 2070295\nnice_usec 5765000\ncore_sched.force_idle_usec 0\nnr_periods 290\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+    },
+    "controller": {
+      "limits": {
+        "memory.max": "4294967296",
+        "memory.swap.max": "0",
+        "cpu.max": "200000 100000",
+        "pids.max": "256"
+      },
+      "peak": "4294971392",
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "162098",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      },
+      "cpu_stat": "usage_usec 718196899\nuser_usec 490551777\nsystem_usec 227645121\nnice_usec 473405000\ncore_sched.force_idle_usec 0\nnr_periods 8835\nnr_throttled 94\nthrottled_usec 2136628\nnr_bursts 0\nburst_usec 0"
+    },
+    "signer": {
+      "limits": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "cpu.max": "100000 100000",
+        "pids.max": "64"
+      },
+      "peak": "97755136",
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      },
+      "cpu_stat": "usage_usec 640911\nuser_usec 184616\nsystem_usec 456295\nnice_usec 176000\ncore_sched.force_idle_usec 0\nnr_periods 9\nnr_throttled 3\nthrottled_usec 29270\nnr_bursts 0\nburst_usec 0"
+    },
+    "qemu": {
+      "limits": {
+        "memory.max": "3221225472",
+        "memory.swap.max": "0",
+        "cpu.max": "200000 100000",
+        "pids.max": "64"
+      },
+      "peak": "2996633600",
+      "events": {
+        "low": "0",
+        "high": "0",
+        "max": "0",
+        "oom": "0",
+        "oom_kill": "0",
+        "oom_group_kill": "0",
+        "sock_throttled": "0"
+      },
+      "cpu_stat": "usage_usec 232166314\nuser_usec 220612164\nsystem_usec 11554150\nnice_usec 210165000\ncore_sched.force_idle_usec 0\nnr_periods 2137\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+    }
+  },
+  "original": {
+    "atomic-disk-evidence/absent-symbi-atomic-installer-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/absent-symbi-atomic-installer-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/absent-symbi-atomic-qemu-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/absent-symbi-atomic-qemu-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/absent-symbi-atomic-signer-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/absent-symbi-atomic-signer-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/boot-stderr.log": {
+      "bytes": 301,
+      "sha256": "29841a6efed87c9ac2c5a1ea9bad85a6bf331af7dc98d32295a42540274babec"
+    },
+    "atomic-disk-evidence/boot-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/cleanup-symbi-atomic-installer-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/cleanup-symbi-atomic-installer-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/cleanup-symbi-atomic-qemu-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/cleanup-symbi-atomic-qemu-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/cleanup-symbi-atomic-signer-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/cleanup-symbi-atomic-signer-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/disk-loops-absent-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/disk-loops-absent-stdout.log": {
+      "bytes": 30,
+      "sha256": "3f1d39e826503300542203478b61c9393220197f672114f5813fa484380802ed"
+    },
+    "atomic-disk-evidence/disk-loops-after-install-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/disk-loops-after-install-stdout.log": {
+      "bytes": 30,
+      "sha256": "3f1d39e826503300542203478b61c9393220197f672114f5813fa484380802ed"
+    },
+    "atomic-disk-evidence/disk-loops-cleanup-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/disk-loops-cleanup-stdout.log": {
+      "bytes": 30,
+      "sha256": "3f1d39e826503300542203478b61c9393220197f672114f5813fa484380802ed"
+    },
+    "atomic-disk-evidence/guest-prepare.log": {
+      "bytes": 202,
+      "sha256": "a0bf0e90d45a9c2f792617934f2529a9acdeca91066fd160d87c73146e0028ff"
+    },
+    "atomic-disk-evidence/guest-qemu.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/guest-report.json": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/guest-result.json": {
+      "bytes": 2834,
+      "sha256": "2413c583fba8fb43fb80ea36f79db936a1744f070ccb7d21238fef732646fb1a"
+    },
+    "atomic-disk-evidence/guest-serial.log": {
+      "bytes": 54826,
+      "sha256": "29f4929f38cbb10df30a6489c7ad45d63e5c759f5d9344562985416c04410166"
+    },
+    "atomic-disk-evidence/hosted.log": {
+      "bytes": 2436,
+      "sha256": "bd37cfe9c320f87db6d6aa86377818f588eddced8b7f7c6a4cfd526092e91018"
+    },
+    "atomic-disk-evidence/image-absent-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/image-absent-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/inspect-image-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/inspect-image-stdout.log": {
+      "bytes": 88680,
+      "sha256": "44128650845711d2c09cb0b48c3d3c227fe29005b7badf37153ad9ae90845f24"
+    },
+    "atomic-disk-evidence/install-stderr.log": {
+      "bytes": 46,
+      "sha256": "add28dd3c5cdd6c4fc4f697cd12a938dafeb66b5b1c08cf007bb18703d24f028"
+    },
+    "atomic-disk-evidence/install-stdout.log": {
+      "bytes": 2849,
+      "sha256": "14dcf7b432339747cebfd1477f280c62127161b9446999142e567c43ffdd990c"
+    },
+    "atomic-disk-evidence/load-image-stderr.log": {
+      "bytes": 11762,
+      "sha256": "67e07d95e19e432137f46e05a3ae2451d606e8b7578281cb2f9269478b9183e6"
+    },
+    "atomic-disk-evidence/load-image-stdout.log": {
+      "bytes": 96,
+      "sha256": "448e4698723c2b8f37aebcf36f171065561cfaa000cf9e6273628116b539d2c0"
+    },
+    "atomic-disk-evidence/remove-image-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/remove-image-stdout.log": {
+      "bytes": 166,
+      "sha256": "f76f4f14811d5187ce6d25c4459e496d0d5eb2fe3254ac24c5f4d75f25ae533b"
+    },
+    "atomic-disk-evidence/result.json": {
+      "bytes": 18524,
+      "sha256": "4f82cefc3e04b35746eade877c3523e70245dadc6faa58cd2358ae5b18586974"
+    },
+    "atomic-disk-evidence/sign-source-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/sign-source-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/export-public-good-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/export-public-good-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/export-public-wrong-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/export-public-wrong-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/fingerprint-good-stderr.log": {
+      "bytes": 160,
+      "sha256": "699f9c3594dba4daef3628530a63a6766dae14c6937144abccc0d4609140aa72"
+    },
+    "atomic-disk-evidence/source-authentication/fingerprint-good-stdout.log": {
+      "bytes": 258,
+      "sha256": "94fb675b260fac39cc14f037cc56d873cce3ec2babbd8fb4b3545acd78c14baa"
+    },
+    "atomic-disk-evidence/source-authentication/fingerprint-wrong-stderr.log": {
+      "bytes": 160,
+      "sha256": "699f9c3594dba4daef3628530a63a6766dae14c6937144abccc0d4609140aa72"
+    },
+    "atomic-disk-evidence/source-authentication/fingerprint-wrong-stdout.log": {
+      "bytes": 259,
+      "sha256": "01385a8e8f24011df533a823c151b614e081baae0d6c8c0ccb5a07241d9b2682"
+    },
+    "atomic-disk-evidence/source-authentication/generate-good-stderr.log": {
+      "bytes": 296,
+      "sha256": "7b177f4684f46a1d862cf85095d5b2ba85294dc148d4993a856efce06366fd1e"
+    },
+    "atomic-disk-evidence/source-authentication/generate-good-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/generate-wrong-stderr.log": {
+      "bytes": 300,
+      "sha256": "fc5935ed3b8dae629bf28ddee384e68aae17a8edcc37a3b26b6da6de8d6d3ce6"
+    },
+    "atomic-disk-evidence/source-authentication/generate-wrong-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/policy-altered-signature-stderr.log": {
+      "bytes": 85,
+      "sha256": "7f64ef2a80fd093eecee413a8660b71833d7c258f0c7038113cd32b79779cf24"
+    },
+    "atomic-disk-evidence/source-authentication/policy-altered-signature-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/policy-unsigned-stderr.log": {
+      "bytes": 80,
+      "sha256": "db7f2b42c0cec130f75aab927a1102fce38128d2e4193c09cd6a1bd3b57dfa03"
+    },
+    "atomic-disk-evidence/source-authentication/policy-unsigned-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/policy-valid-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/policy-valid-stdout.log": {
+      "bytes": 311,
+      "sha256": "2b0ecfb73107b697f2627eadfd174e586cffb60e951348bb1147ce4d69e0e29b"
+    },
+    "atomic-disk-evidence/source-authentication/policy-wrong-key-stderr.log": {
+      "bytes": 83,
+      "sha256": "7d6d3802af885e074659c2da4b191fa4adb29cff9aa0f7dd984e16fb425fa6d5"
+    },
+    "atomic-disk-evidence/source-authentication/policy-wrong-key-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/policy-wrong-reference-stderr.log": {
+      "bytes": 173,
+      "sha256": "8ade743c67475ee9230ccf3b604d1a0308c8c153131a2b2468f13b82eeee27fd"
+    },
+    "atomic-disk-evidence/source-authentication/policy-wrong-reference-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/result.json": {
+      "bytes": 2837,
+      "sha256": "7044d43f7820ac036effaeb333c14b2ea3d8284fab35dd2afa176ea06a62174d"
+    },
+    "atomic-disk-evidence/source-authentication/sign-control-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/sign-control-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/sign-development-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/sign-development-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/sign-wrong-key-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/sign-wrong-key-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/sign-wrong-reference-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/sign-wrong-reference-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/skopeo-package-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/skopeo-package-stdout.log": {
+      "bytes": 30,
+      "sha256": "cf7baa4791d6c083f6c2bb5cf6a2f6098350093c63db3f713b9364e19047608e"
+    },
+    "atomic-disk-evidence/source-authentication/skopeo-version-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/skopeo-version-stdout.log": {
+      "bytes": 71,
+      "sha256": "d3f87a33662e67251df0471ad910eb0bdd95c26080b9ad037b15d28198fdc36b"
+    },
+    "atomic-disk-evidence/source-authentication/stop-agent-0-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/stop-agent-0-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/stop-agent-1-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/stop-agent-1-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/verify-development-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "atomic-disk-evidence/source-authentication/verify-development-stdout.log": {
+      "bytes": 158,
+      "sha256": "e795f0ab1503783142ea90eda39979e5320eb5b71584e954d9965e95eaa5ab77"
+    },
+    "atomic-disk-evidence/source-good-public.asc": {
+      "bytes": 400,
+      "sha256": "5526e1f3fdb804166f7d9302e9b75a60eef1e9a0a7649690dd7318047fa1533c"
+    },
+    "atomic-disk-evidence/source-signature-1": {
+      "bytes": 397,
+      "sha256": "7346e20628d5f39f7249e68a9cbce11ce66cd183feea0213ed40f7cccf05a769"
+    },
+    "atomic-disk-evidence/systemd-result.txt": {
+      "bytes": 128,
+      "sha256": "a1471c63041954632a2adca2f67241c5adeb770ae31103b25a6d53b23ed66988"
+    },
+    "atomic-image-evidence/hosted-prepare.log": {
+      "bytes": 233,
+      "sha256": "a7852a683aa82ce882c4a895fe88e66069a5c4fde19b7bcdc8cc9801893347ef"
+    },
+    "atomic-image-evidence/image-manifest.json": {
+      "bytes": 628,
+      "sha256": "fceae70fae08092a44acf5775b11f0da859fed19f6a53b4193f112961a526c34"
+    },
+    "atomic-image-evidence/prepare-systemd-result.txt": {
+      "bytes": 136,
+      "sha256": "191736fbd1ce15a9936252e53bb6f69f6274360f883f1d1896bda86d58b2109c"
+    },
+    "atomic-image-evidence/prepare.json": {
+      "bytes": 3046,
+      "sha256": "d159a7bfa2cb1474c18dbf91bdfa748668397aee08fe99bdbf3f3e16fed819e8"
+    }
+  }
+}

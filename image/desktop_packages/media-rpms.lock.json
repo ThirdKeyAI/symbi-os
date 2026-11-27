@@ -1,0 +1,159 @@
+{
+  "schema": 1,
+  "status": "blocked-missing-media-closure-and-authenticated-sources",
+  "release": "45",
+  "architecture": "x86_64",
+  "resolution_base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "target_bases": {
+    "generic": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+    "nvidia": "ghcr.io/secureblue/sericea-nvidia-hardened@sha256:9b8053d581db16d47b1df18698ffe8cc3f70c45a3758363fdc8d85c1b0fcaf5e"
+  },
+  "trusted_keys": [
+    {
+      "file": "fedora-45-primary.asc",
+      "fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E",
+      "sha256": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425",
+      "identity": "Fedora (45) <fedora-45-primary@fedoraproject.org>"
+    },
+    {
+      "file": "rpmfusion-free-2020.asc",
+      "fingerprint": "E9A491A3DE247814E7E067EAE06F8ECDD651FF2E",
+      "sha256": "10fc0a3e1a0307e8088357a31a9c5e4e3d9f9e0b01db2b03b5790d949a47f3b3",
+      "identity": "RPM Fusion free repository for Fedora (2020) <rpmfusion-buildsys@lists.rpmfusion.org>",
+      "source": "https://github.com/rpmfusion/rpmfusion-free-release/blob/455da393b8e1d3bad80a7d3c8617ef343ebb2c1a/RPM-GPG-KEY-rpmfusion-free-fedora-2020",
+      "second_source": "https://github.com/rpm-software-management/distribution-gpg-keys/blob/b7cc71f1c253f12a5b9e9172258b5e52ab281a81/keys/rpmfusion/RPM-GPG-KEY-rpmfusion-free-fedora-2020"
+    }
+  ],
+  "discovery": {
+    "source_commit": "30d4ab76e316d20921bd9c05bfb085f5959db0b9",
+    "run_id": 45818341284,
+    "job_id": 139903782308,
+    "result_path": "docs/security/reports/P0-03-desktop-packages/45818341284/guest/result.json",
+    "result_bytes": 34613,
+    "result_sha256": "272171f10e32bcfb8387360e12a03a2b397c199ec1d7043ecde5fb27325088ef",
+    "candidate_artifact": {
+      "id": 15116164474,
+      "bytes": 46648044,
+      "sha256": "7f8f6128f3977caeeea5a3efdb355213570d84acd7d441c3be3e22e9d63e1cbc",
+      "expires_at": "2026-12-03T12:22:01Z"
+    },
+    "scope": "Aggregate desktop discovery only; the artifact is not a media-only install closure"
+  },
+  "root_packages": [
+    {
+      "name": "mplayer",
+      "epoch": "0",
+      "version": "1.5.1",
+      "release": "0.26.r38531.20260727.f401198.fc45",
+      "arch": "x86_64",
+      "nevra": "mplayer-1.5.1-0.26.r38531.20260727.f401198.fc45.x86_64",
+      "vendor": "RPM Fusion",
+      "license": "GPL-3.0-or-later",
+      "source_rpm": "mplayer-1.5.1-0.26.r38531.20260727.f401198.fc45.src.rpm",
+      "filename": "mplayer-1.5.1-0.26.r38531.20260727.f401198.fc45.x86_64.rpm",
+      "bytes": 1168032,
+      "sha256": "141890e808e37bff2ca6c40c62cc9a1b2a9a38e80015ec2aaa8357f3fd794311",
+      "signature_verified": true,
+      "key_fingerprint": "E9A491A3DE247814E7E067EAE06F8ECDD651FF2E"
+    },
+    {
+      "name": "mplayer-common",
+      "epoch": "0",
+      "version": "1.5.1",
+      "release": "0.26.r38531.20260727.f401198.fc45",
+      "arch": "x86_64",
+      "nevra": "mplayer-common-1.5.1-0.26.r38531.20260727.f401198.fc45.x86_64",
+      "vendor": "RPM Fusion",
+      "license": "GPL-3.0-or-later",
+      "source_rpm": "mplayer-1.5.1-0.26.r38531.20260727.f401198.fc45.src.rpm",
+      "filename": "mplayer-common-1.5.1-0.26.r38531.20260727.f401198.fc45.x86_64.rpm",
+      "bytes": 1215687,
+      "sha256": "cdd6e9b991293260f0481be1e100eb717cc0ea7705d0e26dcec933f6f452329e",
+      "signature_verified": true,
+      "key_fingerprint": "E9A491A3DE247814E7E067EAE06F8ECDD651FF2E"
+    },
+    {
+      "name": "mpv",
+      "epoch": "0",
+      "version": "0.41.0",
+      "release": "10.fc45",
+      "arch": "x86_64",
+      "nevra": "mpv-0.41.0-10.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-2.0-or-later AND LGPL-2.1-or-later AND BSD-2-Clause AND BSD-3-Clause AND ISC AND MIT",
+      "source_rpm": "mpv-0.41.0-10.fc45.src.rpm",
+      "filename": "mpv-0.41.0-10.fc45.x86_64.rpm",
+      "bytes": 1726413,
+      "sha256": "f19dc077e31763530aac2e0825e01e3b8b4ac9db0f49d4d6ec88bff704a7a1de",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    }
+  ],
+  "closure": {
+    "complete": false,
+    "packages": [],
+    "artifact": null,
+    "reason": "The retained aggregate candidate artifact does not prove the exact additive MPlayer and mpv dependency closure"
+  },
+  "source_inputs": [
+    {
+      "source_rpm": "mplayer-1.5.1-0.26.r38531.20260727.f401198.fc45.src.rpm",
+      "expected_key_fingerprint": "E9A491A3DE247814E7E067EAE06F8ECDD651FF2E",
+      "status": "missing-authenticated-source-rpm",
+      "filename": null,
+      "bytes": null,
+      "sha256": null,
+      "signature_verified": false
+    },
+    {
+      "source_rpm": "mpv-0.41.0-10.fc45.src.rpm",
+      "expected_key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E",
+      "status": "missing-authenticated-source-rpm",
+      "filename": null,
+      "bytes": null,
+      "sha256": null,
+      "signature_verified": false
+    }
+  ],
+  "security_evidence": {
+    "status": "incomplete-product-name-search-only",
+    "cleared": false,
+    "request_manifest": {
+      "path": "docs/security/reports/P0-03-cve-bz/2026-11-26/desktop-profile/request-evidence.json",
+      "bytes": 1877,
+      "sha256": "293935e679e1730c2f2142b783c3881c5d76fef4050c808c92df85de55e54f56"
+    },
+    "packages": [
+      {
+        "name": "mplayer",
+        "version": "1.5.1",
+        "release": "0.26.r38531.20260727.f401198.fc45",
+        "source_rpm": "mplayer-1.5.1-0.26.r38531.20260727.f401198.fc45.src.rpm",
+        "query": "MPlayer",
+        "path": "docs/security/reports/P0-03-cve-bz/2026-11-26/desktop-profile/00-search.json",
+        "bytes": 63626,
+        "sha256": "99b9e8b561ef6fc8337a00a6b4075f6b9d7e8fed229e430c5df9b051eebc962b",
+        "package_version_assessed": false
+      },
+      {
+        "name": "mpv",
+        "version": "0.41.0",
+        "release": "10.fc45",
+        "source_rpm": "mpv-0.41.0-10.fc45.src.rpm",
+        "query": "mpv",
+        "path": "docs/security/reports/P0-03-cve-bz/2026-11-26/desktop-profile/02-search.json",
+        "bytes": 152972,
+        "sha256": "c76b4bd697cb029f1197f8174c6956aaea8d0d31afd19c6c0a48cb6d584919b7",
+        "package_version_assessed": false
+      }
+    ],
+    "scope": "Retained public product-name searches bound to the exact candidate versions; incomplete and not a CVE or backport clearance"
+  },
+  "install_ready": false,
+  "image_source_commit": null,
+  "playback_qualified": {
+    "generic": false,
+    "nvidia": false
+  },
+  "persists_repository_trust": false
+}

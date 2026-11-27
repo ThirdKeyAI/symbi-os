@@ -1,0 +1,43 @@
+[Unit]
+Description=Disposable non-root Symbiont Landlock qualification
+ConditionPathExists=!/etc/initrd-release
+Requires=p.service q.service
+After=p.service q.service user@10001.service
+SuccessAction=poweroff
+FailureAction=poweroff
+
+[Service]
+Type=exec
+User=symbi-qual
+Group=symbi-qual
+WorkingDirectory=/var/lib/symbi-qualification/home
+ImportCredential=symbi-landlock.py
+ImportCredential=vertical_slice.py
+ImportCredential=symbi-runner.py
+ImportCredential=symbi_mountinfo.py
+ImportCredential=symbi-expected.json
+ExecStart=/usr/bin/python3 %d/symbi-runner.py %d/symbi-landlock.py %d/vertical_slice.py %d/symbi-expected.json
+Environment=HOME=/var/lib/symbi-qualification/home
+Environment=USER=symbi-qual
+Environment=LOGNAME=symbi-qual
+Environment=XDG_RUNTIME_DIR=/run/user/10001
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/10001/bus
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=LANG=C.UTF-8
+UMask=0077
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/symbi-qualification /tmp /run/user/10001
+MemoryMax=1536M
+MemorySwapMax=0
+CPUQuota=100%
+TasksMax=256
+RuntimeMaxSec=95min
+TimeoutStartSec=5700
+TimeoutStopSec=30
+StandardOutput=journal+console
+StandardError=journal+console

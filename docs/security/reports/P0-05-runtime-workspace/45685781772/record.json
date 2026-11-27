@@ -1,0 +1,49 @@
+{
+  "run_url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45685781772",
+  "head": "acddab8c36a719dbc818dedd4ea95cd8a01ef1d4",
+  "job_id": 139457907908,
+  "conclusion": "failure",
+  "artifact_id": 15057271914,
+  "artifact_digest_from_github": "sha256:8ff0b31d2aabd36f573f611178a63fbd15e66c751aa95a2c857ba9665b54ddbb",
+  "observation": "Whole resource unit terminated by OOM while compiling the runtime crate. No completed workspace gate, no test run, and no fixture patch applied.",
+  "measurement": {
+    "memory_peak_bytes": 4294967296,
+    "memory_max_bytes": 4294967296,
+    "memory_swap_max_bytes": 0,
+    "result": "oom-kill",
+    "cpu_usage_ns": 599154213000
+  },
+  "evidence_limit": "Whole-unit termination prevented Python finally from writing cgroup-final.json; outer systemd result retains the observed OOM and peak.",
+  "qualified": false,
+  "files": {
+    "baseline-build.log": {
+      "original_sha256": "c6eb9314cd0e58fbb51ebd4912903dbcbd4adebd9c98ac174abd3340c79277a7",
+      "retained_sha256": "c6eb9314cd0e58fbb51ebd4912903dbcbd4adebd9c98ac174abd3340c79277a7"
+    },
+    "cgroup-limits.json": {
+      "original_sha256": "793978dd325346b691df2874b59d3c299548bcedf446ccf30ba3aa0783f25dd2",
+      "retained_sha256": "793978dd325346b691df2874b59d3c299548bcedf446ccf30ba3aa0783f25dd2"
+    },
+    "host-build-packages.txt": {
+      "original_sha256": "8516af44574c9b583c90096c9939aee6ea44cc4caa5a24571047a5c721139fea",
+      "retained_sha256": "8516af44574c9b583c90096c9939aee6ea44cc4caa5a24571047a5c721139fea"
+    },
+    "host-disk.txt": {
+      "original_sha256": "b06c9af546e689ba6f7d0758830dc7e90ad8864b9bc7b903e28ca28fdcf2def0",
+      "retained_sha256": "b06c9af546e689ba6f7d0758830dc7e90ad8864b9bc7b903e28ca28fdcf2def0"
+    },
+    "hosted-checks.log": {
+      "original_sha256": "cab0257bb698e888349a871c37d1bfc66532f5f176c1cdf4c94def40d1e31c41",
+      "retained_sha256": "cab0257bb698e888349a871c37d1bfc66532f5f176c1cdf4c94def40d1e31c41"
+    },
+    "result.json": {
+      "original_sha256": "45a15e0457752bbcefe23c5d22bdc24029e6ae802943c4f98fde05a52834e570",
+      "retained_sha256": "45a15e0457752bbcefe23c5d22bdc24029e6ae802943c4f98fde05a52834e570"
+    },
+    "systemd-result.txt": {
+      "original_sha256": "86d156a84741a476710f7865755c419f1c895413071f320d739d495ba147b29f",
+      "retained_sha256": "86d156a84741a476710f7865755c419f1c895413071f320d739d495ba147b29f"
+    }
+  },
+  "retention_format": "Trailing whitespace removed; original per-file hashes retained."
+}

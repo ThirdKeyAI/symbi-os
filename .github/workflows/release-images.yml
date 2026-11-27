@@ -1,0 +1,77 @@
+name: Protected image release evidence gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      evidence_run_id:
+        description: Run ID of the exact release-candidate evidence artifact
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: protected-release-evidence-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify-release-evidence:
+    # The protected environment also limits deployments to v* tags.  Keep this
+    # explicit check so a branch dispatch never becomes a release attempt.
+    if: startsWith(github.ref, 'refs/tags/v')
+    environment:
+      name: symbi-os-release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      EVIDENCE_RUN_ID: ${{ inputs.evidence_run_id }}
+    steps:
+      - name: Check out the exact tagged source without persisted credentials
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Bind the artifact to the reviewed candidate producer
+        # The complete bundle must come from release-candidate.yml at this exact
+        # tag and commit; this consumer never accepts an artifact it produced.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          case "$EVIDENCE_RUN_ID" in
+            ''|*[!0-9]*) echo 'A numeric candidate evidence run ID is required.' >&2; exit 1 ;;
+          esac
+          mkdir -p .cache/release-origin
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$EVIDENCE_RUN_ID" \
+            > .cache/release-origin/run.json
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$EVIDENCE_RUN_ID/artifacts?per_page=100" \
+            > .cache/release-origin/artifacts.json
+      - name: Download the exact same-repository evidence artifact
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: symbi-os-release-evidence
+          path: .cache/release-evidence
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.evidence_run_id }}
+      - name: Reconcile both image subjects and every release gate offline
+        env:
+          EXPECTED_BUILDER_REF: https://github.com/${{ github.repository }}/.github/workflows/release-candidate.yml@${{ github.ref }}
+          EXPECTED_GATE_REF: https://github.com/${{ github.repository }}/.github/workflows/release-images.yml@${{ github.ref }}
+        run: |
+          python3 image/release/contract.py \
+            --manifest .cache/release-evidence/manifest.json \
+            --evidence-root .cache/release-evidence \
+            --expected-purpose release \
+            --expected-source-commit "$GITHUB_SHA" \
+            --expected-tag "$GITHUB_REF_NAME" \
+            --expected-workflow-ref "$EXPECTED_BUILDER_REF" \
+            --expected-gate-workflow-ref "$EXPECTED_GATE_REF" \
+            --artifact-metadata \
+              .cache/release-origin/run.json \
+              .cache/release-origin/artifacts.json \
+            --artifact-run-id "$EVIDENCE_RUN_ID" \
+            --artifact-name symbi-os-release-evidence \
+            --artifact-source-ref "$GITHUB_REF" \
+            --producer-workflow .github/workflows/release-candidate.yml \
+            --output .cache/release-verification.json

@@ -1,0 +1,1804 @@
+{
+  "passed": true,
+  "fixture": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9",
+  "binary_sha256": "1e90af1fe424ec37ad716bbc1e069c0bc7a78f59c49871b7e79506bda69f49c7",
+  "driver_sha256": "c5dc5d798c285f99e8db72b64d55749f127aa4139645425b7bd69d48dd7e9ded",
+  "cases": [
+    {
+      "name": "granted",
+      "passed": true,
+      "manifest_sha256": "7763bdf3b0850d4a3ed0be98f9f9e5f177c2a6c69fa5bc6bb5e9ee4662028f53",
+      "exit_code": 0,
+      "stdout": "\u2192 Running agent: fixture (agents/fixture.symbi)\n\u2192 Input: {\"input\": \"input.txt\", \"output\": \"granted.json\"}\n\nfixture complete\n",
+      "stderr": "Loaded environment from /tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.env\nInvocation ID: c18b27f1-3011-4ae9-9d13-456a0e17bb6f\nAudit run: ae3de3b0-215d-4bb0-afb4-8d25b9cd6222\nAudit journal: /tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.symbiont/governed/11dc2ff8-89ca-408a-bbda-1c94a7e8f1f7.ae3de3b0-215d-4bb0-afb4-8d25b9cd6222.jsonl\nAudit public key: 80a76f300b41d7c86d08df1aa210e62342235003f3459a583f7ff854ba355465\n\u2713 Cedar policy gate wired (1 policy file(s) loaded)\n\n--- 2 iterations, 4 tokens, terminated: Completed ---\n",
+      "requests": [
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"input\": \"input.txt\", \"output\": \"granted.json\"}"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "files",
+                "description": "Declared file operation",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "input": {
+                      "type": "string",
+                      "description": ""
+                    },
+                    "output": {
+                      "type": "string",
+                      "description": ""
+                    }
+                  },
+                  "required": [
+                    "input",
+                    "output"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"input\": \"input.txt\", \"output\": \"granted.json\"}"
+            },
+            {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "id": "files",
+                  "type": "function",
+                  "function": {
+                    "name": "files",
+                    "arguments": "{\"input\": \"input.txt\", \"output\": \"granted.json\"}"
+                  }
+                }
+              ]
+            },
+            {
+              "role": "tool",
+              "content": "{\"status\":\"success\",\"scan_id\":\"1795643922-7e41b3fd840b4f9fb0eb21945e55e955\",\"tool\":\"files\",\"command\":\"python3 -c import json,os,pathlib,resource,sys,time\\ntime.sleep(1)\\nsource=pathlib.Path(sys.argv[1])\\ntarget=pathlib.Path(sys.argv[2])\\nresult={\\\"input_visible\\\":source.exists(),\\\"adjacent_visible\\\":pathlib.Path(\\\"adjacent.txt\\\").exists(),\\\"uid\\\":os.getuid(),\\\"sum\\\":None,\\\"input_writable\\\":False}\\nif source.exists():\\n    result[\\\"sum\\\"]=sum(map(int,source.read_text().split()))\\n    try:\\n        source.write_text(\\\"changed\\\")\\n        result[\\\"input_writable\\\"]=True\\n    except OSError:\\n        pass\\npathlib.Path(\\\"sibling.txt\\\").write_text(\\\"scratch only\\\")\\nresult[\\\"file_limit\\\"]=list(resource.getrlimit(resource.RLIMIT_FSIZE))\\ntarget.write_text(json.dumps(result))\\nprint(json.dumps(result))\\n input.txt granted.json\",\"duration_ms\":1263,\"timestamp\":\"2026-11-25T21:58:43.403006986+00:00\",\"output_hash\":\"sha256:aa541e842fa05f3718e77cb07a2c4b0acfb19e37d81f6f076d0097ed6f474e69\",\"output_truncated\":false,\"exit_code\":0,\"stderr\":\"\",\"results\":{\"input_visible\":true,\"adjacent_visible\":false,\"uid\":65534,\"sum\":10,\"input_writable\":false,\"file_limit\":[1024,1024],\"exit_code\":0},\"created_files\":[{\"path\":\"granted.json\",\"bytes\":128,\"sha256\":\"00f95558c0390fcd1beb7a931eee6bffe3bbe793ee7ca2a04db288622056d2c2\"}]}",
+              "tool_call_id": "files"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "files",
+                "description": "Declared file operation",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "input": {
+                      "type": "string",
+                      "description": ""
+                    },
+                    "output": {
+                      "type": "string",
+                      "description": ""
+                    }
+                  },
+                  "required": [
+                    "input",
+                    "output"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "workers": [
+        {
+          "id": "905b912ad59bb4bdbe4ae83d948bbad196b758df237975f16f1e0bdeedcdc930",
+          "lease": "36882a46-b858-4d67-97d4-4e697f9a7685",
+          "origin": {
+            "agent_id": "11dc2ff8-89ca-408a-bbda-1c94a7e8f1f7",
+            "run_id": "ae3de3b0-215d-4bb0-afb4-8d25b9cd6222",
+            "public_key": "80a76f300b41d7c86d08df1aa210e62342235003f3459a583f7ff854ba355465",
+            "dispatch_id": "924555b0-c8ec-4984-b450-51579b7ccda2",
+            "call_fingerprint": "sha256:aeb0e56c95700ba5b994c9d32b836ee72e6baba6f5414d23eeea7f21dc55fd86",
+            "tool_name": "files",
+            "iteration": 1
+          },
+          "mounts": [
+            {
+              "Type": "bind",
+              "Source": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/state/staging/1bae1801-8f47-4b27-8e04-f049f306e873/data/input-0",
+              "Destination": "/workspace/input.txt",
+              "Mode": "",
+              "RW": false,
+              "Propagation": "rprivate"
+            },
+            {
+              "Type": "bind",
+              "Source": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/state/staging/1bae1801-8f47-4b27-8e04-f049f306e873/data/output",
+              "Destination": "/workspace/granted.json",
+              "Mode": "",
+              "RW": true,
+              "Propagation": "rprivate"
+            }
+          ],
+          "ulimits": [
+            {
+              "Name": "core",
+              "Hard": 0,
+              "Soft": 0
+            },
+            {
+              "Name": "fsize",
+              "Hard": 1024,
+              "Soft": 1024
+            },
+            {
+              "Name": "nofile",
+              "Hard": 1024,
+              "Soft": 1024
+            }
+          ],
+          "runtime": "runsc"
+        }
+      ],
+      "envelope": {
+        "status": "success",
+        "scan_id": "1795643922-7e41b3fd840b4f9fb0eb21945e55e955",
+        "tool": "files",
+        "command": "python3 -c import json,os,pathlib,resource,sys,time\ntime.sleep(1)\nsource=pathlib.Path(sys.argv[1])\ntarget=pathlib.Path(sys.argv[2])\nresult={\"input_visible\":source.exists(),\"adjacent_visible\":pathlib.Path(\"adjacent.txt\").exists(),\"uid\":os.getuid(),\"sum\":None,\"input_writable\":False}\nif source.exists():\n    result[\"sum\"]=sum(map(int,source.read_text().split()))\n    try:\n        source.write_text(\"changed\")\n        result[\"input_writable\"]=True\n    except OSError:\n        pass\npathlib.Path(\"sibling.txt\").write_text(\"scratch only\")\nresult[\"file_limit\"]=list(resource.getrlimit(resource.RLIMIT_FSIZE))\ntarget.write_text(json.dumps(result))\nprint(json.dumps(result))\n input.txt granted.json",
+        "duration_ms": 1263,
+        "timestamp": "2026-11-25T21:58:43.403006986+00:00",
+        "output_hash": "sha256:aa541e842fa05f3718e77cb07a2c4b0acfb19e37d81f6f076d0097ed6f474e69",
+        "output_truncated": false,
+        "exit_code": 0,
+        "stderr": "",
+        "results": {
+          "input_visible": true,
+          "adjacent_visible": false,
+          "uid": 65534,
+          "sum": 10,
+          "input_writable": false,
+          "file_limit": [
+            1024,
+            1024
+          ],
+          "exit_code": 0
+        },
+        "created_files": [
+          {
+            "path": "granted.json",
+            "bytes": 128,
+            "sha256": "00f95558c0390fcd1beb7a931eee6bffe3bbe793ee7ca2a04db288622056d2c2"
+          }
+        ]
+      },
+      "worker_origins": [
+        {
+          "run_id": "ae3de3b0-215d-4bb0-afb4-8d25b9cd6222",
+          "dispatch_id": "924555b0-c8ec-4984-b450-51579b7ccda2",
+          "start_sequence": 6
+        }
+      ]
+    },
+    {
+      "name": "undeclared",
+      "passed": true,
+      "manifest_sha256": "98d1ffee3e703ec1a7bc1a845e892c939034a926a5b98b00026464342d0d5ab3",
+      "exit_code": 0,
+      "stdout": "\u2192 Running agent: fixture (agents/fixture.symbi)\n\u2192 Input: {\"input\": \"input.txt\", \"output\": \"undeclared.json\"}\n\nfixture complete\n",
+      "stderr": "Loaded environment from /tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.env\nInvocation ID: 51b87883-b71f-4459-9629-9573244a246b\nAudit run: 6a0680d2-dbb0-4c15-84f9-acc9b96a5266\nAudit journal: /tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.symbiont/governed/561f5533-09d9-4a28-ac31-8598535db9f9.6a0680d2-dbb0-4c15-84f9-acc9b96a5266.jsonl\nAudit public key: 80a76f300b41d7c86d08df1aa210e62342235003f3459a583f7ff854ba355465\n\u2713 Cedar policy gate wired (1 policy file(s) loaded)\n\n--- 2 iterations, 4 tokens, terminated: Completed ---\n",
+      "requests": [
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"input\": \"input.txt\", \"output\": \"undeclared.json\"}"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "files",
+                "description": "Declared file operation",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "input": {
+                      "type": "string",
+                      "description": ""
+                    },
+                    "output": {
+                      "type": "string",
+                      "description": ""
+                    }
+                  },
+                  "required": [
+                    "input",
+                    "output"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"input\": \"input.txt\", \"output\": \"undeclared.json\"}"
+            },
+            {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "id": "files",
+                  "type": "function",
+                  "function": {
+                    "name": "files",
+                    "arguments": "{\"input\": \"input.txt\", \"output\": \"undeclared.json\"}"
+                  }
+                }
+              ]
+            },
+            {
+              "role": "tool",
+              "content": "{\"status\":\"success\",\"scan_id\":\"1795643923-beb6d751fbd74bb0bcbe04a49942bf88\",\"tool\":\"files\",\"command\":\"python3 -c import json,os,pathlib,resource,sys,time\\ntime.sleep(1)\\nsource=pathlib.Path(sys.argv[1])\\ntarget=pathlib.Path(sys.argv[2])\\nresult={\\\"input_visible\\\":source.exists(),\\\"adjacent_visible\\\":pathlib.Path(\\\"adjacent.txt\\\").exists(),\\\"uid\\\":os.getuid(),\\\"sum\\\":None,\\\"input_writable\\\":False}\\nif source.exists():\\n    result[\\\"sum\\\"]=sum(map(int,source.read_text().split()))\\n    try:\\n        source.write_text(\\\"changed\\\")\\n        result[\\\"input_writable\\\"]=True\\n    except OSError:\\n        pass\\npathlib.Path(\\\"sibling.txt\\\").write_text(\\\"scratch only\\\")\\nresult[\\\"file_limit\\\"]=list(resource.getrlimit(resource.RLIMIT_FSIZE))\\ntarget.write_text(json.dumps(result))\\nprint(json.dumps(result))\\n input.txt undeclared.json\",\"duration_ms\":1230,\"timestamp\":\"2026-11-25T21:58:45.157270150+00:00\",\"output_hash\":\"sha256:885b2cb37ad9e962d569113b380ef956ea8992057d5b9c745e4389ac3859b7cf\",\"output_truncated\":false,\"exit_code\":0,\"stderr\":\"\",\"results\":{\"input_visible\":false,\"adjacent_visible\":false,\"uid\":65534,\"sum\":null,\"input_writable\":false,\"file_limit\":[67108864,67108864],\"exit_code\":0},\"created_files\":[]}",
+              "tool_call_id": "files"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "files",
+                "description": "Declared file operation",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "input": {
+                      "type": "string",
+                      "description": ""
+                    },
+                    "output": {
+                      "type": "string",
+                      "description": ""
+                    }
+                  },
+                  "required": [
+                    "input",
+                    "output"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "workers": [
+        {
+          "id": "039c89e6402ac6be5e5942c79d39dff03ab5a0486188c682e96bf34d60b5a161",
+          "lease": "e89e637b-6e1f-43a6-b455-4704783e5a98",
+          "origin": {
+            "agent_id": "561f5533-09d9-4a28-ac31-8598535db9f9",
+            "run_id": "6a0680d2-dbb0-4c15-84f9-acc9b96a5266",
+            "public_key": "80a76f300b41d7c86d08df1aa210e62342235003f3459a583f7ff854ba355465",
+            "dispatch_id": "990dc447-db25-4b87-b7a5-eb6dfc034d50",
+            "call_fingerprint": "sha256:612690165d0e090c8f53bad3a26d34ebe30b1fcac7932cdc340f8c361fceb5ae",
+            "tool_name": "files",
+            "iteration": 1
+          },
+          "mounts": [],
+          "ulimits": [
+            {
+              "Name": "core",
+              "Hard": 0,
+              "Soft": 0
+            },
+            {
+              "Name": "fsize",
+              "Hard": 67108864,
+              "Soft": 67108864
+            },
+            {
+              "Name": "nofile",
+              "Hard": 1024,
+              "Soft": 1024
+            }
+          ],
+          "runtime": "runsc"
+        }
+      ],
+      "envelope": {
+        "status": "success",
+        "scan_id": "1795643923-beb6d751fbd74bb0bcbe04a49942bf88",
+        "tool": "files",
+        "command": "python3 -c import json,os,pathlib,resource,sys,time\ntime.sleep(1)\nsource=pathlib.Path(sys.argv[1])\ntarget=pathlib.Path(sys.argv[2])\nresult={\"input_visible\":source.exists(),\"adjacent_visible\":pathlib.Path(\"adjacent.txt\").exists(),\"uid\":os.getuid(),\"sum\":None,\"input_writable\":False}\nif source.exists():\n    result[\"sum\"]=sum(map(int,source.read_text().split()))\n    try:\n        source.write_text(\"changed\")\n        result[\"input_writable\"]=True\n    except OSError:\n        pass\npathlib.Path(\"sibling.txt\").write_text(\"scratch only\")\nresult[\"file_limit\"]=list(resource.getrlimit(resource.RLIMIT_FSIZE))\ntarget.write_text(json.dumps(result))\nprint(json.dumps(result))\n input.txt undeclared.json",
+        "duration_ms": 1230,
+        "timestamp": "2026-11-25T21:58:45.157270150+00:00",
+        "output_hash": "sha256:885b2cb37ad9e962d569113b380ef956ea8992057d5b9c745e4389ac3859b7cf",
+        "output_truncated": false,
+        "exit_code": 0,
+        "stderr": "",
+        "results": {
+          "input_visible": false,
+          "adjacent_visible": false,
+          "uid": 65534,
+          "sum": null,
+          "input_writable": false,
+          "file_limit": [
+            67108864,
+            67108864
+          ],
+          "exit_code": 0
+        },
+        "created_files": []
+      },
+      "worker_origins": [
+        {
+          "run_id": "6a0680d2-dbb0-4c15-84f9-acc9b96a5266",
+          "dispatch_id": "990dc447-db25-4b87-b7a5-eb6dfc034d50",
+          "start_sequence": 6
+        }
+      ]
+    },
+    {
+      "name": "parser",
+      "passed": true,
+      "manifest_sha256": "e7b1176844c961a1707973e9cff038bf41e65b69bf54dc0625129ceb3242bc22",
+      "exit_code": 0,
+      "stdout": "\u2192 Running agent: fixture (agents/fixture.symbi)\n\u2192 Input: {\"input\": \"input.txt\", \"output\": \"parser.json\"}\n\nfixture complete\n",
+      "stderr": "Loaded environment from /tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.env\nInvocation ID: 0d208b0e-560e-4175-ad63-e91c3cb1f6e9\nAudit run: 996d856e-6611-4102-8733-7dfc6eb37b29\nAudit journal: /tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.symbiont/governed/1fc034aa-a0a2-46e7-9aed-2114abee3c47.996d856e-6611-4102-8733-7dfc6eb37b29.jsonl\nAudit public key: 80a76f300b41d7c86d08df1aa210e62342235003f3459a583f7ff854ba355465\n\u2713 Cedar policy gate wired (1 policy file(s) loaded)\n\n--- 2 iterations, 4 tokens, terminated: Completed ---\n",
+      "requests": [
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"input\": \"input.txt\", \"output\": \"parser.json\"}"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "files",
+                "description": "Declared file operation",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "input": {
+                      "type": "string",
+                      "description": ""
+                    },
+                    "output": {
+                      "type": "string",
+                      "description": ""
+                    }
+                  },
+                  "required": [
+                    "input",
+                    "output"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"input\": \"input.txt\", \"output\": \"parser.json\"}"
+            },
+            {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "id": "files",
+                  "type": "function",
+                  "function": {
+                    "name": "files",
+                    "arguments": "{\"input\": \"input.txt\", \"output\": \"parser.json\"}"
+                  }
+                }
+              ]
+            },
+            {
+              "role": "tool",
+              "content": "{\"status\":\"success\",\"scan_id\":\"1795643925-4c5d46878bec4e049cb4b372c7f5e8a3\",\"tool\":\"files\",\"command\":\"python3 -c import json,os,pathlib,resource,sys,time\\ntime.sleep(1)\\nsource=pathlib.Path(sys.argv[1])\\ntarget=pathlib.Path(sys.argv[2])\\nresult={\\\"input_visible\\\":source.exists(),\\\"adjacent_visible\\\":pathlib.Path(\\\"adjacent.txt\\\").exists(),\\\"uid\\\":os.getuid(),\\\"sum\\\":None,\\\"input_writable\\\":False}\\nif source.exists():\\n    result[\\\"sum\\\"]=sum(map(int,source.read_text().split()))\\n    try:\\n        source.write_text(\\\"changed\\\")\\n        result[\\\"input_writable\\\"]=True\\n    except OSError:\\n        pass\\npathlib.Path(\\\"sibling.txt\\\").write_text(\\\"scratch only\\\")\\nresult[\\\"file_limit\\\"]=list(resource.getrlimit(resource.RLIMIT_FSIZE))\\ntarget.write_text(json.dumps(result))\\nprint('import json,pathlib,time; time.sleep(1); print(json.dumps({\\\"parsed\\\":True,\\\"input_visible\\\":pathlib.Path(\\\"input.txt\\\").exists(),\\\"output_visible\\\":pathlib.Path(\\\"parser.json\\\").exists(),\\\"adjacent_visible\\\":pathlib.Path(\\\"adjacent.txt\\\").exists()}))')\\n input.txt parser.json\",\"duration_ms\":1224,\"timestamp\":\"2026-11-25T21:58:48.028303052+00:00\",\"output_hash\":\"sha256:d29bd7dd72e12b6c27dc5c9037a705f37d57362e95d788f7cee0609277ad701e\",\"output_truncated\":false,\"exit_code\":0,\"stderr\":\"\",\"results\":{\"parsed\":true,\"input_visible\":false,\"output_visible\":false,\"adjacent_visible\":false,\"exit_code\":0},\"created_files\":[{\"path\":\"parser.json\",\"bytes\":128,\"sha256\":\"00f95558c0390fcd1beb7a931eee6bffe3bbe793ee7ca2a04db288622056d2c2\"}]}",
+              "tool_call_id": "files"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "files",
+                "description": "Declared file operation",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "input": {
+                      "type": "string",
+                      "description": ""
+                    },
+                    "output": {
+                      "type": "string",
+                      "description": ""
+                    }
+                  },
+                  "required": [
+                    "input",
+                    "output"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "workers": [
+        {
+          "id": "1e96db78b8a2423e11fe37d2f0f5a77423d028ba608d2752b24d0fa6d10496c8",
+          "lease": "0576127c-5a1a-4228-bf7e-9e1f009eef18",
+          "origin": {
+            "agent_id": "1fc034aa-a0a2-46e7-9aed-2114abee3c47",
+            "run_id": "996d856e-6611-4102-8733-7dfc6eb37b29",
+            "public_key": "80a76f300b41d7c86d08df1aa210e62342235003f3459a583f7ff854ba355465",
+            "dispatch_id": "5398fb80-1568-4fdf-a760-f996dc64c679",
+            "call_fingerprint": "sha256:ed2e7cc06d6912a7c817fbd19303927ad0aaa2279c35473b5d31d82dcb29cc71",
+            "tool_name": "files",
+            "iteration": 1
+          },
+          "mounts": [
+            {
+              "Type": "bind",
+              "Source": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/state/staging/59006c62-0d86-43a9-850d-2a618a57caf8/data/input-0",
+              "Destination": "/workspace/input.txt",
+              "Mode": "",
+              "RW": false,
+              "Propagation": "rprivate"
+            },
+            {
+              "Type": "bind",
+              "Source": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/state/staging/59006c62-0d86-43a9-850d-2a618a57caf8/data/output",
+              "Destination": "/workspace/parser.json",
+              "Mode": "",
+              "RW": true,
+              "Propagation": "rprivate"
+            }
+          ],
+          "ulimits": [
+            {
+              "Name": "core",
+              "Hard": 0,
+              "Soft": 0
+            },
+            {
+              "Name": "fsize",
+              "Hard": 1024,
+              "Soft": 1024
+            },
+            {
+              "Name": "nofile",
+              "Hard": 1024,
+              "Soft": 1024
+            }
+          ],
+          "runtime": "runsc"
+        },
+        {
+          "id": "2da19f0881a853524393a9b2083b69dcf332a6e4c1bebcd94395066c3fcb770f",
+          "lease": "b664a9b0-53c9-4b84-bfed-77ecbdbb9e6d",
+          "origin": {
+            "agent_id": "1fc034aa-a0a2-46e7-9aed-2114abee3c47",
+            "run_id": "996d856e-6611-4102-8733-7dfc6eb37b29",
+            "public_key": "80a76f300b41d7c86d08df1aa210e62342235003f3459a583f7ff854ba355465",
+            "dispatch_id": "5398fb80-1568-4fdf-a760-f996dc64c679",
+            "call_fingerprint": "sha256:ed2e7cc06d6912a7c817fbd19303927ad0aaa2279c35473b5d31d82dcb29cc71",
+            "tool_name": "files",
+            "iteration": 1
+          },
+          "mounts": [],
+          "ulimits": [
+            {
+              "Name": "core",
+              "Hard": 0,
+              "Soft": 0
+            },
+            {
+              "Name": "fsize",
+              "Hard": 67108864,
+              "Soft": 67108864
+            },
+            {
+              "Name": "nofile",
+              "Hard": 1024,
+              "Soft": 1024
+            }
+          ],
+          "runtime": "runsc"
+        }
+      ],
+      "envelope": {
+        "status": "success",
+        "scan_id": "1795643925-4c5d46878bec4e049cb4b372c7f5e8a3",
+        "tool": "files",
+        "command": "python3 -c import json,os,pathlib,resource,sys,time\ntime.sleep(1)\nsource=pathlib.Path(sys.argv[1])\ntarget=pathlib.Path(sys.argv[2])\nresult={\"input_visible\":source.exists(),\"adjacent_visible\":pathlib.Path(\"adjacent.txt\").exists(),\"uid\":os.getuid(),\"sum\":None,\"input_writable\":False}\nif source.exists():\n    result[\"sum\"]=sum(map(int,source.read_text().split()))\n    try:\n        source.write_text(\"changed\")\n        result[\"input_writable\"]=True\n    except OSError:\n        pass\npathlib.Path(\"sibling.txt\").write_text(\"scratch only\")\nresult[\"file_limit\"]=list(resource.getrlimit(resource.RLIMIT_FSIZE))\ntarget.write_text(json.dumps(result))\nprint('import json,pathlib,time; time.sleep(1); print(json.dumps({\"parsed\":True,\"input_visible\":pathlib.Path(\"input.txt\").exists(),\"output_visible\":pathlib.Path(\"parser.json\").exists(),\"adjacent_visible\":pathlib.Path(\"adjacent.txt\").exists()}))')\n input.txt parser.json",
+        "duration_ms": 1224,
+        "timestamp": "2026-11-25T21:58:48.028303052+00:00",
+        "output_hash": "sha256:d29bd7dd72e12b6c27dc5c9037a705f37d57362e95d788f7cee0609277ad701e",
+        "output_truncated": false,
+        "exit_code": 0,
+        "stderr": "",
+        "results": {
+          "parsed": true,
+          "input_visible": false,
+          "output_visible": false,
+          "adjacent_visible": false,
+          "exit_code": 0
+        },
+        "created_files": [
+          {
+            "path": "parser.json",
+            "bytes": 128,
+            "sha256": "00f95558c0390fcd1beb7a931eee6bffe3bbe793ee7ca2a04db288622056d2c2"
+          }
+        ]
+      },
+      "worker_origins": [
+        {
+          "run_id": "996d856e-6611-4102-8733-7dfc6eb37b29",
+          "dispatch_id": "5398fb80-1568-4fdf-a760-f996dc64c679",
+          "start_sequence": 6
+        },
+        {
+          "run_id": "996d856e-6611-4102-8733-7dfc6eb37b29",
+          "dispatch_id": "5398fb80-1568-4fdf-a760-f996dc64c679",
+          "start_sequence": 6
+        }
+      ]
+    },
+    {
+      "name": "oversize",
+      "passed": true,
+      "manifest_sha256": "e51ae7232e702b4c469272e403cc9187202bbab280d7b03e27b294099ca33051",
+      "exit_code": 2,
+      "stdout": "\u2192 Running agent: fixture (agents/fixture.symbi)\n\u2192 Input: {\"input\": \"input.txt\", \"output\": \"oversize.json\"}\n\n",
+      "stderr": "Loaded environment from /tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.env\nInvocation ID: 73a075c2-cee9-4984-a685-ed3ff0430d05\nAudit run: 0d7fca98-fa48-4b14-a513-7255ab827a2d\nAudit journal: /tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.symbiont/governed/937a5284-5d8a-4e58-90b5-4c5e333247c0.0d7fca98-fa48-4b14-a513-7255ab827a2d.jsonl\nAudit public key: 80a76f300b41d7c86d08df1aa210e62342235003f3459a583f7ff854ba355465\n\u2713 Cedar policy gate wired (1 policy file(s) loaded)\nTool error (inspect audit for effect status): \"[Error] {\\\"status\\\":\\\"error\\\",\\\"scan_id\\\":\\\"1795643928-a1ad696a03ba4b82b6d62b9b0379cc05\\\",\\\"tool\\\":\\\"files\\\",\\\"command\\\":\\\"python3 -c import json,os,pathlib,resource,sys,time\\\\ntime.sleep(1)\\\\nsource=pathlib.Path(sys.argv[1])\\\\ntarget=pathlib.Path(sys.argv[2])\\\\nresult={\\\\\\\"input_visible\\\\\\\":source.exists(),\\\\\\\"adjacent_visible\\\\\\\":pathlib.Path(\\\\\\\"adjacent.txt\\\\\\\").exists(),\\\\\\\"uid\\\\\\\":os.getuid(),\\\\\\\"sum\\\\\\\":None,\\\\\\\"input_writable\\\\\\\":False}\\\\nif source.exists():\\\\n    result[\\\\\\\"sum\\\\\\\"]=sum(map(int,source.read_text().split()))\\\\n    try:\\\\n        source.write_text(\\\\\\\"changed\\\\\\\")\\\\n        result[\\\\\\\"input_writable\\\\\\\"]=True\\\\n    except OSError:\\\\n        pass\\\\npathlib.Path(\\\\\\\"sibling.txt\\\\\\\").write_text(\\\\\\\"scratch only\\\\\\\")\\\\nresult[\\\\\\\"file_limit\\\\\\\"]=list(resource.getrlimit(resource.RLIMIT_FSIZE))\\\\ntarget.write_text(json.dumps(result))\\\\ntry:\\\\n    target.write_bytes(b\\\\\\\"x\\\\\\\"*2048)\\\\nexcept OSError:\\\\n    result[\\\\\\\"oversize_blocked\\\\\\\"]=True\\\\n    print(json.dumps(result))\\\\n    sys.exit(3)\\\\nraise RuntimeError(\\\\\\\"file limit was not enforced\\\\\\\")\\\\n input.txt oversize.json\\\",\\\"duration_ms\\\":1240,\\\"timestamp\\\":\\\"2026-11-25T21:58:49.764140220+00:00\\\",\\\"output_hash\\\":\\\"sha256:d6423523e5e05eb74797bdd5bdaddd692698acdfc1fe7b2806f5f01298fe0590\\\",\\\"output_truncated\\\":false,\\\"exit_code\\\":3,\\\"stderr\\\":\\\"\\\",\\\"results\\\":{\\\"input_visible\\\":true,\\\"adjacent_visible\\\":false,\\\"uid\\\":65534,\\\"sum\\\":10,\\\"input_writable\\\":false,\\\"file_limit\\\":[1024,1024],\\\"oversize_blocked\\\":true,\\\"exit_code\\\":3},\\\"created_files\\\":[]}\"\nInvocation requires reconciliation; no work repeated. Inspect its protected run journal.\n",
+      "requests": [
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"input\": \"input.txt\", \"output\": \"oversize.json\"}"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "files",
+                "description": "Declared file operation",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "input": {
+                      "type": "string",
+                      "description": ""
+                    },
+                    "output": {
+                      "type": "string",
+                      "description": ""
+                    }
+                  },
+                  "required": [
+                    "input",
+                    "output"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "workers": [
+        {
+          "id": "8286515f3ef311d1eaa32ecadccb0d96c510dc159febd1eb40d28d17e42605b3",
+          "lease": "89f6e0b5-5219-4a5f-ba0c-8833104b9d39",
+          "origin": {
+            "agent_id": "937a5284-5d8a-4e58-90b5-4c5e333247c0",
+            "run_id": "0d7fca98-fa48-4b14-a513-7255ab827a2d",
+            "public_key": "80a76f300b41d7c86d08df1aa210e62342235003f3459a583f7ff854ba355465",
+            "dispatch_id": "e773abb0-bf62-4b7b-86ab-3d28a24c5dbc",
+            "call_fingerprint": "sha256:8e3ef713bd69d6d44b1510d890c0199466142a9e80b4275c930e22ce00d84742",
+            "tool_name": "files",
+            "iteration": 1
+          },
+          "mounts": [
+            {
+              "Type": "bind",
+              "Source": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/state/staging/32fd3100-d0e9-470e-acde-2b07ea69ef6d/data/input-0",
+              "Destination": "/workspace/input.txt",
+              "Mode": "",
+              "RW": false,
+              "Propagation": "rprivate"
+            },
+            {
+              "Type": "bind",
+              "Source": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/state/staging/32fd3100-d0e9-470e-acde-2b07ea69ef6d/data/output",
+              "Destination": "/workspace/oversize.json",
+              "Mode": "",
+              "RW": true,
+              "Propagation": "rprivate"
+            }
+          ],
+          "ulimits": [
+            {
+              "Name": "core",
+              "Hard": 0,
+              "Soft": 0
+            },
+            {
+              "Name": "fsize",
+              "Hard": 1024,
+              "Soft": 1024
+            },
+            {
+              "Name": "nofile",
+              "Hard": 1024,
+              "Soft": 1024
+            }
+          ],
+          "runtime": "runsc"
+        }
+      ],
+      "further_inference_refused": true,
+      "envelope": {
+        "status": "error",
+        "scan_id": "1795643928-a1ad696a03ba4b82b6d62b9b0379cc05",
+        "tool": "files",
+        "command": "python3 -c import json,os,pathlib,resource,sys,time\ntime.sleep(1)\nsource=pathlib.Path(sys.argv[1])\ntarget=pathlib.Path(sys.argv[2])\nresult={\"input_visible\":source.exists(),\"adjacent_visible\":pathlib.Path(\"adjacent.txt\").exists(),\"uid\":os.getuid(),\"sum\":None,\"input_writable\":False}\nif source.exists():\n    result[\"sum\"]=sum(map(int,source.read_text().split()))\n    try:\n        source.write_text(\"changed\")\n        result[\"input_writable\"]=True\n    except OSError:\n        pass\npathlib.Path(\"sibling.txt\").write_text(\"scratch only\")\nresult[\"file_limit\"]=list(resource.getrlimit(resource.RLIMIT_FSIZE))\ntarget.write_text(json.dumps(result))\ntry:\n    target.write_bytes(b\"x\"*2048)\nexcept OSError:\n    result[\"oversize_blocked\"]=True\n    print(json.dumps(result))\n    sys.exit(3)\nraise RuntimeError(\"file limit was not enforced\")\n input.txt oversize.json",
+        "duration_ms": 1240,
+        "timestamp": "2026-11-25T21:58:49.764140220+00:00",
+        "output_hash": "sha256:d6423523e5e05eb74797bdd5bdaddd692698acdfc1fe7b2806f5f01298fe0590",
+        "output_truncated": false,
+        "exit_code": 3,
+        "stderr": "",
+        "results": {
+          "input_visible": true,
+          "adjacent_visible": false,
+          "uid": 65534,
+          "sum": 10,
+          "input_writable": false,
+          "file_limit": [
+            1024,
+            1024
+          ],
+          "oversize_blocked": true,
+          "exit_code": 3
+        },
+        "created_files": []
+      },
+      "worker_origins": [
+        {
+          "run_id": "0d7fca98-fa48-4b14-a513-7255ab827a2d",
+          "dispatch_id": "e773abb0-bf62-4b7b-86ab-3d28a24c5dbc",
+          "start_sequence": 6
+        }
+      ]
+    },
+    {
+      "name": "existing",
+      "passed": true,
+      "manifest_sha256": "7763bdf3b0850d4a3ed0be98f9f9e5f177c2a6c69fa5bc6bb5e9ee4662028f53",
+      "exit_code": 0,
+      "stdout": "\u2192 Running agent: fixture (agents/fixture.symbi)\n\u2192 Input: {\"input\": \"input.txt\", \"output\": \"existing.json\"}\n\nfixture complete\n",
+      "stderr": "Loaded environment from /tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.env\nInvocation ID: 8cdab3cd-4eea-4efd-9dd6-b6b44638668a\nAudit run: b2472a0e-ac72-4e6a-8bce-33f76aa3f83b\nAudit journal: /tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.symbiont/governed/b527e57a-5cec-4f6e-807c-6718e3821a0c.b2472a0e-ac72-4e6a-8bce-33f76aa3f83b.jsonl\nAudit public key: 80a76f300b41d7c86d08df1aa210e62342235003f3459a583f7ff854ba355465\n\u2713 Cedar policy gate wired (1 policy file(s) loaded)\n\n--- 2 iterations, 4 tokens, terminated: Completed ---\n",
+      "requests": [
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"input\": \"input.txt\", \"output\": \"existing.json\"}"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "files",
+                "description": "Declared file operation",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "input": {
+                      "type": "string",
+                      "description": ""
+                    },
+                    "output": {
+                      "type": "string",
+                      "description": ""
+                    }
+                  },
+                  "required": [
+                    "input",
+                    "output"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"input\": \"input.txt\", \"output\": \"existing.json\"}"
+            },
+            {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "id": "files",
+                  "type": "function",
+                  "function": {
+                    "name": "files",
+                    "arguments": "{\"input\": \"input.txt\", \"output\": \"existing.json\"}"
+                  }
+                }
+              ]
+            },
+            {
+              "role": "tool",
+              "content": "[Policy denied] filesystem output already exists; overwriting is forbidden",
+              "tool_call_id": "files"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "files",
+                "description": "Declared file operation",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "input": {
+                      "type": "string",
+                      "description": ""
+                    },
+                    "output": {
+                      "type": "string",
+                      "description": ""
+                    }
+                  },
+                  "required": [
+                    "input",
+                    "output"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "workers": [],
+      "worker_origins": []
+    },
+    {
+      "name": "symlink",
+      "passed": true,
+      "manifest_sha256": "7763bdf3b0850d4a3ed0be98f9f9e5f177c2a6c69fa5bc6bb5e9ee4662028f53",
+      "exit_code": 0,
+      "stdout": "\u2192 Running agent: fixture (agents/fixture.symbi)\n\u2192 Input: {\"input\": \"linked.txt\", \"output\": \"symlink.json\"}\n\nfixture complete\n",
+      "stderr": "Loaded environment from /tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.env\nInvocation ID: 01a904da-a59d-41be-b238-3b0a6cd70b4b\nAudit run: fea1396a-2633-4e30-82d1-39e61d2b36b0\nAudit journal: /tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.symbiont/governed/89c7cdee-5008-48ff-9fda-0f7d4c458b69.fea1396a-2633-4e30-82d1-39e61d2b36b0.jsonl\nAudit public key: 80a76f300b41d7c86d08df1aa210e62342235003f3459a583f7ff854ba355465\n\u2713 Cedar policy gate wired (1 policy file(s) loaded)\n\n--- 2 iterations, 4 tokens, terminated: Completed ---\n",
+      "requests": [
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"input\": \"linked.txt\", \"output\": \"symlink.json\"}"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "files",
+                "description": "Declared file operation",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "input": {
+                      "type": "string",
+                      "description": ""
+                    },
+                    "output": {
+                      "type": "string",
+                      "description": ""
+                    }
+                  },
+                  "required": [
+                    "input",
+                    "output"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"input\": \"linked.txt\", \"output\": \"symlink.json\"}"
+            },
+            {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "id": "files",
+                  "type": "function",
+                  "function": {
+                    "name": "files",
+                    "arguments": "{\"input\": \"linked.txt\", \"output\": \"symlink.json\"}"
+                  }
+                }
+              ]
+            },
+            {
+              "role": "tool",
+              "content": "[Policy denied] cannot open declared input",
+              "tool_call_id": "files"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "files",
+                "description": "Declared file operation",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "input": {
+                      "type": "string",
+                      "description": ""
+                    },
+                    "output": {
+                      "type": "string",
+                      "description": ""
+                    }
+                  },
+                  "required": [
+                    "input",
+                    "output"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "workers": [],
+      "worker_origins": []
+    },
+    {
+      "name": "nested",
+      "passed": true,
+      "manifest_sha256": "7763bdf3b0850d4a3ed0be98f9f9e5f177c2a6c69fa5bc6bb5e9ee4662028f53",
+      "exit_code": 0,
+      "stdout": "\u2192 Running agent: fixture (agents/fixture.symbi)\n\u2192 Input: {\"input\": \"nested/input.txt\", \"output\": \"nested/nested.json\"}\n\nfixture complete\n",
+      "stderr": "Loaded environment from /tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.env\nInvocation ID: f47c0cb4-1b1d-4dce-91d5-b7ea60e077d1\nAudit run: 64ba31f2-0b2c-435b-80fe-ef22f0ed5a6a\nAudit journal: /tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.symbiont/governed/8189ee3e-a6bc-4db6-ab28-04dd2cdf809c.64ba31f2-0b2c-435b-80fe-ef22f0ed5a6a.jsonl\nAudit public key: 80a76f300b41d7c86d08df1aa210e62342235003f3459a583f7ff854ba355465\n\u2713 Cedar policy gate wired (1 policy file(s) loaded)\n\n--- 2 iterations, 4 tokens, terminated: Completed ---\n",
+      "requests": [
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"input\": \"nested/input.txt\", \"output\": \"nested/nested.json\"}"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "files",
+                "description": "Declared file operation",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "input": {
+                      "type": "string",
+                      "description": ""
+                    },
+                    "output": {
+                      "type": "string",
+                      "description": ""
+                    }
+                  },
+                  "required": [
+                    "input",
+                    "output"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"input\": \"nested/input.txt\", \"output\": \"nested/nested.json\"}"
+            },
+            {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "id": "files",
+                  "type": "function",
+                  "function": {
+                    "name": "files",
+                    "arguments": "{\"input\": \"nested/input.txt\", \"output\": \"nested/nested.json\"}"
+                  }
+                }
+              ]
+            },
+            {
+              "role": "tool",
+              "content": "{\"status\":\"success\",\"scan_id\":\"1795643931-1d330d2642ce4e93b0233bf7c277c17d\",\"tool\":\"files\",\"command\":\"python3 -c import json,os,pathlib,resource,sys,time\\ntime.sleep(1)\\nsource=pathlib.Path(sys.argv[1])\\ntarget=pathlib.Path(sys.argv[2])\\nresult={\\\"input_visible\\\":source.exists(),\\\"adjacent_visible\\\":pathlib.Path(\\\"adjacent.txt\\\").exists(),\\\"uid\\\":os.getuid(),\\\"sum\\\":None,\\\"input_writable\\\":False}\\nif source.exists():\\n    result[\\\"sum\\\"]=sum(map(int,source.read_text().split()))\\n    try:\\n        source.write_text(\\\"changed\\\")\\n        result[\\\"input_writable\\\"]=True\\n    except OSError:\\n        pass\\npathlib.Path(\\\"sibling.txt\\\").write_text(\\\"scratch only\\\")\\nresult[\\\"file_limit\\\"]=list(resource.getrlimit(resource.RLIMIT_FSIZE))\\ntarget.write_text(json.dumps(result))\\nprint(json.dumps(result))\\n nested/input.txt nested/nested.json\",\"duration_ms\":1222,\"timestamp\":\"2026-11-25T21:58:52.247400053+00:00\",\"output_hash\":\"sha256:aa541e842fa05f3718e77cb07a2c4b0acfb19e37d81f6f076d0097ed6f474e69\",\"output_truncated\":false,\"exit_code\":0,\"stderr\":\"\",\"results\":{\"input_visible\":true,\"adjacent_visible\":false,\"uid\":65534,\"sum\":10,\"input_writable\":false,\"file_limit\":[1024,1024],\"exit_code\":0},\"created_files\":[{\"path\":\"nested/nested.json\",\"bytes\":128,\"sha256\":\"00f95558c0390fcd1beb7a931eee6bffe3bbe793ee7ca2a04db288622056d2c2\"}]}",
+              "tool_call_id": "files"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "files",
+                "description": "Declared file operation",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "input": {
+                      "type": "string",
+                      "description": ""
+                    },
+                    "output": {
+                      "type": "string",
+                      "description": ""
+                    }
+                  },
+                  "required": [
+                    "input",
+                    "output"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "workers": [
+        {
+          "id": "e75c0835b45e7efb55db2503ac79c57e77d884d2ba1767e0d1d87be8f0346749",
+          "lease": "e9218b24-d6fd-4443-bb20-6c3e76a2db8f",
+          "origin": {
+            "agent_id": "8189ee3e-a6bc-4db6-ab28-04dd2cdf809c",
+            "run_id": "64ba31f2-0b2c-435b-80fe-ef22f0ed5a6a",
+            "public_key": "80a76f300b41d7c86d08df1aa210e62342235003f3459a583f7ff854ba355465",
+            "dispatch_id": "401d833c-f939-4d1c-80bd-d77ac0d1c7b3",
+            "call_fingerprint": "sha256:60b0b2ae1334705626092451eaf46f74c84963a1b4d695e4b10d52f3bde18925",
+            "tool_name": "files",
+            "iteration": 1
+          },
+          "mounts": [
+            {
+              "Type": "bind",
+              "Source": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/state/staging/e898b7d8-d1e3-463c-b735-3e5fa4b69d65/data/input-0",
+              "Destination": "/workspace/nested/input.txt",
+              "Mode": "",
+              "RW": false,
+              "Propagation": "rprivate"
+            },
+            {
+              "Type": "bind",
+              "Source": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/state/staging/e898b7d8-d1e3-463c-b735-3e5fa4b69d65/data/output",
+              "Destination": "/workspace/nested/nested.json",
+              "Mode": "",
+              "RW": true,
+              "Propagation": "rprivate"
+            }
+          ],
+          "ulimits": [
+            {
+              "Name": "core",
+              "Hard": 0,
+              "Soft": 0
+            },
+            {
+              "Name": "fsize",
+              "Hard": 1024,
+              "Soft": 1024
+            },
+            {
+              "Name": "nofile",
+              "Hard": 1024,
+              "Soft": 1024
+            }
+          ],
+          "runtime": "runsc"
+        }
+      ],
+      "envelope": {
+        "status": "success",
+        "scan_id": "1795643931-1d330d2642ce4e93b0233bf7c277c17d",
+        "tool": "files",
+        "command": "python3 -c import json,os,pathlib,resource,sys,time\ntime.sleep(1)\nsource=pathlib.Path(sys.argv[1])\ntarget=pathlib.Path(sys.argv[2])\nresult={\"input_visible\":source.exists(),\"adjacent_visible\":pathlib.Path(\"adjacent.txt\").exists(),\"uid\":os.getuid(),\"sum\":None,\"input_writable\":False}\nif source.exists():\n    result[\"sum\"]=sum(map(int,source.read_text().split()))\n    try:\n        source.write_text(\"changed\")\n        result[\"input_writable\"]=True\n    except OSError:\n        pass\npathlib.Path(\"sibling.txt\").write_text(\"scratch only\")\nresult[\"file_limit\"]=list(resource.getrlimit(resource.RLIMIT_FSIZE))\ntarget.write_text(json.dumps(result))\nprint(json.dumps(result))\n nested/input.txt nested/nested.json",
+        "duration_ms": 1222,
+        "timestamp": "2026-11-25T21:58:52.247400053+00:00",
+        "output_hash": "sha256:aa541e842fa05f3718e77cb07a2c4b0acfb19e37d81f6f076d0097ed6f474e69",
+        "output_truncated": false,
+        "exit_code": 0,
+        "stderr": "",
+        "results": {
+          "input_visible": true,
+          "adjacent_visible": false,
+          "uid": 65534,
+          "sum": 10,
+          "input_writable": false,
+          "file_limit": [
+            1024,
+            1024
+          ],
+          "exit_code": 0
+        },
+        "created_files": [
+          {
+            "path": "nested/nested.json",
+            "bytes": 128,
+            "sha256": "00f95558c0390fcd1beb7a931eee6bffe3bbe793ee7ca2a04db288622056d2c2"
+          }
+        ]
+      },
+      "worker_origins": [
+        {
+          "run_id": "64ba31f2-0b2c-435b-80fe-ef22f0ed5a6a",
+          "dispatch_id": "401d833c-f939-4d1c-80bd-d77ac0d1c7b3",
+          "start_sequence": 6
+        }
+      ]
+    },
+    {
+      "name": "descendant",
+      "passed": true,
+      "manifest_sha256": "aaed659471f4e737f124b07d3b8ec79d4d1c76bc30bf1082dd10744fb8cdb003",
+      "exit_code": 0,
+      "stdout": "\u2192 Running agent: fixture (agents/fixture.symbi)\n\u2192 Input: {\"input\": \"input.txt\", \"output\": \"descendant.json\"}\n\nfixture complete\n",
+      "stderr": "Loaded environment from /tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.env\nInvocation ID: 6d241c56-3230-4435-8e61-0e7ceb81c4ba\nAudit run: ca435cc9-312d-4cc0-a106-0c25340ac92f\nAudit journal: /tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.symbiont/governed/30e2836e-c0f2-4b60-a697-f6202bb8e386.ca435cc9-312d-4cc0-a106-0c25340ac92f.jsonl\nAudit public key: 80a76f300b41d7c86d08df1aa210e62342235003f3459a583f7ff854ba355465\n\u2713 Cedar policy gate wired (1 policy file(s) loaded)\n\n--- 2 iterations, 4 tokens, terminated: Completed ---\n",
+      "requests": [
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"input\": \"input.txt\", \"output\": \"descendant.json\"}"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "files",
+                "description": "Declared file operation",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "input": {
+                      "type": "string",
+                      "description": ""
+                    },
+                    "output": {
+                      "type": "string",
+                      "description": ""
+                    }
+                  },
+                  "required": [
+                    "input",
+                    "output"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"input\": \"input.txt\", \"output\": \"descendant.json\"}"
+            },
+            {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "id": "files",
+                  "type": "function",
+                  "function": {
+                    "name": "files",
+                    "arguments": "{\"input\": \"input.txt\", \"output\": \"descendant.json\"}"
+                  }
+                }
+              ]
+            },
+            {
+              "role": "tool",
+              "content": "{\"status\":\"success\",\"scan_id\":\"1795643932-7eecccdf0efd4bb8b604c8ceaed90b99\",\"tool\":\"files\",\"command\":\"python3 -c import json,os,pathlib,resource,sys,time\\ntime.sleep(1)\\nsource=pathlib.Path(sys.argv[1])\\ntarget=pathlib.Path(sys.argv[2])\\nresult={\\\"input_visible\\\":source.exists(),\\\"adjacent_visible\\\":pathlib.Path(\\\"adjacent.txt\\\").exists(),\\\"uid\\\":os.getuid(),\\\"sum\\\":None,\\\"input_writable\\\":False}\\nif source.exists():\\n    result[\\\"sum\\\"]=sum(map(int,source.read_text().split()))\\n    try:\\n        source.write_text(\\\"changed\\\")\\n        result[\\\"input_writable\\\"]=True\\n    except OSError:\\n        pass\\npathlib.Path(\\\"sibling.txt\\\").write_text(\\\"scratch only\\\")\\nresult[\\\"file_limit\\\"]=list(resource.getrlimit(resource.RLIMIT_FSIZE))\\ntarget.write_text(json.dumps(result))\\nif os.fork()==0:\\n    os.setsid()\\n    time.sleep(.4)\\n    target.write_text(\\\"LATE DESCENDANT WRITE\\\")\\n    time.sleep(30)\\n    os._exit(0)\\nprint(json.dumps(result))\\n input.txt descendant.json\",\"duration_ms\":1245,\"timestamp\":\"2026-11-25T21:58:53.931481322+00:00\",\"output_hash\":\"sha256:aa541e842fa05f3718e77cb07a2c4b0acfb19e37d81f6f076d0097ed6f474e69\",\"output_truncated\":false,\"exit_code\":0,\"stderr\":\"\",\"results\":{\"input_visible\":true,\"adjacent_visible\":false,\"uid\":65534,\"sum\":10,\"input_writable\":false,\"file_limit\":[1024,1024],\"exit_code\":0},\"created_files\":[{\"path\":\"descendant.json\",\"bytes\":128,\"sha256\":\"00f95558c0390fcd1beb7a931eee6bffe3bbe793ee7ca2a04db288622056d2c2\"}]}",
+              "tool_call_id": "files"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "files",
+                "description": "Declared file operation",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "input": {
+                      "type": "string",
+                      "description": ""
+                    },
+                    "output": {
+                      "type": "string",
+                      "description": ""
+                    }
+                  },
+                  "required": [
+                    "input",
+                    "output"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "workers": [
+        {
+          "id": "59fe8b337c4a84b50963cde76a2e7d1a6a4221c881a2626f136fc8a4af9082a2",
+          "lease": "5e06acf9-5eb4-46b6-b0eb-551803fd8770",
+          "origin": {
+            "agent_id": "30e2836e-c0f2-4b60-a697-f6202bb8e386",
+            "run_id": "ca435cc9-312d-4cc0-a106-0c25340ac92f",
+            "public_key": "80a76f300b41d7c86d08df1aa210e62342235003f3459a583f7ff854ba355465",
+            "dispatch_id": "6fbf31e0-fc4f-4ac8-83a1-b4c33b6c7bec",
+            "call_fingerprint": "sha256:18aeafb3488e17bd7368d90c476b298496fad842fc99dcd1f8a1ad5d1b86d573",
+            "tool_name": "files",
+            "iteration": 1
+          },
+          "mounts": [
+            {
+              "Type": "bind",
+              "Source": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/state/staging/90a4f347-dec5-49c9-abfd-2bc45f894440/data/input-0",
+              "Destination": "/workspace/input.txt",
+              "Mode": "",
+              "RW": false,
+              "Propagation": "rprivate"
+            },
+            {
+              "Type": "bind",
+              "Source": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/state/staging/90a4f347-dec5-49c9-abfd-2bc45f894440/data/output",
+              "Destination": "/workspace/descendant.json",
+              "Mode": "",
+              "RW": true,
+              "Propagation": "rprivate"
+            }
+          ],
+          "ulimits": [
+            {
+              "Name": "core",
+              "Hard": 0,
+              "Soft": 0
+            },
+            {
+              "Name": "fsize",
+              "Hard": 1024,
+              "Soft": 1024
+            },
+            {
+              "Name": "nofile",
+              "Hard": 1024,
+              "Soft": 1024
+            }
+          ],
+          "runtime": "runsc"
+        }
+      ],
+      "envelope": {
+        "status": "success",
+        "scan_id": "1795643932-7eecccdf0efd4bb8b604c8ceaed90b99",
+        "tool": "files",
+        "command": "python3 -c import json,os,pathlib,resource,sys,time\ntime.sleep(1)\nsource=pathlib.Path(sys.argv[1])\ntarget=pathlib.Path(sys.argv[2])\nresult={\"input_visible\":source.exists(),\"adjacent_visible\":pathlib.Path(\"adjacent.txt\").exists(),\"uid\":os.getuid(),\"sum\":None,\"input_writable\":False}\nif source.exists():\n    result[\"sum\"]=sum(map(int,source.read_text().split()))\n    try:\n        source.write_text(\"changed\")\n        result[\"input_writable\"]=True\n    except OSError:\n        pass\npathlib.Path(\"sibling.txt\").write_text(\"scratch only\")\nresult[\"file_limit\"]=list(resource.getrlimit(resource.RLIMIT_FSIZE))\ntarget.write_text(json.dumps(result))\nif os.fork()==0:\n    os.setsid()\n    time.sleep(.4)\n    target.write_text(\"LATE DESCENDANT WRITE\")\n    time.sleep(30)\n    os._exit(0)\nprint(json.dumps(result))\n input.txt descendant.json",
+        "duration_ms": 1245,
+        "timestamp": "2026-11-25T21:58:53.931481322+00:00",
+        "output_hash": "sha256:aa541e842fa05f3718e77cb07a2c4b0acfb19e37d81f6f076d0097ed6f474e69",
+        "output_truncated": false,
+        "exit_code": 0,
+        "stderr": "",
+        "results": {
+          "input_visible": true,
+          "adjacent_visible": false,
+          "uid": 65534,
+          "sum": 10,
+          "input_writable": false,
+          "file_limit": [
+            1024,
+            1024
+          ],
+          "exit_code": 0
+        },
+        "created_files": [
+          {
+            "path": "descendant.json",
+            "bytes": 128,
+            "sha256": "00f95558c0390fcd1beb7a931eee6bffe3bbe793ee7ca2a04db288622056d2c2"
+          }
+        ]
+      },
+      "worker_origins": [
+        {
+          "run_id": "ca435cc9-312d-4cc0-a106-0c25340ac92f",
+          "dispatch_id": "6fbf31e0-fc4f-4ac8-83a1-b4c33b6c7bec",
+          "start_sequence": 6
+        }
+      ]
+    },
+    {
+      "name": "substitution",
+      "passed": true,
+      "manifest_sha256": "fe73b119aa7059723fb96b997d709cf499481dc6c65643f85dff787078aaee4b",
+      "exit_code": 0,
+      "stdout": "\u2192 Running agent: fixture (agents/fixture.symbi)\n\u2192 Input: {\"input\": \"input.txt\", \"output\": \"substitution.json\"}\n\nfixture complete\n",
+      "stderr": "Loaded environment from /tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.env\nInvocation ID: 6825ff00-db56-4c9a-8e19-29c0de6e4e12\nAudit run: ff765c62-4218-43e8-973c-46bed2d7d335\nAudit journal: /tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.symbiont/governed/189f79fd-c5df-4c7f-b6ea-c4956b1be8f2.ff765c62-4218-43e8-973c-46bed2d7d335.jsonl\nAudit public key: 80a76f300b41d7c86d08df1aa210e62342235003f3459a583f7ff854ba355465\n\u2713 Cedar policy gate wired (1 policy file(s) loaded)\n\n--- 2 iterations, 4 tokens, terminated: Completed ---\n",
+      "requests": [
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"input\": \"input.txt\", \"output\": \"substitution.json\"}"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "files",
+                "description": "Declared file operation",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "input": {
+                      "type": "string",
+                      "description": ""
+                    },
+                    "output": {
+                      "type": "string",
+                      "description": ""
+                    }
+                  },
+                  "required": [
+                    "input",
+                    "output"
+                  ]
+                }
+              }
+            }
+          ]
+        },
+        {
+          "model": "fixture",
+          "messages": [
+            {
+              "role": "system",
+              "content": "You are agent 'fixture'. Follow the governance rules defined in your DSL.\n\n--- Agent DSL ---\nagent fixture() {}\n--- End DSL ---"
+            },
+            {
+              "role": "user",
+              "content": "{\"input\": \"input.txt\", \"output\": \"substitution.json\"}"
+            },
+            {
+              "role": "assistant",
+              "tool_calls": [
+                {
+                  "id": "files",
+                  "type": "function",
+                  "function": {
+                    "name": "files",
+                    "arguments": "{\"input\": \"input.txt\", \"output\": \"substitution.json\"}"
+                  }
+                }
+              ]
+            },
+            {
+              "role": "tool",
+              "content": "{\"status\":\"success\",\"scan_id\":\"1795643934-6bba92dd003f4811b169774aef1e326d\",\"tool\":\"files\",\"command\":\"python3 -c import json,os,pathlib,resource,sys,time\\ntime.sleep(1)\\nsource=pathlib.Path(sys.argv[1])\\ntarget=pathlib.Path(sys.argv[2])\\nresult={\\\"input_visible\\\":source.exists(),\\\"adjacent_visible\\\":pathlib.Path(\\\"adjacent.txt\\\").exists(),\\\"uid\\\":os.getuid(),\\\"sum\\\":None,\\\"input_writable\\\":False}\\nif source.exists():\\n    result[\\\"sum\\\"]=sum(map(int,source.read_text().split()))\\n    try:\\n        source.write_text(\\\"changed\\\")\\n        result[\\\"input_writable\\\"]=True\\n    except OSError:\\n        pass\\npathlib.Path(\\\"sibling.txt\\\").write_text(\\\"scratch only\\\")\\nresult[\\\"file_limit\\\"]=list(resource.getrlimit(resource.RLIMIT_FSIZE))\\ntarget.write_text(json.dumps(result))\\nfor action in [lambda: target.unlink(), lambda: source.write_text(\\\"changed\\\")]:\\n    try: action()\\n    except OSError: pass\\n    else: raise RuntimeError(\\\"declared inode was replaceable\\\")\\nprint(json.dumps(result))\\n input.txt substitution.json\",\"duration_ms\":1215,\"timestamp\":\"2026-11-25T21:58:55.675420297+00:00\",\"output_hash\":\"sha256:aa541e842fa05f3718e77cb07a2c4b0acfb19e37d81f6f076d0097ed6f474e69\",\"output_truncated\":false,\"exit_code\":0,\"stderr\":\"\",\"results\":{\"input_visible\":true,\"adjacent_visible\":false,\"uid\":65534,\"sum\":10,\"input_writable\":false,\"file_limit\":[1024,1024],\"exit_code\":0},\"created_files\":[{\"path\":\"substitution.json\",\"bytes\":128,\"sha256\":\"00f95558c0390fcd1beb7a931eee6bffe3bbe793ee7ca2a04db288622056d2c2\"}]}",
+              "tool_call_id": "files"
+            }
+          ],
+          "max_tokens": 16384,
+          "temperature": 0.30000001192092896,
+          "tools": [
+            {
+              "type": "function",
+              "function": {
+                "name": "files",
+                "description": "Declared file operation",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "input": {
+                      "type": "string",
+                      "description": ""
+                    },
+                    "output": {
+                      "type": "string",
+                      "description": ""
+                    }
+                  },
+                  "required": [
+                    "input",
+                    "output"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "workers": [
+        {
+          "id": "33145ac34e78a2feacd3f75eaf5aad99a06132a4fcf925c0faadcb284a75d786",
+          "lease": "5e054f85-22dd-4b22-bc17-699611c2aa92",
+          "origin": {
+            "agent_id": "189f79fd-c5df-4c7f-b6ea-c4956b1be8f2",
+            "run_id": "ff765c62-4218-43e8-973c-46bed2d7d335",
+            "public_key": "80a76f300b41d7c86d08df1aa210e62342235003f3459a583f7ff854ba355465",
+            "dispatch_id": "76c18a8d-1618-440c-ba5b-dd4a56c3207e",
+            "call_fingerprint": "sha256:c839642d452722da189ff6a1f78caf356a17ea5ecc8893a1c5c9f8c9f23a8557",
+            "tool_name": "files",
+            "iteration": 1
+          },
+          "mounts": [
+            {
+              "Type": "bind",
+              "Source": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/state/staging/3f3274d2-10f6-46ff-a70d-2f6ea06d9fb3/data/input-0",
+              "Destination": "/workspace/input.txt",
+              "Mode": "",
+              "RW": false,
+              "Propagation": "rprivate"
+            },
+            {
+              "Type": "bind",
+              "Source": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/state/staging/3f3274d2-10f6-46ff-a70d-2f6ea06d9fb3/data/output",
+              "Destination": "/workspace/substitution.json",
+              "Mode": "",
+              "RW": true,
+              "Propagation": "rprivate"
+            }
+          ],
+          "ulimits": [
+            {
+              "Name": "core",
+              "Hard": 0,
+              "Soft": 0
+            },
+            {
+              "Name": "fsize",
+              "Hard": 1024,
+              "Soft": 1024
+            },
+            {
+              "Name": "nofile",
+              "Hard": 1024,
+              "Soft": 1024
+            }
+          ],
+          "runtime": "runsc"
+        }
+      ],
+      "envelope": {
+        "status": "success",
+        "scan_id": "1795643934-6bba92dd003f4811b169774aef1e326d",
+        "tool": "files",
+        "command": "python3 -c import json,os,pathlib,resource,sys,time\ntime.sleep(1)\nsource=pathlib.Path(sys.argv[1])\ntarget=pathlib.Path(sys.argv[2])\nresult={\"input_visible\":source.exists(),\"adjacent_visible\":pathlib.Path(\"adjacent.txt\").exists(),\"uid\":os.getuid(),\"sum\":None,\"input_writable\":False}\nif source.exists():\n    result[\"sum\"]=sum(map(int,source.read_text().split()))\n    try:\n        source.write_text(\"changed\")\n        result[\"input_writable\"]=True\n    except OSError:\n        pass\npathlib.Path(\"sibling.txt\").write_text(\"scratch only\")\nresult[\"file_limit\"]=list(resource.getrlimit(resource.RLIMIT_FSIZE))\ntarget.write_text(json.dumps(result))\nfor action in [lambda: target.unlink(), lambda: source.write_text(\"changed\")]:\n    try: action()\n    except OSError: pass\n    else: raise RuntimeError(\"declared inode was replaceable\")\nprint(json.dumps(result))\n input.txt substitution.json",
+        "duration_ms": 1215,
+        "timestamp": "2026-11-25T21:58:55.675420297+00:00",
+        "output_hash": "sha256:aa541e842fa05f3718e77cb07a2c4b0acfb19e37d81f6f076d0097ed6f474e69",
+        "output_truncated": false,
+        "exit_code": 0,
+        "stderr": "",
+        "results": {
+          "input_visible": true,
+          "adjacent_visible": false,
+          "uid": 65534,
+          "sum": 10,
+          "input_writable": false,
+          "file_limit": [
+            1024,
+            1024
+          ],
+          "exit_code": 0
+        },
+        "created_files": [
+          {
+            "path": "substitution.json",
+            "bytes": 128,
+            "sha256": "00f95558c0390fcd1beb7a931eee6bffe3bbe793ee7ca2a04db288622056d2c2"
+          }
+        ]
+      },
+      "worker_origins": [
+        {
+          "run_id": "ff765c62-4218-43e8-973c-46bed2d7d335",
+          "dispatch_id": "76c18a8d-1618-440c-ba5b-dd4a56c3207e",
+          "start_sequence": 6
+        }
+      ]
+    }
+  ],
+  "provider_errors": [],
+  "backend_observer_sha256": "ada28a514859b87960fd1b0d49094d720a19ebbdbccf762f7829885f7f3f3625",
+  "origin_observer_sha256": "89a8042c49f89244bb4adbdad8a654cec23800f8bfae3086890555a29b6d35c7",
+  "image": "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc",
+  "backend": "gvisor",
+  "container_profile_sha256": "b9f4d369e513f86d622ada90f3fb0aa3185fd022af719ec9b7170f710793d2be",
+  "runsc": {
+    "path": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/runsc/usr/bin/runsc",
+    "registered_path": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/runsc/usr/bin/runsc",
+    "sha256": "fcf27497492d44de3d1406d64bd72e038822bed74dea429efb338edf0b2ceeb8",
+    "mode": 493,
+    "bundle": {
+      "path": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/runsc/usr/bin/gvisor-bin",
+      "mode": 493,
+      "entries": {
+        "checkpointgofer": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "28d25c1b7e1b3c4e99364c4c06898185ddf653a81409d25502db475166e49c23"
+        },
+        "gvisor-proc-umounter": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "b3bbbaef5ddc62084e5febd19d3acca14f3d42b2a25d8552fb40def699467019"
+        },
+        "gvisor-sentry-prewarmer": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "046e3ec1de3aa7b7ec7ce53b4f0d1e08db15987847606a8e361133d5c5bd3d73"
+        },
+        "gvisor_sentry": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "fdc9c6bcfb59af3a2ebb499f0b63d548b8ffb11c44f0861a794e10de823da62c"
+        },
+        "runsc-fd-parking": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "03af90d07ea466c10ecc3e3ba839b2a59540959dd3286aea3886917cba850c11"
+        },
+        "runsc-metric-server": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "76bf2c18c5a2122145fdc38cb84bab20216703620fbe4dd1a4a23a579d30615a"
+        },
+        "runsc-netgofer": {
+          "kind": "file",
+          "mode": 493,
+          "sha256": "31b983f86020fa0caa0301e5dda1b9bd1ecfe6178819e2ba93dbefbea344719d"
+        }
+      }
+    }
+  },
+  "config_sha256": "7a07213654f49c68aa9bf6b3af68f0f6637d07861ac4428bf8e6e5cfd4f468b1",
+  "public_key": "80a76f300b41d7c86d08df1aa210e62342235003f3459a583f7ff854ba355465",
+  "journals": [
+    {
+      "path": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.symbiont/governed/89c7cdee-5008-48ff-9fda-0f7d4c458b69.fea1396a-2633-4e30-82d1-39e61d2b36b0.jsonl",
+      "sha256": "4d3a78e64292eab9ef555c8643d53c0f5ca34fc44e9ace16fa19667b99f3c98e",
+      "file_grants": []
+    },
+    {
+      "path": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.symbiont/governed/1fc034aa-a0a2-46e7-9aed-2114abee3c47.996d856e-6611-4102-8733-7dfc6eb37b29.jsonl",
+      "sha256": "4edde572a7fcc626be699e5b3dee25f9640a08f92295aad7df84cd9d8e8e8fb4",
+      "file_grants": [
+        {
+          "create": [
+            "parser.json"
+          ],
+          "input_snapshots": true,
+          "max_file_bytes": 1024,
+          "output_parent_identity": [
+            66305,
+            8530179
+          ],
+          "overwrite": false,
+          "read": [
+            {
+              "bytes": 5,
+              "path": "input.txt",
+              "sha256": "24f94aff5fb421ef3e92587e0d1a0995130385ad2aa891caeebe3c00c83a8414"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.symbiont/governed/8189ee3e-a6bc-4db6-ab28-04dd2cdf809c.64ba31f2-0b2c-435b-80fe-ef22f0ed5a6a.jsonl",
+      "sha256": "e144ab1fb6d93d063e67b41bc8154e1fcaddb44ef60b305c8b6fbc0128a3ddfb",
+      "file_grants": [
+        {
+          "create": [
+            "nested/nested.json"
+          ],
+          "input_snapshots": true,
+          "max_file_bytes": 1024,
+          "output_parent_identity": [
+            66305,
+            8530221
+          ],
+          "overwrite": false,
+          "read": [
+            {
+              "bytes": 5,
+              "path": "nested/input.txt",
+              "sha256": "24f94aff5fb421ef3e92587e0d1a0995130385ad2aa891caeebe3c00c83a8414"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.symbiont/governed/11dc2ff8-89ca-408a-bbda-1c94a7e8f1f7.ae3de3b0-215d-4bb0-afb4-8d25b9cd6222.jsonl",
+      "sha256": "cd156691f486cf811a4346d513d0a3186dd6505a4ea1f0e0196e707633defe26",
+      "file_grants": [
+        {
+          "create": [
+            "granted.json"
+          ],
+          "input_snapshots": true,
+          "max_file_bytes": 1024,
+          "output_parent_identity": [
+            66305,
+            8530179
+          ],
+          "overwrite": false,
+          "read": [
+            {
+              "bytes": 5,
+              "path": "input.txt",
+              "sha256": "24f94aff5fb421ef3e92587e0d1a0995130385ad2aa891caeebe3c00c83a8414"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.symbiont/governed/561f5533-09d9-4a28-ac31-8598535db9f9.6a0680d2-dbb0-4c15-84f9-acc9b96a5266.jsonl",
+      "sha256": "a84dcfe06ec14c510a8f531e7a7d406aca53e4fe4b355717632bb1fb46f491c1",
+      "file_grants": [
+        {
+          "create": [],
+          "input_snapshots": true,
+          "max_file_bytes": 0,
+          "output_parent_identity": null,
+          "overwrite": false,
+          "read": []
+        }
+      ]
+    },
+    {
+      "path": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.symbiont/governed/189f79fd-c5df-4c7f-b6ea-c4956b1be8f2.ff765c62-4218-43e8-973c-46bed2d7d335.jsonl",
+      "sha256": "0c5ad31dea866d91df3adc63181ddabeeda1fe0913c0a5579df9cdf39a76ae9f",
+      "file_grants": [
+        {
+          "create": [
+            "substitution.json"
+          ],
+          "input_snapshots": true,
+          "max_file_bytes": 1024,
+          "output_parent_identity": [
+            66305,
+            8530179
+          ],
+          "overwrite": false,
+          "read": [
+            {
+              "bytes": 5,
+              "path": "input.txt",
+              "sha256": "24f94aff5fb421ef3e92587e0d1a0995130385ad2aa891caeebe3c00c83a8414"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.symbiont/governed/30e2836e-c0f2-4b60-a697-f6202bb8e386.ca435cc9-312d-4cc0-a106-0c25340ac92f.jsonl",
+      "sha256": "5f72c0c158f9127578d2c7a4198f9bc065737e09bbf385ca1ce60662391ae1b3",
+      "file_grants": [
+        {
+          "create": [
+            "descendant.json"
+          ],
+          "input_snapshots": true,
+          "max_file_bytes": 1024,
+          "output_parent_identity": [
+            66305,
+            8530179
+          ],
+          "overwrite": false,
+          "read": [
+            {
+              "bytes": 5,
+              "path": "input.txt",
+              "sha256": "24f94aff5fb421ef3e92587e0d1a0995130385ad2aa891caeebe3c00c83a8414"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.symbiont/governed/b527e57a-5cec-4f6e-807c-6718e3821a0c.b2472a0e-ac72-4e6a-8bce-33f76aa3f83b.jsonl",
+      "sha256": "beb23af70df8e75c6bfc244aa530e6431af81085f3e21948c2785bd9c42b7c52",
+      "file_grants": []
+    },
+    {
+      "path": "/tmp/sf-dzl13wh2/symbi-file-grants-aces7qy9/.symbiont/governed/937a5284-5d8a-4e58-90b5-4c5e333247c0.0d7fca98-fa48-4b14-a513-7255ab827a2d.jsonl",
+      "sha256": "62c87a3bc590f6c6359be56e14ab07fcbee483ab7f9862a8b1621e9c4a25109b",
+      "file_grants": [
+        {
+          "create": [
+            "oversize.json"
+          ],
+          "input_snapshots": true,
+          "max_file_bytes": 1024,
+          "output_parent_identity": [
+            66305,
+            8530179
+          ],
+          "overwrite": false,
+          "read": [
+            {
+              "bytes": 5,
+              "path": "input.txt",
+              "sha256": "24f94aff5fb421ef3e92587e0d1a0995130385ad2aa891caeebe3c00c83a8414"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "remaining_workers": [],
+  "remaining_leases": []
+}

@@ -1,0 +1,1 @@
+{"passed": false, "report": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/public/fixtures/gvisor-test-git-source.json", "error": "AssertionError: Empty journal"}

@@ -1,0 +1,265 @@
+Running main() from /builddir/build/BUILD/gtest-1.17.0-build/googletest-1.17.0/googletest/src/gtest_main.cc
+[==========] Running 91 tests from 8 test suites.
+[----------] Global test environment set-up.
+[----------] 9 tests from Animation
+[ RUN      ] Animation.opacityPolicyAppliesToFutureChanges
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Animation.opacityPolicyAppliesToFutureChanges (19 ms)
+[ RUN      ] Animation.geometryUsesFinalLayoutAndPreviousPresentation
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Animation.geometryUsesFinalLayoutAndPreviousPresentation (14 ms)
+[ RUN      ] Animation.unconfiguredGeometryChangesImmediately
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Animation.unconfiguredGeometryChangesImmediately (14 ms)
+[ RUN      ] Animation.nestedGeometryUsesNearestConfiguredElement
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Animation.nestedGeometryUsesNearestConfiguredElement (13 ms)
+[ RUN      ] Animation.configuredChildComposesWithParentGeometry
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Animation.configuredChildComposesWithParentGeometry (13 ms)
+[ RUN      ] Animation.replacingPolicyOnlyAffectsNextChange
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Animation.replacingPolicyOnlyAffectsNextChange (14 ms)
+[ RUN      ] Animation.noAnimationRestoresImmediateOpacityChanges
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Animation.noAnimationRestoresImmediateOpacityChanges (12 ms)
+[ RUN      ] Animation.noAnimationRemovesPresentationGeometry
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Animation.noAnimationRemovesPresentationGeometry (13 ms)
+[ RUN      ] Animation.geometryIgnoresLayoutsBeforeFirstPresentation
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Animation.geometryIgnoresLayoutsBeforeFirstPresentation (12 ms)
+[----------] 9 tests from Animation (127 ms total)
+
+[----------] 2 tests from WaylandPlatform
+[ RUN      ] WaylandPlatform.keyboardEnterReplacesPressedKeys
+[       OK ] WaylandPlatform.keyboardEnterReplacesPressedKeys (0 ms)
+[ RUN      ] WaylandPlatform.keyboardLeaveClearsKeyboardState
+[       OK ] WaylandPlatform.keyboardLeaveClearsKeyboardState (0 ms)
+[----------] 2 tests from WaylandPlatform (0 ms total)
+
+[----------] 44 tests from Element
+[ RUN      ] Element.buttonRebuildAppliesLabelLayout
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.buttonRebuildAppliesLabelLayout (2579 ms)
+[ RUN      ] Element.checkboxRebuildAppliesStyle
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.checkboxRebuildAppliesStyle (13 ms)
+[ RUN      ] Element.radioGroupSurvivesCallbackRebuild
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.radioGroupSurvivesCallbackRebuild (12 ms)
+[ RUN      ] Element.comboboxNormalizesSelection
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.comboboxNormalizesSelection (13 ms)
+[ RUN      ] Element.comboboxSupportsEmptyItems
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.comboboxSupportsEmptyItems (12 ms)
+[ RUN      ] Element.imageCacheStringEncodesFitMode
+[       OK ] Element.imageCacheStringEncodesFitMode (0 ms)
+[ RUN      ] Element.imageSourcesAreExclusive
+[       OK ] Element.imageSourcesAreExclusive (0 ms)
+[ RUN      ] Element.imageCacheEntryReportsFailure
+[       OK ] Element.imageCacheEntryReportsFailure (0 ms)
+[ RUN      ] Element.imageRecognizesScalablePaths
+[       OK ] Element.imageRecognizesScalablePaths (0 ms)
+[ RUN      ] Element.progressBarRebuildSizesIndeterminatePulse
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.progressBarRebuildSizesIndeterminatePulse (13 ms)
+[ RUN      ] Element.rowLayoutRebuild
+[       OK ] Element.rowLayoutRebuild (0 ms)
+[ RUN      ] Element.scrollAreaClampsToContentOverflow
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.scrollAreaClampsToContentOverflow (13 ms)
+[ RUN      ] Element.scrollAreaRebuild
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.scrollAreaRebuild (12 ms)
+[ RUN      ] Element.scrollAreaRebuildClampsDisabledAxis
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.scrollAreaRebuildClampsDisabledAxis (12 ms)
+[ RUN      ] Element.scrollAreaRepositionClampsNewOverflow
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.scrollAreaRepositionClampsNewOverflow (12 ms)
+[ RUN      ] Element.scrollAreaThumbTracksScroll
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.scrollAreaThumbTracksScroll (12 ms)
+[ RUN      ] Element.scrollAreaTinyViewportDoesNotCrash
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.scrollAreaTinyViewportDoesNotCrash (12 ms)
+[ RUN      ] Element.scrollAreaThumbDragScrolls
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.scrollAreaThumbDragScrolls (12 ms)
+[ RUN      ] Element.scrollAreaMaxScrollIsStableAcrossContentRelayout
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.scrollAreaMaxScrollIsStableAcrossContentRelayout (12 ms)
+[ RUN      ] Element.scrollAreaContentKeepsOffsetAcrossStrayRelayout
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.scrollAreaContentKeepsOffsetAcrossStrayRelayout (12 ms)
+[ RUN      ] Element.sliderUsesConfiguredRange
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.sliderUsesConfiguredRange (13 ms)
+[ RUN      ] Element.sliderReportsRangeValue
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.sliderReportsRangeValue (12 ms)
+[ RUN      ] Element.sliderDegenerateRangeIsFinite
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.sliderDegenerateRangeIsFinite (12 ms)
+[ RUN      ] Element.spinboxArrowsMoveAndNotify
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.spinboxArrowsMoveAndNotify (13 ms)
+[ RUN      ] Element.spinboxRebuildNormalizesSelection
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.spinboxRebuildNormalizesSelection (12 ms)
+[ RUN      ] Element.spinboxRebuildAppliesFill
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.spinboxRebuildAppliesFill (24 ms)
+[ RUN      ] Element.text
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.text (12 ms)
+[ RUN      ] Element.synchronousTextRebuildSchedulesTextureRefresh
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.synchronousTextRebuildSchedulesTextureRefresh (12 ms)
+[ RUN      ] Element.textClampRebuildSchedulesTextureRefresh
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.textClampRebuildSchedulesTextureRefresh (12 ms)
+[ RUN      ] Element.textPreferredSize
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.textPreferredSize (12 ms)
+[ RUN      ] Element.textGrowsAgainstNeighbor
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.textGrowsAgainstNeighbor (12 ms)
+[ RUN      ] Element.textSideBySide
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.textSideBySide (13 ms)
+[ RUN      ] Element.textShrinkingThenGrowing
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.textShrinkingThenGrowing (12 ms)
+[ RUN      ] Element.textChangingSize
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.textChangingSize (20 ms)
+[ RUN      ] Element.textChangingContent
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.textChangingContent (12 ms)
+[ RUN      ] Element.textClampSize
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.textClampSize (12 ms)
+[ RUN      ] Element.textCharPosition
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.textCharPosition (12 ms)
+[ RUN      ] Element.textboxNavigation
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.textboxNavigation (32 ms)
+[ RUN      ] Element.textboxEditing
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.textboxEditing (13 ms)
+[ RUN      ] Element.textBoxNewLines
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.textBoxNewLines (13 ms)
+[ RUN      ] Element.textboxRebuildUpdatesEyeIcon
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.textboxRebuildUpdatesEyeIcon (12 ms)
+[ RUN      ] Element.textboxRebuildClampsEditingState
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.textboxRebuildClampsEditingState (12 ms)
+[ RUN      ] Element.textboxCallbackOnlyReportsUserEdits
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.textboxCallbackOnlyReportsUserEdits (12 ms)
+[ RUN      ] Element.textboxSingleLineSelectionVCentered
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] Element.textboxSingleLineSelectionVCentered (12 ms)
+[----------] 44 tests from Element (3108 ms total)
+
+[----------] 7 tests from SliderLabel
+[ RUN      ] SliderLabel.threeDigitMaxIsThreeChars
+[       OK ] SliderLabel.threeDigitMaxIsThreeChars (0 ms)
+[ RUN      ] SliderLabel.twoDigitMaxIsTwoChars
+[       OK ] SliderLabel.twoDigitMaxIsTwoChars (0 ms)
+[ RUN      ] SliderLabel.snapFloatAddsTwoForFraction
+[       OK ] SliderLabel.snapFloatAddsTwoForFraction (0 ms)
+[ RUN      ] SliderLabel.negativeMinAddsSign
+[       OK ] SliderLabel.negativeMinAddsSign (0 ms)
+[ RUN      ] SliderLabel.smallRangeDoesNotUnderflow
+[       OK ] SliderLabel.smallRangeDoesNotUnderflow (0 ms)
+[ RUN      ] SliderLabel.zeroMaxDoesNotCrash
+[       OK ] SliderLabel.zeroMaxDoesNotCrash (0 ms)
+[ RUN      ] SliderLabel.negativeMaxDoesNotCrash
+[       OK ] SliderLabel.negativeMaxDoesNotCrash (0 ms)
+[----------] 7 tests from SliderLabel (0 ms total)
+
+[----------] 1 test from Env
+[ RUN      ] Env.enabled
+[       OK ] Env.enabled (0 ms)
+[----------] 1 test from Env (0 ms total)
+
+[----------] 10 tests from UTF8
+[ RUN      ] UTF8.codepointLen
+[       OK ] UTF8.codepointLen (0 ms)
+[ RUN      ] UTF8.codepointLenBefore
+[       OK ] UTF8.codepointLenBefore (0 ms)
+[ RUN      ] UTF8.length
+[       OK ] UTF8.length (0 ms)
+[ RUN      ] UTF8.substr
+[       OK ] UTF8.substr (0 ms)
+[ RUN      ] UTF8.utf8ToOffset
+[       OK ] UTF8.utf8ToOffset (0 ms)
+[ RUN      ] UTF8.offsetToUTF8Len
+[       OK ] UTF8.offsetToUTF8Len (0 ms)
+[ RUN      ] UTF8.findFirstOf
+[       OK ] UTF8.findFirstOf (0 ms)
+[ RUN      ] UTF8.findLastOf
+[       OK ] UTF8.findLastOf (0 ms)
+[ RUN      ] UTF8.findFirstNotOf
+[       OK ] UTF8.findFirstNotOf (0 ms)
+[ RUN      ] UTF8.findLastNotOf
+[       OK ] UTF8.findLastNotOf (0 ms)
+[----------] 10 tests from UTF8 (0 ms total)
+
+[----------] 5 tests from Positioner
+[ RUN      ] Positioner.main
+[       OK ] Positioner.main (0 ms)
+[ RUN      ] Positioner.align
+[       OK ] Positioner.align (0 ms)
+[ RUN      ] Positioner.columnLayoutGrowFillsRemaining
+[       OK ] Positioner.columnLayoutGrowFillsRemaining (0 ms)
+[ RUN      ] Positioner.rowLayoutGrowFillsRemaining
+[       OK ] Positioner.rowLayoutGrowFillsRemaining (0 ms)
+[ RUN      ] Positioner.rowLayoutOverflowShrinkDoesNotUnderflow
+[       OK ] Positioner.rowLayoutOverflowShrinkDoesNotUnderflow (0 ms)
+[----------] 5 tests from Positioner (0 ms total)
+
+[----------] 13 tests from CEmbeddedSurfaceTest
+[ RUN      ] CEmbeddedSurfaceTest.frameRequestsAreCoalesced
+[       OK ] CEmbeddedSurfaceTest.frameRequestsAreCoalesced (0 ms)
+[ RUN      ] CEmbeddedSurfaceTest.mouseInputCanBeDisabled
+[       OK ] CEmbeddedSurfaceTest.mouseInputCanBeDisabled (0 ms)
+[ RUN      ] CEmbeddedSurfaceTest.mouseAxisPreservesDelta
+[       OK ] CEmbeddedSurfaceTest.mouseAxisPreservesDelta (0 ms)
+[ RUN      ] CEmbeddedSurfaceTest.alwaysHoveredElementReceivesPointerEventsOnce
+[       OK ] CEmbeddedSurfaceTest.alwaysHoveredElementReceivesPointerEventsOnce (0 ms)
+[ RUN      ] CEmbeddedSurfaceTest.textboxFocusCanBeCleared
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] CEmbeddedSurfaceTest.textboxFocusCanBeCleared (12 ms)
+[ RUN      ] CEmbeddedSurfaceTest.clearingTextboxFocusDoesNotAffectAnotherTextbox
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] CEmbeddedSurfaceTest.clearingTextboxFocusDoesNotAffectAnotherTextbox (13 ms)
+[ RUN      ] CEmbeddedSurfaceTest.textboxCallbackWaitsForIMCommit
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] CEmbeddedSurfaceTest.textboxCallbackWaitsForIMCommit (13 ms)
+[ RUN      ] CEmbeddedSurfaceTest.touchIsCapturedByInitialTarget
+[       OK ] CEmbeddedSurfaceTest.touchIsCapturedByInitialTarget (0 ms)
+[ RUN      ] CEmbeddedSurfaceTest.cancelledPrimaryTouchDoesNotClick
+[       OK ] CEmbeddedSurfaceTest.cancelledPrimaryTouchDoesNotClick (0 ms)
+[ RUN      ] CEmbeddedSurfaceTest.primaryTouchTapKeepsInitialPointerTarget
+[       OK ] CEmbeddedSurfaceTest.primaryTouchTapKeepsInitialPointerTarget (0 ms)
+[ RUN      ] CEmbeddedSurfaceTest.invalidatedSurfaceIgnoresHostCalls
+[       OK ] CEmbeddedSurfaceTest.invalidatedSurfaceIgnoresHostCalls (0 ms)
+[ RUN      ] CEmbeddedSurfaceTest.repositionScheduledDuringPreRenderIsKept
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] CEmbeddedSurfaceTest.repositionScheduledDuringPreRenderIsKept (13 ms)
+[ RUN      ] CEmbeddedSurfaceTest.detachedElementDoesNotDropRootReposition
+[1;32mDEBUG [0m]: CConfigManager: no hyprtoolkit.conf found, using defaults (expected at $XDG_CONFIG_HOME/hypr/hyprtoolkit.conf or ~/.config/hypr/hyprtoolkit.conf)
+[       OK ] CEmbeddedSurfaceTest.detachedElementDoesNotDropRootReposition (12 ms)
+[----------] 13 tests from CEmbeddedSurfaceTest (66 ms total)
+
+[----------] Global test environment tear-down
+[==========] 91 tests from 8 test suites ran. (3304 ms total)
+[  PASSED  ] 91 tests.

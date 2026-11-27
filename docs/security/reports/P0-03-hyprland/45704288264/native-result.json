@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "hyprland_sha256": "0f5dc9a3bb14265516a1a7c16a90ff0ad54fda94c7caed5defb4b234ecb7f34a",
+  "hyprctl_sha256": "683ed4ff31f059a018ea745f20bad543fa0ba7b655eabfcba4ed47755d1df028",
+  "limits": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000"
+  },
+  "fedora_atomic_boot": false,
+  "scope": "Native-loading refusal in a private headless compositor",
+  "checks": [
+    {
+      "name": "fixture-compiled",
+      "passed": true,
+      "stderr": ""
+    },
+    {
+      "name": "constructor-positive-control",
+      "passed": true
+    },
+    {
+      "name": "config-lua-native-refused",
+      "passed": true,
+      "generation": 1
+    },
+    {
+      "name": "private-instance-query",
+      "passed": true,
+      "stderr": ""
+    }
+  ],
+  "passed": false,
+  "os_qualified": false,
+  "probe_sha256": "2d6521274010180e544d3051312f1fa70309f5476abc613562f85369203cd3d1"
+}

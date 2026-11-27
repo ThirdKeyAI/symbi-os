@@ -1,0 +1,34 @@
+{
+  "run_id": 45726113225,
+  "head": "455cae687ff7b0b3919127ccc4a36f69b2146494",
+  "tested_merge": "80474784484193a01c02c8eb72b5a050e6436534",
+  "conclusion": "failure",
+  "artifact": {
+    "id": 15074212936,
+    "bytes": 14919,
+    "sha256": "16f1ce1b0420378758b30ce8bd74727b12ebec151db4fc1458a24f5da13591d5"
+  },
+  "scope": "Compiler installation progressed past its signature and exact additive-inventory gates, then the strict human-readable version-banner comparison failed. The failed toolchain subdirectory was not retained, so the exact banner cannot be inferred from this report. No source compilation or provider acceptance ran.",
+  "files": {
+    "result.json": {
+      "original_sha256": "221d9701a13de523d7894e100f7447ad0a16561ee8a6dee4d5ff5a3bdfffcaca",
+      "retained_sha256": "221d9701a13de523d7894e100f7447ad0a16561ee8a6dee4d5ff5a3bdfffcaca"
+    },
+    "install-signed-compiler.log": {
+      "original_sha256": "b8de96230bd586f40b11c9f90da352d826f6c0d06de417ae2a0eee471c0343b7",
+      "retained_sha256": "b8de96230bd586f40b11c9f90da352d826f6c0d06de417ae2a0eee471c0343b7"
+    },
+    "base-signature.json": {
+      "original_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead",
+      "retained_sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    "source-fetch.log": {
+      "original_sha256": "40a99e31f1fa60fd4b670ec4610bcc773e8c88bf805d09aa51742ccfb5b39f5d",
+      "retained_sha256": "40a99e31f1fa60fd4b670ec4610bcc773e8c88bf805d09aa51742ccfb5b39f5d"
+    },
+    "source-checkout.log": {
+      "original_sha256": "4491686b1550a800c63c443600fb2d3af9d66abfa0f7da9e31a85520ab91227d",
+      "retained_sha256": "4491686b1550a800c63c443600fb2d3af9d66abfa0f7da9e31a85520ab91227d"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+/inputs/rpms/iniparser-4.2.6-5.fc45.x86_64.rpm:
+    Header OpenPGP DSA signature: NOTFOUND
+    Header OpenPGP V4 RSA/SHA256 signature, key ID 655a4b02f577861e: NOKEY
+    Header OpenPGP signature: NOTFOUND
+    Header SHA256 digest: OK
+    Payload SHA256 digest: OK
+    Legacy OpenPGP DSA signature: NOTFOUND
+    Legacy OpenPGP RSA signature: NOTFOUND

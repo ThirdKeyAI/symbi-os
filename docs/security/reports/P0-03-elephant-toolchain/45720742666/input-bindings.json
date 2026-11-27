@@ -1,0 +1,14 @@
+{
+  "source_commit": "943be8905da5dc1e3dace4b5bf5f9f5f648dd88b",
+  "profile": "elephant-build",
+  "requirements_source": "image/launcher/elephant-build-requirements.json",
+  "files": {
+    "resolve_packages.py": "9cde06bf10749202d5248b66dd0c50bf214edd08e37c12e48527b31ec2356bcd",
+    "guest_inventory.py": "c214e843b92b0bb2c7ecdef047e35162165fa30a8381e88f22fcc17aefbbd9d8",
+    "build-requirements.json": "285a0ea6b8c172f51dd4fc9d5ad010ec65761e40458fa674481f303edc3f32fc",
+    "fedora-package-trust.json": "3801b3f6ad666bc0f762f2502fdaebac0eb051fbbadcb343fd2559e3b05ec443",
+    "fedora-45-primary.asc": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425",
+    "dnf.conf": "7efd0964186fedfa5269c023d97a94d7ad2ad4a6cbf14b0197e5d89b3b6de0f7",
+    "repos/fedora-build.repo": "535aaceeafda783decd20f72553aa4cf93f281b02555b43d93712710d7048757"
+  }
+}

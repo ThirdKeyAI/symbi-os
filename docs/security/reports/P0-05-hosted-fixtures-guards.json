@@ -1,0 +1,18 @@
+[
+  {
+    "command": [
+      "bash",
+      "scripts/check-container-fixtures.sh"
+    ],
+    "exit_code": 1,
+    "output": "Container fixture execution requires GitHub-hosted CI.\n"
+  },
+  {
+    "command": [
+      "python3",
+      "image/container/hosted/check.py"
+    ],
+    "exit_code": 1,
+    "output": "Container fixture execution requires the disposable hosted resource unit\n"
+  }
+]

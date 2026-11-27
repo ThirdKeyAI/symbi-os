@@ -1,0 +1,23 @@
+{
+  "passed": false,
+  "os_qualified": false,
+  "source_commit": "1059a49cc57464d0e9b78e7f3b7e6439673bff67",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [],
+  "scope": "Source-built Elephant and actual provider refusal on the selected base; no OS qualification",
+  "failure": "ModuleNotFoundError: No module named 'inventory'",
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "8835072",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 28956\nuser_usec 22965\nsystem_usec 5990\nnice_usec 23000\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+  }
+}

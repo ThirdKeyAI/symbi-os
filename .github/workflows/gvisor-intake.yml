@@ -1,0 +1,40 @@
+name: gVisor release intake
+
+on:
+  push:
+    branches: [main, card/P0-05-native-prep]
+    paths:
+      - "image/container/gvisor-inputs.json"
+      - "image/container/runtime_inputs.py"
+      - "image/container/intake.py"
+      - "image/tests/test_container_runtime_inputs.py"
+      - "scripts/check-gvisor-intake.sh"
+      - ".github/workflows/gvisor-intake.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gvisor-intake-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out the proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Authenticate and inventory fixed public inputs without execution
+        run: bash scripts/check-gvisor-intake.sh
+      - name: Retain bounded public evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: gvisor-release-intake-evidence
+          path: .cache/gvisor-intake-evidence/
+          retention-days: 14
+          if-no-files-found: error

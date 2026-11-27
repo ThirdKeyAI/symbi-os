@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# User-session setup only; never run as a privileged configuration writer.
+set -euo pipefail
+source_dir=${1:-/usr/share/symbiont/defaults}
+target_dir=${2:-${XDG_CONFIG_HOME:-$HOME/.config}}
+refuse() { printf 'symbi-seed-config: %s\n' "$*" >&2; exit 1; }
+[[ $source_dir == /* && $target_dir == /* ]] || refuse 'paths must be absolute'
+[[ -d $source_dir && ! -L $source_dir ]] || refuse 'invalid source directory'
+[[ ! -L $target_dir ]] || refuse 'refusing target symlink'
+# The image owns the source tree. Do not import links, devices or sockets.
+bad=$(find "$source_dir" -mindepth 1 ! -type d ! -type f -print -quit)
+[[ -z $bad ]] || refuse 'refusing non-regular source entry (including symlink)'
+mkdir -p -- "$target_dir"
+find "$source_dir" -mindepth 1 -print0 | while IFS= read -r -d '' src; do
+  relative=${src#"$source_dir"/}
+  dest=$target_dir/$relative
+  if [[ -d $src ]]; then
+    [[ ! -L $dest ]] || refuse "refusing directory symlink: $relative"
+    if [[ -e $dest ]]; then
+      [[ -d $dest ]] || refuse "existing file conflicts with directory: $relative"
+    else
+      mkdir -- "$dest"
+    fi
+  elif [[ ! -e $dest && ! -L $dest ]]; then
+    cp -T --no-clobber --no-dereference --no-preserve=ownership -- "$src" "$dest"
+  fi
+done

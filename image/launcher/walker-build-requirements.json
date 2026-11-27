@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "scope": "Candidate signed Fedora compiler/native headers for the exact Walker source; resolve and review before installing",
+  "source_inputs": "image/launcher/walker-source.json",
+  "source_revision": "a515085fd39fae80acc086c8fbfd9b7771a9a11d",
+  "cargo_toml_sha256": "d1676045d1101a2d92c5669e54e36e63363d3e79dbc10c561662039ae2453a90",
+  "cargo_lock_sha256": "3448367c28c769e29f681ea2de84d4a822f08569bbef6628f03535c61fec2315",
+  "packages": [
+    "rust >= 1.92.0",
+    "cargo >= 1.92.0",
+    "gcc",
+    "glibc-devel",
+    "pkgconf-pkg-config",
+    "protobuf-compiler",
+    "pkgconfig(gtk4) >= 4.12",
+    "pkgconfig(gio-2.0) >= 2.80",
+    "pkgconfig(gtk4-layer-shell-0) >= 1.0",
+    "pkgconfig(poppler-glib)",
+    "pkgconfig(cairo)",
+    "pkgconfig(gdk-pixbuf-2.0)",
+    "pkgconfig(wayland-client)"
+  ],
+  "notes": [
+    "The exact Cargo lock has 284 registry packages; gtk4 0.11.5 requires Rust1.92 and the source selects GTK4.12/GIO2.80 features",
+    "gtk4-layer-shell-sys0.6.1 requires gtk4-layer-shell-0 >=1.0; later builds must enforce all native version constraints",
+    "The pinned build.rs uses protobuf-codegen3.7.2 with the default protoc from PATH; use the signed Fedora protobuf-compiler, not a downloaded installer",
+    "Rust/Cargo compiler versions, native RPM bytes and any changed base packages require separate review after discovery; never install compiler candidates into the product",
+    "This separate profile does not modify the compositor, Elephant or launcher-runtime package locks; no compilation or OS qualification is implied"
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "run_id": 45702056416,
+  "head": "19e77c1b3c3001a135e8f86355adc70670b7fedf",
+  "artifact": {
+    "id": 15063207973,
+    "bytes": 226509,
+    "sha256": "48517b330f45c6e53c2bbd6e0cf1c56fd4aa03f099394f0dd3870612e1e75b7e"
+  },
+  "passed": false,
+  "qualified": false,
+  "failure": "All six drivers reached their first case but supervisor socket paths exceeded the 104-byte supported boundary; no actual fixture worker was launched.",
+  "files": {
+    "hosted-fixtures.log": {
+      "original_sha256": "9c2a77b73df23616f41cbb4411cbd1ff48ced8c4fb1ace1cc0edeaa2a7743a3b",
+      "retained_sha256": "9c2a77b73df23616f41cbb4411cbd1ff48ced8c4fb1ace1cc0edeaa2a7743a3b",
+      "retained_file": "hosted-fixtures.log"
+    },
+    "systemd-result.txt": {
+      "original_sha256": "97acdc0ef4744e18bc2bb661bc8d13df95a63a67f04f702f9013ef33ddef710a",
+      "retained_sha256": "97acdc0ef4744e18bc2bb661bc8d13df95a63a67f04f702f9013ef33ddef710a",
+      "retained_file": "systemd-result.txt"
+    },
+    "public/result.json": {
+      "original_sha256": "34f6ab430749ac7c6594de5ae90cb0ef5022e42832bc350e93a0d4b218c22dea",
+      "retained_sha256": "34f6ab430749ac7c6594de5ae90cb0ef5022e42832bc350e93a0d4b218c22dea",
+      "retained_file": "public-result.json"
+    },
+    "public/cgroup-final.json": {
+      "original_sha256": "bfd0bdb650f7f7b049e2119e5250f742a1f92c2ef08e53edfa456f6f57f7616c",
+      "retained_sha256": "bfd0bdb650f7f7b049e2119e5250f742a1f92c2ef08e53edfa456f6f57f7616c",
+      "retained_file": "public-cgroup-final.json"
+    },
+    "public/fixtures/result.json": {
+      "original_sha256": "dce9c2987e08a087a5901024b66c5f5abff183fd7f5a9e01ae5657bcb014978d",
+      "retained_sha256": "dce9c2987e08a087a5901024b66c5f5abff183fd7f5a9e01ae5657bcb014978d",
+      "retained_file": "public-fixtures-result.json"
+    },
+    "public/fixtures/docker-test-filesystem-grants.json": {
+      "original_sha256": "ca06dfd2e57eb74dd2de45bd31f67ff8eb92001500f802668ce52d2e37071004",
+      "retained_sha256": "ca06dfd2e57eb74dd2de45bd31f67ff8eb92001500f802668ce52d2e37071004",
+      "retained_file": "public-fixtures-docker-test-filesystem-grants.json"
+    },
+    "public/fixtures/docker-test-filesystem-grants.log": {
+      "original_sha256": "e6339fd5bfc822e950f8fb38dbe0fab2248ffa91fa4c03a195aef0847f52d285",
+      "retained_sha256": "e6339fd5bfc822e950f8fb38dbe0fab2248ffa91fa4c03a195aef0847f52d285",
+      "retained_file": "public-fixtures-docker-test-filesystem-grants.log"
+    },
+    "public/fixtures/docker-test-git-source.json": {
+      "original_sha256": "87f4120fec4514410f2e4bf8c2e3360729406c45519cbdbaa27449886104bcf6",
+      "retained_sha256": "87f4120fec4514410f2e4bf8c2e3360729406c45519cbdbaa27449886104bcf6",
+      "retained_file": "public-fixtures-docker-test-git-source.json"
+    },
+    "public/fixtures/docker-test-git-source.log": {
+      "original_sha256": "2b5bd94f0dbcc44c6eb36175a1c997ac9d24953d220e118a95d13372ec68dcb8",
+      "retained_sha256": "2b5bd94f0dbcc44c6eb36175a1c997ac9d24953d220e118a95d13372ec68dcb8",
+      "retained_file": "public-fixtures-docker-test-git-source.log"
+    },
+    "public/fixtures/docker-test-source-broker.json": {
+      "original_sha256": "ae7288aa3209ccc0624e0fc4f24b6fedc45d506f9234477dbd76c2cdfeb9944b",
+      "retained_sha256": "ae7288aa3209ccc0624e0fc4f24b6fedc45d506f9234477dbd76c2cdfeb9944b",
+      "retained_file": "public-fixtures-docker-test-source-broker.json"
+    },
+    "public/fixtures/docker-test-source-broker.log": {
+      "original_sha256": "fdfe1f83326571df51071d2d677e8707f054b389c7dd22ad630c673000579612",
+      "retained_sha256": "fdfe1f83326571df51071d2d677e8707f054b389c7dd22ad630c673000579612",
+      "retained_file": "public-fixtures-docker-test-source-broker.log"
+    },
+    "public/fixtures/gvisor-test-filesystem-grants.json": {
+      "original_sha256": "a8e35f24a2787e43071c4fa279a14ba2e6fb3ebd0cabaa379ff290724fe32261",
+      "retained_sha256": "a8e35f24a2787e43071c4fa279a14ba2e6fb3ebd0cabaa379ff290724fe32261",
+      "retained_file": "public-fixtures-gvisor-test-filesystem-grants.json"
+    },
+    "public/fixtures/gvisor-test-filesystem-grants.log": {
+      "original_sha256": "614f2ea9a85e9adab3c2a681b2f9ed2f1afd2268a2dcd29dafc45f81c0445328",
+      "retained_sha256": "614f2ea9a85e9adab3c2a681b2f9ed2f1afd2268a2dcd29dafc45f81c0445328",
+      "retained_file": "public-fixtures-gvisor-test-filesystem-grants.log"
+    },
+    "public/fixtures/gvisor-test-git-source.json": {
+      "original_sha256": "00929089cb15ffaf9602a050ea8f394e1b52d15cff6c48d67a2a6db99e0ff071",
+      "retained_sha256": "00929089cb15ffaf9602a050ea8f394e1b52d15cff6c48d67a2a6db99e0ff071",
+      "retained_file": "public-fixtures-gvisor-test-git-source.json"
+    },
+    "public/fixtures/gvisor-test-git-source.log": {
+      "original_sha256": "d7f79a8deb49c2b04d59c585b3cec3d40f98e89edf6a7e23c3ccd4cbba1dd083",
+      "retained_sha256": "d7f79a8deb49c2b04d59c585b3cec3d40f98e89edf6a7e23c3ccd4cbba1dd083",
+      "retained_file": "public-fixtures-gvisor-test-git-source.log"
+    },
+    "public/fixtures/gvisor-test-source-broker.json": {
+      "original_sha256": "947abb6f7a70d694e5246ebb554d1245c693356fe7b46309be3f63d522bc05be",
+      "retained_sha256": "947abb6f7a70d694e5246ebb554d1245c693356fe7b46309be3f63d522bc05be",
+      "retained_file": "public-fixtures-gvisor-test-source-broker.json"
+    },
+    "public/fixtures/gvisor-test-source-broker.log": {
+      "original_sha256": "a01f25f4b11e5acac359ab3916921582930ec6d52e1c1c17e825d392badde7be",
+      "retained_sha256": "a01f25f4b11e5acac359ab3916921582930ec6d52e1c1c17e825d392badde7be",
+      "retained_file": "public-fixtures-gvisor-test-source-broker.log"
+    }
+  }
+}

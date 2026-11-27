@@ -95,12 +95,26 @@ Register each invariant as a control in Symbiont's catalogue (`docs/security/con
 
 The product image is Fedora Atomic (bootc), built with [BlueBuild](https://blue-build.org) on top of [secureblue](https://github.com/secureblue/secureblue)'s `wayblue-hyprland-main-userns-hardened` image, plus an `-nvidia` variant. Everything is built and tested on this image from day one, including Phase 1. Useful [Ombuntu](https://ombuntu.org) pieces are ported to it instead of running on Ubuntu (see the porting table below).
 
+**Implementation finding (25 Nov 2026):** upstream has retired the named Hyprland family and separate userns variants. The original choice below is not a usable current pin. See [OQ-07](open-questions.md) and [the image preparation record](../image/README.md); selecting a replacement must preserve the trusted-compositor requirements.
+
 **Why this base:** current kernel and Hyprland, SELinux, signed images with atomic rollback, and hardening already done. Debian stable ships Hyprland 0.41.2 against 0.57.x upstream, so it would mean maintaining Hyprland packaging ourselves. The `userns` variant is required because the Claude Code and Codex sandboxes use bubblewrap.
 
 **Image contents**
 
 - Symbiont runtime and the `symbi-*` services from this plan, as systemd units with SELinux policy modules.
 - Hyprland, Waybar and Walker configs adapted from Omarchy, plus an Agents section in the single Super + Alt + Space menu.
+- Owner-selected desktop profile: MPlayer, Ombuntu-style menus, Tokyo Night as the initial theme, Kitty as the default terminal, Nerd Fonts and the inspected local terminal customizations. Preserve the owner's existing keyboard shortcuts, including local overrides; the application launcher stays on Super + Space and the main menu on Super + Alt + Space. Exact requirements, local observations and the full shortcut reference are in [Desktop defaults and Ombuntu compatibility](desktop-profile.md). These additions remain pending in P0-03.
+- Tolaria as the default Git-backed Markdown second brain. The OS source build
+  disables its self-updater, unauthenticated writable loopback bridge, runtime
+  package downloads, direct model-provider routes, direct agent launches and
+  durable writes to real harness configuration. Super+Shift+O keeps the existing
+  note-app shortcut. Human vault selection and editing stay local; governed agent
+  access is delivered by P1-13 through named contracts and reviewed Git diffs.
+- Owner-selected terminal applications: Yazi as the terminal file manager,
+  Glum as the local Markdown reader, and Tootles as the Mastodon and Bluesky
+  client. They use pinned authenticated inputs. Yazi runtime package and theme
+  downloads are disabled; Tootles account credentials remain in the human
+  session and require qualified secret storage before real-account use.
 - Managed browser policies (telemetry off, keyring-backed passwords) and developer-tool telemetry opt-outs, borrowed from Ombuntu.
 - Security by removal: `hyprpm` and all Hyprland plugins disabled, no menu extensions, no remote themes, no `curl | sh` installers anywhere.
 
@@ -179,6 +193,16 @@ A thin desktop launcher: it generates a Symbiont control project per principal (
 - **Registry:** `/etc/symbi/models.toml` (system), `~/.config/symbi/models.toml` (user; a new remote provider needs trusted-path confirmation); project files only narrow.
 - Every call lands in the run's protected journal, and a D-Bus signal on each remote call drives the egress light.
 
+### Tolaria second-brain route
+
+The desktop app is a human-owned Git and Markdown editor. It never launches an
+agent directly in the OS profile and never edits the user's real harness
+configuration. P1-13 adds a first-party governed route: named read operations see
+only a selected vault, while writes happen on a private branch/worktree and
+produce a reviewable diff. Applying that diff is a separate human-approved action;
+the service cannot merge or push. Vault contents are untrusted input and cannot
+widen grants, change session class or become executable instructions.
+
 ### Acceptance criteria
 
 - [ ] Symbiont's Landlock platform diagnostic and release driver pass on the Fedora Atomic image, with the report retained (P0-04).
@@ -190,6 +214,8 @@ A thin desktop launcher: it generates a Symbiont control project per principal (
 - [ ] Revoking a principal ends an in-flight model response within 1 second.
 - [ ] A malicious project config cannot change routing.
 - [ ] Cursor refuses to start in a confidential session.
+- [ ] A governed agent can read a selected Tolaria vault without direct filesystem
+  access; a write changes only an isolated branch until the human approves the diff.
 
 ## Phase 2: symbi-trustd and the grant broker
 
@@ -346,6 +372,113 @@ artifacts = [{ name = "tla2tools.jar", sha256 = "…" }]
 **Store:** a signed catalog of system, organization and personal skills and services; installing shows the manifest as a plain list of what it reads, writes, runs and contacts.
 
 **Skills the OS ships:** `symbi-service-onboard`, `symbi-policy-author`, `skill-audit`, `flight-recorder-review`, `os-agent-guide` (generated from installed contracts so it cannot drift) and `symbi-doctor`.
+
+### Review of the proposed default catalog (25 Nov 2026)
+
+The proposed ship list is a useful later-phase catalog, not a description of
+what the current development image ships. The six skills listed above remain
+planned. The following additions are recommended candidates for their existing
+phase dependencies; this review does not add them to P0's acceptance gates or
+implement contracts, grants, service manifests or skills.
+
+| Candidate | Assessment and required boundary | Phase dependencies |
+| --- | --- | --- |
+| `tla-check` | Already named in the manifest example and trace-monitor design. Bundle the pinned checker, its Java runtime and required scripts; no network, gVisor, explicit model/source read scope and declared model/report outputs. Model checking alone does not implement journal adapters or continuous trace conformance. | P5-01/P5-07 packaging; P5-05 trace integration, P0-02 models |
+| `governed-review` | Strong initial use case. Name `read_file`, `list_files`, `grep_files`, `git_status`, `git_diff`, `git_staged_diff` and `git_log` exactly. No `git_*` wildcard, shell or push permission. Use the upstream bounded private Git snapshots, including an explicit metadata grant, and a separate contract for one declared new report. | P1-06 qualified harness route, P5-01/P5-07 skill bundle |
+| `toolclad-author` | Complements OpenAPI onboarding with local CLI contracts. Write drafts into a declared output area; never install/sign/activate them or execute generated commands automatically. Validation and test runs require separate scoped contracts. | P4-03/P4-04 authoring UI, P5-01/P5-07 bundle |
+| `grant-planner` | Instructions-only advisor that proposes exact paths, operations, destinations, duration and cost. It cannot create, widen, renew or approve grants, or choose the authoritative session class. | P5-01/P5-07; P2 trusted approval integration |
+| `web-research` | Useful after a reviewed web service exists. Search, fetch and site-map operations need separate bounded contracts. A new local Rust crawler is additional implementation scope, not an existing plan deliverable; search also needs a selected provider or index. | P4-01/P4-03 service, P5-01/P5-07 bundle; P4-02 if browser execution is needed |
+| `supply-chain-check` | Read-only access to reviewed registries/advisory services through the broker; scoped private cache and declared report output. Bundle the checkers. Do not run arbitrary project build scripts or create audit exemptions, change trust roots, or sign approvals. A passing scan is not a source audit. | P1-03 egress, P4 service operations, P5-01/P5-07 bundle |
+| `atomic-admin` | Begin with exact read-only status/diagnostic operations on bootc, rpm-ostree and installed trust state. A future mutation needs a typed broker operation, gate decision, journal and trusted approval; approval alone must not expose a root shell or unrestricted privileged socket. | P5-07 alongside symbi-doctor; any mutation additionally needs its reviewed P2/TCB integration |
+
+The upstream baseline for this review is Symbiont
+`deddb9e997244d2289c217ad76b8fde0e9b0339b`. Its
+[managed launcher](https://github.com/ThirdKeyAI/Symbiont/blob/deddb9e997244d2289c217ad76b8fde0e9b0339b/src/commands/managed_cli.rs)
+rejects plugin directories, selects distinct registered tool names and disables
+built-in tools/project discovery. The
+[Git query implementation](https://github.com/ThirdKeyAI/Symbiont/blob/deddb9e997244d2289c217ad76b8fde0e9b0339b/crates/runtime/src/sandbox/source_git.py)
+uses fixed operations; its [documented scope](https://github.com/ThirdKeyAI/Symbiont/blob/deddb9e997244d2289c217ad76b8fde0e9b0339b/docs/git-source-queries.md)
+includes the bounded Git object database, excludes recursive submodule review,
+and refuses several repository layouts. The review skill must expose those
+limits rather than promise unrestricted repository compatibility.
+
+The harness/profile proposal agrees with Phase 1 with one correction:
+`symbi-claude-code` hooks belong to workspace mode and remain advisory. Governed
+Claude uses the runtime dispatcher and loads no harness plugins. Codex and Pi
+need adapters, inference routes, bridge configuration and containment tests;
+broker routes alone are insufficient, and Pi bridge support is still open.
+Cursor stays remote-only workspace mode and is refused for confidential
+sessions. Profiles must preserve the user's real harness configuration.
+
+Signed `web`, `github`, `gitea`, `cve-bz` and `osv` service manifests fit Phase 4. A local
+web engine still makes remote requests: session-class policy, origin/redirect
+and DNS/SSRF checks, credentials, byte/depth/time limits, cancellation and
+journaling apply. Crawl responses are untrusted data, never instructions or
+executable dependencies. Reuse upstream outbound capabilities where applicable;
+do not give the engine an independent unrestricted network path. Registry
+CONNECT access for workspace tools belongs to P1-03; named read-only registry
+queries for a governed skill require explicit service operations instead.
+
+The owner selected [cve.bz](https://cve.bz/cve/api) as a security-information
+source. Use its public API now for dependency and advisory assessment; its
+Streamable HTTP MCP endpoint is `https://cve.bz/mcp`. The planned `cve-bz`
+service should expose bounded advisory lookup/feed operations, with stack checks
+as a distinct data-upload operation subject to session-class and egress policy.
+A lockfile or SBOM can reveal private project information; the first P0 lookup
+used only the already public pinned upstream Cargo.lock. Retain advisory IDs,
+affected/fixed ranges, source timestamps, query/input hashes and attribution,
+and cross-check relevant publisher advisories and Fedora backports. Empty
+results, missing KEV/EPSS data or a successful API request are not release
+approval. The [first retained assessment](security/reports/P0-03-cve-bz/2026-11-26/README.md)
+records open matches; no MCP client was installed and no service authority was
+created. Signed service integration remains Phase 4 work.
+
+#### External integration references for later evaluation
+
+The following 14 entries are reference-only. They are not OS defaults or signed
+service IDs; they are not installed, connected, configured, approved or
+supported, and they are not part of the signed catalog. Any selection or
+adoption requires P4-01/P4-03/P4-04 service-manifest, contract,
+credential/data-boundary and terms review.
+
+| Label | Reference ID |
+| --- | --- |
+| Dropbox | `app-69b31dc2110c8191b8b47dc98fe5a052@openai-curated-remote` |
+| Box | `box@openai-curated-remote` |
+| Figma | `figma@openai-curated-remote` |
+| Finances | `finances@openai-curated-remote` |
+| Gmail | `gmail@openai-curated-remote` |
+| Google Calendar | `google-calendar@openai-curated-remote` |
+| Google Drive | `google-drive@openai-curated-remote` |
+| Linear | `linear@openai-curated-remote` |
+| Notion | `notion@openai-curated-remote` |
+| OpenAI Developers | `openai-developers@openai-curated-remote` |
+| Outlook Calendar | `outlook-calendar@openai-curated-remote` |
+| Outlook Email | `outlook-email@openai-curated-remote` |
+| SharePoint | `sharepoint@openai-curated-remote` |
+| Teams | `teams@openai-curated-remote` |
+
+The proposed `verify_stale` push rule is already a Phase 5 example, not an
+implemented GitHub/Gitea gate. Freshness must come from trusted verification
+evidence bound to the exact repository, content and required checks; a skill or
+repository file cannot clear it. Equivalent publishing effects through Git,
+API and browser routes must receive the same decision (INV-9). Passing the
+freshness condition does not itself grant permission to publish.
+
+The shared-tab extension remains planned Phase 4 infrastructure with explicit
+per-session human designation. It is the proposed first-party browser extension,
+not a reason to alter the user's other extensions. MCP bridge configuration is
+infrastructure, not a marketplace plugin. Hyprland native loading must be
+blocked in the compositor even when a `.so` is present; removing `hyprpm` is
+insufficient, and the current image still needs the real negative runtime test.
+
+Correct the proposed blanket ban on runtime downloads: INV-12 requires hashes
+and signature verification before use for its named artifacts. The separate
+skill rule forbids fetching a skill's executable dependencies on demand. It
+does not prohibit authenticated image updates, authorized workspace package
+traffic or bounded web/advisory data retrieval. None of those is a path to
+replace trusted tools without the required verification. No skill may grant
+authority or lower a session's class; OQ-04's trusted class source remains open.
 
 ### Policy studio
 
@@ -516,11 +649,11 @@ Open questions raised: <links, or none>
 
 | ID | Card | Depends on | Invariants | Owner | Status |
 | --- | --- | --- | --- | --- | --- |
-| P0-01 | Repo scaffold, CI, cargo-deny/vet, Cedar schema skeleton | none | INV-12 | Codex | Done |
-| P0-02 | TLA+ models: GrantLifecycle, TrustedInput, Freeze, JournalBeforeEffect, SessionClass | none | INV-2, 3, 4, 5, 8, 10 | Codex | Done |
-| P0-03 | Base image: BlueBuild recipe on secureblue, cosign signing, SBOM, ported Ombuntu defaults | P0-01 | INV-12 |  | Not started |
-| P0-04 | Qualify Symbiont 3.0's Landlock route on the Fedora Atomic image (platform diagnostic and release driver); retain the report | P0-03 | INV-1, 7 |  | Not started |
-| P0-05 | Container tier on Fedora Atomic: moby-engine or Podman for Symbiont's Docker and gVisor routes; qualify the choice | P0-03 | INV-1 |  | Not started |
+| P0-01 | Repo scaffold, CI, cargo-deny/vet, Cedar schema skeleton | none | INV-12 | Implementation agent | Done |
+| P0-02 | TLA+ models: GrantLifecycle, TrustedInput, Freeze, JournalBeforeEffect, SessionClass | none | INV-2, 3, 4, 5, 8, 10 | Implementation agent | Done |
+| P0-03 | Base image: BlueBuild recipe on secureblue, cosign signing, SBOM, ported Ombuntu defaults | P0-01 | INV-12 | Implementation agent | In review; verified inputs ready, image qualification pending |
+| P0-04 | Qualify Symbiont 3.0's Landlock route on the Fedora Atomic image (platform diagnostic and release driver); retain the report | P0-03 | INV-1, 7 | Implementation agent | In review; failed native boot corrected, exact rerun pending |
+| P0-05 | Container tier on Fedora Atomic: moby-engine or Podman for Symbiont's Docker and gVisor routes; qualify the choice | P0-03 | INV-1 | Implementation agent | In review; Moby candidate boot, authenticated fixture intake and six-run controller prepared; producer prerequisites, second boot and managed route pending |
 | P1-01 | symbi-common: principal IDs, D-Bus types, Symbiont API and journal clients | P0-01 | INV-5 |  | Not started |
 | P1-02 | symbi-run: desktop launcher over Symbiont's managed CLI route (governed mode) | P1-01, P0-04 | INV-7, 13 |  | Not started |
 | P1-03 | symbi-egressd: Symbiont outbound capabilities for APIs; allowlisted CONNECT proxy for workspace mode | P1-01 | INV-1, 5, 6, 7 |  | Not started |
@@ -531,8 +664,9 @@ Open questions raised: <links, or none>
 | P1-08 | Pi adapter for governed and workspace modes | P1-02, P1-04 | INV-6, 13 |  | Not started |
 | P1-09 | Cursor: workspace mode only, remote-only, symbi-claude-code Cursor hooks | P1-02, P1-03 | INV-8 |  | Not started |
 | P1-10 | Escape suite v1, extending Symbiont's containment and Landlock test drivers | P1-02 | INV-1, 7 |  | Not started |
-| P1-11 | Phase 1 release: services shipped in the signed Fedora Atomic image | P1-05 to P1-10, P0-03 | INV-12 |  | Not started |
+| P1-11 | Phase 1 release: services shipped in the signed Fedora Atomic image | P1-05 to P1-10, P1-12, P1-13, P0-03 | INV-12 |  | Not started |
 | P1-12 | Workspace mode: writable project snapshot, diff applied only after approval (terminal relay until trustd) | P1-02, P1-03 | INV-1, 2, 7 |  | Not started |
+| P1-13 | Tolaria governed second-brain route: selected-vault reads, isolated Git writes and reviewed diff application | P1-02, P1-12, P0-03 | INV-1, 2, 5, 7, 13 |  | Not started |
 | P2-02 | Wayland protocols and Hyprland patch: trusted surface, input provenance | P0-02 | INV-4 |  | Not started |
 | P2-03 | symbi-trustd: escalation-queue surface, cards, secure attention key, freeze, credential entry | P2-02 | INV-2, 4, 10 |  | Not started |
 | P2-04 | symbi-grantd: portal backend writing Symbiont root ceilings and file grants; revocation path | P2-03 | INV-2, 3, 8 |  | Not started |
@@ -560,7 +694,7 @@ Open questions raised: <links, or none>
 
 ## Risks and open questions
 
-Implementation notes raised by P0-01: see [docs/open-questions.md](open-questions.md) for CI/review setup, unresolved model attributes, build-tool lockfile review, and qualification prerequisites. The original questions below remain open.
+Implementation notes raised during P0: see [docs/open-questions.md](open-questions.md) for CI/review setup, the retired base image, signing setup, unresolved model attributes, build-tool lockfile review, and qualification prerequisites. The original questions below remain open.
 
 The biggest risk is the Hyprland patch for the trusted path; everything else has a known fallback.
 
@@ -587,7 +721,7 @@ The biggest risk is the Hyprland patch for the trusted path; everything else has
 - [ ] Default wake phrase, and licensed training data for it.
 - [ ] Cedar decision caching strategy in egressd at high connection rates.
 - [ ] Product name and signing-key custody (ThirdKey hardware keys?).
-- [ ] Symbiont's Docker and gVisor routes need a Docker daemon: layer moby-engine into the image, or qualify Podman's Docker-compatible socket?
+- [x] Container engine strategy: use Fedora moby-engine and Docker CLI to match upstream. Package pins and both-tier qualification are still pending P0-05; see [the container record](../image/container/README.md).
 
 ## Sources
 

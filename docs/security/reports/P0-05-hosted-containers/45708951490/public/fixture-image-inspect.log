@@ -1,0 +1,38 @@
+[
+    {
+        "Architecture": "amd64",
+        "Config": {
+            "Cmd": [
+                "/usr/local/bin/python3",
+                "--version"
+            ],
+            "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "PYTHONDONTWRITEBYTECODE=1",
+                "LANG=C.UTF-8"
+            ]
+        },
+        "Created": "2026-11-25T21:58:09.321553381Z",
+        "Descriptor": {
+            "digest": "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc",
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "size": 757
+        },
+        "Id": "sha256:49397e7a177a1062f938df2e7d309e195703b5bb9fae687e26fc7889dc0b33bc",
+        "Metadata": {
+            "LastTagTime": "2026-11-25T21:58:09.331801783Z"
+        },
+        "Os": "linux",
+        "Parent": "sha256:e278295e71165ebc5691106e46ba254188c552c1eed07f20b5ad5f6993ee62cc",
+        "RepoDigests": [],
+        "RepoTags": [],
+        "RootFS": {
+            "Layers": [
+                "sha256:47c2bf97949810fc3b57b71d5a164e9e2272cb8abc87d97b64d4fc97cfd9fc48",
+                "sha256:ff13618575dc3724292da01805bb1eb9b5b84263f339451d38acc46dad81db27"
+            ],
+            "Type": "layers"
+        },
+        "Size": 73817352
+    }
+]

@@ -1,0 +1,148 @@
+{
+  "schema": 1,
+  "status": "offline-payload-contract-only",
+  "source_inputs_sha256": "cc91fc05ece93c561f446111ddfac5be307f1de4ad0258ecb00616297657ee21",
+  "glum_release_inputs_sha256": "c331f8a09ae6058e86514cfb04427bee7f2702544d7e706708827018d81bccca",
+  "selected_for_release": false,
+  "security_qualified": false,
+  "os_qualified": false,
+  "applications": {
+    "yazi": {
+      "repository": "https://github.com/sxyazi/yazi",
+      "version": "v26.9.1",
+      "revision": "8dd895c695a5950330c2623eb43debf323b60654",
+      "files": [
+        {
+          "bundle": "yazi/bin/yazi",
+          "destination": "usr/bin/yazi",
+          "mode": 493,
+          "kind": "binary"
+        },
+        {
+          "bundle": "yazi/assets/yazi.desktop",
+          "destination": "usr/share/applications/yazi.desktop",
+          "mode": 420,
+          "kind": "desktop",
+          "source_file": "assets/yazi.desktop"
+        },
+        {
+          "bundle": "yazi/licenses/LICENSE",
+          "destination": "usr/share/licenses/yazi/LICENSE",
+          "mode": 420,
+          "kind": "license",
+          "source_file": "LICENSE"
+        },
+        {
+          "bundle": "yazi/licenses/LICENSE-ICONS",
+          "destination": "usr/share/licenses/yazi/LICENSE-ICONS",
+          "mode": 420,
+          "kind": "license",
+          "source_file": "LICENSE-ICONS"
+        }
+      ]
+    },
+    "glum": {
+      "repository": "https://github.com/jaschadub/glum",
+      "version": "v0.4.1",
+      "revision": "9cc45ced6ee0fc0bb5c6d90db65b453e6c2e650b",
+      "files": [
+        {
+          "bundle": "glum/bin/glum",
+          "destination": "usr/bin/glum",
+          "mode": 493,
+          "kind": "binary",
+          "release_file": "glum"
+        },
+        {
+          "bundle": "glum/licenses/LICENSE",
+          "destination": "usr/share/licenses/glum/LICENSE",
+          "mode": 420,
+          "kind": "license",
+          "source_file": "LICENSE",
+          "release_file": "LICENSE"
+        },
+        {
+          "bundle": "glum/licenses/NOTICE",
+          "destination": "usr/share/licenses/glum/NOTICE",
+          "mode": 420,
+          "kind": "notice",
+          "source_file": "NOTICE",
+          "release_file": "NOTICE"
+        },
+        {
+          "bundle": "glum/man/glum.1",
+          "destination": "usr/share/man/man1/glum.1",
+          "mode": 420,
+          "kind": "manpage",
+          "release_file": "share/man/man1/glum.1"
+        },
+        {
+          "bundle": "glum/completions/bash/glum",
+          "destination": "usr/share/bash-completion/completions/glum",
+          "mode": 420,
+          "kind": "bash-completion",
+          "release_file": "share/bash-completion/completions/glum"
+        },
+        {
+          "bundle": "glum/completions/fish/glum.fish",
+          "destination": "usr/share/fish/vendor_completions.d/glum.fish",
+          "mode": 420,
+          "kind": "fish-completion",
+          "release_file": "share/fish/vendor_completions.d/glum.fish"
+        },
+        {
+          "bundle": "glum/completions/zsh/_glum",
+          "destination": "usr/share/zsh/site-functions/_glum",
+          "mode": 420,
+          "kind": "zsh-completion",
+          "release_file": "share/zsh/site-functions/_glum"
+        }
+      ]
+    },
+    "tootles": {
+      "repository": "https://github.com/tootles-dev/tootles",
+      "version": "v0.2.0",
+      "revision": "40d7a63c5ec0e08cb3eb8241b50a2af6cf76c98a",
+      "files": [
+        {
+          "bundle": "tootles/bin/tootles",
+          "destination": "usr/bin/tootles",
+          "mode": 493,
+          "kind": "binary"
+        },
+        {
+          "bundle": "tootles/assets/tootles.desktop",
+          "destination": "usr/share/applications/tootles.desktop",
+          "mode": 420,
+          "kind": "desktop",
+          "source_file": "packaging/tootles.desktop"
+        },
+        {
+          "bundle": "tootles/licenses/LICENSE",
+          "destination": "usr/share/licenses/tootles/LICENSE",
+          "mode": 420,
+          "kind": "license",
+          "source_file": "LICENSE"
+        },
+        {
+          "bundle": "tootles/man/tootles.1",
+          "destination": "usr/share/man/man1/tootles.1",
+          "mode": 420,
+          "kind": "manpage",
+          "source_file": "packaging/tootles.1"
+        }
+      ]
+    }
+  },
+  "forbidden_destinations": [
+    "usr/bin/ya",
+    "usr/lib/yazi/plugins",
+    "usr/libexec/glum-updater",
+    "usr/libexec/tootles-updater",
+    "usr/libexec/yazi-updater",
+    "usr/share/applications/ya.desktop",
+    "usr/share/yazi/flavors",
+    "usr/share/yazi/plugins"
+  ],
+  "scope": "Exact offline development-payload allowlist only; staging is disabled until real offline provenance verification and native desktop, security and release qualification are complete"
+}

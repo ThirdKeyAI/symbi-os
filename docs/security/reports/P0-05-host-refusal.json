@@ -1,0 +1,7 @@
+{
+  "card": "P0-05",
+  "passed": false,
+  "qualified": false,
+  "scope": "infrastructure probes and Docker fixtures; full gVisor route evidence pending",
+  "error": "Fedora guest required; host results are not image qualification"
+}

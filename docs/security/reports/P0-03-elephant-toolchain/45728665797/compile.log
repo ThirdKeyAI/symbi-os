@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/inputs/build_guest.py", line 119, in <module>
+    main()
+    ~~~~^^
+  File "/inputs/build_guest.py", line 101, in main
+    run('upstream-tests', ['go', 'test', '-p=1', '-parallel=1', '-count=1', './...'], patched, 1800)
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/inputs/build_guest.py", line 58, in run
+    result.check_returncode()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib64/python3.15/subprocess.py", line 623, in check_returncode
+    raise CalledProcessError(self.returncode, self.args, self.stdout,
+                             self.stderr)
+subprocess.CalledProcessError: Command ['go', 'test', '-p=1', '-parallel=1', '-count=1', './...'] returned non-zero exit status 1.

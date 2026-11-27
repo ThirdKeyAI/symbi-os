@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/inputs/compile.py", line 129, in <module>
+    if __name__ == '__main__': main()
+                               ~~~~^^
+  File "/inputs/compile.py", line 27, in main
+    shutil.copytree(inputs/'portal-prefix/portal', PREFIX, symlinks=True, dirs_exist_ok=True)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib64/python3.15/shutil.py", line 652, in copytree
+    with os.scandir(src) as itr:
+         ~~~~~~~~~~^^^^^
+PermissionError: [Errno 13] Permission denied: '/inputs/portal-prefix/portal'

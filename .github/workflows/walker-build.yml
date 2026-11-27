@@ -1,0 +1,99 @@
+name: Source-built Walker compatibility
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "image/walker/**"
+      - "!image/walker/README.md"
+      - "image/launcher/walker-source.json"
+      - "image/launcher/walker-build-requirements.json"
+      - "image/launcher/walker-build-rpms.lock.json"
+      - "image/launcher/runtime-requirements.json"
+      - "image/launcher/runtime-rpms.lock.json"
+      - "image/launcher/probes/bounded_process.py"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/keys/**"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - "scripts/check-walker-build.sh"
+      - ".github/workflows/walker-build.yml"
+  pull_request:
+    paths:
+      - "image/walker/**"
+      - "!image/walker/README.md"
+      - "image/launcher/walker-source.json"
+      - "image/launcher/walker-build-requirements.json"
+      - "image/launcher/walker-build-rpms.lock.json"
+      - "image/launcher/runtime-requirements.json"
+      - "image/launcher/runtime-rpms.lock.json"
+      - "image/launcher/probes/bounded_process.py"
+      - "image/hyprland/build_inputs.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/keys/**"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - "scripts/check-walker-build.sh"
+      - ".github/workflows/walker-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: walker-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  launcher:
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Check out the proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Download exact signed compiler and runtime RPM inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache
+          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15075328677/zip > .cache/walker-build-rpms.zip
+          echo 'a78541040299738b173f650159a84e5760f290cd3193d8d140532291454ef182  .cache/walker-build-rpms.zip' | sha256sum --check --strict
+          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15068598980/zip > .cache/walker-runtime-rpms.zip
+          echo '43ef54a307fcb72b7dd878a0930683544ed50904f5c294a32c2e236a5d614a0a  .cache/walker-runtime-rpms.zip' | sha256sum --check --strict
+      - name: Build locked source offline and check original-base CLI compatibility
+        run: bash scripts/check-walker-build.sh
+      - name: Retain public build and compatibility evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: walker-build-evidence
+          path: .cache/walker-build-evidence/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Retain compiled development input before any later reuse
+        if: ${{ always() && hashFiles('.cache/walker-build-payload/manifest.json') != '' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: walker-development-binary
+          path: .cache/walker-build-payload/
+          retention-days: 14
+          compression-level: 0
+          if-no-files-found: error

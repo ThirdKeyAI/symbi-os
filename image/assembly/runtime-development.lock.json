@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "scope": "Retained development runtime for original-base compatibility; not an installed or qualified OS",
+  "source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+  "patch_sha256": "a4545649b1c83f0a3402781f815ebc66ea2b507128d17f61e76c4febb5017bda",
+  "cargo_lock_sha256": "d189b27d99bfc7fafeb8b6a37c0cfe36c1beb3472a6d5ae6f41dca8883fbb59d",
+  "validation_run": 45702056794,
+  "validation_head": "19e77c1b3c3001a135e8f86355adc70670b7fedf",
+  "artifact": {
+    "id": 15066141540,
+    "bytes": 529348296,
+    "sha256": "bed79f624444c6dc0c3a5105facdcd9ad637a26f4fcd6cacb6e10544c36a0724"
+  },
+  "binaries": {
+    "symbi": {
+      "bytes": 520712360,
+      "sha256": "1e90af1fe424ec37ad716bbc1e069c0bc7a78f59c49871b7e79506bda69f49c7"
+    },
+    "symbi-sandbox-supervisor": {
+      "bytes": 8635672,
+      "sha256": "57af2b2931c891c8ee7df21ac063aea64571acc460ababdcb09b8df7ed21c269"
+    }
+  },
+  "validation_checked_merge": "f01100ce68df6ed31dfa0983a2ba1b59be230b6c",
+  "qualified": false,
+  "product_installation": false,
+  "source_pin_sha256": "b6c6d71212914fa8e6a5ccf5f1d5bd6118d1dacee5d0fe8319df9b39c874e1d8",
+  "build_result_sha256": "d109e0cd5cda4b713000497d60082c96fb3c856618bd31c16f1fadd099874fd4"
+}

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# The application provider needs the compositor's display environment to launch
+# ordinary desktop applications. This user service has no approval authority.
+systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_DESKTOP XDG_SESSION_TYPE XDG_CONFIG_HOME HYPRLAND_INSTANCE_SIGNATURE
+systemctl --user start symbi-elephant.service
+exec /usr/bin/waybar

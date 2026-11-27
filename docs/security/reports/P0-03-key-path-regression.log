@@ -1,0 +1,36 @@
+test_existing_file_symlink_is_preserved (test_image.Defaults.test_existing_file_symlink_is_preserved) ... ok
+test_existing_symlink_is_neither_replaced_nor_followed (test_image.Defaults.test_existing_symlink_is_neither_replaced_nor_followed) ... ok
+test_first_login_and_repeat_preserve_user_edits (test_image.Defaults.test_first_login_and_repeat_preserve_user_edits) ... ok
+test_root_symlink_is_rejected (test_image.Defaults.test_root_symlink_is_rejected) ... ok
+test_source_symlinks_are_rejected (test_image.Defaults.test_source_symlinks_are_rejected) ... ok
+test_portal_and_connectivity_defaults (test_image.PrivacyDefaults.test_portal_and_connectivity_defaults) ... ok
+test_shipped_config_does_not_invoke_omarchy_installers_or_plugins (test_image.PrivacyDefaults.test_shipped_config_does_not_invoke_omarchy_installers_or_plugins) ... ok
+test_telemetry_off_without_turning_off_browser_security_updates (test_image.PrivacyDefaults.test_telemetry_off_without_turning_off_browser_security_updates) ... ok
+test_changed_or_outside_trust_key_is_rejected (test_image.RecipePins.test_changed_or_outside_trust_key_is_rejected) ... ok
+test_committed_configuration_has_no_fabricated_base (test_image.RecipePins.test_committed_configuration_has_no_fabricated_base) ... ok
+test_mutable_or_malformed_base_is_rejected (test_image.RecipePins.test_mutable_or_malformed_base_is_rejected) ... ok
+test_recipe_uses_digest_and_local_public_key (test_image.RecipePins.test_recipe_uses_digest_and_local_public_key) ... ok
+test_symlinked_trust_directory_cannot_escape (test_image.RecipePins.test_symlinked_trust_directory_cannot_escape) ... FAIL
+test_bad_repository_scopes_are_refused (test_signing.SigningPolicy.test_bad_repository_scopes_are_refused) ... ok
+test_changed_key_or_key_outside_trust_directory_is_refused (test_signing.SigningPolicy.test_changed_key_or_key_outside_trust_directory_is_refused) ... ok
+test_default_reject_and_explicit_key_repository_bindings (test_signing.SigningPolicy.test_default_reject_and_explicit_key_repository_bindings) ... ok
+test_missing_variant_and_base_release_collision_fail (test_signing.SigningPolicy.test_missing_variant_and_base_release_collision_fail) ... ok
+test_only_approved_digest_rebases_are_emitted (test_signing.SigningPolicy.test_only_approved_digest_rebases_are_emitted) ... ok
+test_policy_bundle_cannot_overwrite_existing_output (test_signing.SigningPolicy.test_policy_bundle_cannot_overwrite_existing_output) ... ok
+test_private_key_material_is_never_embedded (test_signing.SigningPolicy.test_private_key_material_is_never_embedded) ... ok
+test_symlinked_trust_directory_cannot_escape (test_signing.SigningPolicy.test_symlinked_trust_directory_cannot_escape) ... ok
+test_unconfigured_release_trust_fails (test_signing.SigningPolicy.test_unconfigured_release_trust_fails) ... ok
+
+======================================================================
+FAIL: test_symlinked_trust_directory_cannot_escape (test_image.RecipePins.test_symlinked_trust_directory_cannot_escape)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/vmstore/repos2/symbi-os/image/tests/test_image.py", line 142, in test_symlinked_trust_directory_cannot_escape
+    with self.assertRaises(ValueError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 22 tests in 0.043s
+
+FAILED (failures=1)

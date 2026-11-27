@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "selected": true,
+  "installed": false,
+  "qualified": false,
+  "os_qualified": false,
+  "repository": {
+    "id": 1472078858,
+    "full_name": "ThirdKeyAI/symbi-os"
+  },
+  "workflow": ".github/workflows/fedora-packages.yml",
+  "profile": "container-runtime",
+  "run_id": 45940456063,
+  "run_attempt": 1,
+  "source_commit": "6927b6514e564f92544c7c24a674738f82b2a09c",
+  "package_count": 108,
+  "package_bytes": 116875288,
+  "source_package_plan": {
+    "inventory": {
+      "run_id": 45870354828,
+      "path": "docs/security/reports/P0-03-desktop/45870354828/install/installed-after-stdout.log",
+      "bytes": 88016,
+      "sha256": "4142fa70cff7227a164225f6ebff5bbbaf7816c5d5d864a4a47c454969445387",
+      "canonical_sha256": "7af38020fc34399648c491a007e089982395582ad2f79448fb853a57c93effc4",
+      "package_count": 2184
+    },
+    "requested_root_nevras": {
+      "container-selinux": "container-selinux-4:2.251.0-1.fc45.noarch",
+      "docker-cli": "docker-cli-29.9.3-1.fc45.x86_64",
+      "moby-engine": "moby-engine-29.9.3-1.fc45.x86_64"
+    },
+    "additive_nevras": [],
+    "replacements_allowed": false
+  },
+  "candidate_artifact": {
+    "id": 15172313799,
+    "name": "container-runtime-rpm-candidates",
+    "bytes": 117025835,
+    "sha256": "608c986142d351314c2d217c5704a719e3e6fb2596622f3339d35cd30ac07c98"
+  },
+  "evidence_artifact": {
+    "id": 15173200521,
+    "name": "container-runtime-fedora-package-evidence",
+    "bytes": 128889,
+    "sha256": "3dfad18c7bc5cc56f0085e7e02df05b3984446d86d7ba797fb63b6f41d41aa25"
+  },
+  "source_image_producer": {
+    "repository": {
+      "id": 1472078858,
+      "full_name": "ThirdKeyAI/symbi-os"
+    },
+    "head_repository": {
+      "id": 1472078858,
+      "full_name": "ThirdKeyAI/symbi-os"
+    },
+    "workflow": {
+      "id": 431169773,
+      "path": ".github/workflows/desktop-image.yml"
+    },
+    "run_id": 45870354828,
+    "run_attempt": 1,
+    "event": "push",
+    "head_sha": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+    "head_branch": "card/P0-03-image-foundation",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "scope": "Signed empty-rpmdb closure retained as provenance; exact roots already exist in the source and the source-aware RPM transaction is empty"
+}

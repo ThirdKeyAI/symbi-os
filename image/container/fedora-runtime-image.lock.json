@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "state": "pending",
+  "selected": false,
+  "qualified": false,
+  "os_qualified": false,
+  "release_qualified": false,
+  "signature_qualified": false,
+  "variant": "generic",
+  "repository": {
+    "id": 1472078858,
+    "full_name": "ThirdKeyAI/symbi-os"
+  },
+  "workflow": {
+    "id": null,
+    "path": ".github/workflows/container-runtime-image.yml"
+  },
+  "producer": {
+    "run_id": null,
+    "run_attempt": null,
+    "event": "workflow_dispatch",
+    "head_sha": null,
+    "head_branch": null,
+    "status": "pending",
+    "conclusion": null
+  },
+  "artifact": {
+    "id": null,
+    "name": "container-runtime-development-image",
+    "bytes": null,
+    "sha256": null
+  },
+  "manifest": {
+    "sha256": null,
+    "contract_sha256": null,
+    "archive": {
+      "name": "symbi-container-runtime-generic.oci.tar.gz",
+      "bytes": null,
+      "sha256": null,
+      "image_id": null,
+      "manifest_digest": null
+    }
+  },
+  "scope": "Derived development image selection; unavailable hosted output cannot enter native qualification"
+}

@@ -1,0 +1,195 @@
+{
+  "schema": 1,
+  "passed": true,
+  "os_qualified": false,
+  "security_qualified": false,
+  "packages_selected": false,
+  "source_commit": "30d4ab76e316d20921bd9c05bfb085f5959db0b9",
+  "limits": {
+    "memory.max": "3221225472",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "base-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "pull",
+      "exit_code": 0
+    },
+    {
+      "name": "discover",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-container",
+      "exit_code": 0
+    },
+    {
+      "name": "container-absent",
+      "exit_code": 1
+    },
+    {
+      "name": "remove-image",
+      "exit_code": 0
+    },
+    {
+      "name": "image-absent",
+      "exit_code": 1
+    }
+  ],
+  "scope": "Authenticated public candidates only; no package transaction, program execution or release acceptance",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "inputs": {
+    "trust": {
+      "schema": 1,
+      "release": "45",
+      "architecture": "x86_64",
+      "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+      "keys": [
+        {
+          "file": "fedora-45-primary.asc",
+          "fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E",
+          "sha256": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425",
+          "identity": "Fedora (45) <fedora-45-primary@fedoraproject.org>"
+        },
+        {
+          "file": "rpmfusion-free-2020.asc",
+          "fingerprint": "E9A491A3DE247814E7E067EAE06F8ECDD651FF2E",
+          "sha256": "10fc0a3e1a0307e8088357a31a9c5e4e3d9f9e0b01db2b03b5790d949a47f3b3",
+          "identity": "RPM Fusion free repository for Fedora (2020) <rpmfusion-buildsys@lists.rpmfusion.org>",
+          "source": "https://github.com/rpmfusion/rpmfusion-free-release/blob/455da393b8e1d3bad80a7d3c8617ef343ebb2c1a/RPM-GPG-KEY-rpmfusion-free-fedora-2020",
+          "second_source": "https://github.com/rpm-software-management/distribution-gpg-keys/blob/b7cc71f1c253f12a5b9e9172258b5e52ab281a81/keys/rpmfusion/RPM-GPG-KEY-rpmfusion-free-fedora-2020"
+        }
+      ],
+      "scope": "Public keys used only in isolated disposable discovery keyrings; no new installed OS/release trust; no private key; no package selection"
+    },
+    "requirements": {
+      "schema": 1,
+      "scope": "Initial requested terminal/media candidates. Full Ombuntu menus, fonts, compositor bindings and source-only tooling remain separate integration work.",
+      "packages": [
+        "kitty",
+        "mplayer",
+        "mpv",
+        "bat",
+        "fd-find",
+        "eza",
+        "zoxide",
+        "fzf",
+        "ripgrep",
+        "btop",
+        "fastfetch",
+        "lazygit",
+        "tmux",
+        "neovim",
+        "jq",
+        "bash-completion",
+        "wl-clipboard",
+        "grim",
+        "slurp",
+        "playerctl",
+        "pamixer",
+        "brightnessctl",
+        "imv",
+        "ffmpegthumbnailer"
+      ],
+      "packages_selected": false,
+      "security_review": {
+        "kitty": {
+          "minimum_upstream_version": "0.51.0",
+          "cves": [
+            "CVE-2026-134823",
+            "CVE-2026-95835"
+          ],
+          "fixed_package_verified": false,
+          "evidence": "docs/security/reports/P0-03-cve-bz/2026-11-26/desktop-profile/README.md",
+          "rule": "Signatures authenticate candidate origin only. Before selection inspect exact signed Fedora source/patches for both reviewed fixes and assess remaining advisories; upstream version alone does not establish backports or security clearance."
+        }
+      },
+      "unresolved_tooling": [
+        "starship",
+        "mise",
+        "gum"
+      ],
+      "not_installed_by_this_step": true
+    },
+    "bindings": {
+      "resolve.py": "93fa7d30287367d63bb57964a77ff44fc0474e9455cdfbed8873d1424e6d400f",
+      "contract.py": "950ba63083152495e501d7531857b1aaec1c95b0e2f5a9c2cead19d92769b1c7",
+      "bounded_process.py": "31353489fcf05bb3a6e7ddd423e6737ccd366e9ba3b328c04339dc96f3224788",
+      "guest_inventory.py": "c214e843b92b0bb2c7ecdef047e35162165fa30a8381e88f22fcc17aefbbd9d8",
+      "requirements.json": "019a390c651739f13c94bf8425f1344fc80eaa0449426302a7d704645a2265c0",
+      "trust.json": "c1a4dba502ce26e7f773528797deec3dcc0ea5af3bea5873b7e58e639b9f85ac",
+      "fedora-45-primary.asc": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425",
+      "rpmfusion-free-2020.asc": "10fc0a3e1a0307e8088357a31a9c5e4e3d9f9e0b01db2b03b5790d949a47f3b3",
+      "dnf.conf": "7efd0964186fedfa5269c023d97a94d7ad2ad4a6cbf14b0197e5d89b3b6de0f7",
+      "repos/desktop.repo": "7c42917600cbe56e8c694533cca8737140309c8a26c79cd8530947f4f9e47176"
+    },
+    "repository_inputs": {
+      "schema": 1,
+      "selected_configuration_sha256": "7c42917600cbe56e8c694533cca8737140309c8a26c79cd8530947f4f9e47176",
+      "reviewed_public_sources": {
+        "ombuntu-packages.list": {
+          "url": "https://github.com/Ombuntu/Ombuntu/blob/8f2085cb73520fc3558f1248dadd1fca5e69cfcc/install/packages.list",
+          "bytes": 1325,
+          "sha256": "563f07603ae08c1396d34d270ffa77ba432d6819af89fd6532adfbd4a3197745",
+          "git_blob": "a647887eee7828e0143dbf872e5eca47a69070d1"
+        },
+        "mplayer.spec": {
+          "url": "https://github.com/rpmfusion/mplayer/blob/089ddb72b8f41415036a1a837b3aeda6e976d823/mplayer.spec",
+          "bytes": 46671,
+          "sha256": "b66085a63e492600776cb3fe4953d0e2ec56f077b9c58db0e9efd7831e2ca115",
+          "git_blob": "15d83ae0a470b870ba8cad7627936755c1168c58"
+        },
+        "rpmfusion-free-release.spec": {
+          "url": "https://github.com/rpmfusion/rpmfusion-free-release/blob/455da393b8e1d3bad80a7d3c8617ef343ebb2c1a/rpmfusion-free-release.spec",
+          "bytes": 13541,
+          "sha256": "724aa20646537afa498790212d9a255c0e25ba3c1944b5549cfc012fec44bc33",
+          "git_blob": "3d4b4cbe8796cb52b7c381d3b0d5118ad80f67db"
+        },
+        "RPM-GPG-KEY-rpmfusion-free-fedora-2020": {
+          "url": "https://github.com/rpmfusion/rpmfusion-free-release/blob/455da393b8e1d3bad80a7d3c8617ef343ebb2c1a/RPM-GPG-KEY-rpmfusion-free-fedora-2020",
+          "bytes": 1704,
+          "sha256": "10fc0a3e1a0307e8088357a31a9c5e4e3d9f9e0b01db2b03b5790d949a47f3b3",
+          "git_blob": "86f36222f54d9fe5924f272960b27608968b109f"
+        },
+        "rpmfusion-free.repo": {
+          "url": "https://github.com/rpmfusion/rpmfusion-free-release/blob/455da393b8e1d3bad80a7d3c8617ef343ebb2c1a/rpmfusion-free.repo",
+          "bytes": 1266,
+          "sha256": "9a51fd0682a556b8d3880e7aa5e2f2ff1bd34a293e8ca33a13251daafcf5321b",
+          "git_blob": "8f6d698e8f49cabced3f44e16f5e2b2c7346903b"
+        },
+        "rpmfusion-free-updates.repo": {
+          "url": "https://github.com/rpmfusion/rpmfusion-free-release/blob/455da393b8e1d3bad80a7d3c8617ef343ebb2c1a/rpmfusion-free-updates.repo",
+          "git_blob": "12b59cee2c3b805f699bdfd1807eafbee313df52",
+          "bytes": 1282,
+          "sha256": "5ff9b7101380f4062dd459305de7d379db54dc07c9df240eff08ae061c047998"
+        }
+      },
+      "changes": [
+        "Keep only Fedora45/x86_64 binary release and stable-update repositories",
+        "Use two isolated pinned public package keys, required package/payload verification and TLS verification",
+        "Request HTTPS mirror URLs; disable telemetry, source/debug/testing/nonfree/tainted repositories"
+      ],
+      "metadata_signature_scope": "Preserve upstream repo_gpgcheck=0; HTTPS metalinks and independently verified exact RPM signatures. Metadata freshness does not establish a vulnerability fix or select a release package.",
+      "packages_pinned": false
+    }
+  },
+  "packages": 39,
+  "candidate_manifest_sha256": "272171f10e32bcfb8387360e12a03a2b397c199ec1d7043ecde5fb27325088ef",
+  "container_absent": true,
+  "image_removed": true,
+  "private_storage_removed": true,
+  "cgroup_final": {
+    "memory.max": "3221225472",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "3250700288",
+    "memory.events": "low 0\nhigh 0\nmax 60246\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 172501181\nuser_usec 101703841\nsystem_usec 70797340\nnice_usec 96854000\ncore_sched.force_idle_usec 0\nnr_periods 2083\nnr_throttled 430\nthrottled_usec 20865435\nnr_bursts 0\nburst_usec 0"
+  }
+}

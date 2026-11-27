@@ -1,0 +1,104 @@
+name: Signed Hyprland portal build package discovery
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "image/portal/source-inputs.json"
+      - "image/portal/build-requirements.json"
+      - "image/portal/inputs.py"
+      - "image/portal/hosted_discover.py"
+      - "image/portal/reviewed/**"
+      - "image/hyprland/candidate-inputs.json"
+      - "image/hyprland/development-prefix.lock.json"
+      - "image/hyprland/build-rpms.lock.json"
+      - "image/hyprland/build-requirements.json"
+      - "image/hyprland/patches/**"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/fedora-package-trust.json"
+      - "image/hyprland/fedora-build.repo"
+      - "image/hyprland/package-dnf.conf"
+      - "image/hyprland/package-repository-inputs.json"
+      - "image/hyprland/keys/**"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/reuse.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - "image/launcher/probes/bounded_process.py"
+      - "scripts/check-portal-packages.sh"
+      - ".github/workflows/portal-packages.yml"
+  pull_request:
+    paths:
+      - "image/portal/source-inputs.json"
+      - "image/portal/build-requirements.json"
+      - "image/portal/inputs.py"
+      - "image/portal/hosted_discover.py"
+      - "image/portal/reviewed/**"
+      - "image/hyprland/candidate-inputs.json"
+      - "image/hyprland/development-prefix.lock.json"
+      - "image/hyprland/build-rpms.lock.json"
+      - "image/hyprland/build-requirements.json"
+      - "image/hyprland/patches/**"
+      - "image/hyprland/resolve_packages.py"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/fedora-package-trust.json"
+      - "image/hyprland/fedora-build.repo"
+      - "image/hyprland/package-dnf.conf"
+      - "image/hyprland/package-repository-inputs.json"
+      - "image/hyprland/keys/**"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/reuse.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - "image/launcher/probes/bounded_process.py"
+      - "scripts/check-portal-packages.sh"
+      - ".github/workflows/portal-packages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: portal-packages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  packages:
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-26.04
+    timeout-minutes: 50
+    steps:
+      - name: Check out proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Resolve and verify portal build RPMs without installation
+        run: bash scripts/check-portal-packages.sh
+      - name: Retain public discovery evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: portal-package-evidence
+          path: .cache/portal-package-evidence/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Retain authenticated candidates for separate package review
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: portal-build-rpm-candidates
+          path: |
+            .cache/portal-package-output/rpms/
+            .cache/portal-package-output/evidence/result.json
+          retention-days: 14
+          compression-level: 0
+          if-no-files-found: error

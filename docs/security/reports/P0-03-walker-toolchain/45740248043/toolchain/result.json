@@ -1,0 +1,955 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "mode": "build",
+  "limits": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128"
+  },
+  "commands": [
+    {
+      "name": "installed-before",
+      "exit_code": 0
+    },
+    {
+      "name": "import-key",
+      "exit_code": 0
+    },
+    {
+      "name": "keyring",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-000-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-000-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-001-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-001-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-002-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-002-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-003-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-003-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-004-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-004-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-005-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-005-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-006-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-006-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-007-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-007-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-008-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-008-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-009-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-009-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-010-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-010-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-011-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-011-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-012-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-012-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-013-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-013-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-014-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-014-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-015-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-015-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-016-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-016-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-017-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-017-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-018-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-018-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-019-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-019-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-020-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-020-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-021-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-021-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-022-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-022-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-023-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-023-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-024-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-024-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-025-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-025-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-026-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-026-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-027-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-027-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-028-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-028-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-029-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-029-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-030-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-030-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-031-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-031-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-032-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-032-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-033-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-033-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-034-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-034-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-035-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-035-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-036-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-036-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-037-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-037-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-038-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-038-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-039-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-039-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-040-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-040-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-041-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-041-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-042-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-042-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-043-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-043-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-044-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-044-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-045-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-045-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-046-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-046-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-047-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-047-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-048-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-048-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-049-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-049-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-050-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-050-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-051-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-051-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-052-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-052-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-053-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-053-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-054-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-054-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-055-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-055-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-056-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-056-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-057-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-057-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-058-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-058-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-059-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-059-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-060-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-060-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-061-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-061-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-062-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-062-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-063-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-063-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-064-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-064-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-065-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-065-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-066-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-066-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-067-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-067-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-068-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-068-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-069-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-069-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-070-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-070-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-071-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-071-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-072-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-072-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-073-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-073-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-074-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-074-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-075-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-075-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-076-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-076-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-077-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-077-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-078-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-078-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-079-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-079-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-080-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-080-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-081-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-081-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-082-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-082-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-083-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-083-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-084-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-084-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-085-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-085-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-086-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-086-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-087-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-087-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-088-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-088-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-089-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-089-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-090-signature",
+      "exit_code": 0
+    },
+    {
+      "name": "rpm-090-identity",
+      "exit_code": 0
+    },
+    {
+      "name": "offline-install",
+      "exit_code": 0
+    },
+    {
+      "name": "installed-after",
+      "exit_code": 0
+    },
+    {
+      "name": "rustc-version",
+      "exit_code": 0
+    },
+    {
+      "name": "cargo-version",
+      "exit_code": 0
+    },
+    {
+      "name": "protoc-version",
+      "exit_code": 0
+    },
+    {
+      "name": "native-0-version",
+      "exit_code": 0
+    },
+    {
+      "name": "native-0-minimum",
+      "exit_code": 0
+    },
+    {
+      "name": "native-1-version",
+      "exit_code": 0
+    },
+    {
+      "name": "native-1-minimum",
+      "exit_code": 0
+    },
+    {
+      "name": "native-2-version",
+      "exit_code": 0
+    },
+    {
+      "name": "native-2-minimum",
+      "exit_code": 0
+    },
+    {
+      "name": "native-3-version",
+      "exit_code": 0
+    },
+    {
+      "name": "native-4-version",
+      "exit_code": 0
+    },
+    {
+      "name": "native-5-version",
+      "exit_code": 0
+    },
+    {
+      "name": "native-6-version",
+      "exit_code": 0
+    }
+  ],
+  "scope": "Disposable signed package installation only; no product installation",
+  "added_packages": [
+    "brotli\t0\t1.2.1\t1.fc45\tx86_64",
+    "brotli-devel\t0\t1.2.1\t1.fc45\tx86_64",
+    "bzip2-devel\t0\t1.0.8\t24.fc45\tx86_64",
+    "cairo-devel\t0\t1.18.6\t1.fc45\tx86_64",
+    "cairo-gobject-devel\t0\t1.18.6\t1.fc45\tx86_64",
+    "cargo\t0\t1.100.0\t1.fc45\tx86_64",
+    "fontconfig-devel\t0\t2.18.3\t2.fc45\tx86_64",
+    "freetype-devel\t0\t2.14.3\t3.fc45\tx86_64",
+    "fribidi-devel\t0\t1.0.18\t1.fc45\tx86_64",
+    "gdk-pixbuf2-devel\t0\t2.44.8\t3.fc45\tx86_64",
+    "glib2-devel\t0\t2.90.1\t1.fc45\tx86_64",
+    "glycin-devel\t0\t2.2.6\t1.fc45\tx86_64",
+    "gpgme-devel\t0\t2.0.1\t6.fc45\tx86_64",
+    "gpgmepp-devel\t1\t2.0.0\t2.fc45\tx86_64",
+    "graphene-devel\t0\t1.10.8\t6.fc45\tx86_64",
+    "graphite2-devel\t0\t1.3.14\t22.fc45\tx86_64",
+    "gtk4-devel\t0\t4.24.1\t1.fc45\tx86_64",
+    "gtk4-layer-shell\t0\t1.3.0\t3.fc45\tx86_64",
+    "gtk4-layer-shell-devel\t0\t1.3.0\t3.fc45\tx86_64",
+    "harfbuzz-cairo\t0\t15.0.0\t2.fc45\tx86_64",
+    "harfbuzz-devel\t0\t15.0.0\t2.fc45\tx86_64",
+    "harfbuzz-gpu\t0\t15.0.0\t2.fc45\tx86_64",
+    "harfbuzz-raster\t0\t15.0.0\t2.fc45\tx86_64",
+    "harfbuzz-vector\t0\t15.0.0\t2.fc45\tx86_64",
+    "keyutils-libs-devel\t0\t1.6.3\t8.fc45\tx86_64",
+    "krb5-devel\t0\t1.22.2\t11.fc45\tx86_64",
+    "lcms2-devel\t0\t2.16\t8.fc45\tx86_64",
+    "libGLEW\t0\t2.2.0\t13.fc45\tx86_64",
+    "libX11-devel\t0\t1.8.13\t3.fc45\tx86_64",
+    "libXau-devel\t0\t1.0.12\t5.fc45\tx86_64",
+    "libXext-devel\t0\t1.3.6\t6.fc45\tx86_64",
+    "libXft-devel\t0\t2.3.8\t11.fc45\tx86_64",
+    "libXrender-devel\t0\t0.9.12\t5.fc45\tx86_64",
+    "libassuan-devel\t0\t2.5.7\t6.fc45\tx86_64",
+    "libblkid-devel\t0\t2.42.4\t1.fc45\tx86_64",
+    "libcom_err-devel\t0\t1.47.4\t2.fc45\tx86_64",
+    "libcurl-devel\t0\t8.21.0\t9.fc45\tx86_64",
+    "libdatrie-devel\t0\t0.2.14\t3.fc45\tx86_64",
+    "libffi-devel\t0\t3.5.2\t3.fc45\tx86_64",
+    "libgit2_1.9\t0\t1.9.7\t3.fc45\tx86_64",
+    "libgpg-error-devel\t0\t1.61\t2.fc45\tx86_64",
+    "libicu-devel\t0\t78.3\t9.fc45\tx86_64",
+    "libidn2-devel\t0\t2.3.8\t4.fc45\tx86_64",
+    "libjpeg-turbo-devel\t0\t3.1.4.1\t2.fc45\tx86_64",
+    "libkadm5\t0\t1.22.2\t11.fc45\tx86_64",
+    "liblerc-devel\t0\t4.3.0\t1.fc45\tx86_64",
+    "libmount-devel\t0\t2.42.4\t1.fc45\tx86_64",
+    "libnghttp2-devel\t0\t1.69.0\t6.fc45\tx86_64",
+    "libnghttp3-devel\t0\t1.19.0\t1.fc45\tx86_64",
+    "libpng-devel\t2\t1.6.59\t1.fc45\tx86_64",
+    "libpsl-devel\t0\t0.23.1\t1.fc45\tx86_64",
+    "libseccomp-devel\t0\t2.6.1\t3.fc45\tx86_64",
+    "libselinux-devel\t0\t3.11\t5.fc45\tx86_64",
+    "libsepol-devel\t0\t3.11\t2.fc45\tx86_64",
+    "libssh-devel\t0\t0.12.2\t1.fc45\tx86_64",
+    "libthai-devel\t0\t0.1.30\t3.fc45\tx86_64",
+    "libtiff-devel\t0\t4.7.2\t3.fc45\tx86_64",
+    "libverto-devel\t0\t0.3.2\t13.fc45\tx86_64",
+    "libwebp-devel\t0\t1.6.0\t4.fc45\tx86_64",
+    "libxcb-devel\t0\t1.17.0\t8.fc45\tx86_64",
+    "libxml2-devel\t0\t2.15.4\t1.fc45\tx86_64",
+    "libzstd-devel\t0\t1.5.7\t6.fc45\tx86_64",
+    "llhttp\t0\t9.4.4\t1.fc45\tx86_64",
+    "lzo-devel\t0\t2.10\t17.fc45\tx86_64",
+    "lzo-minilzo\t0\t2.10\t17.fc45\tx86_64",
+    "ngtcp2-crypto-ossl-devel\t0\t1.22.1\t3.fc45\tx86_64",
+    "ngtcp2-devel\t0\t1.22.1\t3.fc45\tx86_64",
+    "nspr-devel\t0\t4.39.0\t10.fc45\tx86_64",
+    "nss-devel\t0\t3.133.0\t1.fc45\tx86_64",
+    "nss-softokn-devel\t0\t3.133.0\t1.fc45\tx86_64",
+    "nss-softokn-freebl-devel\t0\t3.133.0\t1.fc45\tx86_64",
+    "nss-util-devel\t0\t3.133.0\t1.fc45\tx86_64",
+    "openjpeg-devel\t0\t2.5.4\t5.fc45\tx86_64",
+    "openjpeg-tools\t0\t2.5.4\t5.fc45\tx86_64",
+    "openssl-devel\t1\t4.0.3\t1.fc45\tx86_64",
+    "pango-devel\t0\t1.58.2\t1.fc45\tx86_64",
+    "pcre2-devel\t0\t10.49\t1.fc45\tx86_64",
+    "pixman-devel\t0\t0.46.2\t4.fc45\tx86_64",
+    "poppler-devel\t0\t26.08.0\t2.fc45\tx86_64",
+    "poppler-glib-devel\t0\t26.08.0\t2.fc45\tx86_64",
+    "protobuf-compiler\t0\t33.5\t7.fc45\tx86_64",
+    "publicsuffix-list\t0\t20260624\t2.fc45\tnoarch",
+    "rust\t0\t1.100.0\t1.fc45\tx86_64",
+    "rust-std-static\t0\t1.100.0\t1.fc45\tx86_64",
+    "sysprof-capture-devel\t0\t51.0\t1.fc45\tx86_64",
+    "vulkan-headers\t0\t1.4.350.0\t4.fc45\tnoarch",
+    "vulkan-loader-devel\t0\t1.4.350.0\t2.fc45\tx86_64",
+    "wayland-devel\t0\t1.26.0\t3.fc45\tx86_64",
+    "xorg-x11-proto-devel\t0\t2025.1\t3.fc45\tnoarch",
+    "xz-devel\t1\t5.8.3\t2.fc45\tx86_64",
+    "zlib-ng-compat-devel\t0\t2.3.3\t6.fc45\tx86_64"
+  ],
+  "all_base_packages_unchanged": true,
+  "toolchain": {
+    "rustc": {
+      "identity": {
+        "binary": "rustc",
+        "commit-hash": "0ef1bc386059596dada8fb65b50425aab2ea637a",
+        "commit-date": "2026-11-09",
+        "host": "x86_64-unknown-linux-gnu",
+        "release": "1.100.0",
+        "LLVM version": "23.1.5"
+      },
+      "binary_sha256": "a03c783a5cc409182c9c0da806976493bf674a091ab8280f5b8215d6f65e52d1"
+    },
+    "cargo": {
+      "identity": {
+        "release": "1.100.0",
+        "commit-hash": "3acc79c0c841844675bc53a605922dbfc441e750",
+        "commit-date": "2026-11-05",
+        "host": "x86_64-unknown-linux-gnu",
+        "libgit2": "1.9.7 (sys:0.21.0 system)",
+        "libcurl": "8.21.0 (sys:0.4.90+curl-8.21.0 system ssl:OpenSSL/4.0.3)",
+        "os": "Fedora 45.0.0 [64-bit]"
+      },
+      "binary_sha256": "4b658f0a6f57ac5fe2c4788a5bd522784efc335d8db1b2fa88ef4d946ce981ff"
+    }
+  },
+  "protoc": {
+    "version": "libprotoc 33.5",
+    "binary_sha256": "ebd89c8700becb83f3dfa96b4b63f39da3792be95ba31fbd6ed317409ae8ad35"
+  },
+  "native_versions": {
+    "gtk4": "4.24.1",
+    "gio-2.0": "2.90.1",
+    "gtk4-layer-shell-0": "1.3.0",
+    "poppler-glib": "26.08.0",
+    "cairo": "1.18.6",
+    "gdk-pixbuf-2.0": "2.44.8",
+    "wayland-client": "1.26.0"
+  },
+  "cgroup_final": {
+    "memory.max": "2147483648",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "128",
+    "memory.peak": "1000763392",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 8137726\nuser_usec 5528704\nsystem_usec 2609021\nnice_usec 5513824\ncore_sched.force_idle_usec 0\nnr_periods 104\nnr_throttled 15\nthrottled_usec 38173\nnr_bursts 0\nburst_usec 0"
+  }
+}

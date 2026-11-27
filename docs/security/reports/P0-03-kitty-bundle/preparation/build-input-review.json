@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "scope": "Public build-input reconnaissance, no native asset download or selection",
+  "kitty_revision": "c83027daa9b031541193c19dbc518a4a42a5c9f5",
+  "kitty_shader_driver_git_blob": "38b3ba19d7b1a32661c7eaf18e7ed548fec93e28",
+  "source_archive_sha256": "084807db816a3de9f1a253eff232f17fe9f76ccd77da8101511f830431097ecf",
+  "source_archive_generated_shader_files": 0,
+  "slang_release": "v2026.22.1",
+  "slang_tag": "b72650ac88fa621961fdb571fdfa7d3f3e87a7c4",
+  "slang_revision": "a4d69f877276f412b4e8268cb2d31c3ad5ec2f98",
+  "tag_verification": {
+    "verified": false,
+    "reason": "unsigned",
+    "signature": null,
+    "payload": null,
+    "verified_at": null
+  },
+  "reviewed_workflows": [
+    {
+      "path": ".github/workflows/release.yml",
+      "git_blob": "36978eb670eee0cfe7b4765a81bb9241e43bb764",
+      "observation": "Inspected workflow has no Linux artifact attestation/signature generation step; this is not an exhaustive statement about external attestations."
+    },
+    {
+      "path": ".github/workflows/release-linux-glibc-2-28.yml",
+      "git_blob": "a2853290bea472e19d9b21fdce77890ecd3b8e22",
+      "observation": "Inspected workflow has no Linux artifact attestation/signature generation step; this is not an exhaustive statement about external attestations."
+    }
+  ],
+  "fedora_slang_source": "https://packages.fedoraproject.org/pkgs/slang/slang/",
+  "fedora_slang_observation": "The package describes the S-Lang extension-language library, not the Slang shader compiler.",
+  "candidate_alternative": "Inspect the separately publisher-signed Kitty 0.51.0 Linux bundle before making any package selection."
+}

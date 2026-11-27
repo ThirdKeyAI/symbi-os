@@ -1,0 +1,106 @@
+test_actual_ctest_class_and_name_are_accepted (test_portal_ctest_report.PortalCTestReport.test_actual_ctest_class_and_name_are_accepted) ... ERROR
+test_changed_selection_or_unsuccessful_ctest_is_refused (test_portal_ctest_report.PortalCTestReport.test_changed_selection_or_unsuccessful_ctest_is_refused) ... 
+  test_changed_selection_or_unsuccessful_ctest_is_refused (test_portal_ctest_report.PortalCTestReport.test_changed_selection_or_unsuccessful_ctest_is_refused) (report=b'<?xml version="1.0" encoding="UTF-8"?>\n<testsuite name="Linux-c++"\n\ttests="1"\n\tfailures="0"\n\tdisabled="0"\n\tskipped="0"\n\thostname="ed82006c91e8"\n\ttime="0"\n\ttimestamp="2026-11-26T06:57:18"\n\t>\n\t<testcase name="other-test" classname="hyprland-share-picker-data" time="0.00451903" status="run">\n\t\t<properties/>\n\t\t<system-out></system-out>\n\t</testcase>\n</testsuite>\n') ... ERROR
+  test_changed_selection_or_unsuccessful_ctest_is_refused (test_portal_ctest_report.PortalCTestReport.test_changed_selection_or_unsuccessful_ctest_is_refused) (report=b'<?xml version="1.0" encoding="UTF-8"?>\n<testsuite name="Linux-c++"\n\ttests="1"\n\tfailures="0"\n\tdisabled="0"\n\tskipped="0"\n\thostname="ed82006c91e8"\n\ttime="0"\n\ttimestamp="2026-11-26T06:57:18"\n\t>\n\t<testcase name="hyprland-share-picker-data" classname="other-suite" time="0.00451903" status="run">\n\t\t<properties/>\n\t\t<system-out></system-out>\n\t</testcase>\n</testsuite>\n') ... ERROR
+  test_changed_selection_or_unsuccessful_ctest_is_refused (test_portal_ctest_report.PortalCTestReport.test_changed_selection_or_unsuccessful_ctest_is_refused) (report=b'<?xml version="1.0" encoding="UTF-8"?>\n<testsuite name="Linux-c++"\n\ttests="1"\n\tfailures="1"\n\tdisabled="0"\n\tskipped="0"\n\thostname="ed82006c91e8"\n\ttime="0"\n\ttimestamp="2026-11-26T06:57:18"\n\t>\n\t<testcase name="hyprland-share-picker-data" classname="hyprland-share-picker-data" time="0.00451903" status="run">\n\t\t<properties/>\n\t\t<system-out></system-out>\n\t</testcase>\n</testsuite>\n') ... ERROR
+  test_changed_selection_or_unsuccessful_ctest_is_refused (test_portal_ctest_report.PortalCTestReport.test_changed_selection_or_unsuccessful_ctest_is_refused) (report=b'<?xml version="1.0" encoding="UTF-8"?>\n<testsuite name="Linux-c++"\n\ttests="1"\n\tfailures="0"\n\tdisabled="0"\n\tskipped="1"\n\thostname="ed82006c91e8"\n\ttime="0"\n\ttimestamp="2026-11-26T06:57:18"\n\t>\n\t<testcase name="hyprland-share-picker-data" classname="hyprland-share-picker-data" time="0.00451903" status="run">\n\t\t<properties/>\n\t\t<system-out></system-out>\n\t</testcase>\n</testsuite>\n') ... ERROR
+  test_changed_selection_or_unsuccessful_ctest_is_refused (test_portal_ctest_report.PortalCTestReport.test_changed_selection_or_unsuccessful_ctest_is_refused) (report=b'<?xml version="1.0" encoding="UTF-8"?>\n<testsuite name="Linux-c++"\n\ttests="1"\n\tfailures="0"\n\tdisabled="1"\n\tskipped="0"\n\thostname="ed82006c91e8"\n\ttime="0"\n\ttimestamp="2026-11-26T06:57:18"\n\t>\n\t<testcase name="hyprland-share-picker-data" classname="hyprland-share-picker-data" time="0.00451903" status="run">\n\t\t<properties/>\n\t\t<system-out></system-out>\n\t</testcase>\n</testsuite>\n') ... ERROR
+  test_changed_selection_or_unsuccessful_ctest_is_refused (test_portal_ctest_report.PortalCTestReport.test_changed_selection_or_unsuccessful_ctest_is_refused) (report=b'<?xml version="1.0" encoding="UTF-8"?>\n<testsuite name="Linux-c++"\n\ttests="1"\n\tfailures="0"\n\tdisabled="0"\n\tskipped="0"\n\thostname="ed82006c91e8"\n\ttime="0"\n\ttimestamp="2026-11-26T06:57:18"\n\t>\n\t<testcase name="hyprland-share-picker-data" classname="hyprland-share-picker-data" time="0.00451903" status="notrun">\n\t\t<properties/>\n\t\t<system-out></system-out>\n\t</testcase>\n</testsuite>\n') ... ERROR
+  test_changed_selection_or_unsuccessful_ctest_is_refused (test_portal_ctest_report.PortalCTestReport.test_changed_selection_or_unsuccessful_ctest_is_refused) (report=b'<?xml version="1.0" encoding="UTF-8"?>\n<testsuite name="Linux-c++"\n\ttests="1"\n\tfailures="0"\n\tdisabled="0"\n\tskipped="0"\n\thostname="ed82006c91e8"\n\ttime="0"\n\ttimestamp="2026-11-26T06:57:18"\n\t>\n\t<testcase name="hyprland-share-picker-data" classname="hyprland-share-picker-data" time="0.00451903" status="run">\n\t\t<failure message="failed"/>\n\t\t<system-out></system-out>\n\t</testcase>\n</testsuite>\n') ... ERROR
+  test_changed_selection_or_unsuccessful_ctest_is_refused (test_portal_ctest_report.PortalCTestReport.test_changed_selection_or_unsuccessful_ctest_is_refused) (report=b'<?xml version="1.0" encoding="UTF-8"?>\n<testsuite name="Linux-c++"\n\ttests="1"\n\tfailures="0"\n\tdisabled="0"\n\tskipped="0"\n\thostname="ed82006c91e8"\n\ttime="0"\n\ttimestamp="2026-11-26T06:57:18"\n\t>\n\t<testcase name="hyprland-share-picker-data" classname="hyprland-share-picker-data" time="0.00451903" status="run">\n\t\t<skipped/>\n\t\t<system-out></system-out>\n\t</testcase>\n</testsuite>\n') ... ERROR
+test_changed_selection_or_unsuccessful_ctest_is_refused (test_portal_ctest_report.PortalCTestReport.test_changed_selection_or_unsuccessful_ctest_is_refused) ... ERROR
+
+======================================================================
+ERROR: test_actual_ctest_class_and_name_are_accepted (test_portal_ctest_report.PortalCTestReport.test_actual_ctest_class_and_name_are_accepted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-portal-followup-stage/image/tests/test_portal_ctest_report.py", line 15, in test_actual_ctest_class_and_name_are_accepted
+    self.assertEqual(require_test_report(self.fixture(), expected_cases=expected), expected)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: require_test_report() got an unexpected keyword argument 'expected_cases'
+
+======================================================================
+ERROR: test_changed_selection_or_unsuccessful_ctest_is_refused (test_portal_ctest_report.PortalCTestReport.test_changed_selection_or_unsuccessful_ctest_is_refused) (report=b'<?xml version="1.0" encoding="UTF-8"?>\n<testsuite name="Linux-c++"\n\ttests="1"\n\tfailures="0"\n\tdisabled="0"\n\tskipped="0"\n\thostname="ed82006c91e8"\n\ttime="0"\n\ttimestamp="2026-11-26T06:57:18"\n\t>\n\t<testcase name="other-test" classname="hyprland-share-picker-data" time="0.00451903" status="run">\n\t\t<properties/>\n\t\t<system-out></system-out>\n\t</testcase>\n</testsuite>\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-portal-followup-stage/image/tests/test_portal_ctest_report.py", line 31, in test_changed_selection_or_unsuccessful_ctest_is_refused
+    require_test_report(changed, expected_cases=expected)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: require_test_report() got an unexpected keyword argument 'expected_cases'
+
+======================================================================
+ERROR: test_changed_selection_or_unsuccessful_ctest_is_refused (test_portal_ctest_report.PortalCTestReport.test_changed_selection_or_unsuccessful_ctest_is_refused) (report=b'<?xml version="1.0" encoding="UTF-8"?>\n<testsuite name="Linux-c++"\n\ttests="1"\n\tfailures="0"\n\tdisabled="0"\n\tskipped="0"\n\thostname="ed82006c91e8"\n\ttime="0"\n\ttimestamp="2026-11-26T06:57:18"\n\t>\n\t<testcase name="hyprland-share-picker-data" classname="other-suite" time="0.00451903" status="run">\n\t\t<properties/>\n\t\t<system-out></system-out>\n\t</testcase>\n</testsuite>\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-portal-followup-stage/image/tests/test_portal_ctest_report.py", line 31, in test_changed_selection_or_unsuccessful_ctest_is_refused
+    require_test_report(changed, expected_cases=expected)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: require_test_report() got an unexpected keyword argument 'expected_cases'
+
+======================================================================
+ERROR: test_changed_selection_or_unsuccessful_ctest_is_refused (test_portal_ctest_report.PortalCTestReport.test_changed_selection_or_unsuccessful_ctest_is_refused) (report=b'<?xml version="1.0" encoding="UTF-8"?>\n<testsuite name="Linux-c++"\n\ttests="1"\n\tfailures="1"\n\tdisabled="0"\n\tskipped="0"\n\thostname="ed82006c91e8"\n\ttime="0"\n\ttimestamp="2026-11-26T06:57:18"\n\t>\n\t<testcase name="hyprland-share-picker-data" classname="hyprland-share-picker-data" time="0.00451903" status="run">\n\t\t<properties/>\n\t\t<system-out></system-out>\n\t</testcase>\n</testsuite>\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-portal-followup-stage/image/tests/test_portal_ctest_report.py", line 31, in test_changed_selection_or_unsuccessful_ctest_is_refused
+    require_test_report(changed, expected_cases=expected)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: require_test_report() got an unexpected keyword argument 'expected_cases'
+
+======================================================================
+ERROR: test_changed_selection_or_unsuccessful_ctest_is_refused (test_portal_ctest_report.PortalCTestReport.test_changed_selection_or_unsuccessful_ctest_is_refused) (report=b'<?xml version="1.0" encoding="UTF-8"?>\n<testsuite name="Linux-c++"\n\ttests="1"\n\tfailures="0"\n\tdisabled="0"\n\tskipped="1"\n\thostname="ed82006c91e8"\n\ttime="0"\n\ttimestamp="2026-11-26T06:57:18"\n\t>\n\t<testcase name="hyprland-share-picker-data" classname="hyprland-share-picker-data" time="0.00451903" status="run">\n\t\t<properties/>\n\t\t<system-out></system-out>\n\t</testcase>\n</testsuite>\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-portal-followup-stage/image/tests/test_portal_ctest_report.py", line 31, in test_changed_selection_or_unsuccessful_ctest_is_refused
+    require_test_report(changed, expected_cases=expected)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: require_test_report() got an unexpected keyword argument 'expected_cases'
+
+======================================================================
+ERROR: test_changed_selection_or_unsuccessful_ctest_is_refused (test_portal_ctest_report.PortalCTestReport.test_changed_selection_or_unsuccessful_ctest_is_refused) (report=b'<?xml version="1.0" encoding="UTF-8"?>\n<testsuite name="Linux-c++"\n\ttests="1"\n\tfailures="0"\n\tdisabled="1"\n\tskipped="0"\n\thostname="ed82006c91e8"\n\ttime="0"\n\ttimestamp="2026-11-26T06:57:18"\n\t>\n\t<testcase name="hyprland-share-picker-data" classname="hyprland-share-picker-data" time="0.00451903" status="run">\n\t\t<properties/>\n\t\t<system-out></system-out>\n\t</testcase>\n</testsuite>\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-portal-followup-stage/image/tests/test_portal_ctest_report.py", line 31, in test_changed_selection_or_unsuccessful_ctest_is_refused
+    require_test_report(changed, expected_cases=expected)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: require_test_report() got an unexpected keyword argument 'expected_cases'
+
+======================================================================
+ERROR: test_changed_selection_or_unsuccessful_ctest_is_refused (test_portal_ctest_report.PortalCTestReport.test_changed_selection_or_unsuccessful_ctest_is_refused) (report=b'<?xml version="1.0" encoding="UTF-8"?>\n<testsuite name="Linux-c++"\n\ttests="1"\n\tfailures="0"\n\tdisabled="0"\n\tskipped="0"\n\thostname="ed82006c91e8"\n\ttime="0"\n\ttimestamp="2026-11-26T06:57:18"\n\t>\n\t<testcase name="hyprland-share-picker-data" classname="hyprland-share-picker-data" time="0.00451903" status="notrun">\n\t\t<properties/>\n\t\t<system-out></system-out>\n\t</testcase>\n</testsuite>\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-portal-followup-stage/image/tests/test_portal_ctest_report.py", line 31, in test_changed_selection_or_unsuccessful_ctest_is_refused
+    require_test_report(changed, expected_cases=expected)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: require_test_report() got an unexpected keyword argument 'expected_cases'
+
+======================================================================
+ERROR: test_changed_selection_or_unsuccessful_ctest_is_refused (test_portal_ctest_report.PortalCTestReport.test_changed_selection_or_unsuccessful_ctest_is_refused) (report=b'<?xml version="1.0" encoding="UTF-8"?>\n<testsuite name="Linux-c++"\n\ttests="1"\n\tfailures="0"\n\tdisabled="0"\n\tskipped="0"\n\thostname="ed82006c91e8"\n\ttime="0"\n\ttimestamp="2026-11-26T06:57:18"\n\t>\n\t<testcase name="hyprland-share-picker-data" classname="hyprland-share-picker-data" time="0.00451903" status="run">\n\t\t<failure message="failed"/>\n\t\t<system-out></system-out>\n\t</testcase>\n</testsuite>\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-portal-followup-stage/image/tests/test_portal_ctest_report.py", line 31, in test_changed_selection_or_unsuccessful_ctest_is_refused
+    require_test_report(changed, expected_cases=expected)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: require_test_report() got an unexpected keyword argument 'expected_cases'
+
+======================================================================
+ERROR: test_changed_selection_or_unsuccessful_ctest_is_refused (test_portal_ctest_report.PortalCTestReport.test_changed_selection_or_unsuccessful_ctest_is_refused) (report=b'<?xml version="1.0" encoding="UTF-8"?>\n<testsuite name="Linux-c++"\n\ttests="1"\n\tfailures="0"\n\tdisabled="0"\n\tskipped="0"\n\thostname="ed82006c91e8"\n\ttime="0"\n\ttimestamp="2026-11-26T06:57:18"\n\t>\n\t<testcase name="hyprland-share-picker-data" classname="hyprland-share-picker-data" time="0.00451903" status="run">\n\t\t<skipped/>\n\t\t<system-out></system-out>\n\t</testcase>\n</testsuite>\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-portal-followup-stage/image/tests/test_portal_ctest_report.py", line 31, in test_changed_selection_or_unsuccessful_ctest_is_refused
+    require_test_report(changed, expected_cases=expected)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: require_test_report() got an unexpected keyword argument 'expected_cases'
+
+======================================================================
+ERROR: test_changed_selection_or_unsuccessful_ctest_is_refused (test_portal_ctest_report.PortalCTestReport.test_changed_selection_or_unsuccessful_ctest_is_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/jascha/Documents/Codex/2026-11-24-begin-building-the-spec-using-empty/p003-portal-followup-stage/image/tests/test_portal_ctest_report.py", line 33, in test_changed_selection_or_unsuccessful_ctest_is_refused
+    require_test_report(raw, expected_cases=['hyprland-share-picker-data'])
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: require_test_report() got an unexpected keyword argument 'expected_cases'
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.001s
+
+FAILED (errors=10)

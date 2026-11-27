@@ -1,0 +1,76 @@
+name: Atomic image preflight
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "image/boot/**"
+      - "image/desktop-images.lock.json"
+      - "image/base-images.json"
+      - "image/release-trust.json"
+      - "image/signing.py"
+      - "image/keys/**"
+      - "image/desktop/verify.py"
+      - "image/toolchain/reuse.py"
+      - "image/launcher/probes/bounded_process.py"
+      - "scripts/check-atomic-image.sh"
+      - ".github/workflows/atomic-preflight.yml"
+      - "!image/boot/README.md"
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: Exact retained development image to inspect without installing or booting
+        required: true
+        default: generic
+        type: choice
+        options: [generic, nvidia]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: atomic-image-preflight-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    env:
+      SYMBI_IMAGE_VARIANT: ${{ inputs.variant || 'generic' }}
+    steps:
+      - name: Check out the proposed inspection revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Download the exact retained development artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache
+          artifact=$(python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          from image.boot.inputs import require_desktop_image
+          lock=json.loads(Path('image/desktop-images.lock.json').read_text())
+          pins=json.loads(Path('image/base-images.json').read_text())
+          variant=os.environ['SYMBI_IMAGE_VARIANT']
+          require_desktop_image(lock,pins,variant)
+          print(lock['images'][variant]['artifact']['id'])
+          PY
+          )
+          timeout 30 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/$artifact" > .cache/atomic-image-artifact.json
+          timeout 900 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/$artifact/zip" > .cache/atomic-development-image.zip
+      - name: Verify metadata and stream the exact retained image
+        run: bash scripts/check-atomic-image.sh prepare
+      - name: Inspect installed payload, kernel, installer and trust without privileges
+        run: bash scripts/check-atomic-image.sh inspect
+      - name: Retain bounded public preflight evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: atomic-image-preflight-${{ inputs.variant || 'generic' }}
+          path: .cache/atomic-image-evidence
+          if-no-files-found: error
+          retention-days: 14

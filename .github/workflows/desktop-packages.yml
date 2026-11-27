@@ -1,0 +1,81 @@
+name: Desktop signed package discovery
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "image/desktop_packages/**"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/fedora-package-trust.json"
+      - "image/hyprland/package-dnf.conf"
+      - "image/hyprland/keys/**"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/reuse.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - "image/launcher/probes/bounded_process.py"
+      - "scripts/check-desktop-packages.sh"
+      - ".github/workflows/desktop-packages.yml"
+      - "!image/desktop_packages/README.md"
+  pull_request:
+    paths:
+      - "image/desktop_packages/**"
+      - "image/hyprland/guest_inventory.py"
+      - "image/hyprland/inventory.py"
+      - "image/hyprland/fedora-package-trust.json"
+      - "image/hyprland/package-dnf.conf"
+      - "image/hyprland/keys/**"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "image/recipe.py"
+      - "image/toolchain/reuse.py"
+      - "image/toolchain/bootstrap_cosign.py"
+      - "image/toolchain/cosign.json"
+      - "image/toolchain/keys/**"
+      - "image/launcher/probes/bounded_process.py"
+      - "scripts/check-desktop-packages.sh"
+      - ".github/workflows/desktop-packages.yml"
+      - "!image/desktop_packages/README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-packages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  packages:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-26.04
+    timeout-minutes: 75
+    steps:
+      - name: Check out proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Resolve and verify desktop RPM candidates without installation
+        run: bash scripts/check-desktop-packages.sh
+      - name: Retain public evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: desktop-package-evidence
+          path: .cache/desktop-package-evidence/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Retain authenticated candidates for separate source and security review
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: symbiont-desktop-rpm-candidates
+          path: |
+            .cache/desktop-package-output/rpms/
+            .cache/desktop-package-output/evidence/result.json
+          retention-days: 7
+          compression-level: 0
+          if-no-files-found: error

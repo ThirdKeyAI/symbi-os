@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+  "rust_version": "1.100.0",
+  "patch_sha256": "a7fd467722ecd498e095402466cbf56f4f3461df2c39e2e9471c1e2e1200e76c",
+  "checks": [],
+  "baseline_passed": false,
+  "patched_workspace_passed": false,
+  "os_qualified": false,
+  "source_commit": "6b1d42df6992b0689ca10909fddc3b82cfbcbc07",
+  "scope": "Ubuntu hosted workspace and Python fixture checks; no Fedora, container or escape qualification",
+  "source_clean_before": true,
+  "cargo_lock_sha256": "d189b27d99bfc7fafeb8b6a37c0cfe36c1beb3472a6d5ae6f41dca8883fbb59d",
+  "started_at_utc": "2026-11-25T19:31:18.064234+00:00",
+  "rustc": "rustc 1.100.0 (0ef1bc386 2026-11-09)\nbinary: rustc\ncommit-hash: 0ef1bc386059596dada8fb65b50425aab2ea637a\ncommit-date: 2026-11-09\nhost: x86_64-unknown-linux-gnu\nrelease: 1.100.0\nLLVM version: 23.1.5\n",
+  "protoc": "libprotoc 3.21.12"
+}

@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "scope": "Signed disposable Elephant compiler and OCR test inputs; not a product layer or dependency audit",
+  "run_id": 45734717251,
+  "head_sha": "d3a4cc32d7a8100477be974adbdffa2aff8d5f61",
+  "tested_commit": "d3a4cc32d7a8100477be974adbdffa2aff8d5f61",
+  "event": "push",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "artifact": {
+    "id": 15078925262,
+    "bytes": 42612804,
+    "sha256": "7a612d68f1cd5bde65d8f542f6da236751b5555e05d46137e14a9dbd0b2a41aa"
+  },
+  "manifest_sha256": "9a0dd08b46a8211e54fcea11d97364098575adb471d702cb5c4fe0f9b263fc89",
+  "packages": [
+    {
+      "filename": "go-filesystem-3.8.0-3.fc45.x86_64.rpm",
+      "bytes": 8536,
+      "sha256": "d6b7be15db822c933a20166f849051743016546a8c1d9fbbb460bf135f28f852",
+      "nevra": "go-filesystem-3.8.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LicenseRef-Fedora-Public-Domain",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "golang-1.27.4-2.fc45.x86_64.rpm",
+      "bytes": 1502055,
+      "sha256": "7818d61212b5d4975e41de6470a76d62a79d0bcc3bbd960bf939df6d0f422e10",
+      "nevra": "golang-1.27.4-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause AND LicenseRef-Fedora-Public-Domain",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "golang-bin-1.27.4-2.fc45.x86_64.rpm",
+      "bytes": 24876179,
+      "sha256": "aabab6cebc01e5830af7b41abbe6aa860d1b19add676f6da0e6116f687392622",
+      "nevra": "golang-bin-1.27.4-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause AND LicenseRef-Fedora-Public-Domain",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "golang-src-1.27.4-2.fc45.noarch.rpm",
+      "bytes": 16163788,
+      "sha256": "006f379434db96daba41d8dea7e8504003433679e7e36de3047b9234c4d81363",
+      "nevra": "golang-src-1.27.4-2.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause AND LicenseRef-Fedora-Public-Domain",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "tesseract-5.5.4-1.fc45.x86_64.rpm",
+      "bytes": 51018,
+      "sha256": "558356be76de1a70656bc7fc3037f8c98a39a5b80c900d931259776440b6fe4b",
+      "nevra": "tesseract-5.5.4-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    }
+  ],
+  "key": {
+    "path": "image/hyprland/keys/fedora-45-primary.asc",
+    "sha256": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425",
+    "fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E",
+    "identity": "Fedora (45) <fedora-45-primary@fedoraproject.org>"
+  },
+  "qualified": false,
+  "product_installation": false,
+  "requirements": {
+    "schema": 1,
+    "scope": "Candidate signed Fedora toolchain for source-built application-only Elephant; review and pin before installation",
+    "source_inputs": "image/launcher/elephant-source.json",
+    "packages": [
+      "golang >= 1.27.1",
+      "gcc",
+      "glibc-devel",
+      "tesseract"
+    ],
+    "notes": [
+      "The pinned Elephant go.mod requires Go1.27.1; the selected base has no Go compiler",
+      "Go plugin and executable must be built with the same authenticated compiler and compatible flags",
+      "GCC and glibc development inputs support Go CGO/plugin builds; existing base packages remain pinned by its image digest",
+      "Discovery does not install packages or build/execute Elephant",
+      "This separate profile must not change either the compositor build lock or the launcher runtime lock",
+      "The actual upstream TestRunOCR needs the tesseract executable: hosted45732324253 confirmed convert creates its image but tesseract is absent. This package is a development test prerequisite only, not a product runtime selection."
+    ],
+    "source_revision": "8f1e21d6efe40b8b3953f95b9574f99f717caf91",
+    "go_mod_sha256": "c5fe5f8c609ed14dae2fea900a0cbdc00875352a1b3b1bf6bfa9f84f430288b9",
+    "go_sum_sha256": "c307c62070ecdac44a964fe304b1325b74d859bb851bd9a807faf52091a0f8d0"
+  }
+}

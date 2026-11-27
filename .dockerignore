@@ -1,0 +1,12 @@
+.git
+.agents
+.codex
+.tools
+.cache
+target
+artifacts
+**/__pycache__
+**/*.private.pem
+**/*.private.jwk.json
+.env
+.env.*

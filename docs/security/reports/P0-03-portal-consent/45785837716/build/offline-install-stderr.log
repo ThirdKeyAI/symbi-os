@@ -1,0 +1,191 @@
+Updating and loading repositories:
+Repositories loaded.
+Total size of inbound packages is 146 MiB. Need to download 0 B.
+After this operation, 501 MiB extra will be used (install 736 MiB, remove 234 MiB).
+Running transaction
+[  1/185] Verify package files          100% | 387.0   B/s | 173.0   B |  00m00s
+[  2/185] Prepare transaction           100% | 559.0   B/s | 183.0   B |  00m00s
+[  3/185] Installing xorg-x11-proto-dev 100% | 119.7 MiB/s |   1.8 MiB |  00m00s
+[  4/185] Installing zlib-ng-compat-dev 100% |  35.3 MiB/s | 108.6 KiB |  00m00s
+[  5/185] Installing libpng-devel-2:1.6 100% |  27.0 MiB/s | 911.7 KiB |  00m00s
+[  6/185] Installing systemd-devel-0:26 100% |  70.8 MiB/s | 797.9 KiB |  00m00s
+[  7/185] Upgrading at-spi2-core-0:2.62 100% |  46.9 MiB/s |   1.6 MiB |  00m00s
+[  8/185] Upgrading atk-0:2.62.2-1.fc45 100% |  62.0 MiB/s | 254.0 KiB |  00m00s
+[  9/185] Installing gtk2-0:2.24.33-28. 100% | 141.8 MiB/s |  13.0 MiB |  00m00s
+[ 10/185] Installing gtest-0:1.17.0-3.f 100% |  83.8 MiB/s | 514.7 KiB |  00m00s
+[ 11/185] Installing gmock-0:1.17.0-3.f 100% |  35.2 MiB/s | 144.2 KiB |  00m00s
+[ 12/185] Installing dbus-devel-1:1.16. 100% |  33.3 MiB/s | 136.5 KiB |  00m00s
+[ 13/185] Downgrading mesa-filesystem-0 100% |   2.1 MiB/s |   4.3 KiB |  00m00s
+[ 14/185] Downgrading mesa-dri-drivers- 100% | 447.6 MiB/s |  53.3 MiB |  00m00s
+[ 15/185] Downgrading mesa-libgbm-0:26. 100% |   6.6 MiB/s |  20.3 KiB |  00m00s
+[ 16/185] Installing pixman-devel-0:0.4 100% |  27.8 MiB/s |  56.9 KiB |  00m00s
+[ 17/185] Installing pcre2-devel-0:10.4 100% |  70.8 MiB/s |   2.1 MiB |  00m00s
+[ 18/185] Installing ninja-build-0:1.13 100% |  16.9 MiB/s | 500.6 KiB |  00m00s
+[ 19/185] Installing cmake-rpm-macros-0 100% |   4.4 MiB/s |   9.0 KiB |  00m00s
+[ 20/185] Installing meson-srpm-macros- 100% |   1.9 MiB/s |   1.9 KiB |  00m00s
+[ 21/185] Installing lua-srpm-macros-0: 100% | 951.2 KiB/s |   1.9 KiB |  00m00s
+[ 22/185] Installing libicu-devel-0:78. 100% | 102.5 MiB/s |   5.2 MiB |  00m00s
+[ 23/185] Installing libffi-devel-0:3.5 100% |  17.4 MiB/s |  35.6 KiB |  00m00s
+[ 24/185] Installing gdb-minimal-0:18.1 100% | 229.2 MiB/s |  14.4 MiB |  00m00s
+[ 25/185] Installing fribidi-devel-0:1. 100% |  26.7 MiB/s |  82.1 KiB |  00m00s
+[ 26/185] Installing elfutils-0:0.197-1 100% |  74.9 MiB/s |   3.1 MiB |  00m00s
+[ 27/185] Installing dwz-0:0.17-3.fc45. 100% |  11.4 MiB/s | 292.5 KiB |  00m00s
+[ 28/185] Installing debugedit-0:5.4-1. 100% |   8.1 MiB/s | 232.1 KiB |  00m00s
+[ 29/185] Installing wayland-devel-0:1. 100% |  24.7 MiB/s | 733.3 KiB |  00m00s
+[ 30/185] Installing lua-rpm-macros-0:1 100% |   1.2 MiB/s |   2.5 KiB |  00m00s
+[ 31/185] Installing abseil-cpp-testing 100% |  41.1 MiB/s | 588.7 KiB |  00m00s
+[ 32/185] Installing abseil-cpp-devel-0 100% |  55.9 MiB/s |   4.2 MiB |  00m00s
+[ 33/185] Installing libcanberra-gtk2-0 100% |  13.5 MiB/s |  55.3 KiB |  00m00s
+[ 34/185] Upgrading at-spi2-atk-0:2.62. 100% |  56.7 MiB/s | 290.2 KiB |  00m00s
+[ 35/185] Installing libXau-devel-0:1.0 100% |   1.1 MiB/s |   9.1 KiB |  00m00s
+[ 36/185] Installing libxcb-devel-0:1.1 100% |  88.7 MiB/s |   3.0 MiB |  00m00s
+[ 37/185] Installing libX11-devel-0:1.8 100% | 100.5 MiB/s |   1.1 MiB |  00m00s
+[ 38/185] Installing libXext-devel-0:1. 100% |  35.7 MiB/s | 109.8 KiB |  00m00s
+[ 39/185] Installing libXfixes-devel-0: 100% |   4.8 MiB/s |   9.9 KiB |  00m00s
+[ 40/185] Installing libXrender-devel-0 100% |  24.9 MiB/s |  51.0 KiB |  00m00s
+[ 41/185] Installing libXi-devel-0:1.8. 100% |  46.8 MiB/s | 143.9 KiB |  00m00s
+[ 42/185] Installing libXcursor-devel-0 100% |  14.9 MiB/s |  30.5 KiB |  00m00s
+[ 43/185] Installing libXrandr-devel-0: 100% |  11.8 MiB/s |  24.1 KiB |  00m00s
+[ 44/185] Installing libXcomposite-deve 100% |   4.9 MiB/s |  10.1 KiB |  00m00s
+[ 45/185] Installing libXinerama-devel- 100% |   4.1 MiB/s |   8.4 KiB |  00m00s
+[ 46/185] Installing libXtst-devel-0:1. 100% |   6.6 MiB/s |  13.6 KiB |  00m00s
+[ 47/185] Installing libXdamage-devel-0 100% |   1.5 MiB/s |   3.1 KiB |  00m00s
+[ 48/185] Upgrading libdav1d-0:1.5.5-1. 100% | 251.4 MiB/s |   1.8 MiB |  00m00s
+[ 49/185] Installing libdav1d-devel-0:1 100% |  21.1 MiB/s |  43.3 KiB |  00m00s
+[ 50/185] Installing zig-srpm-macros-0: 100% | 931.6 KiB/s |   1.9 KiB |  00m00s
+[ 51/185] Installing xz-devel-1:5.8.3-2 100% |  64.1 MiB/s | 262.6 KiB |  00m00s
+[ 52/185] Installing libxml2-devel-0:2. 100% | 176.9 MiB/s |   6.7 MiB |  00m00s
+[ 53/185] Installing libxkbcommon-devel 100% | 128.6 MiB/s | 395.1 KiB |  00m00s
+[ 54/185] Installing tree-sitter-srpm-m 100% |   4.7 MiB/s |   9.6 KiB |  00m00s
+[ 55/185] Installing tomlplusplus-0:3.4 100% |  64.3 MiB/s | 263.5 KiB |  00m00s
+[ 56/185] Installing sysprof-capture-de 100% | 167.1 MiB/s | 855.7 KiB |  00m00s
+[ 57/185] Installing rust-srpm-macros-0 100% |   3.1 MiB/s |   6.4 KiB |  00m00s
+[ 58/185] Installing rhash-0:1.4.5-5.fc 100% |  11.0 MiB/s | 360.1 KiB |  00m00s
+[ 59/185] Installing cmake-0:4.3.0-7.fc 100% | 299.3 MiB/s |  40.4 MiB |  00m00s
+[ 60/185] Installing cmake-data-0:4.3.0 100% |  49.1 MiB/s |  10.1 MiB |  00m00s
+[ 61/185] Installing qt6-srpm-macros-0: 100% | 730.5 KiB/s | 748.0   B |  00m00s
+[ 62/185] Installing qt5-srpm-macros-0: 100% | 757.8 KiB/s | 776.0   B |  00m00s
+[ 63/185] Installing perl-srpm-macros-0 100% |   1.1 MiB/s |   1.1 KiB |  00m00s
+[ 64/185] Installing package-notes-srpm 100% |   1.0 MiB/s |   2.1 KiB |  00m00s
+[ 65/185] Installing openblas-srpm-macr 100% | 382.8 KiB/s | 392.0   B |  00m00s
+[ 66/185] Installing ocaml-srpm-macros- 100% |   2.1 MiB/s |   2.1 KiB |  00m00s
+[ 67/185] Installing ncurses-c++-libs-0 100% |  30.2 MiB/s | 154.9 KiB |  00m00s
+[ 68/185] Installing ncurses-devel-0:6. 100% |  22.2 MiB/s |   1.0 MiB |  00m00s
+[ 69/185] Installing muParser-0:2.3.5-6 100% |  91.9 MiB/s | 564.9 KiB |  00m00s
+[ 70/185] Installing lzo-minilzo-0:2.10 100% |  12.3 MiB/s |  37.8 KiB |  00m00s
+[ 71/185] Installing lzo-devel-0:2.10-1 100% |  70.1 MiB/s | 215.3 KiB |  00m00s
+[ 72/185] Installing lua-0:5.5.1-2.fc45 100% |  23.1 MiB/s | 638.9 KiB |  00m00s
+[ 73/185] Installing linkdupes-0:0.7.3- 100% |  26.4 MiB/s | 783.5 KiB |  00m00s
+[ 74/185] Installing libstdc++-devel-0: 100% | 351.6 MiB/s |  41.5 MiB |  00m00s
+[ 75/185] Installing libsepol-devel-0:3 100% |  20.9 MiB/s | 128.2 KiB |  00m00s
+[ 76/185] Installing libselinux-devel-0 100% |  30.6 MiB/s | 156.6 KiB |  00m00s
+[ 77/185] Installing libseccomp-devel-0 100% |   4.4 MiB/s | 122.5 KiB |  00m00s
+[ 78/185] Installing libpciaccess-devel 100% |   7.8 MiB/s |  15.9 KiB |  00m00s
+[ 79/185] Installing libglvnd-core-deve 100% |  20.1 MiB/s |  41.1 KiB |  00m00s
+[ 80/185] Installing libglvnd-devel-1:1 100% | 235.6 MiB/s |   2.1 MiB |  00m00s
+[ 81/185] Installing libepoxy-devel-0:1 100% | 317.9 MiB/s |   1.6 MiB |  00m00s
+[ 82/185] Installing libeis-0:1.6.0-3.f 100% |  31.4 MiB/s | 128.5 KiB |  00m00s
+[ 83/185] Installing libdatrie-devel-0: 100% |  14.6 MiB/s | 418.4 KiB |  00m00s
+[ 84/185] Installing libthai-devel-0:0. 100% | 102.1 MiB/s | 522.6 KiB |  00m00s
+[ 85/185] Installing libblkid-devel-0:2 100% |  22.5 MiB/s |  46.2 KiB |  00m00s
+[ 86/185] Installing libmount-devel-0:2 100% |  16.5 MiB/s |  67.4 KiB |  00m00s
+[ 87/185] Installing glib2-devel-0:2.90 100% | 198.7 MiB/s |  15.9 MiB |  00m00s
+[ 88/185] Installing atk-devel-0:2.62.2 100% | 379.7 MiB/s |   6.1 MiB |  00m00s
+[ 89/185] Installing at-spi2-core-devel 100% | 382.7 MiB/s |   4.6 MiB |  00m00s
+[ 90/185] Installing at-spi2-atk-devel- 100% | 713.5 KiB/s |   2.1 KiB |  00m00s
+[ 91/185] Installing libcloudproviders- 100% | 196.1 MiB/s |   1.4 MiB |  00m00s
+[ 92/185] Installing libGLEW-0:2.2.0-13 100% | 185.9 MiB/s | 761.4 KiB |  00m00s
+[ 93/185] Installing kernel-srpm-macros 100% |   2.3 MiB/s |   2.3 KiB |  00m00s
+[ 94/185] Installing java-srpm-macros-0 100% |   1.1 MiB/s |   1.1 KiB |  00m00s
+[ 95/185] Installing iniparser-0:4.2.6- 100% |  12.9 MiB/s |  39.5 KiB |  00m00s
+[ 96/185] Installing harfbuzz-vector-0: 100% |  28.8 MiB/s | 118.1 KiB |  00m00s
+[ 97/185] Installing harfbuzz-raster-0: 100% |  39.5 MiB/s | 121.4 KiB |  00m00s
+[ 98/185] Installing harfbuzz-gpu-0:15. 100% |  57.6 MiB/s | 177.1 KiB |  00m00s
+[ 99/185] Installing harfbuzz-cairo-0:1 100% |  17.2 MiB/s |  53.0 KiB |  00m00s
+[100/185] Installing graphite2-devel-0: 100% |  24.8 MiB/s |  50.8 KiB |  00m00s
+[101/185] Installing gpgverify-0:2.2-5. 100% |   4.6 MiB/s |   9.4 KiB |  00m00s
+[102/185] Installing gnome-srpm-macros- 100% |   4.0 MiB/s |   4.1 KiB |  00m00s
+[103/185] Installing gnat-srpm-macros-0 100% |   1.2 MiB/s |   1.3 KiB |  00m00s
+[104/185] Installing glslang-0:16.3.0-2 100% |  96.3 MiB/s |   3.6 MiB |  00m00s
+[105/185] Installing ghc-srpm-macros-0: 100% | 521.5 KiB/s |   1.0 KiB |  00m00s
+[106/185] Installing gcc-plugin-annobin 100% |  19.1 MiB/s |  58.7 KiB |  00m00s
+[107/185] Installing gap-srpm-macros-0: 100% |   2.6 MiB/s |   2.7 KiB |  00m00s
+[108/185] Installing fpc-srpm-macros-0: 100% | 410.2 KiB/s | 420.0   B |  00m00s
+[109/185] Installing filesystem-srpm-ma 100% |  19.0 MiB/s |  38.9 KiB |  00m00s
+[110/185] Installing efi-srpm-macros-0: 100% |  20.2 MiB/s |  41.3 KiB |  00m00s
+[111/185] Installing cmake-srpm-macros- 100% | 785.2 KiB/s | 804.0   B |  00m00s
+[112/185] Installing bzip2-devel-0:1.0. 100% | 151.7 MiB/s | 310.7 KiB |  00m00s
+[113/185] Installing brotli-0:1.2.1-1.f 100% |   1.3 MiB/s |  34.3 KiB |  00m00s
+[114/185] Installing brotli-devel-0:1.2 100% |  13.3 MiB/s |  68.2 KiB |  00m00s
+[115/185] Installing freetype-devel-0:2 100% | 204.6 MiB/s |   8.6 MiB |  00m00s
+[116/185] Installing fontconfig-devel-0 100% |  32.1 MiB/s | 164.2 KiB |  00m00s
+[117/185] Installing cairo-devel-0:1.18 100% | 327.3 MiB/s |   2.3 MiB |  00m00s
+[118/185] Installing harfbuzz-devel-0:1 100% |  56.1 MiB/s |   6.6 MiB |  00m00s
+[119/185] Installing cairo-gobject-deve 100% |   3.7 MiB/s |   7.6 KiB |  00m00s
+[120/185] Installing glycin-devel-0:2.2 100% |  74.5 MiB/s | 152.7 KiB |  00m00s
+[121/185] Installing gdk-pixbuf2-devel- 100% |  75.2 MiB/s |   2.3 MiB |  00m00s
+[122/185] Installing libXft-devel-0:2.3 100% |  20.3 MiB/s |  41.6 KiB |  00m00s
+[123/185] Installing pango-devel-0:1.58 100% | 154.5 MiB/s |   1.5 MiB |  00m00s
+[124/185] Installing gtk2-devel-0:2.24. 100% | 197.1 MiB/s |  23.8 MiB |  00m00s
+[125/185] Installing gtk3-devel-0:3.24. 100% | 132.7 MiB/s |  34.6 MiB |  00m00s
+[126/185] Installing ansible-srpm-macro 100% |   1.5 MiB/s |  36.2 KiB |  00m00s
+[127/185] Installing annobin-docs-0:13. 100% |   3.8 MiB/s | 100.8 KiB |  00m00s
+[128/185] Installing annobin-plugin-gcc 100% |  86.8 MiB/s | 711.1 KiB |  00m00s
+[129/185] Installing add-determinism-0: 100% |  32.2 MiB/s |   2.2 MiB |  00m00s
+[130/185] Installing build-reproducibil 100% | 126.3 KiB/s |   1.5 KiB |  00m00s
+[131/185] Installing R-srpm-macros-0:1. 100% | 627.2 KiB/s |   4.4 KiB |  00m00s
+[132/185] Installing redhat-rpm-config- 100% |   2.5 MiB/s | 190.4 KiB |  00m00s
+[133/185] Installing forge-srpm-macros- 100% |   5.6 MiB/s |  40.3 KiB |  00m00s
+[134/185] Installing rpm-build-0:6.1.0- 100% |   8.5 MiB/s | 322.1 KiB |  00m00s
+[135/185] Installing erlang-srpm-macros 100% | 286.5 KiB/s |   2.6 KiB |  00m00s
+[136/185] Installing pyproject-srpm-mac 100% | 124.8 KiB/s |   4.0 KiB |  00m00s
+[137/185] Installing fonts-srpm-macros- 100% |   2.7 MiB/s |  57.0 KiB |  00m00s
+[138/185] Installing go-srpm-macros-0:3 100% |   3.4 MiB/s |  63.0 KiB |  00m00s
+[139/185] Installing python-srpm-macros 100% |   3.7 MiB/s |  52.9 KiB |  00m00s
+[140/185] Installing libcanberra-devel- 100% |   7.7 MiB/s | 149.0 KiB |  00m00s
+[141/185] Installing librsvg2-devel-0:2 100% |  75.4 MiB/s |   1.1 MiB |  00m00s
+[142/185] Installing glslang-devel-0:16 100% |  41.8 MiB/s | 156.1 MiB |  00m04s
+[143/185] Installing iniparser-devel-0: 100% |  64.0 MiB/s | 131.0 KiB |  00m00s
+[144/185] Installing libeis-devel-0:1.6 100% |  51.4 MiB/s |  52.6 KiB |  00m00s
+[145/185] Installing libdrm-devel-0:2.4 100% | 105.0 MiB/s | 752.7 KiB |  00m00s
+[146/185] Installing gcc-c++-0:16.2.1-3 100% | 322.9 MiB/s |  46.8 MiB |  00m00s
+[147/185] Installing lua-devel-0:5.5.1- 100% |  24.2 MiB/s |  49.6 KiB |  00m00s
+[148/185] Installing muParser-devel-0:2 100% |  42.4 MiB/s | 130.2 KiB |  00m00s
+[149/185] Installing readline-devel-0:8 100% | 147.3 MiB/s | 603.5 KiB |  00m00s
+[150/185] Installing tomlplusplus-devel 100% | 126.2 MiB/s | 646.3 KiB |  00m00s
+[151/185] Installing xcb-util-errors-de 100% |   7.0 MiB/s |   7.1 KiB |  00m00s
+[152/185] Installing xcb-util-wm-devel- 100% |  69.5 MiB/s | 142.4 KiB |  00m00s
+[153/185] Installing re2-devel-2:202511 100% |  25.6 MiB/s | 104.7 KiB |  00m00s
+[154/185] Installing meson-0:1.12.1-3.f 100% | 163.8 MiB/s |  15.1 MiB |  00m00s
+[155/185] Installing mesa-libgbm-devel- 100% |  15.0 MiB/s |  30.8 KiB |  00m00s
+[156/185] Downgrading mesa-libEGL-0:26. 100% |  97.5 MiB/s | 399.5 KiB |  00m00s
+[157/185] Downgrading mesa-libGL-0:26.2 100% |  92.6 MiB/s | 379.3 KiB |  00m00s
+[158/185] Downgrading mesa-vulkan-drive 100% | 614.9 MiB/s | 174.0 MiB |  00m00s
+[159/185] Installing gtest-devel-0:1.17 100% | 152.1 MiB/s |   1.1 MiB |  00m00s
+[160/185] Installing ibus-gtk2-0:1.5.35 100% |  21.8 MiB/s |  44.6 KiB |  00m00s
+[161/185] Installing libinput-devel-0:1 100% | 117.3 MiB/s | 240.2 KiB |  00m00s
+[162/185] Installing libseat-devel-0:0. 100% |   6.3 MiB/s |   6.5 KiB |  00m00s
+[163/185] Installing sdbus-cpp-devel-0: 100% |  78.2 MiB/s | 320.2 KiB |  00m00s
+[164/185] Installing wayland-protocols- 100% |  73.9 MiB/s |   1.0 MiB |  00m00s
+[165/185] Installing systemd-rpm-macros 100% |   8.7 MiB/s |   8.9 KiB |  00m00s
+[166/185] Installing pugixml-devel-0:1. 100% |  34.2 MiB/s |  69.9 KiB |  00m00s
+[167/185] Installing pipewire-devel-0:1 100% |  63.1 MiB/s |   1.0 MiB |  00m00s
+[168/185] Installing libzip-devel-0:1.1 100% |  68.8 MiB/s | 282.0 KiB |  00m00s
+[169/185] Installing libwebp-devel-0:1. 100% |  30.6 MiB/s | 125.4 KiB |  00m00s
+[170/185] Installing libuuid-devel-0:2. 100% |  21.4 MiB/s |  43.9 KiB |  00m00s
+[171/185] Installing libjpeg-turbo-deve 100% | 174.2 MiB/s | 356.7 KiB |  00m00s
+[172/185] Installing libdisplay-info-de 100% |  50.8 MiB/s | 104.1 KiB |  00m00s
+[173/185] Installing lcms2-devel-0:2.16 100% | 133.2 MiB/s | 136.4 KiB |  00m00s
+[174/185] Installing hwdata-devel-0:0.4 100% | 468.8 KiB/s | 480.0   B |  00m00s
+[175/185] Installing file-devel-0:5.48- 100% |  10.7 MiB/s |  10.9 KiB |  00m00s
+[176/185] Removing mesa-libEGL-1:26.2.7 100% |   2.0 KiB/s |   6.0   B |  00m00s
+[177/185] Removing at-spi2-atk-0:2.62.1 100% |   6.3 KiB/s |  13.0   B |  00m00s
+[178/185] Removing mesa-libGL-1:26.2.7- 100% |   2.0 KiB/s |   6.0   B |  00m00s
+[179/185] Removing mesa-dri-drivers-1:2 100% |  17.4 KiB/s |  89.0   B |  00m00s
+[180/185] Removing mesa-libgbm-1:26.2.7 100% |   2.4 KiB/s |   5.0   B |  00m00s
+[181/185] Removing atk-0:2.62.1-1.fc45. 100% |   4.4 KiB/s |   9.0   B |  00m00s
+[182/185] Removing mesa-vulkan-drivers- 100% |  12.2 KiB/s |  75.0   B |  00m00s
+[183/185] Removing mesa-filesystem-1:26 100% |   2.0 KiB/s |   4.0   B |  00m00s
+[184/185] Removing at-spi2-core-0:2.62. 100% |  19.0 KiB/s | 136.0   B |  00m00s
+[185/185] Removing libdav1d-0:1.5.4-1.f 100% |   3.0   B/s |   8.0   B |  00m02s
+Complete!

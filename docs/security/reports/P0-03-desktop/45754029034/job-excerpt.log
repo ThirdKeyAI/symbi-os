@@ -1,0 +1,15 @@
+2026-11-26T04:15:26.5560522Z .cache/bluebuild-development-tool.zip: OK
+2026-11-26T04:15:30.4366937Z .cache/hyprland-development-prefix.zip: OK
+2026-11-26T04:15:34.1758592Z .cache/elephant-development-binaries.zip: OK
+2026-11-26T04:15:35.9659870Z .cache/walker-development-binary.zip: OK
+2026-11-26T04:15:49.4253649Z .cache/symbiont-runtime.zip: OK
+2026-11-26T04:15:50.4420509Z .cache/hyprland-runtime-rpms.zip: OK
+2026-11-26T04:15:51.2628874Z .cache/launcher-runtime-rpms.zip: OK
+2026-11-26T04:15:52.5747366Z .cache/symbiont-runtime-rpms.zip: OK
+2026-11-26T04:15:52.6007365Z Running as unit: symbi-desktop-prep-45754029034-1.service
+2026-11-26T04:15:56.2914338Z Finished with result: oom-kill
+2026-11-26T04:15:56.2915084Z Main processes terminated with: code=killed/status=KILL
+2026-11-26T04:15:56.2915706Z Service runtime: 3.681s
+2026-11-26T04:15:56.2916335Z CPU time consumed: 2.887s
+2026-11-26T04:15:56.2916700Z Memory peak: 512.0M
+2026-11-26T04:15:56.2916966Z Memory swap peak: 0B

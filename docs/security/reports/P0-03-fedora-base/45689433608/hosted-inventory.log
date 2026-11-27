@@ -1,0 +1,12 @@
+Running as unit: symbi-fedora-base-45689433608-1.service
+
+Verification for ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f --
+The following checks were performed on each of these signatures:
+  - The cosign claims were validated
+  - Existence of the claims in the transparency log was verified offline
+  - The signatures were verified against the specified public key
+          Finished with result: success
+Main processes terminated with: code=exited, status=0/SUCCESS
+               Service runtime: 3min 10.388s
+             CPU time consumed: 2min 14.063s
+                   Memory peak: 2G (swap: 0B)

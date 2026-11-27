@@ -1,0 +1,121 @@
+{
+  "recorded_at_utc": "2026-11-25T14:12:58.426605+00:00",
+  "reason": "Allow remaining serial workspace tests and lint checks after the successful 105-minute build without increasing host CPU or RAM limits.",
+  "method": "Task-specific runtime drop-ins and daemon-reload; no service restart.",
+  "prior_direct_update": "set-property rejected RuntimeMaxUSec; neither process was restarted.",
+  "host_unit": "symbi-p0-runtime-builder-ssd.service",
+  "host_before": {
+    "ActiveState": "active",
+    "DropInPaths": "",
+    "RuntimeMaxUSec": "4h",
+    "MainPID": "2188835",
+    "ExecMainStartTimestampMonotonic": "1021703802658",
+    "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/symbi-p0-runtime-builder-ssd.service",
+    "CPUQuotaPerSecUSec": "250ms",
+    "MemoryMax": "1073741824",
+    "MemorySwapMax": "0"
+  },
+  "guest": {
+    "before": {
+      "RuntimeMaxUSec": "3h 30min",
+      "MainPID": "963",
+      "ExecMainStartTimestampMonotonic": "61558499",
+      "ActiveState": "active",
+      "DropInPaths": ""
+    },
+    "after": {
+      "RuntimeMaxUSec": "6h",
+      "MainPID": "963",
+      "ExecMainStartTimestampMonotonic": "61558499",
+      "ActiveState": "active",
+      "DropInPaths": "/run/systemd/system/symbi-workspace-checks.service.d/80-symbi-validation-duration.conf"
+    },
+    "override": "/run/systemd/system/symbi-workspace-checks.service.d/80-symbi-validation-duration.conf"
+  },
+  "systemd_source_references": [
+    "https://github.com/systemd/systemd/blob/v255/src/core/manager.c",
+    "https://github.com/systemd/systemd/blob/v255/src/core/service.c"
+  ],
+  "host_after": {
+    "ActiveState": "active",
+    "DropInPaths": "/run/user/1000/systemd/user/symbi-p0-runtime-builder-ssd.service.d/80-symbi-validation-duration.conf",
+    "RuntimeMaxUSec": "7h",
+    "MainPID": "2188835",
+    "ExecMainStartTimestampMonotonic": "1021703802658",
+    "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/symbi-p0-runtime-builder-ssd.service",
+    "CPUQuotaPerSecUSec": "250ms",
+    "MemoryMax": "1073741824",
+    "MemorySwapMax": "0"
+  },
+  "host_override": "/run/user/1000/systemd/user/symbi-p0-runtime-builder-ssd.service.d/80-symbi-validation-duration.conf",
+  "verified_cgroup_limits": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "cpu.max": "25000 100000"
+  },
+  "follow_ups": [
+    {
+      "recorded_at_utc": "2026-11-25T16:23:42.216405+00:00",
+      "reason": "Serial integration-test linking is still progressing; leave time for lint and subsequent fixture validation at the same resource caps.",
+      "method": "Existing task-specific runtime drop-ins and daemon-reload; no restart or resource-cap change.",
+      "host_unit": "symbi-p0-runtime-builder-ssd.service",
+      "host_before": {
+        "ActiveState": "active",
+        "InvocationID": "f38032eccc3847fbb504c66de095c360",
+        "RuntimeMaxUSec": "7h",
+        "MainPID": "2188835",
+        "ExecMainStartTimestampMonotonic": "1021703802658",
+        "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/symbi-p0-runtime-builder-ssd.service",
+        "CPUQuotaPerSecUSec": "250ms",
+        "MemoryHigh": "1073741824",
+        "MemoryMax": "1073741824",
+        "MemorySwapMax": "0",
+        "TasksMax": "32",
+        "Nice": "10"
+      },
+      "host_after": {
+        "ActiveState": "active",
+        "InvocationID": "f38032eccc3847fbb504c66de095c360",
+        "RuntimeMaxUSec": "12h",
+        "MainPID": "2188835",
+        "ExecMainStartTimestampMonotonic": "1021703802658",
+        "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/symbi-p0-runtime-builder-ssd.service",
+        "CPUQuotaPerSecUSec": "250ms",
+        "MemoryHigh": "1073741824",
+        "MemoryMax": "1073741824",
+        "MemorySwapMax": "0",
+        "TasksMax": "32",
+        "Nice": "10"
+      },
+      "host_override": "/run/user/1000/systemd/user/symbi-p0-runtime-builder-ssd.service.d/80-symbi-validation-duration.conf",
+      "guest": {
+        "before": {
+          "RuntimeMaxUSec": "6h",
+          "MainPID": "963",
+          "ExecMainStartTimestampMonotonic": "61558499",
+          "TasksMax": "128",
+          "Nice": "10",
+          "ActiveState": "active",
+          "InvocationID": "a15dd8a398674cc2b87979b2cc79ef01"
+        },
+        "after": {
+          "RuntimeMaxUSec": "8h",
+          "MainPID": "963",
+          "ExecMainStartTimestampMonotonic": "61558499",
+          "TasksMax": "128",
+          "Nice": "10",
+          "ActiveState": "active",
+          "InvocationID": "a15dd8a398674cc2b87979b2cc79ef01"
+        },
+        "override": "/run/systemd/system/symbi-workspace-checks.service.d/80-symbi-validation-duration.conf"
+      },
+      "verified_cgroup_limits": {
+        "memory.high": "1073741824",
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "cpu.max": "25000 100000",
+        "pids.max": "32"
+      }
+    }
+  ]
+}

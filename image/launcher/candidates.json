@@ -1,0 +1,37 @@
+{
+  "scope": "Uninstalled candidate artifacts for static dependency inspection only; no executable or signature qualification",
+  "components": [
+    {
+      "repo": "walker",
+      "revision": "a515085fd39fae80acc086c8fbfd9b7771a9a11d",
+      "tag": "v2.17.2",
+      "assets": [
+        {
+          "name": "walker-v2.17.2-x86_64-unknown-linux-gnu.tar.gz",
+          "bytes": 2772997,
+          "sha256": "57e68d1f9f14782f1ae0f1c704509749a545a92531b8788b76b16bc29fcc5c19",
+          "url": "https://github.com/abenz1267/walker/releases/download/v2.17.2/walker-v2.17.2-x86_64-unknown-linux-gnu.tar.gz"
+        }
+      ]
+    },
+    {
+      "repo": "elephant",
+      "revision": "8f1e21d6efe40b8b3953f95b9574f99f717caf91",
+      "tag": "v2.22.1",
+      "assets": [
+        {
+          "name": "desktopapplications-linux-amd64.tar.gz",
+          "bytes": 9012972,
+          "sha256": "a185897cae065c036a2b2a5beac08201e0a233ad51587b9a553428434225c75a",
+          "url": "https://github.com/abenz1267/elephant/releases/download/v2.22.1/desktopapplications-linux-amd64.tar.gz"
+        },
+        {
+          "name": "elephant-linux-amd64.tar.gz",
+          "bytes": 9216345,
+          "sha256": "53098cd67fbd0eb256d02594b06ef6817031ed93e93911126bea9904b33ad775",
+          "url": "https://github.com/abenz1267/elephant/releases/download/v2.22.1/elephant-linux-amd64.tar.gz"
+        }
+      ]
+    }
+  ]
+}

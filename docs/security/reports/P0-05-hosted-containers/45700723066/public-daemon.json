@@ -1,0 +1,29 @@
+{
+  "hosts": [
+    "unix:///var/run/docker.sock"
+  ],
+  "data-root": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/docker-data",
+  "exec-root": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/docker-exec",
+  "pidfile": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/docker.pid",
+  "runtimes": {
+    "runsc": {
+      "path": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/runsc/usr/bin/runsc"
+    }
+  },
+  "default-runtime": "runc",
+  "exec-opts": [
+    "native.cgroupdriver=cgroupfs"
+  ],
+  "cgroup-parent": "/system.slice/symbi-container-fixtures-45700723066-1.service",
+  "bridge": "none",
+  "iptables": false,
+  "ip-forward": false,
+  "ip-masq": false,
+  "userland-proxy": false,
+  "live-restore": false,
+  "log-driver": "local",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "2"
+  }
+}

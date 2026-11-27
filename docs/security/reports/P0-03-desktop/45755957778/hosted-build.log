@@ -1,0 +1,22 @@
+Running as unit: symbi-desktop-build-45755957778-1.service
+Desktop build: delegated controllers and limits verified
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/runner/work/symbi-os/symbi-os/image/desktop/build.py", line 225, in <module>
+    if __name__ == '__main__': main()
+                               ^^^^^^
+  File "/home/runner/work/symbi-os/symbi-os/image/desktop/build.py", line 123, in main
+    run('build-image',command,1800)
+  File "/home/runner/work/symbi-os/symbi-os/image/desktop/build.py", line 65, in run
+    if check: result.check_returncode()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 502, in check_returncode
+    raise CalledProcessError(self.returncode, self.args, self.stdout,
+subprocess.CalledProcessError: Command '['/usr/bin/python3', '-m', 'image.desktop.enter_build', 'podman', '--cgroup-manager=cgroupfs', '--root', '/home/runner/work/symbi-os/symbi-os/.cache/desktop-image-storage/root', '--runroot', '/run/symbi-desktop-build-45755957778-1', 'build', '--authfile', '/home/runner/work/symbi-os/symbi-os/.cache/desktop-image-storage/auth.json', '--pull=never', '--network=none', '--isolation=oci', '--jobs=1', '--layers=false', '--force-rm', '--memory=2g', '--memory-swap=2g', '--cpu-period=100000', '--cpu-quota=100000', '--cgroup-parent=/system.slice/symbi-desktop-build-45755957778-1.service/image-build', '--cap-drop=ALL', '--cap-add=CHOWN,DAC_OVERRIDE,FOWNER,FSETID,SETGID,SETUID,SETFCAP', '--security-opt=no-new-privileges', '--volume', '/home/runner/work/symbi-os/symbi-os/.cache/desktop-image-storage/install-evidence:/symbi-build-evidence:rw', '--iidfile', '/home/runner/work/symbi-os/symbi-os/.cache/desktop-image-storage/image-id', '--file', '/home/runner/work/symbi-os/symbi-os/.cache/desktop-image-inputs/context/Containerfile', '/home/runner/work/symbi-os/symbi-os/.cache/desktop-image-inputs/context']' returned non-zero exit status 1.
+Finished with result: exit-code
+Main processes terminated with: code=exited/status=1
+Service runtime: 2min 13.949s
+CPU time consumed: 2min 55.069s
+Memory peak: 2.9M
+Memory swap peak: 0B

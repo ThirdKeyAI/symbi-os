@@ -1,0 +1,36 @@
+[1/4] STEP 1/1: FROM ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f AS symbiont-os
+--> 52c4eb0cdd5c
+[4/4] STEP 1/29: FROM 52c4eb0cdd5c9e892f6a8aafc9bd1b25222c746cbabea2b249fd79369d35f7ee
+[4/4] STEP 2/29: ARG TARGETARCH
+[4/4] STEP 3/29: ARG RECIPE=/home/runner/work/symbi-os/symbi-os/.cache/desktop-image-inputs/context/recipe.json
+[4/4] STEP 4/29: ARG IMAGE_REGISTRY=ghcr.io/thirdkeyai
+[4/4] STEP 5/29: ARG BB_BUILD_FEATURES="bootc"
+[4/4] STEP 6/29: ARG CONFIG_DIRECTORY="/tmp/files"
+[4/4] STEP 7/29: ARG MODULE_DIRECTORY="/tmp/modules"
+[4/4] STEP 8/29: ARG IMAGE_NAME="symbiont-os"
+[4/4] STEP 9/29: ARG BASE_IMAGE="ghcr.io/secureblue/sericea-main-hardened"
+[4/4] STEP 10/29: RUN --mount=type=bind,src=.bluebuild-scripts_a654ee88,dst=/scripts/,ro   /scripts/pre_build.sh
+Preparing system for optfix...
+Linking /opt => /usr/lib/opt
+[4/4] STEP 11/29: RUN --mount=type=bind,src=install-inputs,dst=/symbi-build-inputs,ro PYTHONDONTWRITEBYTECODE=1 python3 /symbi-build-inputs/install.py
+[4/4] STEP 12/29: COPY --chown=0:0 payload/ /
+[4/4] STEP 13/29: COPY image/overlay/ /
+[4/4] STEP 14/29: COPY image/desktop/session/ /
+[4/4] STEP 15/29: COPY image/vendor/ombuntu/LICENSE /usr/share/licenses/symbiont-os/Ombuntu-MIT
+[4/4] STEP 16/29: COPY image/vendor/omarchy/LICENSE /usr/share/licenses/symbiont-os/Omarchy-MIT
+[4/4] STEP 17/29: COPY LICENSE /usr/share/licenses/symbiont-os/Apache-2.0
+[4/4] STEP 18/29: COPY image/harden-image.sh /tmp/symbi-harden-image.sh
+[4/4] STEP 19/29: RUN bash /tmp/symbi-harden-image.sh && rm /tmp/symbi-harden-image.sh
+[4/4] STEP 20/29: RUN --mount=type=bind,src=.bluebuild-scripts_a654ee88,dst=/scripts/,ro   /scripts/post_build.sh
+[4/4] STEP 21/29: LABEL io.artifacthub.package.readme-url="https://raw.githubusercontent.com/blue-build/cli/main/README.md"
+[4/4] STEP 22/29: LABEL org.blue-build.build-id="9bb10b71-8a25-45ae-b194-03c498e70cdc"
+[4/4] STEP 23/29: LABEL org.opencontainers.image.base.digest="sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f"
+[4/4] STEP 24/29: LABEL org.opencontainers.image.base.name="ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f"
+[4/4] STEP 25/29: LABEL org.opencontainers.image.created="2026-11-26T04:57:23.896708646+00:00"
+[4/4] STEP 26/29: LABEL org.opencontainers.image.description="Highly experimental Symbi OS desktop development image"
+[4/4] STEP 27/29: LABEL org.opencontainers.image.licenses="Apache-2.0"
+[4/4] STEP 28/29: LABEL org.opencontainers.image.source="https://github.com/ThirdKeyAI/symbi-os"
+[4/4] STEP 29/29: LABEL org.opencontainers.image.title="symbiont-os"
+[4/4] COMMIT
+--> 68a9d7bcdbf1
+68a9d7bcdbf15413a897821de45c2c20a76a9197bea1fdbcf2aeec56edcb483c

@@ -1,0 +1,25 @@
+{
+  "total_count": 1,
+  "artifacts": [
+    {
+      "id": 15100051408,
+      "node_id": "MDg6QXJ0aWZhY3QxNTEwMDA1MTQwOA==",
+      "name": "portal-consent-evidence",
+      "size_in_bytes": 159107,
+      "url": "https://api.github.com/repos/ThirdKeyAI/symbi-os/actions/artifacts/15100051408",
+      "archive_download_url": "https://api.github.com/repos/ThirdKeyAI/symbi-os/actions/artifacts/15100051408/zip",
+      "expired": false,
+      "digest": "sha256:aaab4d2ae563ac2b5e325b3b2b3e7e800c81f031267071c6b25d26dc680c2b27",
+      "created_at": "2026-11-26T08:39:16Z",
+      "updated_at": "2026-11-26T08:39:16Z",
+      "expires_at": "2026-12-10T08:39:15Z",
+      "workflow_run": {
+        "id": 45784560037,
+        "repository_id": 1472078858,
+        "head_repository_id": 1472078858,
+        "head_branch": "card/P0-03-image-foundation",
+        "head_sha": "bcc91ed1e549693c1b0f5a428b7d6561430be256"
+      }
+    }
+  ]
+}

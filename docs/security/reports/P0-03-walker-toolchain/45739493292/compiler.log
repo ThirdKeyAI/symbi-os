@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "/inputs/install_guest.py", line 114, in <module>
+    main()
+    ~~~~^^
+  File "/inputs/install_guest.py", line 73, in main
+    raise ValueError('RPM identity differs from the reviewed package')
+ValueError: RPM identity differs from the reviewed package

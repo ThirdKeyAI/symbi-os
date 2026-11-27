@@ -1,0 +1,5 @@
+error: unexpected argument '--symbi-unknown-qualification-option' found
+
+Usage: symbi [COMMAND]
+
+For more information, try '--help'.

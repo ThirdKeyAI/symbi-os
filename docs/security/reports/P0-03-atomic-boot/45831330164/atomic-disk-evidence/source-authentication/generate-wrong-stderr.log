@@ -1,0 +1,4 @@
+gpg: keybox '/output/private/wrong/pubring.kbx' created
+gpg: /output/private/wrong/trustdb.gpg: trustdb created
+gpg: directory '/output/private/wrong/openpgp-revocs.d' created
+gpg: revocation certificate stored as '/output/private/wrong/openpgp-revocs.d/9F10827F2E8D2FE54F63A36344E6BC10C03E38BD.rev'

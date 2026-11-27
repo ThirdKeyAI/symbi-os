@@ -1,0 +1,2 @@
+libprotobuf-dev:amd64	3.21.12-15ubuntu1.1
+protobuf-compiler	3.21.12-15ubuntu1.1

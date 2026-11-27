@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "passed": true,
+  "archives": {
+    "JetBrainsMono.tar.xz": {
+      "bytes": 7284244,
+      "sha256": "04d5e8f903693f9dd13e16f867e994834e681eb3c72c0d337a770dcda09010cf",
+      "members": 98,
+      "fonts": 96,
+      "expanded_bytes": 243185440
+    },
+    "NerdFontsSymbolsOnly.tar.xz": {
+      "bytes": 2362384,
+      "sha256": "01172f37db8543edb102e5cb5c64101c9f4686630804d49b419aa07b23a69996",
+      "members": 5,
+      "fonts": 2,
+      "expanded_bytes": 5206217
+    }
+  }
+}

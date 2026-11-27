@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "state": "pending",
+  "selected": false,
+  "built": false,
+  "qualified": false,
+  "container_qualified": false,
+  "os_qualified": false,
+  "release_qualified": false,
+  "signature_qualified": false,
+  "fixture_source": {
+    "revision": "cd4b34282ade880c8ac3d5136d31ff80cde92794",
+    "tree": "2b2379d0de4eaaf4a57cf52c96355015bb3dc25d",
+    "drivers": {
+      "test-filesystem-grants.py": "c5dc5d798c285f99e8db72b64d55749f127aa4139645425b7bd69d48dd7e9ded",
+      "test-source-broker.py": "ae2b6490cca43924e0f14aa84e71943c4684f298103db72b62eef534a16d1d2e",
+      "test-git-source.py": "82a02079c1a13799d03295e33ea4bc6f6120af7b8c4d25a840dcf023b4e0a075"
+    }
+  },
+  "limits": {
+    "compressed_oci_bytes": 536870912,
+    "expanded_oci_bytes": 1073741824,
+    "manifest_bytes": 65536,
+    "producer_cpu": 1
+  },
+  "blockers": [
+    "offline-ubuntu-package-closure",
+    "fixture-source-alignment",
+    "cold-load-by-manifest-digest",
+    "artifact-upload-approval"
+  ],
+  "scope": "Native fixture producer remains disabled until authenticated offline packages, exact source alignment, cold load and upload approval exist"
+}

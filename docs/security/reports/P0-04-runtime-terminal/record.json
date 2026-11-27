@@ -1,0 +1,76 @@
+{
+  "scope": "Unchanged Ubuntu baseline failure and one focused diagnostic pass, not Fedora qualification",
+  "retention": "Trailing whitespace and blank EOF lines removed; original and retained hashes recorded",
+  "source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+  "qualified": false,
+  "files": {
+    "baseline": {
+      "builder-configuration.json": {
+        "original_sha256": "096db7b966ef8f2cf81cc23bdd547ff93c0f1110ad49dcd6c968d44f19c864f8",
+        "retained_sha256": "096db7b966ef8f2cf81cc23bdd547ff93c0f1110ad49dcd6c968d44f19c864f8"
+      },
+      "first-boot-attempt.json": {
+        "original_sha256": "ce182cc93918682d93b8fe6a44677548b852c73e09dd1663dff8f842c4e262fa",
+        "retained_sha256": "ce182cc93918682d93b8fe6a44677548b852c73e09dd1663dff8f842c4e262fa"
+      },
+      "hdd-unit-after-stop.txt": {
+        "original_sha256": "a845e2b901292911d656ed0ef03bded115828f1b2d13677a99348b031f274a5b",
+        "retained_sha256": "a845e2b901292911d656ed0ef03bded115828f1b2d13677a99348b031f274a5b"
+      },
+      "result.json": {
+        "original_sha256": "a14e32ec2e5d10ddd8e9beca36b9291ee3c3fd8fabc61259181971baf9255c47",
+        "retained_sha256": "a14e32ec2e5d10ddd8e9beca36b9291ee3c3fd8fabc61259181971baf9255c47"
+      },
+      "runtime-duration-extension.json": {
+        "original_sha256": "03c869cbaeb62780ccb5e8ed7bcb924ecc05c180c472ed9f0ebab8cd4d8042e2",
+        "retained_sha256": "03c869cbaeb62780ccb5e8ed7bcb924ecc05c180c472ed9f0ebab8cd4d8042e2"
+      },
+      "storage-migration.json": {
+        "original_sha256": "eb95cd12ae7d1880ecf67149444eedc9b92c4215c7f1872f8961fd5978085521",
+        "retained_sha256": "eb95cd12ae7d1880ecf67149444eedc9b92c4215c7f1872f8961fd5978085521"
+      },
+      "symbi-debug.sha256": {
+        "original_sha256": "97b01ee35d1a4f4817c2cfe8c2caa03b60ee9916d939b6ce0777020c740f660d",
+        "retained_sha256": "97b01ee35d1a4f4817c2cfe8c2caa03b60ee9916d939b6ce0777020c740f660d"
+      },
+      "toolchain-guest.txt": {
+        "original_sha256": "6855c7fd6e5898bd28e94460846cd6c6601258399de3f88c42290151aea39613",
+        "retained_sha256": "6855c7fd6e5898bd28e94460846cd6c6601258399de3f88c42290151aea39613"
+      },
+      "verified-host-limits.json": {
+        "original_sha256": "277f969478108b05d221cc72ceaae438eda6b91eebf5aa938919dadac4d09687",
+        "retained_sha256": "277f969478108b05d221cc72ceaae438eda6b91eebf5aa938919dadac4d09687"
+      },
+      "verified-image.json": {
+        "original_sha256": "445c8b0161ba709ad9aba301997a3aaecb18a37e0b066711be09366d1158716f",
+        "retained_sha256": "445c8b0161ba709ad9aba301997a3aaecb18a37e0b066711be09366d1158716f"
+      },
+      "workspace-checks-hdd.log": {
+        "original_sha256": "8c1eb0c696ba0a36d4e29d5683f8fe890662a22191c8353e5d89e77b51f657b0",
+        "retained_sha256": "8c1eb0c696ba0a36d4e29d5683f8fe890662a22191c8353e5d89e77b51f657b0"
+      },
+      "workspace-checks.log": {
+        "original_sha256": "e73e924a9125fd505ccf611b468aa0290d526337a3eb723dff6b5125ef5a803f",
+        "retained_sha256": "e73e924a9125fd505ccf611b468aa0290d526337a3eb723dff6b5125ef5a803f"
+      }
+    },
+    "focused-recheck": {
+      "focused-0.log": {
+        "original_sha256": "c92743d671ca451b9e6ae94a3acaa44af1b3cc9386cb457403f46857967add7a",
+        "retained_sha256": "30a80d496e8c75d1ea24acd6796631f5c96714547e98824982964f0c0dcca040"
+      },
+      "focused-1.log": {
+        "original_sha256": "0171d3e1648d55bd50204dd0d701184d8c446a066dd6fb1a365a4e6b2a95bf17",
+        "retained_sha256": "7eaa4e783eb181c4e3524435e98bc329e75f4fa06bccb332917c023e5ddc88a6"
+      },
+      "observation.json": {
+        "original_sha256": "c13b177ee6bd96effb843ff77024bae118b80e4cf3e57d37bd2d2abbbcdb5734",
+        "retained_sha256": "c13b177ee6bd96effb843ff77024bae118b80e4cf3e57d37bd2d2abbbcdb5734"
+      },
+      "result.json": {
+        "original_sha256": "ee654b91acecc8a5da0b3a5de8119c9822d3c64682d2da44e31c8f64f8c79314",
+        "retained_sha256": "ee654b91acecc8a5da0b3a5de8119c9822d3c64682d2da44e31c8f64f8c79314"
+      }
+    }
+  }
+}

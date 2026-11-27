@@ -1,0 +1,28 @@
+ERROR => Failed:
+  × Recipe /home/runner/work/symbi-os/symbi-os/.cache/image-tool-evidence/generic.json failed to validate
+  ╰─▶   × 2 errors encountered
+         ╭─[/home/runner/work/symbi-os/symbi-os/.cache/image-tool-evidence/generic.json:1:1]
+       1 │ {
+         · ┬
+         · ╰─┤ - "base-image" is a required property
+         ·   │ - "description" is a required property
+         ·   │ - Additional properties are not allowed ('base', 'metadata', 'spec' were unexpected)
+         ·   │ - "name" is a required property
+         ·   │ - "image-version" is a required property
+       2 │   "version": 2,
+         ·              ┬
+         ·              ╰── - 1 was expected
+       3 │   "base": {
+       4 │     "image": {
+       5 │       "registry": "ghcr.io",
+         ╰────
+        help: Try adding these lines to the top of your file for editor validation highlights:
+              ---
+              # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+
+        Try running with `-vv` for trace logging.
+        You can also open an issue at https://github.com/blue-build/cli/issues
+
+
+  Try running with `-vv` for trace logging.
+  You can also open an issue at https://github.com/blue-build/cli/issues

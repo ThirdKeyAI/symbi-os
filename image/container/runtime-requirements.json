@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "profile": "container-runtime",
+  "scope": "Candidate Fedora container runtime packages; discovery does not install or qualify them",
+  "source_inputs": "image/container/gvisor-inputs.json",
+  "packages": [
+    "moby-engine",
+    "docker-cli",
+    "container-selinux"
+  ],
+  "notes": [
+    "Resolve exact NEVRAs and dependency RPM hashes against the authenticated Fedora base.",
+    "The runsc release archive is authenticated separately and remains unselected."
+  ]
+}

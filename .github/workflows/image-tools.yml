@@ -1,0 +1,70 @@
+name: Image tool compatibility
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "image/toolchain/**"
+      - "image/recipe.py"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "scripts/check-image-tools.sh"
+      - ".github/workflows/image-tools.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
+  pull_request:
+    paths:
+      - "image/toolchain/**"
+      - "image/recipe.py"
+      - "image/base-images.json"
+      - "image/keys/**"
+      - "scripts/check-image-tools.sh"
+      - ".github/workflows/image-tools.yml"
+      - "!image/**/README.md"
+      - "!image/**/runtime-README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: image-tools-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bluebuild:
+    # Internal branches run once per relevant push; forks retain PR validation.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - name: Check out proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Check out exact BlueBuild source
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          repository: blue-build/cli
+          ref: a654ee8810c637aa00356999488e97259061275d
+          path: .cache/bluebuild-source
+          persist-credentials: false
+      - name: Compile and exercise recipe validation under resource limits
+        run: bash scripts/check-image-tools.sh
+      - name: Retain public tool evidence, including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: image-tool-evidence
+          path: .cache/image-tool-evidence/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Retain exact development builder and original license for later reuse
+        if: ${{ always() && hashFiles('.cache/image-tool-payload/manifest.json') != '' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: bluebuild-development-tool
+          path: .cache/image-tool-payload/
+          retention-days: 14
+          compression-level: 0
+          if-no-files-found: error

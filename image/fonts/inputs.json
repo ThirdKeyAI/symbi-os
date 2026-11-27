@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "tag": "v3.5.1",
+  "revision": "b894ea7803af6aade63d60a4381e006098ec9c4d",
+  "published_at": "2026-08-21T15:21:46Z",
+  "repository": "https://github.com/ryanoasis/nerd-fonts",
+  "selected": false,
+  "security_qualified": false,
+  "os_qualified": false,
+  "authentication": "Exact GitHub release asset IDs, API digests, sizes and source revision; the release assets have no detached publisher signature",
+  "assets": [
+    {
+      "name": "JetBrainsMono.tar.xz",
+      "asset_id": 523475208,
+      "bytes": 7284244,
+      "sha256": "04d5e8f903693f9dd13e16f867e994834e681eb3c72c0d337a770dcda09010cf",
+      "url": "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.1/JetBrainsMono.tar.xz"
+    },
+    {
+      "name": "NerdFontsSymbolsOnly.tar.xz",
+      "asset_id": 523461571,
+      "bytes": 2362384,
+      "sha256": "01172f37db8543edb102e5cb5c64101c9f4686630804d49b419aa07b23a69996",
+      "url": "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.1/NerdFontsSymbolsOnly.tar.xz"
+    },
+    {
+      "name": "SHA-256.txt",
+      "asset_id": 523593027,
+      "bytes": 11898,
+      "sha256": "e03d7ad54547d83f1620719cbc89b5684bc0c6fb028160640aa322b5035a63fb",
+      "url": "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.5.1/SHA-256.txt"
+    }
+  ],
+  "notices": [
+    {
+      "path": "image/fonts/licenses/Nerd-Fonts-MIT",
+      "bytes": 6200,
+      "sha256": "1f6ad4edae6479aaace3112ede5279a23284ae54b2a34db66357aef5f64df160"
+    },
+    {
+      "path": "image/fonts/licenses/JetBrains-Mono-OFL-1.1",
+      "bytes": 4399,
+      "sha256": "30f0c136e3c88e422d0791acd97238870f9054a9729bc34cf2ff0d4ed8cac4ad"
+    },
+    {
+      "path": "image/fonts/licenses/Nerd-Fonts-Symbols-MIT",
+      "bytes": 1082,
+      "sha256": "84a7a98c82140fb12c37fe42b93805baa16024cb3e5acc599b7ffe612c55d847"
+    },
+    {
+      "path": "image/fonts/licenses/Font-Logos-Unlicense",
+      "bytes": 1210,
+      "sha256": "88d9b4eb60579c191ec391ca04c16130572d7eedc4a86daa58bf28c6e14c9bcd"
+    },
+    {
+      "path": "image/fonts/licenses/upstream-license-audit.md",
+      "bytes": 8470,
+      "sha256": "c2a3f634fa1e5001912f4f19a42fa86fdef5654691b70000f936089325aa404f"
+    }
+  ],
+  "scope": "Download and passive archive inventory candidate only; no font parsing, installation, selection or desktop qualification"
+}

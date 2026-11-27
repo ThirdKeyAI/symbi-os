@@ -1,0 +1,45 @@
+{
+  "scope": "Final unchanged-source diagnostic evidence; no full test retry or Fedora qualification",
+  "source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+  "compiler": "1.95.0",
+  "source_clean_after": true,
+  "full_workspace_checks_passed": false,
+  "qualified": false,
+  "files": {
+    "clippy.log": {
+      "original_sha256": "9c6589e30156084abe5a152e8e816c42888664eb516b16a74e59a3b84f00a3dd",
+      "retained_sha256": "9c6589e30156084abe5a152e8e816c42888664eb516b16a74e59a3b84f00a3dd"
+    },
+    "collection.json": {
+      "original_sha256": "c28ba8852504cf69adb9fbedb2c7fcf42fed4342e8dc55db16893f77e321822f",
+      "retained_sha256": "c28ba8852504cf69adb9fbedb2c7fcf42fed4342e8dc55db16893f77e321822f"
+    },
+    "fmt.log": {
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "focused-0.log": {
+      "original_sha256": "c92743d671ca451b9e6ae94a3acaa44af1b3cc9386cb457403f46857967add7a",
+      "retained_sha256": "30a80d496e8c75d1ea24acd6796631f5c96714547e98824982964f0c0dcca040"
+    },
+    "focused-1.log": {
+      "original_sha256": "0171d3e1648d55bd50204dd0d701184d8c446a066dd6fb1a365a4e6b2a95bf17",
+      "retained_sha256": "7eaa4e783eb181c4e3524435e98bc329e75f4fa06bccb332917c023e5ddc88a6"
+    },
+    "result.json": {
+      "original_sha256": "890fb76b702e3d95ecffa73328ddc35cbb2ae5fcc1db89aba825210ac620742f",
+      "retained_sha256": "890fb76b702e3d95ecffa73328ddc35cbb2ae5fcc1db89aba825210ac620742f"
+    }
+  },
+  "retention_format": "Trailing whitespace removed; empty log stays empty.",
+  "vm_shutdown": {
+    "unit": "symbi-p0-runtime-builder-ssd.service",
+    "LoadState": "not-found",
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "MainPID": 0,
+    "Result": "success",
+    "observed_at_utc": "2026-11-25T19:46:43.976954+00:00",
+    "method": "Read-only systemctl show after graceful guest poweroff; no restart"
+  }
+}

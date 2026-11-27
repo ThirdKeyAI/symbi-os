@@ -1,0 +1,45 @@
+[fedora]
+name = Fedora 45 - x86_64
+metalink = https://mirrors.fedoraproject.org/metalink?protocol=https&repo=fedora-45&arch=x86_64
+enabled = 1
+countme = 0
+metadata_expire = 7d
+repo_gpgcheck = 0
+type = rpm
+gpgcheck = 1
+gpgkey = file:///inputs/fedora-45-primary.asc
+skip_if_unavailable = False
+sslverify = 1
+
+[updates]
+name = Fedora 45 - x86_64 - Updates
+metalink = https://mirrors.fedoraproject.org/metalink?protocol=https&repo=updates-released-f45&arch=x86_64
+enabled = 1
+countme = 0
+repo_gpgcheck = 0
+type = rpm
+gpgcheck = 1
+metadata_expire = 6h
+gpgkey = file:///inputs/fedora-45-primary.asc
+skip_if_unavailable = False
+sslverify = 1
+
+[rpmfusion-free]
+name=RPM Fusion Free Fedora 45 x86_64 candidate discovery
+metalink=https://mirrors.rpmfusion.org/metalink?repo=free-fedora-45&arch=x86_64&protocol=https
+enabled=1
+gpgcheck=1
+repo_gpgcheck=0
+sslverify=1
+skip_if_unavailable=0
+gpgkey=file:///inputs/rpmfusion-free-2020.asc
+
+[rpmfusion-free-updates]
+name=RPM Fusion Free Fedora 45 x86_64 candidate discovery
+metalink=https://mirrors.rpmfusion.org/metalink?repo=free-fedora-updates-released-45&arch=x86_64&protocol=https
+enabled=1
+gpgcheck=1
+repo_gpgcheck=0
+sslverify=1
+skip_if_unavailable=0
+gpgkey=file:///inputs/rpmfusion-free-2020.asc

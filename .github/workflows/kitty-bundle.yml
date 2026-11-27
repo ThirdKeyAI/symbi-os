@@ -1,0 +1,47 @@
+name: Kitty signed bundle inspection
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "image/kitty/**"
+      - "image/tests/test_kitty_bundle.py"
+      - "scripts/check-kitty-bundle.sh"
+      - ".github/workflows/kitty-bundle.yml"
+      - "!image/kitty/README.md"
+  pull_request:
+    paths:
+      - "image/kitty/**"
+      - "image/tests/test_kitty_bundle.py"
+      - "scripts/check-kitty-bundle.sh"
+      - ".github/workflows/kitty-bundle.yml"
+      - "!image/kitty/README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kitty-bundle-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  inspect:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out proposed OS revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Authenticate and inventory the fixed public candidate without execution
+        run: bash scripts/check-kitty-bundle.sh
+      - name: Retain public bounded evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: kitty-bundle-inspection-evidence
+          path: .cache/kitty-bundle-evidence/
+          retention-days: 14
+          if-no-files-found: error

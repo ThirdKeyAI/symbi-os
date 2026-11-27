@@ -1,0 +1,34 @@
+{
+  "passed": false,
+  "fixture": "/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-source-e2e-9ylx0kmj",
+  "binary_sha256": "69a22494f74451e73806eaeb71ace5dc3a95098c7961f7200716b05ad666a98c",
+  "driver_sha256": "ae2b6490cca43924e0f14aa84e71943c4684f298103db72b62eef534a16d1d2e",
+  "cases": [
+    {
+      "name": "read",
+      "passed": false,
+      "config_sha256": "43052ed538534026532effede6c6d87b1124d00403f981d6472e6df7246c3fb7",
+      "policy_sha256": "ae6f3bbc10d4275226be91b066f1cc3f381fdfef0924005ad6d9c410c2f9d5df",
+      "workers": [],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Loaded environment from /home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-source-e2e-9ylx0kmj/.env\nInvocation ID: d296542d-5acf-47eb-aada-7bed99a18732\nAudit run: 7fa06b3f-0ffc-4e0f-b4a7-84bcd2111475\nAudit journal: /home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-source-e2e-9ylx0kmj/.symbiont/governed/815dc704-ed73-4d3a-a1e1-fbb719ae6a7c.7fa06b3f-0ffc-4e0f-b4a7-84bcd2111475.jsonl\nAudit public key: 05c4b713a95c5c25512d023b99a39fccad8beced8bfb08eb6a002032f95b60b4\n\u2717 Agent sandbox selection failed: supervisor socket path exceeds the supported Unix path length\n",
+      "requests": []
+    }
+  ],
+  "provider_errors": [],
+  "image": "sha256:783ce4ad87bd72e5e4a45915562c87ce81213d45f95792ae1855228590c2b633",
+  "manifests": {
+    "read_file": "a39dcea5a34440edada97b3366c66e3e4fe19993a5152981399a7871e559fe86",
+    "list_files": "ab74a30975d00cb8029c5ed551d5ecff121f17397d2a7faf1383079d6ea56c29",
+    "grep_files": "d3dd036cb5e581cef8ff7b1e2f3184dd2bceffb55146e244de8f8292675ec549"
+  },
+  "public_key": "05c4b713a95c5c25512d023b99a39fccad8beced8bfb08eb6a002032f95b60b4",
+  "verifier_sha256": "9e975bf4d8c55c8925dfd730adbd20bee77e81f05170715f23085a9acb135374",
+  "backend": "docker",
+  "container_profile_sha256": "b9f4d369e513f86d622ada90f3fb0aa3185fd022af719ec9b7170f710793d2be",
+  "error": "AssertionError: {'name': 'read', 'passed': False, 'config_sha256': '43052ed538534026532effede6c6d87b1124d00403f981d6472e6df7246c3fb7', 'policy_sha256': 'ae6f3bbc10d4275226be91b066f1cc3f381fdfef0924005ad6d9c410c2f9d5df', 'workers': [], 'exit_code': 1, 'stdout': '', 'stderr': 'Loaded environment from /home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-source-e2e-9ylx0kmj/.env\\nInvocation ID: d296542d-5acf-47eb-aada-7bed99a18732\\nAudit run: 7fa06b3f-0ffc-4e0f-b4a7-84bcd2111475\\nAudit journal: /home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-source-e2e-9ylx0kmj/.symbiont/governed/815dc704-ed73-4d3a-a1e1-fbb719ae6a7c.7fa06b3f-0ffc-4e0f-b4a7-84bcd2111475.jsonl\\nAudit public key: 05c4b713a95c5c25512d023b99a39fccad8beced8bfb08eb6a002032f95b60b4\\n\u2717 Agent sandbox selection failed: supervisor socket path exceeds the supported Unix path length\\n', 'requests': []}",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/source/scripts/test-source-broker.py\", line 202, in main\n    assert row['exit_code'] == 0 and len(requests) == 2 and not report['provider_errors'], row\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: {'name': 'read', 'passed': False, 'config_sha256': '43052ed538534026532effede6c6d87b1124d00403f981d6472e6df7246c3fb7', 'policy_sha256': 'ae6f3bbc10d4275226be91b066f1cc3f381fdfef0924005ad6d9c410c2f9d5df', 'workers': [], 'exit_code': 1, 'stdout': '', 'stderr': 'Loaded environment from /home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-source-e2e-9ylx0kmj/.env\\nInvocation ID: d296542d-5acf-47eb-aada-7bed99a18732\\nAudit run: 7fa06b3f-0ffc-4e0f-b4a7-84bcd2111475\\nAudit journal: /home/runner/work/symbi-os/symbi-os/.cache/container-fixture-work/private/tmp/symbi-source-e2e-9ylx0kmj/.symbiont/governed/815dc704-ed73-4d3a-a1e1-fbb719ae6a7c.7fa06b3f-0ffc-4e0f-b4a7-84bcd2111475.jsonl\\nAudit public key: 05c4b713a95c5c25512d023b99a39fccad8beced8bfb08eb6a002032f95b60b4\\n\u2717 Agent sandbox selection failed: supervisor socket path exceeds the supported Unix path length\\n', 'requests': []}\n",
+  "remaining_workers": [],
+  "remaining_leases": []
+}

@@ -1,0 +1,964 @@
+{
+  "schema": 1,
+  "scope": "Signed disposable Walker compiler/native inputs, not a product layer or dependency audit",
+  "run_id": 45729431180,
+  "head_sha": "b1f273b4fcfc9d7c410290331d3b480aa3f2b54d",
+  "checked_merge_sha": "b7a3535fba9d1637a1c70daccd05f224a0b445f5",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "artifact": {
+    "id": 15075328677,
+    "bytes": 112092240,
+    "sha256": "a78541040299738b173f650159a84e5760f290cd3193d8d140532291454ef182"
+  },
+  "manifest_sha256": "4c683e047239faa345e7ec12369c94a88be98fc623bac9ab58d87e0d8637566b",
+  "packages": [
+    {
+      "filename": "brotli-1.2.1-1.fc45.x86_64.rpm",
+      "bytes": 24637,
+      "sha256": "bd7b50ca397f5e1bc5645091ea102d3cc6ac5724428dad71abdcbcf7240428a8",
+      "nevra": "brotli-1.2.1-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "brotli-devel-1.2.1-1.fc45.x86_64.rpm",
+      "bytes": 35464,
+      "sha256": "9407679b559ef12bd44008071a94423ec89be4032f9e9b6babe84bc93b3029a9",
+      "nevra": "brotli-devel-1.2.1-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "bzip2-devel-1.0.8-24.fc45.x86_64.rpm",
+      "bytes": 218673,
+      "sha256": "4e37ddc32e16d12a61e7e7f5dc54740edc327f5434c9dd30af9ec766ddcd71dd",
+      "nevra": "bzip2-devel-1.0.8-24.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-4-Clause",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "cairo-devel-1.18.6-1.fc45.x86_64.rpm",
+      "bytes": 196326,
+      "sha256": "093ba6659769160e40468051b0ef77ce7c1e77cd4c0edaae4d73bd16a08dd97c",
+      "nevra": "cairo-devel-1.18.6-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-only OR MPL-1.1",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "cairo-gobject-devel-1.18.6-1.fc45.x86_64.rpm",
+      "bytes": 11159,
+      "sha256": "bfef33c1090df19f895903e20270fdf0397809de1df5182706e87f43e90d1710",
+      "nevra": "cairo-gobject-devel-1.18.6-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-only OR MPL-1.1",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "cargo-1.100.0-1.fc45.x86_64.rpm",
+      "bytes": 8258381,
+      "sha256": "89296225457b5e5b080a3b5785e13582d94aff29af5d7111bc55cf1e0efa3d56",
+      "nevra": "cargo-1.100.0-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "(Apache-2.0 OR MIT) AND (Artistic-2.0 AND BSD-3-Clause AND ISC AND MIT AND MPL-2.0 AND Unicode-3.0)",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "fontconfig-devel-2.18.3-2.fc45.x86_64.rpm",
+      "bytes": 198871,
+      "sha256": "072d10d913e38a5ad3f61c1912655b09415ba354cd0587165215ae5faca310e6",
+      "nevra": "fontconfig-devel-2.18.3-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "HPND AND LicenseRef-Fedora-Public-Domain AND Unicode-DFS-2016",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "freetype-devel-2.14.3-3.fc45.x86_64.rpm",
+      "bytes": 1091811,
+      "sha256": "47cd872d0dcce6b32f57ef649d25facfff0980725e5364c25950fd68e1c7ea76",
+      "nevra": "freetype-devel-2.14.3-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "(FTL OR GPL-2.0-or-later) AND BSD-3-Clause AND MIT AND MIT-Modern-Variant AND LicenseRef-Fedora-Public-Domain AND Zlib",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "fribidi-devel-1.0.18-1.fc45.x86_64.rpm",
+      "bytes": 29781,
+      "sha256": "7febf72e2b24c48320175d58f66b1f271f6e3d55f388fdb4bedc7cc9cbdac8ce",
+      "nevra": "fribidi-devel-1.0.18-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later AND Unicode-DFS-2016",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gdk-pixbuf2-devel-2.44.8-3.fc45.x86_64.rpm",
+      "bytes": 379009,
+      "sha256": "8c969a7c2c8a17797e175451da50d5efa45ef88caa2d9e35f08ece22729a1549",
+      "nevra": "gdk-pixbuf2-devel-2.44.8-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "glib2-devel-2.90.1-1.fc45.x86_64.rpm",
+      "bytes": 1584172,
+      "sha256": "ff86c635832ee3f6e80ed04d681fed4251459da40abad43329826aceae3d990e",
+      "nevra": "glib2-devel-2.90.1-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "glycin-devel-2.2.6-1.fc45.x86_64.rpm",
+      "bytes": 28353,
+      "sha256": "5b757fdcfd3d5e114345c0576cc46761fddb39a013d9c1ef98521210a76a3531",
+      "nevra": "glycin-devel-2.2.6-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "(MPL-2.0 OR LGPL-2.1-or-later) AND Apache-2.0 WITH LLVM-exception AND BSD-3-Clause AND CC0-1.0 AND GPL-3.0-or-later AND IJG AND ISC AND MIT AND Unicode-3.0 AND Unicode-DFS-2016 AND (0BSD OR MIT OR Apache-2.0) AND (Apache-2.0 OR MIT) AND (Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT) AND (BSD-2-Clause OR Apache-2.0 OR MIT) AND (BSD-3-Clause OR Apache-2.0) AND (MIT OR Apache-2.0 OR Zlib) AND (Unlicense OR MIT)",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gpgme-devel-2.0.1-6.fc45.x86_64.rpm",
+      "bytes": 172681,
+      "sha256": "89e5aeb0b2f3ba037853500658d1f279968395059947bfd6abe80ddfad9f332e",
+      "nevra": "gpgme-devel-2.0.1-6.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later AND MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gpgmepp-devel-2.0.0-2.fc45.x86_64.rpm",
+      "bytes": 50716,
+      "sha256": "39937a2002fad0a7489eb5e1021a2419d338fa4a2a164585fca27f5dc2e2a815",
+      "nevra": "gpgmepp-devel-1:2.0.0-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "graphene-devel-1.10.8-6.fc45.x86_64.rpm",
+      "bytes": 172374,
+      "sha256": "f710f8ad40d1f7cbda541575df18e8c082a245d797b7a3172c09796ff8d7f5e9",
+      "nevra": "graphene-devel-1.10.8-6.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "graphite2-devel-1.3.14-22.fc45.x86_64.rpm",
+      "bytes": 20936,
+      "sha256": "0ca603f653cb1f5c8ff554b5cb644fb9fba2ab0d4143c1e9ecfe5f2b81a5c820",
+      "nevra": "graphite2-devel-1.3.14-22.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later OR MPL-2.0 OR GPL-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gtk4-devel-4.24.1-1.fc45.x86_64.rpm",
+      "bytes": 1173995,
+      "sha256": "b767f80cdb73fcf87c5ced629d914d57fa5c83eff527b1d02bde9108af9391a7",
+      "nevra": "gtk4-devel-4.24.1-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.0-or-later AND LGPL-2.1-or-later AND Apache-2.0 AND CC0-1.0 AND MIT AND MIT-open-group AND HPND-sell-variant AND GPL-2.0-or-later AND GPL-3.0-or-later AND OFL-1.1",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gtk4-layer-shell-1.3.0-3.fc45.x86_64.rpm",
+      "bytes": 37039,
+      "sha256": "a9972d6b141f80a02ecec196d0967ef5cce0788bb09cba0c5ceac0dee3c6b09e",
+      "nevra": "gtk4-layer-shell-1.3.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gtk4-layer-shell-devel-1.3.0-3.fc45.x86_64.rpm",
+      "bytes": 30632,
+      "sha256": "0fe74134f5e414bc3a5a110cd00897f843bcea25c357f7cb8beb85bb8658529d",
+      "nevra": "gtk4-layer-shell-devel-1.3.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "harfbuzz-cairo-15.0.0-2.fc45.x86_64.rpm",
+      "bytes": 31512,
+      "sha256": "3fb2158736e431b09d144c82f73334abb0153e55f2d2b27d1d8b3fe77edf0da8",
+      "nevra": "harfbuzz-cairo-15.0.0-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-Modern-Variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "harfbuzz-devel-15.0.0-2.fc45.x86_64.rpm",
+      "bytes": 664273,
+      "sha256": "120ccf33fceadd6017674e9869023801457b7283e5273e304c89141fa8047cc9",
+      "nevra": "harfbuzz-devel-15.0.0-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-Modern-Variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "harfbuzz-gpu-15.0.0-2.fc45.x86_64.rpm",
+      "bytes": 53912,
+      "sha256": "7cbfa894256567e6218ba499c7517b01e77410bff5e78022ed349a423934cd67",
+      "nevra": "harfbuzz-gpu-15.0.0-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-Modern-Variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "harfbuzz-raster-15.0.0-2.fc45.x86_64.rpm",
+      "bytes": 68941,
+      "sha256": "8552843d9320ec909ac01ae859a6a9a398f4bf06fd989ccd74462f25bb88432c",
+      "nevra": "harfbuzz-raster-15.0.0-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-Modern-Variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "harfbuzz-vector-15.0.0-2.fc45.x86_64.rpm",
+      "bytes": 61355,
+      "sha256": "69ed1124667e4ef35d96d835a98845b74a1526309e08ff7acbd2da692b7e7168",
+      "nevra": "harfbuzz-vector-15.0.0-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-Modern-Variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "keyutils-libs-devel-1.6.3-8.fc45.x86_64.rpm",
+      "bytes": 64753,
+      "sha256": "ca49e7cb256042de98841f39038309769da6bf9601527356d474b5230c5a16b3",
+      "nevra": "keyutils-libs-devel-1.6.3-8.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-2.0-or-later AND LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "krb5-devel-1.22.2-11.fc45.x86_64.rpm",
+      "bytes": 146987,
+      "sha256": "c865d118432b59b37e1141be2b6782d982d0562020061cb4e0f933947105fcbe",
+      "nevra": "krb5-devel-1.22.2-11.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Brian-Gladman-2-Clause AND BSD-2-Clause AND (BSD-2-Clause OR GPL-2.0-or-later) AND BSD-2-Clause-first-lines AND BSD-3-Clause AND BSD-4-Clause AND CMU-Mach-nodoc AND FSFULLRWD AND HPND AND HPND-export2-US AND HPND-export-US AND HPND-export-US-acknowledgement AND HPND-export-US-modify AND ISC AND MIT AND MIT-CMU AND OLDAP-2.8 AND OpenVision",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "lcms2-devel-2.16-8.fc45.x86_64.rpm",
+      "bytes": 32444,
+      "sha256": "ad6d0fa7adfde5f855c9630540654f64bde7ec29fe2496efefd853e9e93f5ebb",
+      "nevra": "lcms2-devel-2.16-8.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND GPL-3.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libGLEW-2.2.0-13.fc45.x86_64.rpm",
+      "bytes": 175312,
+      "sha256": "1c26a704d9cf837384faa2eeeda2f690b647b5338ac54b2848e87fe8bef90487",
+      "nevra": "libGLEW-2.2.0-13.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause AND MIT AND MIT-Khronos-old",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libX11-devel-1.8.13-3.fc45.x86_64.rpm",
+      "bytes": 1110416,
+      "sha256": "78a5c21fba8a8d0303c87c716c416c6e6717d9fd3ed7577582d4f439e08ec7a4",
+      "nevra": "libX11-devel-1.8.13-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND X11",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libXau-devel-1.0.12-5.fc45.x86_64.rpm",
+      "bytes": 14212,
+      "sha256": "e4ba9e2efb3d1b177f5cc2fe5cb53acd971046cfd5e9c29c82d17ce5dd635048",
+      "nevra": "libXau-devel-1.0.12-5.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-open-group",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libXext-devel-1.3.6-6.fc45.x86_64.rpm",
+      "bytes": 90485,
+      "sha256": "d18b419cec89d6affe5478d3d7308acd4077b5dafd9b272f145d163744b39fbe",
+      "nevra": "libXext-devel-1.3.6-6.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT-open-group AND X11 AND HPND AND HPND-sell-variant AND SMLNJ AND MIT AND ISC AND HPND-doc AND HPND-doc-sell",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libXft-devel-2.3.8-11.fc45.x86_64.rpm",
+      "bytes": 50423,
+      "sha256": "e6d5d36f90faa5550593fe4f2d2e966125c4b6cf497e4c22e6fe975f9a5e1e0d",
+      "nevra": "libXft-devel-2.3.8-11.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "HPND-sell-variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libXrender-devel-0.9.12-5.fc45.x86_64.rpm",
+      "bytes": 19349,
+      "sha256": "ac903ad3aba24ff968f83dc0921ed8158ef87fca546cd93a159129e910612f43",
+      "nevra": "libXrender-devel-0.9.12-5.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "HPND-sell-variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libassuan-devel-2.5.7-6.fc45.x86_64.rpm",
+      "bytes": 63881,
+      "sha256": "2eda13644494d9b5022f8d5d41d66a97b90de16074f2da2d3179281ce641ecd2",
+      "nevra": "libassuan-devel-2.5.7-6.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-3.0-or-later AND LGPL-2.1-or-later AND LGPL-3.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libblkid-devel-2.42.4-1.fc45.x86_64.rpm",
+      "bytes": 24968,
+      "sha256": "da3968f0bcd02fdfa7380302a19e3cb660e044c1da5766e4f7f1a5826e6830eb",
+      "nevra": "libblkid-devel-2.42.4-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libcom_err-devel-1.47.4-2.fc45.x86_64.rpm",
+      "bytes": 16871,
+      "sha256": "0d45c7631d04925126721af191b9e2a9c7179b9099c611fb494a9390f1d3755d",
+      "nevra": "libcom_err-devel-1.47.4-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libcurl-devel-8.21.0-9.fc45.x86_64.rpm",
+      "bytes": 1020161,
+      "sha256": "efee564001d2868f6ca588c5397a27a3d1637183abd12a30f74c698bbdd6ecee",
+      "nevra": "libcurl-devel-8.21.0-9.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "curl",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libdatrie-devel-0.2.14-3.fc45.x86_64.rpm",
+      "bytes": 92538,
+      "sha256": "c6e057fda6dbbe7e314a042c808be643c906eef26a69878558be67c6ee80d92b",
+      "nevra": "libdatrie-devel-0.2.14-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libffi-devel-3.5.2-3.fc45.x86_64.rpm",
+      "bytes": 30221,
+      "sha256": "6219efdc76ca35e0150d79f5f29b445c47f6bcc8d2f396c6b4e0b53cfc321c6e",
+      "nevra": "libffi-devel-3.5.2-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND CC-PDDC AND (GPL-3.0-or-later WITH Texinfo-exception)",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libgit2_1.9-1.9.7-3.fc45.x86_64.rpm",
+      "bytes": 626727,
+      "sha256": "b751bc432c027f110d505993e3123e4150510c18298b28c595a786b37c066290",
+      "nevra": "libgit2_1.9-1.9.7-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "GPL-2.0-only WITH GCC-exception-2.0 AND MIT AND LicenseRef-Fedora-Public-Domain AND Apache-2.0 AND SSLeay-standalone AND BSD-2-Clause AND NCSA AND Unlicense",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libgpg-error-devel-1.61-2.fc45.x86_64.rpm",
+      "bytes": 74598,
+      "sha256": "9d18c013f19e878fe76c38b43994e8d44eabb6380543b5f6679e93fe6ed36238",
+      "nevra": "libgpg-error-devel-1.61-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later AND (BSD-3-Clause OR LGPL-2.1-or-later) AND FSFULLR AND GPL-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libicu-devel-78.3-9.fc45.x86_64.rpm",
+      "bytes": 829407,
+      "sha256": "dce4e38f2a72e6a05ef7c93f5dba4907930fa7233b8070563a7bf9247893fa4b",
+      "nevra": "libicu-devel-78.3-9.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Unicode-DFS-2016 AND BSD-2-Clause AND BSD-3-Clause AND NAIST-2003 AND LicenseRef-Fedora-Public-Domain",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libidn2-devel-2.3.8-4.fc45.x86_64.rpm",
+      "bytes": 67544,
+      "sha256": "8a5231e1843d4ed9b045fde00a704effff8a6f59fc7414f4237eeeb19e2d3077",
+      "nevra": "libidn2-devel-2.3.8-4.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "(GPL-2.0-or-later OR LGPL-3.0-or-later) AND GPL-3.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libjpeg-turbo-devel-3.1.4.1-2.fc45.x86_64.rpm",
+      "bytes": 99687,
+      "sha256": "6d55d27350fda33f5a15197952b9b9bb7896c1eb45615bbcd2dd861b3df18d71",
+      "nevra": "libjpeg-turbo-devel-3.1.4.1-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Zlib AND BSD-3-Clause AND MIT AND IJG",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libkadm5-1.22.2-11.fc45.x86_64.rpm",
+      "bytes": 82119,
+      "sha256": "a86a4aa4f6eb3df16bd80b9a506a0befa89d9d71582c415bb5fb96556ca05567",
+      "nevra": "libkadm5-1.22.2-11.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Brian-Gladman-2-Clause AND BSD-2-Clause AND (BSD-2-Clause OR GPL-2.0-or-later) AND BSD-2-Clause-first-lines AND BSD-3-Clause AND BSD-4-Clause AND CMU-Mach-nodoc AND FSFULLRWD AND HPND AND HPND-export2-US AND HPND-export-US AND HPND-export-US-acknowledgement AND HPND-export-US-modify AND ISC AND MIT AND MIT-CMU AND OLDAP-2.8 AND OpenVision",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "liblerc-devel-4.3.0-1.fc45.x86_64.rpm",
+      "bytes": 3377583,
+      "sha256": "a3dab84bd2b09eba611f1d8b2a90123493fc96767880db8e94fa5ae641bbdef4",
+      "nevra": "liblerc-devel-4.3.0-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libmount-devel-2.42.4-1.fc45.x86_64.rpm",
+      "bytes": 26263,
+      "sha256": "a2e874839bc6bc105ba7ebdb1c1511b161b3b63c3c3ddecc0fb93ba7ef501ab7",
+      "nevra": "libmount-devel-2.42.4-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libnghttp2-devel-1.69.0-6.fc45.x86_64.rpm",
+      "bytes": 55559,
+      "sha256": "d76bb49c079ed1cf586195e9ab671f4712823ccc454b3de58346cff3668ce617",
+      "nevra": "libnghttp2-devel-1.69.0-6.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libnghttp3-devel-1.19.0-1.fc45.x86_64.rpm",
+      "bytes": 28644,
+      "sha256": "3d5823c1c87ef63394cf7952e0abb000230a78ef7864fd4e03ccdfd0e50587f1",
+      "nevra": "libnghttp3-devel-1.19.0-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libpng-devel-1.6.59-1.fc45.x86_64.rpm",
+      "bytes": 310561,
+      "sha256": "fc59100d2027d3acf90c3bcbc3dbc26ba8d0029295499469ab11cda3b274e09d",
+      "nevra": "libpng-devel-2:1.6.59-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "zlib",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libpsl-devel-0.23.1-1.fc45.x86_64.rpm",
+      "bytes": 34344,
+      "sha256": "f9275e24f7181989b9c85448aa0b21e41c205c92dfa6d6338a1534c981532ad8",
+      "nevra": "libpsl-devel-0.23.1-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libseccomp-devel-2.6.1-3.fc45.x86_64.rpm",
+      "bytes": 68228,
+      "sha256": "7841d427928ec001160847ac3ee975b78cc73fe5337f9b5a990637cf227785f5",
+      "nevra": "libseccomp-devel-2.6.1-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-only",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libselinux-devel-3.11-5.fc45.x86_64.rpm",
+      "bytes": 164512,
+      "sha256": "e4239939b07c59dd0bde5538215d2114aef05186a9627480fd044810a0338a6c",
+      "nevra": "libselinux-devel-3.11-5.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LicenseRef-Fedora-Public-Domain",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libsepol-devel-3.11-2.fc45.x86_64.rpm",
+      "bytes": 49486,
+      "sha256": "a44dfd62d6be8fa643c3a990a1d153e02e8cccde0744cc69c7ead5960cce5779",
+      "nevra": "libsepol-devel-3.11-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libssh-devel-0.12.2-1.fc45.x86_64.rpm",
+      "bytes": 48397,
+      "sha256": "aaa49c7b9939e3afa3548bada2905eccf3d3d55ff7e9f6b74e300d7a2b547b82",
+      "nevra": "libssh-devel-0.12.2-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libthai-devel-0.1.30-3.fc45.x86_64.rpm",
+      "bytes": 82999,
+      "sha256": "444eafb72e2c5bfc4ffba84f043cd8d8ee5398202fb41a69b591fb9cdcedf5d1",
+      "nevra": "libthai-devel-0.1.30-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.1-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libtiff-devel-4.7.2-3.fc45.x86_64.rpm",
+      "bytes": 305840,
+      "sha256": "9c83ce591ffbd1b2e3fca84bc6a9e34d10734369bf8ec076a98de6a8206f3085",
+      "nevra": "libtiff-devel-4.7.2-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "libtiff",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libverto-devel-0.3.2-13.fc45.x86_64.rpm",
+      "bytes": 14603,
+      "sha256": "3c5e78796207f12e8b63a81c2e7e3a473d07263f19d385fdc89c85c59f858186",
+      "nevra": "libverto-devel-0.3.2-13.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libwebp-devel-1.6.0-4.fc45.x86_64.rpm",
+      "bytes": 39994,
+      "sha256": "cb0c0777dfefe7585aab8c2c560c2dcf39795ead9309137e8dc3ca2a2bf16ae0",
+      "nevra": "libwebp-devel-1.6.0-4.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0 AND BSD-3-Clause WITH Google-Patent-WebM AND BSD-3-Clause AND FSFULLRWD",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libxcb-devel-1.17.0-8.fc45.x86_64.rpm",
+      "bytes": 1577431,
+      "sha256": "999cbe249c5a7840355b21c85f1bcd98113c693079f4e6fe9360a391746973bf",
+      "nevra": "libxcb-devel-1.17.0-8.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "X11",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libxml2-devel-2.15.4-1.fc45.x86_64.rpm",
+      "bytes": 549233,
+      "sha256": "ff9f7ea82537dfd36bda8da887ed3990c595ebda3cf05d06f9287017ca795afc",
+      "nevra": "libxml2-devel-2.15.4-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT AND ISC-Veillard AND W3C",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "libzstd-devel-1.5.7-6.fc45.x86_64.rpm",
+      "bytes": 57614,
+      "sha256": "4854cbbe6e60f126418c5d722cde8c0b9cd2ade9d0fd8a5052fa330121050db4",
+      "nevra": "libzstd-devel-1.5.7-6.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause OR GPL-2.0-only",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "llhttp-9.4.4-1.fc45.x86_64.rpm",
+      "bytes": 39451,
+      "sha256": "5c225c5e94d2febdbd76a54e8786614dd44ec66c24a0ed96b9190dd5abc11f43",
+      "nevra": "llhttp-9.4.4-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "lzo-devel-2.10-17.fc45.x86_64.rpm",
+      "bytes": 40017,
+      "sha256": "8766a12a94473d81425e8469e9f461686e0b5170d6cbecc5190f419743867c50",
+      "nevra": "lzo-devel-2.10-17.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "gpl-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "lzo-minilzo-2.10-17.fc45.x86_64.rpm",
+      "bytes": 24914,
+      "sha256": "161c8c70b5ae7a4ff52141d8ab45117a0b348901c5f3629e8efe1b401004cfd8",
+      "nevra": "lzo-minilzo-2.10-17.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "gpl-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "ngtcp2-crypto-ossl-devel-1.22.1-3.fc45.x86_64.rpm",
+      "bytes": 11811,
+      "sha256": "c60a5b0885635735d31bd6fdac70e5112f8a480b900ccc92eb38cc01933f5deb",
+      "nevra": "ngtcp2-crypto-ossl-devel-1.22.1-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "ngtcp2-devel-1.22.1-3.fc45.x86_64.rpm",
+      "bytes": 49755,
+      "sha256": "d56198e70fb7f49a895be3c5fc8d95092c70a3ea15d4ad9e2ff99fe5ab0aa125",
+      "nevra": "ngtcp2-devel-1.22.1-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "nspr-devel-4.39.0-10.fc45.x86_64.rpm",
+      "bytes": 116674,
+      "sha256": "7a36b36416849a837640c28b455e5db6fccd931c3e7bb5f15587d8476493f952",
+      "nevra": "nspr-devel-4.39.0-10.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MPL-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "nss-devel-3.133.0-1.fc45.x86_64.rpm",
+      "bytes": 155777,
+      "sha256": "f1977d1d0289c00547124d1716e7d35e45c5536507d8627dab72fbc102952a75",
+      "nevra": "nss-devel-3.133.0-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MPL-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "nss-softokn-devel-3.133.0-1.fc45.x86_64.rpm",
+      "bytes": 15936,
+      "sha256": "aa9ad989064662e6856744a7c6b01ef80bd95084094618b3fd902075a268b1cd",
+      "nevra": "nss-softokn-devel-3.133.0-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MPL-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "nss-softokn-freebl-devel-3.133.0-1.fc45.x86_64.rpm",
+      "bytes": 106501,
+      "sha256": "e4456d758aa0ac2f344c8eac2c7225d4c98c6a61a04a9a311524c7a9771e34d3",
+      "nevra": "nss-softokn-freebl-devel-3.133.0-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MPL-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "nss-util-devel-3.133.0-1.fc45.x86_64.rpm",
+      "bytes": 90818,
+      "sha256": "d13de9d0a436665be87e56c1c0723a1433f791a8c862140e7d29ec8c55801a0c",
+      "nevra": "nss-util-devel-3.133.0-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MPL-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "openjpeg-devel-2.5.4-5.fc45.x86_64.rpm",
+      "bytes": 27825,
+      "sha256": "0b78563c37b30ff140198872b1f370ab804d459a400be2ba1a9206f436b4b87e",
+      "nevra": "openjpeg-devel-2.5.4-5.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-2-Clause AND MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "openjpeg-tools-2.5.4-5.fc45.x86_64.rpm",
+      "bytes": 87996,
+      "sha256": "8cb5d7f204b4d51ac8fd0ab281a439cd9e221efbfaf60951cc60cc361dd09618",
+      "nevra": "openjpeg-tools-2.5.4-5.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-2-Clause AND MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "openssl-devel-4.0.3-1.fc45.x86_64.rpm",
+      "bytes": 3328546,
+      "sha256": "cd97032c5975bf1c620d5e4f08a6ac307d61dfa550528a0b43c47bd13e4cf8dc",
+      "nevra": "openssl-devel-1:4.0.3-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "pango-devel-1.58.2-1.fc45.x86_64.rpm",
+      "bytes": 167794,
+      "sha256": "1714121398a76b9583b5bd149f3af14f3294d9156826c888084638b16f9eb8f3",
+      "nevra": "pango-devel-1.58.2-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "LGPL-2.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "pcre2-devel-10.49-1.fc45.x86_64.rpm",
+      "bytes": 575100,
+      "sha256": "b63038d2ead88457584a6a0f5f6ed22058f2c36ca421b16b21fe9bcf8615700e",
+      "nevra": "pcre2-devel-10.49-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause AND FSFULLR AND X11 AND GPL-2.0-or-later AND FSFAP AND FSFUL AND GPL-3.0-or-later",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "pixman-devel-0.46.2-4.fc45.x86_64.rpm",
+      "bytes": 18157,
+      "sha256": "a1948f5eaf031644540bbcf04ea3f18b245ec412dc8706c4429c291db8efa584",
+      "nevra": "pixman-devel-0.46.2-4.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "poppler-devel-26.08.0-2.fc45.x86_64.rpm",
+      "bytes": 220014,
+      "sha256": "2f7414d2c5a053e50508320e1b0fac306e1c78a1bb35ef7fd18ed565ccb7ff3d",
+      "nevra": "poppler-devel-26.08.0-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "(GPL-2.0-only OR GPL-3.0-only) AND GPL-2.0-or-later AND LGPL-2.0-or-later AND LGPL-2.1-or-later AND MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "poppler-glib-devel-26.08.0-2.fc45.x86_64.rpm",
+      "bytes": 85939,
+      "sha256": "6bdf79de662a1dd90e7f05de09fc6883cd5827950e60929cf85c26877f326ccb",
+      "nevra": "poppler-glib-devel-26.08.0-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "(GPL-2.0-only OR GPL-3.0-only) AND GPL-2.0-or-later AND LGPL-2.0-or-later AND LGPL-2.1-or-later AND MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "protobuf-compiler-33.5-7.fc45.x86_64.rpm",
+      "bytes": 1645677,
+      "sha256": "0ec9aeee7be465bd6680612d28cb9ef4c911455a34b6793ba8d4e5e88d8d0749",
+      "nevra": "protobuf-compiler-33.5-7.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-3-Clause AND MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "publicsuffix-list-20260624-2.fc45.noarch.rpm",
+      "bytes": 95050,
+      "sha256": "e0fbec07cdc876fba1b4b75cf5c496dfeaeaa7f6fb44c1bb55119d241cf0f0c1",
+      "nevra": "publicsuffix-list-20260624-2.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "MPL-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "rust-1.100.0-1.fc45.x86_64.rpm",
+      "bytes": 33422393,
+      "sha256": "6bb4cd8cd465247798db605268c191fb274c103e316dc06c7a4728a94b1485e3",
+      "nevra": "rust-1.100.0-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "(Apache-2.0 OR MIT) AND (Artistic-2.0 AND BSD-3-Clause AND ISC AND MIT AND MPL-2.0 AND Unicode-3.0)",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "rust-std-static-1.100.0-1.fc45.x86_64.rpm",
+      "bytes": 42951665,
+      "sha256": "35f58252e68cedeefffc3e6833195dcf18e70b28c54c3f490a3cf51d528eeb34",
+      "nevra": "rust-std-static-1.100.0-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "(Apache-2.0 OR MIT) AND (Artistic-2.0 AND BSD-3-Clause AND ISC AND MIT AND MPL-2.0 AND Unicode-3.0)",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "sysprof-capture-devel-51.0-1.fc45.x86_64.rpm",
+      "bytes": 187081,
+      "sha256": "b1d4502ec2d71a9b2c583ede8382e8143e47ddd0bb802ba2645661ef8dc2bbfb",
+      "nevra": "sysprof-capture-devel-51.0-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-2-Clause-Patent",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "vulkan-headers-1.4.350.0-4.fc45.noarch.rpm",
+      "bytes": 1791566,
+      "sha256": "ce6fd06b9a5aa01648824d814c1d9bfe42a613ce447dbd2a2deecfecbe1e5d90",
+      "nevra": "vulkan-headers-1.4.350.0-4.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "vulkan-loader-devel-1.4.350.0-2.fc45.x86_64.rpm",
+      "bytes": 12724,
+      "sha256": "e32f87eee997ffb44b2045b56ac7c5b9c0393e239edda9171e5dd350cb5413fa",
+      "nevra": "vulkan-loader-devel-1.4.350.0-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "wayland-devel-1.26.0-3.fc45.x86_64.rpm",
+      "bytes": 165162,
+      "sha256": "63b336994ed7eb16743daca9dd84f73cbc757c912bd54ff10cd9fe7077c553d0",
+      "nevra": "wayland-devel-1.26.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "xorg-x11-proto-devel-2025.1-3.fc45.noarch.rpm",
+      "bytes": 309408,
+      "sha256": "4b665eaad4e91e61bee14502ab264002506ff91a51d6ba88ab3a26ac82e14a9e",
+      "nevra": "xorg-x11-proto-devel-2025.1-3.fc45.noarch",
+      "vendor": "Fedora Project",
+      "license": "BSD-2-Clause AND HPND AND HPND-sell-variant AND ICU AND MIT AND MIT-open-group AND SGI-B-2.0 AND SMLNJ AND X11 AND X11-distribute-modifications-variant",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "xz-devel-5.8.3-2.fc45.x86_64.rpm",
+      "bytes": 68000,
+      "sha256": "b90ee9cee39e37d4a25af07a1ee4ad39b0fb9d58a27e19cd4f8fa025f63346ae",
+      "nevra": "xz-devel-1:5.8.3-2.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "0BSD",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "zlib-ng-compat-devel-2.3.3-6.fc45.x86_64.rpm",
+      "bytes": 38733,
+      "sha256": "ea3cf02979f8726e00f27b62e17d54668e5142bd8095be406f179380258f73fb",
+      "nevra": "zlib-ng-compat-devel-2.3.3-6.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Zlib",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    }
+  ],
+  "key": {
+    "path": "image/hyprland/keys/fedora-45-primary.asc",
+    "sha256": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425",
+    "fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E",
+    "identity": "Fedora (45) <fedora-45-primary@fedoraproject.org>"
+  },
+  "requirements": {
+    "schema": 1,
+    "scope": "Candidate signed Fedora compiler/native headers for the exact Walker source; resolve and review before installing",
+    "source_inputs": "image/launcher/walker-source.json",
+    "source_revision": "a515085fd39fae80acc086c8fbfd9b7771a9a11d",
+    "cargo_toml_sha256": "d1676045d1101a2d92c5669e54e36e63363d3e79dbc10c561662039ae2453a90",
+    "cargo_lock_sha256": "3448367c28c769e29f681ea2de84d4a822f08569bbef6628f03535c61fec2315",
+    "packages": [
+      "rust >= 1.92.0",
+      "cargo >= 1.92.0",
+      "gcc",
+      "glibc-devel",
+      "pkgconf-pkg-config",
+      "protobuf-compiler",
+      "pkgconfig(gtk4) >= 4.12",
+      "pkgconfig(gio-2.0) >= 2.80",
+      "pkgconfig(gtk4-layer-shell-0) >= 1.0",
+      "pkgconfig(poppler-glib)",
+      "pkgconfig(cairo)",
+      "pkgconfig(gdk-pixbuf-2.0)",
+      "pkgconfig(wayland-client)"
+    ],
+    "notes": [
+      "The exact Cargo lock has 284 registry packages; gtk4 0.11.5 requires Rust1.92 and the source selects GTK4.12/GIO2.80 features",
+      "gtk4-layer-shell-sys0.6.1 requires gtk4-layer-shell-0 >=1.0; later builds must enforce all native version constraints",
+      "The pinned build.rs uses protobuf-codegen3.7.2 with the default protoc from PATH; use the signed Fedora protobuf-compiler, not a downloaded installer",
+      "Rust/Cargo compiler versions, native RPM bytes and any changed base packages require separate review after discovery; never install compiler candidates into the product",
+      "This separate profile does not modify the compositor, Elephant or launcher-runtime package locks; no compilation or OS qualification is implied"
+    ]
+  },
+  "qualified": false,
+  "product_installation": false
+}
