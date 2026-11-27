@@ -20,13 +20,35 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  registration-only:
+  packages:
     runs-on: ubuntu-24.04
-    timeout-minutes: 2
+    timeout-minutes: 55
     steps:
-      - name: Refuse package production from the registration stub
-        shell: bash
-        run: |
-          echo 'The default-branch workflow only registers this manual entry point.' >&2
-          echo 'Select an independently reviewed producer branch; this stub never produces packages.' >&2
-          exit 1
+      - name: Check out the exact requested revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+
+      - name: Authenticate Ubuntu inputs and prepare an unselected candidate
+        env:
+          SYMBI_UBUNTU_PACKAGE_MODE: ${{ inputs.mode }}
+        run: bash scripts/check-container-ubuntu-package-producer.sh "$SYMBI_UBUNTU_PACKAGE_MODE"
+
+      - name: Retain raw authenticated producer evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: container-ubuntu-fixture-package-evidence
+          path: .cache/ubuntu-fixture-package-producer/evidence/
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Retain the validated unselected package candidate
+        if: ${{ success() && inputs.mode == 'produce' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: container-ubuntu-fixture-packages
+          path: .cache/ubuntu-fixture-package-producer/output/candidate/
+          retention-days: 14
+          compression-level: 0
+          if-no-files-found: error

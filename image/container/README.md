@@ -280,14 +280,36 @@ manifest is always `candidate-unselected`; `producer_passed`, every verification
 field and every qualification claim remain false, and the pending public input
 contract still refuses it. All staged paths are private and descriptor-relative:
 every component is opened without following links and each file is hashed,
-parsed or copied through the same stable single-link descriptor. No workflow,
-Dockerfile, native producer or artifact upload consumes this code yet.
+parsed or copied through the same stable single-link descriptor.
+
+The separate `ubuntu-fixture-packages.yml` workflow is manual only. Its
+committed producer contract has state `pending-discovery` and null InRelease
+and Packages.xz pins. In that state `discover` authenticates the exact retained
+Ubuntu Base checksum/keyring and current repository metadata, then uploads only
+non-authoritative raw evidence. The wrapper creates a bounded transient unit for
+either mode; inside it, pending `produce` refuses before retained-input
+validation, in-cgroup inspection, authenticated producer commands or a network
+opener. Discovery also binds the clean
+checkout HEAD to `GITHUB_SHA` and retains the exact tree before retrieval. A
+later review must commit all six byte/hash pins and change the contract to
+`ready`. Only then can the same job
+run file-only apt and no-act dpkg phases with a new network namespace, stream
+the bound packages one at a time, validate the unselected candidate twice and
+reach the conditional candidate upload. The Dockerfile, native producer, image
+consumer and public pending lock remain unchanged.
+
 Candidate output is moved from an isolated held staging directory with atomic
 no-replace semantics and accepted only after the complete nested identity and
-content binding is revalidated through the held destination root. Failure paths
-do not remove pathnames: private partial downloads and staging trees are retained
-for explicit operator disposal, as is the empty private staging parent after a
-successful publication.
+content binding is revalidated through the held destination root. Within that
+reusable writer, failure paths do not remove names because same-UID substitution
+cannot be excluded. After the hosted systemd unit stops, its wrapper rechecks
+each exact direct mode-0700 cache directory under the resolved checkout and
+retains the private scratch for disposal with the ephemeral runner. It performs
+no recursive pathname cleanup or ownership change. Raw command output, held tool
+hashes, cgroup counters, systemd status and retention state remain in the
+evidence artifact. A separate systemd-derived fallback resource record is
+always written, including when the primary cgroup record is truncated, so swap
+and OOM state remain observable.
 
 ## Required remaining evidence
 

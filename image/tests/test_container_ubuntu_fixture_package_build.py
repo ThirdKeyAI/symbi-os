@@ -855,6 +855,14 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                 packages.EXPECTED_REQUEST["roots"],
                 [base / "packages/a.deb", base / "packages/b.deb"],
             )
+            apt_commands = build.offline_apt_commands(
+                base / "apt", base / "repo", base / "archive.gpg",
+                packages.EXPECTED_REQUEST["roots"],
+            )
+            dpkg_command = build.offline_dpkg_command(
+                base / "apt",
+                [base / "packages/a.deb", base / "packages/b.deb"],
+            )
         self.assertEqual(verify, [
             "/usr/bin/gpgv", "--status-fd=1", "--keyring",
             str((base / "archive.gpg").resolve()), "--output",
@@ -862,6 +870,9 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         ])
         update = commands["update"]
         self.assertIn("update", update)
+        self.assertEqual(commands["update"], apt_commands["update"])
+        self.assertEqual(commands["dpkg"], dpkg_command)
+        self.assertIn("APT::Sandbox::User=root", commands["update"])
         self.assertNotIn("http", " ".join(update))
         self.assertEqual(commands["sources_list"].count("deb [arch=amd64"), 3)
         self.assertNotIn("http", commands["sources_list"])
