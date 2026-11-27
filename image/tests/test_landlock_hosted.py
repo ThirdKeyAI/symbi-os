@@ -23,6 +23,7 @@ from image.atomic.hosted import LANDLOCK_PARENT_LIMITS, run_hosted_command
 from image.launcher.probes.bounded_process import run_bounded
 from image.qualification import landlock as landlock_driver
 from image.qualification.boot import (MAX_QMP_MESSAGE_BYTES,
+                                      MAX_QMP_MESSAGES_PER_CALL,
                                       capture_process_identity,
                                       discard_control_socket, discard_overlay,
                                       firmware_arguments, overlay_command,
@@ -32,6 +33,7 @@ from image.qualification.boot import (MAX_QMP_MESSAGE_BYTES,
                                       validate_peer_credentials,
                                       validate_process_state,
                                       validate_socket_info,
+                                      unique_json,
                                       verify_process_identity,
                                       write_progress_sample)
 from image.qualification.guest import collect_public_artifacts
@@ -320,7 +322,10 @@ class HostedLandlock(unittest.TestCase):
         joined = " ".join(command)
         self.assertIn("-net none", joined)
         self.assertIn("-m 2048M", joined)
-        self.assertIn("-smp 1", joined)
+        self.assertIn("-accel tcg,thread=multi", joined)
+        self.assertIn("-smp cpus=2,sockets=1,cores=2,threads=1", joined)
+        self.assertNotIn("tcg,thread=single", joined)
+        self.assertNotIn("-smp 1", joined)
         self.assertIn("product=Symbi-Hosted-Landlock-Probe", joined)
         self.assertIn("file=/output/guest.qcow2,format=qcow2,if=virtio", joined)
         self.assertNotIn("snapshot=on", joined)
@@ -353,9 +358,11 @@ class HostedLandlock(unittest.TestCase):
                     "uid": 10001, "gid": 10001, "pidfd": 10}
         child = mock.Mock(pid=4242)
         child.poll.return_value = None
-        send_signal = mock.Mock(side_effect=PermissionError("synthetic refusal"))
+        send_signal = mock.Mock(side_effect=PermissionError(
+            errno.EACCES, "Permission denied"))
         failure = "TimeoutError: Landlock guest did not report"
-        qmp = mock.Mock(side_effect=FileNotFoundError("synthetic absent socket"))
+        qmp = mock.Mock(side_effect=ValueError(
+            "unexpected QMP response schema"))
         prove_exit = mock.Mock(return_value=False)
         record = {"failure": failure,
                   "child_cleanup": stop_child(
@@ -367,7 +374,11 @@ class HostedLandlock(unittest.TestCase):
         self.assertTrue(record["child_cleanup"]["attempted"])
         self.assertFalse(record["child_cleanup"]["qmp_quit"])
         self.assertFalse(record["child_cleanup"]["exit_proven"])
-        self.assertEqual(len(record["child_cleanup"]["errors"]), 3)
+        self.assertEqual(record["child_cleanup"]["errors"], [
+            "ValueError: unexpected QMP response schema",
+            "PermissionError: [Errno 13] Permission denied",
+            "PermissionError: [Errno 13] Permission denied",
+        ])
         qmp.assert_called_once_with({"path": Path("/output/qmp.sock")}, "quit")
         self.assertEqual(send_signal.call_args_list, [
             mock.call(identity, signal.SIGTERM),
@@ -389,6 +400,27 @@ class HostedLandlock(unittest.TestCase):
         self.assertFalse(cleanup["killed"])
         controlled.terminate.assert_not_called()
         controlled.kill.assert_not_called()
+
+        # QEMU documents that quit may close QMP before returning a response.
+        # Exact pidfd plus direct-child exit proof is sufficient for cleanup;
+        # a signal fallback must not run after that proof succeeds.
+        eof_child = mock.Mock(pid=4242)
+        eof_child.poll.return_value = None
+        qmp = mock.Mock(side_effect=EOFError("synthetic QMP close after quit"))
+        send_signal = mock.Mock(side_effect=PermissionError("must not signal"))
+        cleanup = stop_child(
+            eof_child, identity, {"path": Path("/output/qmp.sock")},
+            request=qmp, prove_exit=mock.Mock(side_effect=(False, True)),
+            verify=mock.Mock(return_value=None), send_signal=send_signal)
+        self.assertTrue(cleanup["exit_proven"])
+        self.assertFalse(cleanup["qmp_quit"])
+        self.assertFalse(cleanup["terminated"])
+        self.assertFalse(cleanup["killed"])
+        self.assertEqual(cleanup["errors"],
+                         ["EOFError: synthetic QMP close after quit"])
+        send_signal.assert_not_called()
+        eof_child.terminate.assert_not_called()
+        eof_child.kill.assert_not_called()
 
         reused = mock.Mock(pid=4242)
         reused.poll.return_value = None
@@ -448,15 +480,39 @@ class HostedLandlock(unittest.TestCase):
         greeting = (b'{"QMP":{"version":{"qemu":{"major":9,"minor":2,'
                     b'"micro":0},"package":""},"capabilities":["oob"]}}\n')
         capabilities = b'{"return":{},"id":"symbi-qmp-capabilities"}\n'
-        status = (b'{"return":{"running":true,"singlestep":false,'
-                  b'"status":"running"},"id":"symbi-query-status"}\n')
-        stream = Stream([greeting, capabilities, status])
-        self.assertEqual(qmp_request(stream, "query-status"),
-                         {"running": True, "singlestep": False,
-                          "status": "running"})
-        self.assertEqual(len(stream.writes), 2)
+        legacy_status = (b'{"return":{"running":true,"singlestep":false,'
+                         b'"status":"running"},"id":"symbi-query-status"}\n')
+        current_status = (b'{"return":{"running":true,"status":"running"},'
+                          b'"id":"symbi-query-status"}\n')
+        running_event = (b'{"event":"RESUME","timestamp":{"seconds":1,'
+                         b'"microseconds":2}}\n')
+        for name, status, expected in (
+            ("legacy singlestep", legacy_status,
+             {"running": True, "singlestep": False, "status": "running"}),
+            ("current", current_status,
+             {"running": True, "status": "running"}),
+        ):
+            with self.subTest(name=name):
+                stream = Stream([greeting, capabilities, status])
+                self.assertEqual(qmp_request(stream, "query-status"), expected)
+                self.assertEqual(len(stream.writes), 2)
+        event_stream = Stream([
+            greeting, capabilities, running_event, current_status])
+        self.assertEqual(qmp_request(event_stream, "query-status"),
+                         {"running": True, "status": "running"})
+        bounded_stream = Stream([
+            greeting, capabilities,
+            *([running_event] * (MAX_QMP_MESSAGES_PER_CALL - 1)),
+            current_status,
+        ])
+        self.assertEqual(qmp_request(bounded_stream, "query-status"),
+                         {"running": True, "status": "running"})
         quit_stream = Stream([
-            greeting, capabilities, b'{"return":{},"id":"symbi-quit"}\n'])
+            greeting, capabilities,
+            b'{"event":"SHUTDOWN","data":{"guest":false,'
+            b'"reason":"host-qmp-quit"},"timestamp":{"seconds":1,'
+            b'"microseconds":3}}\n',
+            b'{"return":{},"id":"symbi-quit"}\n'])
         self.assertEqual(qmp_request(quit_stream, "quit"), {})
         for forbidden in ("qmp_capabilities", "stop", "cont", "system_reset"):
             with self.subTest(forbidden=forbidden), self.assertRaises(ValueError):
@@ -465,28 +521,73 @@ class HostedLandlock(unittest.TestCase):
         invalid = {
             "extra greeting field": (
                 greeting.replace(b'"QMP":', b'"extra":1,"QMP":'),
-                capabilities, status),
+                capabilities, current_status),
             "extra capabilities field": (
                 greeting, b'{"return":{},"id":"symbi-qmp-capabilities","extra":1}\n',
-                status),
+                current_status),
+            "event before capabilities": (
+                greeting, running_event, capabilities, current_status),
             "wrong response id": (
                 greeting, capabilities,
-                status.replace(b"symbi-query-status", b"other")),
+                current_status.replace(b"symbi-query-status", b"other")),
             "extra status field": (
                 greeting, capabilities,
-                status.replace(b'"status":"running"',
-                               b'"status":"running","extra":1')),
+                current_status.replace(b'"status":"running"',
+                                       b'"status":"running","extra":1')),
+            "invalid legacy singlestep": (
+                greeting, capabilities,
+                legacy_status.replace(b'"singlestep":false',
+                                      b'"singlestep":"false"')),
             "inconsistent state": (
                 greeting, capabilities,
-                status.replace(b'"running":true', b'"running":false')),
+                current_status.replace(b'"running":true', b'"running":false')),
+            "invalid event timestamp": (
+                greeting, capabilities,
+                running_event.replace(b'"microseconds":2',
+                                      b'"microseconds":1000000'),
+                current_status),
+            "extra event field": (
+                greeting, capabilities,
+                running_event.replace(b'"event":"RESUME"',
+                                      b'"event":"RESUME","extra":1'),
+                current_status),
+            "invalid event name": (
+                greeting, capabilities,
+                running_event.replace(b'"RESUME"', b'"resume"'),
+                current_status),
+            "invalid event data": (
+                greeting, capabilities,
+                running_event.replace(b'"timestamp":', b'"data":[],"timestamp":'),
+                current_status),
+            "too many events": (
+                greeting, capabilities,
+                *([running_event] * MAX_QMP_MESSAGES_PER_CALL),
+                current_status),
             "malformed json": (b'{not-json}\n',),
             "truncated json": (greeting.removesuffix(b"\n"),),
             "oversized json": (b"{" + b"x" * MAX_QMP_MESSAGE_BYTES + b"}\n",),
             "timeout": (TimeoutError("synthetic timeout"),),
         }
+        for constant in (b"NaN", b"Infinity", b"-Infinity"):
+            invalid["event data " + constant.decode()] = (
+                greeting, capabilities,
+                running_event.replace(
+                    b'"timestamp":',
+                    b'"data":{"value":' + constant + b'},"timestamp":'),
+                current_status,
+            )
         for name, lines in invalid.items():
             with self.subTest(name=name), self.assertRaises((ValueError, TimeoutError)):
                 qmp_request(Stream(lines), "query-status")
+
+    def test_unique_json_rejects_constants_and_duplicate_keys(self):
+        for constant in ("NaN", "Infinity", "-Infinity"):
+            with self.subTest(constant=constant), self.assertRaisesRegex(
+                    ValueError, "non-RFC JSON constant"):
+                unique_json('{"nested":[{"value":' + constant + '}]}')
+        with self.assertRaisesRegex(ValueError,
+                                    "duplicate qualification report key"):
+            unique_json('{"nested":{"value":1,"value":2}}')
 
     def test_qmp_peer_socket_and_process_identity_are_exact(self):
         identity = {"pid": 4242, "ppid": 1, "starttime": 777,
@@ -651,6 +752,26 @@ class HostedLandlock(unittest.TestCase):
         finally:
             if identity is not None:
                 os.close(identity["pidfd"])
+
+    def test_process_identity_rejects_changed_popen_argv_before_proc_reads(self):
+        command = [sys.executable, "-c", "pass"]
+        prepared = prepare_process_identity(
+            command, Path("/proc/self/cgroup").read_text().strip())
+        child = mock.Mock(pid=4242,
+                          args=[sys.executable, "-c", "raise SystemExit(1)"])
+        reader = mock.Mock()
+        real_pidfd_open = os.pidfd_open
+
+        def open_pidfd(pid, flags):
+            self.assertEqual((pid, flags), (4242, 0))
+            return real_pidfd_open(os.getpid(), 0)
+
+        with mock.patch("image.qualification.boot.os.pidfd_open", open_pidfd), \
+                self.assertRaisesRegex(ValueError,
+                                       "QEMU Popen command identity changed"):
+            capture_process_identity(child, prepared, reader=reader)
+        reader.assert_not_called()
+        child.poll.assert_not_called()
 
     def test_failed_cleanup_residue_does_not_hide_regular_evidence(self):
         with tempfile.TemporaryDirectory() as directory:
