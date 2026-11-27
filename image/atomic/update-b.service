@@ -5,7 +5,7 @@ ConditionPathExists=!/run/symbi-update-bootc
 ConditionPathExists=!/run/symbi-update-bootc.new
 After=local-fs.target
 Before=o.service
-OnFailure=poweroff.target
+OnFailure=f.service
 
 [Service]
 Type=oneshot

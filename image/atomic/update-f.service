@@ -1,0 +1,29 @@
+[Unit]
+Description=Retain bounded launcher-preparation failure evidence
+ConditionPathExists=!/etc/initrd-release
+After=b.service
+OnFailure=poweroff.target
+
+[Service]
+Type=oneshot
+ImportCredential=symbi-update-failure.py
+ExecStartPre=/usr/bin/systemctl --quiet is-failed b.service
+ExecStart=/usr/bin/python3 %d/symbi-update-failure.py
+ExecStopPost=/usr/bin/systemctl --no-block poweroff
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=LANG=C.UTF-8
+UMask=0077
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+PrivateTmp=yes
+PrivateMounts=yes
+ProtectHome=yes
+MemoryMax=64M
+MemorySwapMax=0
+CPUQuota=25%
+TasksMax=16
+TimeoutStartSec=30
+TimeoutStopSec=15
+StandardOutput=journal+console
+StandardError=journal+console

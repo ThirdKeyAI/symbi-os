@@ -25,10 +25,15 @@ from image.atomic.update_boot import (DISPOSABLE_PHASE_TIMEOUT_SECONDS,
                                       positive_qemu_command,
                                       firmware_arguments,
                                       stop_child,
+                                      validate_launcher_failure_report,
                                       validate_phase_report,
                                       validate_negative_report,
                                       validate_positive_report,
                                       validate_shared_baseline)
+from image.atomic.update_boot_failure import (JOURNAL_MAX_BYTES,
+                                              JOURNAL_MAX_LINES,
+                                              JOURNAL_MAX_LINE_BYTES,
+                                              bounded_journal_excerpt)
 from image.atomic.update_process import TIMEOUT_SECONDS, validate_update_controller_command
 from image.atomic.update_guest import (UPDATE_COMMAND_TIMEOUT_SECONDS,
                                        BOOTC_LABEL_REFERENCE, BOOTC_LAUNCHER,
@@ -117,6 +122,22 @@ class AtomicUpdateTests(unittest.TestCase):
                              ["controller-result.json", "same-path-positive-serial.log"])
             self.assertEqual((evidence / "controller-result.json").read_text(),
                              '{"passed": false}\n')
+            self.assertFalse((evidence / "same-path-positive.qcow2").exists())
+
+    def test_launcher_failure_report_is_retained_without_private_overlay(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            output, evidence = root / "output", root / "evidence"
+            output.mkdir()
+            evidence.mkdir()
+            (output / "result.json").write_text('{"passed": false}\n')
+            raw = (json.dumps(self.launcher_failure_report(), sort_keys=True) + "\n").encode()
+            (output / "same-path-positive.json").write_bytes(raw)
+            (output / "same-path-positive.qcow2").write_bytes(b"private disk")
+            retained = retain_controller_output(output, evidence)
+            self.assertEqual(retained,
+                             ["controller-result.json", "same-path-positive.json"])
+            self.assertEqual((evidence / "same-path-positive.json").read_bytes(), raw)
             self.assertFalse((evidence / "same-path-positive.qcow2").exists())
 
     def test_failed_update_refuses_unsafe_diagnostic_entries(self):
@@ -652,7 +673,87 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertIn("systemd.extra-unit.o.service", " ".join(firmware))
         self.assertIn("systemd.extra-unit.s.service", " ".join(firmware))
         self.assertIn("systemd.extra-unit.b.service", " ".join(firmware))
+        self.assertIn("systemd.extra-unit.f.service", " ".join(firmware))
+        self.assertIn("symbi-update-failure.py", " ".join(firmware))
         self.assertNotIn("fstab.extra", " ".join(firmware))
+
+    def launcher_failure_report(self):
+        excerpt = bounded_journal_excerpt(
+            "b.service: Failed at step SELINUX_CONTEXT spawning /usr/bin/install: "
+            "Permission denied\n")
+        return {
+            "schema": 1,
+            "passed": False,
+            "guest_booted": True,
+            "release_qualified": False,
+            "product": "Symbi-Hosted-Update-Probe",
+            "diagnostic": "launcher-preparation-failure",
+            "unit": "b.service",
+            "runner_sha256": "a" * 64,
+            "service": {
+                "Result": "exit-code", "ExecMainCode": "1",
+                "ExecMainStatus": "229", "ActiveState": "failed",
+                "SubState": "failed",
+            },
+            "journal": excerpt,
+            "scope": "Bounded launcher-preparation diagnostics; no update action ran",
+        }
+
+    def test_launcher_failure_report_binds_exact_fields_and_bounds(self):
+        report = self.launcher_failure_report()
+        self.assertEqual(validate_launcher_failure_report(report, "a" * 64), report)
+        mutations = []
+        changed = copy.deepcopy(report)
+        changed["extra"] = True
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["service"]["ActiveState"] = "active"
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["service"]["ExecMainStatus"] = "not-a-number"
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["journal"]["excerpt"][0] = "x" * (JOURNAL_MAX_LINE_BYTES + 1)
+        changed["journal"]["bytes"] = len(changed["journal"]["excerpt"][0]) + 1
+        changed["journal"]["sha256"] = hashlib.sha256(
+            (changed["journal"]["excerpt"][0] + "\n").encode()).hexdigest()
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["journal"]["sha256"] = "b" * 64
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["journal"]["excerpt"][0] += "\x00"
+        mutations.append(changed)
+        for changed in mutations:
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                validate_launcher_failure_report(changed, "a" * 64)
+        with self.assertRaises(ValueError):
+            validate_launcher_failure_report(report, "b" * 64)
+
+    def test_launcher_failure_journal_is_bounded_and_redacts_secret_shapes(self):
+        secret = "s" * 64
+        long_value = "a" * 64
+        raw = ("token=" + secret + "\n" + long_value + "\n"
+               + "Authorization: Bearer bearer-value\n"
+               + ("z!" * (JOURNAL_MAX_LINE_BYTES + 100)) + "\n"
+               + "control\x00value\n"
+               + (("q!" * (JOURNAL_MAX_LINE_BYTES // 2) + "\n")
+                  * JOURNAL_MAX_LINES))
+        observed = bounded_journal_excerpt(raw)
+        rendered = "\n".join(observed["excerpt"])
+        self.assertNotIn(secret, rendered)
+        self.assertNotIn(long_value, rendered)
+        self.assertNotIn("bearer-value", rendered)
+        self.assertIn("<redacted>", rendered)
+        self.assertTrue(observed["truncated"])
+        self.assertLessEqual(observed["bytes"], JOURNAL_MAX_BYTES)
+        self.assertLessEqual(observed["line_count"], JOURNAL_MAX_LINES)
+        self.assertTrue(all(len(line.encode("ascii")) <= JOURNAL_MAX_LINE_BYTES
+                            for line in observed["excerpt"]))
+        self.assertNotIn("\x00", rendered)
+        payload = ("\n".join(observed["excerpt"]) + "\n").encode("ascii")
+        self.assertEqual(len(payload), observed["bytes"])
+        self.assertEqual(hashlib.sha256(payload).hexdigest(), observed["sha256"])
 
     def test_each_bootc_rejection_uses_a_distinct_disposable_overlay(self):
         commands = {case: negative_qemu_command(case) for case in (
@@ -981,6 +1082,7 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertEqual(settings["After"], "local-fs.target b.service")
         self.assertNotIn("s.service", settings.get("Requires", ""))
         self.assertNotIn("s.service", settings.get("After", ""))
+        self.assertNotIn("OnFailure", settings)
 
         status_settings = dict(line.split("=", 1) for line in
                                (root / "image/atomic/s.service").read_text().splitlines()
@@ -1007,6 +1109,7 @@ class AtomicUpdateTests(unittest.TestCase):
                          "CAP_CHOWN CAP_DAC_OVERRIDE CAP_FOWNER CAP_MAC_ADMIN")
         self.assertEqual(launcher["MemorySwapMax"], "0")
         self.assertEqual(launcher["TasksMax"], "16")
+        self.assertEqual(launcher["OnFailure"], "f.service")
         text = (root / "image/atomic/update-b.service").read_text()
         self.assertIn("/usr/bin/bootc /run/symbi-update-bootc.new", text)
         self.assertIn("--reference=/usr/bin/ostree", text)
@@ -1020,6 +1123,30 @@ class AtomicUpdateTests(unittest.TestCase):
             "ConditionPathExists=!/run/symbi-update-bootc",
             "ConditionPathExists=!/run/symbi-update-bootc.new",
         ])
+
+        failure = dict(line.split("=", 1) for line in
+                       (root / "image/atomic/update-f.service").read_text().splitlines()
+                       if "=" in line and not line.startswith("#"))
+        self.assertEqual(failure["After"], "b.service")
+        self.assertEqual(failure["OnFailure"], "poweroff.target")
+        self.assertEqual(failure["ImportCredential"], "symbi-update-failure.py")
+        self.assertEqual(failure["ExecStartPre"],
+                         "/usr/bin/systemctl --quiet is-failed b.service")
+        self.assertNotIn("ExecCondition", failure)
+        self.assertEqual(failure["ExecStart"],
+                         "/usr/bin/python3 %d/symbi-update-failure.py")
+        self.assertEqual(failure["ExecStopPost"],
+                         "/usr/bin/systemctl --no-block poweroff")
+        self.assertEqual(failure["NoNewPrivileges"], "yes")
+        self.assertEqual(failure["CapabilityBoundingSet"], "")
+        self.assertEqual(failure["PrivateMounts"], "yes")
+        self.assertEqual(failure["MemorySwapMax"], "0")
+        self.assertEqual(failure["TasksMax"], "16")
+        self.assertEqual(failure["TimeoutStartSec"], "30")
+        self.assertNotIn("SELinuxContext", failure)
+        failure_text = (root / "image/atomic/update-f.service").read_text()
+        self.assertNotIn("[Install]", failure_text)
+        self.assertNotIn("f.service", (root / "image/atomic/contract.py").read_text())
 
         skipped = ("Result=success\nExecMainCode=0\nExecMainStatus=0\n"
                    "ActiveState=inactive\nSubState=dead\n")
