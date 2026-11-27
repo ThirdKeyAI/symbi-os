@@ -174,6 +174,11 @@ def validate_collector_diagnostic(raw, runner_hash):
                       "sha256": hashlib.sha256(remaining).hexdigest()}
             break
         event_name = event.get("event") if isinstance(event, dict) else None
+        if not isinstance(event_name, str):
+            remaining = raw[offset:]
+            suffix = {"state": "invalid", "bytes": len(remaining),
+                      "sha256": hashlib.sha256(remaining).hexdigest()}
+            break
         required = set(common) | {"event", "seq"}
         if event_name in {"collector-stage", "collector-completed"}:
             required.add("stage")
@@ -219,6 +224,7 @@ def validate_collector_diagnostic(raw, runner_hash):
             stages.append(event["stage"])
         elif event_name == "collector-failed":
             if (not stages or event["stage"] != stages[-1]
+                    or not isinstance(event.get("failure_kind"), str)
                     or event["failure_kind"] not in TRANSITION_COLLECTOR_FAILURE_KINDS):
                 invalid_offset = event_offsets[index]
                 suffix = {"state": "invalid", "bytes": len(raw) - invalid_offset,
@@ -238,6 +244,7 @@ def validate_collector_diagnostic(raw, runner_hash):
                     or set(report) != {"bytes", "sha256"}
                     or type(report.get("bytes")) is not int
                     or not 0 < report["bytes"] <= MAX_REPORT
+                    or not isinstance(report.get("sha256"), str)
                     or re.fullmatch(r"[a-f0-9]{64}", report.get("sha256", "")) is None):
                 invalid_offset = event_offsets[index]
                 suffix = {"state": "invalid", "bytes": len(raw) - invalid_offset,
@@ -269,7 +276,7 @@ def validate_transition_failure_report(report, runner_hash):
     required = {
         "schema", "passed", "guest_booted", "release_qualified", "product",
         "diagnostic", "unit", "runner_sha256", "service", "monitor", "probe",
-        "avc", "journal", "scope",
+        "avc", "journal", "diagnostic_stages", "scope",
     }
     if (not isinstance(report, dict) or set(report) != required
             or report.get("schema") != 1 or report.get("passed") is not False
@@ -280,6 +287,9 @@ def validate_transition_failure_report(report, runner_hash):
             or report.get("unit") != "b.service"
             or report.get("runner_sha256") != runner_hash
             or re.fullmatch(r"[a-f0-9]{64}", runner_hash or "") is None
+            or type(report.get("diagnostic_stages")) is not list
+            or report["diagnostic_stages"]
+               != list(TRANSITION_COLLECTOR_STAGES[:-1])
             or report.get("scope") != TRANSITION_FAILURE_SCOPE):
         raise ValueError("unbound transition-probe failure report")
     service = report.get("service")
@@ -342,20 +352,33 @@ def validate_transition_failure_report(report, runner_hash):
             or re.fullmatch(r"[a-f0-9]{64}", probe.get("cursor_sha256", "")) is None):
         raise ValueError("transition source-context observation is incomplete")
     avc = report.get("avc")
+    query_result = avc.get("query_result") if isinstance(avc, dict) else None
+    raw_sha256 = avc.get("raw_sha256") if isinstance(avc, dict) else None
     avc_fields = {
-        "command", "raw_bytes", "raw_sha256", "line_count", "truncated", "records",
+        "command", "query_result", "raw_bytes", "raw_sha256", "line_count",
+        "truncated", "records",
     }
     if (not isinstance(avc, dict) or set(avc) != avc_fields
             or avc.get("command") != TRANSITION_AVC_JOURNAL_COMMAND
+            or not isinstance(query_result, str)
+            or query_result not in {"no-match", "records"}
             or type(avc.get("raw_bytes")) is not int
-            or not 0 < avc["raw_bytes"] <= TRANSITION_AVC_MAX_BYTES
-            or re.fullmatch(r"[a-f0-9]{64}", avc.get("raw_sha256", "")) is None
+            or not isinstance(raw_sha256, str)
+            or re.fullmatch(r"[a-f0-9]{64}", raw_sha256) is None
             or type(avc.get("line_count")) is not int
-            or not 1 <= avc["line_count"] <= TRANSITION_AVC_MAX_RECORDS
             or avc.get("truncated") is not False
             or not isinstance(avc.get("records"), list)
             or len(avc["records"]) != avc["line_count"]):
         raise ValueError("transition AVC evidence is incomplete")
+    if avc["query_result"] == "no-match":
+        if (avc["raw_bytes"] != 0
+                or avc["raw_sha256"] != hashlib.sha256(b"").hexdigest()
+                or avc["line_count"] != 0
+                or avc["records"] != []):
+            raise ValueError("transition AVC no-match evidence is inconsistent")
+    elif (not 0 < avc["raw_bytes"] <= TRANSITION_AVC_MAX_BYTES
+          or not 1 <= avc["line_count"] <= TRANSITION_AVC_MAX_RECORDS):
+        raise ValueError("transition AVC record evidence is incomplete")
     avc_record_fields = {
         "audit_serial", "transport", "receipt_monotonic_usec", "pid", "comm",
         "path_field", "path", "source_context", "target_context", "class",

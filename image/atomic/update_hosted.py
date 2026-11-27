@@ -17,6 +17,7 @@ from image.atomic.update_contract import (NEGATIVE_CASES, NEGATIVE_UPDATE_SOURCE
                                           require_update_base, update_policy,
                                           validate_artifact_metadata, validate_report)
 from image.atomic.update_boot import (MAX_COLLECTOR_DIAGNOSTIC,
+                                      TRANSITION_COLLECTOR_STAGES,
                                       positive_qemu_command,
                                       validate_collector_diagnostic,
                                       validate_transition_failure_report)
@@ -248,6 +249,38 @@ def _fixed_missing_report_controller(inputs, collector_prefix_validated,
     return (json.dumps(result, sort_keys=True, separators=(",", ":")) + "\n").encode()
 
 
+def _validated_transition_report_evidence(report_raw, collector_raw, runner_hash):
+    """Bind the retained report bytes to its completed diagnostic stages."""
+    report_observation = {
+        "name": "same-path-positive.json",
+        "state": "ready",
+        "bytes": len(report_raw),
+        "sha256": hashlib.sha256(report_raw).hexdigest(),
+    }
+    if not isinstance(collector_raw, bytes):
+        return None
+    try:
+        collector = validate_collector_diagnostic(collector_raw, runner_hash)
+    except (TypeError, ValueError):
+        return None
+    expected_terminal = {
+        "event": "collector-completed",
+        "stage": TRANSITION_COLLECTOR_STAGES[-1],
+        "report": {key: report_observation[key]
+                   for key in ("bytes", "sha256")},
+    }
+    if (collector.get("suffix") is not None
+            or collector.get("stages") != list(TRANSITION_COLLECTOR_STAGES)
+            or collector.get("terminal") != expected_terminal):
+        return None
+    return {
+        "report_declared_stages": list(TRANSITION_COLLECTOR_STAGES[:-1]),
+        "collector_observed_stages": list(TRANSITION_COLLECTOR_STAGES),
+        "report": report_observation,
+        "collector_terminal": expected_terminal,
+    }
+
+
 def _transition_failure_publication(payloads):
     """Select only safe same-path failure payloads, or the ordinary-path sentinel."""
     controller_raw = payloads.get("result.json")
@@ -316,15 +349,25 @@ def _transition_failure_publication(payloads):
             != "RuntimeError: bootc transition probe failed; inspect bounded report"):
         return [("controller-result.json",
                  _fixed_transition_failure_controller(runner_hash, False))]
+    diagnostic_evidence = _validated_transition_report_evidence(
+        report_raw, payloads.get("same-path-positive-collector.jsonl"),
+        runner_hash)
+    if diagnostic_evidence is None:
+        return [("controller-result.json",
+                 _fixed_transition_failure_controller(runner_hash, False))]
     return [
         ("controller-result.json",
-         _fixed_transition_failure_controller(runner_hash, True)),
+         _fixed_transition_failure_controller(
+             runner_hash, True, diagnostic_evidence)),
         ("same-path-positive.json", report_raw),
     ]
 
 
-def _fixed_transition_failure_controller(runner_hash, report_validated):
+def _fixed_transition_failure_controller(runner_hash, report_validated,
+                                         diagnostic_evidence=None):
     """Serialize only fixed controller facts for the diagnostic publication path."""
+    if report_validated != (diagnostic_evidence is not None):
+        raise ValueError("transition diagnostic publication is inconsistent")
     result = {
         "schema": 1,
         "passed": False,
@@ -339,6 +382,8 @@ def _fixed_transition_failure_controller(runner_hash, report_validated):
         "inputs": {"update_boot_failure.py": runner_hash},
         "transition_failure_validated": report_validated,
     }
+    if diagnostic_evidence is not None:
+        result["diagnostic_evidence"] = diagnostic_evidence
     return (json.dumps(result, sort_keys=True, separators=(",", ":")) + "\n").encode()
 
 

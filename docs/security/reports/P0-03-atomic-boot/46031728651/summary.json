@@ -1,0 +1,223 @@
+{
+  "schema": 1,
+  "card": "P0-03",
+  "run": {
+    "id": 46031728651,
+    "attempt": 1,
+    "event": "workflow_dispatch",
+    "head": "9361eac68fdf2732a34fc1afaf3b311cec449f10",
+    "tree": "5a8c121981ba781aed3cc77078342565686b933e",
+    "parent": "d7789b8affa243d8a595ea625078d083c2230f0a",
+    "job_id": 140616966241,
+    "run_started_utc": "2026-11-27T16:13:16Z",
+    "run_completed_utc": "2026-11-27T16:34:31Z",
+    "native_step_started_utc": "2026-11-27T16:17:32Z",
+    "native_step_completed_utc": "2026-11-27T16:34:27Z",
+    "conclusion": "failure"
+  },
+  "artifact": {
+    "id": 15216111415,
+    "name": "atomic-development-boot-generic",
+    "bytes": 71277,
+    "github_digest": "sha256:48aca10986fd984e070f98f9c43d6597edb1d497e0e2c9d80f1e233b64c85460",
+    "downloaded_zip_sha256": "48aca10986fd984e070f98f9c43d6597edb1d497e0e2c9d80f1e233b64c85460",
+    "zip_integrity": true,
+    "safe_regular_relative_members": 95,
+    "uncompressed_bytes": 153136
+  },
+  "failure": {
+    "stage": "same-path-positive-avc-journal",
+    "predecessor_install_passed": true,
+    "qemu_exit_code": 0,
+    "report": {
+      "name": "same-path-positive.json",
+      "state": "empty",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "collector": {
+      "name": "same-path-positive-collector.jsonl",
+      "state": "ready",
+      "bytes": 2305,
+      "sha256": "7ba6acaa0d0c61e1409eb44e71fd3185831263d60377dd7f0f0980929694bdf2",
+      "prefix_validated": true,
+      "stream_validated": true,
+      "runner_sha256": "5bd470cc42cfb2c4996fc6419d09440ccc9e28bc2f202811968c7fd4771024d4",
+      "stages": [
+        "service-properties",
+        "source-journal",
+        "monitor",
+        "identity-correlation",
+        "avc-journal"
+      ],
+      "terminal": {
+        "event": "collector-failed",
+        "stage": "avc-journal",
+        "failure_kind": "invalid-evidence"
+      },
+      "suffix": null
+    },
+    "source_context_stage_completed": true,
+    "source_context_value_published": false,
+    "monitor_stage_completed": true,
+    "identity_correlation_stage_completed": true,
+    "avc_query_stage_reached": true,
+    "avc_result_published": false,
+    "transition_failure_validated": false,
+    "phase_diagnostic_validated": true,
+    "interpretation": "The bounded collector proves that source capture, monitor capture and identity correlation completed before AVC evidence validation failed. The empty primary report does not publish the source context or establish an AVC record or AVC absence."
+  },
+  "reachability": {
+    "source_authentication_positive": true,
+    "source_signature_negative_controls": {
+      "unsigned": true,
+      "wrong-key": true,
+      "wrong-reference": true,
+      "altered-signature": true
+    },
+    "same_path_qemu_process_completed": true,
+    "in_guest_update_negative_reports": [],
+    "installed_update_phase_reports": [],
+    "updated_boot_phase_reports": [],
+    "rollback_phase_reports": [],
+    "update_acceptance_observed": false,
+    "update_action_observed": false,
+    "updated_boot_observed": false,
+    "rollback_observed": false
+  },
+  "resources": {
+    "outer": {
+      "memory_max": 5368709120,
+      "memory_peak": 5368713216,
+      "memory_swap_max": 0,
+      "cpu_max": "200000 100000",
+      "pids_max": 256,
+      "memory_events": {
+        "max": 168957,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      }
+    },
+    "update_controller": {
+      "memory_max": 3221225472,
+      "memory_peak": 3221225472,
+      "memory_swap_max": 0,
+      "cpu_max": "200000 100000",
+      "pids_max": 64,
+      "memory_events": {
+        "max": 6217,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      }
+    },
+    "predecessor_installer_limits": {
+      "memory_max": 2147483648,
+      "memory_swap_max": 0,
+      "cpu_max": "100000 100000",
+      "pids_max": 128
+    },
+    "added_swap": false
+  },
+  "cleanup": {
+    "containers": {
+      "symbi-atomic-signer": {
+        "removed": true,
+        "absent": true
+      },
+      "symbi-atomic-update-old-installer": {
+        "removed": true,
+        "absent": true
+      },
+      "symbi-atomic-update-old-signer": {
+        "removed": true,
+        "absent": true
+      },
+      "symbi-atomic-update-qemu": {
+        "removed": true,
+        "absent": true
+      }
+    },
+    "loaded_image_removed": true,
+    "loaded_image_absent": true,
+    "loop_list_empty": true,
+    "private_storage_removed": true,
+    "private_runroot_removed": true
+  },
+  "critical_evidence_sha256": {
+    "atomic-update-evidence/controller-result.json": "431081df93748d9d1058b0eb25c2654d99449d58e85111a22c73bd938409a928",
+    "atomic-update-evidence/same-path-positive-diagnostic.json": "1efb0c2b1b434ed1a64c141cf22accfb1d9cd3fdb8d2fe7a70cbce42b1593687",
+    "atomic-update-evidence/result.json": "b25badc40db755fbeeb3910bc7b2d824eb333609361c4ab46617a02fe8c9927b",
+    "atomic-disk-evidence/result.json": "1c21c4d0bb8f5cfb8e417e55182690deae259be1b019237e4880656ccc0e43bb",
+    "atomic-disk-evidence/source-authentication/result.json": "4c3fdbc555d832bbf8cb6c0d55a2b7e5916a84f61a0bb8a2a04487ec37feffbd",
+    "atomic-disk-evidence/systemd-result.txt": "50a032f19dd1457febc903a91bdc8860327389c41cf5fd7b6b6912710cb26862",
+    "atomic-disk-evidence/update-old-loops-stdout.log": "3f1d39e826503300542203478b61c9393220197f672114f5813fa484380802ed",
+    "atomic-disk-evidence/hosted.log": "06b6c1ce9c7873d4f411b800553c4d581cf891a0edac768b1b1751f261742868",
+    "atomic-disk-evidence/signed-update-and-rollback-stderr.log": "48cff0a6f25c583455b083c785a0d11e072a4534b813f35ebff85843fc7b7598"
+  },
+  "local_correction": {
+    "status": "implemented-pending-hosted-rerun",
+    "avc_no_match_requires": [
+      "exact fixed current-boot AVC journal command",
+      "zero command exit",
+      "empty stdout",
+      "empty stderr"
+    ],
+    "no_match_report_fields": {
+      "query_result": "no-match",
+      "raw_bytes": 0,
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "line_count": 0,
+      "truncated": false,
+      "records": []
+    },
+    "report_declares_stages_through": "report-build",
+    "collector_must_complete_through": "primary-report-write",
+    "collector_terminal_binds_exact_report_bytes_and_sha256": true,
+    "unbound_report_published": false,
+    "policy_allow_rule_added": false,
+    "enforcing_mode_changed": false,
+    "resource_limits_changed": false,
+    "update_after_transition_failure": false
+  },
+  "local_verification": {
+    "focused_update_tests": 71,
+    "focused_address_space_cap_bytes": 134217728,
+    "focused_peak_rss_kib": 36144,
+    "focused_process_swaps": 0,
+    "full_image_tests": 350,
+    "full_address_space_cap_bytes": 402653184,
+    "full_peak_rss_kib": 58144,
+    "full_process_swaps": 0,
+    "enclosing_cgroup_oom_after_tests": 0,
+    "enclosing_cgroup_oom_kill_after_tests": 0,
+    "enclosing_cgroup_oom_group_kill_after_tests": 0,
+    "python_ast": "pass",
+    "json_parse": "pass",
+    "diff_check": "pass",
+    "local_image_vm_container_build_or_network": false,
+    "independent_cold_review": "pass"
+  },
+  "claims": {
+    "passed": false,
+    "guest_booted": false,
+    "selinux_transition_supported": false,
+    "signed_update_accepted": false,
+    "four_guest_signature_rejections_passed": false,
+    "updated_boot_passed": false,
+    "rollback_passed": false,
+    "release_qualified": false,
+    "os_qualified": false,
+    "p0_03_qualified": false
+  },
+  "retention": {
+    "raw_logs_committed": false,
+    "raw_serial_committed": false,
+    "raw_journal_committed": false,
+    "raw_collector_committed": false,
+    "disk_images_committed": false,
+    "private_keys_committed": false,
+    "note": "Only compact content-free facts and hashes are retained in Git; the downloaded artifact remains outside the repository."
+  }
+}

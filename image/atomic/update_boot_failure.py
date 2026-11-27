@@ -285,8 +285,22 @@ def _avc_field(message, name, *, quoted=False):
 
 def parse_avc_evidence(raw, source, service=None):
     """Retain only allowlisted fields from enforcing AVCs for this exact probe."""
-    if not isinstance(source, dict):
+    source_context = (source.get("source_context")
+                      if isinstance(source, dict) else None)
+    if (not isinstance(source_context, str)
+            or _SELINUX_CONTEXT.fullmatch(source_context) is None
+            or source.get("requested_context") != BOOTC_CONTEXT):
         raise ValueError("invalid transition source observation")
+    if raw == "":
+        return {
+            "command": AVC_JOURNAL_COMMAND,
+            "query_result": "no-match",
+            "raw_bytes": 0,
+            "raw_sha256": hashlib.sha256(b"").hexdigest(),
+            "line_count": 0,
+            "truncated": False,
+            "records": [],
+        }
     items = _structured_journal_lines(raw, AVC_MAX_RECORDS)
     records = []
     for item in items:
@@ -363,6 +377,7 @@ def parse_avc_evidence(raw, source, service=None):
         raise ValueError("transition AVC records are duplicated")
     return {
         "command": AVC_JOURNAL_COMMAND,
+        "query_result": "records",
         "raw_bytes": len(raw.encode()),
         "raw_sha256": hashlib.sha256(raw.encode()).hexdigest(),
         "line_count": len(items),
@@ -375,15 +390,18 @@ def bounded_avc_evidence(source, service, run=None):
     """Query only runcon/bootc AVC denials from the current boot."""
     run = fixed_command if run is None else run
     raw = run(AVC_JOURNAL_COMMAND, timeout=5,
-              stdout_max=STRUCTURED_JOURNAL_MAX_BYTES)
+              stdout_max=STRUCTURED_JOURNAL_MAX_BYTES, stderr_max=0)
     return parse_avc_evidence(raw, source, service)
 
 
-def fixed_command(command, *, timeout, stdout_max):
+def fixed_command(command, *, timeout, stdout_max,
+                  stderr_max=COMMAND_STDERR_MAX_BYTES):
     if (not isinstance(command, list) or not command
             or any(not isinstance(value, str) or not value for value in command)
             or type(timeout) is not int or not 1 <= timeout <= 30
-            or type(stdout_max) is not int or not 1 <= stdout_max <= COMMAND_STDOUT_MAX_BYTES):
+            or type(stdout_max) is not int or not 1 <= stdout_max <= COMMAND_STDOUT_MAX_BYTES
+            or type(stderr_max) is not int
+            or not 0 <= stderr_max <= COMMAND_STDERR_MAX_BYTES):
         raise ValueError("invalid transition-probe diagnostic command")
     process = subprocess.Popen(
         command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
@@ -415,7 +433,7 @@ def fixed_command(command, *, timeout, stdout_max):
                     exceeded = len(stdout) > stdout_max
                 else:
                     stderr_bytes += len(chunk)
-                    exceeded = stderr_bytes > COMMAND_STDERR_MAX_BYTES
+                    exceeded = stderr_bytes > stderr_max
                 if exceeded:
                     raise ValueError(
                         "transition-probe diagnostic command output exceeded its bound")
@@ -660,6 +678,7 @@ def main():
             "probe": source,
             "avc": avc,
             "journal": journal,
+            "diagnostic_stages": list(COLLECTOR_STAGES[:-1]),
             "scope": SCOPE,
         }
 

@@ -124,6 +124,26 @@ class AtomicUpdateTests(unittest.TestCase):
                 break
         return bytes(writer.raw)
 
+    def completed_collector_stream(self, report_raw):
+        writer = self.ShortWriter(4096)
+        runner_hash = "a" * 64
+        sequence = 0
+        write_collector_event(
+            writer, "collector-started", runner_hash, sequence=sequence)
+        sequence += 1
+        for stage in COLLECTOR_STAGES:
+            write_collector_event(
+                writer, "collector-stage", runner_hash, sequence=sequence,
+                stage=stage)
+            sequence += 1
+        write_collector_event(
+            writer, "collector-completed", runner_hash, sequence=sequence,
+            stage=COLLECTOR_STAGES[-1], report_observation={
+                "bytes": len(report_raw),
+                "sha256": hashlib.sha256(report_raw).hexdigest(),
+            })
+        return bytes(writer.raw)
+
     def test_virtio_report_writers_complete_short_writes_and_reject_zero(self):
         payload = b'{"passed":false}\n'
         guest = self.ShortWriter(3)
@@ -611,6 +631,15 @@ class AtomicUpdateTests(unittest.TestCase):
             output.mkdir()
             evidence.mkdir()
             report = self.transition_failure_report()
+            report["avc"] = {
+                "command": AVC_JOURNAL_COMMAND,
+                "query_result": "no-match",
+                "raw_bytes": 0,
+                "raw_sha256": hashlib.sha256(b"").hexdigest(),
+                "line_count": 0,
+                "truncated": False,
+                "records": [],
+            }
             controller = self.transition_failure_controller(report)
             controller["unreviewed"] = "API_TOKEN=short"
             controller_raw = (json.dumps(controller, sort_keys=True) + "\n").encode()
@@ -621,8 +650,8 @@ class AtomicUpdateTests(unittest.TestCase):
                 "b.service: API_TOKEN=short\n")
             (output / "qemu-same-path-positive.log").write_text(
                 "guest console API_TOKEN=short\n")
-            (output / "same-path-positive-collector.jsonl").write_text(
-                '{"API_TOKEN":"unreviewed-auxiliary"}\n')
+            (output / "same-path-positive-collector.jsonl").write_bytes(
+                self.completed_collector_stream(raw))
             (output / "same-path-positive.qcow2").write_bytes(b"private disk")
             retained = retain_controller_output(output, evidence)
             self.assertEqual(retained,
@@ -632,7 +661,7 @@ class AtomicUpdateTests(unittest.TestCase):
             self.assertEqual(set(retained_controller), {
                 "schema", "passed", "guest_booted", "release_qualified",
                 "active_phase", "failure", "negative_reports", "phase_reports",
-                "inputs", "transition_failure_validated",
+                "inputs", "transition_failure_validated", "diagnostic_evidence",
             })
             self.assertTrue(retained_controller["transition_failure_validated"])
             self.assertEqual(retained_controller["inputs"],
@@ -641,6 +670,33 @@ class AtomicUpdateTests(unittest.TestCase):
                 retained_controller["failure"],
                 "same-path-positive failed; bounded transition report validated")
             self.assertEqual((evidence / "same-path-positive.json").read_bytes(), raw)
+            diagnostic = retained_controller["diagnostic_evidence"]
+            self.assertEqual(
+                diagnostic["report_declared_stages"],
+                list(TRANSITION_COLLECTOR_STAGES[:-1]))
+            self.assertEqual(
+                diagnostic["collector_observed_stages"],
+                list(TRANSITION_COLLECTOR_STAGES))
+            self.assertEqual(diagnostic["report"], {
+                "name": "same-path-positive.json", "state": "ready",
+                "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),
+            })
+            self.assertEqual(diagnostic["collector_terminal"], {
+                "event": "collector-completed",
+                "stage": TRANSITION_COLLECTOR_STAGES[-1],
+                "report": {"bytes": len(raw),
+                           "sha256": hashlib.sha256(raw).hexdigest()},
+            })
+            retained_report = json.loads(
+                (evidence / "same-path-positive.json").read_bytes())
+            self.assertEqual(
+                retained_report["probe"]["source_context"],
+                "system_u:system_r:unconfined_service_t:s0")
+            self.assertEqual(retained_report["monitor"]["invocation_id"],
+                             retained_report["service"]["InvocationID"])
+            self.assertEqual(retained_report["avc"]["query_result"], "no-match")
+            self.assertEqual(retained_report["avc"]["records"], [])
+            self.assertIn("permission denied", retained_report["journal"]["excerpt"][0])
             self.assertFalse((evidence / "same-path-positive.qcow2").exists())
             self.assertFalse(
                 (evidence / "same-path-positive-collector.jsonl").exists())
@@ -709,6 +765,52 @@ class AtomicUpdateTests(unittest.TestCase):
                 self.assertFalse(json.loads(retained_raw)["transition_failure_validated"])
                 self.assertEqual([path.name for path in evidence.iterdir()],
                                  ["controller-result.json"])
+
+    def test_transition_report_requires_exact_completed_collector_binding(self):
+        report = self.transition_failure_report()
+        raw = (json.dumps(report, sort_keys=True) + "\n").encode()
+        valid_collector = self.completed_collector_stream(raw)
+        stage_mutation = valid_collector.replace(
+            b'"stage":"service-properties"',
+            b'"stage":"source-journal"', 1)
+        collector_lines = valid_collector.splitlines(keepends=True)
+        invalid_event = json.loads(collector_lines[0])
+        invalid_event["event"] = []
+        collector_lines[0] = (json.dumps(
+            invalid_event, sort_keys=True, separators=(",", ":")) + "\n").encode()
+        cases = {
+            "missing": None,
+            "report-hash": self.completed_collector_stream(raw + b"different"),
+            "stage": stage_mutation,
+            "terminal": self.collector_stream(
+                stage="primary-report-write", failure_kind="transport"),
+            "event-type": b"".join(collector_lines),
+            "invalid-suffix": valid_collector
+                              + b'{"API_TOKEN":"must-not-survive"}\n',
+        }
+        for case, collector in cases.items():
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                output, evidence = root / "output", root / "evidence"
+                output.mkdir()
+                evidence.mkdir()
+                controller = self.transition_failure_controller(report)
+                (output / "result.json").write_text(
+                    json.dumps(controller, sort_keys=True) + "\n")
+                (output / "same-path-positive.json").write_bytes(raw)
+                if collector is not None:
+                    (output / "same-path-positive-collector.jsonl").write_bytes(
+                        collector)
+                retained = retain_controller_output(output, evidence)
+                self.assertEqual(retained, ["controller-result.json"])
+                retained_raw = (evidence / "controller-result.json").read_bytes()
+                self.assertFalse(
+                    json.loads(retained_raw)["transition_failure_validated"])
+                self.assertNotIn(b"diagnostic_evidence", retained_raw)
+                self.assertNotIn(b"API_TOKEN", retained_raw)
+                self.assertFalse((evidence / "same-path-positive.json").exists())
+                self.assertFalse(
+                    (evidence / "same-path-positive-collector.jsonl").exists())
 
     def test_failed_update_refuses_unsafe_diagnostic_entries(self):
         for case in ("unexpected", "symlink", "hardlink", "fifo", "socket",
@@ -1307,6 +1409,7 @@ class AtomicUpdateTests(unittest.TestCase):
             },
             "avc": {
                 "command": AVC_JOURNAL_COMMAND,
+                "query_result": "records",
                 "raw_bytes": 512,
                 "raw_sha256": "d" * 64,
                 "line_count": 1,
@@ -1328,6 +1431,7 @@ class AtomicUpdateTests(unittest.TestCase):
                 }],
             },
             "journal": excerpt,
+            "diagnostic_stages": list(TRANSITION_COLLECTOR_STAGES[:-1]),
             "scope": "Bounded explicit-transition diagnostics; no update action ran",
         }
 
@@ -1378,6 +1482,12 @@ class AtomicUpdateTests(unittest.TestCase):
         changed["probe"]["receipt_monotonic_usec"] = 120001002
         mutations.append(changed)
         changed = copy.deepcopy(report)
+        changed["diagnostic_stages"] = list(TRANSITION_COLLECTOR_STAGES[:-2])
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["diagnostic_stages"] = tuple(TRANSITION_COLLECTOR_STAGES[:-1])
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
         changed["avc"]["records"][0]["pid"] = 655
         mutations.append(changed)
         changed = copy.deepcopy(report)
@@ -1425,6 +1535,37 @@ class AtomicUpdateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "did not fail closed"):
             service_properties(properties.replace("ExecMainStatus=229",
                                                   "ExecMainStatus=0"))
+
+    def test_transition_avc_no_match_is_exact_and_fail_closed(self):
+        report = self.transition_failure_report()
+        no_match = {
+            "command": AVC_JOURNAL_COMMAND,
+            "query_result": "no-match",
+            "raw_bytes": 0,
+            "raw_sha256": hashlib.sha256(b"").hexdigest(),
+            "line_count": 0,
+            "truncated": False,
+            "records": [],
+        }
+        report["avc"] = no_match
+        self.assertEqual(validate_transition_failure_report(report, "a" * 64), report)
+        mutations = []
+        for key, value in (
+                ("query_result", "records"),
+                ("query_result", []),
+                ("raw_bytes", 1),
+                ("raw_sha256", "d" * 64),
+                ("raw_sha256", []),
+                ("line_count", 1),
+                ("truncated", True),
+                ("records", [copy.deepcopy(
+                    self.transition_failure_report()["avc"]["records"][0])])):
+            changed = copy.deepcopy(report)
+            changed["avc"][key] = value
+            mutations.append(changed)
+        for changed in mutations:
+            with self.subTest(changed=changed["avc"]), self.assertRaises(ValueError):
+                validate_transition_failure_report(changed, "a" * 64)
 
     def test_transition_failure_journal_is_bounded_and_redacts_secret_shapes(self):
         secret = "s" * 64
@@ -1522,6 +1663,22 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertEqual(source["pid"], 653)
         self.assertEqual(source["command"], SOURCE_CAPTURE_COMMAND)
         service = self.transition_failure_report()["service"]
+        no_match = parse_avc_evidence("", source, service)
+        self.assertEqual(no_match, {
+            "command": AVC_JOURNAL_COMMAND,
+            "query_result": "no-match",
+            "raw_bytes": 0,
+            "raw_sha256": hashlib.sha256(b"").hexdigest(),
+            "line_count": 0,
+            "truncated": False,
+            "records": [],
+        })
+        empty_runner = Mock(return_value="")
+        self.assertEqual(
+            bounded_avc_evidence(source, service, empty_runner), no_match)
+        empty_runner.assert_called_once_with(
+            AVC_JOURNAL_COMMAND, timeout=5, stdout_max=64 * 1024,
+            stderr_max=0)
         message = (
             "audit: type=1400 audit(100.200:42): avc: denied { transition } for "
             "pid=654 comm=\"runcon\" path=\"/usr/bin/bootc\" dev=\"vda3\" "
@@ -1551,7 +1708,8 @@ class AtomicUpdateTests(unittest.TestCase):
         runner = Mock(return_value=raw)
         bounded = bounded_avc_evidence(source, service, runner)
         runner.assert_called_once_with(
-            AVC_JOURNAL_COMMAND, timeout=5, stdout_max=64 * 1024)
+            AVC_JOURNAL_COMMAND, timeout=5, stdout_max=64 * 1024,
+            stderr_max=0)
         self.assertEqual(bounded["command"], AVC_JOURNAL_COMMAND)
         self.assertNotIn(cursor, json.dumps(bounded, sort_keys=True))
 
@@ -1591,6 +1749,16 @@ class AtomicUpdateTests(unittest.TestCase):
             parse_avc_evidence(raw * 33, source, service)
         with self.assertRaisesRegex(ValueError, "duplicated"):
             parse_avc_evidence(raw * 2, source, service)
+        for malformed in ("\n", "{}\n", b""):
+            with self.subTest(malformed=malformed), self.assertRaises(ValueError):
+                parse_avc_evidence(malformed, source, service)
+        for field in ("source_context", "requested_context"):
+            for invalid in (None, 7, [], {}):
+                changed = copy.deepcopy(source)
+                changed[field] = invalid
+                with self.subTest(field=field, invalid=invalid), \
+                        self.assertRaises(ValueError):
+                    parse_avc_evidence("", changed, service)
         ambiguous = source_raw.replace(
             '"MESSAGE":', '"MESSAGE":"duplicate","MESSAGE":', 1)
         with self.assertRaises(ValueError):
@@ -1611,6 +1779,16 @@ class AtomicUpdateTests(unittest.TestCase):
             fixed_failure_command(
                 ["/usr/bin/python3", "-c", "import sys;sys.stderr.write('x'*16384)"],
                 timeout=2, stdout_max=4096,
+            )
+        with self.assertRaisesRegex(ValueError, "exceeded its bound"):
+            fixed_failure_command(
+                ["/usr/bin/python3", "-c", "import sys;sys.stderr.write('x')"],
+                timeout=2, stdout_max=4096, stderr_max=0,
+            )
+        with self.assertRaises(subprocess.CalledProcessError):
+            fixed_failure_command(
+                ["/usr/bin/python3", "-c", "raise SystemExit(1)"],
+                timeout=2, stdout_max=4096, stderr_max=0,
             )
 
     def test_journal_boundary_never_retains_a_partial_secret(self):
