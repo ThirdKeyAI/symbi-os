@@ -164,7 +164,7 @@ class ContainerRuntimeInputs(unittest.TestCase):
             with self.assertRaises(ValueError):
                 mod.inspect_checksums(path, pins)
 
-    def test_fedora_runtime_profile_is_separate_and_heavy_jobs_are_manual_or_main(self):
+    def test_fedora_runtime_profile_is_separate_and_prep_branch_is_passive(self):
         requirements = json.loads(
             (ROOT / "image/container/runtime-requirements.json").read_text())
         self.assertEqual(requirements["profile"], "container-runtime")
@@ -192,14 +192,17 @@ class ContainerRuntimeInputs(unittest.TestCase):
         self.assertEqual(profile["type"], "choice")
         self.assertEqual(profile["default"], "hyprland")
         self.assertEqual(profile["options"], ["hyprland", "container-runtime"])
-        self.assertEqual(triggers["push"]["branches"], ["main"])
+        self.assertEqual(
+            triggers["push"]["branches"],
+            ["main", "card/P0-05-native-prep"],
+        )
         job = document["jobs"]["packages"]
         selected = job["env"]["SYMBI_FEDORA_PACKAGE_PROFILE"]
         self.assertEqual(
             selected,
-            "${{ github.event_name == 'workflow_dispatch' && inputs.profile || 'hyprland' }}",
+            "${{ github.event_name == 'workflow_dispatch' && inputs.profile || (github.event_name == 'push' && github.ref_name == 'card/P0-05-native-prep' && 'container-runtime' || 'hyprland') }}",
         )
-        self.assertIn("inputs.profile == 'container-runtime'", document["concurrency"]["group"])
+        self.assertIn("github.ref_name == 'card/P0-05-native-prep'", document["concurrency"]["group"])
         command = next(step["run"] for step in job["steps"]
                        if step["name"] == "Authenticate and resolve Fedora build inputs without installation")
         self.assertIn('case "$SYMBI_FEDORA_PACKAGE_PROFILE" in', command)
@@ -208,16 +211,71 @@ class ContainerRuntimeInputs(unittest.TestCase):
         self.assertNotIn("${{ inputs.profile }}", command)
         artifact_names = [step["with"]["name"] for step in job["steps"]
                           if step.get("uses", "").startswith("actions/upload-artifact@")]
-        self.assertTrue(all("inputs.profile == 'container-runtime'" in name
+        self.assertTrue(all("env.SYMBI_FEDORA_PACKAGE_PROFILE == 'container-runtime'" in name
                             for name in artifact_names))
-        self.assertIn("contents: read", workflow)
+        self.assertEqual(document["permissions"], {"contents": "read"})
 
-        intake_workflow = (ROOT / ".github/workflows/gvisor-intake.yml").read_text()
-        self.assertIn("branches: [main]", intake_workflow)
+        spec = importlib.util.spec_from_file_location(
+            "resolve_packages", ROOT / "image/hyprland/resolve_packages.py")
+        resolver = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(resolver)
+        roots = {
+            "moby-engine": "moby-engine-29.9.3-1.fc45.x86_64",
+            "docker-cli": "docker-cli-29.9.3-1.fc45.x86_64",
+            "container-selinux": "container-selinux-4:2.251.0-1.fc45.noarch",
+        }
+        command = resolver.resolve_command(requirements, roots)
+        self.assertTrue(resolver.requires_offline_closure(requirements))
+        self.assertEqual(
+            command[-9:],
+            ["download", "--resolve", "--alldeps", "--destdir", "/output/rpms", "--",
+             *roots.values()],
+        )
+        self.assertNotIn("install", command)
+        self.assertNotIn("--downloadonly", command)
+        self.assertEqual(
+            resolver.require_downloaded_roots(roots, [*roots.values(), "bash-5.3-2.fc45.x86_64"]),
+            sorted(roots.values()),
+        )
+        with self.assertRaises(ValueError):
+            resolver.resolve_command(requirements, {**roots, "extra": "extra-1-1.x86_64"})
+        with self.assertRaises(ValueError):
+            resolver.require_downloaded_roots(roots, list(roots.values())[:-1])
+        closure_result = {
+            "passed": True,
+            "installed_packages_unchanged": True,
+            "os_qualified": False,
+            "requirements": requirements,
+            "packages": [{"filename": name + ".rpm"} for name in roots],
+            "installed_root_nevras": roots,
+            "downloaded_root_nevras": sorted(roots.values()),
+            "offline_closure_verified": True,
+            "closure_package_count": len(roots),
+        }
+        self.assertIs(
+            inventory.validate_discovery_result("container-runtime", closure_result),
+            closure_result,
+        )
+        with self.assertRaises(ValueError):
+            inventory.validate_discovery_result(
+                "container-runtime", {**closure_result, "offline_closure_verified": False})
+        hyprland = {"profile": "hyprland", "packages": ["cmake"]}
+        self.assertEqual(
+            resolver.resolve_command(hyprland)[-4:],
+            ["install", "--downloadonly", "--", "cmake"],
+        )
+
+        intake_path = ROOT / ".github/workflows/gvisor-intake.yml"
+        intake_workflow = intake_path.read_text()
+        intake_document = yaml.safe_load(intake_workflow)
+        self.assertEqual(
+            intake_document[True]["push"]["branches"],
+            ["main", "card/P0-05-native-prep"],
+        )
         self.assertIn("workflow_dispatch:", intake_workflow)
         self.assertNotIn('branches: ["**"]', intake_workflow)
         self.assertNotIn("pull_request:", intake_workflow)
-        self.assertIn("contents: read", intake_workflow)
+        self.assertEqual(intake_document["permissions"], {"contents": "read"})
 
         intake_wrapper = (ROOT / "scripts/check-gvisor-intake.sh").read_text()
         for required in (
@@ -230,6 +288,45 @@ class ContainerRuntimeInputs(unittest.TestCase):
         self.assertNotIn("extract_archive(", intake)
         self.assertIn('"archive_extracted": False', intake)
         self.assertIn('"candidate_executed": False', intake)
+
+    def test_non_container_versioned_profile_keeps_download_only_semantics(self):
+        resolver_spec = importlib.util.spec_from_file_location(
+            "resolve_packages_shared", ROOT / "image/hyprland/resolve_packages.py")
+        resolver = importlib.util.module_from_spec(resolver_spec)
+        resolver_spec.loader.exec_module(resolver)
+        inventory_spec = importlib.util.spec_from_file_location(
+            "package_inventory_shared", ROOT / "image/hyprland/package_inventory.py")
+        inventory = importlib.util.module_from_spec(inventory_spec)
+        inventory_spec.loader.exec_module(inventory)
+
+        profile = "walker-build"
+        requirements_path = ROOT / inventory.requirements_input(ROOT, profile)
+        requirements = json.loads(requirements_path.read_text())
+        self.assertIn("rust >= 1.92.0", requirements["packages"])
+        self.assertIn("pkgconfig(gtk4) >= 4.12", requirements["packages"])
+
+        command = resolver.resolve_command(requirements)
+        self.assertFalse(resolver.requires_offline_closure(requirements))
+        expected_tail = ["install", "--downloadonly", "--", *requirements["packages"]]
+        self.assertEqual(command[-len(expected_tail):], expected_tail)
+        self.assertNotIn("download", command)
+        self.assertNotIn("--alldeps", command)
+
+        result = {
+            "passed": True,
+            "installed_packages_unchanged": True,
+            "os_qualified": False,
+            "requirements": requirements,
+            "packages": [{"filename": "candidate.rpm"}],
+        }
+        self.assertIs(inventory.validate_discovery_result(profile, result), result)
+        self.assertTrue(
+            inventory.CONTAINER_CLOSURE_FIELDS.isdisjoint(result),
+            "ordinary package discovery must not claim the container closure proof",
+        )
+        with self.assertRaises(ValueError):
+            inventory.validate_discovery_result(
+                profile, {**result, "offline_closure_verified": True})
 
     def test_daemon_uses_fixed_explicit_runsc_without_runtime_installer(self):
         daemon = json.loads((ROOT / "image/container/daemon.json").read_text())

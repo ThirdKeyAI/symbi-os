@@ -14,7 +14,12 @@ hosted Fedora runner without installing them. Select it manually from the
 existing Fedora package discovery workflow; ordinary `main` and pull-request
 runs continue to use the `hyprland` profile. The workflow validates the selected
 choice before passing it as a quoted argument to the wrapper, which also checks
-its profile allowlist.
+its profile allowlist. Because the selected base already contains the three
+requested engine packages, this profile uses `dnf5 download --resolve --alldeps`
+with a private destination and the exact installed root NEVRAs. The downloaded
+set remains a candidate until its roots match, every RPM signature passes, and
+an RPM test transaction resolves against an empty private RPM database using
+only that set. The test transaction executes no scripts and installs nothing.
 
 `gvisor-inputs.json` fixes release `release-20261123.1`, its commit and tag
 object, the complete x86_64 bzip2 archive, the publisher checksum list, license,
@@ -92,6 +97,15 @@ package inventory as a development input. It does not select that package for a
 release. Until a signed Fedora runtime lock binds the engine RPMs and installed
 gVisor files, the controller exits before disk allocation and retains an
 explicitly unqualified result.
+
+That input preflight runs before the retained desktop-image artifact is
+downloaded. A missing or invalid lock therefore fails without transferring the
+multi-gigabyte image. A passing input preflight means only that immutable inputs
+are ready for the native stage: all qualification fields remain false, and the
+native matrix, managed route, escape suite and review stay listed as blockers.
+The lock must also retain false qualification fields and use the exact pinned
+Fedora 45 RPM-signing fingerprint. It cannot be generated from the passive,
+unsigned gVisor release intake alone.
 
 ## Required remaining evidence
 

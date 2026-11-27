@@ -32,6 +32,35 @@ def requirements_input(root, profile):
     return relative
 
 
+CONTAINER_CLOSURE_FIELDS = {
+    'installed_root_nevras', 'downloaded_root_nevras',
+    'offline_closure_verified', 'closure_package_count',
+}
+
+
+def validate_discovery_result(profile, result):
+    """Validate shared discovery output without extending container claims."""
+    if (not isinstance(result, dict) or result.get('passed') is not True
+            or result.get('installed_packages_unchanged') is not True
+            or result.get('os_qualified') is not False
+            or not isinstance(result.get('packages'), list)
+            or not result['packages']
+            or not isinstance(result.get('requirements'), dict)
+            or not isinstance(result['requirements'].get('packages'), list)):
+        raise ValueError('Fedora package discovery result is incomplete')
+    if profile == 'container-runtime':
+        roots = result.get('installed_root_nevras')
+        if (result.get('offline_closure_verified') is not True
+                or not isinstance(roots, dict)
+                or list(roots) != result['requirements']['packages']
+                or result.get('downloaded_root_nevras') != sorted(roots.values())
+                or result.get('closure_package_count') != len(result['packages'])):
+            raise ValueError('Container runtime closure evidence is incomplete')
+    elif any(field in result for field in CONTAINER_CLOSURE_FIELDS):
+        raise ValueError('Non-container discovery must not claim container closure checks')
+    return result
+
+
 def main():
     if os.environ.get('GITHUB_ACTIONS') != 'true' or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted' or os.geteuid() != 0:
         raise SystemExit('Package discovery requires the disposable hosted resource unit')
@@ -98,8 +127,9 @@ def main():
         assert bindings['fedora-45-primary.asc'] == trust['key']['sha256']
         repo_pin = json.loads((root / 'image/hyprland/package-repository-inputs.json').read_text())
         assert bindings['repos/fedora-build.repo'] == repo_pin['selected_configuration_sha256']
-        (evidence / 'input-bindings.json').write_text(json.dumps({'source_commit': os.environ['GITHUB_SHA'], 'profile': args.profile,
-                                                                'requirements_source': selected_requirements, 'files': bindings}, indent=2) + '\n')
+        bindings_path = evidence / 'input-bindings.json'
+        bindings_path.write_text(json.dumps({'source_commit': os.environ['GITHUB_SHA'], 'profile': args.profile,
+                                             'requirements_source': selected_requirements, 'files': bindings}, indent=2) + '\n')
         output.mkdir()
         storage = root / '.cache/fedora-package-storage'
         storage.mkdir()
@@ -118,16 +148,30 @@ def main():
                             '--entrypoint=/usr/bin/python3', pin['image'], '/inputs/resolve_packages.py']
         subprocess.run(command, check=True, timeout=1500)
         result = json.loads((output / 'evidence/result.json').read_text())
-        assert result['passed'] and result['installed_packages_unchanged'] and not result['os_qualified']
+        validate_discovery_result(args.profile, result)
         for row in result['packages']:
             name = row['filename']
             assert Path(name).name == name and name.endswith('.rpm')
             package = output / 'rpms' / name
             assert not package.is_symlink() and digest(package) == row['sha256']
-        (evidence / 'result.json').write_text(json.dumps({'passed': True, 'base': pin['image'], 'source_commit': os.environ['GITHUB_SHA'],
-                                                        'profile': args.profile,
-                                                        'packages': len(result['packages']), 'rpm_manifest_sha256': digest(output / 'evidence/result.json'),
-                                                        'os_qualified': False, 'scope': 'Candidate signed build inputs, not installed or compiled'}, indent=2) + '\n')
+        summary = {
+            'passed': True, 'base': pin['image'], 'source_commit': os.environ['GITHUB_SHA'],
+            'profile': args.profile, 'requirements_sha256': bindings['build-requirements.json'],
+            'repository_configuration_sha256': bindings['repos/fedora-build.repo'],
+            'input_bindings_sha256': digest(bindings_path),
+            'packages': len(result['packages']),
+            'rpm_manifest_sha256': digest(output / 'evidence/result.json'),
+            'os_qualified': False,
+            'scope': 'Candidate signed build inputs, not installed or compiled',
+        }
+        if args.profile == 'container-runtime':
+            summary.update({
+                'installed_root_nevras': result['installed_root_nevras'],
+                'downloaded_root_nevras': result['downloaded_root_nevras'],
+                'offline_closure_verified': True,
+                'scope': 'Candidate signed package closure; not installed, compiled or qualified',
+            })
+        (evidence / 'result.json').write_text(json.dumps(summary, indent=2) + '\n')
     finally:
         if (output / 'evidence').is_dir():
             shutil.copytree(output / 'evidence', evidence / 'guest')
