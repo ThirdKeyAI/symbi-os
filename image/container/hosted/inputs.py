@@ -13,6 +13,40 @@ FIXTURE_DRIVERS = {
     'test-source-broker.py',
     'test-git-source.py',
 }
+SELECTED_FIXTURE_EXECUTION = {
+    'state': 'passed',
+    'event': 'pull_request',
+    'pull_request': 6,
+    'conclusion': 'success',
+    'run_id': 45995824985,
+    'run_attempt': 1,
+    'head': 'cdd8e7d931ddf90f1fe8afb22d12df9c539320b4',
+    'checked_merge': '2189acad039387cd48116c11934da383bea8e653',
+    'job_id': 140494839919,
+    'source_revision': 'cd4b34282ade880c8ac3d5136d31ff80cde92794',
+    'source_tree': '2b2379d0de4eaaf4a57cf52c96355015bb3dc25d',
+    'artifact': {
+        'id': 15196575712,
+        'name': 'container-fixture-evidence',
+        'bytes': 293698,
+        'sha256': (
+            '8b9d8f59f66348ff42625cb313bffc21'
+            'cead77bb0b152563c6b236313aa99ad0'),
+    },
+    'passed': True,
+    'qualified': False,
+}
+
+
+def exact_record(actual, expected):
+    """Compare a retained record without bool/int or extra-field aliases."""
+    if type(actual) is not type(expected):
+        return False
+    if isinstance(expected, dict):
+        return (set(actual) == set(expected)
+                and all(exact_record(actual[key], value)
+                        for key, value in expected.items()))
+    return actual == expected
 
 
 def digest(path):
@@ -58,13 +92,17 @@ def validate_fixture_source_lock(lock, native):
                        and re.fullmatch(
                            r'[a-f0-9]{40}', runtime_validation[field])
                        for field in ('head', 'checked_merge'))
-            or execution != {
-                'state': 'pending',
-                'run_id': None,
-                'head': None,
-                'source_revision': native['revision'],
-                'source_tree': native['tree'],
-            }):
+            or not (
+                exact_record(execution, {
+                    'state': 'pending',
+                    'run_id': None,
+                    'head': None,
+                    'source_revision': native['revision'],
+                    'source_tree': native['tree'],
+                })
+                or (exact_record(execution, SELECTED_FIXTURE_EXECUTION)
+                    and execution['source_revision'] == native['revision']
+                    and execution['source_tree'] == native['tree']))):
         raise ValueError('Hosted fixture source differs from the native source lock')
     return {
         'repository': native['repository'],
