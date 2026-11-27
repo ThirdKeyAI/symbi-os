@@ -1566,6 +1566,10 @@ def _stop_post_reason(state, environment):
         return "service-resource", "unexpected"
     if service_result == "protocol":
         return "service-protocol", "invalid-evidence"
+    if service_result == "success":
+        if _stop_post_exit_code(environment) == 0:
+            return "service-exit", "command-exit"
+        return "service-protocol", "invalid-evidence"
     if service_result in {"exit-code", "start-limit-hit"}:
         return "service-exit", "command-exit"
     return None, None

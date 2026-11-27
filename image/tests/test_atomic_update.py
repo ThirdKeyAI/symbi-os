@@ -1119,6 +1119,97 @@ class AtomicUpdateTests(unittest.TestCase):
                     command_observation=observation,
                     service_exit_code=invalid)
 
+    def test_stop_post_retains_clean_incomplete_source_journal_receipt(self):
+        runner_hash = "a" * 64
+        service_observation = self.stage_command_observation(
+            "service-properties", stdout_bytes=128)
+        journal_observation = self.stage_command_observation(
+            "source-journal", stdout_bytes=512)
+        prefix = self.ShortWriter(4096)
+        write_collector_event(
+            prefix, "collector-started", runner_hash, sequence=0)
+        write_collector_event(
+            prefix, "collector-stage", runner_hash, sequence=1,
+            stage="service-properties")
+        write_collector_event(
+            prefix, "collector-stage-result", runner_hash, sequence=2,
+            stage="service-properties", reason="accepted",
+            command_observation=service_observation)
+        write_collector_event(
+            prefix, "collector-stage", runner_hash, sequence=3,
+            stage="source-journal")
+
+        with tempfile.TemporaryDirectory() as temporary:
+            state_path = Path(temporary) / "collector-state.json"
+            persist_collector_state({
+                "sequence": 4,
+                "stage": "source-journal",
+                "command_result": journal_observation,
+                "terminal": False,
+                "transport_lost": False,
+            }, runner_hash, state_path)
+            emergency = self.ShortWriter(4096)
+            with patch("image.atomic.update_boot_failure."
+                       "open_collector_channel", return_value=emergency):
+                self.assertTrue(emit_stop_post_receipt(
+                    runner_hash, state_path=state_path,
+                    environment={"SERVICE_RESULT": "success",
+                                 "EXIT_CODE": "exited", "EXIT_STATUS": "0"}))
+
+            repeated = self.ShortWriter(4096)
+            with patch("image.atomic.update_boot_failure."
+                       "open_collector_channel", return_value=repeated):
+                self.assertFalse(emit_stop_post_receipt(
+                    runner_hash, state_path=state_path,
+                    environment={"SERVICE_RESULT": "success",
+                                 "EXIT_CODE": "exited", "EXIT_STATUS": "0"}))
+            self.assertEqual(bytes(repeated.raw), b"")
+
+        normalized = validate_collector_diagnostic(
+            bytes(prefix.raw) + bytes(emergency.raw), runner_hash)
+        self.assertEqual(normalized["terminal"], {
+            "event": "collector-emergency",
+            "stage": "source-journal",
+            "failure_kind": "command-exit",
+            "reason": "service-exit",
+            "command_result": journal_observation,
+            "service_exit_code": 0,
+            "prepared_sequence": 4,
+        })
+        self.assertEqual(normalized["emergency"], normalized["terminal"])
+        self.assertEqual(normalized["completed_stages"], ["service-properties"])
+        self.assertIsNone(normalized["suffix"])
+
+    def test_stop_post_marks_inconsistent_success_metadata_as_protocol_failure(self):
+        runner_hash = "a" * 64
+        observation = self.stage_command_observation(
+            "source-journal", stdout_bytes=512)
+        with tempfile.TemporaryDirectory() as temporary:
+            state_path = Path(temporary) / "collector-state.json"
+            for label, environment, expected_exit in (
+                    ("nonzero", {"SERVICE_RESULT": "success",
+                                 "EXIT_CODE": "exited", "EXIT_STATUS": "7"}, 7),
+                    ("missing", {"SERVICE_RESULT": "success"}, None)):
+                persist_collector_state({
+                    "sequence": 4,
+                    "stage": "source-journal",
+                    "command_result": observation,
+                    "terminal": False,
+                    "transport_lost": False,
+                }, runner_hash, state_path)
+                emergency = self.ShortWriter(4096)
+                with self.subTest(case=label), patch(
+                        "image.atomic.update_boot_failure.open_collector_channel",
+                        return_value=emergency):
+                    self.assertTrue(emit_stop_post_receipt(
+                        runner_hash, state_path=state_path,
+                        environment=environment))
+                receipt = json.loads(bytes(emergency.raw).splitlines()[-1])
+                self.assertEqual(receipt["reason"], "service-protocol")
+                self.assertEqual(receipt["failure_kind"], "invalid-evidence")
+                self.assertEqual(receipt["command_result"], observation)
+                self.assertEqual(receipt["service_exit_code"], expected_exit)
+
     def test_collector_state_rejects_special_links_and_recovers_write_loss(self):
         runner_hash = "a" * 64
         observation = self.stage_command_observation(

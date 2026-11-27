@@ -673,3 +673,11 @@ positive command, endpoint observation, QEMU exit, input hashes, cleanup state
 and resource counters. An invalid first progress event cannot suppress the
 independently validated content-free missing-report diagnostic. Every such path
 still fails the gate and makes no transition, update, release or OS claim.
+
+A service can also report a clean systemd exit before the collector has written a
+terminal event. For a persisted nonterminal state, stop-post now converts only
+exact `SERVICE_RESULT=success`, `EXIT_CODE=exited`, `EXIT_STATUS=0` metadata into
+the existing `service-exit` emergency frame. The frame preserves the last stage,
+fixed command hash and any validated content-free command result already saved in
+the private state file. Inconsistent success metadata becomes
+`service-protocol`; a completed or previously recovered state emits nothing.
