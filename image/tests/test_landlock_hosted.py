@@ -15,12 +15,14 @@ import unittest
 from unittest import mock
 import zlib
 
-from image.atomic.hosted import run_hosted_command
+from image.atomic.hosted import LANDLOCK_PARENT_LIMITS, run_hosted_command
 from image.launcher.probes.bounded_process import run_bounded
 from image.qualification import landlock as landlock_driver
-from image.qualification.boot import (discard_overlay, firmware_arguments,
-                                      overlay_command, qemu_command, stop_child,
-                                      validate_guest_report)
+from image.qualification.boot import (discard_control_socket, discard_overlay,
+                                      firmware_arguments, overlay_command,
+                                      qemu_command, qmp_request, stop_child,
+                                      validate_guest_report,
+                                      write_progress_sample)
 from image.qualification.guest import collect_public_artifacts
 from image.qualification.hosted import (QUALIFICATION_FILES,
                                         validate_source_checkout)
@@ -313,6 +315,7 @@ class HostedLandlock(unittest.TestCase):
         self.assertNotIn("file=/inputs/atomic.raw", joined)
         self.assertIn("file=/inputs/source.raw,format=raw,if=none,id=symbi-qualification-source,readonly=on", joined)
         self.assertIn("virtio-blk-pci,drive=symbi-qualification-source,serial=SYMBIQUAL", joined)
+        self.assertIn("-qmp unix:/output/qmp.sock,server=on,wait=off", joined)
         self.assertEqual(overlay_command(), [
             "/usr/bin/qemu-img", "create", "-f", "qcow2", "-F", "raw",
             "-b", "/inputs/atomic.raw", "/output/guest.qcow2",
@@ -338,10 +341,25 @@ class HostedLandlock(unittest.TestCase):
         child.terminate.side_effect = PermissionError("synthetic refusal")
         child.kill.side_effect = PermissionError("synthetic refusal")
         failure = "TimeoutError: Landlock guest did not report"
-        record = {"failure": failure, "child_cleanup": stop_child(child)}
+        qmp = mock.Mock(side_effect=FileNotFoundError("synthetic absent socket"))
+        record = {"failure": failure,
+                  "child_cleanup": stop_child(child, Path("/output/qmp.sock"), qmp)}
         self.assertEqual(record["failure"], failure)
         self.assertTrue(record["child_cleanup"]["attempted"])
-        self.assertEqual(len(record["child_cleanup"]["errors"]), 2)
+        self.assertFalse(record["child_cleanup"]["qmp_quit"])
+        self.assertEqual(len(record["child_cleanup"]["errors"]), 3)
+        qmp.assert_called_once_with(Path("/output/qmp.sock"), "quit")
+
+        controlled = mock.Mock()
+        controlled.poll.return_value = None
+        controlled.wait.return_value = 0
+        qmp = mock.Mock(return_value={})
+        cleanup = stop_child(controlled, Path("/output/qmp.sock"), qmp)
+        self.assertTrue(cleanup["qmp_quit"])
+        self.assertFalse(cleanup["terminated"])
+        self.assertFalse(cleanup["killed"])
+        controlled.terminate.assert_not_called()
+        controlled.kill.assert_not_called()
         with tempfile.TemporaryDirectory() as directory:
             overlay = Path(directory) / "guest.qcow2"
             overlay.write_bytes(b"synthetic overlay")
@@ -350,6 +368,59 @@ class HostedLandlock(unittest.TestCase):
             self.assertEqual(cleanup, {"attempted": True, "removed": True,
                                        "errors": []})
             self.assertFalse(overlay.exists())
+
+    def test_qmp_control_and_progress_evidence_are_fixed_and_bounded(self):
+        class Stream:
+            def __init__(self):
+                self.lines = iter([
+                    b'{"return":{},"id":"qmp_capabilities"}\n',
+                    b'{"event":"STOP"}\n',
+                    b'{"return":{"running":true,"status":"running"},"id":"query-status"}\n',
+                ])
+                self.writes = []
+
+            def readline(self, _maximum):
+                return next(self.lines, b"")
+
+            def write(self, raw):
+                self.writes.append(raw)
+
+            def flush(self):
+                pass
+
+        stream = Stream()
+        self.assertEqual(qmp_request(stream, "qmp_capabilities"), {})
+        self.assertEqual(qmp_request(stream, "query-status"),
+                         {"running": True, "status": "running"})
+        self.assertEqual(len(stream.writes), 2)
+
+        progress = io.BytesIO()
+        sample = {"schema": 1, "sample": 0, "elapsed_seconds": 0,
+                  "qemu": {"status": "starting"}, "outputs": {}}
+        write_progress_sample(progress, sample)
+        self.assertLess(len(progress.getvalue()), 8192)
+        with self.assertRaises(ValueError):
+            write_progress_sample(progress, {"oversized": "x" * 8192})
+
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "qmp.sock"
+            import socket
+            with socket.socket(socket.AF_UNIX) as channel:
+                channel.bind(str(path))
+                self.assertEqual(discard_control_socket(path), {
+                    "attempted": True, "removed": True, "errors": [],
+                })
+            self.assertFalse(path.exists())
+
+    def test_landlock_parent_keeps_four_gib_pressure_threshold_with_headroom(self):
+        self.assertEqual(LANDLOCK_PARENT_LIMITS, {
+            "memory.high": "4294967296", "memory.max": "5368709120",
+            "memory.swap.max": "0", "cpu.max": "200000 100000",
+            "pids.max": "256",
+        })
+        wrapper = (ROOT / "scripts/check-landlock-qualification.sh").read_text()
+        self.assertIn("MemoryHigh=4G", wrapper)
+        self.assertIn("MemoryMax=5G", wrapper)
 
     def test_kernel_mountinfo_binds_the_exact_source_mount(self):
         raw = ("36 25 252:16 / /run/symbi-qualification/source "
