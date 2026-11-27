@@ -665,7 +665,7 @@ class HostedLandlock(unittest.TestCase):
         self.assertIn("qualification in ('landlock','containers')", atomic)
         self.assertIn("'4294967296'", atomic)
         self.assertIn("else '5368709120'", atomic)
-        self.assertIn("timeout-minutes: 165", workflow)
+        self.assertIn("timeout-minutes: 300", workflow)
 
     def test_bounded_public_report_is_authenticated_and_expanded(self):
         report = self.report()

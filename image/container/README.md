@@ -214,12 +214,15 @@ reports and private controls remain on the discarded guest overlay.
 
 The native fixture OCI itself is not preserved yet. The reviewed
 `native-fixture-image.lock.json` slot is therefore `pending`, with null producer,
-artifact, archive and image identities. It is bound to merge
+artifact, manifest and archive digests and no selector-authored image identity.
+It is bound to merge
 `cd4b34282ade880c8ac3d5136d31ff80cde92794`, its tree and the three driver
-hashes. Preflight refuses to pass until a reviewed successful producer supplies
-the exact offline archive, image ID and repository digest and those bytes are
-present locally. No hosted fixture-image digest is inferred from the earlier
-evidence-only run.
+hashes. A selected intake authenticates the producer run and artifact API
+records, expiry and repository IDs, exact ZIP bytes and members, the inner
+archive and the bounded manifest. It then verifies the manifest-derived image ID
+and repository digest against the OCI layout. The consumer run has its own exact
+identity and need not equal the earlier producer commit. The existing producer
+workflow has not emitted this OCI, so the gate remains closed.
 
 The manual `containers` choice in the shared Fedora runtime workflow is a
 preflight skeleton. It verifies the retained signed gVisor Debian repository

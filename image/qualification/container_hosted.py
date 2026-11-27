@@ -9,7 +9,6 @@ import hashlib
 import json
 from pathlib import Path, PurePosixPath
 import re
-import stat
 import subprocess
 import tomllib
 
@@ -51,7 +50,6 @@ RETAINED_GVISOR_INPUTS = (
 )
 FIXTURE_DRIVERS = {"test-filesystem-grants.py", "test-source-broker.py", "test-git-source.py"}
 MAX_NATIVE_ARCHIVE_BYTES = 12 * 1024**3
-MAX_FIXTURE_ARCHIVE_BYTES = 4 * 1024**3
 
 
 def require(condition, message):
@@ -133,84 +131,10 @@ def validate_fixture_checkout(source, pin):
 
 
 def load_native_fixture_image(root, source_commit, source_pin):
-    """Require a reviewed, locally preserved offline fixture OCI before native work."""
-    root = Path(root)
-    selected = unique_json(root / "image/container/native-fixture-image.lock.json")
-    require(re.fullmatch(r"[a-f0-9]{40}", source_commit or "")
-            and set(selected) == {"schema", "state", "selected", "qualified",
-                                  "os_qualified", "release_qualified", "repository",
-                                  "workflow", "producer", "artifact", "fixture_source",
-                                  "archive", "scope"}
-            and selected.get("schema") == 1
-            and selected.get("repository") == {
-                "id": 1472078858, "full_name": "ThirdKeyAI/symbi-os"}
-            and set(selected.get("workflow", {})) == {"id", "path"}
-            and set(selected.get("producer", {})) == {
-                "run_id", "run_attempt", "event", "head_sha", "status", "conclusion"}
-            and set(selected.get("artifact", {})) == {"id", "name", "bytes", "sha256"}
-            and set(selected.get("archive", {})) == {
-                "name", "bytes", "sha256", "image_id", "repo_digest"}
-            and selected.get("workflow", {}).get("path")
-            == ".github/workflows/container-fixtures.yml"
-            and selected.get("qualified") is False
-            and selected.get("os_qualified") is False
-            and selected.get("release_qualified") is False,
-            "native fixture image selector identity or qualification claims changed")
-    expected_source = {key: source_pin[key] for key in ("revision", "tree", "drivers")}
-    require(selected.get("fixture_source") == expected_source,
-            "native fixture image selector uses different reviewed fixture bytes")
-    if selected.get("state") == "pending":
-        require(selected.get("selected") is False
-                and selected.get("scope")
-                == "Pending offline fixture OCI; no run, artifact or image identity has been selected"
-                and selected.get("workflow", {}).get("id") is None
-                and selected.get("producer") == {
-                    "run_id": None, "run_attempt": None, "event": "workflow_dispatch",
-                    "head_sha": None, "status": "pending", "conclusion": None}
-                and selected.get("artifact") == {
-                    "id": None, "name": "container-native-fixture-image",
-                    "bytes": None, "sha256": None}
-                and selected.get("archive") == {
-                    "name": "symbi-native-fixture.oci.tar", "bytes": None,
-                    "sha256": None, "image_id": None, "repo_digest": None},
-                "pending native fixture selector contains invented output identity")
-        return {"ready": False, "blocker": "pending-native-fixture-image",
-                "selector_sha256": sha256(root / "image/container/native-fixture-image.lock.json")}
-    require(selected.get("state") == "selected" and selected.get("selected") is True,
-            "native fixture image selector has an unsupported state")
-    workflow, producer = selected.get("workflow", {}), selected.get("producer", {})
-    artifact, archive = selected.get("artifact", {}), selected.get("archive", {})
-    require(type(workflow.get("id")) is int and workflow["id"] > 0
-            and type(producer.get("run_id")) is int and producer["run_id"] > 0
-            and type(producer.get("run_attempt")) is int and producer["run_attempt"] > 0
-            and producer.get("event") == "workflow_dispatch"
-            and producer.get("head_sha") == source_commit
-            and producer.get("status") == "completed"
-            and producer.get("conclusion") == "success",
-            "native fixture producer identity is incomplete or unsuccessful")
-    require(type(artifact.get("id")) is int and artifact["id"] > 0
-            and artifact.get("name") == "container-native-fixture-image"
-            and type(artifact.get("bytes")) is int and 0 < artifact["bytes"] <= MAX_FIXTURE_ARCHIVE_BYTES
-            and re.fullmatch(r"[a-f0-9]{64}", artifact.get("sha256", "")),
-            "native fixture artifact identity is invalid")
-    require(archive.get("name") == "symbi-native-fixture.oci.tar"
-            and type(archive.get("bytes")) is int and 0 < archive["bytes"] <= MAX_FIXTURE_ARCHIVE_BYTES
-            and re.fullmatch(r"[a-f0-9]{64}", archive.get("sha256", ""))
-            and re.fullmatch(r"sha256:[a-f0-9]{64}", archive.get("image_id", ""))
-            and re.fullmatch(r"[a-z0-9]+(?:[._/-][a-z0-9]+)*@sha256:[a-f0-9]{64}",
-                             archive.get("repo_digest", "")),
-            "native fixture OCI identity is invalid")
-    path = root / ".cache/container-native-fixture-inputs" / archive["name"]
-    try:
-        info = path.lstat()
-    except FileNotFoundError:
-        return {"ready": False, "blocker": "missing-native-fixture-image",
-                "selector_sha256": sha256(root / "image/container/native-fixture-image.lock.json")}
-    require(stat.S_ISREG(info.st_mode) and info.st_nlink == 1 and not path.is_symlink()
-            and info.st_size == archive["bytes"] and sha256(path) == archive["sha256"],
-            "preserved native fixture OCI differs from its reviewed selector")
-    return {"ready": True, "path": path, "selector": selected,
-            "selector_sha256": sha256(root / "image/container/native-fixture-image.lock.json")}
+    """Require the authenticated producer artifact and independent consumer record."""
+    from image.container.native_fixture_inputs import validate_consumed_fixture
+    expected = {key: source_pin[key] for key in ("revision", "tree", "drivers")}
+    return validate_consumed_fixture(root, source_commit, expected)
 
 
 def verify_release_signature(keyring, signature, release, fingerprint):
@@ -527,11 +451,15 @@ def build_preflight(root, source_commit, image_source_commit, verify=verify_rele
         "card": "P0-05",
         "passed": False,
         "qualified": False,
+        "container_qualified": False,
         "os_qualified": False,
         "release_qualified": False,
+        "signature_qualified": False,
         "native_fixture_matrix_passed": False,
+        "controller_escape_negatives_passed": False,
         "managed_route_qualified": False,
         "escape_suite_qualified": False,
+        "review_complete": False,
         "source_commit": source_commit,
         "image_source_commit": image_source_commit,
         "runsc": runsc,
@@ -552,7 +480,8 @@ def build_preflight(root, source_commit, image_source_commit, verify=verify_rele
         result["blockers"].insert(0, fixture_image["blocker"])
     else:
         result["native_fixture_image"] = {
-            "archive": fixture_image["selector"]["archive"],
+            "archive": fixture_image["manifest"]["archive"],
+            "image": fixture_image["image"],
             "producer": fixture_image["selector"]["producer"],
             "artifact": fixture_image["selector"]["artifact"],
         }
@@ -597,6 +526,16 @@ def run_container_preflight(root, source_commit, image_source_commit):
         result["passed"] = (
             result.get("fedora_runtime_ready") is True
             and result.get("native_fixture_image_ready") is True
+            and result.get("qualified") is False
+            and result.get("container_qualified") is False
+            and result.get("os_qualified") is False
+            and result.get("release_qualified") is False
+            and result.get("signature_qualified") is False
+            and result.get("review_complete") is False
+            and result.get("native_fixture_matrix_passed") is False
+            and result.get("controller_escape_negatives_passed") is False
+            and result.get("managed_route_qualified") is False
+            and result.get("escape_suite_qualified") is False
             and isinstance(boot, dict)
             and boot.get("qualified") is False
             and boot.get("os_qualified") is False

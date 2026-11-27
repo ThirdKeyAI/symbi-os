@@ -320,15 +320,22 @@ def _listener_controls(output):
     stack = contextlib.ExitStack()
     try:
         tcp = stack.enter_context(socket.socket(socket.AF_INET, socket.SOCK_STREAM))
-        tcp.bind(("127.0.0.1", 0)); tcp.listen(2); tcp.setblocking(False)
+        tcp.bind(("127.0.0.1", 0))
+        tcp.listen(2)
+        tcp.setblocking(False)
         udp = stack.enter_context(socket.socket(socket.AF_INET, socket.SOCK_DGRAM))
-        udp.bind(("127.0.0.1", 0)); udp.setblocking(False)
+        udp.bind(("127.0.0.1", 0))
+        udp.setblocking(False)
         abstract_name = "symbi-escape-" + uuid.uuid4().hex
         abstract = stack.enter_context(socket.socket(socket.AF_UNIX, socket.SOCK_STREAM))
-        abstract.bind("\0" + abstract_name); abstract.listen(2); abstract.setblocking(False)
+        abstract.bind("\0" + abstract_name)
+        abstract.listen(2)
+        abstract.setblocking(False)
         pipewire = output / ("pipewire-" + uuid.uuid4().hex)
         pipewire_listener = stack.enter_context(socket.socket(socket.AF_UNIX, socket.SOCK_STREAM))
-        pipewire_listener.bind(str(pipewire)); pipewire_listener.listen(2); pipewire_listener.setblocking(False)
+        pipewire_listener.bind(str(pipewire))
+        pipewire_listener.listen(2)
+        pipewire_listener.setblocking(False)
         stack.callback(pipewire.unlink, missing_ok=True)
         ssh_root = output / ("host-private-" + uuid.uuid4().hex)
         ssh_root.mkdir(mode=0o700)
@@ -341,15 +348,19 @@ def _listener_controls(output):
 
         with socket.create_connection(tcp.getsockname(), timeout=2) as control:
             control.sendall(b"control")
-        accepted, _ = tcp.accept(); accepted.close()
+        accepted, _ = tcp.accept()
+        accepted.close()
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as control:
             control.sendto(b"control", udp.getsockname())
         require(udp.recv(64) == b"control", "DNS observer positive control failed")
         for listener, address in ((abstract, "\0" + abstract_name),
                                   (pipewire_listener, str(pipewire))):
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as control:
-                control.settimeout(2); control.connect(address); control.sendall(b"control")
-            accepted, _ = listener.accept(); accepted.close()
+                control.settimeout(2)
+                control.connect(address)
+                control.sendall(b"control")
+            accepted, _ = listener.accept()
+            accepted.close()
         return stack, {
             "tcp": tcp, "udp": udp, "abstract": abstract, "pipewire": pipewire_listener,
             "tcp_port": tcp.getsockname()[1], "udp_port": udp.getsockname()[1],
@@ -476,6 +487,7 @@ def compact_evidence(report):
         "container_qualified": False,
         "os_qualified": False,
         "release_qualified": False,
+        "signature_qualified": False,
         "native_fixture_matrix_passed": report.get("native_fixture_matrix_passed") is True,
         "controller_escape_negatives_passed": report.get("controller_escape_negatives_passed") is True,
         "managed_route_qualified": False,
@@ -517,7 +529,8 @@ def main():
     report = {
         "schema": 1, "card": "P0-05", "passed": False, "qualified": False,
         "container_qualified": False, "os_qualified": False,
-        "release_qualified": False, "native_fixture_matrix_passed": False,
+        "release_qualified": False, "signature_qualified": False,
+        "native_fixture_matrix_passed": False,
         "controller_escape_negatives_passed": False,
         "managed_route_qualified": False, "escape_suite_qualified": False,
         "review_complete": False,
