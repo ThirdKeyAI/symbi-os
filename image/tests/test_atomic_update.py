@@ -42,8 +42,14 @@ from image.atomic.update_boot_failure import (JOURNAL_MAX_BYTES,
                                               SOURCE_CAPTURE_COMMAND,
                                               SOURCE_JOURNAL_COMMAND,
                                               COLLECTOR_STAGES,
+                                              AVC_COMMAND_SHA256,
+                                              AVC_FAILURE_REASONS,
+                                              AvcEvidenceError,
                                               _SENSITIVE_ASSIGNMENT as PRODUCER_SENSITIVE,
+                                              _kill_and_reap,
+                                              bounded_command_result,
                                               bounded_avc_evidence,
+                                              collector_failure_detail,
                                               fixed_command as fixed_failure_command,
                                               parse_avc_evidence,
                                               parse_source_capture,
@@ -104,7 +110,57 @@ class AtomicUpdateTests(unittest.TestCase):
             self.raw.extend(raw[:count])
             return count
 
-    def collector_stream(self, stage="avc-journal", failure_kind="command-exit"):
+    @staticmethod
+    def avc_command_result(*, exit_code=0, stdout=b"record", stderr=b"",
+                           timed_out=False, stdout_truncated=False,
+                           stderr_truncated=False):
+        return {
+            "command": AVC_JOURNAL_COMMAND,
+            "exit_code": exit_code,
+            "timed_out": timed_out,
+            "stdout": stdout,
+            "stderr": stderr,
+            "stdout_truncated": stdout_truncated,
+            "stderr_truncated": stderr_truncated,
+        }
+
+    @staticmethod
+    def avc_command_observation(*, exit_code=0, stdout=b"record", stderr=b"",
+                                timed_out=False, stdout_truncated=False,
+                                stderr_truncated=False):
+        return {
+            "command_sha256": AVC_COMMAND_SHA256,
+            "exit_code": exit_code,
+            "timed_out": timed_out,
+            "stdout_bytes": len(stdout),
+            "stdout_sha256": hashlib.sha256(stdout).hexdigest(),
+            "stdout_truncated": stdout_truncated,
+            "stderr_bytes": len(stderr),
+            "stderr_sha256": hashlib.sha256(stderr).hexdigest(),
+            "stderr_truncated": stderr_truncated,
+        }
+
+    @staticmethod
+    def avc_journal_raw(**changes):
+        source_context = "system_u:system_r:unconfined_service_t:s0"
+        message = (
+            "audit: type=1400 audit(100.200:42): avc: denied { transition } for "
+            "pid=654 comm=\"runcon\" path=\"/usr/bin/bootc\" "
+            "scontext=" + source_context + " "
+            "tcontext=system_u:system_r:install_t:s0 "
+            "tclass=process permissive=0"
+        )
+        record = {
+            "MESSAGE": message,
+            "__CURSOR": "s=" + "2" * 64,
+            "__MONOTONIC_TIMESTAMP": "1002",
+            "_TRANSPORT": "kernel",
+        }
+        record.update(changes)
+        return (json.dumps(record) + "\n").encode()
+
+    def collector_stream(self, stage="avc-journal", failure_kind="command-exit",
+                         failure_detail=None):
         writer = self.ShortWriter(4096)
         runner_hash = "a" * 64
         sequence = 0
@@ -120,7 +176,7 @@ class AtomicUpdateTests(unittest.TestCase):
                 write_collector_event(
                     writer, "collector-failed", runner_hash, sequence=sequence,
                     stage=current,
-                    failure_kind=failure_kind)
+                    failure_kind=failure_kind, failure_detail=failure_detail)
                 break
         return bytes(writer.raw)
 
@@ -230,6 +286,391 @@ class AtomicUpdateTests(unittest.TestCase):
             "stage": "primary-report-write",
             "report": report,
         })
+
+    def test_collector_field_type_mutations_fail_closed(self):
+        invalid_json_values = ([], {}, True, None)
+        for value in invalid_json_values:
+            for label, arguments in (
+                    ("event", (value, "a" * 64, 0, None, None, None)),
+                    ("runner-hash", ("collector-started", value, 0,
+                                     None, None, None)),
+                    ("sequence", ("collector-started", "a" * 64, value,
+                                  None, None, None)),
+                    ("stage", ("collector-stage", "a" * 64, 1,
+                               value, None, None)),
+                    ("failure-kind", ("collector-failed", "a" * 64, 6,
+                                      "avc-journal", value, None))):
+                event, runner_hash, sequence, stage, failure_kind, detail = arguments
+                with self.subTest(producer=label, value=value), \
+                        self.assertRaises(ValueError):
+                    write_collector_event(
+                        self.ShortWriter(4096), event, runner_hash,
+                        sequence=sequence, stage=stage,
+                        failure_kind=failure_kind, failure_detail=detail)
+
+            for key in ("bytes", "sha256"):
+                report = {"bytes": 321, "sha256": "b" * 64}
+                report[key] = value
+                with self.subTest(producer_report=key, value=value), \
+                        self.assertRaises(ValueError):
+                    write_collector_event(
+                        self.ShortWriter(4096), "collector-completed", "a" * 64,
+                        sequence=9, stage=COLLECTOR_STAGES[-1],
+                        report_observation=report)
+
+            with self.subTest(host_runner_hash=value), self.assertRaises(ValueError):
+                validate_collector_diagnostic(
+                    self.collector_stream(), value)
+
+        receipt = json.loads(self.collector_stream().splitlines()[0])
+        for key in receipt:
+            for value in invalid_json_values:
+                changed = copy.deepcopy(receipt)
+                changed[key] = value
+                raw = (json.dumps(
+                    changed, sort_keys=True, separators=(",", ":")) + "\n").encode()
+                with self.subTest(receipt=key, value=value), \
+                        self.assertRaises(ValueError):
+                    validate_collector_diagnostic(raw, "a" * 64)
+
+        report_raw = b'{"passed":false}\n'
+        completed_raw = self.completed_collector_stream(report_raw)
+        lines = completed_raw.splitlines()
+        terminal = json.loads(lines[-1])
+        prefix = b"\n".join(lines[:-1]) + b"\n"
+        for key in ("bytes", "sha256"):
+            for value in invalid_json_values:
+                changed = copy.deepcopy(terminal)
+                changed["report"][key] = value
+                raw = prefix + (json.dumps(
+                    changed, sort_keys=True, separators=(",", ":")) + "\n").encode()
+                observed = validate_collector_diagnostic(raw, "a" * 64)
+                with self.subTest(host_report=key, value=value):
+                    self.assertIsNone(observed["terminal"])
+                    self.assertEqual(observed["suffix"]["state"], "invalid")
+
+    def test_avc_failure_receipt_is_content_free_and_exactly_bound(self):
+        private_stderr = b"API_TOKEN=must-not-be-retained"
+        stderr = private_stderr[:1]
+        observation = self.avc_command_observation(
+            exit_code=1, stdout=b"", stderr=stderr, stderr_truncated=True)
+        error = AvcEvidenceError("stderr-truncated", observation)
+        detail = collector_failure_detail(error)
+        self.assertEqual(detail, {
+            "reason": "stderr-truncated", "command": observation,
+        })
+        self.assertNotIn("API_TOKEN", json.dumps(detail, sort_keys=True))
+        self.assertNotIn("must-not-be-retained", json.dumps(detail, sort_keys=True))
+        raw = self.collector_stream(
+            failure_kind="invalid-evidence", failure_detail=detail)
+        self.assertLessEqual(max(map(len, raw.splitlines())), 1024)
+        observed = validate_collector_diagnostic(raw, "a" * 64)
+        self.assertEqual(observed["terminal"], {
+            "event": "collector-failed", "stage": "avc-journal",
+            "failure_kind": "invalid-evidence", "failure_detail": detail,
+        })
+
+        terminal = json.loads(raw.splitlines()[-1])
+        mutations = []
+        for key, value in (
+                ("reason", "unreviewed-reason"),
+                ("reason", "records-output-empty")):
+            changed = copy.deepcopy(terminal)
+            changed["failure_detail"][key] = value
+            mutations.append((key, changed))
+        for key, value in (
+                ("command_sha256", "b" * 64),
+                ("stderr_bytes", 0),
+                ("stderr_truncated", False)):
+            changed = copy.deepcopy(terminal)
+            changed["failure_detail"]["command"][key] = value
+            mutations.append((key, changed))
+        changed = copy.deepcopy(terminal)
+        changed["failure_kind"] = "command-exit"
+        mutations.append(("failure_kind-binding", changed))
+        invalid_json_values = ([], {}, True, None)
+        for value in invalid_json_values:
+            changed = copy.deepcopy(terminal)
+            changed["failure_detail"] = value
+            mutations.append(("failure_detail", changed))
+            changed = copy.deepcopy(terminal)
+            changed["failure_detail"]["reason"] = value
+            mutations.append(("reason", changed))
+            changed = copy.deepcopy(terminal)
+            changed["failure_detail"]["command"] = value
+            mutations.append(("command", changed))
+        for key in observation:
+            for value in invalid_json_values:
+                if (type(value) is type(observation[key])
+                        and value == observation[key]):
+                    continue
+                changed = copy.deepcopy(terminal)
+                changed["failure_detail"]["command"][key] = value
+                mutations.append((key, changed))
+        for value in invalid_json_values:
+            changed = copy.deepcopy(terminal)
+            changed["failure_kind"] = value
+            mutations.append(("failure_kind", changed))
+        prefix = b"\n".join(raw.splitlines()[:-1]) + b"\n"
+        for label, changed in mutations:
+            candidate = prefix + (json.dumps(
+                changed, sort_keys=True, separators=(",", ":")) + "\n").encode()
+            with self.subTest(label=label, changed=changed):
+                rejected = validate_collector_diagnostic(candidate, "a" * 64)
+                self.assertIsNone(rejected["terminal"])
+                self.assertEqual(rejected["suffix"]["state"], "invalid")
+
+        for label, changed in mutations:
+            if label == "failure_detail" and changed.get("failure_detail") is None:
+                continue
+            with self.subTest(producer_label=label), self.assertRaises(ValueError):
+                write_collector_event(
+                    self.ShortWriter(4096), "collector-failed", "a" * 64,
+                    sequence=6, stage="avc-journal",
+                    failure_kind=changed.get("failure_kind"),
+                    failure_detail=changed.get("failure_detail"))
+
+        with self.assertRaises(ValueError):
+            write_collector_event(
+                self.ShortWriter(4096), "collector-failed", "a" * 64,
+                sequence=2, stage="source-journal",
+                failure_kind="invalid-evidence", failure_detail=detail)
+
+    def test_avc_command_status_predicates_reject_every_ambiguous_result(self):
+        source = {
+            "source_context": "system_u:system_r:unconfined_service_t:s0",
+            "requested_context": BOOTC_CONTEXT,
+        }
+        cases = (
+            ("records-output-empty", self.avc_command_result(
+                exit_code=0, stdout=b"")),
+            ("no-match-output-nonempty", self.avc_command_result(
+                exit_code=1, stdout=b"unexpected")),
+            ("unexpected-exit", self.avc_command_result(
+                exit_code=2, stdout=b"")),
+            ("command-result-invalid", self.avc_command_result(
+                exit_code=1, stdout=b"", stderr=b"x")),
+            ("stdout-truncated", self.avc_command_result(
+                exit_code=0, stdout=b"x" * (64 * 1024 + 1),
+                stdout_truncated=True)),
+            ("stderr-truncated", self.avc_command_result(
+                exit_code=1, stdout=b"", stderr=b"x",
+                stderr_truncated=True)),
+            ("command-timeout", self.avc_command_result(
+                exit_code=-9, stdout=b"", timed_out=True)),
+            ("stdout-invalid-utf8", self.avc_command_result(
+                exit_code=0, stdout=b"\xff")),
+            ("journal-record-invalid-json", self.avc_command_result(
+                exit_code=0, stdout=b"not-json\n")),
+            ("command-result-invalid", "not-a-command-result"),
+        )
+        for reason, result in cases:
+            runner = Mock(return_value=result)
+            with self.subTest(reason=reason), \
+                    self.assertRaises(AvcEvidenceError) as caught:
+                bounded_avc_evidence(source, None, runner)
+            self.assertEqual(caught.exception.reason, reason)
+            detail = collector_failure_detail(caught.exception)
+            self.assertIsNotNone(detail)
+            self.assertEqual(detail["reason"], reason)
+            self.assertEqual(set(detail), {"reason", "command"})
+            runner.assert_called_once_with(
+                AVC_JOURNAL_COMMAND, timeout=5, stdout_max=64 * 1024,
+                stderr_max=0)
+
+        wrong_command = self.avc_command_result(exit_code=1, stdout=b"")
+        wrong_command["command"] = ["/usr/bin/true"]
+        with self.assertRaises(AvcEvidenceError) as caught:
+            bounded_avc_evidence(
+                source, None, Mock(return_value=wrong_command))
+        self.assertEqual(caught.exception.reason, "command-result-invalid")
+
+    def test_returned_null_exit_status_becomes_bound_invalid_evidence(self):
+        source = {
+            "source_context": "system_u:system_r:unconfined_service_t:s0",
+            "requested_context": BOOTC_CONTEXT,
+        }
+        for exit_code, timed_out in (
+                (None, False), (None, True), (True, False), (1.0, False),
+                (-2**31 - 1, False), (256, False)):
+            result = self.avc_command_result(
+                exit_code=exit_code, stdout=b"", timed_out=timed_out)
+            with self.subTest(exit_code=exit_code, timed_out=timed_out), \
+                    self.assertRaises(AvcEvidenceError) as caught:
+                bounded_avc_evidence(source, None, Mock(return_value=result))
+            self.assertEqual(caught.exception.reason, "command-result-invalid")
+            detail = collector_failure_detail(caught.exception)
+            self.assertEqual(detail["reason"], "command-result-invalid")
+            self.assertEqual(detail["command"]["exit_code"], None)
+            self.assertFalse(detail["command"]["timed_out"])
+            raw = self.collector_stream(
+                failure_kind="invalid-evidence", failure_detail=detail)
+            observed = validate_collector_diagnostic(raw, "a" * 64)
+            self.assertEqual(observed["terminal"]["failure_detail"], detail)
+
+        timeout = subprocess.TimeoutExpired(AVC_JOURNAL_COMMAND, 5)
+        with self.assertRaises(AvcEvidenceError) as caught:
+            bounded_avc_evidence(source, None, Mock(side_effect=timeout))
+        self.assertEqual(caught.exception.reason, "command-timeout")
+        detail = collector_failure_detail(caught.exception)
+        self.assertIsNotNone(detail)
+        self.assertEqual(detail["command"]["exit_code"], None)
+        self.assertTrue(detail["command"]["timed_out"])
+
+    def test_avc_journal_malformed_types_nesting_and_surrogates_are_normalized(self):
+        source = {
+            "source_context": "system_u:system_r:unconfined_service_t:s0",
+            "requested_context": BOOTC_CONTEXT,
+        }
+        cases = []
+        invalid_json_values = ([], {}, True, None)
+        for field in (
+                "MESSAGE", "__CURSOR", "__MONOTONIC_TIMESTAMP", "_TRANSPORT"):
+            for value in invalid_json_values:
+                cases.append((field + "-type", self.avc_journal_raw(**{field: value})))
+        cases.extend((
+            ("cursor-malformed", self.avc_journal_raw(__CURSOR="short")),
+            ("message-surrogate", self.avc_journal_raw(MESSAGE="\ud800")),
+            ("cursor-surrogate", self.avc_journal_raw(__CURSOR="\ud800")),
+            ("transport-surrogate", self.avc_journal_raw(_TRANSPORT="\ud800")),
+            ("duplicate-key", b'{"MESSAGE":"one","MESSAGE":"two"}\n'),
+            ("deep-nesting", (
+                '{"nested":' + '[' * 1500 + '0' + ']' * 1500 + '}\n').encode()),
+        ))
+        for name, raw in cases:
+            result = self.avc_command_result(exit_code=0, stdout=raw)
+            with self.subTest(name=name), \
+                    self.assertRaises(AvcEvidenceError) as caught:
+                bounded_avc_evidence(source, None, Mock(return_value=result))
+            self.assertIn(caught.exception.reason, AVC_FAILURE_REASONS)
+            detail = collector_failure_detail(caught.exception)
+            self.assertIsNotNone(detail)
+            self.assertEqual(
+                detail["command"],
+                self.avc_command_observation(exit_code=0, stdout=raw))
+
+    def test_bounded_command_result_observes_real_status_and_hard_caps(self):
+        exit_one = bounded_command_result(
+            [sys.executable, "-c", "raise SystemExit(1)"], timeout=2,
+            stdout_max=16, stderr_max=16)
+        self.assertEqual(exit_one["exit_code"], 1)
+        self.assertEqual(exit_one["stdout"], b"")
+        self.assertEqual(exit_one["stderr"], b"")
+        self.assertFalse(exit_one["timed_out"])
+        self.assertFalse(exit_one["stdout_truncated"])
+        self.assertFalse(exit_one["stderr_truncated"])
+
+        stdout = bounded_command_result(
+            [sys.executable, "-c", "import sys;sys.stdout.write('x'*17)"],
+            timeout=2, stdout_max=16, stderr_max=16)
+        self.assertTrue(stdout["stdout_truncated"])
+        self.assertEqual(len(stdout["stdout"]), 17)
+        stderr = bounded_command_result(
+            [sys.executable, "-c", "import sys;sys.stderr.write('x'*17)"],
+            timeout=2, stdout_max=16, stderr_max=16)
+        self.assertTrue(stderr["stderr_truncated"])
+        self.assertEqual(len(stderr["stderr"]), 17)
+
+        zero_stderr = bounded_command_result(
+            [sys.executable, "-c", "import sys;sys.stderr.write('x')"],
+            timeout=2, stdout_max=16, stderr_max=0)
+        self.assertEqual(zero_stderr["stderr"], b"x")
+        self.assertTrue(zero_stderr["stderr_truncated"])
+
+        timed = bounded_command_result(
+            [sys.executable, "-c",
+             "import os,time;print(os.getpid(),flush=True);time.sleep(5)"],
+            timeout=1, stdout_max=16, stderr_max=16)
+        self.assertTrue(timed["timed_out"])
+        self.assertIsInstance(timed["exit_code"], int)
+        self.assertNotEqual(timed["exit_code"], 0)
+        child_pid = int(timed["stdout"].strip())
+        with self.assertRaises(ProcessLookupError):
+            os.kill(child_pid, 0)
+
+    def test_bounded_command_cleanup_reaps_or_fails_closed(self):
+        live = Mock()
+        live.poll.return_value = None
+        live.wait.return_value = -9
+        self.assertEqual(_kill_and_reap(live), -9)
+        live.kill.assert_called_once_with()
+        live.wait.assert_called_once_with()
+
+        raced = Mock()
+        raced.poll.return_value = None
+        raced.kill.side_effect = ProcessLookupError
+        raced.wait.return_value = 0
+        self.assertEqual(_kill_and_reap(raced), 0)
+        raced.wait.assert_called_once_with()
+
+        unreaped = Mock()
+        unreaped.poll.return_value = None
+        unreaped.wait.return_value = None
+        with self.assertRaisesRegex(RuntimeError, "was not reaped"):
+            _kill_and_reap(unreaped)
+        unreaped.wait.assert_called_once_with()
+
+        def mocked_process(*, kill_error=None, wait_error=None):
+            process = Mock()
+            process.stdout = SimpleNamespace(closed=True)
+            process.stderr = SimpleNamespace(closed=True)
+            process.poll.return_value = None
+            process.kill.side_effect = kill_error
+            process.wait.side_effect = wait_error
+            if wait_error is None:
+                process.wait.return_value = -9
+            return process
+
+        selector = Mock()
+        selector.register.side_effect = RuntimeError("original selector failure")
+        process = mocked_process()
+        with patch("image.atomic.update_boot_failure.subprocess.Popen",
+                   return_value=process), \
+                patch("image.atomic.update_boot_failure.selectors.DefaultSelector",
+                      return_value=selector), \
+                self.assertRaisesRegex(RuntimeError, "original selector failure"):
+            bounded_command_result(
+                ["/usr/bin/true"], timeout=1, stdout_max=1, stderr_max=0)
+        process.kill.assert_called_once_with()
+        process.wait.assert_called_once_with()
+
+        with patch("image.atomic.update_boot_failure.subprocess.Popen",
+                   return_value=mocked_process()) as opener, \
+                patch(
+                    "image.atomic.update_boot_failure.selectors.DefaultSelector",
+                    side_effect=RuntimeError("selector construction failed")), \
+                self.assertRaisesRegex(
+                    RuntimeError, "selector construction failed"):
+            bounded_command_result(
+                ["/usr/bin/true"], timeout=1, stdout_max=1, stderr_max=0)
+        constructed = opener.return_value
+        constructed.kill.assert_called_once_with()
+        constructed.wait.assert_called_once_with()
+
+        for cleanup_error in (
+                PermissionError("kill denied"), OSError("reap failed"),
+                subprocess.TimeoutExpired(["/usr/bin/true"], 1)):
+            if isinstance(cleanup_error, PermissionError):
+                process = mocked_process(kill_error=cleanup_error)
+            else:
+                process = mocked_process(wait_error=cleanup_error)
+            selector = Mock()
+            selector.register.side_effect = RuntimeError(
+                "original selector failure")
+            with self.subTest(cleanup_error=type(cleanup_error).__name__), \
+                    patch("image.atomic.update_boot_failure.subprocess.Popen",
+                          return_value=process), \
+                    patch(
+                        "image.atomic.update_boot_failure.selectors.DefaultSelector",
+                        return_value=selector), \
+                    self.assertRaises(type(cleanup_error)) as caught:
+                bounded_command_result(
+                    ["/usr/bin/true"], timeout=1, stdout_max=1, stderr_max=0)
+            self.assertIs(caught.exception, cleanup_error)
+            if isinstance(cleanup_error, PermissionError):
+                process.wait.assert_not_called()
+            else:
+                process.wait.assert_called_once_with()
 
     def test_auxiliary_collector_failures_never_block_the_primary_report(self):
         with patch("image.atomic.update_boot_failure.os.open",
@@ -633,6 +1074,8 @@ class AtomicUpdateTests(unittest.TestCase):
             report = self.transition_failure_report()
             report["avc"] = {
                 "command": AVC_JOURNAL_COMMAND,
+                "command_observation": self.avc_command_observation(
+                    exit_code=1, stdout=b""),
                 "query_result": "no-match",
                 "raw_bytes": 0,
                 "raw_sha256": hashlib.sha256(b"").hexdigest(),
@@ -1409,6 +1852,17 @@ class AtomicUpdateTests(unittest.TestCase):
             },
             "avc": {
                 "command": AVC_JOURNAL_COMMAND,
+                "command_observation": {
+                    "command_sha256": AVC_COMMAND_SHA256,
+                    "exit_code": 0,
+                    "timed_out": False,
+                    "stdout_bytes": 512,
+                    "stdout_sha256": "d" * 64,
+                    "stdout_truncated": False,
+                    "stderr_bytes": 0,
+                    "stderr_sha256": hashlib.sha256(b"").hexdigest(),
+                    "stderr_truncated": False,
+                },
                 "query_result": "records",
                 "raw_bytes": 512,
                 "raw_sha256": "d" * 64,
@@ -1457,6 +1911,10 @@ class AtomicUpdateTests(unittest.TestCase):
         report = self.transition_failure_report()
         self.assertEqual(validate_transition_failure_report(report, "a" * 64), report)
         mutations = []
+        for schema in (True, 1.0):
+            changed = copy.deepcopy(report)
+            changed["schema"] = schema
+            mutations.append(changed)
         changed = copy.deepcopy(report)
         changed["extra"] = True
         mutations.append(changed)
@@ -1540,6 +1998,8 @@ class AtomicUpdateTests(unittest.TestCase):
         report = self.transition_failure_report()
         no_match = {
             "command": AVC_JOURNAL_COMMAND,
+            "command_observation": self.avc_command_observation(
+                exit_code=1, stdout=b""),
             "query_result": "no-match",
             "raw_bytes": 0,
             "raw_sha256": hashlib.sha256(b"").hexdigest(),
@@ -1563,9 +2023,56 @@ class AtomicUpdateTests(unittest.TestCase):
             changed = copy.deepcopy(report)
             changed["avc"][key] = value
             mutations.append(changed)
+        for observation in (
+                self.avc_command_observation(exit_code=0, stdout=b""),
+                self.avc_command_observation(exit_code=1, stdout=b"unexpected"),
+                self.avc_command_observation(
+                    exit_code=1, stdout=b"", stderr=b"diagnostic"),
+                self.avc_command_observation(
+                    exit_code=-9, stdout=b"", timed_out=True),
+                self.avc_command_observation(
+                    exit_code=-9, stdout=b"x" * (64 * 1024 + 1),
+                    stdout_truncated=True)):
+            changed = copy.deepcopy(report)
+            changed["avc"]["command_observation"] = observation
+            mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["avc"]["command_observation"]["command_sha256"] = "d" * 64
+        mutations.append(changed)
+        invalid_json_values = ([], {}, True, None)
+        for key in no_match["command_observation"]:
+            for value in invalid_json_values:
+                changed = copy.deepcopy(report)
+                changed["avc"]["command_observation"][key] = value
+                mutations.append(changed)
+        for key in no_match:
+            if key == "command_observation":
+                continue
+            for value in invalid_json_values:
+                if type(value) is type(no_match[key]) and value == no_match[key]:
+                    continue
+                changed = copy.deepcopy(report)
+                changed["avc"][key] = value
+                mutations.append(changed)
         for changed in mutations:
             with self.subTest(changed=changed["avc"]), self.assertRaises(ValueError):
                 validate_transition_failure_report(changed, "a" * 64)
+
+    def test_transition_avc_record_type_mutations_fail_as_value_errors(self):
+        report = self.transition_failure_report()
+        record = report["avc"]["records"][0]
+        invalid_json_values = ([], {}, True, None)
+        for key in record:
+            for value in invalid_json_values:
+                changed = copy.deepcopy(report)
+                changed["avc"]["records"][0][key] = value
+                with self.subTest(key=key, value=value), \
+                        self.assertRaises(ValueError):
+                    validate_transition_failure_report(changed, "a" * 64)
+        changed = copy.deepcopy(report)
+        changed["avc"]["records"][0]["permissions"] = [["transition"]]
+        with self.assertRaises(ValueError):
+            validate_transition_failure_report(changed, "a" * 64)
 
     def test_transition_failure_journal_is_bounded_and_redacts_secret_shapes(self):
         secret = "s" * 64
@@ -1663,9 +2170,13 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertEqual(source["pid"], 653)
         self.assertEqual(source["command"], SOURCE_CAPTURE_COMMAND)
         service = self.transition_failure_report()["service"]
-        no_match = parse_avc_evidence("", source, service)
+        no_match_runner = Mock(return_value=self.avc_command_result(
+            exit_code=1, stdout=b""))
+        no_match = bounded_avc_evidence(source, service, no_match_runner)
         self.assertEqual(no_match, {
             "command": AVC_JOURNAL_COMMAND,
+            "command_observation": self.avc_command_observation(
+                exit_code=1, stdout=b""),
             "query_result": "no-match",
             "raw_bytes": 0,
             "raw_sha256": hashlib.sha256(b"").hexdigest(),
@@ -1673,10 +2184,7 @@ class AtomicUpdateTests(unittest.TestCase):
             "truncated": False,
             "records": [],
         })
-        empty_runner = Mock(return_value="")
-        self.assertEqual(
-            bounded_avc_evidence(source, service, empty_runner), no_match)
-        empty_runner.assert_called_once_with(
+        no_match_runner.assert_called_once_with(
             AVC_JOURNAL_COMMAND, timeout=5, stdout_max=64 * 1024,
             stderr_max=0)
         message = (
@@ -1705,12 +2213,16 @@ class AtomicUpdateTests(unittest.TestCase):
             "path_field", "path", "source_context", "target_context", "class",
             "permissions", "permissive", "cursor_sha256",
         })
-        runner = Mock(return_value=raw)
+        runner = Mock(return_value=self.avc_command_result(
+            exit_code=0, stdout=raw.encode()))
         bounded = bounded_avc_evidence(source, service, runner)
         runner.assert_called_once_with(
             AVC_JOURNAL_COMMAND, timeout=5, stdout_max=64 * 1024,
             stderr_max=0)
         self.assertEqual(bounded["command"], AVC_JOURNAL_COMMAND)
+        self.assertEqual(
+            bounded["command_observation"],
+            self.avc_command_observation(exit_code=0, stdout=raw.encode()))
         self.assertNotIn(cursor, json.dumps(bounded, sort_keys=True))
 
         entrypoint = raw.replace(

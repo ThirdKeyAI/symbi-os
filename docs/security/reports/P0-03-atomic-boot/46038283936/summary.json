@@ -1,0 +1,241 @@
+{
+  "schema": 1,
+  "card": "P0-03",
+  "run": {
+    "id": 46038283936,
+    "attempt": 1,
+    "event": "workflow_dispatch",
+    "head": "387bbf91dea0a3ec70f8f41ee5d76df23b0c4ab9",
+    "tree": "1e815bfa8dbf14bec77e14380ebc7c1526fbe646",
+    "parent": "9361eac68fdf2732a34fc1afaf3b311cec449f10",
+    "job_id": 140639198466,
+    "run_started_utc": "2026-11-27T17:00:20Z",
+    "run_completed_utc": "2026-11-27T17:24:21Z",
+    "native_step_started_utc": "2026-11-27T17:10:09Z",
+    "native_step_completed_utc": "2026-11-27T17:24:16Z",
+    "conclusion": "failure"
+  },
+  "artifact": {
+    "id": 15220411216,
+    "name": "atomic-development-boot-generic",
+    "bytes": 71273,
+    "github_digest": "sha256:90231e9d705563ee76fbf43606839d32a75675e26f0dd3e25fd93dcaaab97c97",
+    "downloaded_zip_sha256": "90231e9d705563ee76fbf43606839d32a75675e26f0dd3e25fd93dcaaab97c97",
+    "zip_integrity": true,
+    "safe_regular_relative_members": 95,
+    "uncompressed_bytes": 153144
+  },
+  "failure": {
+    "stage": "same-path-positive-avc-journal",
+    "predecessor_install_passed": true,
+    "qemu_exit_code": 0,
+    "report": {
+      "name": "same-path-positive.json",
+      "state": "empty",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "collector": {
+      "name": "same-path-positive-collector.jsonl",
+      "state": "ready",
+      "bytes": 2305,
+      "sha256": "b7804c32f16f8344d74f7c9a5a5c0bea6ed9c62fdccae5430859aa72a96b1fd3",
+      "prefix_validated": true,
+      "stream_validated": true,
+      "runner_sha256": "1c16f24964db67cd46ddcefdc9d19b1c471a2b68bbbf72cf0427b91ca53eee9c",
+      "stages": [
+        "service-properties",
+        "source-journal",
+        "monitor",
+        "identity-correlation",
+        "avc-journal"
+      ],
+      "terminal": {
+        "event": "collector-failed",
+        "stage": "avc-journal",
+        "failure_kind": "invalid-evidence"
+      },
+      "suffix": null,
+      "failure_detail_retained": false
+    },
+    "source_context_stage_completed": true,
+    "source_context_value_published": false,
+    "monitor_stage_completed": true,
+    "identity_correlation_stage_completed": true,
+    "avc_query_stage_reached": true,
+    "avc_result_published": false,
+    "rejected_field_or_value_recoverable": false,
+    "transition_failure_validated": false,
+    "phase_diagnostic_validated": true,
+    "interpretation": "The bounded collector locates the failure at AVC evidence validation after source, monitor and identity correlation. The retained run does not include the AVC command exit status, byte counts, hashes, truncation flags or a failure reason, so it cannot distinguish no-match status from stderr, truncation, malformed output, invalid UTF-8 or another rejected predicate."
+  },
+  "reachability": {
+    "source_authentication_positive": true,
+    "source_signature_negative_controls": {
+      "unsigned": true,
+      "wrong-key": true,
+      "wrong-reference": true,
+      "altered-signature": true
+    },
+    "same_path_qemu_process_completed": true,
+    "in_guest_update_negative_reports": [],
+    "installed_update_phase_reports": [],
+    "updated_boot_phase_reports": [],
+    "rollback_phase_reports": [],
+    "update_acceptance_observed": false,
+    "update_action_observed": false,
+    "updated_boot_observed": false,
+    "rollback_observed": false
+  },
+  "resources": {
+    "outer": {
+      "memory_max": 5368709120,
+      "memory_peak": 5368713216,
+      "memory_swap_max": 0,
+      "cpu_max": "200000 100000",
+      "pids_max": 256,
+      "memory_events": {
+        "max": 172225,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      }
+    },
+    "update_controller": {
+      "memory_max": 3221225472,
+      "memory_peak": 3221225472,
+      "memory_swap_max": 0,
+      "cpu_max": "200000 100000",
+      "pids_max": 64,
+      "memory_events": {
+        "max": 6753,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      }
+    },
+    "predecessor_installer_limits": {
+      "memory_max": 2147483648,
+      "memory_swap_max": 0,
+      "cpu_max": "100000 100000",
+      "pids_max": 128
+    },
+    "added_swap": false
+  },
+  "cleanup": {
+    "containers": {
+      "symbi-atomic-signer": {
+        "removed": true,
+        "absent": true
+      },
+      "symbi-atomic-update-old-installer": {
+        "removed": true,
+        "absent": true
+      },
+      "symbi-atomic-update-old-signer": {
+        "removed": true,
+        "absent": true
+      },
+      "symbi-atomic-update-qemu": {
+        "removed": true,
+        "absent": true
+      }
+    },
+    "loaded_image_removed": true,
+    "loaded_image_absent": true,
+    "loop_list_empty": true,
+    "private_storage_removed": true,
+    "private_runroot_removed": true
+  },
+  "critical_evidence_sha256": {
+    "atomic-update-evidence/controller-result.json": "93dcdb6902e854ab85eaada498cc4954ac09a5c5f7b00f4cde9dfb7443729884",
+    "atomic-update-evidence/same-path-positive-diagnostic.json": "a7761a50798d9ff325b9888319fbb87dbfc9dba20a26fd7e3403896ac99b59a5",
+    "atomic-update-evidence/result.json": "dd4bafb53fb9ed14490e18cb403efcf32b81ea85f975e76944fd5422cb512a8c",
+    "atomic-disk-evidence/result.json": "4568387f5e0d05fa7b64939246ed5f9c360bef68ace9611a2e260bb02d72da12",
+    "atomic-disk-evidence/source-authentication/result.json": "d6c06146cc9e4a547268635534c19e62ef10c2206f53cd9e2b5aab730f71ee73",
+    "atomic-disk-evidence/systemd-result.txt": "127dcbf1443db48462dac3bf59c1b9b4d6d523f8c5b0780b43dc39d6d77ecc47",
+    "atomic-disk-evidence/update-old-loops-stdout.log": "3f1d39e826503300542203478b61c9393220197f672114f5813fa484380802ed",
+    "atomic-disk-evidence/hosted.log": "f0b03ea54fe084702b83446f9a7286915c48c23dde881bfe96557f7d4ba4061b",
+    "atomic-disk-evidence/signed-update-and-rollback-stderr.log": "673106a1ab91b3f39d7c84421d72965a87fdfce1a4c646da2b372126ebc24023"
+  },
+  "local_correction": {
+    "status": "implemented-pending-hosted-rerun",
+    "avc_no_match_requires": [
+      "exact fixed current-boot AVC journal command",
+      "command exit status 1",
+      "empty stdout",
+      "empty stderr",
+      "untruncated stdout and stderr"
+    ],
+    "avc_records_require": [
+      "exact fixed current-boot AVC journal command",
+      "command exit status 0",
+      "nonempty strict UTF-8 stdout",
+      "empty stderr",
+      "untruncated stdout and stderr",
+      "all records bind the exact source, process and probe"
+    ],
+    "failure_receipt": {
+      "content_free_reason_allowlist": true,
+      "command_sha256": true,
+      "exit_status": true,
+      "stdout_bytes_sha256_truncation": true,
+      "stderr_bytes_sha256_truncation": true,
+      "stderr_limit_bytes": 0,
+      "stderr_overflow_sentinel_bytes": 1,
+      "raw_stdout_or_stderr_retained": false
+    },
+    "unbound_report_published": false,
+    "report_schema_exact_builtin_int": true,
+    "returned_avc_exit_status_exact_builtin_int": true,
+    "returned_avc_exit_status_min": -2147483648,
+    "returned_avc_exit_status_max": 255,
+    "returned_null_exit_status_result": "command-result-invalid",
+    "post_kill_wait_without_timeout": true,
+    "cleanup_failure_claims_reaped_child": false,
+    "policy_allow_rule_added": false,
+    "enforcing_mode_changed": false,
+    "resource_limits_changed": false,
+    "update_after_transition_failure": false
+  },
+  "local_verification": {
+    "focused_update_tests": 79,
+    "focused_address_space_cap_bytes": 134217728,
+    "focused_peak_rss_kib": 36968,
+    "focused_process_swaps": 0,
+    "full_image_tests": 358,
+    "full_address_space_cap_bytes": 402653184,
+    "full_peak_rss_kib": 58656,
+    "full_process_swaps": 0,
+    "enclosing_cgroup_oom_after_tests": 0,
+    "enclosing_cgroup_oom_kill_after_tests": 0,
+    "enclosing_cgroup_oom_group_kill_after_tests": 0,
+    "python_ast": "pass",
+    "json_parse": "pass",
+    "diff_check": "pass",
+    "local_image_vm_container_build_or_network": false,
+    "independent_cold_review": "pending"
+  },
+  "claims": {
+    "passed": false,
+    "guest_booted": false,
+    "selinux_transition_supported": false,
+    "signed_update_accepted": false,
+    "four_guest_signature_rejections_passed": false,
+    "updated_boot_passed": false,
+    "rollback_passed": false,
+    "release_qualified": false,
+    "os_qualified": false,
+    "p0_03_qualified": false
+  },
+  "retention": {
+    "raw_logs_committed": false,
+    "raw_serial_committed": false,
+    "raw_journal_committed": false,
+    "raw_collector_committed": false,
+    "disk_images_committed": false,
+    "private_keys_committed": false,
+    "downloaded_artifact_path": "/tmp/symbi-p003-run-46038283936-iT7CEz/artifact.zip",
+    "note": "Only compact content-free facts and hashes are retained in Git; the downloaded artifact remains outside the repository."
+  }
+}

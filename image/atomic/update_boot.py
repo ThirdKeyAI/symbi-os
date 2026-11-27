@@ -52,8 +52,23 @@ TRANSITION_AVC_JOURNAL_COMMAND = [
     "_TRANSPORT=audit", "+", "_TRANSPORT=kernel",
 ]
 TRANSITION_AVC_MAX_BYTES = 64 * 1024
+TRANSITION_AVC_STDERR_MAX_BYTES = 0
 TRANSITION_AVC_MAX_RECORDS = 32
 TRANSITION_JOURNAL_CORRELATION_MARGIN_USEC = 120 * 1_000_000
+TRANSITION_AVC_COMMAND_SHA256 = hashlib.sha256(json.dumps(
+    TRANSITION_AVC_JOURNAL_COMMAND, separators=(",", ":")).encode()).hexdigest()
+TRANSITION_AVC_FAILURE_REASONS = frozenset({
+    "command-timeout", "spawn-permission", "spawn-os-error",
+    "command-result-invalid", "stdout-truncated", "stderr-truncated",
+    "stderr-nonempty", "unexpected-exit", "no-match-output-nonempty",
+    "records-output-empty", "stdout-invalid-utf8", "source-invalid",
+    "journal-output-invalid", "journal-output-empty-or-truncated",
+    "journal-record-oversized", "journal-record-invalid-json",
+    "journal-record-duplicate-key", "journal-record-incomplete",
+    "denial-malformed", "permissions-invalid", "field-ambiguous",
+    "probe-binding-mismatch", "process-correlation-mismatch",
+    "source-correlation-mismatch", "records-duplicated", "records-invalid",
+})
 _SELINUX_CONTEXT = re.compile(
     r"[A-Za-z0-9_.-]{1,64}:[A-Za-z0-9_.-]{1,64}:"
     r"[A-Za-z0-9_.-]{1,128}:[A-Za-z0-9_.:,-]{1,192}"
@@ -117,10 +132,103 @@ def unique_json(raw):
     return value
 
 
+def _valid_transition_avc_command_observation(observation):
+    fields = {
+        "command_sha256", "exit_code", "timed_out", "stdout_bytes",
+        "stdout_sha256", "stdout_truncated", "stderr_bytes", "stderr_sha256",
+        "stderr_truncated",
+    }
+    if (not isinstance(observation, dict) or set(observation) != fields
+            or not isinstance(observation.get("command_sha256"), str)
+            or observation["command_sha256"] != TRANSITION_AVC_COMMAND_SHA256
+            or (observation.get("exit_code") is not None
+                and (type(observation["exit_code"]) is not int
+                     or not -2**31 <= observation["exit_code"] <= 255))
+            or type(observation.get("timed_out")) is not bool
+            or type(observation.get("stdout_bytes")) is not int
+            or not 0 <= observation["stdout_bytes"] <= TRANSITION_AVC_MAX_BYTES + 1
+            or not isinstance(observation.get("stdout_sha256"), str)
+            or re.fullmatch(r"[a-f0-9]{64}",
+                            observation["stdout_sha256"]) is None
+            or type(observation.get("stdout_truncated")) is not bool
+            or type(observation.get("stderr_bytes")) is not int
+            or not 0 <= observation["stderr_bytes"] <= TRANSITION_AVC_STDERR_MAX_BYTES + 1
+            or not isinstance(observation.get("stderr_sha256"), str)
+            or re.fullmatch(r"[a-f0-9]{64}",
+                            observation["stderr_sha256"]) is None
+            or type(observation.get("stderr_truncated")) is not bool
+            or observation["stdout_truncated"]
+               != (observation["stdout_bytes"] == TRANSITION_AVC_MAX_BYTES + 1)
+            or observation["stderr_truncated"]
+               != (observation["stderr_bytes"] == TRANSITION_AVC_STDERR_MAX_BYTES + 1)):
+        return False
+    empty_hash = hashlib.sha256(b"").hexdigest()
+    return not (((observation["stdout_bytes"] == 0)
+                 != (observation["stdout_sha256"] == empty_hash))
+                or ((observation["stderr_bytes"] == 0)
+                    != (observation["stderr_sha256"] == empty_hash)))
+
+
+def _valid_transition_avc_failure_detail(detail):
+    if (not isinstance(detail, dict) or set(detail) != {"reason", "command"}
+            or not isinstance(detail.get("reason"), str)
+            or detail["reason"] not in TRANSITION_AVC_FAILURE_REASONS
+            or not _valid_transition_avc_command_observation(
+                detail.get("command"))):
+        return False
+    reason = detail["reason"]
+    observation = detail["command"]
+    parser_reasons = TRANSITION_AVC_FAILURE_REASONS - {
+        "command-timeout", "spawn-permission", "spawn-os-error",
+        "command-result-invalid", "stdout-truncated", "stderr-truncated",
+        "stderr-nonempty", "unexpected-exit", "no-match-output-nonempty",
+        "records-output-empty", "stdout-invalid-utf8",
+    }
+    if observation["exit_code"] is None:
+        if observation["timed_out"]:
+            return (reason == "command-timeout"
+                    and observation["stdout_bytes"] == 0
+                    and observation["stderr_bytes"] == 0
+                    and not observation["stdout_truncated"]
+                    and not observation["stderr_truncated"])
+        return (reason in {
+            "spawn-permission", "spawn-os-error", "command-result-invalid",
+        } and observation["stdout_bytes"] == 0
+                and observation["stderr_bytes"] == 0
+                and not observation["stdout_truncated"]
+                and not observation["stderr_truncated"])
+    if observation["timed_out"]:
+        return reason == "command-timeout"
+    if observation["stdout_truncated"]:
+        return reason == "stdout-truncated"
+    if observation["stderr_truncated"]:
+        return reason == "stderr-truncated"
+    if observation["stderr_bytes"]:
+        return reason == "stderr-nonempty"
+    if observation["exit_code"] == 1:
+        return (observation["stdout_bytes"] > 0
+                and reason == "no-match-output-nonempty")
+    if observation["exit_code"] != 0:
+        return reason == "unexpected-exit"
+    if observation["stdout_bytes"] == 0:
+        return reason == "records-output-empty"
+    return reason == "stdout-invalid-utf8" or reason in parser_reasons
+
+
+def _transition_avc_failure_kind(reason):
+    return {
+        "command-timeout": "timeout",
+        "spawn-permission": "permission",
+        "spawn-os-error": "os-error",
+        "unexpected-exit": "command-exit",
+    }.get(reason, "invalid-evidence")
+
+
 def validate_collector_diagnostic(raw, runner_hash):
     """Validate and normalize the isolated transition-collector event stream."""
     if (not isinstance(raw, bytes) or not 0 < len(raw) <= MAX_COLLECTOR_DIAGNOSTIC
-            or re.fullmatch(r"[a-f0-9]{64}", runner_hash or "") is None):
+            or not isinstance(runner_hash, str)
+            or re.fullmatch(r"[a-f0-9]{64}", runner_hash) is None):
         raise ValueError("invalid transition collector stream")
     common = {
         "schema": 1,
@@ -168,7 +276,8 @@ def validate_collector_diagnostic(raw, runner_hash):
                 allow_nan=False).encode()
             if canonical != line_raw or not isinstance(event, dict):
                 raise ValueError("noncanonical transition collector event")
-        except (UnicodeError, ValueError, json.JSONDecodeError):
+        except (UnicodeError, ValueError, TypeError, RecursionError,
+                json.JSONDecodeError):
             remaining = raw[offset:]
             suffix = {"state": "invalid", "bytes": len(remaining),
                       "sha256": hashlib.sha256(remaining).hexdigest()}
@@ -186,6 +295,8 @@ def validate_collector_diagnostic(raw, runner_hash):
                 required.add("report")
         elif event_name == "collector-failed":
             required.update({"stage", "failure_kind"})
+            if "failure_detail" in event:
+                required.add("failure_detail")
         if (set(event) != required
                 or type(event.get("schema")) is not int
                 or event.get("schema") != 1
@@ -225,13 +336,22 @@ def validate_collector_diagnostic(raw, runner_hash):
         elif event_name == "collector-failed":
             if (not stages or event["stage"] != stages[-1]
                     or not isinstance(event.get("failure_kind"), str)
-                    or event["failure_kind"] not in TRANSITION_COLLECTOR_FAILURE_KINDS):
+                    or event["failure_kind"] not in TRANSITION_COLLECTOR_FAILURE_KINDS
+                    or ("failure_detail" in event
+                        and (event["stage"] != "avc-journal"
+                             or not _valid_transition_avc_failure_detail(
+                                 event["failure_detail"])
+                             or event["failure_kind"]
+                                != _transition_avc_failure_kind(
+                                    event["failure_detail"]["reason"])))):
                 invalid_offset = event_offsets[index]
                 suffix = {"state": "invalid", "bytes": len(raw) - invalid_offset,
                           "sha256": hashlib.sha256(raw[invalid_offset:]).hexdigest()}
                 break
             terminal = {"event": event_name, "stage": event["stage"],
                         "failure_kind": event["failure_kind"]}
+            if "failure_detail" in event:
+                terminal["failure_detail"] = event["failure_detail"]
         elif event_name == "collector-completed":
             if (stages != list(TRANSITION_COLLECTOR_STAGES)
                     or event["stage"] != TRANSITION_COLLECTOR_STAGES[-1]):
@@ -245,7 +365,7 @@ def validate_collector_diagnostic(raw, runner_hash):
                     or type(report.get("bytes")) is not int
                     or not 0 < report["bytes"] <= MAX_REPORT
                     or not isinstance(report.get("sha256"), str)
-                    or re.fullmatch(r"[a-f0-9]{64}", report.get("sha256", "")) is None):
+                    or re.fullmatch(r"[a-f0-9]{64}", report["sha256"]) is None):
                 invalid_offset = event_offsets[index]
                 suffix = {"state": "invalid", "bytes": len(raw) - invalid_offset,
                           "sha256": hashlib.sha256(raw[invalid_offset:]).hexdigest()}
@@ -279,14 +399,16 @@ def validate_transition_failure_report(report, runner_hash):
         "avc", "journal", "diagnostic_stages", "scope",
     }
     if (not isinstance(report, dict) or set(report) != required
-            or report.get("schema") != 1 or report.get("passed") is not False
+            or type(report.get("schema")) is not int
+            or report["schema"] != 1 or report.get("passed") is not False
             or report.get("guest_booted") is not True
             or report.get("release_qualified") is not False
             or report.get("product") != "Symbi-Hosted-Update-Probe"
             or report.get("diagnostic") != "bootc-transition-probe-failure"
             or report.get("unit") != "b.service"
             or report.get("runner_sha256") != runner_hash
-            or re.fullmatch(r"[a-f0-9]{64}", runner_hash or "") is None
+            or not isinstance(runner_hash, str)
+            or re.fullmatch(r"[a-f0-9]{64}", runner_hash) is None
             or type(report.get("diagnostic_stages")) is not list
             or report["diagnostic_stages"]
                != list(TRANSITION_COLLECTOR_STAGES[:-1])
@@ -304,6 +426,7 @@ def validate_transition_failure_report(report, runner_hash):
     main_exited = (service.get("ExecMainExitTimestampMonotonic", "")
                    if isinstance(service, dict) else "")
     if (not isinstance(service, dict) or set(service) != service_fields
+            or any(not isinstance(value, str) for value in service.values())
             or service.get("Result") == "success"
             or service.get("ActiveState") != "failed"
             or service.get("SubState") != "failed"
@@ -316,7 +439,7 @@ def validate_transition_failure_report(report, runner_hash):
             or re.fullmatch(r"[0-9]{1,20}", main_started) is None
             or re.fullmatch(r"[0-9]{1,20}", main_exited) is None
             or not 0 < int(main_started) <= int(main_exited) <= 2**63 - 1
-            or any(not isinstance(value, str) or not value or len(value.encode()) > 128
+            or any(not value or len(value.encode()) > 128
                    for value in service.values())):
         raise ValueError("transition-probe service failure is incomplete")
     monitor = report.get("monitor")
@@ -338,7 +461,8 @@ def validate_transition_failure_report(report, runner_hash):
     if (not isinstance(probe, dict) or set(probe) != probe_fields
             or probe.get("command") != TRANSITION_SOURCE_CAPTURE_COMMAND
             or probe.get("journal_command") != TRANSITION_SOURCE_JOURNAL_COMMAND
-            or _SELINUX_CONTEXT.fullmatch(probe.get("source_context", "")) is None
+            or not isinstance(probe.get("source_context"), str)
+            or _SELINUX_CONTEXT.fullmatch(probe["source_context"]) is None
             or probe.get("requested_context") != "system_u:system_r:install_t:s0"
             or probe.get("probe_command") != TRANSITION_PROBE_COMMAND
             or probe.get("invocation_id") != service["InvocationID"]
@@ -349,17 +473,25 @@ def validate_transition_failure_report(report, runner_hash):
             or probe["receipt_monotonic_usec"] <= 0
             or abs(probe["receipt_monotonic_usec"] - int(main_started))
                > TRANSITION_JOURNAL_CORRELATION_MARGIN_USEC
-            or re.fullmatch(r"[a-f0-9]{64}", probe.get("cursor_sha256", "")) is None):
+            or not isinstance(probe.get("cursor_sha256"), str)
+            or re.fullmatch(r"[a-f0-9]{64}", probe["cursor_sha256"]) is None):
         raise ValueError("transition source-context observation is incomplete")
     avc = report.get("avc")
     query_result = avc.get("query_result") if isinstance(avc, dict) else None
     raw_sha256 = avc.get("raw_sha256") if isinstance(avc, dict) else None
     avc_fields = {
-        "command", "query_result", "raw_bytes", "raw_sha256", "line_count",
-        "truncated", "records",
+        "command", "command_observation", "query_result", "raw_bytes",
+        "raw_sha256", "line_count", "truncated", "records",
     }
+    command_observation = (avc.get("command_observation")
+                           if isinstance(avc, dict) else None)
     if (not isinstance(avc, dict) or set(avc) != avc_fields
             or avc.get("command") != TRANSITION_AVC_JOURNAL_COMMAND
+            or not _valid_transition_avc_command_observation(command_observation)
+            or command_observation["timed_out"]
+            or command_observation["stdout_truncated"]
+            or command_observation["stderr_truncated"]
+            or command_observation["stderr_bytes"] != 0
             or not isinstance(query_result, str)
             or query_result not in {"no-match", "records"}
             or type(avc.get("raw_bytes")) is not int
@@ -371,13 +503,18 @@ def validate_transition_failure_report(report, runner_hash):
             or len(avc["records"]) != avc["line_count"]):
         raise ValueError("transition AVC evidence is incomplete")
     if avc["query_result"] == "no-match":
-        if (avc["raw_bytes"] != 0
+        if (command_observation["exit_code"] != 1
+                or command_observation["stdout_bytes"] != 0
+                or avc["raw_bytes"] != 0
                 or avc["raw_sha256"] != hashlib.sha256(b"").hexdigest()
                 or avc["line_count"] != 0
                 or avc["records"] != []):
             raise ValueError("transition AVC no-match evidence is inconsistent")
     elif (not 0 < avc["raw_bytes"] <= TRANSITION_AVC_MAX_BYTES
-          or not 1 <= avc["line_count"] <= TRANSITION_AVC_MAX_RECORDS):
+          or not 1 <= avc["line_count"] <= TRANSITION_AVC_MAX_RECORDS
+          or command_observation["exit_code"] != 0
+          or command_observation["stdout_bytes"] != avc["raw_bytes"]
+          or command_observation["stdout_sha256"] != avc["raw_sha256"]):
         raise ValueError("transition AVC record evidence is incomplete")
     avc_record_fields = {
         "audit_serial", "transport", "receipt_monotonic_usec", "pid", "comm",
@@ -389,7 +526,8 @@ def validate_transition_failure_report(report, runner_hash):
         if (not isinstance(record, dict) or set(record) != avc_record_fields
                 or type(record.get("audit_serial")) is not int
                 or not 0 < record["audit_serial"] <= 2**63 - 1
-                or record.get("transport") not in {"audit", "kernel"}
+                or not isinstance(record.get("transport"), str)
+                or record["transport"] not in {"audit", "kernel"}
                 or type(record.get("receipt_monotonic_usec")) is not int
                 or not max(0, int(main_started)
                            - TRANSITION_JOURNAL_CORRELATION_MARGIN_USEC)
@@ -398,17 +536,23 @@ def validate_transition_failure_report(report, runner_hash):
                 or type(record.get("pid")) is not int
                 or record["pid"] != int(main_pid)
                 or record.get("comm") != "runcon"
-                or record.get("path_field") not in {"path", "name"}
+                or not isinstance(record.get("path_field"), str)
+                or record["path_field"] not in {"path", "name"}
                 or record.get("path") != "/usr/bin/bootc"
-                or _SELINUX_CONTEXT.fullmatch(record.get("source_context", "")) is None
-                or _SELINUX_CONTEXT.fullmatch(record.get("target_context", "")) is None
-                or re.fullmatch(r"[a-z0-9_]{1,64}", record.get("class", "")) is None
+                or not isinstance(record.get("source_context"), str)
+                or _SELINUX_CONTEXT.fullmatch(record["source_context"]) is None
+                or not isinstance(record.get("target_context"), str)
+                or _SELINUX_CONTEXT.fullmatch(record["target_context"]) is None
+                or not isinstance(record.get("class"), str)
+                or re.fullmatch(r"[a-z0-9_]{1,64}", record["class"]) is None
                 or not isinstance(permissions, list) or not 1 <= len(permissions) <= 16
+                or any(not isinstance(value, str) for value in permissions)
                 or len(set(permissions)) != len(permissions)
-                or any(re.fullmatch(r"[a-z0-9_]{1,64}", value or "") is None
+                or any(re.fullmatch(r"[a-z0-9_]{1,64}", value) is None
                        for value in permissions)
                 or record.get("permissive") is not False
-                or re.fullmatch(r"[a-f0-9]{64}", record.get("cursor_sha256", "")) is None):
+                or not isinstance(record.get("cursor_sha256"), str)
+                or re.fullmatch(r"[a-f0-9]{64}", record["cursor_sha256"]) is None):
             raise ValueError("transition AVC record is incomplete")
     allowed_sources = {probe["source_context"], probe["requested_context"]}
     if any(record["source_context"] not in allowed_sources
@@ -431,7 +575,8 @@ def validate_transition_failure_report(report, runner_hash):
             or type(journal.get("bytes")) is not int
             or not 0 <= journal["bytes"] <= TRANSITION_FAILURE_JOURNAL_MAX_BYTES
             or type(journal.get("truncated")) is not bool
-            or re.fullmatch(r"[a-f0-9]{64}", journal.get("sha256", "")) is None
+            or not isinstance(journal.get("sha256"), str)
+            or re.fullmatch(r"[a-f0-9]{64}", journal["sha256"]) is None
             or not isinstance(journal.get("excerpt"), list)
             or len(journal["excerpt"]) != journal["line_count"]):
         raise ValueError("transition-probe journal metadata is incomplete")

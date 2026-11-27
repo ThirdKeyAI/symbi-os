@@ -51,6 +51,7 @@ AVC_MAX_RECORDS = 32
 JOURNAL_CORRELATION_MARGIN_USEC = 120 * 1_000_000
 COMMAND_STDOUT_MAX_BYTES = 64 * 1024
 COMMAND_STDERR_MAX_BYTES = 8 * 1024
+AVC_STDERR_MAX_BYTES = 0
 REPORT_MAX_BYTES = 128 * 1024
 SCOPE = "Bounded explicit-transition diagnostics; no update action ran"
 COLLECTOR_SCOPE = "Bounded collector progress; no transition or update claim"
@@ -59,6 +60,20 @@ COLLECTOR_STAGES = (
     "service-properties", "source-journal", "monitor", "identity-correlation",
     "avc-journal", "bounded-journal", "report-build", "primary-report-write",
 )
+AVC_FAILURE_REASONS = frozenset({
+    "command-timeout", "spawn-permission", "spawn-os-error",
+    "command-result-invalid", "stdout-truncated", "stderr-truncated",
+    "stderr-nonempty", "unexpected-exit", "no-match-output-nonempty",
+    "records-output-empty", "stdout-invalid-utf8", "source-invalid",
+    "journal-output-invalid", "journal-output-empty-or-truncated",
+    "journal-record-oversized", "journal-record-invalid-json",
+    "journal-record-duplicate-key", "journal-record-incomplete",
+    "denial-malformed", "permissions-invalid", "field-ambiguous",
+    "probe-binding-mismatch", "process-correlation-mismatch",
+    "source-correlation-mismatch", "records-duplicated", "records-invalid",
+})
+AVC_COMMAND_SHA256 = hashlib.sha256(json.dumps(
+    AVC_JOURNAL_COMMAND, separators=(",", ":")).encode()).hexdigest()
 _SENSITIVE_COMPONENT = (
     r"(?:(?:api|private)[_.-]key|authorization|authentication|auth|cookie|"
     r"credential|password|passwd|passphrase|secret|token|jwt|pat|key)"
@@ -84,6 +99,18 @@ _SELINUX_CONTEXT = re.compile(
 )
 _JOURNAL_CURSOR = re.compile(r"[A-Za-z0-9_.:;=-]{32,2048}")
 _INVOCATION_ID = re.compile(r"[a-f0-9]{32}")
+
+
+class AvcEvidenceError(ValueError):
+    """Carry one fixed content-free AVC rejection observation."""
+
+    def __init__(self, reason, observation, failure_kind="invalid-evidence"):
+        if not isinstance(reason, str) or reason not in AVC_FAILURE_REASONS:
+            raise ValueError("invalid AVC failure reason")
+        self.reason = reason
+        self.observation = observation
+        self.failure_kind = failure_kind
+        super().__init__("AVC evidence rejected: " + reason)
 
 
 def sha256(path):
@@ -125,7 +152,8 @@ def _structured_journal_lines(raw, maximum):
 
 def parse_source_capture(raw, invocation_id):
     """Bind the fixed pre-probe cat output to this service invocation."""
-    if _INVOCATION_ID.fullmatch(invocation_id or "") is None:
+    if (not isinstance(invocation_id, str)
+            or _INVOCATION_ID.fullmatch(invocation_id) is None):
         raise ValueError("invalid transition-probe invocation identity")
     matches = []
     for item in _structured_journal_lines(raw, SOURCE_JOURNAL_MAX_RECORDS):
@@ -138,7 +166,8 @@ def parse_source_capture(raw, invocation_id):
         monotonic = item.get("__MONOTONIC_TIMESTAMP")
         pid_text = item.get("_PID")
         if (not isinstance(context, str) or _SELINUX_CONTEXT.fullmatch(context) is None
-                or _JOURNAL_CURSOR.fullmatch(cursor or "") is None
+                or not isinstance(cursor, str)
+                or _JOURNAL_CURSOR.fullmatch(cursor) is None
                 or not isinstance(monotonic, str)
                 or re.fullmatch(r"[0-9]{1,20}", monotonic) is None
                 or not isinstance(pid_text, str)
@@ -291,16 +320,6 @@ def parse_avc_evidence(raw, source, service=None):
             or _SELINUX_CONTEXT.fullmatch(source_context) is None
             or source.get("requested_context") != BOOTC_CONTEXT):
         raise ValueError("invalid transition source observation")
-    if raw == "":
-        return {
-            "command": AVC_JOURNAL_COMMAND,
-            "query_result": "no-match",
-            "raw_bytes": 0,
-            "raw_sha256": hashlib.sha256(b"").hexdigest(),
-            "line_count": 0,
-            "truncated": False,
-            "records": [],
-        }
     items = _structured_journal_lines(raw, AVC_MAX_RECORDS)
     records = []
     for item in items:
@@ -310,9 +329,11 @@ def parse_avc_evidence(raw, source, service=None):
         transport = item.get("_TRANSPORT")
         if (not isinstance(message, str) or not 0 < len(message.encode()) <= 4096
                 or any(not " " <= character <= "~" for character in message)
-                or _JOURNAL_CURSOR.fullmatch(cursor or "") is None
+                or not isinstance(cursor, str)
+                or _JOURNAL_CURSOR.fullmatch(cursor) is None
                 or not isinstance(monotonic, str)
                 or re.fullmatch(r"[0-9]{1,20}", monotonic) is None
+                or not isinstance(transport, str)
                 or transport not in {"audit", "kernel"}):
             raise ValueError("incomplete transition AVC journal record")
         denial = re.search(
@@ -386,12 +407,246 @@ def parse_avc_evidence(raw, source, service=None):
     }
 
 
+def _kill_and_reap(process):
+    """Kill one owned live child, then wait without a deadline until it is reaped."""
+    if process.poll() is None:
+        try:
+            process.kill()
+        except ProcessLookupError:
+            pass
+    returncode = process.wait()
+    if type(returncode) is not int:
+        raise RuntimeError("bounded diagnostic child was not reaped")
+    return returncode
+
+
+def bounded_command_result(command, *, timeout, stdout_max, stderr_max):
+    """Run one fixed command and retain bounded bytes plus exact process status."""
+    if (not isinstance(command, list) or not command
+            or any(not isinstance(value, str) or not value for value in command)
+            or type(timeout) is not int or not 1 <= timeout <= 30
+            or type(stdout_max) is not int or not 1 <= stdout_max <= COMMAND_STDOUT_MAX_BYTES
+            or type(stderr_max) is not int
+            or not 0 <= stderr_max <= COMMAND_STDERR_MAX_BYTES):
+        raise ValueError("invalid bounded diagnostic command")
+    process = subprocess.Popen(
+        command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env={"PATH": "/usr/sbin:/usr/bin:/sbin:/bin", "LANG": "C.UTF-8"},
+    )
+    cleanup_attempted = False
+    selector = None
+    try:
+        deadline = time.monotonic() + timeout
+        buffers = {"stdout": bytearray(), "stderr": bytearray()}
+        maxima = {"stdout": stdout_max, "stderr": stderr_max}
+        truncated = {"stdout": False, "stderr": False}
+        timed_out = False
+        returncode = None
+        selector = selectors.DefaultSelector()
+        selector.register(process.stdout, selectors.EVENT_READ, "stdout")
+        selector.register(process.stderr, selectors.EVENT_READ, "stderr")
+        stop = False
+        while selector.get_map() and not stop:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                timed_out = True
+                break
+            events = selector.select(remaining)
+            if not events:
+                timed_out = True
+                break
+            for key, _mask in events:
+                chunk = os.read(key.fileobj.fileno(), 4096)
+                if not chunk:
+                    selector.unregister(key.fileobj)
+                    key.fileobj.close()
+                    continue
+                name = key.data
+                maximum = maxima[name]
+                room = max(0, maximum + 1 - len(buffers[name]))
+                buffers[name].extend(chunk[:room])
+                if len(chunk) > room or len(buffers[name]) > maximum:
+                    truncated[name] = True
+                    stop = True
+                    break
+        if timed_out or any(truncated.values()):
+            cleanup_attempted = True
+            returncode = _kill_and_reap(process)
+        else:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                timed_out = True
+                cleanup_attempted = True
+                returncode = _kill_and_reap(process)
+            else:
+                try:
+                    returncode = process.wait(timeout=remaining)
+                except subprocess.TimeoutExpired:
+                    timed_out = True
+                    cleanup_attempted = True
+                    returncode = _kill_and_reap(process)
+        if type(returncode) is not int:
+            raise RuntimeError("bounded diagnostic child was not reaped")
+    except BaseException:
+        if not cleanup_attempted:
+            cleanup_attempted = True
+            _kill_and_reap(process)
+        raise
+    finally:
+        if selector is not None:
+            selector.close()
+        for stream in (process.stdout, process.stderr):
+            if stream is not None and not stream.closed:
+                stream.close()
+    return {
+        "command": list(command),
+        "exit_code": returncode,
+        "timed_out": timed_out,
+        "stdout": bytes(buffers["stdout"]),
+        "stderr": bytes(buffers["stderr"]),
+        "stdout_truncated": truncated["stdout"],
+        "stderr_truncated": truncated["stderr"],
+    }
+
+
+def _empty_avc_observation(*, timed_out=False):
+    empty_hash = hashlib.sha256(b"").hexdigest()
+    return {
+        "command_sha256": AVC_COMMAND_SHA256,
+        "exit_code": None,
+        "timed_out": timed_out,
+        "stdout_bytes": 0,
+        "stdout_sha256": empty_hash,
+        "stdout_truncated": False,
+        "stderr_bytes": 0,
+        "stderr_sha256": empty_hash,
+        "stderr_truncated": False,
+    }
+
+
+def _avc_command_observation(result):
+    required = {
+        "command", "exit_code", "timed_out", "stdout", "stderr",
+        "stdout_truncated", "stderr_truncated",
+    }
+    if (not isinstance(result, dict) or set(result) != required
+            or result.get("command") != AVC_JOURNAL_COMMAND
+            or type(result.get("exit_code")) is not int
+            or not -2**31 <= result["exit_code"] <= 255
+            or type(result.get("timed_out")) is not bool
+            or not isinstance(result.get("stdout"), bytes)
+            or not isinstance(result.get("stderr"), bytes)
+            or type(result.get("stdout_truncated")) is not bool
+            or type(result.get("stderr_truncated")) is not bool
+            or len(result["stdout"]) > STRUCTURED_JOURNAL_MAX_BYTES + 1
+            or len(result["stderr"]) > AVC_STDERR_MAX_BYTES + 1
+            or (result["stdout_truncated"]
+                != (len(result["stdout"]) == STRUCTURED_JOURNAL_MAX_BYTES + 1))
+            or (result["stderr_truncated"]
+                != (len(result["stderr"]) == AVC_STDERR_MAX_BYTES + 1))):
+        raise ValueError("invalid bounded AVC command result")
+    return {
+        "command_sha256": AVC_COMMAND_SHA256,
+        "exit_code": result["exit_code"],
+        "timed_out": result["timed_out"],
+        "stdout_bytes": len(result["stdout"]),
+        "stdout_sha256": hashlib.sha256(result["stdout"]).hexdigest(),
+        "stdout_truncated": result["stdout_truncated"],
+        "stderr_bytes": len(result["stderr"]),
+        "stderr_sha256": hashlib.sha256(result["stderr"]).hexdigest(),
+        "stderr_truncated": result["stderr_truncated"],
+    }
+
+
+def _avc_parse_reason(error):
+    message = str(error)
+    exact = {
+        "invalid transition source observation": "source-invalid",
+        "invalid structured transition journal output": "journal-output-invalid",
+        "structured transition journal is empty or truncated":
+            "journal-output-empty-or-truncated",
+        "structured transition journal record exceeded its limit":
+            "journal-record-oversized",
+        "invalid structured transition journal record": "journal-record-invalid-json",
+        "incomplete transition AVC journal record": "journal-record-incomplete",
+        "malformed transition AVC denial": "denial-malformed",
+        "invalid transition AVC permissions": "permissions-invalid",
+        "transition AVC does not bind the enforcing probe": "probe-binding-mismatch",
+        "transition AVC falls outside the main process":
+            "process-correlation-mismatch",
+        "transition AVC source does not bind the requested transition":
+            "source-correlation-mismatch",
+        "transition AVC records are duplicated": "records-duplicated",
+    }
+    if message in exact:
+        return exact[message]
+    if message.startswith("ambiguous transition AVC "):
+        return "field-ambiguous"
+    if message == "duplicate structured transition journal record key":
+        return "journal-record-duplicate-key"
+    return "records-invalid"
+
+
+def _raise_avc(reason, observation, failure_kind="invalid-evidence"):
+    raise AvcEvidenceError(reason, observation, failure_kind)
+
+
 def bounded_avc_evidence(source, service, run=None):
     """Query only runcon/bootc AVC denials from the current boot."""
-    run = fixed_command if run is None else run
-    raw = run(AVC_JOURNAL_COMMAND, timeout=5,
-              stdout_max=STRUCTURED_JOURNAL_MAX_BYTES, stderr_max=0)
-    return parse_avc_evidence(raw, source, service)
+    run = bounded_command_result if run is None else run
+    try:
+        result = run(
+            AVC_JOURNAL_COMMAND, timeout=5,
+            stdout_max=STRUCTURED_JOURNAL_MAX_BYTES,
+            stderr_max=AVC_STDERR_MAX_BYTES)
+    except subprocess.TimeoutExpired:
+        _raise_avc("command-timeout", _empty_avc_observation(timed_out=True),
+                   "timeout")
+    except PermissionError:
+        _raise_avc("spawn-permission", _empty_avc_observation(), "permission")
+    except OSError:
+        _raise_avc("spawn-os-error", _empty_avc_observation(), "os-error")
+    try:
+        observation = _avc_command_observation(result)
+    except (TypeError, ValueError):
+        _raise_avc("command-result-invalid", _empty_avc_observation())
+    if observation["timed_out"]:
+        _raise_avc("command-timeout", observation, "timeout")
+    if observation["stdout_truncated"]:
+        _raise_avc("stdout-truncated", observation)
+    if observation["stderr_truncated"]:
+        _raise_avc("stderr-truncated", observation)
+    if observation["stderr_bytes"]:
+        _raise_avc("stderr-nonempty", observation)
+    stdout = result["stdout"]
+    if observation["exit_code"] == 1:
+        if stdout:
+            _raise_avc("no-match-output-nonempty", observation)
+        return {
+            "command": AVC_JOURNAL_COMMAND,
+            "command_observation": observation,
+            "query_result": "no-match",
+            "raw_bytes": 0,
+            "raw_sha256": hashlib.sha256(b"").hexdigest(),
+            "line_count": 0,
+            "truncated": False,
+            "records": [],
+        }
+    if observation["exit_code"] != 0:
+        _raise_avc("unexpected-exit", observation, "command-exit")
+    if not stdout:
+        _raise_avc("records-output-empty", observation)
+    try:
+        raw = stdout.decode("utf-8", errors="strict")
+    except UnicodeDecodeError:
+        _raise_avc("stdout-invalid-utf8", observation)
+    try:
+        parsed = parse_avc_evidence(raw, source, service)
+    except (UnicodeError, ValueError, TypeError, RecursionError) as error:
+        _raise_avc(_avc_parse_reason(error), observation)
+    parsed["command_observation"] = observation
+    return parsed
 
 
 def fixed_command(command, *, timeout, stdout_max,
@@ -505,6 +760,8 @@ def open_collector_channel(channel=COLLECTOR_CHANNEL):
 
 def collector_failure_kind(error):
     """Reduce an exception to a fixed, content-free diagnostic class."""
+    if isinstance(error, AvcEvidenceError):
+        return error.failure_kind
     if isinstance(error, subprocess.TimeoutExpired):
         return "timeout"
     if isinstance(error, subprocess.CalledProcessError):
@@ -520,12 +777,118 @@ def collector_failure_kind(error):
     return "unexpected"
 
 
+def _valid_avc_command_observation(observation):
+    fields = {
+        "command_sha256", "exit_code", "timed_out", "stdout_bytes",
+        "stdout_sha256", "stdout_truncated", "stderr_bytes", "stderr_sha256",
+        "stderr_truncated",
+    }
+    if (not isinstance(observation, dict) or set(observation) != fields
+            or not isinstance(observation.get("command_sha256"), str)
+            or observation["command_sha256"] != AVC_COMMAND_SHA256
+            or (observation.get("exit_code") is not None
+                and (type(observation["exit_code"]) is not int
+                     or not -2**31 <= observation["exit_code"] <= 255))
+            or type(observation.get("timed_out")) is not bool
+            or type(observation.get("stdout_bytes")) is not int
+            or not 0 <= observation["stdout_bytes"] <= STRUCTURED_JOURNAL_MAX_BYTES + 1
+            or not isinstance(observation.get("stdout_sha256"), str)
+            or re.fullmatch(r"[a-f0-9]{64}",
+                            observation["stdout_sha256"]) is None
+            or type(observation.get("stdout_truncated")) is not bool
+            or type(observation.get("stderr_bytes")) is not int
+            or not 0 <= observation["stderr_bytes"] <= AVC_STDERR_MAX_BYTES + 1
+            or not isinstance(observation.get("stderr_sha256"), str)
+            or re.fullmatch(r"[a-f0-9]{64}",
+                            observation["stderr_sha256"]) is None
+            or type(observation.get("stderr_truncated")) is not bool
+            or observation["stdout_truncated"]
+               != (observation["stdout_bytes"] == STRUCTURED_JOURNAL_MAX_BYTES + 1)
+            or observation["stderr_truncated"]
+               != (observation["stderr_bytes"] == AVC_STDERR_MAX_BYTES + 1)):
+        return False
+    empty_hash = hashlib.sha256(b"").hexdigest()
+    if ((observation["stdout_bytes"] == 0)
+            != (observation["stdout_sha256"] == empty_hash)
+            or (observation["stderr_bytes"] == 0)
+               != (observation["stderr_sha256"] == empty_hash)):
+        return False
+    return True
+
+
+def _valid_avc_failure_detail(detail):
+    if (not isinstance(detail, dict) or set(detail) != {"reason", "command"}
+            or not isinstance(detail.get("reason"), str)
+            or detail["reason"] not in AVC_FAILURE_REASONS
+            or not _valid_avc_command_observation(detail.get("command"))):
+        return False
+    reason = detail["reason"]
+    observation = detail["command"]
+    parser_reasons = AVC_FAILURE_REASONS - {
+        "command-timeout", "spawn-permission", "spawn-os-error",
+        "command-result-invalid", "stdout-truncated", "stderr-truncated",
+        "stderr-nonempty", "unexpected-exit", "no-match-output-nonempty",
+        "records-output-empty", "stdout-invalid-utf8",
+    }
+    if observation["exit_code"] is None:
+        if observation["timed_out"]:
+            return (reason == "command-timeout"
+                    and observation["stdout_bytes"] == 0
+                    and observation["stderr_bytes"] == 0
+                    and not observation["stdout_truncated"]
+                    and not observation["stderr_truncated"])
+        return (reason in {
+            "spawn-permission", "spawn-os-error", "command-result-invalid",
+        } and observation["stdout_bytes"] == 0
+                and observation["stderr_bytes"] == 0
+                and not observation["stdout_truncated"]
+                and not observation["stderr_truncated"])
+    if observation["timed_out"]:
+        return reason == "command-timeout"
+    if observation["stdout_truncated"]:
+        return reason == "stdout-truncated"
+    if observation["stderr_truncated"]:
+        return reason == "stderr-truncated"
+    if observation["stderr_bytes"]:
+        return reason == "stderr-nonempty"
+    if observation["exit_code"] == 1:
+        return (observation["stdout_bytes"] > 0
+                and reason == "no-match-output-nonempty")
+    if observation["exit_code"] != 0:
+        return reason == "unexpected-exit"
+    if observation["stdout_bytes"] == 0:
+        return reason == "records-output-empty"
+    return reason == "stdout-invalid-utf8" or reason in parser_reasons
+
+
+def _avc_failure_kind(reason):
+    return {
+        "command-timeout": "timeout",
+        "spawn-permission": "permission",
+        "spawn-os-error": "os-error",
+        "unexpected-exit": "command-exit",
+    }.get(reason, "invalid-evidence")
+
+
+def collector_failure_detail(error):
+    """Return only the fixed AVC reason and content-free command observation."""
+    if not isinstance(error, AvcEvidenceError):
+        return None
+    detail = {"reason": error.reason, "command": error.observation}
+    if not _valid_avc_failure_detail(detail):
+        return None
+    return detail
+
+
 def write_collector_event(output, event, runner_hash, *, sequence, stage=None,
-                          failure_kind=None, report_observation=None):
+                          failure_kind=None, failure_detail=None,
+                          report_observation=None):
     """Write one canonical, allowlisted progress event without raw failure text."""
-    if (event not in {"collector-started", "collector-stage", "collector-failed",
-                      "collector-completed"}
-            or re.fullmatch(r"[a-f0-9]{64}", runner_hash or "") is None
+    if (not isinstance(event, str)
+            or event not in {"collector-started", "collector-stage",
+                             "collector-failed", "collector-completed"}
+            or not isinstance(runner_hash, str)
+            or re.fullmatch(r"[a-f0-9]{64}", runner_hash) is None
             or type(sequence) is not int or not 0 <= sequence <= 9):
         raise ValueError("invalid collector progress event")
     record = {
@@ -540,26 +903,35 @@ def write_collector_event(output, event, runner_hash, *, sequence, stage=None,
         "scope": COLLECTOR_SCOPE,
     }
     if event in {"collector-stage", "collector-failed", "collector-completed"}:
-        if stage not in COLLECTOR_STAGES:
+        if not isinstance(stage, str) or stage not in COLLECTOR_STAGES:
             raise ValueError("invalid collector progress stage")
         record["stage"] = stage
     elif stage is not None:
         raise ValueError("collector start cannot name a stage")
     if event == "collector-failed":
-        if failure_kind not in {
+        if not isinstance(failure_kind, str) or failure_kind not in {
                 "timeout", "command-exit", "permission", "os-error",
                 "invalid-evidence", "transport", "unexpected"}:
             raise ValueError("invalid collector failure kind")
         record["failure_kind"] = failure_kind
+        if failure_detail is not None:
+            if (stage != "avc-journal"
+                    or not _valid_avc_failure_detail(failure_detail)
+                    or failure_kind != _avc_failure_kind(failure_detail["reason"])):
+                raise ValueError("invalid AVC collector failure detail")
+            record["failure_detail"] = failure_detail
     elif failure_kind is not None:
         raise ValueError("non-failure collector event named a failure")
+    elif failure_detail is not None:
+        raise ValueError("non-failure collector event named AVC failure detail")
     if event == "collector-completed":
         if (not isinstance(report_observation, dict)
                 or set(report_observation) != {"bytes", "sha256"}
                 or type(report_observation.get("bytes")) is not int
                 or not 0 < report_observation["bytes"] <= REPORT_MAX_BYTES
-                or re.fullmatch(
-                    r"[a-f0-9]{64}", report_observation.get("sha256", "")) is None):
+                or not isinstance(report_observation.get("sha256"), str)
+                or re.fullmatch(r"[a-f0-9]{64}",
+                                report_observation["sha256"]) is None):
             raise ValueError("invalid completed primary-report observation")
         record["report"] = report_observation
     elif report_observation is not None:
@@ -694,7 +1066,8 @@ def main():
             try:
                 safe_collector_event(
                     collector, "collector-failed", runner_hash, stage=stage,
-                    failure_kind=collector_failure_kind(error))
+                    failure_kind=collector_failure_kind(error),
+                    failure_detail=collector_failure_detail(error))
             except BaseException:
                 pass
         raise
