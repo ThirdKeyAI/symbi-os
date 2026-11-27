@@ -45,19 +45,20 @@ ARTIFACT_FIELDS = {"id", "name", "bytes", "sha256"}
 ARCHIVE_FIELDS = {"name", "bytes", "sha256"}
 MANIFEST_BINDING_FIELDS = {"sha256", "archive"}
 IMAGE_FIELDS = {"repository", "image_id", "manifest_digest", "repo_digest"}
+TESTED_IMAGE_FIELDS = {"descriptor", "config_digest"}
 GENERATED_MANIFEST_FIELDS = {
     "schema", "built", "qualified", "container_qualified", "os_qualified",
     "release_qualified", "signature_qualified", "source_commit",
-    "producer", "fixture_source", "archive", "image", "scope",
+    "producer", "fixture_source", "archive", "tested_image", "image", "scope",
 }
 MANIFEST_PRODUCER_FIELDS = {"run_id", "run_attempt", "workflow_id"}
 FIXTURE_DRIVERS = {
     "test-filesystem-grants.py", "test-source-broker.py", "test-git-source.py",
 }
 MAX_MANIFEST_BYTES = 64 * 1024
-MAX_ARTIFACT_BYTES = 5 * 1024**3
-MAX_ARCHIVE_BYTES = 4 * 1024**3
-MAX_OCI_BYTES = 8 * 1024**3
+MAX_ARTIFACT_BYTES = 512 * 1024**2 + MAX_MANIFEST_BYTES + 1024**2
+MAX_ARCHIVE_BYTES = 512 * 1024**2
+MAX_OCI_BYTES = 1024**3
 MAX_TRANSFER_RECORD_BYTES = 64 * 1024
 MAX_PREPARE_RECORD_BYTES = 256 * 1024
 PRE_TRANSFER_MARGIN_BYTES = 2 * 1024**3
@@ -321,6 +322,8 @@ def _read_member(bundle, row, maximum):
 def validate_generated_manifest(manifest, manifest_raw, selection):
     archive = manifest.get("archive") if isinstance(manifest, dict) else None
     image = manifest.get("image") if isinstance(manifest, dict) else None
+    tested_image = (
+        manifest.get("tested_image") if isinstance(manifest, dict) else None)
     producer = manifest.get("producer") if isinstance(manifest, dict) else None
     require(set(manifest) == GENERATED_MANIFEST_FIELDS
             and len(manifest_raw) <= MAX_MANIFEST_BYTES
@@ -344,6 +347,13 @@ def validate_generated_manifest(manifest, manifest_raw, selection):
             and isinstance(archive, dict) and set(archive) == ARCHIVE_FIELDS
             and archive == selection["manifest"]["archive"]
             and isinstance(image, dict) and set(image) == IMAGE_FIELDS
+            and isinstance(tested_image, dict)
+            and set(tested_image) == TESTED_IMAGE_FIELDS
+            and isinstance(tested_image.get("descriptor"), str)
+            and tested_image["descriptor"].startswith("sha256:")
+            and exact_hash(
+                tested_image["descriptor"].removeprefix("sha256:"))
+            and tested_image.get("config_digest") == image.get("image_id")
             and image.get("repository") == IMAGE_REPOSITORY
             and isinstance(image.get("image_id"), str)
             and image["image_id"].startswith("sha256:")
@@ -353,6 +363,11 @@ def validate_generated_manifest(manifest, manifest_raw, selection):
             and exact_hash(image["manifest_digest"].removeprefix("sha256:"))
             and image.get("repo_digest")
             == IMAGE_REPOSITORY + "@" + image["manifest_digest"]
+            and len({
+                tested_image["descriptor"],
+                image["image_id"],
+                image["manifest_digest"],
+            }) == 3
             and manifest.get("scope") == MANIFEST_SCOPE,
             "native fixture manifest differs from the selected producer output")
     return image

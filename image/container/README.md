@@ -224,6 +224,24 @@ and repository digest against the OCI layout. The consumer run has its own exact
 identity and need not equal the earlier producer commit. The existing producer
 workflow has not emitted this OCI, so the gate remains closed.
 
+A standard-library streaming exporter is prepared behind
+`native-fixture-build.lock.json`. It converts one Docker-save image only after
+checking the exact config digest, ordered uncompressed layer `diff_id` values,
+Linux/amd64 configuration, current manual-run identity and output cleanup. It
+writes byte-stable gzip/tar output for identical Docker-save input bytes,
+independently passes the result through
+the same bounded OCI unpacker as the consumer, and permits at most a 64 KiB
+manifest, 512 MiB compressed OCI and 1 GiB expanded OCI. It remains disabled.
+The current hosted image performs live `apt-get` resolution and the retained
+six-run evidence used upstream fixture commit `c1fac8aab6c5d399abb39036ba35b9636212e17f`,
+while the native contract requires merge
+`cd4b34282ade880c8ac3d5136d31ff80cde92794`. Before activation, a separately
+reviewed signed Ubuntu package closure must be downloaded sequentially and the
+image built offline, the six profiles must run from the required merge, and a
+cold Docker load must resolve the image by its exact manifest digest. Artifact
+upload is also withheld. The committed prerequisite slot records all four
+blockers and keeps every qualification claim false.
+
 The manual `containers` choice in the shared Fedora runtime workflow is a
 preflight skeleton. It verifies the retained signed gVisor Debian repository
 metadata with the pinned full publisher fingerprint and uses the complete
