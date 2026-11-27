@@ -45,14 +45,19 @@ QMP_STATES = frozenset({
 })
 QMP_ROOT_DRIVE = "symbi-atomic-root"
 QMP_ROOT_DEVICE = "symbi-atomic-root-device"
+QMP_ROOT_QDEV = (
+    "/machine/peripheral/symbi-atomic-root-device/virtio-backend")
 QMP_SOURCE_DRIVE = "symbi-qualification-source"
 QMP_SOURCE_DEVICE = "symbi-qualification-source-device"
+QMP_SOURCE_QDEV = (
+    "/machine/peripheral/symbi-qualification-source-device/virtio-backend")
 QMP_TOPOLOGY = {
     "schema": 1,
     "strict_boot": True,
     "root": {
         "drive": QMP_ROOT_DRIVE,
         "device": QMP_ROOT_DEVICE,
+        "qdev": QMP_ROOT_QDEV,
         "file": "/output/guest.qcow2",
         "format": "qcow2",
         "backing_file": "/inputs/atomic.raw",
@@ -62,6 +67,7 @@ QMP_TOPOLOGY = {
     "source": {
         "drive": QMP_SOURCE_DRIVE,
         "device": QMP_SOURCE_DEVICE,
+        "qdev": QMP_SOURCE_QDEV,
         "file": "/inputs/source.raw",
         "format": "raw",
         "backing_file": None,
@@ -197,7 +203,7 @@ def _predicate(value, available=True):
     return "pass" if value else "fail"
 
 
-def _qmp_device_predicates(rows, devices_valid, drive, qdev, filename,
+def _qmp_device_predicates(rows, devices_valid, drive, expected_qdev, filename,
                            driver, read_only, backing, bootindex,
                            expected_bootindex):
     matches = ([row for row in rows if row.get("device") == drive]
@@ -212,7 +218,7 @@ def _qmp_device_predicates(rows, devices_valid, drive, qdev, filename,
     return {
         "drive": _predicate(len(matches) == 1, devices_valid),
         "qdev": _predicate(
-            row.get("qdev") == qdev if row_available else False,
+            row.get("qdev") == expected_qdev if row_available else False,
             row_available),
         "inserted": _predicate(inserted_valid, row_available),
         "file": _predicate(
@@ -259,11 +265,11 @@ def qmp_topology_observation(blocks, root_bootindex, source_bootindex):
         "schema": 1,
         "inventory": inventory,
         "root": _qmp_device_predicates(
-            rows, devices_valid, QMP_ROOT_DRIVE, QMP_ROOT_DEVICE,
+            rows, devices_valid, QMP_ROOT_DRIVE, QMP_ROOT_QDEV,
             "/output/guest.qcow2", "qcow2", False, "/inputs/atomic.raw",
             root_bootindex, 1),
         "source": _qmp_device_predicates(
-            rows, devices_valid, QMP_SOURCE_DRIVE, QMP_SOURCE_DEVICE,
+            rows, devices_valid, QMP_SOURCE_DRIVE, QMP_SOURCE_QDEV,
             "/inputs/source.raw", "raw", True, None,
             source_bootindex, -1),
     }
@@ -337,15 +343,15 @@ def validate_qmp_block_topology(blocks, root_bootindex, source_bootindex):
         raise _qmp_topology_failure(
             "unexpected QMP block device inventory", observation)
 
-    for drive, device, filename, driver, read_only, backing in (
-        (QMP_ROOT_DRIVE, QMP_ROOT_DEVICE, "/output/guest.qcow2",
+    for drive, qdev, filename, driver, read_only, backing in (
+        (QMP_ROOT_DRIVE, QMP_ROOT_QDEV, "/output/guest.qcow2",
          "qcow2", False, "/inputs/atomic.raw"),
-        (QMP_SOURCE_DRIVE, QMP_SOURCE_DEVICE, "/inputs/source.raw",
+        (QMP_SOURCE_DRIVE, QMP_SOURCE_QDEV, "/inputs/source.raw",
          "raw", True, None),
     ):
         block = indexed[drive]
         inserted = block.get("inserted")
-        if (block.get("qdev") != device or not isinstance(inserted, dict)
+        if (block.get("qdev") != qdev or not isinstance(inserted, dict)
                 or inserted.get("file") != filename
                 or inserted.get("drv") != driver
                 or type(inserted.get("ro")) is not bool

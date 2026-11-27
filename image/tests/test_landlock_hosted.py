@@ -59,6 +59,10 @@ from image.qualification.source_mount import validate_source_identity
 
 
 ROOT = Path(__file__).resolve().parents[2]
+ROOT_BACKEND_QDEV = (
+    "/machine/peripheral/symbi-atomic-root-device/virtio-backend")
+SOURCE_BACKEND_QDEV = (
+    "/machine/peripheral/symbi-qualification-source-device/virtio-backend")
 
 
 def settings(name):
@@ -629,11 +633,11 @@ class HostedLandlock(unittest.TestCase):
             b'{"return":{},"id":"symbi-quit"}\n'])
         self.assertEqual(qmp_request(quit_stream, "quit"), {})
         blocks = [
-            {"device": "symbi-atomic-root", "qdev": "symbi-atomic-root-device",
+            {"device": "symbi-atomic-root", "qdev": ROOT_BACKEND_QDEV,
              "inserted": {"file": "/output/guest.qcow2", "drv": "qcow2",
                           "ro": False, "backing_file": "/inputs/atomic.raw"}},
             {"device": "symbi-qualification-source",
-             "qdev": "symbi-qualification-source-device",
+             "qdev": SOURCE_BACKEND_QDEV,
              "inserted": {"file": "/inputs/source.raw", "drv": "raw",
                           "ro": True}},
         ]
@@ -669,7 +673,11 @@ class HostedLandlock(unittest.TestCase):
             "missing source": blocks[:1],
             "duplicate root": [blocks[0], blocks[0]],
             "root drive": [{**blocks[0], "device": "other"}, blocks[1]],
-            "root qdev": [{**blocks[0], "qdev": "other"}, blocks[1]],
+            "root parent qdev": [
+                {**blocks[0], "qdev": "symbi-atomic-root-device"}, blocks[1]],
+            "root backend under another parent": [
+                {**blocks[0], "qdev":
+                 "/machine/peripheral/other/virtio-backend"}, blocks[1]],
             "root inserted": [{**blocks[0], "inserted": []}, blocks[1]],
             "root file": [{**blocks[0], "inserted": {
                 **blocks[0]["inserted"], "file": "/inputs/source.raw"}}, blocks[1]],
@@ -680,7 +688,12 @@ class HostedLandlock(unittest.TestCase):
             "root backing": [{**blocks[0], "inserted": {
                 **blocks[0]["inserted"], "backing_file": "/other"}}, blocks[1]],
             "source drive": [blocks[0], {**blocks[1], "device": "other"}],
-            "source qdev": [blocks[0], {**blocks[1], "qdev": "other"}],
+            "source parent qdev": [
+                blocks[0],
+                {**blocks[1], "qdev": "symbi-qualification-source-device"}],
+            "source backend under another parent": [
+                blocks[0], {**blocks[1], "qdev":
+                            "/machine/peripheral/other/virtio-backend"}],
             "source writable": [blocks[0], {**blocks[1], "inserted": {
                 **blocks[1]["inserted"], "ro": False}}],
             "source backing": [blocks[0], {**blocks[1], "inserted": {
@@ -704,6 +717,10 @@ class HostedLandlock(unittest.TestCase):
                 validate_qmp_topology_record(changed)
         changed = copy.deepcopy(expected)
         changed["root"]["bootindex"] = True
+        with self.assertRaises(ValueError):
+            validate_qmp_topology_record(changed)
+        changed = copy.deepcopy(expected)
+        changed["root"]["qdev"] = "symbi-atomic-root-device"
         with self.assertRaises(ValueError):
             validate_qmp_topology_record(changed)
 
@@ -771,11 +788,11 @@ class HostedLandlock(unittest.TestCase):
 
     def test_qmp_topology_observation_retries_only_socket_startup(self):
         topology = validate_qmp_block_topology([
-            {"device": "symbi-atomic-root", "qdev": "symbi-atomic-root-device",
+            {"device": "symbi-atomic-root", "qdev": ROOT_BACKEND_QDEV,
              "inserted": {"file": "/output/guest.qcow2", "drv": "qcow2",
                           "ro": False, "backing_file": "/inputs/atomic.raw"}},
             {"device": "symbi-qualification-source",
-             "qdev": "symbi-qualification-source-device",
+             "qdev": SOURCE_BACKEND_QDEV,
              "inserted": {"file": "/inputs/source.raw", "drv": "raw",
                           "ro": True}},
         ], 1, -1)
@@ -818,11 +835,11 @@ class HostedLandlock(unittest.TestCase):
 
     def test_qmp_topology_failures_retain_only_fixed_predicate_results(self):
         blocks = [
-            {"device": "symbi-atomic-root", "qdev": "symbi-atomic-root-device",
+            {"device": "symbi-atomic-root", "qdev": ROOT_BACKEND_QDEV,
              "inserted": {"file": "/output/guest.qcow2", "drv": "qcow2",
                           "ro": False, "backing_file": "/inputs/atomic.raw"}},
             {"device": "symbi-qualification-source",
-             "qdev": "symbi-qualification-source-device",
+             "qdev": SOURCE_BACKEND_QDEV,
              "inserted": {"file": "/inputs/source.raw", "drv": "raw",
                           "ro": True}},
         ]
@@ -900,12 +917,12 @@ class HostedLandlock(unittest.TestCase):
 
     def test_qmp_topology_row_failures_are_distinct_and_content_free(self):
         root = {"device": "symbi-atomic-root",
-                "qdev": "symbi-atomic-root-device",
+                "qdev": ROOT_BACKEND_QDEV,
                 "inserted": {"file": "/output/guest.qcow2", "drv": "qcow2",
                              "ro": False,
                              "backing_file": "/inputs/atomic.raw"}}
         source = {"device": "symbi-qualification-source",
-                  "qdev": "symbi-qualification-source-device",
+                  "qdev": SOURCE_BACKEND_QDEV,
                   "inserted": {"file": "/inputs/source.raw", "drv": "raw",
                                "ro": True}}
         cases = (
@@ -943,11 +960,11 @@ class HostedLandlock(unittest.TestCase):
 
     def test_qmp_topology_observation_schema_rejects_mutations(self):
         blocks = [
-            {"device": "symbi-atomic-root", "qdev": "symbi-atomic-root-device",
+            {"device": "symbi-atomic-root", "qdev": ROOT_BACKEND_QDEV,
              "inserted": {"file": "/output/guest.qcow2", "drv": "qcow2",
                           "ro": False, "backing_file": "/inputs/atomic.raw"}},
             {"device": "symbi-qualification-source",
-             "qdev": "symbi-qualification-source-device",
+             "qdev": SOURCE_BACKEND_QDEV,
              "inserted": {"file": "/inputs/source.raw", "drv": "raw",
                           "ro": True}},
         ]
@@ -969,7 +986,7 @@ class HostedLandlock(unittest.TestCase):
              "inserted": {"file": "/output/guest.qcow2", "drv": "qcow2",
                           "ro": False, "backing_file": "/inputs/atomic.raw"}},
             {"device": "symbi-qualification-source",
-             "qdev": "symbi-qualification-source-device",
+             "qdev": SOURCE_BACKEND_QDEV,
              "inserted": {"file": "/inputs/source.raw", "drv": "raw",
                           "ro": True}},
         ]
@@ -991,11 +1008,11 @@ class HostedLandlock(unittest.TestCase):
         source_revision = "a" * 40
         binary_sha256 = "b" * 64
         topology = validate_qmp_block_topology([
-            {"device": "symbi-atomic-root", "qdev": "symbi-atomic-root-device",
+            {"device": "symbi-atomic-root", "qdev": ROOT_BACKEND_QDEV,
              "inserted": {"file": "/output/guest.qcow2", "drv": "qcow2",
                           "ro": False, "backing_file": "/inputs/atomic.raw"}},
             {"device": "symbi-qualification-source",
-             "qdev": "symbi-qualification-source-device",
+             "qdev": SOURCE_BACKEND_QDEV,
              "inserted": {"file": "/inputs/source.raw", "drv": "raw",
                           "ro": True}},
         ], 1, -1)
