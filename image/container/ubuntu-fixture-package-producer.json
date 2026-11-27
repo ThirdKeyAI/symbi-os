@@ -1,5 +1,5 @@
 {
-  "schema": 1,
+  "schema": 2,
   "state": "pending-discovery",
   "repository": {
     "id": 1472078858,
@@ -27,6 +27,32 @@
     "checksum_signature": "image/container/hosted/ubuntu/SHA256SUMS.gpg",
     "archive_keyring": "image/container/hosted/ubuntu/archive.gpg"
   },
+  "freshness_policy": [
+    {
+      "suite": "noble",
+      "codename": "noble",
+      "inrelease_url": "https://archive.ubuntu.com/ubuntu/dists/noble/InRelease",
+      "signer_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C",
+      "mode": "immutable-release",
+      "maximum_age_days": 1830
+    },
+    {
+      "suite": "noble-updates",
+      "codename": "noble",
+      "inrelease_url": "https://archive.ubuntu.com/ubuntu/dists/noble-updates/InRelease",
+      "signer_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C",
+      "mode": "valid-until",
+      "maximum_age_days": 14
+    },
+    {
+      "suite": "noble-security",
+      "codename": "noble",
+      "inrelease_url": "https://security.ubuntu.com/ubuntu/dists/noble-security/InRelease",
+      "signer_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C",
+      "mode": "valid-until",
+      "maximum_age_days": 14
+    }
+  ],
   "metadata_pins": [
     {
       "suite": "noble",

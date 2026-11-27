@@ -22,6 +22,7 @@ from image.container import ubuntu_fixture_packages as packages
 
 ROOT = Path(__file__).resolve().parents[2]
 NOW = datetime(2026, 11, 27, 12, 0, tzinfo=timezone.utc)
+DEFAULT_TIME = object()
 
 
 def package_stanza(name, version, architecture, filename, payload):
@@ -35,18 +36,22 @@ def package_stanza(name, version, architecture, filename, payload):
     ).encode()
 
 
-def release_bytes(source, index_bytes, *, date=None, valid_until=None):
+def release_bytes(source, index_bytes, *, date=None, valid_until=DEFAULT_TIME):
     date = NOW - timedelta(hours=1) if date is None else date
-    valid_until = NOW + timedelta(days=6) if valid_until is None else valid_until
+    if valid_until is DEFAULT_TIME:
+        valid_until = (None if source["suite"] == "noble"
+                       else NOW + timedelta(days=6))
     digest = hashlib.sha256(index_bytes).hexdigest()
     codename = build.EXPECTED_CODENAMES[source["suite"]]
+    expiry = ("" if valid_until is None else
+              f"Valid-Until: {build.format_release_time(valid_until)}\n")
     return (
         "Origin: Ubuntu\n"
         "Label: Ubuntu\n"
         f"Suite: {source['suite']}\n"
         f"Codename: {codename}\n"
         f"Date: {build.format_release_time(date)}\n"
-        f"Valid-Until: {build.format_release_time(valid_until)}\n"
+        f"{expiry}"
         "Architectures: amd64 arm64\n"
         "Components: main restricted universe multiverse\n"
         "SHA256:\n"
@@ -123,7 +128,8 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         self.index = lzma.compress(raw, format=lzma.FORMAT_XZ, preset=0)
         self.release = release_bytes(self.source, self.index)
         self.binding = build.validate_signed_release(
-            self.release, self.source, NOW)
+            self.release, self.source, NOW,
+            build.expected_freshness_policy(self.source))
 
     def candidate_fixture(self):
         lock = packages.unique_json(
@@ -174,7 +180,9 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                     preset=0,
                 )
                 release = release_bytes(source, index_bytes)
-                binding = build.validate_signed_release(release, source, NOW)
+                binding = build.validate_signed_release(
+                    release, source, NOW,
+                    build.expected_freshness_policy(source))
             release_rows.append(build.release_record(
                 source, binding,
                 {
@@ -281,7 +289,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             },
         )
         self.assertLess(self.binding["date"], self.binding["verified_at"])
-        self.assertGreater(self.binding["valid_until"], self.binding["verified_at"])
+        self.assertIsNone(self.binding["valid_until"])
 
     def test_stale_future_wrong_suite_and_ambiguous_release_metadata_fail(self):
         duplicate = self.release + (
@@ -291,8 +299,8 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         cases = [
             release_bytes(
                 self.source, self.index,
-                date=NOW - timedelta(days=2),
-                valid_until=NOW - timedelta(seconds=1),
+                date=NOW - build.MAX_IMMUTABLE_RELEASE_AGE
+                - timedelta(seconds=1),
             ),
             release_bytes(
                 self.source, self.index,
@@ -300,13 +308,83 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             ),
             self.release.replace(b"Suite: noble\n", b"Suite: noble-updates\n"),
             self.release.replace(b"Codename: noble\n", b"Codename: jammy\n"),
-            self.release.replace(b"Valid-Until:", b"X-Valid-Until:"),
+            release_bytes(
+                self.source, self.index,
+                valid_until=NOW + timedelta(days=1),
+            ),
             self.release.replace(b"Architectures: amd64 arm64", b"Architectures: arm64"),
             duplicate,
         ]
         for changed in cases:
             with self.subTest(changed=changed), self.assertRaises(ValueError):
-                build.validate_signed_release(changed, self.source, NOW)
+                build.validate_signed_release(
+                    changed, self.source, NOW,
+                    build.expected_freshness_policy(self.source))
+
+    def test_immutable_release_age_and_clock_skew_boundaries_are_exact(self):
+        policy = build.expected_freshness_policy(self.source)
+        at_age = release_bytes(
+            self.source, self.index,
+            date=NOW - build.MAX_IMMUTABLE_RELEASE_AGE)
+        at_skew = release_bytes(
+            self.source, self.index, date=NOW + build.MAX_CLOCK_SKEW)
+        build.validate_signed_release(at_age, self.source, NOW, policy)
+        build.validate_signed_release(at_skew, self.source, NOW, policy)
+        for changed in (
+                release_bytes(
+                    self.source, self.index,
+                    date=NOW - build.MAX_IMMUTABLE_RELEASE_AGE
+                    - timedelta(seconds=1)),
+                release_bytes(
+                    self.source, self.index,
+                    date=NOW + build.MAX_CLOCK_SKEW + timedelta(seconds=1))):
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                build.validate_signed_release(
+                    changed, self.source, NOW, policy)
+
+    def test_freshness_policy_cannot_cross_suite_url_codename_or_signer(self):
+        policy = build.expected_freshness_policy(self.source)
+        cases = []
+        for field, value in (
+                ("suite", "noble-updates"),
+                ("codename", "jammy"),
+                ("inrelease_url", "https://security.ubuntu.com/ubuntu/dists/noble/InRelease"),
+                ("signer_fingerprint", "A" * 40),
+                ("mode", "valid-until"),
+                ("maximum_age_days", 1831)):
+            changed = copy.deepcopy(policy)
+            changed[field] = value
+            cases.append(changed)
+        for changed in cases:
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                build.validate_signed_release(
+                    self.release, self.source, NOW, changed)
+
+    def test_rolling_pockets_require_one_bounded_unexpired_valid_until(self):
+        source = copy.deepcopy(packages.EXPECTED_SOURCES[1])
+        policy = build.expected_freshness_policy(source)
+        valid = release_bytes(source, self.index)
+        binding = build.validate_signed_release(valid, source, NOW, policy)
+        self.assertGreater(binding["valid_until"], binding["verified_at"])
+        missing = release_bytes(source, self.index, valid_until=None)
+        duplicate = valid.replace(
+            b"Valid-Until: ", b"Valid-Until: ", 1) + (
+                b"Valid-Until: "
+                + build.format_release_time(NOW + timedelta(days=1)).encode()
+                + b"\n")
+        oversized = valid.replace(
+            next(line for line in valid.splitlines(keepends=True)
+                 if line.startswith(b"Valid-Until:")),
+            b"Valid-Until: " + b"1" * 129 + b"\n")
+        excessive = release_bytes(
+            source, self.index,
+            valid_until=NOW + build.MAX_VALIDITY_WINDOW
+            + timedelta(seconds=1))
+        stale = release_bytes(
+            source, self.index, valid_until=NOW - timedelta(seconds=1))
+        for changed in (missing, duplicate, oversized, excessive, stale):
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                build.validate_signed_release(changed, source, NOW, policy)
 
     def test_signed_index_membership_returns_only_exact_requested_rows(self):
         requested = {
