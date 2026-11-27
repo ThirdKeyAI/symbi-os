@@ -139,3 +139,52 @@ against ordered `diff_id` values, fixes gzip and tar metadata, caps compressed
 output at 512 MiB and expanded verification at 1 GiB, and deletes partial
 output on failure. The consumer-format verification runs before any output
 could be retained. No artifact upload step is enabled.
+
+## Unselected Ubuntu package candidate preparation
+
+`ubuntu_fixture_package_build.py` now defines dormant producer-side validators
+and finalization primitives for the missing offline package closure. It does
+not invoke system tools or contain or invent repository metadata. For each exact
+reviewed source it can require one pinned-fingerprint `gpgv` result for the
+InRelease file, parse the authenticated Release text,
+requires the exact suite and codename, and rejects a missing or expired
+`Valid-Until`, an excessive validity window, or a future `Date`. The signed
+SHA-256 row must name exactly `main/binary-amd64/Packages.xz`; selected apt URIs
+are then matched to exact package name, version, architecture, Filename, Size
+and SHA256 fields in that compressed index.
+
+The prepared plan uses only staged `file:` repositories. It binds apt's
+`--print-uris` and `--simulate --no-download` results to the authenticated
+Ubuntu Base dpkg status and requires a separate `dpkg --no-act --unpack` plan.
+Package payloads are downloaded one at a time without redirects, with per-file,
+total-byte and time bounds, and are hashed while streaming. Partial downloads
+and partial candidate directories are removed. The exact metadata and package
+bytes can be written only beside a manifest whose state is
+`candidate-unselected`; `selected` and every signature, container, OS and
+release qualification field remain false.
+
+This preparation is not wired to `container-fixtures.yml` or
+`native_fixture_build.py`. The current Dockerfile still performs its historical
+live apt installation, the committed Ubuntu lock remains pending and empty, and
+its public validator rejects a populated candidate. No image build, OCI export,
+cold load, artifact upload or qualification was enabled by this slice.
+The candidate retains hashes rather than copies of `gpgv`, apt and dpkg output,
+so its validator alone cannot prove that the future wrapper ran those commands
+successfully. Hosted logs and artifact provenance remain mandatory review input.
+
+The next hosted step must be a separately reviewed manual producer job on a
+fresh Ubuntu runner. Under one CPU, bounded memory and zero swap, it must verify
+the committed Ubuntu keyring and rootfs checksum, fetch the three exact
+InRelease files, extract their Release text with the prepared `gpgv` command,
+and retain the verification time and tool hashes. It must fetch only the three
+Packages.xz members named by those signed Release files, read only dpkg status
+from the authenticated rootfs archive, stage local file repositories, and run
+apt update, URI planning and simulation with external networking disabled. It
+must bind every planned package to its signed index row, download the payloads
+sequentially, compare `dpkg-deb` identity to that row, and pass the no-act dpkg
+plan before writing and independently rechecking the unselected candidate.
+If any current Ubuntu suite omits `Valid-Until` or fails another strict field,
+the job must stop; changing the source or freshness policy needs its own review.
+Only a fully passing run may add an unselected candidate artifact. Selecting its
+real run, artifact and byte identities is a later committed review, and only
+that selection can unblock an offline `docker build --network=none` change.
