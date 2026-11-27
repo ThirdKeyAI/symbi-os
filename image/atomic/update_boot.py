@@ -95,10 +95,12 @@ def _qemu_command(overlay, report, serial, expected_filename,
         "-accel", "tcg,thread=single", "-cpu", "max", "-m", "2048M", "-smp", "1",
         "-nodefaults", "-no-user-config", "-no-reboot", "-net", "none",
         "-smbios", "type=1,manufacturer=Symbi-Test,product=Symbi-Hosted-Update-Probe",
-        "-drive", "file=" + overlay + ",format=qcow2,if=virtio",
+        "-drive", "file=" + overlay + ",format=qcow2,if=none,id=symbi-boot-disk",
+        "-device", "virtio-blk-pci,drive=symbi-boot-disk,bootindex=1",
         "-drive", "file=/inputs/update.raw,format=raw,if=none,"
                   "id=symbi-update-source,readonly=on",
         "-device", "virtio-blk-pci,drive=symbi-update-source,serial=SYMBIUPDATE",
+        "-boot", "strict=on",
         "-device", "virtio-rng-pci", "-device", "virtio-serial-pci",
         "-chardev", "file,id=report,path=" + report,
         "-device", "virtserialport,chardev=report,name=org.symbi.update",
@@ -137,9 +139,11 @@ def validate_source_device(report, expected):
         source = expected["source_disk"]
     except (KeyError, TypeError) as error:
         raise ValueError("update source-device evidence is missing") from error
-    required = {"path", "TYPE", "LABEL", "UUID"}
+    required = {"path", "serial", "TYPE", "LABEL", "UUID"}
     if (not isinstance(observed, dict) or set(observed) != required
             or re.fullmatch(r"/dev/vd[a-z]{1,3}", observed.get("path", "")) is None
+            or observed.get("serial") != "SYMBIUPDATE"
+            or source.get("serial") != "SYMBIUPDATE"
             or observed.get("TYPE") != source.get("filesystem")
             or observed.get("LABEL") != source.get("label")
             or observed.get("UUID") != source.get("uuid")):
@@ -264,7 +268,8 @@ def main():
         raise ValueError("oversized update expectation")
     expected = unique_json(expected_raw)
     source = expected.get("source_disk", {})
-    if ((inputs / "update.raw").stat().st_size != source.get("bytes")
+    if (source.get("serial") != "SYMBIUPDATE"
+            or (inputs / "update.raw").stat().st_size != source.get("bytes")
             or sha256(inputs / "update.raw") != source.get("sha256")):
         raise ValueError("authenticated update source disk changed")
     names = ["update_guest.py", "expected.json", "update-policy.json",

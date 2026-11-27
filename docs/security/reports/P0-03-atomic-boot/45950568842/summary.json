@@ -1,0 +1,93 @@
+{
+  "schema": 1,
+  "passed": false,
+  "qualification": false,
+  "run": {
+    "id": 45950568842,
+    "attempt": 1,
+    "event": "workflow_dispatch",
+    "workflow_id": 431513082,
+    "repository_id": 1472078858,
+    "head_repository_id": 1472078858,
+    "head_branch": "card/P0-03-update-proof",
+    "head_sha": "e27fed99a44c61ae877b241c769ceb9a034d4d39",
+    "job_id": 140345198215,
+    "job_name": "install-and-boot",
+    "conclusion": "failure",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45950568842"
+  },
+  "artifact": {
+    "id": 15178183907,
+    "name": "atomic-development-boot-generic",
+    "bytes": 71958,
+    "digest": "sha256:13111398129e53cc142a917d9060e7a93e73a08c44cb82612dcac0d1343c138d",
+    "expires_at": "2026-12-11T07:01:16Z"
+  },
+  "retained_evidence_sha256": {
+    "atomic-disk-evidence/result.json": "8e731340a8f40981e97fcfd713b7e7e6b07c6cc55daba8c76a50ddd4e2edbff1",
+    "atomic-disk-evidence/signed-update-and-rollback-stderr.log": "993cebe962ee981e33bcdfb366f2fc46efcf39826241fbfbe70d2b8da17c2833",
+    "atomic-disk-evidence/systemd-result.txt": "e1bc2ecb3a291ae22d53b41c68415d928215b9de8303d3c3e9aea330fc1df2e3",
+    "atomic-update-evidence/controller-result.json": "b3e75054ce9c0082bb65493b476f13865ff64e031521759d05012c5506253f70",
+    "atomic-update-evidence/result.json": "bacb5117247f04084f24c72180979731b2c54f41bcc7af6aa0613845c2610ae9"
+  },
+  "observation": {
+    "stage": "same-path-positive",
+    "phase_timeout_seconds": 1800,
+    "failure": "TimeoutError: update guest phase exceeded its bound",
+    "guest_report_bytes": 0,
+    "serial_log_bytes": 0,
+    "serial_output_observed": false,
+    "phase_reports": 0,
+    "negative_reports": 0,
+    "source_disk": {
+      "bytes": 5625753600,
+      "filesystem": "ext4",
+      "label": "SYMBIUPDATE",
+      "uuid": "29e25792-e534-4a3e-80a9-ece6dddf3cfd",
+      "sha256": "9ac09695135dfa4ff450def0272ab92a60c3ff960143eacc2283a5cc892e7afe"
+    },
+    "controller_memory_max_bytes": 3221225472,
+    "controller_memory_peak_bytes": 3221225472,
+    "controller_memory_max_events": 484,
+    "controller_cpu_usage_usec": 20108308,
+    "hosted_parent_memory_max_bytes": 5368709120,
+    "hosted_parent_memory_peak_bytes": 5368713216,
+    "hosted_parent_memory_max_events": 164120,
+    "oom_events": 0,
+    "oom_kill_events": 0,
+    "oom_group_kill_events": 0,
+    "swap_max_bytes": 0,
+    "cleanup_complete": true
+  },
+  "root_cause_assessment": {
+    "confirmed": false,
+    "strongest_hypothesis": "firmware selected or attempted the unindexed, nonbootable update source after the source changed from an implicit virtio disk to an explicit virtio device",
+    "basis": "the preceding run reached kernel and systemd output under the same 3 GiB controller and 2 GiB guest limits; the failing run emitted no serial bytes after only the pre-kernel disk topology changed",
+    "memory_pressure_observed": true,
+    "memory_pressure_shown_causal": false
+  },
+  "correction": {
+    "explicit_boot_backend": "if=none,id=symbi-boot-disk",
+    "explicit_boot_device": "virtio-blk-pci,drive=symbi-boot-disk,bootindex=1",
+    "strict_boot": true,
+    "source_device": "virtio-blk-pci,drive=symbi-update-source,serial=SYMBIUPDATE",
+    "source_read_only": true,
+    "source_boot_indexed": false,
+    "covered_vm_commands": 8,
+    "resource_limits_changed": false,
+    "timeouts_changed": false,
+    "isolation_changed": false
+  },
+  "local_verification": {
+    "focused_update_tests": 39,
+    "full_image_tests": 318,
+    "full_suite_seconds": 2.063,
+    "full_suite_peak_rss_kib": 55616,
+    "swaps": 0,
+    "shell_syntax": "pass",
+    "json": "pass",
+    "diff_check": "pass",
+    "cold_review": "no blockers"
+  },
+  "next": "A fresh exact-head hosted run must pass all update, rejection and rollback phases before update or rollback qualification."
+}

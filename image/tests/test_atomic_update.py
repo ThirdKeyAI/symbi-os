@@ -1218,8 +1218,9 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertIn("SYMBI_QUALIFICATION=update", script)
         self.assertIn("--property=MemoryMax=5G", script)
         self.assertIn("'memory.max':'5368709120'", hosted)
-        self.assertIn("qualification not in ('','update')", hosted)
-        self.assertNotIn("qualification=='landlock'", hosted)
+        self.assertIn(
+            "qualification not in ('','landlock','update','containers')", hosted)
+        self.assertIn("qualification=='landlock'", hosted)
         self.assertIn("qualification=='update'", hosted)
 
     def test_only_the_fixed_atomic_controller_can_use_the_extended_timeout(self):
