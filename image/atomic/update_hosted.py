@@ -20,6 +20,81 @@ from image.boot.inputs import unpack_desktop_image
 
 
 MAX_SOURCE_BYTES = 13 * 1024**3
+MAX_PUBLIC_OUTPUT_BYTES = 2 * 1024**2
+
+
+def _controller_output_names():
+    public = {"result.json"}
+    overlays = {"same-path-positive.qcow2", "guest.qcow2"}
+    public.update({"prepare-same-path-positive.qcow2.log",
+                   "qemu-same-path-positive.log",
+                   "same-path-positive-serial.log", "same-path-positive.json",
+                   "prepare-guest.qcow2.log"})
+    for case in NEGATIVE_CASES:
+        label = "negative-" + case
+        overlays.add(label + ".qcow2")
+        public.update({"prepare-" + label + ".qcow2.log", "qemu-" + label + ".log",
+                       label + "-serial.log", label + ".json"})
+    for index in range(3):
+        label = str(index)
+        public.update({"qemu-" + label + ".log", "serial-" + label + ".log",
+                       "phase-" + label + ".json"})
+    return public, overlays
+
+
+def _read_bounded_regular(path):
+    flags = os.O_RDONLY | os.O_CLOEXEC | os.O_NONBLOCK
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    descriptor = os.open(path, flags)
+    try:
+        before = os.fstat(descriptor)
+        if (not stat.S_ISREG(before.st_mode) or before.st_nlink != 1
+                or before.st_size > MAX_PUBLIC_OUTPUT_BYTES):
+            raise ValueError("unsafe or oversized update controller output: " + path.name)
+        chunks = []
+        remaining = MAX_PUBLIC_OUTPUT_BYTES + 1
+        while remaining:
+            chunk = os.read(descriptor, min(128 * 1024, remaining))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            remaining -= len(chunk)
+        raw = b"".join(chunks)
+        after = os.fstat(descriptor)
+        if (len(raw) != before.st_size or before.st_dev != after.st_dev
+                or before.st_ino != after.st_ino or before.st_size != after.st_size
+                or before.st_mode != after.st_mode or after.st_nlink != 1
+                or before.st_mtime_ns != after.st_mtime_ns
+                or before.st_ctime_ns != after.st_ctime_ns):
+            raise ValueError("update controller output changed while retained: " + path.name)
+        return raw
+    finally:
+        os.close(descriptor)
+
+
+def retain_controller_output(output, evidence):
+    """Copy only bounded direct diagnostics; never retain guest disk overlays."""
+    output, evidence = Path(output), Path(evidence)
+    public, overlays = _controller_output_names()
+    allowed = public | overlays
+    names = set()
+    for path in output.iterdir():
+        if path.name not in allowed:
+            raise ValueError("unexpected update controller output: " + path.name)
+        names.add(path.name)
+    retained = []
+    payloads = []
+    for name in sorted(names & public):
+        raw = _read_bounded_regular(output / name)
+        target_name = "controller-result.json" if name == "result.json" else name
+        payloads.append((target_name, raw))
+    for name, raw in payloads:
+        target = evidence / name
+        with target.open("xb") as stream:
+            stream.write(raw)
+        retained.append(name)
+    return retained
 
 
 def _sign_source(root, group, podman, image_id, storage, containers, run,
@@ -294,9 +369,6 @@ def run_update(root, group, podman, image_id, storage, containers, run, pins,
         summary = validate_report(report, old_digest, current_digest)
         if sha256(disk) != old_disk_hash or sha256(update_disk) != source_disk["sha256"]:
             raise ValueError("read-only predecessor or update disk changed")
-        for path in sorted(output.iterdir()):
-            if path.is_file() and not path.is_symlink() and path.stat().st_size <= 2 * 1024**2:
-                shutil.copyfile(path, evidence / path.name)
         shutil.copytree(old_signing / "evidence", evidence / "predecessor-authentication")
         (evidence / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
         record.update(passed=True, guest_booted=True, source_authentication=authentication,
@@ -304,9 +376,17 @@ def run_update(root, group, podman, image_id, storage, containers, run, pins,
                       bootc_negative_controls=controller["bootc_negative_controls"],
                       negative_overlays_discarded=controller["negative_overlays_discarded"],
                       source_disk=source_disk, phases=controller["phases"], summary=summary)
-        return record
     except Exception as error:
         record["failure"] = type(error).__name__ + ": " + str(error)
         raise
     finally:
+        if output is not None and output.is_dir():
+            try:
+                record["retained_controller_output"] = retain_controller_output(output, evidence)
+            except Exception as error:
+                record["retention_failure"] = type(error).__name__ + ": " + str(error)
+                record["passed"] = False
         (evidence / "result.json").write_text(json.dumps(record, indent=2) + "\n")
+    if not record["passed"]:
+        raise RuntimeError("signed update evidence retention did not pass")
+    return record

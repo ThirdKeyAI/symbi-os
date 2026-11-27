@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "passed": false,
+  "qualification": false,
+  "run": {
+    "id": 45941277123,
+    "attempt": 1,
+    "event": "workflow_dispatch",
+    "workflow_id": 431513082,
+    "repository_id": 1472078858,
+    "head_repository_id": 1472078858,
+    "head_branch": "card/P0-03-update-proof",
+    "head_sha": "2bb20a92bbc21ef09af58294a4fcc4b09e4b95ba",
+    "job_id": 140315931544,
+    "job_name": "install-and-boot",
+    "conclusion": "failure",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45941277123"
+  },
+  "artifact": {
+    "id": 15173679586,
+    "name": "atomic-development-boot-generic",
+    "bytes": 69194,
+    "digest": "sha256:f31997229d7a109a748bf64cd3cc70880a6a85db4c471e59126a91e8a9f7fbb1",
+    "expires_at": "2026-12-11T05:18:29Z"
+  },
+  "retained_evidence_sha256": {
+    "atomic-disk-evidence/result.json": "42610cbc3951d719c60399e6ff505174d1561dfe104b803ed7c33f2b1dab2005",
+    "atomic-update-evidence/result.json": "049e6d6c3b78d524cc90a1012f1a14fd44a3c3d012e138565e61b8658bb5575d",
+    "atomic-disk-evidence/systemd-result.txt": "8021f0880fd3866870bbf0b4716787ff25e3ff0f0fcebdb2de15adf400272c64"
+  },
+  "observation": {
+    "stage": "same-path-positive",
+    "outer_phase_timeout_seconds": 1200,
+    "longest_guest_command_timeout_seconds": 1200,
+    "primary_cause": "the outer phase left no time after the longest in-guest command for boot, report transfer or cleanup",
+    "secondary_error": "best-effort child termination raised PermissionError and obscured the primary timeout in step output",
+    "controller_output_retained": false,
+    "memory_max_bytes": 4294967296,
+    "memory_peak_bytes": 4294971392,
+    "memory_max_events": 190198,
+    "oom_events": 0,
+    "oom_kill_events": 0,
+    "swap_max_bytes": 0
+  },
+  "correction": {
+    "disposable_phase_timeout_seconds": 1800,
+    "guest_command_timeout_seconds": 1200,
+    "controller_timeout_seconds": 5400,
+    "systemd_timeout_seconds": 6600,
+    "hosted_parent_memory_max_bytes": 5368709120,
+    "controller_container_memory_max_bytes": 3221225472,
+    "guest_memory_max_bytes": 2147483648,
+    "cleanup_preserves_primary_failure": true,
+    "bounded_controller_output_retention": true,
+    "disk_overlays_retained": false
+  },
+  "local_verification": {
+    "focused_tests": 34,
+    "image_tests": 313,
+    "full_suite_seconds": 2.086,
+    "full_suite_peak_rss_kib": 55032,
+    "swaps": 0,
+    "shell_syntax": "pass",
+    "diff_check": "pass",
+    "cold_review": "no blockers"
+  },
+  "next": "A fresh exact-head hosted run must pass before update or rollback qualification."
+}

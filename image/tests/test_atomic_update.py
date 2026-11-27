@@ -6,8 +6,11 @@ import os
 from pathlib import Path
 import signal
 import shutil
+import socket
+import subprocess
 import tempfile
 import unittest
+from unittest.mock import Mock, patch
 
 from image.atomic.update_contract import (NEGATIVE_UPDATE_SOURCE, POSITIVE_OVERLAY_CASE,
                                           update_policy,
@@ -15,16 +18,19 @@ from image.atomic.update_contract import (NEGATIVE_UPDATE_SOURCE, POSITIVE_OVERL
                                           negative_signature_payloads,
                                           validate_report, require_update_base,
                                           validate_artifact_metadata)
-from image.atomic.update_boot import (qemu_command, negative_qemu_command,
+from image.atomic.update_boot import (DISPOSABLE_PHASE_TIMEOUT_SECONDS,
+                                      qemu_command, negative_qemu_command,
                                       positive_qemu_command,
                                       firmware_arguments,
+                                      stop_child,
                                       validate_negative_report,
                                       validate_positive_report,
                                       validate_shared_baseline)
 from image.atomic.update_process import TIMEOUT_SECONDS, validate_update_controller_command
-from image.atomic.update_guest import (phase_status, deployment_snapshot,
+from image.atomic.update_guest import (UPDATE_COMMAND_TIMEOUT_SECONDS,
+                                       phase_status, deployment_snapshot,
                                        staged_deployment_snapshot)
-from image.atomic.update_hosted import run_update
+from image.atomic.update_hosted import retain_controller_output, run_update
 from image.atomic.hosted import (RETAINED_REPORT_MAX_BYTES,
                                  validate_retained_preflight)
 from image.boot.inputs import require_desktop_image
@@ -32,6 +38,135 @@ from image.boot.preflight import expected_inputs
 
 
 class AtomicUpdateTests(unittest.TestCase):
+    def test_disposable_vm_deadline_exceeds_the_longest_guest_command(self):
+        self.assertEqual(UPDATE_COMMAND_TIMEOUT_SECONDS, 1200)
+        self.assertEqual(DISPOSABLE_PHASE_TIMEOUT_SECONDS, 1800)
+        self.assertGreater(DISPOSABLE_PHASE_TIMEOUT_SECONDS,
+                           UPDATE_COMMAND_TIMEOUT_SECONDS)
+
+    def test_update_qemu_cleanup_does_not_mask_a_primary_failure(self):
+        child = Mock()
+        child.poll.return_value = None
+        child.terminate.side_effect = PermissionError(13, "denied")
+        child.kill.side_effect = PermissionError(13, "denied")
+        result = stop_child(child)
+        self.assertTrue(result["attempted"])
+        self.assertFalse(result["terminated"])
+        self.assertFalse(result["killed"])
+        self.assertEqual(len(result["errors"]), 2)
+        self.assertTrue(all("PermissionError" in error for error in result["errors"]))
+
+    def test_exited_update_qemu_receives_no_cleanup_signal(self):
+        child = Mock()
+        child.poll.return_value = 1
+        result = stop_child(child)
+        self.assertFalse(result["attempted"])
+        child.terminate.assert_not_called()
+        child.kill.assert_not_called()
+
+    def test_update_qemu_cleanup_escalates_after_terminate_timeout(self):
+        child = Mock()
+        child.poll.return_value = None
+        child.wait.side_effect = [
+            subprocess.TimeoutExpired(["qemu-system-x86_64"], 10), None,
+        ]
+        result = stop_child(child)
+        self.assertTrue(result["attempted"])
+        self.assertTrue(result["terminated"])
+        self.assertTrue(result["killed"])
+        self.assertEqual(result["errors"], [])
+        child.terminate.assert_called_once_with()
+        child.kill.assert_called_once_with()
+
+    def test_failed_update_retains_only_bounded_direct_diagnostics(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            output, evidence = root / "output", root / "evidence"
+            output.mkdir()
+            evidence.mkdir()
+            (output / "result.json").write_text('{"passed": false}\n')
+            (output / "same-path-positive-serial.log").write_text("guest stalled\n")
+            (output / "same-path-positive.qcow2").write_bytes(b"private disk")
+            retained = retain_controller_output(output, evidence)
+            self.assertEqual(retained,
+                             ["controller-result.json", "same-path-positive-serial.log"])
+            self.assertEqual((evidence / "controller-result.json").read_text(),
+                             '{"passed": false}\n')
+            self.assertFalse((evidence / "same-path-positive.qcow2").exists())
+
+    def test_failed_update_refuses_unsafe_diagnostic_entries(self):
+        for case in ("unexpected", "symlink", "hardlink", "fifo", "socket",
+                     "directory", "oversized"):
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                output, evidence = root / "output", root / "evidence"
+                output.mkdir()
+                evidence.mkdir()
+                path = output / "same-path-positive-serial.log"
+                if case == "unexpected":
+                    (output / "unreviewed.txt").write_text("x")
+                elif case == "symlink":
+                    target = root / "target"
+                    target.write_text("x")
+                    path.symlink_to(target)
+                elif case == "hardlink":
+                    target = root / "target"
+                    target.write_text("x")
+                    os.link(target, path)
+                elif case == "fifo":
+                    os.mkfifo(path)
+                elif case == "socket":
+                    with socket.socket(socket.AF_UNIX) as server:
+                        server.bind(str(path))
+                        with self.assertRaises((OSError, ValueError)):
+                            retain_controller_output(output, evidence)
+                    continue
+                elif case == "directory":
+                    path.mkdir()
+                else:
+                    with path.open("wb") as stream:
+                        stream.truncate(2 * 1024**2 + 1)
+                with self.assertRaises((OSError, ValueError)):
+                    retain_controller_output(output, evidence)
+
+    def test_failed_update_refuses_existing_evidence_destination(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            output, evidence = root / "output", root / "evidence"
+            output.mkdir()
+            evidence.mkdir()
+            (output / "result.json").write_text('{"passed": false}\n')
+            (evidence / "controller-result.json").write_text("preexisting\n")
+            with self.assertRaises(FileExistsError):
+                retain_controller_output(output, evidence)
+            self.assertEqual((evidence / "controller-result.json").read_text(),
+                             "preexisting\n")
+
+    def test_failed_update_detects_same_size_in_place_change(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            output, evidence = root / "output", root / "evidence"
+            output.mkdir()
+            evidence.mkdir()
+            path = output / "same-path-positive-serial.log"
+            path.write_bytes(b"a" * 4096)
+            initial = path.stat()
+            original_read = os.read
+            changed = False
+
+            def changing_read(descriptor, count):
+                nonlocal changed
+                raw = original_read(descriptor, count)
+                if not changed:
+                    changed = True
+                    path.write_bytes(b"b" * 4096)
+                    os.utime(path, ns=(initial.st_atime_ns, initial.st_mtime_ns))
+                return raw
+
+            with patch("image.atomic.update_hosted.os.read", side_effect=changing_read):
+                with self.assertRaisesRegex(ValueError, "changed while retained"):
+                    retain_controller_output(output, evidence)
+
     def retained_preflight_context(self):
         root = Path(__file__).resolve().parents[2]
         lock = json.loads((root / "image/desktop-images.lock.json").read_text())
@@ -657,6 +792,9 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertIn("require_update_base(lock,pins,current)", workflow)
         self.assertIn(".cache/atomic-update-evidence", workflow)
         self.assertIn("SYMBI_QUALIFICATION=update", script)
+        self.assertIn("--property=MemoryMax=5G", script)
+        self.assertIn("'memory.max':'5368709120'", hosted)
+        self.assertIn("qualification not in ('','landlock','update','containers')", hosted)
         self.assertIn("qualification=='landlock'", hosted)
         self.assertIn("qualification=='update'", hosted)
 
