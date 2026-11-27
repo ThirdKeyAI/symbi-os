@@ -146,20 +146,21 @@ could be retained. No artifact upload step is enabled.
 and finalization primitives for the missing offline package closure. It does
 not invoke system tools or contain or invent repository metadata. For each exact
 reviewed source it can require one pinned-fingerprint `gpgv` result for the
-InRelease file, parse the authenticated Release text,
-requires the exact suite and codename, and rejects a missing or expired
+InRelease file, parse the authenticated Release text, require the exact suite
+and codename, and reject a missing or expired
 `Valid-Until`, an excessive validity window, or a future `Date`. The signed
 SHA-256 row must name exactly `main/binary-amd64/Packages.xz`; selected apt URIs
 are then matched to exact package name, version, architecture, Filename, Size
 and SHA256 fields in that compressed index.
 
 The prepared plan uses only staged `file:` repositories. It binds apt's
-`--print-uris` and `--simulate --no-download` results to the authenticated
+`--print-uris` and `--simulate --no-download` results to the exact pending-lock
 Ubuntu Base dpkg status and requires a separate `dpkg --no-act --unpack` plan.
-Package payloads are downloaded one at a time without redirects, with per-file,
-total-byte and time bounds, and are hashed while streaming. Partial downloads
-and partial candidate directories are removed. The exact metadata and package
-bytes can be written only beside a manifest whose state is
+Before any opener call, every plan/package row, reviewed source, identity,
+sequence, size, hash, uniqueness constraint and aggregate byte bound is checked.
+Package payloads are then downloaded one at a time without redirects, under one
+aggregate deadline and a per-operation timeout, and hashed while streaming.
+The exact metadata and package bytes can be written only beside a manifest whose state is
 `candidate-unselected`; `producer_passed`, all verification fields, `selected`
 and every signature, container, OS and release qualification field remain
 false.
@@ -171,6 +172,14 @@ the filesystem root with `O_NOFOLLOW|O_CLOEXEC`, hold that descriptor chain,
 and hash, parse, copy, validate, clean and rename through held directory and
 file descriptors. A symlink, hardlink, mode/owner/size change, leaf replacement
 or changed named identity fails closed.
+
+Candidate output is built under a new unpredictable private staging parent held
+by descriptor. Publication uses `renameat2(RENAME_NOREPLACE)` from that isolated
+descriptor and accepts success only after the destination inode matches the
+held candidate root. Cleanup deletes a partial tree only when its complete
+recorded root, subdirectory and leaf identity inventory still matches. A
+replacement, link, FIFO or renamed member leaves the ambiguous tree untouched
+and fails the operation.
 
 This preparation is not wired to `container-fixtures.yml` or
 `native_fixture_build.py`. The current Dockerfile still performs its historical
@@ -187,7 +196,8 @@ the committed Ubuntu keyring and rootfs checksum, fetch the three exact
 InRelease files, extract their Release text with the prepared `gpgv` command,
 and retain strict structured results: exact argv, the tool hash computed from
 its already-open descriptor, exit status, bounded raw stdout and stderr plus
-their hashes, verification time and exact input identities. It must fetch only the three
+their hashes, verification time and exact input identities. It must fetch only
+the three
 Packages.xz members named by those signed Release files, read only dpkg status
 from the authenticated rootfs archive, stage local file repositories, and run
 apt update, URI planning and simulation with external networking disabled. It

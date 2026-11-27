@@ -9,12 +9,15 @@ currently invokes it, builds an image, or uploads an artifact.
 """
 from datetime import datetime, timedelta, timezone
 from email.utils import format_datetime, parsedate_to_datetime
+import ctypes
+import errno
 import hashlib
 import json
 import lzma
 import os
 from pathlib import Path, PurePosixPath
 import re
+import secrets
 import shlex
 import stat
 import tarfile
@@ -33,11 +36,14 @@ MAX_INDEX_TEXT_BYTES = 512 * 1024**2
 MAX_STANZA_BYTES = 1024**2
 MAX_PLAN_BYTES = 4 * 1024**2
 MAX_STATUS_BYTES = 16 * 1024**2
+MAX_BASE_TAR_MEMBERS = 32 * 1024
+MAX_BASE_TAR_EXPANDED_BYTES = 1024**3
 DOWNLOAD_CHUNK_BYTES = 64 * 1024
 DOWNLOAD_TIMEOUT_SECONDS = 30
 MAX_DOWNLOAD_SECONDS = 600
 PRIVATE_DIRECTORY_MODE = 0o700
 PRIVATE_FILE_MODE = 0o600
+_RENAME_NOREPLACE = 1
 EXPECTED_CODENAMES = {
     "noble": "noble",
     "noble-updates": "noble",
@@ -109,6 +115,13 @@ def _directory_identity(info):
     return info.st_dev, info.st_ino, info.st_mode, info.st_uid, info.st_gid
 
 
+def _exact_directory_identity(info):
+    return (
+        info.st_dev, info.st_ino, info.st_mode, info.st_uid, info.st_gid,
+        info.st_nlink, info.st_size, info.st_mtime_ns, info.st_ctime_ns,
+    )
+
+
 def _canonical_absolute_path(value, description):
     require(isinstance(value, (str, os.PathLike)), description + " is not a path")
     raw = os.fspath(value)
@@ -126,6 +139,38 @@ def _safe_leaf(name):
     return (isinstance(name, str) and name and "/" not in name
             and "\\" not in name and name not in (".", "..")
             and "\x00" not in name)
+
+
+def _rename_noreplace(source_fd, source_name, destination_fd,
+                      destination_name):
+    """Atomically publish one name without replacing an existing name."""
+    require(type(source_fd) is int and type(destination_fd) is int
+            and _safe_leaf(source_name) and _safe_leaf(destination_name),
+            "Ubuntu candidate publish names or descriptors are invalid")
+    try:
+        renameat2 = ctypes.CDLL(None, use_errno=True).renameat2
+    except AttributeError as error:
+        raise ValueError(
+            "atomic no-replace candidate publication is unavailable") from error
+    renameat2.argtypes = (
+        ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p,
+        ctypes.c_uint,
+    )
+    renameat2.restype = ctypes.c_int
+    result = renameat2(
+        source_fd, os.fsencode(source_name),
+        destination_fd, os.fsencode(destination_name),
+        _RENAME_NOREPLACE,
+    )
+    if result != 0:
+        error_number = ctypes.get_errno()
+        if error_number == errno.EEXIST:
+            raise FileExistsError(
+                error_number, "Ubuntu candidate destination already exists",
+                destination_name)
+        raise OSError(
+            error_number, "atomic no-replace candidate publication failed",
+            destination_name)
 
 
 class _DirectoryAnchor:
@@ -297,9 +342,15 @@ def _unlink_created_at(directory_fd, name, created):
     try:
         named = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
     except FileNotFoundError:
-        return
-    if named.st_dev == created.st_dev and named.st_ino == created.st_ino:
+        return False
+    if (stat.S_ISREG(named.st_mode) and named.st_nlink == 1
+            and named.st_uid == os.geteuid() and named.st_gid == os.getegid()
+            and stat.S_IMODE(named.st_mode) == PRIVATE_FILE_MODE
+            and named.st_dev == created.st_dev
+            and named.st_ino == created.st_ino):
         os.unlink(name, dir_fd=directory_fd)
+        return True
+    return False
 
 
 def _finish_regular_at(directory_fd, name, descriptor, before, description):
@@ -604,19 +655,20 @@ def _package_row(raw, source, index_sha256):
 
 def find_requested_packages(path, source, index_binding, requested):
     """Find every apt-selected Filename exactly once in its signed Packages.xz."""
-    require(isinstance(index_binding, dict)
+    require(type(index_binding) is dict
+            and set(index_binding) == packages.RELEASE_INDEX_FIELDS
             and type(index_binding.get("bytes")) is int
-            and index_binding["bytes"] > 0
+            and 0 < index_binding["bytes"] <= packages.MAX_INDEX_BYTES
             and packages.exact_hash(index_binding.get("sha256"))
             and index_binding.get("path") == "main/binary-amd64/Packages.xz",
             "Ubuntu Packages.xz bytes differ from signed Release membership")
-    require(source in packages.EXPECTED_SOURCES and isinstance(requested, dict)
+    require(source in packages.EXPECTED_SOURCES and type(requested) is dict
             and 0 < len(requested) <= packages.MAX_PACKAGE_COUNT,
             "Ubuntu requested package membership set is invalid")
     for filename, expected in requested.items():
         require(packages._safe_filename(filename, ".deb")
                 and filename.startswith("pool/main/")
-                and isinstance(expected, dict)
+                and type(expected) is dict
                 and set(expected) == {"bytes", "sha256"}
                 and type(expected["bytes"]) is int
                 and 0 < expected["bytes"] <= packages.MAX_PACKAGE_BYTES
@@ -892,12 +944,120 @@ def offline_sources_list(repository_root, keyring, sources):
     return "\n".join(rows) + "\n"
 
 
+def _reviewed_package_url(url, filename=None, expected_source=None):
+    require(type(url) is str and packages._canonical_https(url),
+            "Ubuntu package download URL is not canonical HTTPS")
+    matches = []
+    sources = ([expected_source] if expected_source is not None else
+               list({source["base_url"]: source
+                     for source in packages.EXPECTED_SOURCES}.values()))
+    for source in sources:
+        require(source in packages.EXPECTED_SOURCES,
+                "Ubuntu package URL source is not reviewed")
+        prefix = source["base_url"] + "/"
+        if url.startswith(prefix):
+            relative = url.removeprefix(prefix)
+            if (packages._safe_filename(relative, ".deb")
+                    and relative.startswith("pool/main/")
+                    and (filename is None or relative == filename)):
+                matches.append((source, relative))
+    require(len(matches) == 1,
+            "Ubuntu package URL is outside the exact reviewed source")
+    return matches[0]
+
+
+def _validate_download_plan(plan, package_rows):
+    require(type(plan) is list and type(package_rows) is list
+            and len(plan) == len(package_rows)
+            and 0 < len(plan) <= packages.MAX_PACKAGE_COUNT,
+            "Ubuntu sequential package download plan is invalid")
+    source_by_suite = {
+        source["suite"]: source for source in packages.EXPECTED_SOURCES
+    }
+    identities = set()
+    package_names = set()
+    filenames = set()
+    destinations = set()
+    urls = set()
+    total = 0
+    for sequence, (planned, package) in enumerate(
+            zip(plan, package_rows, strict=True)):
+        source = package.get("source") if type(package) is dict else None
+        require(type(planned) is dict
+                and set(planned) == {
+                    "sequence", "suite", "filename", "destination", "bytes",
+                    "sha256",
+                }
+                and type(package) is dict
+                and set(package) == packages.PACKAGE_FIELDS
+                and type(source) is dict
+                and set(source) == packages.PACKAGE_SOURCE_FIELDS,
+                "Ubuntu download plan or package row fields changed")
+        suite = planned.get("suite")
+        filename = planned.get("filename")
+        destination = planned.get("destination")
+        expected_source = source_by_suite.get(suite)
+        require(type(planned.get("sequence")) is int
+                and planned["sequence"] == sequence
+                and type(suite) is str and expected_source is not None
+                and type(filename) is str
+                and packages._safe_filename(filename, ".deb")
+                and filename.startswith("pool/main/")
+                and type(destination) is str
+                and packages._safe_filename(destination, ".deb")
+                and PurePosixPath(destination).name == destination
+                and type(planned.get("bytes")) is int
+                and 0 < planned["bytes"] <= packages.MAX_PACKAGE_BYTES
+                and packages.exact_hash(planned.get("sha256")),
+                "Ubuntu ordered download plan row is malformed")
+        name = package.get("package")
+        version = package.get("version")
+        architecture = package.get("architecture")
+        require(type(name) is str
+                and re.fullmatch(r"[a-z0-9][a-z0-9+.-]*", name) is not None
+                and type(version) is str and version
+                and re.fullmatch(r"[A-Za-z0-9.+:~\-]+", version) is not None
+                and type(architecture) is str
+                and architecture in ("amd64", "all")
+                and package.get("filename") == filename
+                and type(package.get("bytes")) is int
+                and package["bytes"] == planned["bytes"]
+                and package.get("sha256") == planned["sha256"]
+                and source.get("suite") == suite
+                and source.get("component") == "main"
+                and source.get("index_architecture") == "amd64"
+                and packages.exact_hash(source.get("index_sha256")),
+                "Ubuntu package row differs from its signed download plan")
+        reviewed_source, reviewed_filename = _reviewed_package_url(
+            package.get("url"), filename, expected_source)
+        require(reviewed_source == expected_source
+                and reviewed_filename == filename,
+                "Ubuntu package URL differs from its reviewed suite")
+        identity = packages.package_identity(package)
+        require(identity not in identities and name not in package_names
+                and filename not in filenames
+                and destination not in destinations
+                and package["url"] not in urls,
+                "Ubuntu package download plan repeats an identity or path")
+        identities.add(identity)
+        package_names.add(name)
+        filenames.add(filename)
+        destinations.add(destination)
+        urls.add(package["url"])
+        total += package["bytes"]
+        require(total <= packages.MAX_CLOSURE_BYTES,
+                "Ubuntu package download plan exceeds its total byte bound")
+    return total
+
+
 def _download_exact_at(url, directory_fd, name, expected_bytes,
-                       expected_sha256, opener):
-    require(packages._canonical_https(url)
+                       expected_sha256, opener, deadline):
+    _reviewed_package_url(url)
+    require(_safe_leaf(name)
             and type(expected_bytes) is int
             and 0 < expected_bytes <= packages.MAX_PACKAGE_BYTES
-            and packages.exact_hash(expected_sha256),
+            and packages.exact_hash(expected_sha256)
+            and type(deadline) in (int, float),
             "Ubuntu package download binding is invalid")
     request = Request(
         url,
@@ -908,11 +1068,17 @@ def _download_exact_at(url, directory_fd, name, expected_bytes,
     )
     written = 0
     digest = hashlib.sha256()
-    deadline = time.monotonic() + MAX_DOWNLOAD_SECONDS
+    require(time.monotonic() < deadline,
+            "Ubuntu package aggregate download deadline expired")
     descriptor, created = _create_private_regular_at(
         directory_fd, name, "Ubuntu package download")
     try:
-        with opener(request, timeout=DOWNLOAD_TIMEOUT_SECONDS) as response:
+        remaining = deadline - time.monotonic()
+        require(remaining > 0,
+                "Ubuntu package aggregate download deadline expired")
+        with opener(
+                request,
+                timeout=min(DOWNLOAD_TIMEOUT_SECONDS, remaining)) as response:
             length = response.headers.get("Content-Length")
             require(response.status == 200 and response.geturl() == url
                     and isinstance(length, str) and length.isdigit()
@@ -944,6 +1110,7 @@ def _download_exact_at(url, directory_fd, name, expected_bytes,
 def download_exact(url, destination, expected_bytes, expected_sha256,
                    opener=_OPEN_EXACT_URL):
     """Download one exact payload through an anchored private directory fd."""
+    _reviewed_package_url(url)
     destination = _canonical_absolute_path(
         destination, "Ubuntu package download destination")
     anchor = _DirectoryAnchor(
@@ -951,7 +1118,8 @@ def download_exact(url, destination, expected_bytes, expected_sha256,
     try:
         result, _ = _download_exact_at(
             url, anchor.fd, destination.name, expected_bytes,
-            expected_sha256, opener)
+            expected_sha256, opener,
+            time.monotonic() + MAX_DOWNLOAD_SECONDS)
         anchor.verify()
         return result
     finally:
@@ -961,32 +1129,23 @@ def download_exact(url, destination, expected_bytes, expected_sha256,
 def download_package_plan(plan, package_rows, destination,
                           opener=_OPEN_EXACT_URL):
     """Download the signed apt plan strictly one package at a time."""
+    _validate_download_plan(plan, package_rows)
+    deadline = time.monotonic() + MAX_DOWNLOAD_SECONDS
     destination = _canonical_absolute_path(
         destination, "Ubuntu sequential package download directory")
-    require(isinstance(plan, list) and isinstance(package_rows, list)
-            and len(plan) == len(package_rows)
-            and 0 < len(plan) <= packages.MAX_PACKAGE_COUNT,
-            "Ubuntu sequential package download plan is invalid")
     anchor = _DirectoryAnchor(
         destination, "Ubuntu sequential package download directory")
     outputs = []
     try:
         for sequence, (planned, package) in enumerate(
                 zip(plan, package_rows, strict=True)):
-            require(planned.get("sequence") == sequence
-                    and planned.get("suite")
-                    == package.get("source", {}).get("suite")
-                    and planned.get("filename") == package.get("filename")
-                    and planned.get("bytes") == package.get("bytes")
-                    and planned.get("sha256") == package.get("sha256"),
-                    "Ubuntu ordered download differs from signed apt membership")
             name = f"{sequence:04d}-" + PurePosixPath(
                 package["filename"]).name
             require(packages._safe_filename(name, ".deb"),
                     "Ubuntu package staging filename is unsafe")
             result, created = _download_exact_at(
                 package["url"], anchor.fd, name, package["bytes"],
-                package["sha256"], opener)
+                package["sha256"], opener, deadline)
             outputs.append({
                 "sequence": sequence,
                 "path": destination / name,
@@ -995,9 +1154,6 @@ def download_package_plan(plan, package_rows, destination,
                 "_name": name,
                 "_created": created,
             })
-        require(sum(row["bytes"] for row in outputs)
-                <= packages.MAX_CLOSURE_BYTES,
-                "Ubuntu downloaded closure exceeds its total byte bound")
         anchor.verify()
         return [
             {key: value for key, value in row.items() if not key.startswith("_")}
@@ -1011,37 +1167,71 @@ def download_package_plan(plan, package_rows, destination,
         anchor.close()
 
 
-def extract_base_dpkg_status(archive, binding):
-    """Read only dpkg status from the exact authenticated Ubuntu Base archive."""
-    require(isinstance(binding, dict)
-            and type(binding.get("bytes")) is int
-            and packages.exact_hash(binding.get("sha256"))
-            and binding["bytes"] > 0,
-            "Ubuntu Base archive differs from its authenticated binding")
+def _scan_base_tar(descriptor):
+    member_count = 0
+    expanded_bytes = 0
+    selected = None
+    os.lseek(descriptor, 0, os.SEEK_SET)
+    with os.fdopen(os.dup(descriptor), "rb") as stream, tarfile.open(
+            fileobj=stream, mode="r|gz") as bundle:
+        for member in bundle:
+            member_count += 1
+            require(member_count <= MAX_BASE_TAR_MEMBERS
+                    and type(member.size) is int and member.size >= 0,
+                    "Ubuntu Base tar traversal exceeds its member bound")
+            expanded_bytes += member.size
+            require(expanded_bytes <= MAX_BASE_TAR_EXPANDED_BYTES,
+                    "Ubuntu Base tar traversal exceeds its expanded byte bound")
+            name = member.name
+            while name.startswith("./"):
+                name = name[2:]
+            if name != "var/lib/dpkg/status":
+                continue
+            require(selected is None and member.isfile()
+                    and 0 < member.size <= MAX_STATUS_BYTES,
+                    "Ubuntu Base contains a duplicate or invalid dpkg status")
+            selected = (member.name, member.type, member.size)
+    os.lseek(descriptor, 0, os.SEEK_SET)
+    require(selected is not None,
+            "Ubuntu Base archive has no bounded dpkg status")
+    return selected
+
+
+def _read_scanned_base_status(descriptor, selected):
+    result = None
+    os.lseek(descriptor, 0, os.SEEK_SET)
+    with os.fdopen(os.dup(descriptor), "rb") as stream, tarfile.open(
+            fileobj=stream, mode="r|gz") as bundle:
+        for member in bundle:
+            if (member.name, member.type, member.size) != selected:
+                continue
+            extracted = bundle.extractfile(member)
+            require(extracted is not None,
+                    "Ubuntu Base dpkg status cannot be read")
+            result = extracted.read(MAX_STATUS_BYTES + 1)
+            require(len(result) == member.size,
+                    "Ubuntu Base dpkg status changed size while reading")
+            break
+    os.lseek(descriptor, 0, os.SEEK_SET)
+    require(result is not None,
+            "Ubuntu Base dpkg status changed between bounded passes")
+    return result
+
+
+def extract_base_dpkg_status(archive, lock):
+    """Read dpkg status from the exact pending-lock Ubuntu Base archive."""
+    _validate_pending_contract(lock)
+    binding = lock["rootfs"]
+    archive = _canonical_absolute_path(archive, "Ubuntu Base archive")
+    require(archive.name == binding["archive"],
+            "Ubuntu Base archive name differs from the pending lock")
     archive, anchor, descriptor, before = _open_private_path(
         archive, binding["bytes"], "Ubuntu Base archive")
-    selected = None
     try:
         require(_fd_sha256(descriptor) == binding["sha256"],
                 "Ubuntu Base archive hash differs from its binding")
-        os.lseek(descriptor, 0, os.SEEK_SET)
-        with os.fdopen(os.dup(descriptor), "rb") as stream, tarfile.open(
-                fileobj=stream, mode="r|gz") as bundle:
-            for member in bundle:
-                name = member.name
-                while name.startswith("./"):
-                    name = name[2:]
-                if name != "var/lib/dpkg/status":
-                    continue
-                require(selected is None and member.isfile()
-                        and 0 < member.size <= MAX_STATUS_BYTES,
-                        "Ubuntu Base contains a duplicate or invalid dpkg status")
-                extracted = bundle.extractfile(member)
-                require(extracted is not None,
-                        "Ubuntu Base dpkg status cannot be read")
-                selected = extracted.read(MAX_STATUS_BYTES + 1)
-                require(len(selected) == member.size,
-                        "Ubuntu Base dpkg status changed size while reading")
+        selected = _scan_base_tar(descriptor)
+        status = _read_scanned_base_status(descriptor, selected)
         _close_private_path(
             archive, anchor, descriptor, before, "Ubuntu Base archive")
     except (tarfile.TarError, EOFError, OSError) as error:
@@ -1049,10 +1239,10 @@ def extract_base_dpkg_status(archive, binding):
     finally:
         os.close(descriptor)
         anchor.close()
-    require(isinstance(selected, bytes) and 0 < len(selected) <= MAX_STATUS_BYTES
-            and b"\x00" not in selected,
+    require(isinstance(status, bytes) and 0 < len(status) <= MAX_STATUS_BYTES
+            and b"\x00" not in status,
             "Ubuntu Base archive has no bounded dpkg status")
-    return selected, {"bytes": len(selected), "sha256": sha256_bytes(selected)}
+    return status, {"bytes": len(status), "sha256": sha256_bytes(status)}
 
 
 def _copy_exact(source, destination_fd, destination_name, expected_bytes,
@@ -1083,8 +1273,10 @@ def _copy_exact(source, destination_fd, destination_name, expected_bytes,
         _finish_private_output(
             destination_fd, destination_name, output_fd, created,
             expected_bytes, expected_sha256, "Ubuntu candidate output payload")
+        output_identity = _file_identity(os.fstat(output_fd))
         _close_private_path(
             source, anchor, source_fd, before, "Ubuntu candidate input payload")
+        return output_identity
     except BaseException:
         if created is not None:
             _unlink_created_at(destination_fd, destination_name, created)
@@ -1109,7 +1301,7 @@ def _read_bounded_regular_at(directory_fd, name, maximum, description):
     try:
         raw = _fd_read(descriptor, maximum, description)
         _finish_regular_at(directory_fd, name, descriptor, before, description)
-        return raw
+        return raw, _file_identity(before)
     finally:
         os.close(descriptor)
 
@@ -1121,14 +1313,15 @@ def _validate_bound_regular_at(directory_fd, name, row, description):
         require(_fd_sha256(descriptor) == row["sha256"],
                 description + " hash changed")
         _finish_regular_at(directory_fd, name, descriptor, before, description)
+        return _file_identity(before)
     finally:
         os.close(descriptor)
 
 
-def _validate_candidate_output_fd(root_fd, lock):
+def _validate_candidate_output_fd(root_fd, lock, expected_identities=None):
     require(set(os.listdir(root_fd)) == {"manifest.json", "metadata", "packages"},
             "Ubuntu package candidate output members changed")
-    raw_manifest = _read_bounded_regular_at(
+    raw_manifest, manifest_identity = _read_bounded_regular_at(
         root_fd, "manifest.json", packages.MAX_METADATA_BYTES,
         "Ubuntu candidate manifest")
     manifest = packages.unique_json_bytes(
@@ -1149,8 +1342,9 @@ def _validate_candidate_output_fd(root_fd, lock):
             expected_metadata[index["filename"]] = index
         require(set(os.listdir(metadata_fd)) == set(expected_metadata),
                 "Ubuntu candidate retained metadata members changed")
+        metadata_identities = {}
         for name, row in expected_metadata.items():
-            _validate_bound_regular_at(
+            metadata_identities[name] = _validate_bound_regular_at(
                 metadata_fd, name, row,
                 "Ubuntu candidate retained metadata")
         expected_packages = {}
@@ -1161,8 +1355,9 @@ def _validate_candidate_output_fd(root_fd, lock):
             expected_packages[basename] = row
         require(set(os.listdir(payloads_fd)) == set(expected_packages),
                 "Ubuntu candidate package members changed")
+        package_identities = {}
         for name, row in expected_packages.items():
-            _validate_bound_regular_at(
+            package_identities[name] = _validate_bound_regular_at(
                 payloads_fd, name, row, "Ubuntu candidate package")
         require(set(os.listdir(root_fd))
                 == {"manifest.json", "metadata", "packages"}
@@ -1179,6 +1374,31 @@ def _validate_candidate_output_fd(root_fd, lock):
                 and _directory_identity(os.fstat(payloads_fd))
                 == payloads_identity,
                 "Ubuntu candidate members changed during validation")
+        if expected_identities is not None:
+            require(isinstance(expected_identities, dict)
+                    and set(expected_identities) == {
+                        "root", "metadata_dir", "packages_dir", "manifest",
+                        "metadata", "packages", "root_exact",
+                        "metadata_dir_exact", "packages_dir_exact",
+                    }
+                    and _directory_identity(os.fstat(root_fd))
+                    == expected_identities["root"]
+                    and metadata_identity
+                    == expected_identities["metadata_dir"]
+                    and payloads_identity
+                    == expected_identities["packages_dir"]
+                    and _exact_directory_identity(os.fstat(root_fd))
+                    == expected_identities["root_exact"]
+                    and _exact_directory_identity(os.fstat(metadata_fd))
+                    == expected_identities["metadata_dir_exact"]
+                    and _exact_directory_identity(os.fstat(payloads_fd))
+                    == expected_identities["packages_dir_exact"]
+                    and manifest_identity == expected_identities["manifest"]
+                    and metadata_identities
+                    == expected_identities["metadata"]
+                    and package_identities
+                    == expected_identities["packages"],
+                    "Ubuntu candidate created identities changed")
         return manifest
     finally:
         os.close(payloads_fd)
@@ -1196,68 +1416,125 @@ def validate_candidate_output(root, lock):
         anchor.close()
 
 
-def _name_absent_at(directory_fd, name, description):
-    try:
-        os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
-    except FileNotFoundError:
-        return
-    except OSError as error:
-        raise ValueError(description + " cannot be inspected") from error
-    raise ValueError(description + " already exists")
-
-
-def _remove_candidate_tree_at(parent_fd, name, created):
-    """Remove only the known private candidate shape without following links."""
-    try:
-        root_fd = _open_private_directory_at(
-            parent_fd, name, "partial Ubuntu candidate")
-    except ValueError:
-        return
-    try:
-        if (os.fstat(root_fd).st_dev != created.st_dev
-                or os.fstat(root_fd).st_ino != created.st_ino):
-            return
-        for directory_name in ("metadata", "packages"):
-            try:
-                child_fd = _open_private_directory_at(
-                    root_fd, directory_name, "partial Ubuntu candidate directory")
-            except ValueError:
-                continue
-            child_identity = _directory_identity(os.fstat(child_fd))
-            try:
-                for child_name in os.listdir(child_fd):
-                    require(_safe_leaf(child_name),
-                            "partial Ubuntu candidate member is unsafe")
-                    info = os.stat(
-                        child_name, dir_fd=child_fd, follow_symlinks=False)
-                    require(not stat.S_ISDIR(info.st_mode),
-                            "partial Ubuntu candidate contains an unexpected directory")
-                    os.unlink(child_name, dir_fd=child_fd)
-                require(not os.listdir(child_fd)
-                        and _directory_identity(os.fstat(child_fd))
-                        == child_identity
-                        and _directory_identity(os.stat(
-                            directory_name, dir_fd=root_fd,
-                            follow_symlinks=False)) == child_identity,
-                        "partial Ubuntu candidate directory changed during cleanup")
-            finally:
-                os.close(child_fd)
-            os.rmdir(directory_name, dir_fd=root_fd)
+def _create_isolated_stage(parent_fd, destination_name):
+    for _ in range(8):
+        token = secrets.token_hex(16)
+        require(re.fullmatch(r"[a-f0-9]{32}", token) is not None,
+                "Ubuntu candidate staging token is malformed")
+        name = ".ubuntu-package-candidate-" + token
+        if name == destination_name:
+            continue
         try:
-            info = os.stat("manifest.json", dir_fd=root_fd, follow_symlinks=False)
-        except FileNotFoundError:
-            pass
-        else:
-            require(not stat.S_ISDIR(info.st_mode),
-                    "partial Ubuntu candidate manifest became a directory")
-            os.unlink("manifest.json", dir_fd=root_fd)
-        require(not os.listdir(root_fd),
-                "partial Ubuntu candidate contains unexpected members")
-    finally:
-        os.close(root_fd)
-    named = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
-    if named.st_dev == created.st_dev and named.st_ino == created.st_ino:
-        os.rmdir(name, dir_fd=parent_fd)
+            os.mkdir(name, PRIVATE_DIRECTORY_MODE, dir_fd=parent_fd)
+        except FileExistsError:
+            continue
+        descriptor = _open_private_directory_at(
+            parent_fd, name, "isolated Ubuntu candidate staging directory")
+        return name, descriptor, _directory_identity(os.fstat(descriptor))
+    raise ValueError("cannot create an isolated Ubuntu candidate staging directory")
+
+
+def _named_directory_is_held(parent_fd, name, descriptor, identity):
+    try:
+        named = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+        held = os.fstat(descriptor)
+    except OSError:
+        return False
+    return (stat.S_ISDIR(named.st_mode)
+            and _directory_identity(named) == identity
+            and _directory_identity(held) == identity)
+
+
+def _candidate_tree_matches(stage_fd, root_name, root_fd, metadata_fd,
+                            payloads_fd, identities):
+    try:
+        if (set(identities) != {
+                    "root", "metadata_dir", "packages_dir", "manifest",
+                    "metadata", "packages", "root_exact",
+                    "metadata_dir_exact", "packages_dir_exact",
+                }
+                or not _named_directory_is_held(
+                    stage_fd, root_name, root_fd, identities["root"])
+                or not _named_directory_is_held(
+                    root_fd, "metadata", metadata_fd,
+                    identities["metadata_dir"])
+                or not _named_directory_is_held(
+                    root_fd, "packages", payloads_fd,
+                    identities["packages_dir"])):
+            return False
+        exact_directories = (
+            (root_fd, identities["root_exact"]),
+            (metadata_fd, identities["metadata_dir_exact"]),
+            (payloads_fd, identities["packages_dir_exact"]),
+        )
+        if any(expected is not None
+               and _exact_directory_identity(os.fstat(descriptor)) != expected
+               for descriptor, expected in exact_directories):
+            return False
+        root_members = {"metadata", "packages"}
+        if identities["manifest"] is not None:
+            root_members.add("manifest.json")
+        if (set(os.listdir(stage_fd)) != {root_name}
+                or set(os.listdir(root_fd)) != root_members
+                or set(os.listdir(metadata_fd)) != set(identities["metadata"])
+                or set(os.listdir(payloads_fd)) != set(identities["packages"])):
+            return False
+        if identities["manifest"] is not None:
+            manifest = os.stat(
+                "manifest.json", dir_fd=root_fd, follow_symlinks=False)
+            if _file_identity(manifest) != identities["manifest"]:
+                return False
+        for name, expected in identities["metadata"].items():
+            named = os.stat(name, dir_fd=metadata_fd, follow_symlinks=False)
+            if _file_identity(named) != expected:
+                return False
+        for name, expected in identities["packages"].items():
+            named = os.stat(name, dir_fd=payloads_fd, follow_symlinks=False)
+            if _file_identity(named) != expected:
+                return False
+        return True
+    except OSError:
+        return False
+
+
+def _cleanup_candidate_tree(stage_fd, root_name, root_fd, metadata_fd,
+                            payloads_fd, identities):
+    """Delete only the complete, isolated tree with recorded exact identities."""
+    if not _candidate_tree_matches(
+            stage_fd, root_name, root_fd, metadata_fd, payloads_fd,
+            identities):
+        return False
+    for name in sorted(identities["metadata"]):
+        os.unlink(name, dir_fd=metadata_fd)
+    for name in sorted(identities["packages"]):
+        os.unlink(name, dir_fd=payloads_fd)
+    if identities["manifest"] is not None:
+        os.unlink("manifest.json", dir_fd=root_fd)
+    if (os.listdir(metadata_fd) or os.listdir(payloads_fd)
+            or not _named_directory_is_held(
+                root_fd, "metadata", metadata_fd,
+                identities["metadata_dir"])
+            or not _named_directory_is_held(
+                root_fd, "packages", payloads_fd,
+                identities["packages_dir"])):
+        return False
+    os.rmdir("metadata", dir_fd=root_fd)
+    os.rmdir("packages", dir_fd=root_fd)
+    if (os.listdir(root_fd)
+            or not _named_directory_is_held(
+                stage_fd, root_name, root_fd, identities["root"])):
+        return False
+    os.rmdir(root_name, dir_fd=stage_fd)
+    return True
+
+
+def _remove_empty_stage(parent_fd, name, stage_fd, identity):
+    if (os.listdir(stage_fd)
+            or not _named_directory_is_held(
+                parent_fd, name, stage_fd, identity)):
+        return False
+    os.rmdir(name, dir_fd=parent_fd)
+    return True
 
 
 def write_candidate_output(destination, lock, manifest, metadata_inputs,
@@ -1268,9 +1545,6 @@ def write_candidate_output(destination, lock, manifest, metadata_inputs,
         destination, "Ubuntu candidate output destination")
     require(_safe_leaf(destination.name),
             "Ubuntu candidate output destination name is unsafe")
-    partial_name = destination.name + ".partial"
-    require(_safe_leaf(partial_name),
-            "Ubuntu candidate partial output name is unsafe")
     expected_metadata = {}
     for release, index in zip(
             manifest["release_metadata"], manifest["package_indexes"], strict=True):
@@ -1289,75 +1563,123 @@ def write_candidate_output(destination, lock, manifest, metadata_inputs,
             "Ubuntu candidate output inputs are incomplete")
     anchor = _DirectoryAnchor(
         destination.parent, "Ubuntu candidate output parent")
-    partial_fd = metadata_fd = payloads_fd = manifest_fd = None
-    created = None
+    stage_fd = root_fd = metadata_fd = payloads_fd = manifest_fd = None
+    stage_name = None
+    stage_identity = None
+    manifest_created = None
+    identities = {
+        "root": None,
+        "metadata_dir": None,
+        "packages_dir": None,
+        "root_exact": None,
+        "metadata_dir_exact": None,
+        "packages_dir_exact": None,
+        "manifest": None,
+        "metadata": {},
+        "packages": {},
+    }
     renamed = False
+    published = False
     try:
-        _name_absent_at(
-            anchor.fd, destination.name, "Ubuntu candidate output destination")
-        _name_absent_at(
-            anchor.fd, partial_name, "Ubuntu candidate partial output")
-        os.mkdir(partial_name, PRIVATE_DIRECTORY_MODE, dir_fd=anchor.fd)
-        partial_fd = _open_private_directory_at(
-            anchor.fd, partial_name, "Ubuntu candidate partial output")
-        created = os.fstat(partial_fd)
-        os.mkdir("metadata", PRIVATE_DIRECTORY_MODE, dir_fd=partial_fd)
-        os.mkdir("packages", PRIVATE_DIRECTORY_MODE, dir_fd=partial_fd)
+        stage_name, stage_fd, stage_identity = _create_isolated_stage(
+            anchor.fd, destination.name)
+        root_name = "candidate"
+        os.mkdir(root_name, PRIVATE_DIRECTORY_MODE, dir_fd=stage_fd)
+        root_fd = _open_private_directory_at(
+            stage_fd, root_name, "isolated Ubuntu candidate root")
+        identities["root"] = _directory_identity(os.fstat(root_fd))
+        os.mkdir("metadata", PRIVATE_DIRECTORY_MODE, dir_fd=root_fd)
+        os.mkdir("packages", PRIVATE_DIRECTORY_MODE, dir_fd=root_fd)
         metadata_fd = _open_private_directory_at(
-            partial_fd, "metadata", "Ubuntu candidate metadata directory")
+            root_fd, "metadata", "Ubuntu candidate metadata directory")
         payloads_fd = _open_private_directory_at(
-            partial_fd, "packages", "Ubuntu candidate package directory")
+            root_fd, "packages", "Ubuntu candidate package directory")
+        identities["metadata_dir"] = _directory_identity(
+            os.fstat(metadata_fd))
+        identities["packages_dir"] = _directory_identity(
+            os.fstat(payloads_fd))
         for name in sorted(expected_metadata):
             row = expected_metadata[name]
-            _copy_exact(
+            identities["metadata"][name] = _copy_exact(
                 metadata_inputs[name], metadata_fd, name,
                 row["bytes"], row["sha256"])
         for name in sorted(expected_packages):
             row = expected_packages[name]
-            _copy_exact(
+            identities["packages"][name] = _copy_exact(
                 package_inputs[row["filename"]], payloads_fd, name,
                 row["bytes"], row["sha256"])
         raw = (json.dumps(manifest, indent=2) + "\n").encode()
         require(0 < len(raw) <= packages.MAX_METADATA_BYTES,
                 "Ubuntu candidate manifest exceeds its byte bound")
         manifest_fd, manifest_created = _create_private_regular_at(
-            partial_fd, "manifest.json", "Ubuntu candidate manifest")
+            root_fd, "manifest.json", "Ubuntu candidate manifest")
         _write_all(manifest_fd, raw)
         _finish_private_output(
-            partial_fd, "manifest.json", manifest_fd, manifest_created,
+            root_fd, "manifest.json", manifest_fd, manifest_created,
             len(raw), sha256_bytes(raw), "Ubuntu candidate manifest")
+        identities["manifest"] = _file_identity(os.fstat(manifest_fd))
         os.close(manifest_fd)
         manifest_fd = None
-        validated = _validate_candidate_output_fd(partial_fd, lock)
-        os.rename(
-            partial_name, destination.name,
-            src_dir_fd=anchor.fd, dst_dir_fd=anchor.fd)
+        identities["root_exact"] = _exact_directory_identity(
+            os.fstat(root_fd))
+        identities["metadata_dir_exact"] = _exact_directory_identity(
+            os.fstat(metadata_fd))
+        identities["packages_dir_exact"] = _exact_directory_identity(
+            os.fstat(payloads_fd))
+        validated = _validate_candidate_output_fd(
+            root_fd, lock, identities)
+        require(_candidate_tree_matches(
+                    stage_fd, root_name, root_fd, metadata_fd, payloads_fd,
+                    identities)
+                and _named_directory_is_held(
+                    anchor.fd, stage_name, stage_fd, stage_identity),
+                "Ubuntu candidate staging identity changed before publish")
+        _rename_noreplace(
+            stage_fd, root_name, anchor.fd, destination.name)
         renamed = True
         named = os.stat(
             destination.name, dir_fd=anchor.fd, follow_symlinks=False)
-        require(_directory_identity(named)
-                == _directory_identity(os.fstat(partial_fd)),
+        require(stat.S_ISDIR(named.st_mode)
+                and _directory_identity(named) == identities["root"]
+                and _directory_identity(os.fstat(root_fd)) == identities["root"],
                 "Ubuntu candidate output identity changed during rename")
+        published = True
         anchor.verify()
+        require(_remove_empty_stage(
+                    anchor.fd, stage_name, stage_fd, stage_identity),
+                "Ubuntu candidate staging directory changed after publish")
         return validated
     except BaseException:
-        if manifest_fd is not None:
-            os.close(manifest_fd)
-            manifest_fd = None
-        if payloads_fd is not None:
-            os.close(payloads_fd)
-            payloads_fd = None
-        if metadata_fd is not None:
-            os.close(metadata_fd)
-            metadata_fd = None
-        if partial_fd is not None:
-            os.close(partial_fd)
-            partial_fd = None
-        if created is not None and not renamed:
-            _remove_candidate_tree_at(anchor.fd, partial_name, created)
+        if (manifest_fd is not None and manifest_created is not None
+                and identities["manifest"] is None):
+            _unlink_created_at(
+                root_fd, "manifest.json", manifest_created)
+        cleaned = False
+        if (not renamed and stage_fd is not None and root_fd is not None
+                and metadata_fd is not None and payloads_fd is not None
+                and all(identities[field] is not None for field in (
+                    "root", "metadata_dir", "packages_dir"))):
+            for field, descriptor in (
+                    ("root_exact", root_fd),
+                    ("metadata_dir_exact", metadata_fd),
+                    ("packages_dir_exact", payloads_fd)):
+                if identities[field] is None:
+                    identities[field] = _exact_directory_identity(
+                        os.fstat(descriptor))
+            cleaned = _cleanup_candidate_tree(
+                stage_fd, "candidate", root_fd, metadata_fd, payloads_fd,
+                identities)
+        if (stage_fd is not None and stage_name is not None
+                and stage_identity is not None
+                and (cleaned or renamed)):
+            _remove_empty_stage(
+                anchor.fd, stage_name, stage_fd, stage_identity)
+        require(not published or renamed,
+                "Ubuntu candidate publication state is inconsistent")
         raise
     finally:
-        for descriptor in (manifest_fd, payloads_fd, metadata_fd, partial_fd):
+        for descriptor in (
+                manifest_fd, payloads_fd, metadata_fd, root_fd, stage_fd):
             if descriptor is not None:
                 os.close(descriptor)
         anchor.close()
@@ -1420,7 +1742,7 @@ def _contract_sha256(lock):
 def _validate_pending_contract(lock):
     from image.container import ubuntu_fixture_inputs as inputs
 
-    require(isinstance(lock, dict) and set(lock) == inputs.LOCK_FIELDS
+    require(type(lock) is dict and set(lock) == inputs.LOCK_FIELDS
             and type(lock.get("schema")) is int and lock["schema"] == 1
             and lock.get("status") == "pending"
             and all(lock.get(field) is False for field in inputs.CLAIM_FIELDS),
