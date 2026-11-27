@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "passed": false,
+  "qualification": false,
+  "run": {
+    "id": 45963493222,
+    "attempt": 1,
+    "event": "workflow_dispatch",
+    "workflow_id": 431513082,
+    "repository_id": 1472078858,
+    "head_repository_id": 1472078858,
+    "head_branch": "card/P0-03-update-proof",
+    "head_sha": "9bf9e2f0f010c06b909e284fb95eabeccc0d6eba",
+    "job_id": 140386581694,
+    "job_name": "install-and-boot",
+    "started_at": "2026-11-27T08:09:25Z",
+    "completed_at": "2026-11-27T08:32:48Z",
+    "conclusion": "failure",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45963493222"
+  },
+  "artifact": {
+    "id": 15182054885,
+    "name": "atomic-development-boot-generic",
+    "bytes": 82410,
+    "digest": "sha256:83500e8b5cb434699dc2a50a48fad2851592a9228b4f79f8ba1556423001faa1",
+    "downloaded_zip_sha256": "83500e8b5cb434699dc2a50a48fad2851592a9228b4f79f8ba1556423001faa1",
+    "files": 98,
+    "uncompressed_bytes": 229603,
+    "expires_at": "2026-12-11T08:32:44Z"
+  },
+  "retained_evidence_sha256": {
+    "atomic-disk-evidence/result.json": "4852a80313189cc717b6c7744145247471087d5b4390cc005da04b60e632b17b",
+    "atomic-disk-evidence/source-authentication/result.json": "e214b7d159f01476fde4c639cb705c6415741e2b705926518035e5f4b0083be7",
+    "atomic-disk-evidence/signed-update-and-rollback-stderr.log": "9ca4224c5759c38166f66114a9df8a387955e2c358bfafe9eeac4df992f9ca8f",
+    "atomic-disk-evidence/systemd-result.txt": "6c4cced9a98ee4069f49c9f232f1dc8a0fe2eb55676aaf9b6ec3bfd62e4d7485",
+    "atomic-update-evidence/result.json": "fe0a1e5080b7961674855cdd635c3aa3ff6bc27c79d47aa24630954fb5d5e88b",
+    "atomic-update-evidence/controller-result.json": "fac0864a32828af929fef8a5490f66414397044b77bebd16243214f7cb7c7cc1",
+    "atomic-update-evidence/same-path-positive.json": "acb480ebe6eb1f923b844921dd5521f6715f45f63039b1970d44ab681a48131d",
+    "atomic-update-evidence/same-path-positive-serial.log": "2d3b530ebe6bbdc11f9a00362c2a3ee7d1bad15e901232ca0f02c914cc863d74"
+  },
+  "observation": {
+    "stage": "same-path-positive",
+    "artifact_intake_passed": true,
+    "predecessor_installation_passed": true,
+    "source_disk_construction_passed": true,
+    "guest_booted": true,
+    "source_device": "/dev/vdb",
+    "source_identity_command_passed": true,
+    "source_mount_command_passed": true,
+    "source_mount_options_requested": ["ro", "nosuid", "nodev", "noexec"],
+    "formatted_mount_query_passed": true,
+    "formatted_mount_query_stdout_sha256": "bf889e84e369f85be8753b4734a65a18635dca3bf9a4484ccc131e2852eb54cf",
+    "guest_failure": "ValueError: update source mount controls changed",
+    "controller_failure": "ValueError: unbound or incomplete same-path positive update report",
+    "bootc_switch_attempted": false,
+    "phase_reports": 0,
+    "negative_reports": 0
+  },
+  "source_disk": {
+    "bytes": 5625753600,
+    "entries": 133,
+    "payload_bytes": 4240735420,
+    "filesystem": "ext4",
+    "label": "SYMBIUPDATE",
+    "serial": "SYMBIUPDATE",
+    "uuid": "39b13dd8-4c15-445d-b6eb-c52e11a9d844",
+    "sha256": "ecd4ccefb7e01bef5e1e9fb4f8d27b3a27abe66e84041edfc4d81c79b6e583d2"
+  },
+  "host_fixture_authentication": {
+    "passed": true,
+    "release_qualified": false,
+    "scope": "Ephemeral CI fixture key; not the ThirdKey release identity",
+    "valid_accepted": true,
+    "unsigned_rejected": true,
+    "wrong_key_rejected": true,
+    "wrong_reference_rejected": true,
+    "altered_signature_rejected": true,
+    "private_keys_removed": true
+  },
+  "resources": {
+    "controller": {
+      "memory_max_bytes": 3221225472,
+      "memory_peak_bytes": 3221225472,
+      "memory_max_events": 6820,
+      "cpu_usage_usec": 339893034
+    },
+    "hosted_parent": {
+      "memory_max_bytes": 5368709120,
+      "memory_peak_bytes": 5368713216,
+      "memory_max_events": 172465,
+      "cpu_usage_usec": 772015137
+    },
+    "oom_events": 0,
+    "oom_kill_events": 0,
+    "oom_group_kill_events": 0,
+    "swap_max_bytes": 0
+  },
+  "cleanup": {
+    "named_containers_removed_and_absent": true,
+    "loaded_image_removed": true,
+    "private_runroot_removed": true,
+    "private_storage_removed": true,
+    "child_cleanup_attempted": false,
+    "qemu_exited_naturally": true
+  },
+  "correction": {
+    "formatted_findmnt_output_is_authority": false,
+    "kernel_mountinfo_is_authority": true,
+    "mountinfo_bytes_bounded": true,
+    "mountinfo_escape_set_bounded": true,
+    "unique_exact_mountpoint_required": true,
+    "filesystem_root_required": "/",
+    "filesystem_required": "ext4",
+    "direct_source_required": "/dev/vdb",
+    "source_major_minor_bound_to_block_node": true,
+    "mounted_directory_device_bound_to_block_node": true,
+    "required_vfs_options": ["ro", "nosuid", "nodev", "noexec"],
+    "bounded_mount_observation_retained": true,
+    "resource_limits_changed": false
+  },
+  "local_verification": {
+    "focused_update_tests": 46,
+    "focused_seconds": 0.141,
+    "focused_peak_rss_kib": 34516,
+    "full_image_tests": 325,
+    "full_suite_seconds": 2.062,
+    "full_suite_peak_rss_kib": 54948,
+    "swaps": 0,
+    "python_syntax": "pass",
+    "diff_check": "pass",
+    "cold_review": "no blockers"
+  },
+  "next": "A fresh exact-head hosted run must pass the signed switch, four guest refusal controls, updated boot and rollback before qualification."
+}

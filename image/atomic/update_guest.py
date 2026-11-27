@@ -17,6 +17,10 @@ SOURCE_SERIAL_BYTES = b"SYMBIUPDATE"
 SOURCE_DEVICE_TIMEOUT_SECONDS = 30
 SYS_BLOCK = Path("/sys/class/block")
 DEV_ROOT = Path("/dev")
+MOUNTINFO = Path("/proc/self/mountinfo")
+MOUNTINFO_MAX_BYTES = 256 * 1024
+MOUNTINFO_MAX_LINES = 4096
+MOUNTINFO_MAX_LINE_BYTES = 8192
 NEGATIVE_SOURCE = Path("/run/symbi-update-negative/source")
 NEGATIVE_CASES = ("unsigned", "wrong-key", "wrong-reference", "altered-signature")
 POSITIVE_OVERLAY_CASE = "valid-signature"
@@ -60,6 +64,187 @@ def validate_source_identity(raw, expected):
     if selected != required:
         raise ValueError("update filesystem identity differs")
     return selected
+
+
+_MOUNTINFO_ESCAPES = {
+    "040": " ",
+    "011": "\t",
+    "012": "\n",
+    "134": "\\",
+}
+
+
+def _decode_mountinfo_field(value):
+    """Decode only the four escapes emitted by procfs mountinfo."""
+    if (not isinstance(value, str) or not 1 <= len(value) <= 4096
+            or "\x00" in value or "\r" in value or "\n" in value):
+        raise ValueError("invalid mountinfo field")
+    decoded = []
+    offset = 0
+    while offset < len(value):
+        if value[offset] != "\\":
+            decoded.append(value[offset])
+            offset += 1
+            continue
+        code = value[offset + 1:offset + 4]
+        if len(code) != 3 or code not in _MOUNTINFO_ESCAPES:
+            raise ValueError("invalid mountinfo escape")
+        decoded.append(_MOUNTINFO_ESCAPES[code])
+        offset += 4
+    result = "".join(decoded)
+    if "\x00" in result:
+        raise ValueError("invalid decoded mountinfo field")
+    return result
+
+
+def _mountinfo_options(value):
+    if (not isinstance(value, str) or not 1 <= len(value) <= 4096
+            or "\x00" in value or any(character.isspace() for character in value)):
+        raise ValueError("invalid mountinfo options")
+    options = value.split(",")
+    if (not 1 <= len(options) <= 128
+            or any(not option or len(option) > 4096 for option in options)):
+        raise ValueError("ambiguous mountinfo options")
+    return options
+
+
+def source_mount_observation(raw, mountpoint=SOURCE.parent):
+    """Return one bounded kernel mount observation without accepting its controls."""
+    if Path(mountpoint) != SOURCE.parent or not isinstance(raw, str):
+        raise ValueError("fixed update mountpoint required")
+    try:
+        encoded = raw.encode("utf-8")
+    except UnicodeEncodeError as error:
+        raise ValueError("invalid mountinfo encoding") from error
+    if (not 0 < len(encoded) <= MOUNTINFO_MAX_BYTES or not raw.endswith("\n")
+            or "\x00" in raw or "\r" in raw):
+        raise ValueError("invalid or oversized mountinfo")
+    lines = raw[:-1].split("\n")
+    if not 1 <= len(lines) <= MOUNTINFO_MAX_LINES:
+        raise ValueError("invalid mountinfo line count")
+    matches = []
+    for line in lines:
+        if (not line or len(line.encode("utf-8")) > MOUNTINFO_MAX_LINE_BYTES
+                or "\t" in line):
+            raise ValueError("invalid mountinfo line")
+        fields = line.split(" ")
+        if (not 10 <= len(fields) <= 128 or any(not field for field in fields)
+                or len([field for field in fields if field == "-"]) != 1):
+            raise ValueError("malformed mountinfo line")
+        separator = fields.index("-")
+        if separator < 6 or len(fields) != separator + 4:
+            raise ValueError("malformed mountinfo separator")
+        if (re.fullmatch(r"(0|[1-9][0-9]{0,9})", fields[0]) is None
+                or re.fullmatch(r"(0|[1-9][0-9]{0,9})", fields[1]) is None
+                or re.fullmatch(r"(0|[1-9][0-9]{0,6}):(0|[1-9][0-9]{0,6})",
+                                fields[2]) is None
+                or re.fullmatch(r"[A-Za-z0-9_.+-]{1,128}",
+                                fields[separator + 1]) is None
+                or any(len(field) > 4096 for field in fields[6:separator])):
+            raise ValueError("invalid mountinfo identity")
+        root = _decode_mountinfo_field(fields[3])
+        observed_mountpoint = _decode_mountinfo_field(fields[4])
+        source = _decode_mountinfo_field(fields[separator + 2])
+        options = _mountinfo_options(fields[5])
+        super_options = _mountinfo_options(fields[separator + 3])
+        if observed_mountpoint == str(mountpoint):
+            matches.append({
+                "mountpoint": observed_mountpoint,
+                "root": root,
+                "fstype": fields[separator + 1],
+                "source": source,
+                "major_minor": fields[2],
+                "options": options,
+                "super_options": super_options,
+            })
+    observation = {
+        "mountinfo_sha256": hashlib.sha256(encoded).hexdigest(),
+        "match_count": len(matches),
+    }
+    if len(matches) == 1:
+        observation.update(matches[0])
+    return observation
+
+
+def validate_source_mount(observation, source_device, device_number):
+    """Bind one mountinfo entry to the exact direct block node and controls."""
+    required = {"mountinfo_sha256", "match_count", "mountpoint", "root",
+                "fstype", "source", "major_minor", "options", "super_options"}
+    source_device = Path(source_device)
+    if (not isinstance(observation, dict) or set(observation) != required
+            or observation.get("match_count") != 1
+            or re.fullmatch(r"[a-f0-9]{64}",
+                            observation.get("mountinfo_sha256", "")) is None
+            or not isinstance(device_number, tuple) or len(device_number) != 2
+            or any(type(value) is not int or not 0 <= value <= 9999999
+                   for value in device_number)
+            or re.fullmatch(r"/dev/vd[a-z]{1,3}", str(source_device)) is None):
+        raise ValueError("ambiguous update source mount observation")
+    options = observation.get("options")
+    super_options = observation.get("super_options")
+    if (not isinstance(options, list) or not isinstance(super_options, list)
+            or len(options) != len(set(options))
+            or len(super_options) != len(set(super_options))
+            or any(not isinstance(value, str) or not value or len(value) > 4096
+                   for value in options + super_options)
+            or observation.get("mountpoint") != str(SOURCE.parent)
+            or observation.get("root") != "/"
+            or observation.get("fstype") != "ext4"
+            or observation.get("source") != str(source_device)
+            or observation.get("major_minor") != f"{device_number[0]}:{device_number[1]}"
+            or "rw" in options
+            or not {"ro", "nosuid", "nodev", "noexec"}.issubset(set(options))):
+        raise ValueError("update source mount controls changed")
+    return observation
+
+
+def validate_mounted_device(source_device, mountpoint, *, device_lstat=None,
+                            mount_stat=None, is_mount=None):
+    """Require the mounted directory and direct block node to share a device ID."""
+    source_device, mountpoint = Path(source_device), Path(mountpoint)
+    if (re.fullmatch(r"/dev/vd[a-z]{1,3}", str(source_device)) is None
+            or mountpoint != SOURCE.parent):
+        raise ValueError("fixed update source device and mountpoint required")
+    device_lstat = os.lstat if device_lstat is None else device_lstat
+    mount_stat = os.stat if mount_stat is None else mount_stat
+    is_mount = os.path.ismount if is_mount is None else is_mount
+    device = device_lstat(source_device)
+    mounted = mount_stat(mountpoint)
+    if (not stat.S_ISBLK(device.st_mode) or not stat.S_ISDIR(mounted.st_mode)
+            or not is_mount(mountpoint)):
+        raise ValueError("update source is not a direct block-device mount")
+    device_number = (os.major(device.st_rdev), os.minor(device.st_rdev))
+    mounted_number = (os.major(mounted.st_dev), os.minor(mounted.st_dev))
+    if mounted_number != device_number:
+        raise ValueError("mounted update source device number differs")
+    return device_number
+
+
+def read_mountinfo(path=MOUNTINFO):
+    """Read the current mount namespace table with a hard byte ceiling."""
+    if Path(path) != MOUNTINFO:
+        raise ValueError("fixed mountinfo path required")
+    flags = os.O_RDONLY | os.O_CLOEXEC
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    descriptor = os.open(path, flags)
+    try:
+        chunks = []
+        total = 0
+        while total <= MOUNTINFO_MAX_BYTES:
+            chunk = os.read(descriptor, min(65536, MOUNTINFO_MAX_BYTES + 1 - total))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            total += len(chunk)
+    finally:
+        os.close(descriptor)
+    if total > MOUNTINFO_MAX_BYTES:
+        raise ValueError("oversized mountinfo")
+    try:
+        return b"".join(chunks).decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError("invalid mountinfo encoding") from error
 
 
 def _sysfs_bytes(path, limit):
@@ -337,14 +522,10 @@ def main():
              str(source_device), str(SOURCE.parent)])
         if not os.statvfs(SOURCE).f_flag & os.ST_RDONLY:
             raise ValueError("update source is writable")
-        mount = run(["/usr/bin/findmnt", "-n", "-o", "SOURCE,FSTYPE,OPTIONS",
-                     "--target", str(SOURCE)]).split()
-        mounted_source = mount[0].split("[", 1)[0] if mount else ""
-        if (len(mount) != 3 or Path(mounted_source).resolve(strict=True) != source_device
-                or mount[1] != "ext4"
-                or not {"ro", "nosuid", "nodev", "noexec"}.issubset(
-                    set(mount[2].split(",")))):
-            raise ValueError("update source mount controls changed")
+        observation = source_mount_observation(read_mountinfo())
+        record["source_mount_observation"] = observation
+        device_number = validate_mounted_device(source_device, SOURCE.parent)
+        validate_source_mount(observation, source_device, device_number)
         record["source_device"] = {"path": str(source_device),
                                    "serial": SOURCE_SERIAL, **identity}
         manifest = SOURCE / "manifest.json"

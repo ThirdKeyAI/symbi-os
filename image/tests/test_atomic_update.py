@@ -30,13 +30,17 @@ from image.atomic.update_boot import (DISPOSABLE_PHASE_TIMEOUT_SECONDS,
                                       validate_shared_baseline)
 from image.atomic.update_process import TIMEOUT_SECONDS, validate_update_controller_command
 from image.atomic.update_guest import (UPDATE_COMMAND_TIMEOUT_SECONDS,
+                                       MOUNTINFO_MAX_BYTES,
                                        SOURCE, STATE, SOURCE_SERIAL,
                                        SOURCE_DEVICE_TIMEOUT_SECONDS,
                                        phase_status, deployment_snapshot,
                                        staged_deployment_snapshot,
                                        validate_source_identity,
                                        discover_source_device,
-                                       wait_for_source_device)
+                                       wait_for_source_device,
+                                       source_mount_observation,
+                                       validate_source_mount,
+                                       validate_mounted_device)
 from image.atomic.update_hosted import retain_controller_output, run_update
 from image.atomic.hosted import (RETAINED_REPORT_MAX_BYTES,
                                  validate_retained_preflight)
@@ -1030,6 +1034,84 @@ class AtomicUpdateTests(unittest.TestCase):
         for changed in mutations:
             with self.subTest(changed=changed), self.assertRaises(ValueError):
                 validate_source_identity(changed, expected)
+
+    def test_source_mount_observation_binds_kernel_mountinfo_to_the_device(self):
+        raw = (r"46 23 0:1 /cache\040root /run/other\040mount ro - tmpfs "
+               "tmpfs\\134name rw\n"
+               "47 23 252:16 / /run/symbi-update "
+               "ro,nosuid,nodev,noexec,relatime - ext4 /dev/vdb ro,seclabel\n")
+        observation = source_mount_observation(raw)
+        self.assertEqual(observation, {
+            "mountinfo_sha256": hashlib.sha256(raw.encode()).hexdigest(),
+            "match_count": 1,
+            "mountpoint": "/run/symbi-update",
+            "root": "/",
+            "fstype": "ext4",
+            "source": "/dev/vdb",
+            "major_minor": "252:16",
+            "options": ["ro", "nosuid", "nodev", "noexec", "relatime"],
+            "super_options": ["ro", "seclabel"],
+        })
+        self.assertEqual(validate_source_mount(
+            observation, Path("/dev/vdb"), (252, 16)), observation)
+
+    def test_source_mount_validation_rejects_changed_controls(self):
+        valid = ("47 23 252:16 / /run/symbi-update "
+                 "ro,nosuid,nodev,noexec,relatime - ext4 /dev/vdb ro,seclabel\n")
+        mutations = {
+            "device number": valid.replace("252:16", "252:17"),
+            "filesystem root": valid.replace("252:16 / /run", "252:16 /subtree /run"),
+            "mountpoint": valid.replace("/run/symbi-update", "/run/other"),
+            "source": valid.replace("/dev/vdb", "/dev/vdc"),
+            "filesystem": valid.replace(" ext4 ", " xfs "),
+            "read only": valid.replace("ro,nosuid", "rw,nosuid"),
+            "nosuid": valid.replace(",nosuid", ""),
+            "nodev": valid.replace(",nodev", ""),
+            "noexec": valid.replace(",noexec", ""),
+        }
+        for name, raw in mutations.items():
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                validate_source_mount(
+                    source_mount_observation(raw), Path("/dev/vdb"), (252, 16))
+
+    def test_source_mount_observation_rejects_ambiguous_or_unsafe_input(self):
+        valid = ("47 23 252:16 / /run/symbi-update "
+                 "ro,nosuid,nodev,noexec - ext4 /dev/vdb ro,seclabel\n")
+        cases = {
+            "duplicate target": valid + valid.replace("47 23", "48 23"),
+            "malformed escape": valid.replace("symbi-update", r"symbi\041update"),
+            "unknown escape": valid.replace("/dev/vdb", r"/dev/vd\142"),
+            "nul": valid.replace("ext4", "ext4\x00"),
+            "oversized": valid + ("x" * MOUNTINFO_MAX_BYTES),
+        }
+        for name, raw in cases.items():
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                observation = source_mount_observation(raw)
+                validate_source_mount(observation, Path("/dev/vdb"), (252, 16))
+
+    def test_mounted_device_binding_requires_one_real_mount_of_the_block_node(self):
+        source = Mock(st_mode=stat.S_IFBLK | 0o600,
+                      st_rdev=os.makedev(252, 16))
+        mounted = Mock(st_mode=stat.S_IFDIR | 0o755,
+                       st_dev=os.makedev(252, 16))
+        kwargs = {
+            "device_lstat": Mock(return_value=source),
+            "mount_stat": Mock(return_value=mounted),
+            "is_mount": Mock(return_value=True),
+        }
+        self.assertEqual(validate_mounted_device(
+            Path("/dev/vdb"), SOURCE.parent, **kwargs), (252, 16))
+        for name, change in {
+            "not mounted": {"is_mount": Mock(return_value=False)},
+            "not block": {"device_lstat": Mock(return_value=Mock(
+                st_mode=stat.S_IFREG | 0o600, st_rdev=os.makedev(252, 16)))},
+            "other mounted device": {"mount_stat": Mock(return_value=Mock(
+                st_mode=stat.S_IFDIR | 0o755, st_dev=os.makedev(252, 17)))},
+        }.items():
+            changed = dict(kwargs)
+            changed.update(change)
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                validate_mounted_device(Path("/dev/vdb"), SOURCE.parent, **changed)
 
     def test_existing_atomic_workflow_downloads_both_exact_artifacts(self):
         root = Path(__file__).resolve().parents[2]
