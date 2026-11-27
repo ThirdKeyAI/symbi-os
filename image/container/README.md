@@ -118,9 +118,11 @@ and hash plus `/etc/docker/daemon.json` from the generated
 `fedora-runtime.lock.json` using descriptor-relative traversal that rejects
 links in every path component; it also requires the unchanged source RPM
 inventory.
-The outer native controller remains at 4 GiB, two CPUs and zero swap, matching
-the existing Landlock gate. On a future successful observation, it will record
-only a candidate boot pass: `qualified`, `os_qualified` and
+The native container wrapper retains a 4 GiB hard cap, two CPUs and zero swap.
+The Landlock wrapper instead starts memory pressure at 4 GiB and has a 5 GiB
+hard cap, with the same CPU and swap bounds. On a future successful
+observation, it will record only a candidate boot pass: `qualified`,
+`os_qualified` and
 `release_qualified` stay false, and `native-fedora-six-run-matrix`, managed-route,
 escape-suite and review blockers remain. This stage does not invoke the
 daemon/fixture controller, and no fixture profile runs. Its bounded evidence

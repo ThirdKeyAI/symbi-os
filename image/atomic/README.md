@@ -67,12 +67,13 @@ The service has a 256 MiB/half-CPU/32-task/zero-swap ceiling and powers off afte
 the probe. A stale, incomplete or permissive report fails validation.
 
 Resource limits: current artifact preparation 1 GiB/one CPU; ordinary Atomic
-install/update controller 5 GiB/two CPUs/256 tasks; the Landlock and container
-qualification wrappers 4 GiB/two CPUs/256 tasks; temporary signer 1 GiB/one
-CPU/64 tasks; installer 2 GiB/one CPU/128 tasks; QEMU container
-3 GiB/two CPUs/64 tasks. All use zero swap. Large inputs, virtual disks and OCI
-storage stay hosted and are removed after the attempt. Only bounded original
-logs and JSON observations are uploaded. The new workflow has one concurrency
+install/update controller 5 GiB/two CPUs/256 tasks; the container qualification
+wrapper has a 4 GiB hard cap, two CPUs and 256 tasks; the Landlock qualification
+wrapper has a 4 GiB pressure threshold, a 5 GiB hard cap, two CPUs and 256 tasks;
+temporary signer 1 GiB/one CPU/64 tasks; installer 2 GiB/one CPU/128 tasks; QEMU
+container 3 GiB/two CPUs/64 tasks. All use zero swap. Large inputs, virtual disks
+and OCI storage stay hosted and are removed after the attempt. Only bounded
+original logs and JSON observations are uploaded. The new workflow has one concurrency
 group, does not cancel a running attempt and does not retrigger desktop builds.
 
 Eleven new inert fixture tests were written before implementation; the initial
