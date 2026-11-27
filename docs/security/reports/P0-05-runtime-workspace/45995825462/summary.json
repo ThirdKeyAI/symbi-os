@@ -1,0 +1,80 @@
+{
+  "schema": "symbi.p0-05.runtime-workspace-rerun.v1",
+  "run": {
+    "attempt": 2,
+    "conclusion": "success",
+    "event": "pull_request",
+    "head_sha": "cdd8e7d931ddf90f1fe8afb22d12df9c539320b4",
+    "id": 45995825462,
+    "job_id": 140511688718,
+    "merge_sha": "2189acad039387cd48116c11934da383bea8e653"
+  },
+  "inputs": {
+    "cargo_lock_sha256": "d189b27d99bfc7fafeb8b6a37c0cfe36c1beb3472a6d5ae6f41dca8883fbb59d",
+    "fixture_patch_sha256": "a4545649b1c83f0a3402781f815ebc66ea2b507128d17f61e76c4febb5017bda",
+    "runtime_source": "deddb9e997244d2289c217ad76b8fde0e9b0339b"
+  },
+  "checks": {
+    "baseline_build": true,
+    "baseline_clippy": true,
+    "baseline_format": true,
+    "baseline_tests": true,
+    "fixture_build": true,
+    "fixture_clippy": true,
+    "fixture_format": true,
+    "fixture_tests": true,
+    "focused_fixture_tests": 17,
+    "formerly_failing_test_passed_in_both_phases": true,
+    "fixture_test_log_sha256": "9542e33e758eebae78ab8b02825ee95e0126a61f6b709118df1936c5d2cf8c39",
+    "result_json_sha256": "6ca2072b9ad0a3ecd157884d2963620330a0c3f1010e1ee3009dd8763b8100c7"
+  },
+  "evidence_artifact": {
+    "bytes": 109806,
+    "downloaded": true,
+    "id": 15201192376,
+    "name": "runtime-workspace-evidence",
+    "regular_files": 16,
+    "sha256": "82ee7cfde8b9c674765a231236e6a5021438225ddf906f1b3faa782f63793b2a",
+    "uncompressed_bytes": 550542
+  },
+  "development_binary_artifact": {
+    "bytes": 529348360,
+    "downloaded": false,
+    "id": 15200318312,
+    "name": "checked-runtime-development-binaries",
+    "sha256": "79736993a728f831c27c9ce84ac5d4bbc3c5869713d4e29d20b15dec4dc0cafa",
+    "files": {
+      "supervisor": {
+        "bytes": 8635672,
+        "sha256": "57af2b2931c891c8ee7df21ac063aea64571acc460ababdcb09b8df7ed21c269"
+      },
+      "symbi": {
+        "bytes": 520712424,
+        "sha256": "bac2cf67cfe8a0a1c9de39cb44da23093ba4f5362c92937dab3e669578590128"
+      }
+    }
+  },
+  "resources": {
+    "cpu_throttled_seconds": 134.927,
+    "memory_max_bytes": 8589934592,
+    "memory_peak_bytes": 8589934592,
+    "memory_events": {
+      "max": 6120,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "swap_max_bytes": 0,
+    "swap_peak_bytes": 0
+  },
+  "cleanup": {
+    "broader_manifest_retained": false,
+    "transient_unit_collected": true
+  },
+  "scope": {
+    "os_qualified": false,
+    "release_qualified": false,
+    "runtime_workspace_passed": true,
+    "container_qualified": false
+  }
+}
