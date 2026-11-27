@@ -12,9 +12,10 @@ User=symbi-qual
 Group=symbi-qual
 WorkingDirectory=/var/lib/symbi-qualification/home
 ImportCredential=symbi-landlock.py
+ImportCredential=vertical_slice.py
 ImportCredential=symbi-runner.py
 ImportCredential=symbi-expected.json
-ExecStart=/usr/bin/python3 %d/symbi-runner.py %d/symbi-landlock.py %d/symbi-expected.json
+ExecStart=/usr/bin/python3 %d/symbi-runner.py %d/symbi-landlock.py %d/vertical_slice.py %d/symbi-expected.json
 Environment=HOME=/var/lib/symbi-qualification/home
 Environment=USER=symbi-qual
 Environment=LOGNAME=symbi-qual

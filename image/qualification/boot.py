@@ -45,6 +45,7 @@ def firmware_arguments(directory):
         ("systemd.extra-unit.l.service", "l.service"),
         ("symbi-status-server.py", "status_server.py"),
         ("symbi-landlock.py", "landlock.py"),
+        ("vertical_slice.py", "vertical_slice.py"),
         ("symbi-runner.py", "guest.py"),
         ("symbi-prepare.py", "prepare.py"),
         ("symbi-expected.json", "expected.json"),
@@ -113,13 +114,15 @@ def _bounded_decompress(encoded, compressed_bytes, expected_bytes):
     return raw
 
 
-def validate_guest_report(report, expected, expected_hash, runner_hash, driver_hash):
+def validate_guest_report(report, expected, expected_hash, runner_hash, driver_hash,
+                          validator_hash):
     required = {
         "schema": 1, "passed": True, "qualified": True, "guest_booted": True,
         "os_qualified": False, "release_qualified": False,
         "product": "Symbi-Hosted-Landlock-Probe", "nonce": expected["nonce"],
         "expected_sha256": expected_hash, "runner_sha256": runner_hash,
-        "driver_sha256": driver_hash, "source_revision": expected["source_revision"],
+        "driver_sha256": driver_hash, "validator_sha256": validator_hash,
+        "source_revision": expected["source_revision"],
         "source_manifest_sha256": expected["source_manifest_sha256"],
         "binary_sha256": expected["binary_sha256"], "image_ref": expected["image_ref"],
     }
@@ -179,7 +182,8 @@ def main():
     if ((inputs / "source.raw").stat().st_size != source_disk.get("bytes")
             or sha256(inputs / "source.raw") != source_disk.get("sha256")):
         raise ValueError("authenticated source disk changed")
-    hashes = {name: sha256(inputs / name) for name in ("guest.py", "landlock.py", "expected.json")}
+    hashes = {name: sha256(inputs / name) for name in
+              ("guest.py", "landlock.py", "vertical_slice.py", "expected.json")}
     record = {"schema": 1, "passed": False, "guest_booted": False,
               "qualification_qualified": False, "os_qualified": False,
               "release_qualified": False, "limits": limits, "inputs": hashes,
@@ -215,7 +219,8 @@ def main():
             raise ValueError("missing bounded guest qualification report")
         report = unique_json(path.read_bytes())
         files = validate_guest_report(report, expected, hashes["expected.json"],
-                                      hashes["guest.py"], hashes["landlock.py"])
+                                      hashes["guest.py"], hashes["landlock.py"],
+                                      hashes["vertical_slice.py"])
         evidence = output / "evidence"
         evidence.mkdir(mode=0o700)
         for name, raw in files.items():

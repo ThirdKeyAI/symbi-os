@@ -16,9 +16,13 @@ import socket
 import stat
 import subprocess
 import sys
-import tomllib
 
-from image.qualification.vertical_slice import validate_vertical_slice
+try:
+    from vertical_slice import validate_vertical_slice
+except ModuleNotFoundError as error:
+    if error.name != "vertical_slice":
+        raise
+    from image.qualification.vertical_slice import validate_vertical_slice
 
 ROOT = Path(__file__).resolve().parents[2]
 REQUIRED_CASES = ("onboarding", "files", "source", "git", "managed", "actions",
@@ -192,6 +196,7 @@ def main():
     parser.add_argument("--check-host", action="store_true")
     parser.add_argument("--source", type=Path)
     parser.add_argument("--binary", type=Path)
+    parser.add_argument("--expected-revision")
     parser.add_argument("--expected-binary-sha256")
     parser.add_argument("--image-ref")
     parser.add_argument("--expected-abi", type=int)
@@ -207,13 +212,15 @@ def main():
             report["host_ready"] = True
             print(json.dumps(report, indent=2))
             return 0
-        require(all((args.source, args.binary, args.expected_binary_sha256, args.image_ref,
+        require(all((args.source, args.binary, args.expected_revision,
+                     args.expected_binary_sha256, args.image_ref,
                      args.expected_abi, args.bootc_status_socket, args.output)),
                 "all qualification inputs are required")
+        require(re.fullmatch(r"[a-f0-9]{40}", args.expected_revision),
+                "invalid runtime source revision")
         require(re.fullmatch(r"[a-f0-9]{64}", args.expected_binary_sha256), "invalid binary digest")
         require(args.expected_abi >= 6, "Landlock ABI must be at least 6")
-        with (ROOT / "upstream/symbiont.toml").open("rb") as stream:
-            revision = tomllib.load(stream)["revision"]
+        revision = args.expected_revision
         source = args.source.resolve(strict=True)
         binary = args.binary.resolve(strict=True)
         validate_source(source, revision)

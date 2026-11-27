@@ -15,6 +15,19 @@ from image.atomic.update_process import TIMEOUT_SECONDS,run_update_controller
 from image.boot.inputs import require_desktop_image
 from image.boot.preflight import expected_inputs,validate_loaded_image,validate_report as validate_preflight
 from image.launcher.probes.bounded_process import run_bounded
+from image.qualification.hosted_process import (TIMEOUT_SECONDS as LANDLOCK_TIMEOUT_SECONDS,
+                                                run_landlock_controller)
+
+
+def run_hosted_command(qualification,name,command,stdout_path,stderr_path,timeout,
+                       expected_cgroup_parent=None,expected_image=None):
+    """Select the one command allowed beyond the shared process deadline."""
+    if name=='landlock-qualification':
+        if qualification!='landlock' or timeout!=LANDLOCK_TIMEOUT_SECONDS:
+            raise ValueError('Invalid hosted Landlock controller deadline')
+        return run_landlock_controller(command,stdout_path,stderr_path,
+                                       expected_cgroup_parent,expected_image)
+    return run_bounded(command,stdout_path,stderr_path,timeout,1024**2)
 
 
 def main():
@@ -56,8 +69,10 @@ def main():
             result=run_update_controller(command,evidence/(name+'-stdout.log'),
                                          evidence/(name+'-stderr.log'))
         else:
-            result=run_bounded(command,evidence/(name+'-stdout.log'),
-                               evidence/(name+'-stderr.log'),timeout,1024**2)
+            result=run_hosted_command(qualification,name,command,evidence/(name+'-stdout.log'),
+                                      evidence/(name+'-stderr.log'),timeout,
+                                      '/'+str(group.relative_to('/sys/fs/cgroup')),
+                                      record['image_id'])
         record['commands'].append({'name':name,'exit_code':result.returncode});del record['active_command'];save()
         if check: result.check_returncode()
         return result
