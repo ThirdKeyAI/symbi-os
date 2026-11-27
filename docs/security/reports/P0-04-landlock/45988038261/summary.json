@@ -83,14 +83,20 @@
       "query-status",
       "quit"
     ],
-    "qmp_socket_removed_before_retention": true,
-    "writable_overlay_removed_before_retention": true,
+    "qmp_peer_binding": "SO_PEERCRED pid/uid/gid plus process starttime, executable inode and pidfd when available",
+    "qmp_socket_mode": "0700",
+    "qmp_message_max_bytes": 16384,
+    "qmp_timeout_seconds": 2,
+    "qmp_socket_removed_only_after_exact_process_exit": true,
+    "writable_overlay_removed_only_after_exact_process_exit": true,
+    "outer_private_residue_reconciliation_after_container_absence": true,
     "outer_exact_container_absence_check_unchanged": true,
     "qualification_scope_unchanged": true,
     "native_rerun_required": true
   },
   "local_verification": {
-    "image_tests": 392,
+    "focused_adversarial_tests": 32,
+    "image_tests": 395,
     "qualification_tests": 35,
     "shell_syntax": true,
     "python_syntax": true,
