@@ -261,6 +261,19 @@ The lock must also retain false qualification fields and use the exact pinned
 Fedora 45 RPM-signing fingerprint. It cannot be generated from the passive,
 unsigned gVisor release intake alone.
 
+## Unselected Ubuntu closure producer
+
+The next package-closure slice is now represented by dormant producer code in
+`ubuntu_fixture_package_build.py`. It strictly parses the signed Release payload
+from each reviewed InRelease, checks suite/codename and Date/Valid-Until
+freshness, binds the exact amd64 Packages.xz SHA-256 member, and matches apt's
+file-only offline plan to exact signed package rows. It also provides bounded
+sequential no-redirect downloads, an authenticated Ubuntu Base dpkg-status
+binding, a no-act dpkg plan, and exact candidate-directory validation. Its
+manifest is always `candidate-unselected`; every qualification claim remains
+false and the pending public input contract still refuses it. No workflow,
+Dockerfile, native producer or artifact upload consumes this code yet.
+
 ## Required remaining evidence
 
 - Build exact-source supervisor/runtime test executables on the isolated builder.
