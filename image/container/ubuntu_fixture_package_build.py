@@ -34,6 +34,7 @@ from image.container import ubuntu_fixture_packages as packages
 
 MAX_CLOCK_SKEW = timedelta(minutes=15)
 MAX_VALIDITY_WINDOW = timedelta(days=14)
+MAX_IMMUTABLE_RELEASE_AGE = timedelta(days=1830)
 MAX_RELEASE_BYTES = packages.MAX_METADATA_BYTES
 MAX_RELEASE_LINE_BYTES = 64 * 1024
 MAX_INDEX_TEXT_BYTES = 512 * 1024**2
@@ -68,7 +69,11 @@ CANDIDATE_CLAIMS = (
 CANDIDATE_RELEASE_FIELDS = packages.RELEASE_FIELDS | {"signed", "verification"}
 SIGNED_RELEASE_FIELDS = {
     "origin", "label", "suite", "codename", "date", "valid_until",
-    "architectures", "components", "verified_at",
+    "architectures", "components", "verified_at", "freshness_policy",
+}
+FRESHNESS_POLICY_FIELDS = {
+    "suite", "codename", "inrelease_url", "signer_fingerprint", "mode",
+    "maximum_age_days",
 }
 SIGNATURE_RECORD_FIELDS = {"signing_fingerprint", "status_sha256"}
 TOOL_FIELDS = {"version", "sha256"}
@@ -477,6 +482,114 @@ def _parse_release_time(value, description):
     return parsed.astimezone(timezone.utc).replace(microsecond=0)
 
 
+def expected_freshness_policy(source):
+    """Return the reviewed freshness rule for one exact Ubuntu source."""
+    packages.validate_sources(packages.EXPECTED_SOURCES)
+    require(source in packages.EXPECTED_SOURCES,
+            "Ubuntu freshness source is not one of the reviewed sources")
+    immutable = source["suite"] == "noble"
+    return {
+        "suite": source["suite"],
+        "codename": EXPECTED_CODENAMES[source["suite"]],
+        "inrelease_url": source["metadata"]["inrelease_url"],
+        "signer_fingerprint": source["metadata"]["signer_fingerprint"],
+        "mode": "immutable-release" if immutable else "valid-until",
+        "maximum_age_days": (
+            MAX_IMMUTABLE_RELEASE_AGE.days if immutable
+            else MAX_VALIDITY_WINDOW.days
+        ),
+    }
+
+
+def validate_freshness_policy(policy, source):
+    """Reject policy rows that are not bound to the reviewed source."""
+    expected = expected_freshness_policy(source)
+    require(type(policy) is dict and set(policy) == FRESHNESS_POLICY_FIELDS
+            and policy == expected
+            and type(policy.get("maximum_age_days")) is int,
+            "Ubuntu Release freshness policy changed or is cross-bound")
+    return policy
+
+
+def _validate_release_freshness(released, valid_until, now, policy):
+    """Apply an already source-bound policy to parsed UTC timestamps."""
+    require(isinstance(released, datetime) and released.tzinfo is not None
+            and isinstance(now, datetime) and now.tzinfo is not None,
+            "Ubuntu Release freshness timestamps are malformed")
+    maximum_age = timedelta(days=policy["maximum_age_days"])
+    require(released <= now + MAX_CLOCK_SKEW,
+            "Ubuntu Release is future-dated")
+    if policy["mode"] == "immutable-release":
+        require(valid_until is None and now - released <= maximum_age,
+                "Ubuntu immutable Release has an expiry or exceeds its age bound")
+    else:
+        require(isinstance(valid_until, datetime)
+                and valid_until.tzinfo is not None
+                and released < valid_until
+                and now < valid_until
+                and valid_until - released <= maximum_age,
+                "Ubuntu rolling Release is stale or has an excessive validity window")
+
+
+def signed_release_diagnostics(raw, source):
+    """Return content-free structural diagnostics for authenticated Release text."""
+    require(isinstance(raw, bytes) and 0 < len(raw) <= MAX_RELEASE_BYTES,
+            "Ubuntu signed Release diagnostics input is empty or oversized")
+    line_names = []
+    for line in raw.splitlines():
+        match = re.match(br"([A-Za-z0-9][A-Za-z0-9-]*):", line)
+        if match is not None:
+            line_names.append(match.group(1).decode("ascii").casefold())
+    diagnostics = {
+        "bytes": len(raw),
+        "sha256": sha256_bytes(raw),
+        "control_fields_valid": False,
+        "field_count": None,
+        "date_fields": line_names.count("date"),
+        "valid_until_fields": line_names.count("valid-until"),
+        "sha256_fields": line_names.count("sha256"),
+        "origin_matches": False,
+        "label_matches": False,
+        "suite_matches": False,
+        "codename_matches": False,
+    }
+    try:
+        fields = _control_fields(raw, "Ubuntu signed Release", MAX_RELEASE_BYTES)
+    except ValueError:
+        return diagnostics
+    suite = source["suite"]
+    diagnostics.update({
+        "control_fields_valid": True,
+        "field_count": len(fields),
+        "origin_matches": fields.get("origin") == "Ubuntu",
+        "label_matches": fields.get("label") == "Ubuntu",
+        "suite_matches": fields.get("suite") == suite,
+        "codename_matches": fields.get("codename")
+        == EXPECTED_CODENAMES.get(suite),
+    })
+    return diagnostics
+
+
+def release_rejection_reason(error):
+    """Map parser detail to a bounded, content-free ledger reason."""
+    require(isinstance(error, ValueError),
+            "Ubuntu Release rejection is not a validation error")
+    message = str(error)
+    if "Valid-Until" in message or "validity window" in message:
+        return "valid-until-rejected"
+    if ("freshness" in message or "stale" in message
+            or "future-dated" in message or "age bound" in message):
+        return "freshness-rejected"
+    if any(name in message for name in (
+            "origin", "label", "suite", "codename", "freshness policy")):
+        return "identity-rejected"
+    if "architecture" in message or "component" in message:
+        return "content-scope-rejected"
+    if "SHA256" in message or "Packages.xz" in message:
+        return "index-inventory-rejected"
+    return "release-structure-rejected"
+
+
 def _control_fields(raw, description, maximum):
     require(isinstance(raw, bytes) and 0 < len(raw) <= maximum,
             description + " is empty or exceeds its byte bound")
@@ -547,11 +660,12 @@ def inrelease_verification_command(keyring, inrelease, release_output):
     ]
 
 
-def validate_signed_release(raw, source, verified_at):
+def validate_signed_release(raw, source, verified_at, freshness_policy):
     """Validate freshness, suite identity and the exact amd64 Packages.xz row."""
     packages.validate_sources(packages.EXPECTED_SOURCES)
     require(source in packages.EXPECTED_SOURCES,
             "Ubuntu Release source is not one of the reviewed sources")
+    policy = validate_freshness_policy(freshness_policy, source)
     require(isinstance(verified_at, datetime) and verified_at.tzinfo is not None,
             "Ubuntu Release verification time is not timezone aware")
     now = verified_at.astimezone(timezone.utc).replace(microsecond=0)
@@ -569,13 +683,14 @@ def validate_signed_release(raw, source, verified_at):
             and "main" in components,
             "Ubuntu Release omits the reviewed architecture or component")
     released = _parse_release_time(fields.get("date"), "Ubuntu Release Date")
-    valid_until = _parse_release_time(
-        fields.get("valid-until"), "Ubuntu Release Valid-Until")
-    require(released <= now + MAX_CLOCK_SKEW
-            and released < valid_until
-            and now < valid_until
-            and valid_until - released <= MAX_VALIDITY_WINDOW,
-            "Ubuntu Release is stale, future-dated or has an excessive validity window")
+    if policy["mode"] == "immutable-release":
+        require("valid-until" not in fields,
+                "Ubuntu immutable Release unexpectedly carries Valid-Until")
+        valid_until = None
+    else:
+        valid_until = _parse_release_time(
+            fields.get("valid-until"), "Ubuntu Release Valid-Until")
+    _validate_release_freshness(released, valid_until, now, policy)
     checksum_rows = [row for row in fields.get("sha256", "").splitlines()
                      if row]
     require(checksum_rows, "Ubuntu Release has no SHA256 inventory")
@@ -603,10 +718,11 @@ def validate_signed_release(raw, source, verified_at):
         "suite": suite,
         "codename": EXPECTED_CODENAMES[suite],
         "date": _iso_time(released),
-        "valid_until": _iso_time(valid_until),
+        "valid_until": None if valid_until is None else _iso_time(valid_until),
         "architectures": architectures,
         "components": components,
         "verified_at": _iso_time(now),
+        "freshness_policy": policy,
         "index": selected[0],
     }
 
@@ -1798,6 +1914,8 @@ def validate_candidate_manifest(lock, manifest):
                 and isinstance(signed["components"], list)
                 and "main" in signed["components"]
                 and signed["verified_at"] == manifest["verified_at"]
+                and signed["freshness_policy"]
+                == expected_freshness_policy(source)
                 and isinstance(verification, dict)
                 and set(verification) == SIGNATURE_RECORD_FIELDS
                 and verification["signing_fingerprint"]
@@ -1808,12 +1926,16 @@ def validate_candidate_manifest(lock, manifest):
             signed["verified_at"], "Ubuntu candidate verification time")
         released = _parse_iso_time(
             signed["date"], "Ubuntu candidate Release date")
-        valid_until = _parse_iso_time(
-            signed["valid_until"], "Ubuntu candidate Release expiry")
-        require(released <= verified + MAX_CLOCK_SKEW < valid_until + MAX_CLOCK_SKEW
-                and verified < valid_until
-                and valid_until - released <= MAX_VALIDITY_WINDOW,
-                "Ubuntu candidate Release freshness evidence is invalid")
+        policy = validate_freshness_policy(
+            signed["freshness_policy"], source)
+        if policy["mode"] == "immutable-release":
+            require(signed["valid_until"] is None,
+                    "Ubuntu immutable candidate Release carries an expiry")
+            valid_until = None
+        else:
+            valid_until = _parse_iso_time(
+                signed["valid_until"], "Ubuntu candidate Release expiry")
+        _validate_release_freshness(released, valid_until, verified, policy)
     count, total = packages._validate_retained_package_shape(
         manifest.get("packages"), base_releases, indexes, sources,
         manifest.get("package_count"), manifest.get("package_bytes"))

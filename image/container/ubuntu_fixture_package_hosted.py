@@ -9,6 +9,8 @@ change the state to ``ready`` before a candidate can be produced.
 from contextlib import contextmanager
 from datetime import datetime, timezone
 import argparse
+import ctypes
+import errno
 import hashlib
 import json
 import os
@@ -31,8 +33,8 @@ CONTRACT_NAME = "ubuntu-fixture-package-producer.json"
 WORKFLOW = ".github/workflows/ubuntu-fixture-packages.yml"
 CONTRACT_FIELDS = {
     "schema", "state", "repository", "workflow", "event", "runner",
-    "limits", "timeouts", "retained_inputs", "metadata_pins", "artifacts",
-    "candidate", "scope",
+    "limits", "timeouts", "retained_inputs", "freshness_policy",
+    "metadata_pins", "artifacts", "candidate", "scope",
 }
 LIMIT_FIELDS = {
     "memory_max", "memory_swap_max", "cpu_max", "pids_max",
@@ -68,7 +70,7 @@ RESULT_FIELDS = {
     "qualified", "container_qualified", "signature_qualified",
     "os_qualified", "release_qualified", "contract_sha256", "lock_sha256",
     "repository", "run", "verified_at", "rootfs", "metadata", "commands",
-    "download", "candidate", "scope",
+    "download", "candidate", "phase_ledger", "scope",
 }
 RUN_FIELDS = {
     "id", "attempt", "head_sha", "head_tree", "workflow", "event",
@@ -83,6 +85,7 @@ METADATA_RESULT_FIELDS = {
 RESULT_PAYLOAD_FIELDS = {"path", "bytes", "sha256"}
 DOWNLOAD_FIELDS = {"count", "bytes", "order_sha256"}
 RESULT_CANDIDATE_FIELDS = {"created", "manifest_sha256", "state"}
+LEDGER_RECEIPT_FIELDS = {"bytes", "sha256", "phase_count", "terminal_phase"}
 SYSTEMD_FALLBACK_FIELDS = {
     "schema", "source", "systemd", "zero_swap", "oom_observed",
     "oom_auditable", "error",
@@ -91,6 +94,37 @@ RETENTION_FIELDS = {
     "schema", "mode", "producer_exit_status", "private_work_retained",
     "recursive_path_cleanup_performed", "candidate_present",
     "post_unit_candidate_validated", "selected", "qualified",
+}
+LEDGER_FIELDS = {
+    "schema", "state", "passed", "authoritative", "selected", "qualified",
+    "container_qualified", "signature_qualified", "os_qualified",
+    "release_qualified", "mode", "contract_sha256", "lock_sha256",
+    "repository", "run", "phases", "scope",
+}
+LEDGER_PHASE_FIELDS = {
+    "sequence", "kind", "suite", "commands", "payloads", "diagnostics",
+}
+LEDGER_PAYLOAD_FIELDS = {"name", "url", "bytes", "sha256"}
+LEDGER_SCOPE = (
+    "Bounded partial hosted evidence only; never a producer result, candidate, "
+    "selection or qualification"
+)
+LEDGER_PHASE_ORDER = (
+    [("checkout", None), ("rootfs-signature", None),
+     ("rootfs-download", None)]
+    + [
+        (kind, source["suite"])
+        for source in packages.EXPECTED_SOURCES
+        for kind in (
+            "inrelease-download", "inrelease-signature",
+            "release-validated", "packages-download",
+        )
+    ]
+)
+LEDGER_REJECTION_REASONS = {
+    "valid-until-rejected", "freshness-rejected", "identity-rejected",
+    "content-scope-rejected", "index-inventory-rejected",
+    "release-structure-rejected",
 }
 
 PENDING_SCOPE = (
@@ -126,7 +160,10 @@ EXPECTED_RETAINED = {
 }
 MAX_COMMAND_OUTPUT = 16 * 1024**2
 MAX_TOOL_BYTES = 64 * 1024**2
+MAX_PHASE_LEDGER_BYTES = 2 * 1024**2
 FETCH_CHUNK = 64 * 1024
+_RENAME_NOREPLACE = 1
+_RENAME_EXCHANGE = 2
 
 
 def require(condition, message):
@@ -164,7 +201,7 @@ def validate_contract(root, contract, lock):
     root = Path(root).resolve(strict=True)
     inputs.validate_pending_lock(root, lock)
     require(type(contract) is dict and set(contract) == CONTRACT_FIELDS
-            and type(contract.get("schema")) is int and contract["schema"] == 1
+            and type(contract.get("schema")) is int and contract["schema"] == 2
             and contract.get("state") in {"pending-discovery", "ready"}
             and contract.get("repository") == packages.REPOSITORY
             and contract.get("workflow") == WORKFLOW
@@ -182,6 +219,13 @@ def validate_contract(root, contract, lock):
             and set(contract["retained_inputs"]) == RETAINED_FIELDS
             and contract["retained_inputs"] == EXPECTED_RETAINED,
             "Ubuntu hosted producer retained input paths changed")
+    policies = contract.get("freshness_policy")
+    require(type(policies) is list
+            and len(policies) == len(packages.EXPECTED_SOURCES),
+            "Ubuntu hosted producer freshness policy count changed")
+    for policy, source in zip(
+            policies, packages.EXPECTED_SOURCES, strict=True):
+        build.validate_freshness_policy(policy, source)
     pins = contract.get("metadata_pins")
     require(type(pins) is list
             and len(pins) == len(packages.EXPECTED_SOURCES),
@@ -718,6 +762,706 @@ def _write_json(path, value):
     return {"bytes": len(raw), "sha256": sha256_bytes(raw)}
 
 
+def _stable_private_file_identity(info, digest):
+    return {
+        "device": info.st_dev,
+        "inode": info.st_ino,
+        "mode": info.st_mode,
+        "links": info.st_nlink,
+        "uid": info.st_uid,
+        "gid": info.st_gid,
+        "rdevice": info.st_rdev,
+        "bytes": info.st_size,
+        "mtime_ns": info.st_mtime_ns,
+        "ctime_ns": info.st_ctime_ns,
+        "sha256": digest,
+    }
+
+
+def _same_published_private_file(first, second):
+    """Compare one file across a rename, which may legitimately change ctime."""
+    if type(first) is not dict or type(second) is not dict:
+        return False
+    fields = set(first) - {"ctime_ns"}
+    return set(first) == set(second) and all(
+        first[name] == second[name] for name in fields)
+
+
+def _private_file_stat_identity(info):
+    return (
+        info.st_dev, info.st_ino, info.st_mode, info.st_nlink,
+        info.st_uid, info.st_gid, info.st_rdev, info.st_size,
+        info.st_mtime_ns, info.st_ctime_ns,
+    )
+
+
+def _read_private_named_file(directory_fd, name, description, maximum,
+                             *, missing_ok=False):
+    """Read one direct private file without following or blocking on its type."""
+    require(type(directory_fd) is int and directory_fd >= 0
+            and _safe_evidence_name(name)
+            and type(maximum) is int and maximum > 0
+            and type(description) is str and description,
+            "Ubuntu private evidence read request is malformed")
+    try:
+        descriptor = os.open(
+            name,
+            os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_NONBLOCK,
+            dir_fd=directory_fd)
+    except FileNotFoundError:
+        if missing_ok:
+            return None
+        raise ValueError(description + " is missing") from None
+    except OSError as error:
+        raise ValueError(description + " is unsafe") from error
+    try:
+        before = os.fstat(descriptor)
+        require(stat.S_ISREG(before.st_mode) and before.st_nlink == 1
+                and before.st_uid == os.geteuid()
+                and before.st_gid == os.getegid()
+                and stat.S_IMODE(before.st_mode) == 0o600
+                and 0 < before.st_size <= maximum,
+                description + " is not one bounded private regular file")
+        remaining = before.st_size
+        chunks = []
+        digest = hashlib.sha256()
+        while remaining:
+            block = os.read(descriptor, min(FETCH_CHUNK, remaining))
+            require(block, description + " was truncated while reading")
+            chunks.append(block)
+            digest.update(block)
+            remaining -= len(block)
+        require(os.read(descriptor, 1) == b"",
+                description + " grew while reading")
+        after = os.fstat(descriptor)
+        try:
+            named = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+        except OSError as error:
+            raise ValueError(description + " name changed while reading") from error
+        stable = _private_file_stat_identity(before)
+        require(stable == _private_file_stat_identity(after)
+                == _private_file_stat_identity(named),
+                description + " identity changed while reading")
+        raw = b"".join(chunks)
+        require(len(raw) == before.st_size,
+                description + " byte count changed while reading")
+        return raw, _stable_private_file_identity(before, digest.hexdigest())
+    finally:
+        os.close(descriptor)
+
+
+def _open_private_evidence_directory(path):
+    path = Path(path)
+    try:
+        descriptor = os.open(
+            path,
+            os.O_RDONLY | os.O_CLOEXEC | os.O_DIRECTORY | os.O_NOFOLLOW
+            | os.O_NONBLOCK)
+    except OSError as error:
+        raise ValueError("Ubuntu phase-ledger evidence directory is unsafe") \
+            from error
+    try:
+        before = os.fstat(descriptor)
+        require(stat.S_ISDIR(before.st_mode)
+                and before.st_uid == os.geteuid()
+                and before.st_gid == os.getegid()
+                and stat.S_IMODE(before.st_mode) == 0o700,
+                "Ubuntu phase-ledger evidence directory is not private")
+        named = os.stat(path, follow_symlinks=False)
+        stable = lambda info: (
+            info.st_dev, info.st_ino, info.st_mode, info.st_nlink,
+            info.st_uid, info.st_gid, info.st_rdev,
+            info.st_mtime_ns, info.st_ctime_ns,
+        )
+        require(stable(before) == stable(named),
+                "Ubuntu phase-ledger evidence directory identity changed")
+        return descriptor
+    except BaseException:
+        os.close(descriptor)
+        raise
+
+
+def _ledger_payload(name, url, identity):
+    require(_safe_evidence_name(name) and type(url) is str
+            and url.startswith("https://")
+            and type(identity) is dict
+            and set(identity) == PAYLOAD_PIN_FIELDS
+            and _strict_positive_int(identity.get("bytes"), packages.MAX_INDEX_BYTES)
+            and packages.exact_hash(identity.get("sha256")),
+            "Ubuntu phase-ledger payload is malformed")
+    return {"name": name, "url": url, **identity}
+
+
+def _renameat2(source_fd, source_name, destination_fd, destination_name, flags):
+    require(_safe_evidence_name(source_name)
+            and _safe_evidence_name(destination_name)
+            and flags in {_RENAME_NOREPLACE, _RENAME_EXCHANGE},
+            "Ubuntu phase-ledger rename request is malformed")
+    try:
+        renameat2 = ctypes.CDLL(None, use_errno=True).renameat2
+    except AttributeError as error:
+        raise ValueError(
+            "atomic Ubuntu phase-ledger publication is unavailable") from error
+    renameat2.argtypes = (
+        ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p,
+        ctypes.c_uint,
+    )
+    renameat2.restype = ctypes.c_int
+    result = renameat2(
+        source_fd, os.fsencode(source_name), destination_fd,
+        os.fsencode(destination_name), flags)
+    if result != 0:
+        number = ctypes.get_errno()
+        if number == errno.EEXIST:
+            raise FileExistsError(
+                number, "Ubuntu phase-ledger destination already exists",
+                destination_name)
+        raise OSError(number, "atomic Ubuntu phase-ledger publication failed")
+
+
+def _validate_release_diagnostics(value):
+    fields = {
+        "bytes", "sha256", "control_fields_valid", "field_count",
+        "date_fields", "valid_until_fields", "sha256_fields",
+        "origin_matches", "label_matches", "suite_matches",
+        "codename_matches",
+    }
+    require(type(value) is dict and set(value) == fields
+            and _strict_positive_int(value.get("bytes"), packages.MAX_METADATA_BYTES)
+            and packages.exact_hash(value.get("sha256"))
+            and type(value.get("control_fields_valid")) is bool
+            and (value.get("field_count") is None
+                 or _strict_positive_int(value["field_count"], 4096))
+            and all(type(value.get(name)) is int and 0 <= value[name] <= 4096
+                    for name in (
+                        "date_fields", "valid_until_fields", "sha256_fields"))
+            and all(type(value.get(name)) is bool for name in (
+                "origin_matches", "label_matches", "suite_matches",
+                "codename_matches")),
+            "Ubuntu phase-ledger Release diagnostics are malformed")
+    require((value["field_count"] is not None)
+            is value["control_fields_valid"],
+            "Ubuntu phase-ledger Release diagnostic validity disagrees")
+    return value
+
+
+def _expected_checkout_commands(source_root):
+    return {
+        "checkout-head": [
+            "/usr/bin/git", "-C", str(source_root), "rev-parse", "--verify",
+            "HEAD^{commit}",
+        ],
+        "checkout-tree": [
+            "/usr/bin/git", "-C", str(source_root), "rev-parse", "--verify",
+            "HEAD^{tree}",
+        ],
+        "checkout-clean": [
+            "/usr/bin/git", "-C", str(source_root), "status",
+            "--porcelain=v1", "--untracked-files=all",
+        ],
+    }
+
+
+def validate_phase_ledger(value, mode, contract, lock, evidence, source_root,
+                          expected_run=None):
+    """Validate one strict prefix of the non-authoritative hosted phase ledger."""
+    evidence = Path(evidence).resolve(strict=True)
+    source_root = Path(source_root).resolve(strict=True)
+    require(type(value) is dict and set(value) == LEDGER_FIELDS
+            and type(value.get("schema")) is int and value["schema"] == 1
+            and value.get("state") == "partial-evidence"
+            and value.get("passed") is False
+            and value.get("authoritative") is False
+            and all(value.get(field) is False for field in (
+                "selected", "qualified", "container_qualified",
+                "signature_qualified", "os_qualified", "release_qualified"))
+            and value.get("mode") == mode
+            and value.get("contract_sha256") == canonical_json_sha256(contract)
+            and value.get("lock_sha256") == canonical_json_sha256(lock)
+            and value.get("repository") == packages.REPOSITORY
+            and value.get("scope") == LEDGER_SCOPE,
+            "Ubuntu phase ledger fields or authority claims changed")
+    run = value.get("run")
+    require(type(run) is dict and set(run) == RUN_FIELDS
+            and _strict_positive_int(run.get("id"))
+            and _strict_positive_int(run.get("attempt"))
+            and packages.exact_hash(run.get("head_sha"), 40)
+            and packages.exact_hash(run.get("head_tree"), 40)
+            and run.get("workflow") == WORKFLOW
+            and run.get("event") == "workflow_dispatch"
+            and (expected_run is None or run == expected_run),
+            "Ubuntu phase ledger run identity changed")
+    phases = value.get("phases")
+    require(type(phases) is list and len(phases) <= len(LEDGER_PHASE_ORDER),
+            "Ubuntu phase ledger is oversized")
+    retained = validate_retained_inputs(source_root, contract, lock)
+    prior = {}
+    for offset, phase in enumerate(phases):
+        expected_kind, expected_suite = LEDGER_PHASE_ORDER[offset]
+        rejection = (type(phase) is dict
+                     and phase.get("kind") == "release-rejected")
+        require(type(phase) is dict and set(phase) == LEDGER_PHASE_FIELDS
+                and type(phase.get("sequence")) is int
+                and phase["sequence"] == offset + 1
+                and (phase.get("kind") == expected_kind
+                     or (rejection and expected_kind == "release-validated"
+                         and offset == len(phases) - 1))
+                and phase.get("suite") == expected_suite
+                and type(phase.get("commands")) is list
+                and len(phase["commands"]) <= 3
+                and type(phase.get("payloads")) is list
+                and len(phase["payloads"]) <= 1
+                and type(phase.get("diagnostics")) is dict,
+                "Ubuntu phase ledger order or fields changed")
+        command_by_name = {}
+        for command in phase["commands"]:
+            validate_command_result(evidence, command)
+            require(command["name"] not in command_by_name
+                    and command["timed_out"] is False
+                    and command["exit_status"] == 0,
+                    "Ubuntu phase ledger contains a failed or duplicate command")
+            command_by_name[command["name"]] = command
+        payloads = phase["payloads"]
+        for payload in payloads:
+            require(type(payload) is dict and set(payload) == LEDGER_PAYLOAD_FIELDS
+                    and _safe_evidence_name(payload.get("name"))
+                    and type(payload.get("url")) is str
+                    and payload["url"].startswith("https://")
+                    and _strict_positive_int(
+                        payload.get("bytes"), packages.MAX_INDEX_BYTES)
+                    and packages.exact_hash(payload.get("sha256")),
+                    "Ubuntu phase ledger payload fields changed")
+
+        if rejection:
+            source = next(row for row in packages.EXPECTED_SOURCES
+                          if row["suite"] == expected_suite)
+            download_phase = prior[("inrelease-download", expected_suite)]
+            signature_phase = prior[("inrelease-signature", expected_suite)]
+            inrelease = download_phase["payloads"][0]
+            diagnostics = phase["diagnostics"]
+            require(command_by_name == {} and payloads == []
+                    and type(diagnostics) is dict
+                    and set(diagnostics) == {
+                        "reason", "inrelease", "signer_fingerprint"}
+                    and diagnostics.get("reason") in LEDGER_REJECTION_REASONS
+                    and diagnostics.get("inrelease") == {
+                        "bytes": inrelease["bytes"],
+                        "sha256": inrelease["sha256"],
+                    }
+                    and diagnostics.get("signer_fingerprint")
+                    == source["metadata"]["signer_fingerprint"]
+                    == signature_phase["diagnostics"]["signature"][
+                        "signing_fingerprint"],
+                    "Ubuntu phase ledger Release rejection changed")
+            prior[("release-rejected", expected_suite)] = phase
+            continue
+        if expected_kind == "checkout":
+            expected = _expected_checkout_commands(source_root)
+            require(set(command_by_name) == set(expected) and payloads == []
+                    and phase["diagnostics"] == {
+                        "head_sha": run["head_sha"],
+                        "head_tree": run["head_tree"],
+                        "clean": True,
+                    }, "Ubuntu phase ledger checkout binding changed")
+            for name, argv in expected.items():
+                row = command_by_name[name]
+                require(row["argv"] == argv and row["network"] == "host"
+                        and row["launcher"] is None and row["inputs"] == []
+                        and row["timeout_seconds"]
+                        == contract["timeouts"]["metadata_seconds"]
+                        and _read_raw_file(evidence, row["stderr"]["path"]) == b"",
+                        "Ubuntu phase ledger checkout command changed")
+            require(_read_raw_file(
+                        evidence, command_by_name["checkout-head"]["stdout"]["path"])
+                    == (run["head_sha"] + "\n").encode("ascii")
+                    and _read_raw_file(
+                        evidence,
+                        command_by_name["checkout-tree"]["stdout"]["path"])
+                    == (run["head_tree"] + "\n").encode("ascii")
+                    and _read_raw_file(
+                        evidence,
+                        command_by_name["checkout-clean"]["stdout"]["path"])
+                    == b"", "Ubuntu phase ledger checkout outputs changed")
+        elif expected_kind == "rootfs-signature":
+            command = command_by_name.get("rootfs-gpgv")
+            expected_inputs = [retained[name] for name in (
+                "archive_keyring", "checksum_signature", "checksum")]
+            expected_argv = [
+                "/usr/bin/gpgv", "--status-fd=1", "--keyring",
+                str(source_root / contract["retained_inputs"]["archive_keyring"]),
+                str(source_root / contract["retained_inputs"]["checksum_signature"]),
+                str(source_root / contract["retained_inputs"]["checksum"]),
+            ]
+            require(command is not None and len(command_by_name) == 1
+                    and command["argv"] == expected_argv
+                    and command["inputs"] == expected_inputs
+                    and command["network"] == "host"
+                    and command["launcher"] is None
+                    and command["timeout_seconds"]
+                    == contract["timeouts"]["metadata_seconds"]
+                    and payloads == [],
+                    "Ubuntu phase ledger rootfs signature command changed")
+            observed = build.validate_gpgv_status(
+                command["exit_status"],
+                _read_raw_file(evidence, command["stdout"]["path"]).decode("utf-8"),
+                lock["rootfs"]["checksum"]["signer_fingerprint"])
+            require(phase["diagnostics"] == observed,
+                    "Ubuntu phase ledger rootfs signature diagnostics changed")
+        elif expected_kind == "rootfs-download":
+            require(command_by_name == {} and len(payloads) == 1
+                    and payloads[0] == _ledger_payload(
+                        "rootfs", lock["rootfs"]["url"], {
+                            "bytes": lock["rootfs"]["bytes"],
+                            "sha256": lock["rootfs"]["sha256"],
+                        })
+                    and phase["diagnostics"] == {},
+                    "Ubuntu phase ledger rootfs payload changed")
+        else:
+            source = next(row for row in packages.EXPECTED_SOURCES
+                          if row["suite"] == expected_suite)
+            policy = build.expected_freshness_policy(source)
+            if expected_kind == "inrelease-download":
+                require(command_by_name == {} and len(payloads) == 1
+                        and payloads[0]["name"] == "inrelease-" + expected_suite
+                        and payloads[0]["url"]
+                        == source["metadata"]["inrelease_url"]
+                        and payloads[0]["bytes"] <= packages.MAX_METADATA_BYTES
+                        and phase["diagnostics"] == {},
+                        "Ubuntu phase ledger InRelease payload changed")
+                pin = next(row for row in contract["metadata_pins"]
+                           if row["suite"] == expected_suite)["inrelease"]
+                if contract["state"] == "ready":
+                    require({key: payloads[0][key] for key in PAYLOAD_PIN_FIELDS}
+                            == pin,
+                            "Ubuntu phase ledger InRelease differs from its pin")
+            elif expected_kind == "inrelease-signature":
+                command = command_by_name.get("inrelease-" + expected_suite)
+                prior_download = prior[("inrelease-download", expected_suite)]
+                expected_input = {
+                    key: prior_download["payloads"][0][key]
+                    for key in ("name", "bytes", "sha256")
+                }
+                require(command is not None and len(command_by_name) == 1
+                        and command["inputs"]
+                        == [expected_input, retained["archive_keyring"]]
+                        and command["network"] == "host"
+                        and command["launcher"] is None
+                        and command["timeout_seconds"]
+                        == contract["timeouts"]["metadata_seconds"]
+                        and len(command["argv"]) == 7
+                        and command["argv"][:4] == [
+                            "/usr/bin/gpgv", "--status-fd=1", "--keyring",
+                            str(source_root / contract["retained_inputs"][
+                                "archive_keyring"]),
+                        ]
+                        and command["argv"][4] == "--output"
+                        and Path(command["argv"][5]).name
+                        == expected_suite + "_Release"
+                        and Path(command["argv"][6]).name
+                        == expected_suite + "_InRelease"
+                        and Path(command["argv"][5]).parent
+                        == Path(command["argv"][6]).parent
+                        and Path(command["argv"][5]).parent.name
+                        == "metadata-" + expected_suite
+                        and payloads == [],
+                        "Ubuntu phase ledger InRelease command cross-binding changed")
+                diagnostics = phase["diagnostics"]
+                require(type(diagnostics) is dict
+                        and set(diagnostics) == {"signature", "release"},
+                        "Ubuntu phase ledger InRelease diagnostics changed")
+                observed = build.validate_gpgv_status(
+                    command["exit_status"],
+                    _read_raw_file(
+                        evidence, command["stdout"]["path"]).decode("utf-8"),
+                    source["metadata"]["signer_fingerprint"])
+                require(diagnostics["signature"] == observed,
+                        "Ubuntu phase ledger InRelease signature changed")
+                _validate_release_diagnostics(diagnostics["release"])
+            elif expected_kind == "release-validated":
+                signature_phase = prior[("inrelease-signature", expected_suite)]
+                diagnostics = phase["diagnostics"]
+                release_diagnostics = signature_phase["diagnostics"]["release"]
+                require(command_by_name == {} and payloads == []
+                        and type(diagnostics) is dict
+                        and set(diagnostics) == {
+                            "freshness_policy", "release", "index"}
+                        and diagnostics["freshness_policy"] == policy
+                        and release_diagnostics["control_fields_valid"] is True
+                        and release_diagnostics["date_fields"] == 1
+                        and release_diagnostics["valid_until_fields"]
+                        == (0 if policy["mode"] == "immutable-release" else 1)
+                        and release_diagnostics["sha256_fields"] == 1
+                        and all(release_diagnostics[name] is True for name in (
+                            "origin_matches", "label_matches", "suite_matches",
+                            "codename_matches"))
+                        and diagnostics["release"]
+                        == {key: release_diagnostics[key]
+                            for key in ("bytes", "sha256")}
+                        and type(diagnostics["index"]) is dict
+                        and set(diagnostics["index"])
+                        == packages.RELEASE_INDEX_FIELDS
+                        and diagnostics["index"]["path"]
+                        == "main/binary-amd64/Packages.xz"
+                        and _strict_positive_int(
+                            diagnostics["index"]["bytes"], packages.MAX_INDEX_BYTES)
+                        and packages.exact_hash(diagnostics["index"]["sha256"]),
+                        "Ubuntu phase ledger validated Release binding changed")
+            else:
+                validated = prior[("release-validated", expected_suite)]
+                identity = validated["diagnostics"]["index"]
+                require(command_by_name == {} and len(payloads) == 1
+                        and payloads[0] == _ledger_payload(
+                            "packages-" + expected_suite, source["packages_url"], {
+                                "bytes": identity["bytes"],
+                                "sha256": identity["sha256"],
+                            })
+                        and phase["diagnostics"] == {},
+                        "Ubuntu phase ledger Packages payload changed")
+                pin = next(row for row in contract["metadata_pins"]
+                           if row["suite"] == expected_suite)["packages_xz"]
+                if contract["state"] == "ready":
+                    require({key: payloads[0][key] for key in PAYLOAD_PIN_FIELDS}
+                            == pin,
+                            "Ubuntu phase ledger Packages differs from its pin")
+        prior[(expected_kind, expected_suite)] = phase
+    return value
+
+
+def _load_phase_ledger_at(directory_fd):
+    retained = _read_private_named_file(
+        directory_fd, "phase-ledger.json", "Ubuntu phase ledger",
+        MAX_PHASE_LEDGER_BYTES)
+    raw, identity = retained
+    value = packages.unique_json_bytes(raw, MAX_PHASE_LEDGER_BYTES)
+    return value, raw, identity
+
+
+def load_phase_ledger(path):
+    """Load one descriptor-anchored, bounded, duplicate-free phase ledger."""
+    path = Path(path)
+    require(path.name == "phase-ledger.json",
+            "Ubuntu phase-ledger path changed")
+    directory_fd = _open_private_evidence_directory(path.parent)
+    try:
+        value, _, _ = _load_phase_ledger_at(directory_fd)
+        return value
+    finally:
+        os.close(directory_fd)
+
+
+class PhaseLedger:
+    """Atomically retain a strict prefix of completed hosted phases."""
+
+    def __init__(self, evidence, mode, contract, lock, run, source_root):
+        self.evidence = Path(evidence).resolve(strict=True)
+        self.mode = mode
+        self.contract = contract
+        self.lock = lock
+        self.run = dict(run)
+        self.source_root = Path(source_root).resolve(strict=True)
+        self.published = False
+        self.fd = _open_private_evidence_directory(self.evidence)
+        self.value = {
+            "schema": 1,
+            "state": "partial-evidence",
+            "passed": False,
+            "authoritative": False,
+            "selected": False,
+            "qualified": False,
+            "container_qualified": False,
+            "signature_qualified": False,
+            "os_qualified": False,
+            "release_qualified": False,
+            "mode": mode,
+            "contract_sha256": canonical_json_sha256(contract),
+            "lock_sha256": canonical_json_sha256(lock),
+            "repository": packages.REPOSITORY,
+            "run": self.run,
+            "phases": [],
+            "scope": LEDGER_SCOPE,
+        }
+        try:
+            self._persist()
+        except BaseException:
+            self.close()
+            raise
+
+    def _named_identity(self, name):
+        retained = _read_private_named_file(
+            self.fd, name, "Ubuntu phase-ledger named output",
+            MAX_PHASE_LEDGER_BYTES, missing_ok=True)
+        return None if retained is None else retained[1]
+
+    def _persist(self):
+        validate_phase_ledger(
+            self.value, self.mode, self.contract, self.lock, self.evidence,
+            self.source_root, self.run)
+        raw = (json.dumps(self.value, indent=2, sort_keys=True) + "\n").encode()
+        require(len(raw) <= MAX_PHASE_LEDGER_BYTES,
+                "Ubuntu phase ledger exceeds its byte bound")
+        temporary = "phase-ledger.new"
+        final = "phase-ledger.json"
+        descriptor = None
+        temporary_created = False
+        temporary_key = None
+        temporary_identity = None
+        prior_final = self._named_identity(final)
+        require((not self.published and prior_final is None)
+                or (self.published and prior_final is not None),
+                "Ubuntu phase-ledger destination has an unexpected state")
+        require(self._named_identity(temporary) is None,
+                "Ubuntu phase-ledger temporary name already exists")
+        try:
+            descriptor = os.open(
+                temporary,
+                os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_CLOEXEC
+                | os.O_NOFOLLOW, 0o600, dir_fd=self.fd)
+            temporary_created = True
+            created = os.fstat(descriptor)
+            temporary_key = (created.st_dev, created.st_ino)
+            view = memoryview(raw)
+            while view:
+                count = os.write(descriptor, view)
+                require(count > 0, "Ubuntu phase-ledger write stalled")
+                view = view[count:]
+            os.fsync(descriptor)
+            info = os.fstat(descriptor)
+            require(stat.S_ISREG(info.st_mode) and info.st_nlink == 1
+                    and info.st_uid == os.geteuid()
+                    and info.st_gid == os.getegid()
+                    and stat.S_IMODE(info.st_mode) == 0o600
+                    and info.st_size == len(raw),
+                    "Ubuntu phase-ledger temporary output changed")
+            os.close(descriptor)
+            descriptor = None
+            temporary_identity = self._named_identity(temporary)
+            require(temporary_identity is not None
+                    and (temporary_identity["device"],
+                         temporary_identity["inode"]) == temporary_key
+                    and temporary_identity["bytes"] == len(raw)
+                    and temporary_identity["sha256"] == sha256_bytes(raw)
+                    and self._named_identity(final) == prior_final,
+                    "Ubuntu phase-ledger name changed before publication")
+            if prior_final is None:
+                _renameat2(
+                    self.fd, temporary, self.fd, final, _RENAME_NOREPLACE)
+                temporary_created = False
+            else:
+                _renameat2(
+                    self.fd, temporary, self.fd, final, _RENAME_EXCHANGE)
+                if not _same_published_private_file(
+                        self._named_identity(temporary), prior_final):
+                    _renameat2(
+                        self.fd, temporary, self.fd, final, _RENAME_EXCHANGE)
+                    raise ValueError(
+                        "Ubuntu phase-ledger destination raced publication")
+                os.unlink(temporary, dir_fd=self.fd)
+                temporary_created = False
+            require(_same_published_private_file(
+                        self._named_identity(final), temporary_identity),
+                    "Ubuntu phase-ledger destination raced publication")
+            os.fsync(self.fd)
+            self.published = True
+        finally:
+            if descriptor is not None:
+                os.close(descriptor)
+            if temporary_created:
+                try:
+                    info = os.stat(
+                        temporary, dir_fd=self.fd, follow_symlinks=False)
+                    require(stat.S_ISREG(info.st_mode)
+                            and (info.st_dev, info.st_ino) == temporary_key,
+                            "Ubuntu phase-ledger temporary output changed")
+                    os.unlink(temporary, dir_fd=self.fd)
+                except FileNotFoundError:
+                    pass
+        value, _, identity = _load_phase_ledger_at(self.fd)
+        require(value == self.value
+                and _same_published_private_file(identity, temporary_identity),
+                "Ubuntu phase ledger changed after atomic publication")
+
+    def append(self, kind, suite, commands=(), payloads=(), diagnostics=None):
+        expected = LEDGER_PHASE_ORDER[len(self.value["phases"])]
+        require((kind, suite) == expected,
+                "Ubuntu phase ledger append is out of order")
+        self.value["phases"].append({
+            "sequence": len(self.value["phases"]) + 1,
+            "kind": kind,
+            "suite": suite,
+            "commands": list(commands),
+            "payloads": list(payloads),
+            "diagnostics": {} if diagnostics is None else diagnostics,
+        })
+        self._persist()
+
+    def reject_release(self, suite, inrelease, signer_fingerprint, reason):
+        expected = LEDGER_PHASE_ORDER[len(self.value["phases"])]
+        require(expected == ("release-validated", suite)
+                and type(inrelease) is dict
+                and set(inrelease) == PAYLOAD_PIN_FIELDS
+                and _strict_positive_int(
+                    inrelease.get("bytes"), packages.MAX_METADATA_BYTES)
+                and packages.exact_hash(inrelease.get("sha256"))
+                and packages.full_fingerprint(signer_fingerprint)
+                and reason in LEDGER_REJECTION_REASONS,
+                "Ubuntu phase-ledger Release rejection is malformed")
+        self.value["phases"].append({
+            "sequence": len(self.value["phases"]) + 1,
+            "kind": "release-rejected",
+            "suite": suite,
+            "commands": [],
+            "payloads": [],
+            "diagnostics": {
+                "reason": reason,
+                "inrelease": inrelease,
+                "signer_fingerprint": signer_fingerprint,
+            },
+        })
+        self._persist()
+
+    def receipt(self):
+        value, raw, _ = _load_phase_ledger_at(self.fd)
+        require(value == self.value,
+                "Ubuntu phase ledger changed before final receipt")
+        terminal = self.value["phases"][-1]["kind"] \
+            if self.value["phases"] else None
+        return {
+            "bytes": len(raw),
+            "sha256": sha256_bytes(raw),
+            "phase_count": len(self.value["phases"]),
+            "terminal_phase": terminal,
+        }
+
+    def close(self):
+        if self.fd is not None:
+            os.close(self.fd)
+            self.fd = None
+
+
+def validate_phase_ledger_receipt(receipt, mode, contract, lock, evidence,
+                                  source_root, run):
+    """Reopen the final ledger and bind its exact bytes to a success receipt."""
+    directory_fd = _open_private_evidence_directory(evidence)
+    try:
+        ledger_value, ledger_raw, _ = _load_phase_ledger_at(directory_fd)
+        validate_phase_ledger(
+            ledger_value, mode, contract, lock, evidence, source_root, run)
+        require(type(receipt) is dict and set(receipt) == LEDGER_RECEIPT_FIELDS
+                and receipt == {
+                    "bytes": len(ledger_raw),
+                    "sha256": sha256_bytes(ledger_raw),
+                    "phase_count": len(LEDGER_PHASE_ORDER),
+                    "terminal_phase": "packages-download",
+                }
+                and len(ledger_value["phases"]) == len(LEDGER_PHASE_ORDER)
+                and ledger_value["phases"][-1]["kind"] == "packages-download"
+                and ledger_value["phases"][-1]["suite"] == "noble-security",
+                "Ubuntu producer result phase-ledger receipt changed")
+        return ledger_value
+    finally:
+        os.close(directory_fd)
+
+
 def systemd_fallback_record(raw):
     """Preserve resource state when the unit cannot run its finally block."""
     require(isinstance(raw, bytes) and len(raw) <= packages.MAX_CONTROL_FILE_BYTES
@@ -899,7 +1643,8 @@ def _run_checkout_binding(root, expected_head, runner, timeout):
     return values["checkout-tree"]
 
 
-def _run_rootfs(root, lock, contract, work, evidence, runner, retained):
+def _run_rootfs(root, lock, contract, work, evidence, runner, retained,
+                ledger=None):
     binding = lock["rootfs"]
     keyring = root / contract["retained_inputs"]["archive_keyring"]
     checksum = root / contract["retained_inputs"]["checksum"]
@@ -917,11 +1662,19 @@ def _run_rootfs(root, lock, contract, work, evidence, runner, retained):
     signature_record = build.validate_gpgv_status(
         command["exit_status"], stdout.decode("utf-8"),
         binding["checksum"]["signer_fingerprint"])
+    if ledger is not None:
+        ledger.append(
+            "rootfs-signature", None, commands=[command],
+            diagnostics=signature_record)
     archive = work / binding["archive"]
     payload = fetch_exact(
         binding["url"], archive, binding["bytes"],
         contract["timeouts"]["rootfs_seconds"],
         expected={"bytes": binding["bytes"], "sha256": binding["sha256"]})
+    if ledger is not None:
+        ledger.append(
+            "rootfs-download", None,
+            payloads=[_ledger_payload("rootfs", binding["url"], payload)])
     return archive, {
         "archive": binding["archive"],
         **payload,
@@ -933,14 +1686,15 @@ def _run_rootfs(root, lock, contract, work, evidence, runner, retained):
 
 
 def _run_metadata(lock, contract, work, evidence, runner, verified_at,
-                  keyring_path, keyring_identity):
+                  keyring_path, keyring_identity, ledger=None):
     releases = []
     indexes = []
     metadata_result = []
     metadata_inputs = {}
     index_inputs = {}
-    for source, pin in zip(
-            lock["sources"], contract["metadata_pins"], strict=True):
+    for source, pin, policy in zip(
+            lock["sources"], contract["metadata_pins"],
+            contract["freshness_policy"], strict=True):
         suite = source["suite"]
         directory = work / ("metadata-" + suite)
         directory.mkdir(mode=0o700)
@@ -952,6 +1706,12 @@ def _run_metadata(lock, contract, work, evidence, runner, verified_at,
             packages.MAX_METADATA_BYTES,
             contract["timeouts"]["metadata_seconds"],
             expected=inrelease_expected)
+        if ledger is not None:
+            ledger.append(
+                "inrelease-download", suite,
+                payloads=[_ledger_payload(
+                    "inrelease-" + suite,
+                    source["metadata"]["inrelease_url"], inrelease)])
         release_path = directory / (suite + "_Release")
         argv = build.inrelease_verification_command(
             keyring_path, inrelease_path, release_path)
@@ -968,14 +1728,42 @@ def _run_metadata(lock, contract, work, evidence, runner, verified_at,
         release_raw = packages.read_bounded_control_file(
             directory, release_path.name, "authenticated Ubuntu Release",
             packages.MAX_METADATA_BYTES)
-        signed = build.validate_signed_release(
-            release_raw, source, verified_at)
+        release_diagnostics = build.signed_release_diagnostics(
+            release_raw, source)
+        if ledger is not None:
+            ledger.append(
+                "inrelease-signature", suite, commands=[command],
+                diagnostics={
+                    "signature": signature_record,
+                    "release": release_diagnostics,
+                })
+        try:
+            signed = build.validate_signed_release(
+                release_raw, source, verified_at, policy)
+        except ValueError as error:
+            if ledger is not None:
+                ledger.reject_release(
+                    suite, inrelease,
+                    signature_record["signing_fingerprint"],
+                    build.release_rejection_reason(error))
+            raise
         if contract["state"] == "ready":
             require(inrelease == pin["inrelease"]
                     and signed["index"] == {
                         "path": "main/binary-amd64/Packages.xz",
                         **pin["packages_xz"],
                     }, "authenticated Ubuntu metadata differs from reviewed pins")
+        if ledger is not None:
+            ledger.append(
+                "release-validated", suite,
+                diagnostics={
+                    "freshness_policy": policy,
+                    "release": {
+                        "bytes": release_diagnostics["bytes"],
+                        "sha256": release_diagnostics["sha256"],
+                    },
+                    "index": signed["index"],
+                })
         index_path = directory / (
             suite + "_main_binary-amd64_Packages.xz")
         index = fetch_exact(
@@ -985,6 +1773,11 @@ def _run_metadata(lock, contract, work, evidence, runner, verified_at,
                 "bytes": signed["index"]["bytes"],
                 "sha256": signed["index"]["sha256"],
             })
+        if ledger is not None:
+            ledger.append(
+                "packages-download", suite,
+                payloads=[_ledger_payload(
+                    "packages-" + suite, source["packages_url"], index)])
         release_row = build.release_record(
             source, signed, inrelease, signature_record)
         index_row = build.index_record(source, signed["index"])
@@ -1239,7 +2032,7 @@ def require_clean_resources(group):
 
 
 def _result(mode, contract, lock, run, verified_at, rootfs, metadata,
-            commands, download, candidate):
+            commands, download, candidate, phase_ledger):
     passed = mode == "produce"
     return {
         "schema": 1,
@@ -1264,6 +2057,7 @@ def _result(mode, contract, lock, run, verified_at, rootfs, metadata,
         "commands": commands,
         "download": download,
         "candidate": candidate,
+        "phase_ledger": phase_ledger,
         "scope": RESULT_SCOPE,
     }
 
@@ -1299,6 +2093,9 @@ def validate_result(result, mode, contract, lock, evidence, source_root,
             and run.get("workflow") == WORKFLOW
             and run.get("event") == "workflow_dispatch",
             "Ubuntu producer result run identity is malformed")
+    receipt = result.get("phase_ledger")
+    validate_phase_ledger_receipt(
+        receipt, mode, contract, lock, evidence, source_root, run)
     rootfs = result.get("rootfs")
     require(type(rootfs) is dict and set(rootfs) == ROOTFS_RESULT_FIELDS
             and rootfs.get("archive") == lock["rootfs"]["archive"]
@@ -1427,19 +2224,29 @@ def run(root, mode, work, evidence, output, environ=None):
     group, _ = validate_cgroup(contract)
     runner = CommandRunner(evidence, work)
     error = None
+    ledger = None
     try:
         run_identity["head_tree"] = _run_checkout_binding(
             root, run_identity["head_sha"], runner,
             contract["timeouts"]["metadata_seconds"])
+        ledger = PhaseLedger(
+            evidence, mode, contract, lock, run_identity, root)
+        ledger.append(
+            "checkout", None, commands=runner.results[-3:],
+            diagnostics={
+                "head_sha": run_identity["head_sha"],
+                "head_tree": run_identity["head_tree"],
+                "clean": True,
+            })
         retained = validate_retained_inputs(root, contract, lock)
         verified_at = datetime.now(timezone.utc).replace(microsecond=0)
         rootfs_archive, rootfs_result = _run_rootfs(
-            root, lock, contract, work, evidence, runner, retained)
+            root, lock, contract, work, evidence, runner, retained, ledger)
         releases, indexes, metadata_result, metadata_inputs, index_inputs = \
             _run_metadata(
                 lock, contract, work, evidence, runner, verified_at,
                 root / contract["retained_inputs"]["archive_keyring"],
-                retained["archive_keyring"])
+                retained["archive_keyring"], ledger)
         if mode == "produce":
             download, candidate = _produce(
                 root, lock, contract, work, evidence, output, runner,
@@ -1454,7 +2261,8 @@ def run(root, mode, work, evidence, output, environ=None):
         require_clean_resources(group)
         result = _result(
             mode, contract, lock, run_identity, verified_at, rootfs_result,
-            metadata_result, runner.results, download, candidate)
+            metadata_result, runner.results, download, candidate,
+            ledger.receipt())
         validate_result(
             result, mode, contract, lock, evidence, root,
             output / "candidate" if mode == "produce" else None)
@@ -1478,6 +2286,7 @@ def run(root, mode, work, evidence, output, environ=None):
                     }
                     for row in metadata_result
                 ],
+                "phase_ledger": result["phase_ledger"],
                 "scope": "Authenticated current metadata for review; not a pin",
             }
             _write_json(evidence / "discovery.json", discovery)
@@ -1486,6 +2295,8 @@ def run(root, mode, work, evidence, output, environ=None):
         error = type(caught).__name__ + ": " + str(caught)
         raise
     finally:
+        if ledger is not None:
+            ledger.close()
         _write_cgroup_final(group, evidence, contract["limits"], error)
 
 

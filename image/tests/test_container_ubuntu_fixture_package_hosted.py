@@ -4,6 +4,8 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import signal
+import socket
 import subprocess
 import tempfile
 import unittest
@@ -82,7 +84,12 @@ class UbuntuHostedProducerTests(unittest.TestCase):
         return contract
 
     def test_committed_contract_is_strict_pending_discovery(self):
+        self.assertEqual(self.contract["schema"], 2)
         self.assertEqual(self.contract["state"], "pending-discovery")
+        self.assertEqual(
+            [row["mode"] for row in self.contract["freshness_policy"]],
+            ["immutable-release", "valid-until", "valid-until"],
+        )
         self.assertEqual(
             [row["suite"] for row in self.contract["metadata_pins"]],
             packages.EXPECTED_REQUEST["suites"],
@@ -117,6 +124,16 @@ class UbuntuHostedProducerTests(unittest.TestCase):
         changed = self.ready_contract()
         changed["candidate"]["producer_passed"] = True
         cases.append(changed)
+        for field, value in (
+                ("suite", "noble-updates"),
+                ("codename", "jammy"),
+                ("inrelease_url", "https://security.ubuntu.com/ubuntu/dists/noble/InRelease"),
+                ("signer_fingerprint", "A" * 40),
+                ("mode", "valid-until"),
+                ("maximum_age_days", 1831)):
+            changed = copy.deepcopy(self.contract)
+            changed["freshness_policy"][0][field] = value
+            cases.append(changed)
         for contract in cases:
             with self.subTest(contract=contract), self.assertRaises(ValueError):
                 hosted.validate_contract(ROOT, contract, self.lock)
@@ -136,6 +153,12 @@ class UbuntuHostedProducerTests(unittest.TestCase):
                 changed["metadata_pins"][0]["inrelease"]["bytes"] = True
             with self.subTest(change=change), self.assertRaises(ValueError):
                 hosted.validate_contract(ROOT, changed, self.lock)
+        changed = copy.deepcopy(contract)
+        changed["metadata_pins"][0]["inrelease"] = {
+            "bytes": None, "sha256": None,
+        }
+        with self.assertRaises(ValueError):
+            hosted.validate_contract(ROOT, changed, self.lock)
 
     def test_produce_refuses_before_inputs_cgroup_commands_or_network(self):
         environment = self.hosted_environment()
@@ -338,6 +361,792 @@ class UbuntuHostedProducerTests(unittest.TestCase):
                 "sha256": "2" * 64,
             }],
         }
+
+    def ledger_command(self, evidence, name, argv, stdout=b"", stderr=b"",
+                       inputs_=()):
+        raw = evidence / "raw"
+        raw.mkdir(mode=0o700, exist_ok=True)
+        for suffix, payload in (("stdout", stdout), ("stderr", stderr)):
+            path = raw / f"{name}.{suffix}"
+            path.write_bytes(payload)
+            path.chmod(0o600)
+        descriptor = os.open(argv[0], os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
+        try:
+            tool = hosted._tool_record(argv[0], descriptor)
+        finally:
+            os.close(descriptor)
+        return {
+            "name": name,
+            "argv": argv,
+            "tool": tool,
+            "launcher": None,
+            "network": "host",
+            "timeout_seconds": self.contract["timeouts"]["metadata_seconds"],
+            "timed_out": False,
+            "exit_status": 0,
+            "started_at": "2026-11-27T00:00:00Z",
+            "finished_at": "2026-11-27T00:00:01Z",
+            "duration_ms": 1,
+            "stdout": {
+                "path": f"raw/{name}.stdout",
+                "bytes": len(stdout),
+                "sha256": hashlib.sha256(stdout).hexdigest(),
+            },
+            "stderr": {
+                "path": f"raw/{name}.stderr",
+                "bytes": len(stderr),
+                "sha256": hashlib.sha256(stderr).hexdigest(),
+            },
+            "inputs": list(inputs_),
+        }
+
+    @staticmethod
+    def gpg_status(fingerprint):
+        return (
+            "[GNUPG:] NEWSIG\n"
+            f"[GNUPG:] GOODSIG {fingerprint[-16:]} Ubuntu Archive\n"
+            f"[GNUPG:] VALIDSIG {fingerprint} 2026-11-27 1795780800 "
+            f"0 4 0 1 10 01 {fingerprint}\n"
+        ).encode()
+
+    def ledger_fixture(self, base, *, full=True, run_id=123):
+        evidence = base / "evidence"
+        evidence.mkdir(mode=0o700)
+        run = {
+            "id": run_id,
+            "attempt": 2,
+            "head_sha": "a" * 40,
+            "head_tree": "b" * 40,
+            "workflow": hosted.WORKFLOW,
+            "event": "workflow_dispatch",
+        }
+        checkout = []
+        outputs = {
+            "checkout-head": (run["head_sha"] + "\n").encode(),
+            "checkout-tree": (run["head_tree"] + "\n").encode(),
+            "checkout-clean": b"",
+        }
+        for name, argv in hosted._expected_checkout_commands(ROOT).items():
+            checkout.append(self.ledger_command(
+                evidence, name, argv, outputs[name]))
+        ledger = hosted.PhaseLedger(
+            evidence, "discover", self.contract, self.lock, run, ROOT)
+        inodes = [(evidence / "phase-ledger.json").stat().st_ino]
+
+        def append(*args, **kwargs):
+            ledger.append(*args, **kwargs)
+            inodes.append((evidence / "phase-ledger.json").stat().st_ino)
+
+        append("checkout", None, commands=checkout, diagnostics={
+            "head_sha": run["head_sha"],
+            "head_tree": run["head_tree"],
+            "clean": True,
+        })
+        retained = hosted.validate_retained_inputs(
+            ROOT, self.contract, self.lock)
+        root_fingerprint = self.lock["rootfs"]["checksum"]["signer_fingerprint"]
+        root_status = self.gpg_status(root_fingerprint)
+        root_command = self.ledger_command(
+            evidence, "rootfs-gpgv", [
+                "/usr/bin/gpgv", "--status-fd=1", "--keyring",
+                str(ROOT / self.contract["retained_inputs"]["archive_keyring"]),
+                str(ROOT / self.contract["retained_inputs"]["checksum_signature"]),
+                str(ROOT / self.contract["retained_inputs"]["checksum"]),
+            ], root_status, inputs_=[retained[name] for name in (
+                "archive_keyring", "checksum_signature", "checksum")])
+        append(
+            "rootfs-signature", None, commands=[root_command],
+            diagnostics=hosted.build.validate_gpgv_status(
+                0, root_status.decode(), root_fingerprint))
+        append(
+            "rootfs-download", None,
+            payloads=[hosted._ledger_payload(
+                "rootfs", self.lock["rootfs"]["url"], {
+                    "bytes": self.lock["rootfs"]["bytes"],
+                    "sha256": self.lock["rootfs"]["sha256"],
+                })])
+        for sequence, source in enumerate(packages.EXPECTED_SOURCES, 1):
+            suite = source["suite"]
+            identity = {
+                "bytes": 100 + sequence,
+                "sha256": format(sequence, "064x"),
+            }
+            append(
+                "inrelease-download", suite,
+                payloads=[hosted._ledger_payload(
+                    "inrelease-" + suite,
+                    source["metadata"]["inrelease_url"], identity)])
+            directory = base / ("metadata-" + suite)
+            directory.mkdir(mode=0o700)
+            fingerprint = source["metadata"]["signer_fingerprint"]
+            status = self.gpg_status(fingerprint)
+            command = self.ledger_command(
+                evidence, "inrelease-" + suite, [
+                    "/usr/bin/gpgv", "--status-fd=1", "--keyring",
+                    str(ROOT / self.contract["retained_inputs"]["archive_keyring"]),
+                    "--output", str(directory / (suite + "_Release")),
+                    str(directory / (suite + "_InRelease")),
+                ], status, inputs_=({
+                    "name": "inrelease-" + suite, **identity,
+                }, retained["archive_keyring"]))
+            expiry = "" if suite == "noble" else "Valid-Until: later\n"
+            release = (
+                "Origin: Ubuntu\nLabel: Ubuntu\n"
+                f"Suite: {suite}\nCodename: noble\nDate: now\n"
+                f"{expiry}SHA256:\n"
+            ).encode()
+            diagnostics = hosted.build.signed_release_diagnostics(
+                release, source)
+            append(
+                "inrelease-signature", suite, commands=[command],
+                diagnostics={
+                    "signature": hosted.build.validate_gpgv_status(
+                        0, status.decode(), fingerprint),
+                    "release": diagnostics,
+                })
+            if not full and suite == "noble":
+                return ledger, evidence, run, inodes, identity
+            index = {
+                "path": "main/binary-amd64/Packages.xz",
+                "bytes": 200 + sequence,
+                "sha256": format(10 + sequence, "064x"),
+            }
+            append(
+                "release-validated", suite, diagnostics={
+                    "freshness_policy": hosted.build.expected_freshness_policy(
+                        source),
+                    "release": {
+                        "bytes": diagnostics["bytes"],
+                        "sha256": diagnostics["sha256"],
+                    },
+                    "index": index,
+                })
+            append(
+                "packages-download", suite,
+                payloads=[hosted._ledger_payload(
+                    "packages-" + suite, source["packages_url"], {
+                        "bytes": index["bytes"],
+                        "sha256": index["sha256"],
+                    })])
+        return ledger, evidence, run, inodes, None
+
+    def discovery_result_fixture(self, base):
+        ledger, evidence, run, _, _ = self.ledger_fixture(base, full=True)
+        phases = ledger.value["phases"]
+        commands = [
+            command
+            for phase in phases
+            for command in phase["commands"]
+        ]
+        metadata = []
+        for source in packages.EXPECTED_SOURCES:
+            suite = source["suite"]
+            inrelease = next(
+                phase for phase in phases
+                if phase["kind"] == "inrelease-download"
+                and phase["suite"] == suite)["payloads"][0]
+            index = next(
+                phase for phase in phases
+                if phase["kind"] == "packages-download"
+                and phase["suite"] == suite)["payloads"][0]
+            signature = next(
+                phase for phase in phases
+                if phase["kind"] == "inrelease-signature"
+                and phase["suite"] == suite)["diagnostics"]["signature"]
+            metadata.append({
+                "suite": suite,
+                "inrelease": {
+                    "path": suite + "_InRelease",
+                    "bytes": inrelease["bytes"],
+                    "sha256": inrelease["sha256"],
+                },
+                "packages_xz": {
+                    "path": suite + "_main_binary-amd64_Packages.xz",
+                    "bytes": index["bytes"],
+                    "sha256": index["sha256"],
+                },
+                "release": {"suite": suite},
+                "signature": signature,
+            })
+        rootfs = self.lock["rootfs"]
+        result = hosted._result(
+            "discover", self.contract, self.lock, run,
+            hosted.datetime(2026, 11, 27, 12, 0,
+                            tzinfo=hosted.timezone.utc), {
+                "archive": rootfs["archive"],
+                "bytes": rootfs["bytes"],
+                "sha256": rootfs["sha256"],
+                "checksum_sha256": rootfs["checksum"]["sha256"],
+                "checksum_signature_sha256": rootfs["checksum"][
+                    "signature_sha256"],
+                "keyring_sha256": rootfs["keyring"]["sha256"],
+                "signing_fingerprint": rootfs["checksum"][
+                    "signer_fingerprint"],
+            }, metadata, commands,
+            {"count": 0, "bytes": 0, "order_sha256": None},
+            {
+                "created": False, "manifest_sha256": None,
+                "state": "candidate-unselected",
+            }, ledger.receipt())
+        return ledger, evidence, result
+
+    def test_phase_ledger_atomically_accepts_every_strict_success_prefix(self):
+        with tempfile.TemporaryDirectory() as directory:
+            ledger, evidence, run, inodes, _ = self.ledger_fixture(
+                Path(directory), full=True)
+            try:
+                self.assertEqual(
+                    len(ledger.value["phases"]), len(hosted.LEDGER_PHASE_ORDER))
+                self.assertEqual(len(inodes), len(hosted.LEDGER_PHASE_ORDER) + 1)
+                self.assertEqual(len(set(inodes)), len(inodes))
+                receipt = ledger.receipt()
+                self.assertEqual(receipt["phase_count"], 15)
+                self.assertEqual(receipt["terminal_phase"], "packages-download")
+                hosted.validate_phase_ledger_receipt(
+                    receipt, "discover", self.contract, self.lock,
+                    evidence, ROOT, run)
+                for cutoff in range(len(ledger.value["phases"]) + 1):
+                    prefix = copy.deepcopy(ledger.value)
+                    prefix["phases"] = prefix["phases"][:cutoff]
+                    hosted.validate_phase_ledger(
+                        prefix, "discover", self.contract, self.lock,
+                        evidence, ROOT, run)
+                serialized = json.dumps(ledger.value)
+                self.assertNotIn("Origin: Ubuntu", serialized)
+                self.assertNotIn("Valid-Until:", serialized)
+                self.assertLess(
+                    (evidence / "phase-ledger.json").stat().st_size,
+                    hosted.MAX_PHASE_LEDGER_BYTES)
+            finally:
+                ledger.close()
+
+    def test_phase_ledger_receipt_rejects_different_exact_bytes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            ledger, evidence, run, _, _ = self.ledger_fixture(
+                Path(directory), full=True)
+            try:
+                receipt = ledger.receipt()
+                path = evidence / "phase-ledger.json"
+                path.write_bytes(path.read_bytes() + b"\n")
+                path.chmod(0o600)
+                with self.assertRaisesRegex(ValueError, "receipt changed"):
+                    hosted.validate_phase_ledger_receipt(
+                        receipt, "discover", self.contract, self.lock,
+                        evidence, ROOT, run)
+            finally:
+                ledger.close()
+
+    def test_phase_ledger_receipt_rejects_same_size_name_replacement(self):
+        with tempfile.TemporaryDirectory() as directory:
+            ledger, evidence, run, _, _ = self.ledger_fixture(
+                Path(directory), full=True)
+            try:
+                receipt = ledger.receipt()
+                path = evidence / "phase-ledger.json"
+                raw = path.read_bytes()
+                real_read = hosted.os.read
+                replaced = False
+
+                def replace_after_read(descriptor, count):
+                    nonlocal replaced
+                    block = real_read(descriptor, count)
+                    if block and not replaced:
+                        replaced = True
+                        replacement = evidence / "same-size-replacement"
+                        replacement.write_bytes(raw)
+                        replacement.chmod(0o600)
+                        os.replace(replacement, path)
+                    return block
+
+                with mock.patch.object(
+                        hosted.os, "read", side_effect=replace_after_read), \
+                        self.assertRaisesRegex(ValueError, "identity changed"):
+                    hosted.validate_phase_ledger_receipt(
+                        receipt, "discover", self.contract, self.lock,
+                        evidence, ROOT, run)
+                self.assertTrue(replaced)
+                self.assertEqual(path.read_bytes(), raw)
+            finally:
+                ledger.close()
+
+    def test_phase_ledger_receipt_cannot_mix_runs_or_ledgers(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            (base / "first").mkdir()
+            (base / "second").mkdir()
+            first, first_evidence, first_run, _, _ = self.ledger_fixture(
+                base / "first", full=True, run_id=123)
+            second, second_evidence, second_run, _, _ = self.ledger_fixture(
+                base / "second", full=True, run_id=456)
+            try:
+                first_receipt = first.receipt()
+                second_receipt = second.receipt()
+                with self.assertRaises(ValueError):
+                    hosted.validate_phase_ledger_receipt(
+                        first_receipt, "discover", self.contract, self.lock,
+                        second_evidence, ROOT, second_run)
+                with self.assertRaises(ValueError):
+                    hosted.validate_phase_ledger_receipt(
+                        second_receipt, "discover", self.contract, self.lock,
+                        second_evidence, ROOT, first_run)
+                hosted.validate_phase_ledger_receipt(
+                    first_receipt, "discover", self.contract, self.lock,
+                    first_evidence, ROOT, first_run)
+            finally:
+                first.close()
+                second.close()
+
+    def test_release_validation_failure_ends_in_fixed_non_authoritative_row(self):
+        with tempfile.TemporaryDirectory() as directory:
+            ledger, evidence, run, _, inrelease = self.ledger_fixture(
+                Path(directory), full=False)
+            try:
+                ledger.reject_release(
+                    "noble", inrelease,
+                    packages.EXPECTED_SOURCES[0]["metadata"][
+                        "signer_fingerprint"],
+                    "valid-until-rejected")
+                hosted.validate_phase_ledger(
+                    ledger.value, "discover", self.contract, self.lock,
+                    evidence, ROOT, run)
+                terminal = ledger.value["phases"][-1]
+                self.assertEqual(terminal["kind"], "release-rejected")
+                self.assertEqual(
+                    terminal["diagnostics"]["inrelease"], inrelease)
+                self.assertFalse(ledger.value["passed"])
+                self.assertFalse((evidence / "producer-result.json").exists())
+                self.assertEqual(
+                    hosted.build.release_rejection_reason(ValueError(
+                        "Ubuntu Release Valid-Until is missing or oversized")),
+                    "valid-until-rejected")
+            finally:
+                ledger.close()
+
+    def test_metadata_parser_persists_rejection_before_propagating_failure(self):
+        source = copy.deepcopy(packages.EXPECTED_SOURCES[1])
+        contract = copy.deepcopy(self.contract)
+        contract["freshness_policy"] = [
+            hosted.build.expected_freshness_policy(source)]
+        contract["metadata_pins"] = [contract["metadata_pins"][1]]
+        lock = copy.deepcopy(self.lock)
+        lock["sources"] = [source]
+        identity = {"bytes": 123, "sha256": "1" * 64}
+        status = self.gpg_status(source["metadata"]["signer_fingerprint"])
+        release = (
+            "Origin: Ubuntu\nLabel: Ubuntu\nSuite: noble-updates\n"
+            "Codename: noble\nDate: Fri, 27 Nov 2026 11:00:00 GMT\n"
+            "Architectures: amd64\nComponents: main\nSHA256:\n"
+            f" {'2' * 64} 1 main/binary-amd64/Packages.xz\n"
+        ).encode()
+
+        class Runner:
+            def run(self, *_args, **_kwargs):
+                return {"timed_out": False, "exit_status": 0}, status, b""
+
+        class Ledger:
+            def __init__(self):
+                self.calls = []
+
+            def append(self, kind, suite, **kwargs):
+                self.calls.append((kind, suite, kwargs))
+
+            def reject_release(self, *args):
+                self.calls.append(("reject", *args))
+
+        ledger = Ledger()
+        retained = hosted.validate_retained_inputs(
+            ROOT, self.contract, self.lock)
+        with tempfile.TemporaryDirectory() as directory, \
+                mock.patch.object(hosted, "fetch_exact", return_value=identity), \
+                mock.patch.object(
+                    hosted.packages, "read_bounded_control_file",
+                    return_value=release), \
+                self.assertRaisesRegex(ValueError, "Valid-Until"):
+            hosted._run_metadata(
+                lock, contract, Path(directory), Path(directory), Runner(),
+                hosted.datetime(2026, 11, 27, 12, 0,
+                                tzinfo=hosted.timezone.utc),
+                ROOT / self.contract["retained_inputs"]["archive_keyring"],
+                retained["archive_keyring"], ledger)
+        self.assertEqual(
+            [row[0] for row in ledger.calls],
+            ["inrelease-download", "inrelease-signature", "reject"],
+        )
+        self.assertEqual(ledger.calls[-1][1], "noble-updates")
+        self.assertEqual(ledger.calls[-1][2], identity)
+        self.assertEqual(
+            ledger.calls[-1][-1], "valid-until-rejected")
+
+    def test_phase_ledger_rejects_mutation_order_duplicates_and_cross_binding(self):
+        with tempfile.TemporaryDirectory() as directory:
+            ledger, evidence, run, _, _ = self.ledger_fixture(
+                Path(directory), full=True)
+            try:
+                cases = []
+                changed = copy.deepcopy(ledger.value)
+                changed["phases"][3], changed["phases"][4] = (
+                    changed["phases"][4], changed["phases"][3])
+                cases.append(changed)
+                changed = copy.deepcopy(ledger.value)
+                changed["phases"].insert(
+                    5, copy.deepcopy(changed["phases"][4]))
+                cases.append(changed)
+                changed = copy.deepcopy(ledger.value)
+                changed["run"]["head_sha"] = "c" * 40
+                cases.append(changed)
+                changed = copy.deepcopy(ledger.value)
+                changed["phases"][4]["commands"][0]["inputs"][0][
+                    "sha256"] = "f" * 64
+                cases.append(changed)
+                changed = copy.deepcopy(ledger.value)
+                changed["phases"][3]["payloads"][0]["url"] = (
+                    "https://security.ubuntu.com/ubuntu/dists/noble/InRelease")
+                cases.append(changed)
+                changed = copy.deepcopy(ledger.value)
+                changed["phases"][5]["diagnostics"]["freshness_policy"][
+                    "signer_fingerprint"] = "A" * 40
+                cases.append(changed)
+                changed = copy.deepcopy(ledger.value)
+                changed["phases"][4]["diagnostics"]["release"][
+                    "origin_matches"] = False
+                cases.append(changed)
+                changed = copy.deepcopy(ledger.value)
+                changed["phases"][1]["commands"][0]["timeout_seconds"] += 1
+                cases.append(changed)
+                for changed in cases:
+                    with self.subTest(changed=changed), self.assertRaises(ValueError):
+                        hosted.validate_phase_ledger(
+                            changed, "discover", self.contract, self.lock,
+                            evidence, ROOT, run)
+            finally:
+                ledger.close()
+
+    def test_ledger_and_result_reject_every_false_authority_claim(self):
+        claims = (
+            "passed", "authoritative", "selected", "qualified",
+            "container_qualified", "signature_qualified", "os_qualified",
+            "release_qualified",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            ledger, evidence, result = self.discovery_result_fixture(
+                Path(directory))
+            try:
+                hosted.validate_result(
+                    result, "discover", self.contract, self.lock,
+                    evidence, ROOT)
+                for claim in claims:
+                    changed_ledger = copy.deepcopy(ledger.value)
+                    changed_ledger[claim] = True
+                    with self.subTest(target="ledger", claim=claim), \
+                            self.assertRaises(ValueError):
+                        hosted.validate_phase_ledger(
+                            changed_ledger, "discover", self.contract,
+                            self.lock, evidence, ROOT, result["run"])
+
+                    changed_result = copy.deepcopy(result)
+                    changed_result[claim] = True
+                    with self.subTest(target="result", claim=claim), \
+                            self.assertRaises(ValueError):
+                        hosted.validate_result(
+                            changed_result, "discover", self.contract,
+                            self.lock, evidence, ROOT)
+            finally:
+                ledger.close()
+
+    def test_phase_ledger_rejects_truncation_unsafe_names_and_publication_race(self):
+        run = {
+            "id": 123, "attempt": 2, "head_sha": "a" * 40,
+            "head_tree": "b" * 40, "workflow": hosted.WORKFLOW,
+            "event": "workflow_dispatch",
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            evidence = Path(directory) / "evidence"
+            evidence.mkdir(mode=0o700)
+            ledger = hosted.PhaseLedger(
+                evidence, "discover", self.contract, self.lock, run, ROOT)
+            ledger.close()
+            (evidence / "phase-ledger.json").write_bytes(b'{"schema":')
+            (evidence / "phase-ledger.json").chmod(0o600)
+            with self.assertRaises(ValueError):
+                hosted.load_phase_ledger(evidence / "phase-ledger.json")
+            (evidence / "phase-ledger.json").write_bytes(
+                b'{"schema": 1, "schema": 1}')
+            with self.assertRaises(ValueError):
+                hosted.load_phase_ledger(evidence / "phase-ledger.json")
+            os.truncate(
+                evidence / "phase-ledger.json",
+                hosted.MAX_PHASE_LEDGER_BYTES + 1)
+            with self.assertRaises(ValueError):
+                hosted.load_phase_ledger(evidence / "phase-ledger.json")
+
+        with tempfile.TemporaryDirectory() as directory:
+            evidence = Path(directory) / "evidence"
+            evidence.mkdir(mode=0o700)
+            temporary = evidence / "phase-ledger.new"
+            temporary.write_bytes(b"occupied")
+            temporary.chmod(0o600)
+            with self.assertRaises(ValueError):
+                hosted.PhaseLedger(
+                    evidence, "discover", self.contract, self.lock, run, ROOT)
+            self.assertEqual(temporary.read_bytes(), b"occupied")
+
+        with tempfile.TemporaryDirectory() as directory:
+            evidence = Path(directory) / "evidence"
+            evidence.mkdir(mode=0o700)
+            final = evidence / "phase-ledger.json"
+            final.write_bytes(b"occupied")
+            final.chmod(0o600)
+            with self.assertRaisesRegex(ValueError, "unexpected state"):
+                hosted.PhaseLedger(
+                    evidence, "discover", self.contract, self.lock, run, ROOT)
+            self.assertEqual(final.read_bytes(), b"occupied")
+
+        with tempfile.TemporaryDirectory() as directory:
+            evidence = Path(directory) / "evidence"
+            evidence.mkdir(mode=0o700)
+            target = evidence / "target"
+            target.write_bytes(b"target")
+            target.chmod(0o600)
+            (evidence / "phase-ledger.json").symlink_to(target)
+            with self.assertRaises(ValueError):
+                hosted.PhaseLedger(
+                    evidence, "discover", self.contract, self.lock, run, ROOT)
+            self.assertTrue((evidence / "phase-ledger.json").is_symlink())
+
+        with tempfile.TemporaryDirectory() as directory:
+            evidence = Path(directory) / "evidence"
+            evidence.mkdir(mode=0o700)
+            ledger = hosted.PhaseLedger(
+                evidence, "discover", self.contract, self.lock, run, ROOT)
+            real_rename = hosted._renameat2
+            raced = False
+
+            def race(source_fd, source_name, destination_fd,
+                     destination_name, flags):
+                nonlocal raced
+                if flags == hosted._RENAME_EXCHANGE and not raced:
+                    raced = True
+                    replacement = evidence / "replacement"
+                    replacement.write_bytes(b"raced\n")
+                    replacement.chmod(0o600)
+                    os.replace(replacement, evidence / "phase-ledger.json")
+                return real_rename(
+                    source_fd, source_name, destination_fd,
+                    destination_name, flags)
+
+            try:
+                with mock.patch.object(hosted, "_renameat2", side_effect=race), \
+                        self.assertRaisesRegex(ValueError, "raced publication"):
+                    ledger._persist()
+            finally:
+                ledger.close()
+
+    def test_phase_ledger_nonblocking_reader_rejects_unsafe_node_types(self):
+        run = {
+            "id": 123, "attempt": 2, "head_sha": "a" * 40,
+            "head_tree": "b" * 40, "workflow": hosted.WORKFLOW,
+            "event": "workflow_dispatch",
+        }
+
+        def make_node(evidence, name, kind):
+            path = evidence / name
+            handle = None
+            if kind == "fifo":
+                os.mkfifo(path, 0o600)
+            elif kind == "socket":
+                handle = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+                try:
+                    handle.bind(str(path))
+                except BaseException:
+                    handle.close()
+                    raise
+            else:
+                target = evidence / (name + "-target")
+                target.write_bytes(b"retained")
+                target.chmod(0o600)
+                if kind == "hardlink":
+                    os.link(target, path)
+                else:
+                    path.symlink_to(target.name)
+            return path, handle
+
+        def assert_rejected(operation, *, bounded):
+            previous = None
+
+            def blocked(*_):
+                raise TimeoutError("unsafe FIFO open blocked")
+
+            if bounded:
+                previous = signal.signal(signal.SIGALRM, blocked)
+                signal.setitimer(signal.ITIMER_REAL, 1.0)
+            try:
+                with self.assertRaises(ValueError):
+                    operation()
+            finally:
+                if bounded:
+                    signal.setitimer(signal.ITIMER_REAL, 0)
+                    signal.signal(signal.SIGALRM, previous)
+
+        for name, operation_name in (
+                ("phase-ledger.json", "final"),
+                ("phase-ledger.new", "temporary")):
+            for kind in ("fifo", "hardlink", "symlink", "socket"):
+                with self.subTest(path=operation_name, kind=kind), \
+                        tempfile.TemporaryDirectory() as directory:
+                    evidence = Path(directory) / "evidence"
+                    evidence.mkdir(mode=0o700)
+                    node, handle = make_node(evidence, name, kind)
+
+                    def construct():
+                        ledger = hosted.PhaseLedger(
+                            evidence, "discover", self.contract, self.lock,
+                            run, ROOT)
+                        ledger.close()
+
+                    try:
+                        assert_rejected(construct, bounded=kind == "fifo")
+                        self.assertTrue(node.exists() or node.is_symlink())
+                    finally:
+                        if handle is not None:
+                            handle.close()
+
+        for kind in ("fifo", "hardlink", "symlink", "socket"):
+            with self.subTest(load=kind), \
+                    tempfile.TemporaryDirectory() as directory:
+                evidence = Path(directory) / "evidence"
+                evidence.mkdir(mode=0o700)
+                node, handle = make_node(
+                    evidence, "phase-ledger.json", kind)
+                try:
+                    assert_rejected(
+                        lambda: hosted.load_phase_ledger(node),
+                        bounded=kind == "fifo")
+                finally:
+                    if handle is not None:
+                        handle.close()
+
+        for name, operation in (
+                ("phase-ledger.json", "final"),
+                ("phase-ledger.new", "temporary"),
+                ("phase-ledger.json", "load")):
+            with self.subTest(device=operation), \
+                    tempfile.TemporaryDirectory() as directory:
+                evidence = Path(directory) / "evidence"
+                evidence.mkdir(mode=0o700)
+                path = evidence / name
+                path.write_bytes(b"device-shaped")
+                path.chmod(0o600)
+                real_fstat = hosted.os.fstat
+
+                def device_fstat(descriptor):
+                    info = real_fstat(descriptor)
+                    if hosted.stat.S_ISREG(info.st_mode):
+                        return mock.Mock(st_mode=hosted.stat.S_IFCHR | 0o600)
+                    return info
+
+                with mock.patch.object(
+                        hosted.os, "fstat", side_effect=device_fstat), \
+                        self.assertRaises(ValueError):
+                    if operation == "load":
+                        hosted.load_phase_ledger(path)
+                    else:
+                        hosted.PhaseLedger(
+                            evidence, "discover", self.contract, self.lock,
+                            run, ROOT)
+
+    def test_phase_ledger_publication_interruptions_remain_fail_closed(self):
+        for interruption in (
+                "partial-write", "file-fsync", "rename", "directory-fsync"):
+            with self.subTest(interruption=interruption), \
+                    tempfile.TemporaryDirectory() as directory:
+                ledger, evidence, run, _, _ = self.ledger_fixture(
+                    Path(directory), full=False)
+                before_value = copy.deepcopy(ledger.value)
+                source = packages.EXPECTED_SOURCES[0]
+                release = (
+                    "Origin: Ubuntu\nLabel: Ubuntu\nSuite: noble\n"
+                    "Codename: noble\nDate: now\nSHA256:\n"
+                ).encode()
+                release_diagnostics = hosted.build.signed_release_diagnostics(
+                    release, source)
+                next_diagnostics = {
+                    "freshness_policy": hosted.build.expected_freshness_policy(
+                        source),
+                    "release": {
+                        "bytes": release_diagnostics["bytes"],
+                        "sha256": release_diagnostics["sha256"],
+                    },
+                    "index": {
+                        "path": "main/binary-amd64/Packages.xz",
+                        "bytes": 201,
+                        "sha256": format(11, "064x"),
+                    },
+                }
+                real_fsync = hosted.os.fsync
+                real_write = hosted.os.write
+                write_calls = 0
+
+                def interrupted_write(descriptor, value):
+                    nonlocal write_calls
+                    write_calls += 1
+                    if write_calls == 1:
+                        count = max(1, len(value) // 2)
+                        return real_write(descriptor, value[:count])
+                    raise OSError("injected partial write interruption")
+
+                def interrupted_fsync(descriptor):
+                    if (interruption == "file-fsync"
+                            and descriptor != ledger.fd):
+                        raise OSError("injected file fsync interruption")
+                    if (interruption == "directory-fsync"
+                            and descriptor == ledger.fd):
+                        raise OSError("injected directory fsync interruption")
+                    return real_fsync(descriptor)
+
+                try:
+                    if interruption == "partial-write":
+                        context = mock.patch.object(
+                            hosted.os, "write",
+                            side_effect=interrupted_write)
+                    elif interruption == "rename":
+                        context = mock.patch.object(
+                            hosted, "_renameat2",
+                            side_effect=OSError("injected rename interruption"))
+                    else:
+                        context = mock.patch.object(
+                            hosted.os, "fsync", side_effect=interrupted_fsync)
+                    with context, self.assertRaises(OSError):
+                        ledger.append(
+                            "release-validated", "noble",
+                            diagnostics=next_diagnostics)
+                    after_value = copy.deepcopy(ledger.value)
+                    self.assertEqual(
+                        after_value["phases"][:-1], before_value["phases"])
+                    self.assertEqual(
+                        after_value["phases"][-1]["kind"],
+                        "release-validated")
+                    hosted.validate_phase_ledger(
+                        before_value, "discover", self.contract, self.lock,
+                        evidence, ROOT, run)
+                    hosted.validate_phase_ledger(
+                        after_value, "discover", self.contract, self.lock,
+                        evidence, ROOT, run)
+                    expected = after_value if interruption == "directory-fsync" \
+                        else before_value
+                    observed = hosted.load_phase_ledger(
+                        evidence / "phase-ledger.json")
+                    self.assertEqual(observed, expected)
+                    expected_raw = (
+                        json.dumps(expected, indent=2, sort_keys=True) + "\n"
+                    ).encode()
+                    self.assertEqual(
+                        (evidence / "phase-ledger.json").read_bytes(),
+                        expected_raw)
+                    self.assertFalse((evidence / "phase-ledger.new").exists())
+                    self.assertFalse((evidence / "producer-result.json").exists())
+                    self.assertFalse((evidence / "discovery.json").exists())
+                finally:
+                    ledger.close()
 
     def test_command_evidence_reopens_tools_and_raw_outputs(self):
         with tempfile.TemporaryDirectory() as directory:
