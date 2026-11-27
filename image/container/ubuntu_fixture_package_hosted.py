@@ -87,8 +87,25 @@ DOWNLOAD_FIELDS = {"count", "bytes", "order_sha256"}
 RESULT_CANDIDATE_FIELDS = {"created", "manifest_sha256", "state"}
 LEDGER_RECEIPT_FIELDS = {"bytes", "sha256", "phase_count", "terminal_phase"}
 SYSTEMD_FALLBACK_FIELDS = {
-    "schema", "source", "systemd", "zero_swap", "oom_observed",
-    "oom_auditable", "error",
+    "schema", "source", "authoritative", "systemd",
+    "measurement_available", "zero_swap", "oom_observed", "oom_auditable",
+    "error",
+}
+SYSTEMD_FALLBACK_SCHEMA = 2
+SYSTEMD_RESULT_FIELDS = {
+    "LoadState", "ActiveState", "SubState", "Result", "ExecMainCode",
+    "ExecMainStatus", "MemoryCurrent", "MemoryPeak", "MemoryMax",
+    "MemorySwapCurrent", "MemorySwapPeak", "MemorySwapMax",
+    "CPUQuotaPerSecUSec", "CPUQuotaPeriodUSec", "CPUUsageNSec",
+    "TasksCurrent", "TasksMax", "RuntimeMaxUSec",
+}
+CGROUP_FINAL_FIELDS = {
+    "schema", "limits", "counters", "zero_swap", "error",
+}
+CGROUP_FINAL_COUNTERS = {
+    "memory.max", "memory.swap.max", "memory.current", "memory.peak",
+    "memory.swap.current", "memory.swap.peak", "memory.events", "cpu.max",
+    "cpu.stat", "pids.max", "pids.current", "pids.peak",
 }
 RETENTION_FIELDS = {
     "schema", "mode", "producer_exit_status", "private_work_retained",
@@ -1515,21 +1532,26 @@ def systemd_fallback_record(raw):
                 "Ubuntu producer systemd evidence has duplicate or unsafe fields")
         rows[key] = value
     zero_values = {"0", "0B"}
+    exact_fields = set(rows) == SYSTEMD_RESULT_FIELDS
+    measurement_available = exact_fields and rows.get("LoadState") == "loaded"
+    oom_auditable = (measurement_available
+                     and rows.get("Result") not in {None, "", "[not set]"})
     return {
-        "schema": 1,
+        "schema": SYSTEMD_FALLBACK_SCHEMA,
         "source": "systemd-fallback",
+        "authoritative": False,
         "systemd": rows,
-        "zero_swap": (
-            rows.get("MemorySwapMax") in zero_values
-            and rows.get("MemorySwapCurrent") in zero_values
-            and rows.get("MemorySwapPeak") in zero_values
-        ),
-        "oom_observed": rows.get("Result") == "oom-kill",
-        "oom_auditable": "Result" in rows,
-        "error": (
-            "producer did not emit in-cgroup final counters"
-            + (": " + " | ".join(messages) if messages else "")
-        ),
+        "measurement_available": measurement_available,
+        "zero_swap": (measurement_available
+                      and rows.get("MemorySwapMax") in zero_values
+                      and rows.get("MemorySwapCurrent") in zero_values
+                      and rows.get("MemorySwapPeak") in zero_values),
+        "oom_observed": (oom_auditable
+                         and rows.get("Result") == "oom-kill"),
+        "oom_auditable": oom_auditable,
+        "error": (None if measurement_available else
+                  "systemd transient unit measurement is unavailable"
+                  + (": " + " | ".join(messages) if messages else "")),
     }
 
 
@@ -1543,6 +1565,106 @@ def write_systemd_fallback(systemd_path, output_path):
             "Ubuntu producer fallback resource fields changed")
     _write_json(Path(output_path), result)
     return result
+
+
+def validate_post_unit_records(cgroup, fallback, cleanup):
+    """Require authoritative primary resources and bounded fallback OOM state."""
+    require(type(cgroup) is dict and set(cgroup) == CGROUP_FINAL_FIELDS
+            and type(cgroup.get("schema")) is int and cgroup["schema"] == 1
+            and cgroup.get("limits") == EXPECTED_LIMITS
+            and type(cgroup.get("counters")) is dict
+            and set(cgroup["counters"]) == CGROUP_FINAL_COUNTERS
+            and all(type(value) is str
+                    for value in cgroup["counters"].values())
+            and cgroup.get("error") is None,
+            "Ubuntu producer primary resource evidence is malformed")
+    counters = cgroup["counters"]
+    require(counters["memory.swap.max"] == "0"
+            and counters["memory.swap.current"] == "0"
+            and counters["memory.swap.peak"] == "0"
+            and cgroup.get("zero_swap") is True,
+            "Ubuntu producer primary resource evidence reports swap")
+    events = {}
+    for line in counters["memory.events"].splitlines():
+        fields = line.split()
+        require(len(fields) == 2
+                and re.fullmatch(r"[a-z][a-z0-9_]*", fields[0]) is not None
+                and fields[0] not in events
+                and re.fullmatch(r"0|[1-9][0-9]*", fields[1]) is not None,
+                "Ubuntu producer primary memory event evidence is malformed")
+        events[fields[0]] = int(fields[1])
+    require(all(name in events and events[name] == 0 for name in (
+                "oom", "oom_kill", "oom_group_kill")),
+            "Ubuntu producer primary resource evidence reports OOM")
+
+    require(type(cleanup) is dict and set(cleanup) == RETENTION_FIELDS
+            and type(cleanup.get("schema")) is int and cleanup["schema"] == 1
+            and cleanup.get("mode") in {"discover", "produce"}
+            and type(cleanup.get("producer_exit_status")) is int
+            and cleanup["producer_exit_status"] == 0
+            and cleanup.get("private_work_retained") is True
+            and cleanup.get("recursive_path_cleanup_performed") is False
+            and cleanup.get("selected") is False
+            and cleanup.get("qualified") is False,
+            "Ubuntu producer direct exit or retention evidence is malformed")
+    production = cleanup["mode"] == "produce"
+    require(cleanup.get("candidate_present") is production
+            and cleanup.get("post_unit_candidate_validated") is production,
+            "Ubuntu producer post-unit candidate state changed")
+
+    require(type(fallback) is dict and set(fallback) == SYSTEMD_FALLBACK_FIELDS
+            and type(fallback.get("schema")) is int
+            and fallback["schema"] == SYSTEMD_FALLBACK_SCHEMA
+            and fallback.get("source") == "systemd-fallback"
+            and fallback.get("authoritative") is False
+            and type(fallback.get("systemd")) is dict
+            and set(fallback["systemd"]) == SYSTEMD_RESULT_FIELDS
+            and all(type(key) is str and type(value) is str
+                    for key, value in fallback["systemd"].items())
+            and type(fallback.get("measurement_available")) is bool
+            and type(fallback.get("zero_swap")) is bool
+            and type(fallback.get("oom_observed")) is bool
+            and type(fallback.get("oom_auditable")) is bool
+            and (fallback.get("error") is None
+                 or type(fallback["error"]) is str),
+            "Ubuntu producer fallback resource evidence is malformed")
+    systemd = fallback["systemd"]
+    expected_available = systemd["LoadState"] == "loaded"
+    expected_auditable = (expected_available
+                          and systemd["Result"] not in {"", "[not set]"})
+    expected_zero_swap = (expected_available
+                          and all(systemd[name] in {"0", "0B"} for name in (
+                              "MemorySwapMax", "MemorySwapCurrent",
+                              "MemorySwapPeak")))
+    expected_error = (None if expected_available else
+                      "systemd transient unit measurement is unavailable")
+    require(fallback["measurement_available"] is expected_available
+            and fallback["zero_swap"] is expected_zero_swap
+            and fallback["oom_observed"]
+            is (expected_auditable and systemd["Result"] == "oom-kill")
+            and fallback["oom_auditable"] is expected_auditable
+            and fallback["error"] == expected_error,
+            "Ubuntu producer fallback resource claims changed")
+    require(systemd["MemorySwapCurrent"] in {"0", "0B", "[not set]"}
+            and systemd["MemorySwapPeak"] in {"0", "0B", "[not set]"}
+            and systemd["MemorySwapMax"]
+            in {"0", "0B", "[not set]", "infinity"},
+            "Ubuntu producer fallback reports nonzero swap")
+    if expected_available:
+        require(fallback["oom_auditable"] is True
+                and fallback["oom_observed"] is False
+                and systemd["ActiveState"] == "inactive"
+                and systemd["SubState"] == "dead"
+                and systemd["Result"] == "success"
+                and systemd["ExecMainCode"] == "1"
+                and systemd["ExecMainStatus"] == "0",
+                "Ubuntu producer loaded fallback reports a failed unit")
+    else:
+        require(systemd["LoadState"] == "not-found"
+                and fallback["oom_auditable"] is False
+                and fallback["oom_observed"] is False,
+                "Ubuntu producer fallback availability changed")
+    return True
 
 
 def _open_exact_private_directory(path, expected_identity, description):
@@ -2392,6 +2514,7 @@ def main(argv=None):
     if args.command == "resource-fallback":
         print(json.dumps({
             "source": result["source"],
+            "measurement_available": result["measurement_available"],
             "zero_swap": result["zero_swap"],
             "oom_observed": result["oom_observed"],
         }, sort_keys=True))

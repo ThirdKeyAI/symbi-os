@@ -1,0 +1,206 @@
+{
+  "artifact": {
+    "bytes": 13309,
+    "crc_passed": true,
+    "digest": "sha256:b83b307fcb4e391083f9d8b38d8be6a3394e5de9239d6dfb0b9b2979b82f17ed",
+    "entries": 23,
+    "id": 15229943622,
+    "name": "container-ubuntu-fixture-package-evidence",
+    "safe_zip": {
+      "all_entries_regular_mode_0600": true,
+      "no_absolute_or_parent_paths": true,
+      "no_duplicate_paths": true,
+      "no_encrypted_entries": true,
+      "no_links_or_special_nodes": true
+    },
+    "uncompressed_bytes": 44757
+  },
+  "audit": {
+    "archive_members_checked": 23,
+    "command_records_checked": 7,
+    "discovery_pin_rows_checked": 3,
+    "json_records_checked": 6,
+    "ledger_phases_checked": 15,
+    "module_result_ledger_discovery_validation_passed": true,
+    "raw_command_outputs_match_descriptors": true,
+    "retained_tool_records_cross_bound": true,
+    "runner_tools_live_reopened_after_run": false
+  },
+  "authenticated_inputs": {
+    "metadata": [
+      {
+        "inrelease": {
+          "bytes": 255850,
+          "sha256": "cdb2f31d809f589719a53c6ad15f255b27569c4059542ada282aaa21b8e164b0"
+        },
+        "packages_xz": {
+          "bytes": 1401160,
+          "sha256": "2a6a199e1031a5c279cb346646d594993f35b1c03dd4a82aaa0323980dd92451"
+        },
+        "signing_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C",
+        "suite": "noble"
+      },
+      {
+        "inrelease": {
+          "bytes": 126125,
+          "sha256": "10dc47ad967e0513d877e0d55621c7393568894c4dbba1049232251630cb43c7"
+        },
+        "packages_xz": {
+          "bytes": 1492208,
+          "sha256": "9e6336a8322f908dbeddcd2de57f19d22756fb11f161458f04204914ba85e6ff"
+        },
+        "signing_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C",
+        "suite": "noble-updates"
+      },
+      {
+        "inrelease": {
+          "bytes": 126127,
+          "sha256": "a3849ffa5d069c5a6cc929dc55e1fd946aff6e3da4f97d88f20059b6b7d6d203"
+        },
+        "packages_xz": {
+          "bytes": 1230772,
+          "sha256": "5c947649225178b587da69bd15724dff4d22d17d911f60abf7213534ea494a90"
+        },
+        "signing_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C",
+        "suite": "noble-security"
+      }
+    ],
+    "rootfs": {
+      "bytes": 30028293,
+      "sha256": "e77b6f10c2590cef872b33ee9f635a0e3fd1f57fb074c0e52b5c7f56147a0c86"
+    },
+    "rootfs_checksum": {
+      "sha256": "30f23cec3a46679bcf21dbe0c0a0ab51440e9b2f5ac69b3ae1d4a7a71c0ffc69"
+    },
+    "rootfs_checksum_signature": {
+      "sha256": "5164e25bab9ff0467fc83415c8f759bb79cbd4e0264b9a11f49ff1e6a10a4c1f",
+      "signing_fingerprint": "843938DF228D22F7B3742BC0D94AA3F0EFE21092"
+    }
+  },
+  "claims": {
+    "authoritative": false,
+    "candidate_emitted": false,
+    "container_qualified": false,
+    "os_qualified": false,
+    "pins_selected": false,
+    "producer_passed": false,
+    "qualified": false,
+    "release_qualified": false,
+    "selected": false,
+    "signature_qualified": false
+  },
+  "failure": {
+    "direct_systemd_run_exit_status": 0,
+    "producer_completed": true,
+    "producer_exit_status": 0,
+    "reason": "fallback-swap-unavailable",
+    "sole_observed_failure": true,
+    "stage": "post-success-resource-wrapper",
+    "systemd_fallback_memory_swap_current": "[not set]",
+    "systemd_fallback_memory_swap_peak": "[not set]"
+  },
+  "independent_review": "pending",
+  "ledger": {
+    "bytes": 21106,
+    "last_kind": "packages-download",
+    "last_suite": "noble-security",
+    "phase_count": 15,
+    "schema": 2,
+    "sha256": "53d50a74ff24af1391029c3aed39e0ff67d620b71c4eb3f0e20cdeeabecb5148",
+    "strict_sequence_end": 15,
+    "strict_sequence_start": 1
+  },
+  "local_correction": {
+    "fallback_nonzero_swap_rejected": true,
+    "loaded_fallback_real_success_and_oom_state_required": true,
+    "not_found_fallback_measurement_available": false,
+    "not_found_fallback_oom_auditable": false,
+    "fallback_unavailable_swap_accepted_only_with_clean_primary": true,
+    "primary_missing_swap_rejected": true,
+    "primary_nonzero_swap_rejected": true,
+    "primary_swap_authoritative": true,
+    "producer_exit_status_must_be_zero": true,
+    "qualification_claims_changed": false,
+    "selection_claims_changed": false,
+    "systemd_fallback_schema": 2,
+    "systemd_result_field_schema_exact": true
+  },
+  "local_verification": {
+    "affected_address_space_cap_bytes": 134217728,
+    "affected_peak_rss_kib": 42368,
+    "affected_tests": 81,
+    "complete_address_space_cap_bytes": 201326592,
+    "complete_allocator_arenas": 1,
+    "complete_image_tests": 608,
+    "complete_peak_rss_kib": 72380,
+    "complete_qualification_tests": 40,
+    "process_swaps": 0
+  },
+  "outputs": {
+    "candidate_emitted": false,
+    "discovery_emitted": true,
+    "phase_ledger_emitted": true,
+    "producer_result_emitted": true
+  },
+  "provenance": {
+    "contract_sha256": "d6c32ad626c47c49fddc7536fb10ba8e9d37a70cb572bafd706fa258bb15a0ca",
+    "discovery_bytes": 1331,
+    "discovery_sha256": "891c7a6c51e6d2e3831a802fc71574b9e6078ff67e4e7b24a03ef45bec73bba8",
+    "lock_sha256": "94d6f84024639b880060ac93825b4d3f1408f9f3a73b6e8087faac1748268b6c",
+    "producer_result_bytes": 17184,
+    "producer_result_sha256": "8a19d562b32a36f386f7379631b2958457b5a4cdfd974170357d27c446012cc3",
+    "verified_at": "2026-11-27T20:47:11Z"
+  },
+  "resources": {
+    "fallback": {
+      "legacy_recorded_oom_auditable": true,
+      "legacy_recorded_zero_swap": false,
+      "load_state": "not-found",
+      "measurement_available": false,
+      "memory_swap_current_available": false,
+      "memory_swap_peak_available": false,
+      "retained_exec_main_status_field": 0,
+      "retained_result_field": "success",
+      "reviewed_oom_auditable": false,
+      "reviewed_oom_observed": false
+    },
+    "primary": {
+      "memory_current_bytes": 55980032,
+      "memory_events": {
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "memory_max_bytes": 2147483648,
+      "memory_peak_bytes": 56180736,
+      "memory_swap_current_bytes": 0,
+      "memory_swap_max_bytes": 0,
+      "memory_swap_peak_bytes": 0,
+      "pids_current": 1,
+      "pids_max": 128,
+      "pids_peak": 16,
+      "zero_swap": true
+    }
+  },
+  "retention": {
+    "candidate_present": false,
+    "post_unit_candidate_validated": false,
+    "private_work_retained": true,
+    "producer_exit_status": 0,
+    "recursive_path_cleanup_performed": false
+  },
+  "run": {
+    "attempt": 1,
+    "branch": "card/P0-05-package-producer",
+    "conclusion": "failure",
+    "event": "workflow_dispatch",
+    "head_sha": "ab295ada3c4ff4745c48c9304c4aca901b6a33d8",
+    "head_tree": "e32e190fae3c88a22855315f5fb466f3ad338c9f",
+    "id": 46065953923,
+    "job_id": 140731190153,
+    "mode": "discover",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46065953923",
+    "workflow": ".github/workflows/ubuntu-fixture-packages.yml"
+  },
+  "schema": 1
+}
