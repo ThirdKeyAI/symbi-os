@@ -259,6 +259,12 @@ class FedoraContainerController(unittest.TestCase):
             "managed_route_qualified": False,
             "escape_suite_qualified": False,
             "fedora_runtime_ready": True,
+            "container_boot": {
+                "qualified": False,
+                "os_qualified": False,
+                "release_qualified": False,
+                "remaining_blocker": "native-fedora-six-run-matrix",
+            },
             "fixture_source": {"revision": "a" * 40},
             "blockers": ["native-fedora-six-run-matrix", "managed-route-evidence",
                          "escape-suite-evidence", "required-review"],
@@ -279,6 +285,94 @@ class FedoraContainerController(unittest.TestCase):
         self.assertFalse(result["release_qualified"])
         self.assertFalse(result["native_fixture_matrix_passed"])
         self.assertIn("native-fedora-six-run-matrix", result["blockers"])
+
+    def test_ready_input_without_candidate_boot_binding_stays_failed(self):
+        prepared = {
+            "schema": 1,
+            "card": "P0-05",
+            "passed": False,
+            "qualified": False,
+            "os_qualified": False,
+            "release_qualified": False,
+            "native_fixture_matrix_passed": False,
+            "managed_route_qualified": False,
+            "escape_suite_qualified": False,
+            "fedora_runtime_ready": True,
+            "fixture_source": {"revision": "a" * 40},
+            "blockers": ["native-fedora-six-run-matrix", "managed-route-evidence",
+                         "escape-suite-evidence", "required-review"],
+        }
+        checkout = {"revision": "a" * 40, "tree": "b" * 40, "drivers": {}}
+        with tempfile.TemporaryDirectory() as directory, \
+                mock.patch.object(self.module, "build_preflight", return_value=prepared), \
+                mock.patch.object(self.module, "validate_fixture_checkout", return_value=checkout):
+            result = self.module.run_container_preflight(
+                Path(directory), "1" * 40, "2" * 40)
+        self.assertFalse(result["passed"])
+        self.assertNotIn("container_boot", result)
+
+    def test_candidate_boot_binding_uses_exact_generated_contract_and_image(self):
+        archive = {
+            "name": "symbi-container-runtime-generic.oci.tar.gz",
+            "bytes": 123456,
+            "sha256": "a" * 64,
+            "image_id": "sha256:" + "b" * 64,
+            "manifest_digest": "sha256:" + "c" * 64,
+        }
+        candidate = {
+            "selection": {
+                "manifest": {
+                    "sha256": "d" * 64,
+                    "contract_sha256": "e" * 64,
+                    "archive": copy.deepcopy(archive),
+                },
+            },
+            "manifest": {"archive": copy.deepcopy(archive), "contract_sha256": "e" * 64},
+        }
+        contract = {
+            "qualified": False,
+            "os_qualified": False,
+            "release_qualified": False,
+            "files": {
+                "usr/bin/runsc": {"sha256": "f" * 64},
+                "etc/containerd/runsc.toml": {"sha256": "1" * 64},
+            },
+            "installation": {
+                "after_inventory_sha256": "2" * 64,
+                "source_inventory_sha256": "2" * 64,
+                "daemon_configuration_sha256": "3" * 64,
+            },
+        }
+        binding = self.module.build_container_boot_binding(candidate, contract)
+        self.assertEqual(binding["archive"], archive)
+        self.assertEqual(binding["generated_manifest_sha256"], "d" * 64)
+        self.assertEqual(binding["contract_sha256"], "e" * 64)
+        self.assertEqual(binding["runsc_files"], {
+            "usr/bin/runsc": "f" * 64,
+            "etc/containerd/runsc.toml": "1" * 64,
+        })
+        self.assertEqual(binding["daemon_configuration_sha256"], "3" * 64)
+        self.assertEqual(binding["remaining_blocker"], "native-fedora-six-run-matrix")
+        self.assertFalse(binding["qualified"])
+        self.assertFalse(binding["os_qualified"])
+        self.assertFalse(binding["release_qualified"])
+
+        changes = []
+        changed = copy.deepcopy(candidate)
+        changed["manifest"]["archive"]["image_id"] = "sha256:" + "0" * 64
+        changes.append((changed, contract))
+        changed_contract = copy.deepcopy(contract)
+        changed_contract["qualified"] = True
+        changes.append((candidate, changed_contract))
+        changed_contract = copy.deepcopy(contract)
+        changed_contract["files"]["../runsc"] = changed_contract["files"].pop("usr/bin/runsc")
+        changes.append((candidate, changed_contract))
+        changed_contract = copy.deepcopy(contract)
+        changed_contract["installation"]["after_inventory_sha256"] = "4" * 64
+        changes.append((candidate, changed_contract))
+        for changed_candidate, changed_contract in changes:
+            with self.subTest(change=changed_contract), self.assertRaises(ValueError):
+                self.module.build_container_boot_binding(changed_candidate, changed_contract)
 
     def test_pending_runtime_image_preflight_fails_before_native_image_work(self):
         prepared = {
@@ -326,9 +420,22 @@ class FedoraContainerController(unittest.TestCase):
         self.assertIn("MemorySwapMax=0", script)
         self.assertIn("CPUQuota=200%", script)
         self.assertIn("SYMBI_QUALIFICATION=containers", script)
+        self.assertIn('exit "$status"', script)
         self.assertIn("qualification not in ('','landlock','update','containers')", atomic)
+        self.assertIn("qualification in ('landlock','containers')", atomic)
+        self.assertIn("'4294967296'", atomic)
+        self.assertIn("'5368709120'", atomic)
         self.assertIn("run_container_preflight", atomic)
-        self.assertIn("Fedora container native six-run controller is not yet bound", atomic)
+        self.assertIn("native-fedora-six-run-matrix", atomic)
+        self.assertIn("container_candidate", atomic)
+        self.assertIn("container-runtime-native-inputs", atomic)
+        self.assertIn(
+            "stop_after_container_candidate_boot(record,report['container_candidate'])",
+            atomic,
+        )
+        self.assertIn("'candidate_boot_passed':True", atomic)
+        self.assertIn("qualification remains blocked", atomic)
+        self.assertNotIn("Fedora container native six-run controller is not yet bound", atomic)
 
 
 if __name__ == "__main__":

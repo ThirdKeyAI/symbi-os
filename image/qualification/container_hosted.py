@@ -7,7 +7,7 @@ six-run matrix, managed route, escape suite and review remain mandatory.
 """
 import hashlib
 import json
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 import subprocess
 import tomllib
@@ -49,6 +49,7 @@ RETAINED_GVISOR_INPUTS = (
     "gvisor/Release",
 )
 FIXTURE_DRIVERS = {"test-filesystem-grants.py", "test-source-broker.py", "test-git-source.py"}
+MAX_NATIVE_ARCHIVE_BYTES = 12 * 1024**3
 
 
 def require(condition, message):
@@ -370,6 +371,66 @@ def validate_fedora_contract(contract, runsc, root, image_source_commit):
                 "Fedora contract runsc package file digest changed")
 
 
+def build_container_boot_binding(candidate, contract):
+    """Bind the first native boot to the selected derived OCI and its contract."""
+    selection = candidate.get("selection") if isinstance(candidate, dict) else None
+    generated = candidate.get("manifest") if isinstance(candidate, dict) else None
+    selected_manifest = selection.get("manifest") if isinstance(selection, dict) else None
+    archive = generated.get("archive") if isinstance(generated, dict) else None
+    require(isinstance(selected_manifest, dict) and isinstance(generated, dict)
+            and isinstance(archive, dict)
+            and archive == selected_manifest.get("archive")
+            and generated.get("contract_sha256") == selected_manifest.get("contract_sha256")
+            and re.fullmatch(r"[a-f0-9]{64}", selected_manifest.get("sha256", ""))
+            and re.fullmatch(r"[a-f0-9]{64}", selected_manifest.get("contract_sha256", ""))
+            and archive.get("name") == "symbi-container-runtime-generic.oci.tar.gz"
+            and type(archive.get("bytes")) is int
+            and 0 < archive["bytes"] <= MAX_NATIVE_ARCHIVE_BYTES
+            and re.fullmatch(r"[a-f0-9]{64}", archive.get("sha256", ""))
+            and re.fullmatch(r"sha256:[a-f0-9]{64}", archive.get("image_id", ""))
+            and re.fullmatch(r"sha256:[a-f0-9]{64}", archive.get("manifest_digest", "")),
+            "derived container image boot identity is incomplete or changed")
+    require(isinstance(contract, dict)
+            and contract.get("qualified") is False
+            and contract.get("os_qualified") is False
+            and contract.get("release_qualified") is False,
+            "generated container contract made a qualification claim before native boot")
+    files = contract.get("files")
+    require(isinstance(files, dict) and 0 < len(files) <= 64,
+            "generated container contract has no bounded runsc file set")
+    runsc_files = {}
+    for relative, item in files.items():
+        path = PurePosixPath(relative) if isinstance(relative, str) else None
+        require(path is not None and str(path) == relative and "\\" not in relative
+                and not path.is_absolute() and ".." not in path.parts
+                and path.parts and path.parts[0] in ("usr", "etc")
+                and isinstance(item, dict) and set(item) == {"sha256"}
+                and re.fullmatch(r"[a-f0-9]{64}", item.get("sha256", "")),
+                "generated container contract contains an unsafe runsc file binding")
+        runsc_files[relative] = item["sha256"]
+    installation = contract.get("installation")
+    require(isinstance(installation, dict)
+            and re.fullmatch(r"[a-f0-9]{64}",
+                             installation.get("daemon_configuration_sha256", ""))
+            and re.fullmatch(r"[a-f0-9]{64}",
+                             installation.get("after_inventory_sha256", ""))
+            and installation.get("after_inventory_sha256")
+            == installation.get("source_inventory_sha256"),
+            "generated container contract installation binding changed")
+    return {
+        "archive": dict(archive),
+        "generated_manifest_sha256": selected_manifest["sha256"],
+        "contract_sha256": selected_manifest["contract_sha256"],
+        "runsc_files": dict(sorted(runsc_files.items())),
+        "daemon_configuration_sha256": installation["daemon_configuration_sha256"],
+        "inventory_sha256": installation["after_inventory_sha256"],
+        "qualified": False,
+        "os_qualified": False,
+        "release_qualified": False,
+        "remaining_blocker": "native-fedora-six-run-matrix",
+    }
+
+
 def build_preflight(root, source_commit, image_source_commit, verify=verify_release_signature):
     require(re.fullmatch(r"[a-f0-9]{40}", source_commit or "")
             and re.fullmatch(r"[a-f0-9]{40}", image_source_commit or ""),
@@ -408,9 +469,11 @@ def build_preflight(root, source_commit, image_source_commit, verify=verify_rele
         require(candidate["manifest"].get("source_image_commit") == image_source_commit,
                 "derived container image uses a different retained source image")
         contract = candidate["contract_path"]
-        validate_fedora_contract(unique_json(contract), runsc, root, image_source_commit)
+        contract_value = unique_json(contract)
+        validate_fedora_contract(contract_value, runsc, root, image_source_commit)
         result["fedora_runtime_ready"] = True
         result["fedora_runtime_lock_sha256"] = sha256(contract)
+        result["container_boot"] = build_container_boot_binding(candidate, contract_value)
         result["container_image_selection"] = {
             "producer_run_id": candidate["selection"]["producer"]["run_id"],
             "producer_head_sha": candidate["selection"]["producer"]["head_sha"],
@@ -436,7 +499,15 @@ def run_container_preflight(root, source_commit, image_source_commit):
         # large image transfer is present and internally consistent.  The
         # native matrix and later route gates remain explicit blockers and the
         # qualification flags stay false.
-        result["passed"] = result.get("fedora_runtime_ready") is True
+        boot = result.get("container_boot")
+        result["passed"] = (
+            result.get("fedora_runtime_ready") is True
+            and isinstance(boot, dict)
+            and boot.get("qualified") is False
+            and boot.get("os_qualified") is False
+            and boot.get("release_qualified") is False
+            and boot.get("remaining_blocker") == "native-fedora-six-run-matrix"
+        )
         return result
     except Exception as error:
         result["failure"] = type(error).__name__ + ": " + str(error)

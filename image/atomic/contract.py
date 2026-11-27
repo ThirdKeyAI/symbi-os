@@ -274,6 +274,15 @@ def validate_report(report,expected,nonce,probe_hash,expected_hash):
                 and report['inventory_count']==expected['inventory_count']
                 and report['inventory_sha256']==expected['inventory_sha256']
                 and report['trust']==expected['trust'],'Booted payload, package inventory or trust changed')
+        if 'container_candidate' in expected:
+            candidate=expected['container_candidate']
+            require(isinstance(candidate,dict)
+                    and set(candidate)=={'contract_sha256','runsc_files','daemon_configuration_sha256'}
+                    and report.get('container_candidate')==candidate,
+                    'Booted container runtime bytes differ from the generated contract')
+        else:
+            require('container_candidate' not in report,
+                    'Unexpected container candidate claim in ordinary Atomic boot')
         status=report['bootc_status'];booted=status['status']['booted']
         reference={'image':'ghcr.io/thirdkeyai/symbiont-os@'+expected['manifest_digest'],
                    'transport':'registry','signature':'containerPolicy'}

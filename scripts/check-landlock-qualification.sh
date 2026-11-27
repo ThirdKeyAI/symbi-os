@@ -10,6 +10,7 @@ qualification_evidence="$root/.cache/landlock-qualification-evidence"
 mkdir -p "$atomic_evidence"
 unit="symbi-landlock-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
 set +e
+# This 4 GiB parent is part of the Landlock-mode controller contract.
 sudo systemd-run --unit="$unit" --wait --pipe --working-directory="$root" \
   --property=MemoryMax=4G --property=MemorySwapMax=0 --property=CPUQuota=200% \
   --property=TasksMax=256 --property=RuntimeMaxSec=145min --property=Nice=10 \
