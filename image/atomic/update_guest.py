@@ -42,6 +42,7 @@ STATUS_SERVICE = {
 }
 BOOTC_CONTEXT = "system_u:system_r:install_t:s0"
 BOOTC_RUNCON = Path("/usr/bin/runcon")
+BOOTC_RUNCON_LABEL = "system_u:object_r:bin_t:s0"
 BOOTC_SOURCE = Path("/usr/bin/bootc")
 BOOTC_LABEL_REFERENCE = Path("/usr/bin/ostree")
 BOOTC_PROBE_COMMAND = [str(BOOTC_RUNCON), BOOTC_CONTEXT,
@@ -216,6 +217,9 @@ def _bootc_file_observation(source_path=None, label_reference=None,
             if not value or b"\0" in value:
                 raise ValueError("invalid SELinux file label")
             return value
+        runcon_label = normalized_label(runcon).decode("ascii")
+        if runcon_label != BOOTC_RUNCON_LABEL:
+            raise ValueError("runcon does not carry the fixed generic executable label")
         label = normalized_label(source)
         reference_label = normalized_label(reference)
         if label != reference_label:
@@ -226,6 +230,7 @@ def _bootc_file_observation(source_path=None, label_reference=None,
         return {
             "runcon": str(runcon_path),
             "runcon_sha256": runcon_hash,
+            "runcon_selinux_label": runcon_label,
             "source": str(source_path),
             "label_reference": str(label_reference),
             "source_sha256": source_hash,
