@@ -705,10 +705,10 @@ def validate_signed_release(raw, source, verified_at, freshness_policy):
         digest, size_text, path = columns
         require(path not in seen, "Ubuntu Release has a duplicate SHA256 path")
         seen.add(path)
-        size = int(size_text)
-        require(0 < size <= packages.MAX_INDEX_BYTES,
-                "Ubuntu Release index size exceeds its bound")
         if path == "main/binary-amd64/Packages.xz":
+            size = int(size_text)
+            require(0 < size <= packages.MAX_INDEX_BYTES,
+                    "Ubuntu Release index size exceeds its bound")
             selected.append({"path": path, "bytes": size, "sha256": digest})
     require(len(selected) == 1,
             "Ubuntu Release lacks one exact amd64 Packages.xz membership row")
