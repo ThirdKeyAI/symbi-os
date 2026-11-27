@@ -880,11 +880,11 @@ class HostedLandlock(unittest.TestCase):
         self.assertIn("time.monotonic() - started >= 5700", boot)
         self.assertIn("RuntimeMaxSec=95min", service)
         self.assertIn("RuntimeMaxSec=145min", wrapper)
-        self.assertIn("MemoryMax=4G", wrapper)
+        self.assertIn("MemoryHigh=4G", wrapper)
+        self.assertIn("MemoryMax=5G", wrapper)
         self.assertIn("MemoryMax=4G", container_wrapper)
-        self.assertIn("qualification in ('landlock','containers')", atomic)
-        self.assertIn("'4294967296'", atomic)
-        self.assertIn("else '5368709120'", atomic)
+        self.assertIn("LANDLOCK_PARENT_LIMITS = {'memory.high':'4294967296','memory.max':'5368709120'", atomic)
+        self.assertIn("LANDLOCK_PARENT_LIMITS if qualification=='landlock'", atomic)
         self.assertIn("timeout-minutes: 300", workflow)
 
     def test_bounded_public_report_is_authenticated_and_expanded(self):
