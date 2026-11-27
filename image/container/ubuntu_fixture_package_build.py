@@ -736,7 +736,7 @@ def validate_signed_release(raw, source, verified_at, freshness_policy):
             raise ReleaseInventoryRejection(
                 "sha256-digest-syntax",
                 "Ubuntu Release SHA256 digest syntax changed")
-        if re.fullmatch(r"[1-9][0-9]*", columns[1]) is None:
+        if re.fullmatch(r"0|[1-9][0-9]*", columns[1]) is None:
             raise ReleaseInventoryRejection(
                 "sha256-size-syntax",
                 "Ubuntu Release SHA256 size syntax changed")
