@@ -5,14 +5,18 @@ import shlex
 from image.recipe import render
 
 
-def render_desktop(pins, variant, root):
+def render_desktop(pins, variant, root, media_ready=False):
     recipe = render(pins, variant, root)
     foundation = recipe['modules'][0]['snippets']
     snippets = [
         'RUN --mount=type=bind,src=install-inputs,dst=/symbi-build-inputs,ro '
         'PYTHONDONTWRITEBYTECODE=1 python3 /symbi-build-inputs/install.py',
-        'COPY --chown=0:0 payload/ /',
     ]
+    if media_ready:
+        snippets.append(
+            'RUN --mount=type=bind,src=install-inputs,dst=/symbi-build-inputs,ro '
+            'PYTHONDONTWRITEBYTECODE=1 python3 /symbi-build-inputs/media/media_install.py')
+    snippets.append('COPY --chown=0:0 payload/ /')
     for instruction in foundation:
         snippets.append(instruction)
         if instruction == 'COPY image/overlay/ /':

@@ -12,6 +12,8 @@ from image.desktop.inputs import select_prefix_files
 from image.desktop.portal import select_consent_files
 from image.desktop.recipe import render_desktop, review_containerfile
 from image.desktop.trust import prepare_trust
+from image.desktop_packages.media_contract import media_selection_digest, require_media_lock
+from image.desktop_packages.media_inputs import unpack_media_bundle
 from image.fonts.install import prepare_font_payload
 from image.hyprland.build_inputs import require_current_requirements, unpack_rpms
 from image.hyprland.prefix_input import unpack_prefix
@@ -69,7 +71,20 @@ def main():
     try:
         checkpoint('validate-target-and-builder')
         pins = load('image/base-images.json')
-        recipe = render_desktop(pins, variant, root)
+        package_trust = load('image/desktop_packages/trust.json')
+        media_lock = load('image/desktop_packages/media-rpms.lock.json')
+        media_ready = require_media_lock(media_lock, root, pins, package_trust)
+        record['media_packages'] = {
+            'install_ready': media_ready,
+            'selection_sha256': media_selection_digest(media_lock),
+            'status': media_lock['status'],
+            'root_packages': media_lock['root_packages'],
+            'source_inputs': media_lock['source_inputs'],
+            'security_evidence': media_lock['security_evidence'],
+            'playback_qualified': media_lock['playback_qualified'],
+            'persists_repository_trust': media_lock['persists_repository_trust'],
+        }
+        recipe = render_desktop(pins, variant, root, media_ready=media_ready)
         build_base = pins['variants']['generic']['image']
         record['base'] = pins['variants'][variant]['image']
         record['component_compilation_base'] = build_base
@@ -207,6 +222,36 @@ def main():
                  'guest_inventory.py': 'image/hyprland/guest_inventory.py', 'resolve_packages.py': 'image/hyprland/resolve_packages.py',
                  'bounded_process.py': 'image/launcher/probes/bounded_process.py', 'fedora-45-primary.asc': trust['key']['path']}
         for name, source in files.items(): copy_regular(root/source, install/name)
+        if media_ready:
+            checkpoint('prepare-offline-media-rpms')
+            extracted = storage/'media-rpms'
+            media_manifest = unpack_media_bundle(root/'.cache/media-rpm-candidates.zip', media_lock, root,
+                                                 pins, package_trust, extracted)
+            media_inputs = install/'media'
+            media_inputs.mkdir()
+            for relative in ('manifest.json',):
+                copy_regular(extracted/relative, media_inputs/relative)
+            for directory in ('rpms', 'srpms'):
+                for source in sorted((extracted/directory).iterdir()):
+                    copy_regular(source, media_inputs/directory/source.name)
+            for source, name in (
+                    ('image/desktop_packages/media-rpms.lock.json', 'media-rpms.lock.json'),
+                    ('image/base-images.json', 'base-images.json'),
+                    ('image/desktop_packages/trust.json', 'trust.json'),
+                    ('image/desktop_packages/media_contract.py', 'media_contract.py'),
+                    ('image/desktop_packages/media_install.py', 'media_install.py'),
+                    ('image/desktop_packages/contract.py', 'contract.py'),
+                    ('image/launcher/probes/bounded_process.py', 'bounded_process.py'),
+                    ('image/hyprland/keys/fedora-45-primary.asc', 'fedora-45-primary.asc'),
+                    ('image/desktop_packages/rpmfusion-free-2020.asc', 'rpmfusion-free-2020.asc')):
+                copy_regular(root/source, media_inputs/name)
+            retained = [media_lock['discovery']['result_path'],
+                        media_lock['security_evidence']['request_manifest']['path'],
+                        *[row['path'] for row in media_lock['security_evidence']['packages']]]
+            for relative in retained:
+                copy_regular(root/relative, media_inputs/'repository'/relative)
+            record['media_packages']['artifact'] = media_lock['closure']['artifact']
+            record['media_packages']['manifest'] = media_manifest
         for source, name in [('image/launcher/licenses/walker.LICENSE', 'Walker-GPL-3.0'),
                              ('image/launcher/licenses/elephant.LICENSE', 'Elephant-GPL-3.0'),
                              ('image/desktop/licenses/Symbiont.LICENSE', 'Symbiont-Apache-2.0'),

@@ -278,3 +278,27 @@ prove the selected secureblue bases contain
 the required tools and accept the exact payload. Booted Kitty, Walker, Waybar
 and glyph rendering remain open. The record therefore says development-included
 and leaves release, security and OS qualification false.
+
+## MPlayer and mpv selection gate
+
+The media package gate now freezes the exact retained MPlayer, companion data
+and mpv binary identities under the separately reviewed RPM Fusion Free and
+Fedora 45 keys. It is intentionally blocked: the retained aggregate desktop
+artifact is not a proof of the media-only dependency closure, and authenticated
+source RPM bytes matching `mplayer-1.5.1-0.26.r38531.20260727.f401198.fc45` and
+`mpv-0.41.0-10.fc45` have not been retained. Closed null metadata slots prevent
+either absence from being mistaken for a source review.
+
+The exact candidate versions are also bound to the retained cve.bz MPlayer and
+mpv product-name search files. Those searches are incomplete and contain
+unrelated results, so they provide neither package-version assessment nor CVE
+clearance. No live API request occurs during assembly.
+
+After a dedicated signed closure and the exact source RPMs are retained, the
+offline installer can enter the desktop build. It uses an ephemeral two-key
+keyring and leaves the image's repository trust unchanged. A separate manual,
+serial hosted matrix binds each retained image to the package/source selection,
+matches the installed RPM identities and then requires headless audio and video
+decode by both players on exact generic and NVIDIA images. Real devices,
+hardware decode, interactive output, untrusted-media robustness and release
+acceptance remain later gates.

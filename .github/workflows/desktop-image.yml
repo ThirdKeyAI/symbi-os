@@ -6,6 +6,14 @@ on:
     paths:
       - "image/desktop/**"
       - "image/fonts/**"
+      - "image/desktop_packages/media*"
+      - "image/desktop_packages/contract.py"
+      - "image/desktop_packages/trust.json"
+      - "image/desktop_packages/rpmfusion-free-2020.asc"
+      - "docs/security/reports/P0-03-desktop-packages/45818341284/guest/result.json"
+      - "docs/security/reports/P0-03-cve-bz/2026-11-26/desktop-profile/00-search.json"
+      - "docs/security/reports/P0-03-cve-bz/2026-11-26/desktop-profile/02-search.json"
+      - "docs/security/reports/P0-03-cve-bz/2026-11-26/desktop-profile/request-evidence.json"
       - "image/portal/**"
       - "LICENSE"
       - "image/base-images.json"
@@ -64,6 +72,14 @@ on:
     paths:
       - "image/desktop/**"
       - "image/fonts/**"
+      - "image/desktop_packages/media*"
+      - "image/desktop_packages/contract.py"
+      - "image/desktop_packages/trust.json"
+      - "image/desktop_packages/rpmfusion-free-2020.asc"
+      - "docs/security/reports/P0-03-desktop-packages/45818341284/guest/result.json"
+      - "docs/security/reports/P0-03-cve-bz/2026-11-26/desktop-profile/00-search.json"
+      - "docs/security/reports/P0-03-cve-bz/2026-11-26/desktop-profile/02-search.json"
+      - "docs/security/reports/P0-03-cve-bz/2026-11-26/desktop-profile/request-evidence.json"
       - "image/portal/**"
       - "LICENSE"
       - "image/base-images.json"
@@ -174,6 +190,55 @@ jobs:
           echo 'ce26dda0cab7e61de9c888503d2e5d3ff87e23f74e859fbfd270dd9de74c2565  .cache/portal-build-rpms.zip' | sha256sum --check --strict
       - name: Authenticate and passively inventory exact font inputs
         run: bash scripts/check-font-intake.sh
+      - name: Fetch the exact media-only closure only after its lock is complete
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          artifact=$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from image.desktop_packages.media_contract import require_media_lock
+          root=Path.cwd()
+          lock=json.loads((root/'image/desktop_packages/media-rpms.lock.json').read_text())
+          pins=json.loads((root/'image/base-images.json').read_text())
+          trust=json.loads((root/'image/desktop_packages/trust.json').read_text())
+          if require_media_lock(lock,root,pins,trust):
+              print(lock['closure']['artifact']['id'])
+          PY
+          )
+          if [[ -n "$artifact" ]]; then
+            timeout 30 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/$artifact" > .cache/media-rpm-artifact.json
+            run=$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          lock=json.loads(Path('image/desktop_packages/media-rpms.lock.json').read_text())
+          print(lock['closure']['artifact']['producer']['run_id'])
+          PY
+            )
+            timeout 30 gh api "repos/ThirdKeyAI/symbi-os/actions/runs/$run" > .cache/media-rpm-run.json
+            python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from image.desktop_packages.media_contract import require_media_artifact_metadata
+          lock=json.loads(Path('image/desktop_packages/media-rpms.lock.json').read_text())
+          artifact=json.loads(Path('.cache/media-rpm-artifact.json').read_text())
+          run=json.loads(Path('.cache/media-rpm-run.json').read_text())
+          require_media_artifact_metadata(lock,artifact,run)
+          PY
+            timeout 300 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/$artifact/zip" > .cache/media-rpm-candidates.zip
+            python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          lock=json.loads(Path('image/desktop_packages/media-rpms.lock.json').read_text())
+          path=Path('.cache/media-rpm-candidates.zip')
+          if path.stat().st_size != lock['closure']['artifact']['bytes']:
+              raise ValueError('Media artifact length changed')
+          with path.open('rb') as stream:
+              actual=hashlib.file_digest(stream,'sha256').hexdigest()
+          if actual != lock['closure']['artifact']['sha256']:
+              raise ValueError('Media artifact digest changed')
+          PY
+          fi
       - name: Prepare and validate the real desktop build context
         run: bash scripts/check-desktop-image.sh prepare
       - name: Assemble and inspect the installed desktop image

@@ -101,3 +101,64 @@ Both-base additive installation, remaining dependency/security/license review,
 fonts, Tokyo Night, menus, all 190 shortcuts and actual desktop acceptance are
 still pending. No production dependency or trust selection changes in this
 evidence-only follow-up; INV-12 remains a release requirement.
+
+## Closed MPlayer and mpv install gate
+
+[`media-rpms.lock.json`](media-rpms.lock.json) freezes the three authenticated
+root RPMs already observed in discovery: MPlayer and `mplayer-common` from the
+exact RPM Fusion Free fingerprint, and mpv from the exact Fedora 45
+fingerprint. It also binds both target base digests and the retained discovery
+manifest. This is a candidate-root lock, not an install selection.
+
+Installation remains closed for two concrete missing inputs. The aggregate
+desktop artifact does not prove the minimal additive dependency closure for
+only MPlayer and mpv, and no authenticated source RPM bytes are retained for
+the exact binary header values. The two source slots therefore contain null
+size/digest fields and `signature_verified=false`. Changing a slot, marking the
+closure complete or setting `install_ready` without the complete authenticated
+records is rejected before an artifact can be opened.
+
+The lock also binds the retained 26 November cve.bz MPlayer and mpv product-name
+search responses to these exact candidate versions and source-RPM names. Those
+responses are incomplete text searches with unrelated matches. The lock keeps
+`package_version_assessed=false` and `cleared=false`; image assembly performs no
+live security lookup and cannot turn the searches into a clearance claim.
+
+When a dedicated media-only closure and its two source RPMs are available, the
+prepared installer rechecks every byte, full signing fingerprint, RPM header,
+binary-to-source version/release relationship and both negative-control
+signers. The closure lock also freezes the producing repository, workflow, run,
+head commit, artifact name and Fedora base digest. Image assembly compares the
+live GitHub artifact and workflow-run metadata with those fields before it
+downloads the archive. It imports the two public keys only into a temporary
+filesystem keyring under `/run`. DNF receives a read-only, preverified local
+closure with
+all repositories and plugins disabled. The system RPM key inventory and
+repository configuration under Fedora Atomic's `/usr/share`, `/usr/etc`, the
+factory and secureblue defaults under `/usr/share`, and mutable `/etc`
+locations must be identical before and after. That snapshot binds the owner,
+group and mode of every covered directory, file and link as well as each
+link's effective target bytes and metadata. Oversized files and special nodes
+fail the build, so RPM Fusion trust does not become image trust.
+
+The future ready lock deliberately uses a two-commit relink. The first commit
+may contain the complete authenticated package inputs with
+`image_source_commit=null`; that commit can build an image whose manifest
+records `media_selection_sha256`. After the retained image exists, a second
+commit sets `image_source_commit` to the first commit and updates the retained
+image lock. The selection digest excludes only this coordination field, so it
+does not change during the relink. Playback refuses a null, stale or mismatched
+commit and independently requires the in-image selection digest. This makes
+the future ready state constructible without claiming that a commit contains
+its own resulting hash.
+
+The manual hosted playback workflow is also closed by the same lock. Once new
+retained generic and NVIDIA images are bound to the selected package/source
+digest and their exact build commit, it runs one variant at a time under a
+3 GiB/one-CPU controller. An unprivileged, read-only, networkless 512 MiB
+container first matches all three installed RPM identities, then makes small
+deterministic WAV and YUV4MPEG fixtures and requires MPlayer and mpv to decode
+both to null outputs. The retained report has an exact scope and schema, exact
+fixture digests and controller limits, and final zero OOM, OOM-kill and group
+OOM-kill counters. That gate does not qualify an audio device, display, GPU
+decode, arbitrary media or a release image.

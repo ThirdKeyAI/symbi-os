@@ -139,6 +139,15 @@ def main():
                 or installed.get('base_crypto_configuration_unchanged') is not True):
             raise ValueError('Image package installation did not preserve the base')
         record['installation']=installed
+        package_inventory = install_output/'installed-after-stdout.log'
+        if prepared.get('media_packages', {}).get('install_ready') is True:
+            media_installed = unique_json((install_output/'media/result.json').read_bytes())
+            if (media_installed.get('passed') is not True
+                    or media_installed.get('persistent_trust_unchanged') is not True
+                    or media_installed.get('persisted_repository_trust') is not False):
+                raise ValueError('Offline media installation did not preserve package trust')
+            record['media_installation'] = media_installed
+            package_inventory = install_output/'media/installed-after-stdout.log'
         # Retain a successful assembly before later runtime checks, so a probe
         # correction can reuse the image instead of repeating the build.
         archive=outputs/('symbiont-os-'+variant+'.oci.tar')
@@ -146,14 +155,20 @@ def main():
         run('compress-image',['gzip','--no-name','-1',str(archive)],1200)
         archive=archive.with_suffix('.tar.gz')
         record['image_archive']={'name':archive.name,'bytes':archive.stat().st_size,'sha256':digest(archive),'image_id':image_id}
-        (outputs/'manifest.json').write_text(json.dumps({'schema':1,'built':True,'os_qualified':False,
+        image_manifest = {'schema':1,'built':True,'os_qualified':False,
             'source_commit':record['source_commit'],'base':base['image'],'variant':variant,'archive':record['image_archive'],
-            'preparation_sha256':digest(evidence/'preparation.json')},indent=2)+'\n')
+            'preparation_sha256':digest(evidence/'preparation.json')}
+        if prepared.get('media_packages', {}).get('install_ready') is True:
+            selection = prepared['media_packages'].get('selection_sha256')
+            if not isinstance(selection, str) or not re.fullmatch(r'[0-9a-f]{64}', selection):
+                raise ValueError('Prepared media selection digest is missing')
+            image_manifest['media_selection_sha256'] = selection
+        (outputs/'manifest.json').write_text(json.dumps(image_manifest,indent=2)+'\n')
         shutil.copyfile(outputs/'manifest.json', evidence/'image-manifest.json')
         qualification=storage/'qualification'
         qualification.mkdir(mode=0o755)
         for source, name in [(evidence/'preparation.json','preparation.json'),
-                             (install_output/'installed-after-stdout.log','installed-after-stdout.log'),
+                             (package_inventory,'installed-after-stdout.log'),
                              (root/'image/desktop/verify.py','verify.py'),
                              (root/'image/fonts/verify.py','font_verify.py'),
                              (root/'image/desktop/portal.py','portal.py'),
@@ -232,6 +247,11 @@ def main():
         for path in install_output.iterdir():
             if path.is_file() and not path.is_symlink() and path.suffix in ('.json','.log','.cnf') and path.stat().st_size<=1024**2:
                 target=evidence/'install'/path.name;target.parent.mkdir(exist_ok=True);shutil.copyfile(path,target)
+        media_output = install_output/'media'
+        if media_output.is_dir():
+            for path in media_output.iterdir():
+                if path.is_file() and not path.is_symlink() and path.suffix in ('.json','.log','.cnf') and path.stat().st_size<=1024**2:
+                    target=evidence/'media-install'/path.name;target.parent.mkdir(exist_ok=True);shutil.copyfile(path,target)
         # Only this run's private storage is inspected/cleaned. Force removal
         # also handles Buildah containers, including failed RUN stages.
         try:

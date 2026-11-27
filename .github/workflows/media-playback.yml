@@ -1,0 +1,74 @@
+name: MPlayer and mpv retained-image playback
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: media-playback-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  playback:
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        variant: [generic, nvidia]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    env:
+      SYMBI_IMAGE_VARIANT: ${{ matrix.variant }}
+    steps:
+      - name: Check out the proposed qualification revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Refuse incomplete media inputs before downloading an image
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache/media-playback-evidence
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          Path('.cache/media-playback-evidence/preflight.json').write_text(json.dumps({
+              'schema': 1, 'passed': False, 'variant': os.environ['SYMBI_IMAGE_VARIANT'],
+              'scope': 'Media lock and retained-image identity check before any large download'
+          }, indent=2)+'\n')
+          PY
+          artifact=$(python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          from image.boot.inputs import require_desktop_image
+          from image.desktop_packages.media_contract import require_media_image_binding, require_media_lock
+          root=Path.cwd()
+          pins=json.loads((root/'image/base-images.json').read_text())
+          images=json.loads((root/'image/desktop-images.lock.json').read_text())
+          media=json.loads((root/'image/desktop_packages/media-rpms.lock.json').read_text())
+          trust=json.loads((root/'image/desktop_packages/trust.json').read_text())
+          variant=os.environ['SYMBI_IMAGE_VARIANT']
+          require_media_lock(media,root,pins,trust,require_ready=True)
+          manifest=require_desktop_image(images,pins,variant)
+          selected=images['images'][variant]
+          require_media_image_binding(media,manifest,selected['tested_commit'])
+          print(selected['artifact']['id'])
+          PY
+          )
+          timeout 30 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/$artifact" > .cache/atomic-image-artifact.json
+          timeout 900 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/$artifact/zip" > .cache/atomic-development-image.zip
+      - name: Authenticate and stream the exact retained image
+        run: bash scripts/check-atomic-image.sh prepare
+      - name: Run bounded offline audio and video decode checks
+        run: bash scripts/check-media-playback.sh
+      - name: Retain bounded playback evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: media-playback-${{ matrix.variant }}
+          path: .cache/media-playback-evidence/
+          retention-days: 14
+          if-no-files-found: error
