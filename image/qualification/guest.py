@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import platform
+import re
 import signal
 import stat
 import subprocess
@@ -17,6 +18,8 @@ import zlib
 
 MAX_ARTIFACT_BYTES = 2 * 1024 * 1024
 MAX_TOTAL_ARTIFACT_BYTES = 12 * 1024 * 1024
+SOURCE_ROOT = Path("/run/symbi-qualification/source")
+SOURCE_RECORD = Path("/run/symbi-qualification/source-device.json")
 
 
 def sha256(path):
@@ -36,6 +39,41 @@ def unique_json(raw):
     if not isinstance(result, dict):
         raise ValueError("guest input must be a JSON object")
     return result
+
+
+def validate_source_device(expected):
+    """Read the root-owned mount record and bind it to the expected disk."""
+    info = SOURCE_RECORD.lstat()
+    if (not stat.S_ISREG(info.st_mode) or info.st_uid != 0 or info.st_gid != 0
+            or info.st_nlink != 1 or stat.S_IMODE(info.st_mode) != 0o644
+            or info.st_size > 16 * 1024):
+        raise ValueError("unsafe qualification source-device record")
+    observed = unique_json(SOURCE_RECORD.read_bytes())
+    source = expected.get("source_disk")
+    required = {"path", "TYPE", "LABEL", "UUID"}
+    if (not isinstance(source, dict) or not isinstance(observed, dict)
+            or set(observed) != required
+            or re.fullmatch(r"/dev/vd[a-z]{1,3}", observed.get("path", "")) is None
+            or observed.get("TYPE") != source.get("filesystem")
+            or observed.get("LABEL") != source.get("label")
+            or observed.get("UUID") != source.get("uuid")):
+        raise ValueError("qualification source-device record differs")
+    mounted = subprocess.run(
+        ["/usr/bin/findmnt", "-n", "-o", "SOURCE,FSTYPE,OPTIONS",
+         "--target", str(SOURCE_ROOT)], stdin=subprocess.DEVNULL,
+        capture_output=True, text=True, timeout=15,
+        env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8"})
+    if (len(mounted.stdout.encode()) > 32 * 1024
+            or len(mounted.stderr.encode()) > 32 * 1024):
+        raise ValueError("qualification mount inspection exceeded its bound")
+    mounted.check_returncode()
+    fields = mounted.stdout.split()
+    mounted_source = fields[0].split("[", 1)[0] if fields else ""
+    if (len(fields) != 3 or mounted_source != observed["path"] or fields[1] != "ext4"
+            or not {"ro", "nosuid", "nodev", "noexec"}.issubset(
+                set(fields[2].split(",")))):
+        raise ValueError("qualification source mount differs from its root record")
+    return observed
 
 
 def safe_public_path(name):
@@ -179,13 +217,14 @@ def main():
             raise ValueError("unprivileged qualification guest identity changed")
         if sorted(path.name for path in Path("/sys/class/net").iterdir()) != ["lo"]:
             raise ValueError("qualification guest gained a network interface")
-        source_root = Path("/var/lib/symbi-qualification/source")
+        source_root = SOURCE_ROOT
         flags = os.statvfs(source_root).f_flag
         required_flags = os.ST_RDONLY | os.ST_NOSUID
         for name in ("ST_NODEV", "ST_NOEXEC"):
             required_flags |= getattr(os, name, 0)
         if flags & required_flags != required_flags:
             raise ValueError("source disk mount lost read-only execution restrictions")
+        record["source_device"] = validate_source_device(expected)
         source = source_root / "source"
         manifest_path = source_root / "manifest.json"
         if source.is_symlink() or manifest_path.is_symlink() or source.stat().st_uid != 10001:

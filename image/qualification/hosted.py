@@ -15,6 +15,21 @@ from image.qualification.hosted_process import TIMEOUT_SECONDS
 
 
 SOURCE_DISK_BYTES = 2 * 1024**3
+QUALIFICATION_FILES = {
+    "boot.py": "image/qualification/boot.py",
+    "guest.py": "image/qualification/guest.py",
+    "prepare.py": "image/qualification/prepare.py",
+    "landlock.py": "image/qualification/landlock.py",
+    "vertical_slice.py": "image/qualification/vertical_slice.py",
+    "status_server.py": "image/qualification/status_server.py",
+    "source_mount.py": "image/qualification/source_mount.py",
+    "fstab.extra": "image/qualification/fstab.extra",
+    "m.service": "image/qualification/m.service",
+    "p.service": "image/qualification/p.service",
+    "q.service": "image/qualification/q.service",
+    "l.service": "image/qualification/l.service",
+    "sysusers.conf": "image/qualification/sysusers.conf",
+}
 MAX_SOURCE_BYTES = 1024**3
 MAX_SOURCE_ENTRIES = 200_000
 
@@ -209,16 +224,7 @@ def run_landlock(root, group, podman, image_id, atomic_disk, storage, containers
         image_ref = "ghcr.io/thirdkeyai/symbiont-os@" + atomic_expected["manifest_digest"]
         inputs = storage / "landlock-input"
         inputs.mkdir(mode=0o755)
-        files = {
-            "boot.py": "image/qualification/boot.py", "guest.py": "image/qualification/guest.py",
-            "prepare.py": "image/qualification/prepare.py",
-            "landlock.py": "image/qualification/landlock.py",
-            "vertical_slice.py": "image/qualification/vertical_slice.py",
-            "status_server.py": "image/qualification/status_server.py",
-            "fstab.extra": "image/qualification/fstab.extra", "p.service": "image/qualification/p.service",
-            "q.service": "image/qualification/q.service", "l.service": "image/qualification/l.service",
-            "sysusers.conf": "image/qualification/sysusers.conf",
-        }
+        files = QUALIFICATION_FILES
         for name, relative in files.items():
             shutil.copyfile(root / relative, inputs / name)
             (inputs / name).chmod(0o644)

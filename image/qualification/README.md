@@ -123,12 +123,15 @@ This is a bounded fail-closed controller skeleton, not Fedora execution evidence
 ## Hosted Landlock execution
 
 `.github/workflows/landlock-qualification.yml` performs a fresh authenticated
-installation using the existing Atomic harness and then boots a second, private
-snapshot for the Landlock suites. The exact clean upstream checkout is placed on
+installation using the existing Atomic harness and then boots an explicit,
+private qcow2 overlay over the read-only installed disk for the Landlock suites.
+The exact clean upstream checkout is placed on
 an ext4 disk with label `SYMBIQUAL`; its commit, tree, submodules, Cargo lock,
-filesystem UUID and bytes are bound before the disk becomes read-only. The guest
-mount comes from the fixed `fstab.extra` credential and is
-`ro,nosuid,nodev,noexec`.
+filesystem UUID and bytes are bound before the disk becomes read-only. QEMU gives
+that source a fixed `SYMBIQUAL` virtio serial. Systemd mounts the corresponding
+`/dev/disk/by-id` path in the main namespace with a 30-second device timeout and
+`ro,nosuid,nodev,noexec`. A bounded capability-free root service then verifies
+the exact ext4 type, label, UUID and mount before the unprivileged runner starts.
 
 The firmware services create a disposable UID 10001 account and delegated user
 manager only in the QEMU overlay. They do not add an account to the product

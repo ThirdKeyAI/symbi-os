@@ -18,12 +18,15 @@ import zlib
 from image.atomic.hosted import run_hosted_command
 from image.launcher.probes.bounded_process import run_bounded
 from image.qualification import landlock as landlock_driver
-from image.qualification.boot import (firmware_arguments, qemu_command,
+from image.qualification.boot import (discard_overlay, firmware_arguments,
+                                      overlay_command, qemu_command, stop_child,
                                       validate_guest_report)
 from image.qualification.guest import collect_public_artifacts
-from image.qualification.hosted import validate_source_checkout
+from image.qualification.hosted import (QUALIFICATION_FILES,
+                                        validate_source_checkout)
 from image.qualification.hosted_process import (TIMEOUT_SECONDS,
                                                 validate_landlock_controller_command)
+from image.qualification.source_mount import validate_source_identity
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -68,6 +71,8 @@ class HostedLandlock(unittest.TestCase):
             "binary_sha256": "c" * 64,
             "image_ref": "ghcr.io/thirdkeyai/symbiont-os@sha256:" + "d" * 64,
             "source_manifest_sha256": "e" * 64,
+            "source_disk": {"filesystem": "ext4", "label": "SYMBIQUAL",
+                            "uuid": "12345678-1234-1234-1234-123456789abc"},
         }
 
     def report(self, name="platform.json", content=b'{"passed":true}\n'):
@@ -91,6 +96,9 @@ class HostedLandlock(unittest.TestCase):
             "binary_sha256": expected["binary_sha256"],
             "image_ref": expected["image_ref"],
             "landlock_abi": 6,
+            "source_device": {"path": "/dev/vdb", "TYPE": "ext4",
+                              "LABEL": "SYMBIQUAL",
+                              "UUID": expected["source_disk"]["uuid"]},
             "summary": {"passed": True, "qualified": True,
                         "public_reports": {name: hashlib.sha256(content).hexdigest()}},
             "artifacts": {name: {"bytes": len(content),
@@ -105,6 +113,7 @@ class HostedLandlock(unittest.TestCase):
                  for index in range(1, len(args), 2)]
         self.assertEqual(set(names), {
             "opt/io.systemd.credentials/fstab.extra",
+            "opt/io.systemd.credentials/systemd.extra-unit.m.service",
             "opt/io.systemd.credentials/systemd.extra-unit.p.service",
             "opt/io.systemd.credentials/systemd.extra-unit.q.service",
             "opt/io.systemd.credentials/systemd.extra-unit.l.service",
@@ -113,24 +122,42 @@ class HostedLandlock(unittest.TestCase):
             "opt/io.systemd.credentials/vertical_slice.py",
             "opt/io.systemd.credentials/symbi-runner.py",
             "opt/io.systemd.credentials/symbi-prepare.py",
+            "opt/io.systemd.credentials/symbi-source-mount.py",
             "opt/io.systemd.credentials/symbi-expected.json",
             "opt/io.systemd.credentials/symbi-sysusers.conf",
         })
         self.assertTrue(all(len(name.encode("ascii")) < 56 for name in names))
         self.assertFalse(any(word in name for name in names for word in ("password", "ssh", "token", "key")))
+        staged = {Path(args[index].split(",file=", 1)[1]).name
+                  for index in range(1, len(args), 2)}
+        self.assertEqual(staged - {"expected.json"},
+                         set(QUALIFICATION_FILES) - {"boot.py"})
 
     def test_guest_units_have_fixed_user_mount_and_authority(self):
         fstab = (ROOT / "image/qualification/fstab.extra").read_text().split()
-        self.assertEqual(fstab, ["LABEL=SYMBIQUAL", "/var/lib/symbi-qualification/source",
-                                 "ext4", "ro,nosuid,nodev,noexec", "0", "0"])
+        self.assertEqual(fstab, ["/dev/disk/by-id/virtio-SYMBIQUAL",
+                                 "/run/symbi-qualification/source", "ext4",
+                                 "ro,nosuid,nodev,noexec,x-systemd.device-timeout=30s",
+                                 "0", "0"])
         prepare = settings("p.service")
-        self.assertEqual(prepare["RequiresMountsFor"], ["/var/lib/symbi-qualification/source"])
+        self.assertEqual(prepare["Requires"], ["m.service"])
+        self.assertEqual(prepare["After"], ["m.service"])
         self.assertEqual(set(prepare["ImportCredential"]),
                          {"symbi-sysusers.conf", "symbi-prepare.py"})
         self.assertTrue(all("/bin/sh" not in command and "/bin/bash" not in command
                             for command in prepare["ExecStart"]))
         self.assertEqual(prepare["ExecStart"],
                          ["/usr/bin/python3 %d/symbi-prepare.py %d/symbi-sysusers.conf"])
+        mount = settings("m.service")
+        self.assertEqual(mount["CapabilityBoundingSet"], [""])
+        self.assertEqual(mount["RequiresMountsFor"],
+                         ["/run/symbi-qualification/source"])
+        self.assertEqual(mount["NoNewPrivileges"], ["yes"])
+        self.assertEqual(mount["MemorySwapMax"], ["0"])
+        self.assertEqual(set(mount["ImportCredential"]),
+                         {"symbi-source-mount.py", "symbi-expected.json"})
+        self.assertNotIn('"/usr/bin/mount"',
+                         (ROOT / "image/qualification/source_mount.py").read_text())
         setup = (ROOT / "image/qualification/prepare.py").read_text()
         for control in ("pwd.getpwuid", "grp.getgrgid", "os.O_EXCL", "os.O_NOFOLLOW",
                         'user.pw_uid == UID', 'group.gr_gid == UID',
@@ -263,10 +290,55 @@ class HostedLandlock(unittest.TestCase):
         self.assertIn("-m 2048M", joined)
         self.assertIn("-smp 1", joined)
         self.assertIn("product=Symbi-Hosted-Landlock-Probe", joined)
-        self.assertIn("file=/inputs/atomic.raw,format=raw,if=virtio", joined)
-        self.assertIn("file=/inputs/source.raw,format=raw,if=virtio,readonly=on", joined)
+        self.assertIn("file=/output/guest.qcow2,format=qcow2,if=virtio", joined)
+        self.assertNotIn("snapshot=on", joined)
+        self.assertNotIn("file=/inputs/atomic.raw", joined)
+        self.assertIn("file=/inputs/source.raw,format=raw,if=none,id=symbi-qualification-source,readonly=on", joined)
+        self.assertIn("virtio-blk-pci,drive=symbi-qualification-source,serial=SYMBIQUAL", joined)
+        self.assertEqual(overlay_command(), [
+            "/usr/bin/qemu-img", "create", "-f", "qcow2", "-F", "raw",
+            "-b", "/inputs/atomic.raw", "/output/guest.qcow2",
+        ])
         for forbidden in ("-virtfs", "-fsdev", "hostfwd", "-nic", "-kernel", "-initrd"):
             self.assertNotIn(forbidden, command)
+
+    def test_source_identity_and_controller_cleanup_fail_closed(self):
+        expected = self.expected()["source_disk"]
+        raw = ("DEVNAME=/dev/vdb\nTYPE=ext4\nLABEL=SYMBIQUAL\nUUID="
+               + expected["uuid"] + "\n")
+        self.assertEqual(validate_source_identity(raw, expected), {
+            "TYPE": "ext4", "LABEL": "SYMBIQUAL", "UUID": expected["uuid"],
+        })
+        for changed in (raw.replace("TYPE=ext4", "TYPE=xfs"),
+                        raw.replace("LABEL=SYMBIQUAL", "LABEL=OTHER"),
+                        raw.replace(expected["uuid"], "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")):
+            with self.subTest(raw=changed), self.assertRaises(ValueError):
+                validate_source_identity(changed, expected)
+
+        child = mock.Mock()
+        child.poll.return_value = None
+        child.terminate.side_effect = PermissionError("synthetic refusal")
+        child.kill.side_effect = PermissionError("synthetic refusal")
+        failure = "TimeoutError: Landlock guest did not report"
+        record = {"failure": failure, "child_cleanup": stop_child(child)}
+        self.assertEqual(record["failure"], failure)
+        self.assertTrue(record["child_cleanup"]["attempted"])
+        self.assertEqual(len(record["child_cleanup"]["errors"]), 2)
+        with tempfile.TemporaryDirectory() as directory:
+            overlay = Path(directory) / "guest.qcow2"
+            overlay.write_bytes(b"synthetic overlay")
+            info = overlay.stat()
+            cleanup = discard_overlay(overlay, (info.st_dev, info.st_ino))
+            self.assertEqual(cleanup, {"attempted": True, "removed": True,
+                                       "errors": []})
+            self.assertFalse(overlay.exists())
+
+    def test_guest_source_device_binding_is_required(self):
+        report = self.report()
+        report["source_device"]["UUID"] = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+        with self.assertRaisesRegex(ValueError, "source-device"):
+            validate_guest_report(report, self.expected(), "f" * 64, "1" * 64,
+                                  "2" * 64, "3" * 64)
 
     def test_landlock_controller_uses_only_its_fixed_extended_runner(self):
         command = self.landlock_controller_command()

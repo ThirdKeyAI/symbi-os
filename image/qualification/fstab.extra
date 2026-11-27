@@ -1,1 +1,1 @@
-LABEL=SYMBIQUAL /var/lib/symbi-qualification/source ext4 ro,nosuid,nodev,noexec 0 0
+/dev/disk/by-id/virtio-SYMBIQUAL /run/symbi-qualification/source ext4 ro,nosuid,nodev,noexec,x-systemd.device-timeout=30s 0 0
