@@ -214,33 +214,17 @@ env -i "PATH=/usr/bin:/bin" "HOME=$HOME" "LANG=C.UTF-8" "LC_ALL=C.UTF-8" "PYTHON
   --mode "$mode" --exit-status "$status" --validated "$validation"
 
 if [[ $status -eq 0 ]]; then
-  python3 - "$evidence/cgroup-final.json" "$evidence/systemd-fallback.json" "$evidence/cleanup.json" <<'PY'
-import json
+  env -i "PATH=/usr/bin:/bin" "HOME=$HOME" "LANG=C.UTF-8" "LC_ALL=C.UTF-8" \
+    "PYTHONDONTWRITEBYTECODE=1" python3 - "$evidence/cgroup-final.json" \
+    "$evidence/systemd-fallback.json" "$evidence/cleanup.json" <<'PY'
 from pathlib import Path
 import sys
+from image.container import ubuntu_fixture_package_hosted as hosted
 
-cgroup = json.loads(Path(sys.argv[1]).read_text())
-fallback = json.loads(Path(sys.argv[2]).read_text())
-cleanup = json.loads(Path(sys.argv[3]).read_text())
-assert cgroup["zero_swap"] is True
-events = dict(
-    line.split() for line in cgroup["counters"]["memory.events"].splitlines())
-assert events.get("oom", "0") == "0"
-assert events.get("oom_kill", "0") == "0"
-assert events.get("oom_group_kill", "0") == "0"
-assert fallback["source"] == "systemd-fallback"
-assert fallback["zero_swap"] is True
-assert fallback["oom_observed"] is False
-assert fallback["oom_auditable"] is True
-assert fallback["systemd"]["Result"] == "success"
-assert cleanup["private_work_retained"] is True
-assert cleanup["recursive_path_cleanup_performed"] is False
-if cleanup["mode"] == "produce":
-    assert cleanup["candidate_present"] is True
-    assert cleanup["post_unit_candidate_validated"] is True
-else:
-    assert cleanup["candidate_present"] is False
-    assert cleanup["post_unit_candidate_validated"] is False
+cgroup = hosted._load_json(Path(sys.argv[1]))
+fallback = hosted._load_json(Path(sys.argv[2]))
+cleanup = hosted._load_json(Path(sys.argv[3]))
+hosted.validate_post_unit_records(cgroup, fallback, cleanup)
 PY
 fi
 

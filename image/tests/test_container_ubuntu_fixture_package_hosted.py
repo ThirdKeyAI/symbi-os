@@ -68,6 +68,33 @@ class UbuntuHostedProducerTests(unittest.TestCase):
             ),
         }
 
+    def systemd_result(self, **overrides):
+        rows = {
+            "LoadState": "loaded",
+            "ActiveState": "inactive",
+            "SubState": "dead",
+            "Result": "success",
+            "ExecMainCode": "1",
+            "ExecMainStatus": "0",
+            "MemoryCurrent": "0",
+            "MemoryPeak": "0",
+            "MemoryMax": str(hosted.EXPECTED_LIMITS["memory_max"]),
+            "MemorySwapCurrent": "0",
+            "MemorySwapPeak": "0",
+            "MemorySwapMax": "0",
+            "CPUQuotaPerSecUSec": "1s",
+            "CPUQuotaPeriodUSec": "100ms",
+            "CPUUsageNSec": "1",
+            "TasksCurrent": "0",
+            "TasksMax": str(hosted.EXPECTED_LIMITS["pids_max"]),
+            "RuntimeMaxUSec": "50min",
+        }
+        self.assertTrue(set(overrides).issubset(rows))
+        rows.update(overrides)
+        self.assertEqual(set(rows), hosted.SYSTEMD_RESULT_FIELDS)
+        return "".join(f"{name}={value}\n"
+                       for name, value in rows.items()).encode()
+
     def ready_contract(self):
         contract = copy.deepcopy(self.contract)
         contract["state"] = "ready"
@@ -1395,18 +1422,35 @@ class UbuntuHostedProducerTests(unittest.TestCase):
                     candidate, rows, observed)
 
     def test_systemd_fallback_always_records_swap_and_oom_state(self):
-        oom = (
-            b"Result=oom-kill\nMemorySwapMax=0\nMemorySwapCurrent=0\n"
-            b"MemorySwapPeak=0\nExecMainStatus=137\n"
-        )
+        oom = self.systemd_result(
+            Result="oom-kill", ExecMainCode="2", ExecMainStatus="9")
         result = hosted.systemd_fallback_record(oom)
         self.assertEqual(set(result), hosted.SYSTEMD_FALLBACK_FIELDS)
+        self.assertEqual(result["schema"], hosted.SYSTEMD_FALLBACK_SCHEMA)
+        self.assertFalse(result["authoritative"])
+        self.assertTrue(result["measurement_available"])
         self.assertTrue(result["zero_swap"])
         self.assertTrue(result["oom_observed"])
         self.assertTrue(result["oom_auditable"])
+        self.assertIsNone(result["error"])
+
+        not_found = hosted.systemd_fallback_record(self.systemd_result(
+            LoadState="not-found", Result="success", ExecMainCode="0",
+            MemoryCurrent="[not set]", MemoryPeak="[not set]",
+            MemoryMax="infinity", MemorySwapCurrent="[not set]",
+            MemorySwapPeak="[not set]", MemorySwapMax="infinity",
+            CPUQuotaPerSecUSec="infinity", CPUQuotaPeriodUSec="infinity",
+            CPUUsageNSec="[not set]", TasksCurrent="[not set]",
+            TasksMax="16666", RuntimeMaxUSec="infinity"))
+        self.assertFalse(not_found["measurement_available"])
+        self.assertFalse(not_found["zero_swap"])
+        self.assertFalse(not_found["oom_observed"])
+        self.assertFalse(not_found["oom_auditable"])
+        self.assertIn("measurement is unavailable", not_found["error"])
 
         unknown = hosted.systemd_fallback_record(
             b"systemctl show failed with status 1\n")
+        self.assertFalse(unknown["measurement_available"])
         self.assertFalse(unknown["zero_swap"])
         self.assertFalse(unknown["oom_observed"])
         self.assertFalse(unknown["oom_auditable"])
@@ -1430,6 +1474,117 @@ class UbuntuHostedProducerTests(unittest.TestCase):
             hosted.write_systemd_fallback(systemd, fallback)
             self.assertEqual(primary.read_bytes(), b"{")
             self.assertTrue(json.loads(fallback.read_text())["oom_observed"])
+
+    def test_post_unit_records_use_primary_swap_authority(self):
+        cgroup = {
+            "schema": 1,
+            "limits": copy.deepcopy(hosted.EXPECTED_LIMITS),
+            "counters": {
+                "memory.max": str(hosted.EXPECTED_LIMITS["memory_max"]),
+                "memory.swap.max": "0",
+                "memory.current": "1",
+                "memory.peak": "1",
+                "memory.swap.current": "0",
+                "memory.swap.peak": "0",
+                "memory.events": (
+                    "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\n"
+                    "oom_group_kill 0"
+                ),
+                "cpu.max": hosted.EXPECTED_LIMITS["cpu_max"],
+                "cpu.stat": "usage_usec 1",
+                "pids.max": str(hosted.EXPECTED_LIMITS["pids_max"]),
+                "pids.current": "1",
+                "pids.peak": "1",
+            },
+            "zero_swap": True,
+            "error": None,
+        }
+        fallback = hosted.systemd_fallback_record(self.systemd_result(
+            LoadState="not-found", Result="success", ExecMainCode="0",
+            MemoryCurrent="[not set]", MemoryPeak="[not set]",
+            MemoryMax="infinity", MemorySwapCurrent="[not set]",
+            MemorySwapPeak="[not set]", MemorySwapMax="infinity",
+            CPUQuotaPerSecUSec="infinity", CPUQuotaPeriodUSec="infinity",
+            CPUUsageNSec="[not set]", TasksCurrent="[not set]",
+            TasksMax="16666", RuntimeMaxUSec="infinity"))
+        cleanup = {
+            "schema": 1,
+            "mode": "discover",
+            "producer_exit_status": 0,
+            "private_work_retained": True,
+            "recursive_path_cleanup_performed": False,
+            "candidate_present": False,
+            "post_unit_candidate_validated": False,
+            "selected": False,
+            "qualified": False,
+        }
+        self.assertFalse(fallback["measurement_available"])
+        self.assertFalse(fallback["oom_auditable"])
+        self.assertFalse(fallback["zero_swap"])
+        self.assertTrue(hosted.validate_post_unit_records(
+            cgroup, fallback, cleanup))
+
+        failed_cleanup = copy.deepcopy(cleanup)
+        failed_cleanup["producer_exit_status"] = 1
+        with self.assertRaises(ValueError):
+            hosted.validate_post_unit_records(
+                cgroup, fallback, failed_cleanup)
+
+        for field, value in (
+                ("measurement_available", True),
+                ("oom_auditable", True),
+                ("oom_observed", True),
+                ("error", "caller supplied")):
+            changed = copy.deepcopy(fallback)
+            changed[field] = value
+            with self.subTest(inconsistent_claim=field), \
+                    self.assertRaises(ValueError):
+                hosted.validate_post_unit_records(cgroup, changed, cleanup)
+
+        loaded = hosted.systemd_fallback_record(self.systemd_result())
+        self.assertTrue(loaded["measurement_available"])
+        self.assertTrue(loaded["oom_auditable"])
+        self.assertTrue(hosted.validate_post_unit_records(
+            cgroup, loaded, cleanup))
+        changed = copy.deepcopy(loaded)
+        changed["oom_auditable"] = False
+        with self.assertRaises(ValueError):
+            hosted.validate_post_unit_records(cgroup, changed, cleanup)
+
+        for field, value in (
+                ("memory.swap.max", "1"),
+                ("memory.swap.current", "1"),
+                ("memory.swap.peak", "1")):
+            changed = copy.deepcopy(cgroup)
+            changed["counters"][field] = value
+            changed["zero_swap"] = False
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                hosted.validate_post_unit_records(changed, fallback, cleanup)
+        for field in (
+                "memory.swap.max", "memory.swap.current", "memory.swap.peak"):
+            changed = copy.deepcopy(cgroup)
+            del changed["counters"][field]
+            with self.subTest(missing=field), self.assertRaises(ValueError):
+                hosted.validate_post_unit_records(changed, fallback, cleanup)
+
+        oom = hosted.systemd_fallback_record(self.systemd_result(
+            Result="oom-kill", ExecMainCode="2", ExecMainStatus="9"))
+        with self.assertRaises(ValueError):
+            hosted.validate_post_unit_records(cgroup, oom, cleanup)
+
+        for field in (
+                "MemorySwapMax", "MemorySwapCurrent", "MemorySwapPeak"):
+            swap = {
+                "MemorySwapMax": "0",
+                "MemorySwapCurrent": "0",
+                "MemorySwapPeak": "0",
+            }
+            swap[field] = "1"
+            nonzero = hosted.systemd_fallback_record(
+                self.systemd_result(**swap))
+            with self.subTest(fallback_nonzero=field), \
+                    self.assertRaises(ValueError):
+                hosted.validate_post_unit_records(cgroup, nonzero, cleanup)
 
     def test_retention_rejects_same_uid_directory_replacement_without_cleanup(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -1549,16 +1704,15 @@ class UbuntuHostedProducerTests(unittest.TestCase):
                 "--property=CapabilityBoundingSet=CAP_SYS_ADMIN",
                 "--property=AmbientCapabilities=CAP_SYS_ADMIN",
                 "--property=ReadWritePaths=$cache",
-                "post_unit_candidate_validated",
-                'cgroup["zero_swap"] is True'):
+                "validate_post_unit_records(cgroup, fallback, cleanup)"):
             self.assertIn(value, text)
+        self.assertNotIn('fallback["zero_swap"] is True', text)
         self.assertNotIn(" +  ", text)
         self.assertNotIn("rm -rf", text)
         self.assertNotIn("chown -R", text)
         self.assertNotIn('if [[ ! -e "$evidence/cgroup-final.json"', text)
         self.assertIn('if [[ "$mode" == discover ]]', text)
         self.assertIn("systemd-fallback.json", text)
-        self.assertIn("recursive_path_cleanup_performed", text)
         self.assertIn(
             'sudo systemd-run "${systemd_args[@]}" /usr/bin/env -i '
             '"${clean_env[@]}" "${producer_argv[@]}"', text)
@@ -1575,6 +1729,12 @@ class UbuntuHostedProducerTests(unittest.TestCase):
         self.assertIn('"--net", "--", executable', module)
         self.assertIn("download_package_plan", module)
         self.assertIn("offline_dpkg_command", module)
+        self.assertIn(
+            'cleanup.get("post_unit_candidate_validated") is production',
+            module)
+        self.assertIn(
+            'cleanup.get("recursive_path_cleanup_performed") is False',
+            module)
 
 
 if __name__ == "__main__":
