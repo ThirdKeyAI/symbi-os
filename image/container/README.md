@@ -273,8 +273,11 @@ freshness, binds the exact amd64 Packages.xz SHA-256 member, and matches apt's
 file-only offline plan to exact signed package rows. It also provides bounded
 sequential no-redirect downloads, an authenticated Ubuntu Base dpkg-status
 binding, a no-act dpkg plan, and exact candidate-directory validation. Its
-manifest is always `candidate-unselected`; every qualification claim remains
-false and the pending public input contract still refuses it. No workflow,
+manifest is always `candidate-unselected`; `producer_passed`, every verification
+field and every qualification claim remain false, and the pending public input
+contract still refuses it. All staged paths are private and descriptor-relative:
+every component is opened without following links and each file is hashed,
+parsed or copied through the same stable single-link descriptor. No workflow,
 Dockerfile, native producer or artifact upload consumes this code yet.
 
 ## Required remaining evidence

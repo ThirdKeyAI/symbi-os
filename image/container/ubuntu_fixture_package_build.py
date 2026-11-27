@@ -16,7 +16,6 @@ import os
 from pathlib import Path, PurePosixPath
 import re
 import shlex
-import shutil
 import stat
 import tarfile
 import time
@@ -37,6 +36,8 @@ MAX_STATUS_BYTES = 16 * 1024**2
 DOWNLOAD_CHUNK_BYTES = 64 * 1024
 DOWNLOAD_TIMEOUT_SECONDS = 30
 MAX_DOWNLOAD_SECONDS = 600
+PRIVATE_DIRECTORY_MODE = 0o700
+PRIVATE_FILE_MODE = 0o600
 EXPECTED_CODENAMES = {
     "noble": "noble",
     "noble-updates": "noble",
@@ -47,8 +48,8 @@ BAD_GPG_STATUS = {
     "KEYEXPIRED", "SIGEXPIRED",
 }
 CANDIDATE_SCOPE = (
-    "Authenticated Ubuntu fixture package candidate; separately reviewed "
-    "selection, offline image build, cold load and qualification remain blocked"
+    "Unselected Ubuntu fixture package bytes; command execution, authenticated "
+    "verification, selection, offline image build and qualification remain blocked"
 )
 CANDIDATE_CLAIMS = (
     "selected", "qualified", "container_qualified", "signature_qualified",
@@ -97,10 +98,262 @@ def sha256_bytes(raw):
     return hashlib.sha256(raw).hexdigest()
 
 
-def sha256_file(path):
-    path = Path(path)
-    with path.open("rb") as stream:
-        return hashlib.file_digest(stream, "sha256").hexdigest()
+def _file_identity(info):
+    return (
+        info.st_dev, info.st_ino, info.st_mode, info.st_uid, info.st_gid,
+        info.st_nlink, info.st_size, info.st_mtime_ns, info.st_ctime_ns,
+    )
+
+
+def _directory_identity(info):
+    return info.st_dev, info.st_ino, info.st_mode, info.st_uid, info.st_gid
+
+
+def _canonical_absolute_path(value, description):
+    require(isinstance(value, (str, os.PathLike)), description + " is not a path")
+    raw = os.fspath(value)
+    require(isinstance(raw, str) and raw and "\x00" not in raw,
+            description + " is malformed")
+    path = Path(raw)
+    require(path.is_absolute() and raw == os.path.normpath(raw)
+            and not raw.startswith("//")
+            and all(part not in ("", ".", "..") for part in path.parts[1:]),
+            description + " is not canonical and absolute")
+    return path
+
+
+def _safe_leaf(name):
+    return (isinstance(name, str) and name and "/" not in name
+            and "\\" not in name and name not in (".", "..")
+            and "\x00" not in name)
+
+
+class _DirectoryAnchor:
+    """Hold every absolute path component open without following links."""
+
+    def __init__(self, path, description, *, private=True):
+        self.path = _canonical_absolute_path(path, description)
+        self.description = description
+        self.private = private
+        self.descriptors = []
+        self.names = []
+        flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+        try:
+            descriptor = os.open("/", flags)
+            self.descriptors.append(descriptor)
+            require(stat.S_ISDIR(os.fstat(descriptor).st_mode),
+                    description + " filesystem root is not a directory")
+            for component in self.path.parts[1:]:
+                child = os.open(component, flags, dir_fd=descriptor)
+                info = os.fstat(child)
+                require(stat.S_ISDIR(info.st_mode),
+                        description + " has a non-directory component")
+                self.names.append(component)
+                self.descriptors.append(child)
+                descriptor = child
+            self._check_target()
+            self.verify()
+        except (OSError, ValueError) as error:
+            self.close()
+            if isinstance(error, ValueError):
+                raise
+            raise ValueError(description + " is not a direct anchored directory") from error
+
+    @property
+    def fd(self):
+        return self.descriptors[-1]
+
+    def _check_target(self):
+        info = os.fstat(self.fd)
+        require(stat.S_ISDIR(info.st_mode),
+                self.description + " is not a directory")
+        if self.private:
+            require(info.st_uid == os.geteuid() and info.st_gid == os.getegid()
+                    and stat.S_IMODE(info.st_mode) == PRIVATE_DIRECTORY_MODE,
+                    self.description + " is not the exact private directory")
+
+    def verify(self):
+        self._check_target()
+        for index, name in enumerate(self.names):
+            held = os.fstat(self.descriptors[index + 1])
+            try:
+                named = os.stat(
+                    name, dir_fd=self.descriptors[index], follow_symlinks=False)
+            except OSError as error:
+                raise ValueError(
+                    self.description + " changed while anchored") from error
+            require(stat.S_ISDIR(named.st_mode)
+                    and _directory_identity(named) == _directory_identity(held),
+                    self.description + " component identity changed")
+
+    def close(self):
+        for descriptor in reversed(getattr(self, "descriptors", [])):
+            try:
+                os.close(descriptor)
+            except OSError:
+                pass
+        self.descriptors = []
+
+
+def _require_private_regular(info, expected_bytes, description):
+    require(stat.S_ISREG(info.st_mode) and info.st_nlink == 1
+            and info.st_uid == os.geteuid() and info.st_gid == os.getegid()
+            and stat.S_IMODE(info.st_mode) == PRIVATE_FILE_MODE
+            and type(expected_bytes) is int and expected_bytes >= 0
+            and info.st_size == expected_bytes,
+            description + " is not one exact private regular file")
+
+
+def _open_regular_at(directory_fd, name, expected_bytes, description):
+    require(_safe_leaf(name), description + " name is unsafe")
+    flags = os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC
+    try:
+        descriptor = os.open(name, flags, dir_fd=directory_fd)
+    except OSError as error:
+        raise ValueError(description + " is not a direct regular file") from error
+    try:
+        before = os.fstat(descriptor)
+        _require_private_regular(before, expected_bytes, description)
+        named = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+        require(_file_identity(named) == _file_identity(before),
+                description + " named identity changed before reading")
+        return descriptor, before
+    except BaseException:
+        os.close(descriptor)
+        raise
+
+
+def _open_private_directory_at(directory_fd, name, description):
+    require(_safe_leaf(name), description + " name is unsafe")
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+    try:
+        descriptor = os.open(name, flags, dir_fd=directory_fd)
+    except OSError as error:
+        raise ValueError(description + " is not a direct directory") from error
+    try:
+        info = os.fstat(descriptor)
+        named = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+        require(stat.S_ISDIR(info.st_mode)
+                and info.st_uid == os.geteuid() and info.st_gid == os.getegid()
+                and stat.S_IMODE(info.st_mode) == PRIVATE_DIRECTORY_MODE
+                and _directory_identity(named) == _directory_identity(info),
+                description + " is not the exact private directory")
+        return descriptor
+    except BaseException:
+        os.close(descriptor)
+        raise
+
+
+def _create_private_regular_at(directory_fd, name, description):
+    require(_safe_leaf(name), description + " name is unsafe")
+    flags = (os.O_RDWR | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW
+             | os.O_CLOEXEC | os.O_NONBLOCK)
+    try:
+        descriptor = os.open(
+            name, flags, PRIVATE_FILE_MODE, dir_fd=directory_fd)
+    except OSError as error:
+        raise ValueError(description + " cannot be created directly") from error
+    try:
+        created = os.fstat(descriptor)
+        _require_private_regular(created, 0, description)
+        named = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+        require(_file_identity(named) == _file_identity(created),
+                description + " changed as it was created")
+        return descriptor, created
+    except BaseException:
+        os.close(descriptor)
+        raise
+
+
+def _write_all(descriptor, raw):
+    view = memoryview(raw)
+    while view:
+        written = os.write(descriptor, view)
+        require(written > 0, "private output write made no progress")
+        view = view[written:]
+
+
+def _finish_private_output(directory_fd, name, descriptor, created,
+                           expected_bytes, expected_sha256, description):
+    os.fsync(descriptor)
+    before = os.fstat(descriptor)
+    _require_private_regular(before, expected_bytes, description)
+    require(before.st_dev == created.st_dev and before.st_ino == created.st_ino,
+            description + " descriptor identity changed")
+    digest = _fd_sha256(descriptor)
+    after = os.fstat(descriptor)
+    try:
+        named = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+    except OSError as error:
+        raise ValueError(description + " disappeared after writing") from error
+    require(digest == expected_sha256
+            and _file_identity(after) == _file_identity(before)
+            and _file_identity(named) == _file_identity(before),
+            description + " changed while hashing or writing")
+    return {"bytes": expected_bytes, "sha256": digest}
+
+
+def _unlink_created_at(directory_fd, name, created):
+    try:
+        named = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+    except FileNotFoundError:
+        return
+    if named.st_dev == created.st_dev and named.st_ino == created.st_ino:
+        os.unlink(name, dir_fd=directory_fd)
+
+
+def _finish_regular_at(directory_fd, name, descriptor, before, description):
+    after = os.fstat(descriptor)
+    try:
+        named = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+    except OSError as error:
+        raise ValueError(description + " disappeared while open") from error
+    require(_file_identity(after) == _file_identity(before)
+            and _file_identity(named) == _file_identity(before),
+            description + " changed while open")
+
+
+def _fd_sha256(descriptor):
+    os.lseek(descriptor, 0, os.SEEK_SET)
+    digest = hashlib.sha256()
+    while True:
+        block = os.read(descriptor, DOWNLOAD_CHUNK_BYTES)
+        if not block:
+            break
+        digest.update(block)
+    os.lseek(descriptor, 0, os.SEEK_SET)
+    return digest.hexdigest()
+
+
+def _fd_read(descriptor, maximum, description):
+    os.lseek(descriptor, 0, os.SEEK_SET)
+    raw = bytearray()
+    while len(raw) <= maximum:
+        block = os.read(descriptor, min(DOWNLOAD_CHUNK_BYTES, maximum + 1 - len(raw)))
+        if not block:
+            break
+        raw.extend(block)
+    require(0 < len(raw) <= maximum, description + " is empty or oversized")
+    os.lseek(descriptor, 0, os.SEEK_SET)
+    return bytes(raw)
+
+
+def _open_private_path(path, expected_bytes, description):
+    path = _canonical_absolute_path(path, description)
+    require(path.name and path.parent != path, description + " has no leaf")
+    anchor = _DirectoryAnchor(path.parent, description + " parent")
+    try:
+        descriptor, before = _open_regular_at(
+            anchor.fd, path.name, expected_bytes, description)
+        return path, anchor, descriptor, before
+    except BaseException:
+        anchor.close()
+        raise
+
+
+def _close_private_path(path, anchor, descriptor, before, description):
+    _finish_regular_at(anchor.fd, path.name, descriptor, before, description)
+    anchor.verify()
 
 
 def format_release_time(value):
@@ -197,9 +450,10 @@ def validate_gpgv_status(returncode, status, expected_fingerprint):
 
 def inrelease_verification_command(keyring, inrelease, release_output):
     """Return the exact command that verifies and extracts signed Release text."""
-    keyring = Path(keyring).resolve()
-    inrelease = Path(inrelease).resolve()
-    release_output = Path(release_output).resolve()
+    keyring = _canonical_absolute_path(keyring, "Ubuntu archive keyring")
+    inrelease = _canonical_absolute_path(inrelease, "Ubuntu InRelease input")
+    release_output = _canonical_absolute_path(
+        release_output, "Ubuntu Release output")
     require(keyring != inrelease and inrelease != release_output
             and keyring != release_output,
             "Ubuntu InRelease verification paths overlap")
@@ -273,12 +527,13 @@ def validate_signed_release(raw, source, verified_at):
     }
 
 
-def _iter_control_stanzas(path):
+def _iter_control_stanzas(descriptor):
     total = 0
     pending = bytearray()
     try:
-        stream = lzma.open(path, "rb")
-        with stream:
+        os.lseek(descriptor, 0, os.SEEK_SET)
+        with os.fdopen(os.dup(descriptor), "rb") as raw_stream, \
+                lzma.LZMAFile(raw_stream, "rb") as stream:
             while True:
                 block = stream.read(64 * 1024)
                 if not block:
@@ -302,6 +557,8 @@ def _iter_control_stanzas(path):
                         "Ubuntu Packages index has an oversized stanza")
     except lzma.LZMAError as error:
         raise ValueError("Ubuntu Packages.xz is malformed") from error
+    finally:
+        os.lseek(descriptor, 0, os.SEEK_SET)
     if pending:
         require(len(pending) <= MAX_STANZA_BYTES,
                 "Ubuntu Packages index has an oversized final stanza")
@@ -347,12 +604,10 @@ def _package_row(raw, source, index_sha256):
 
 def find_requested_packages(path, source, index_binding, requested):
     """Find every apt-selected Filename exactly once in its signed Packages.xz."""
-    path = Path(path)
-    mode = path.stat()
-    require(not path.is_symlink() and path.resolve(strict=True) == path
-            and stat.S_ISREG(mode.st_mode) and mode.st_nlink == 1
-            and mode.st_size == index_binding.get("bytes")
-            and sha256_file(path) == index_binding.get("sha256")
+    require(isinstance(index_binding, dict)
+            and type(index_binding.get("bytes")) is int
+            and index_binding["bytes"] > 0
+            and packages.exact_hash(index_binding.get("sha256"))
             and index_binding.get("path") == "main/binary-amd64/Packages.xz",
             "Ubuntu Packages.xz bytes differ from signed Release membership")
     require(source in packages.EXPECTED_SOURCES and isinstance(requested, dict)
@@ -367,20 +622,31 @@ def find_requested_packages(path, source, index_binding, requested):
                 and 0 < expected["bytes"] <= packages.MAX_PACKAGE_BYTES
                 and packages.exact_hash(expected["sha256"]),
                 "Ubuntu requested package membership row is invalid")
-    found = {}
-    for raw in _iter_control_stanzas(path):
-        fields = _control_fields(raw, "Ubuntu Packages stanza", MAX_STANZA_BYTES)
-        filename = fields.get("filename")
-        if filename not in requested:
-            continue
-        require(filename not in found,
-                "Ubuntu Packages index repeats an apt-selected filename")
-        row = _package_row(raw, source, index_binding["sha256"])
-        expected = requested[filename]
-        require(row["bytes"] == expected["bytes"]
-                and row["sha256"] == expected["sha256"],
-                "apt plan bytes differ from signed Packages membership")
-        found[filename] = row
+    path, anchor, descriptor, before = _open_private_path(
+        path, index_binding["bytes"], "Ubuntu Packages.xz")
+    try:
+        require(_fd_sha256(descriptor) == index_binding["sha256"],
+                "Ubuntu Packages.xz hash differs from signed Release membership")
+        found = {}
+        for raw in _iter_control_stanzas(descriptor):
+            fields = _control_fields(
+                raw, "Ubuntu Packages stanza", MAX_STANZA_BYTES)
+            filename = fields.get("filename")
+            if filename not in requested:
+                continue
+            require(filename not in found,
+                    "Ubuntu Packages index repeats an apt-selected filename")
+            row = _package_row(raw, source, index_binding["sha256"])
+            expected = requested[filename]
+            require(row["bytes"] == expected["bytes"]
+                    and row["sha256"] == expected["sha256"],
+                    "apt plan bytes differ from signed Packages membership")
+            found[filename] = row
+        _close_private_path(
+            path, anchor, descriptor, before, "Ubuntu Packages.xz")
+    finally:
+        os.close(descriptor)
+        anchor.close()
     require(set(found) == set(requested),
             "apt plan contains a package absent from signed Packages metadata")
     return {filename: found[filename] for filename in requested}
@@ -396,64 +662,81 @@ def parse_apt_uri_plan(raw, repository_root, sources):
     except UnicodeDecodeError as error:
         raise ValueError("offline apt URI plan is not UTF-8") from error
     packages.validate_sources(sources)
-    repository_root = Path(repository_root).resolve(strict=True)
-    suite_roots = {
-        source["suite"]: (repository_root / source["suite"]).resolve()
-        for source in sources
-    }
-    result = []
-    filenames, destinations = set(), set()
-    for sequence, line in enumerate(text.splitlines()):
-        try:
-            columns = shlex.split(line, posix=True)
-        except ValueError as error:
-            raise ValueError("offline apt URI plan has invalid quoting") from error
-        require(len(columns) == 4,
-                "offline apt URI plan contains non-package output")
-        uri, destination, size_text, digest_text = columns
-        parsed = urlsplit(uri)
-        require(parsed.scheme == "file" and not parsed.netloc
-                and not parsed.query and not parsed.fragment,
-                "offline apt URI plan contains a network or aliased URI")
-        decoded_path = unquote(parsed.path, errors="strict")
-        require(quote(decoded_path, safe="/") == parsed.path
-                and "\x00" not in decoded_path and "\\" not in decoded_path,
-                "offline apt URI plan path is unsafe")
-        local_path = Path(decoded_path).resolve()
-        matches = []
-        for suite, suite_root in suite_roots.items():
-            if local_path.is_relative_to(suite_root):
-                matches.append((suite, local_path.relative_to(suite_root)))
-        require(len(matches) == 1,
-                "offline apt URI is outside one reviewed suite repository")
-        suite, relative = matches[0]
-        filename = relative.as_posix()
-        require(packages._safe_filename(filename, ".deb")
-                and filename.startswith("pool/main/")
-                and packages._safe_filename(destination, ".deb")
-                and PurePosixPath(destination).name == destination
-                and re.fullmatch(r"[1-9][0-9]*", size_text) is not None
-                and 0 < int(size_text) <= packages.MAX_PACKAGE_BYTES
-                and digest_text.startswith("SHA256:")
-                and packages.exact_hash(digest_text.removeprefix("SHA256:")),
-                "offline apt URI plan row is malformed or weakly hashed")
-        require(filename not in filenames and destination not in destinations,
-                "offline apt URI plan repeats a package or destination")
-        filenames.add(filename)
-        destinations.add(destination)
-        result.append({
-            "sequence": sequence,
-            "suite": suite,
-            "filename": filename,
-            "destination": destination,
-            "bytes": int(size_text),
-            "sha256": digest_text.removeprefix("SHA256:"),
-        })
-    require(0 < len(result) <= packages.MAX_PACKAGE_COUNT,
-            "offline apt URI plan package count is invalid")
-    require(sum(row["bytes"] for row in result) <= packages.MAX_CLOSURE_BYTES,
-            "offline apt URI plan exceeds the closure byte bound")
-    return result
+    repository_root = _canonical_absolute_path(
+        repository_root, "offline apt repository root")
+    anchor = _DirectoryAnchor(repository_root, "offline apt repository root")
+    suite_descriptors = {}
+    try:
+        suite_roots = {}
+        for source in sources:
+            suite = source["suite"]
+            suite_descriptors[suite] = _open_private_directory_at(
+                anchor.fd, suite, "offline apt suite repository")
+            suite_roots[suite] = repository_root / suite
+        result = []
+        filenames, destinations = set(), set()
+        for sequence, line in enumerate(text.splitlines()):
+            try:
+                columns = shlex.split(line, posix=True)
+            except ValueError as error:
+                raise ValueError("offline apt URI plan has invalid quoting") from error
+            require(len(columns) == 4,
+                    "offline apt URI plan contains non-package output")
+            uri, destination, size_text, digest_text = columns
+            parsed = urlsplit(uri)
+            require(parsed.scheme == "file" and not parsed.netloc
+                    and not parsed.query and not parsed.fragment,
+                    "offline apt URI plan contains a network or aliased URI")
+            decoded_path = unquote(parsed.path, errors="strict")
+            require(quote(decoded_path, safe="/") == parsed.path
+                    and "\x00" not in decoded_path and "\\" not in decoded_path,
+                    "offline apt URI plan path is unsafe")
+            local_path = _canonical_absolute_path(
+                decoded_path, "offline apt URI plan path")
+            matches = []
+            for suite, suite_root in suite_roots.items():
+                if local_path.is_relative_to(suite_root):
+                    matches.append((suite, local_path.relative_to(suite_root)))
+            require(len(matches) == 1,
+                    "offline apt URI is outside one reviewed suite repository")
+            suite, relative = matches[0]
+            filename = relative.as_posix()
+            require(packages._safe_filename(filename, ".deb")
+                    and filename.startswith("pool/main/")
+                    and packages._safe_filename(destination, ".deb")
+                    and PurePosixPath(destination).name == destination
+                    and re.fullmatch(r"[1-9][0-9]*", size_text) is not None
+                    and 0 < int(size_text) <= packages.MAX_PACKAGE_BYTES
+                    and digest_text.startswith("SHA256:")
+                    and packages.exact_hash(digest_text.removeprefix("SHA256:")),
+                    "offline apt URI plan row is malformed or weakly hashed")
+            require(filename not in filenames and destination not in destinations,
+                    "offline apt URI plan repeats a package or destination")
+            filenames.add(filename)
+            destinations.add(destination)
+            result.append({
+                "sequence": sequence,
+                "suite": suite,
+                "filename": filename,
+                "destination": destination,
+                "bytes": int(size_text),
+                "sha256": digest_text.removeprefix("SHA256:"),
+            })
+        require(0 < len(result) <= packages.MAX_PACKAGE_COUNT,
+                "offline apt URI plan package count is invalid")
+        require(sum(row["bytes"] for row in result) <= packages.MAX_CLOSURE_BYTES,
+                "offline apt URI plan exceeds the closure byte bound")
+        for suite, descriptor in suite_descriptors.items():
+            named = os.stat(suite, dir_fd=anchor.fd, follow_symlinks=False)
+            require(_directory_identity(named)
+                    == _directory_identity(os.fstat(descriptor)),
+                    "offline apt suite repository changed while planning")
+        anchor.verify()
+        return result
+    finally:
+        for descriptor in suite_descriptors.values():
+            os.close(descriptor)
+        anchor.close()
 
 
 def bind_uri_plan_to_indexes(plan, index_inputs, sources):
@@ -542,13 +825,17 @@ def validate_apt_simulation(raw, package_rows):
 def offline_plan_commands(apt_root, repository_root, keyring, roots,
                           package_paths):
     """Return exact local-repository apt and no-act dpkg commands."""
-    apt_root = Path(apt_root).resolve()
-    repository_root = Path(repository_root).resolve()
-    keyring = Path(keyring).resolve()
+    apt_root = _canonical_absolute_path(apt_root, "offline apt root")
+    repository_root = _canonical_absolute_path(
+        repository_root, "offline apt repository root")
+    keyring = _canonical_absolute_path(keyring, "offline apt keyring")
     require(list(roots) == packages.EXPECTED_REQUEST["roots"]
             and package_paths and len(package_paths) <= packages.MAX_PACKAGE_COUNT,
             "offline Ubuntu package roots or package paths changed")
-    normalized = [Path(path).resolve() for path in package_paths]
+    normalized = [
+        _canonical_absolute_path(path, "offline dpkg package")
+        for path in package_paths
+    ]
     require(len(normalized) == len(set(normalized))
             and all(path.name.endswith(".deb") for path in normalized),
             "offline dpkg package paths are invalid or duplicated")
@@ -588,8 +875,9 @@ def offline_plan_commands(apt_root, repository_root, keyring, roots,
 def offline_sources_list(repository_root, keyring, sources):
     """Render only exact signed local repositories for the offline apt phase."""
     packages.validate_sources(sources)
-    repository_root = Path(repository_root).resolve()
-    keyring = Path(keyring).resolve()
+    repository_root = _canonical_absolute_path(
+        repository_root, "offline apt repository root")
+    keyring = _canonical_absolute_path(keyring, "offline apt keyring")
     require(repository_root.is_absolute() and keyring.is_absolute()
             and not any(character.isspace() for character in str(repository_root))
             and not any(character.isspace() for character in str(keyring)),
@@ -604,19 +892,13 @@ def offline_sources_list(repository_root, keyring, sources):
     return "\n".join(rows) + "\n"
 
 
-def download_exact(url, destination, expected_bytes, expected_sha256,
-                   opener=_OPEN_EXACT_URL):
-    """Download one exact payload without redirects, buffering or parallelism."""
+def _download_exact_at(url, directory_fd, name, expected_bytes,
+                       expected_sha256, opener):
     require(packages._canonical_https(url)
             and type(expected_bytes) is int
             and 0 < expected_bytes <= packages.MAX_PACKAGE_BYTES
             and packages.exact_hash(expected_sha256),
             "Ubuntu package download binding is invalid")
-    destination = Path(destination)
-    parent = destination.parent.resolve(strict=True)
-    require(destination.parent.resolve() == parent
-            and not destination.exists() and not destination.is_symlink(),
-            "Ubuntu package download destination already exists or is aliased")
     request = Request(
         url,
         headers={
@@ -627,6 +909,8 @@ def download_exact(url, destination, expected_bytes, expected_sha256,
     written = 0
     digest = hashlib.sha256()
     deadline = time.monotonic() + MAX_DOWNLOAD_SECONDS
+    descriptor, created = _create_private_regular_at(
+        directory_fd, name, "Ubuntu package download")
     try:
         with opener(request, timeout=DOWNLOAD_TIMEOUT_SECONDS) as response:
             length = response.headers.get("Content-Length")
@@ -634,37 +918,57 @@ def download_exact(url, destination, expected_bytes, expected_sha256,
                     and isinstance(length, str) and length.isdigit()
                     and int(length) == expected_bytes,
                     "Ubuntu package response redirected or changed size")
-            with destination.open("xb") as output:
-                while True:
-                    block = response.read(DOWNLOAD_CHUNK_BYTES)
-                    if not block:
-                        break
-                    written += len(block)
-                    require(written <= expected_bytes
-                            and time.monotonic() <= deadline,
-                            "Ubuntu package response exceeded its signed size or time")
-                    digest.update(block)
-                    output.write(block)
-                output.flush()
-                os.fsync(output.fileno())
+            while True:
+                block = response.read(DOWNLOAD_CHUNK_BYTES)
+                if not block:
+                    break
+                written += len(block)
+                require(written <= expected_bytes
+                        and time.monotonic() <= deadline,
+                        "Ubuntu package response exceeded its signed size or time")
+                digest.update(block)
+                _write_all(descriptor, block)
         require(written == expected_bytes and digest.hexdigest() == expected_sha256,
                 "Ubuntu package bytes differ from signed Packages metadata")
-        destination.chmod(0o644)
-        return {"bytes": written, "sha256": digest.hexdigest()}
+        result = _finish_private_output(
+            directory_fd, name, descriptor, created, expected_bytes,
+            expected_sha256, "Ubuntu package download")
+        return result, created
     except BaseException:
-        destination.unlink(missing_ok=True)
+        _unlink_created_at(directory_fd, name, created)
         raise
+    finally:
+        os.close(descriptor)
+
+
+def download_exact(url, destination, expected_bytes, expected_sha256,
+                   opener=_OPEN_EXACT_URL):
+    """Download one exact payload through an anchored private directory fd."""
+    destination = _canonical_absolute_path(
+        destination, "Ubuntu package download destination")
+    anchor = _DirectoryAnchor(
+        destination.parent, "Ubuntu package download parent")
+    try:
+        result, _ = _download_exact_at(
+            url, anchor.fd, destination.name, expected_bytes,
+            expected_sha256, opener)
+        anchor.verify()
+        return result
+    finally:
+        anchor.close()
 
 
 def download_package_plan(plan, package_rows, destination,
                           opener=_OPEN_EXACT_URL):
     """Download the signed apt plan strictly one package at a time."""
-    destination = Path(destination).resolve(strict=True)
-    require(destination.is_dir() and not destination.is_symlink()
-            and isinstance(plan, list) and isinstance(package_rows, list)
+    destination = _canonical_absolute_path(
+        destination, "Ubuntu sequential package download directory")
+    require(isinstance(plan, list) and isinstance(package_rows, list)
             and len(plan) == len(package_rows)
             and 0 < len(plan) <= packages.MAX_PACKAGE_COUNT,
             "Ubuntu sequential package download plan is invalid")
+    anchor = _DirectoryAnchor(
+        destination, "Ubuntu sequential package download directory")
     outputs = []
     try:
         for sequence, (planned, package) in enumerate(
@@ -680,42 +984,48 @@ def download_package_plan(plan, package_rows, destination,
                 package["filename"]).name
             require(packages._safe_filename(name, ".deb"),
                     "Ubuntu package staging filename is unsafe")
-            path = destination / name
-            result = download_exact(
-                package["url"], path, package["bytes"], package["sha256"],
-                opener=opener,
-            )
+            result, created = _download_exact_at(
+                package["url"], anchor.fd, name, package["bytes"],
+                package["sha256"], opener)
             outputs.append({
                 "sequence": sequence,
-                "path": path,
+                "path": destination / name,
                 "sha256": result["sha256"],
                 "bytes": result["bytes"],
+                "_name": name,
+                "_created": created,
             })
         require(sum(row["bytes"] for row in outputs)
                 <= packages.MAX_CLOSURE_BYTES,
                 "Ubuntu downloaded closure exceeds its total byte bound")
-        return outputs
+        anchor.verify()
+        return [
+            {key: value for key, value in row.items() if not key.startswith("_")}
+            for row in outputs
+        ]
     except BaseException:
         for row in outputs:
-            row["path"].unlink(missing_ok=True)
+            _unlink_created_at(anchor.fd, row["_name"], row["_created"])
         raise
+    finally:
+        anchor.close()
 
 
 def extract_base_dpkg_status(archive, binding):
     """Read only dpkg status from the exact authenticated Ubuntu Base archive."""
-    archive = Path(archive)
-    mode = archive.stat()
     require(isinstance(binding, dict)
             and type(binding.get("bytes")) is int
             and packages.exact_hash(binding.get("sha256"))
-            and not archive.is_symlink() and archive.resolve(strict=True) == archive
-            and stat.S_ISREG(mode.st_mode) and mode.st_nlink == 1
-            and mode.st_size == binding["bytes"]
-            and sha256_file(archive) == binding["sha256"],
+            and binding["bytes"] > 0,
             "Ubuntu Base archive differs from its authenticated binding")
+    archive, anchor, descriptor, before = _open_private_path(
+        archive, binding["bytes"], "Ubuntu Base archive")
     selected = None
     try:
-        with archive.open("rb") as stream, tarfile.open(
+        require(_fd_sha256(descriptor) == binding["sha256"],
+                "Ubuntu Base archive hash differs from its binding")
+        os.lseek(descriptor, 0, os.SEEK_SET)
+        with os.fdopen(os.dup(descriptor), "rb") as stream, tarfile.open(
                 fileobj=stream, mode="r|gz") as bundle:
             for member in bundle:
                 name = member.name
@@ -732,114 +1042,235 @@ def extract_base_dpkg_status(archive, binding):
                 selected = extracted.read(MAX_STATUS_BYTES + 1)
                 require(len(selected) == member.size,
                         "Ubuntu Base dpkg status changed size while reading")
+        _close_private_path(
+            archive, anchor, descriptor, before, "Ubuntu Base archive")
     except (tarfile.TarError, EOFError, OSError) as error:
         raise ValueError("Ubuntu Base archive is malformed") from error
+    finally:
+        os.close(descriptor)
+        anchor.close()
     require(isinstance(selected, bytes) and 0 < len(selected) <= MAX_STATUS_BYTES
             and b"\x00" not in selected,
             "Ubuntu Base archive has no bounded dpkg status")
     return selected, {"bytes": len(selected), "sha256": sha256_bytes(selected)}
 
 
-def _copy_exact(source, destination, expected_bytes, expected_sha256):
-    source = Path(source)
-    before = source.stat()
-    require(not source.is_symlink() and source.resolve(strict=True) == source
-            and stat.S_ISREG(before.st_mode) and before.st_nlink == 1
-            and before.st_size == expected_bytes
-            and sha256_file(source) == expected_sha256,
-            "Ubuntu candidate input payload differs from its manifest")
-    written = 0
-    digest = hashlib.sha256()
-    with source.open("rb") as input_stream, Path(destination).open("xb") as output:
+def _copy_exact(source, destination_fd, destination_name, expected_bytes,
+                expected_sha256):
+    source, anchor, source_fd, before = _open_private_path(
+        source, expected_bytes, "Ubuntu candidate input payload")
+    output_fd = created = None
+    try:
+        require(_fd_sha256(source_fd) == expected_sha256,
+                "Ubuntu candidate input payload differs from its manifest")
+        output_fd, created = _create_private_regular_at(
+            destination_fd, destination_name, "Ubuntu candidate output payload")
+        written = 0
+        digest = hashlib.sha256()
+        os.lseek(source_fd, 0, os.SEEK_SET)
         while True:
-            block = input_stream.read(DOWNLOAD_CHUNK_BYTES)
+            block = os.read(source_fd, DOWNLOAD_CHUNK_BYTES)
             if not block:
                 break
             written += len(block)
             require(written <= expected_bytes,
                     "Ubuntu candidate input grew while copying")
             digest.update(block)
-            output.write(block)
-        output.flush()
-        os.fsync(output.fileno())
-    after = source.stat()
-    require(written == expected_bytes and digest.hexdigest() == expected_sha256
-            and (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns,
-                 before.st_ctime_ns, before.st_nlink)
-            == (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns,
-                after.st_ctime_ns, after.st_nlink),
-            "Ubuntu candidate input changed while copying")
-    Path(destination).chmod(0o644)
+            _write_all(output_fd, block)
+        require(written == expected_bytes
+                and digest.hexdigest() == expected_sha256,
+                "Ubuntu candidate input changed while copying")
+        _finish_private_output(
+            destination_fd, destination_name, output_fd, created,
+            expected_bytes, expected_sha256, "Ubuntu candidate output payload")
+        _close_private_path(
+            source, anchor, source_fd, before, "Ubuntu candidate input payload")
+    except BaseException:
+        if created is not None:
+            _unlink_created_at(destination_fd, destination_name, created)
+        raise
+    finally:
+        if output_fd is not None:
+            os.close(output_fd)
+        os.close(source_fd)
+        anchor.close()
+
+
+def _read_bounded_regular_at(directory_fd, name, maximum, description):
+    try:
+        preliminary = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+    except OSError as error:
+        raise ValueError(description + " is missing") from error
+    require(stat.S_ISREG(preliminary.st_mode)
+            and 0 < preliminary.st_size <= maximum,
+            description + " is not bounded")
+    descriptor, before = _open_regular_at(
+        directory_fd, name, preliminary.st_size, description)
+    try:
+        raw = _fd_read(descriptor, maximum, description)
+        _finish_regular_at(directory_fd, name, descriptor, before, description)
+        return raw
+    finally:
+        os.close(descriptor)
+
+
+def _validate_bound_regular_at(directory_fd, name, row, description):
+    descriptor, before = _open_regular_at(
+        directory_fd, name, row["bytes"], description)
+    try:
+        require(_fd_sha256(descriptor) == row["sha256"],
+                description + " hash changed")
+        _finish_regular_at(directory_fd, name, descriptor, before, description)
+    finally:
+        os.close(descriptor)
+
+
+def _validate_candidate_output_fd(root_fd, lock):
+    require(set(os.listdir(root_fd)) == {"manifest.json", "metadata", "packages"},
+            "Ubuntu package candidate output members changed")
+    raw_manifest = _read_bounded_regular_at(
+        root_fd, "manifest.json", packages.MAX_METADATA_BYTES,
+        "Ubuntu candidate manifest")
+    manifest = packages.unique_json_bytes(
+        raw_manifest, packages.MAX_METADATA_BYTES)
+    validate_candidate_manifest(lock, manifest)
+    metadata_fd = _open_private_directory_at(
+        root_fd, "metadata", "Ubuntu candidate metadata directory")
+    payloads_fd = _open_private_directory_at(
+        root_fd, "packages", "Ubuntu candidate package directory")
+    metadata_identity = _directory_identity(os.fstat(metadata_fd))
+    payloads_identity = _directory_identity(os.fstat(payloads_fd))
+    try:
+        expected_metadata = {}
+        for release, index in zip(
+                manifest["release_metadata"], manifest["package_indexes"],
+                strict=True):
+            expected_metadata[release["inrelease"]["filename"]] = release["inrelease"]
+            expected_metadata[index["filename"]] = index
+        require(set(os.listdir(metadata_fd)) == set(expected_metadata),
+                "Ubuntu candidate retained metadata members changed")
+        for name, row in expected_metadata.items():
+            _validate_bound_regular_at(
+                metadata_fd, name, row,
+                "Ubuntu candidate retained metadata")
+        expected_packages = {}
+        for row in manifest["packages"]:
+            basename = PurePosixPath(row["filename"]).name
+            require(basename not in expected_packages,
+                    "Ubuntu candidate package basenames collide")
+            expected_packages[basename] = row
+        require(set(os.listdir(payloads_fd)) == set(expected_packages),
+                "Ubuntu candidate package members changed")
+        for name, row in expected_packages.items():
+            _validate_bound_regular_at(
+                payloads_fd, name, row, "Ubuntu candidate package")
+        require(set(os.listdir(root_fd))
+                == {"manifest.json", "metadata", "packages"}
+                and set(os.listdir(metadata_fd)) == set(expected_metadata)
+                and set(os.listdir(payloads_fd)) == set(expected_packages)
+                and _directory_identity(os.stat(
+                    "metadata", dir_fd=root_fd, follow_symlinks=False))
+                == metadata_identity
+                and _directory_identity(os.fstat(metadata_fd))
+                == metadata_identity
+                and _directory_identity(os.stat(
+                    "packages", dir_fd=root_fd, follow_symlinks=False))
+                == payloads_identity
+                and _directory_identity(os.fstat(payloads_fd))
+                == payloads_identity,
+                "Ubuntu candidate members changed during validation")
+        return manifest
+    finally:
+        os.close(payloads_fd)
+        os.close(metadata_fd)
 
 
 def validate_candidate_output(root, lock):
-    """Recheck every exact member of an unselected candidate directory."""
-    supplied_root = Path(root)
-    require(supplied_root.is_absolute() and not supplied_root.is_symlink(),
-            "Ubuntu package candidate output root is aliased")
-    root = supplied_root.resolve(strict=True)
-    require(root == supplied_root and root.is_dir()
-            and {path.name for path in root.iterdir()}
-            == {"manifest.json", "metadata", "packages"},
-            "Ubuntu package candidate output members changed")
-    manifest = packages.unique_json(
-        root, "manifest.json", packages.MAX_METADATA_BYTES)
-    validate_candidate_manifest(lock, manifest)
-    metadata = root / "metadata"
-    payloads = root / "packages"
-    require(metadata.is_dir() and not metadata.is_symlink()
-            and payloads.is_dir() and not payloads.is_symlink(),
-            "Ubuntu candidate payload directories are unsafe")
-    expected_metadata = {}
-    for release, index in zip(
-            manifest["release_metadata"], manifest["package_indexes"], strict=True):
-        expected_metadata[release["inrelease"]["filename"]] = release["inrelease"]
-        expected_metadata[index["filename"]] = index
-    require({path.name for path in metadata.iterdir()} == set(expected_metadata),
-            "Ubuntu candidate retained metadata members changed")
-    for name, row in expected_metadata.items():
-        path = metadata / name
-        mode = path.stat()
-        require(not path.is_symlink() and stat.S_ISREG(mode.st_mode)
-                and mode.st_nlink == 1
-                and mode.st_size == row["bytes"]
-                and sha256_file(path) == row["sha256"],
-                "Ubuntu candidate retained metadata bytes changed")
-    expected_packages = {}
-    for row in manifest["packages"]:
-        basename = PurePosixPath(row["filename"]).name
-        require(basename not in expected_packages,
-                "Ubuntu candidate package basenames collide")
-        expected_packages[basename] = row
-    require({path.name for path in payloads.iterdir()} == set(expected_packages),
-            "Ubuntu candidate package members changed")
-    for name, row in expected_packages.items():
-        path = payloads / name
-        mode = path.stat()
-        require(not path.is_symlink() and stat.S_ISREG(mode.st_mode)
-                and mode.st_nlink == 1
-                and mode.st_size == row["bytes"]
-                and sha256_file(path) == row["sha256"],
-                "Ubuntu candidate package bytes changed")
-    return manifest
+    """Recheck every exact member through one anchored candidate directory fd."""
+    anchor = _DirectoryAnchor(root, "Ubuntu package candidate output")
+    try:
+        manifest = _validate_candidate_output_fd(anchor.fd, lock)
+        anchor.verify()
+        return manifest
+    finally:
+        anchor.close()
+
+
+def _name_absent_at(directory_fd, name, description):
+    try:
+        os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+    except FileNotFoundError:
+        return
+    except OSError as error:
+        raise ValueError(description + " cannot be inspected") from error
+    raise ValueError(description + " already exists")
+
+
+def _remove_candidate_tree_at(parent_fd, name, created):
+    """Remove only the known private candidate shape without following links."""
+    try:
+        root_fd = _open_private_directory_at(
+            parent_fd, name, "partial Ubuntu candidate")
+    except ValueError:
+        return
+    try:
+        if (os.fstat(root_fd).st_dev != created.st_dev
+                or os.fstat(root_fd).st_ino != created.st_ino):
+            return
+        for directory_name in ("metadata", "packages"):
+            try:
+                child_fd = _open_private_directory_at(
+                    root_fd, directory_name, "partial Ubuntu candidate directory")
+            except ValueError:
+                continue
+            child_identity = _directory_identity(os.fstat(child_fd))
+            try:
+                for child_name in os.listdir(child_fd):
+                    require(_safe_leaf(child_name),
+                            "partial Ubuntu candidate member is unsafe")
+                    info = os.stat(
+                        child_name, dir_fd=child_fd, follow_symlinks=False)
+                    require(not stat.S_ISDIR(info.st_mode),
+                            "partial Ubuntu candidate contains an unexpected directory")
+                    os.unlink(child_name, dir_fd=child_fd)
+                require(not os.listdir(child_fd)
+                        and _directory_identity(os.fstat(child_fd))
+                        == child_identity
+                        and _directory_identity(os.stat(
+                            directory_name, dir_fd=root_fd,
+                            follow_symlinks=False)) == child_identity,
+                        "partial Ubuntu candidate directory changed during cleanup")
+            finally:
+                os.close(child_fd)
+            os.rmdir(directory_name, dir_fd=root_fd)
+        try:
+            info = os.stat("manifest.json", dir_fd=root_fd, follow_symlinks=False)
+        except FileNotFoundError:
+            pass
+        else:
+            require(not stat.S_ISDIR(info.st_mode),
+                    "partial Ubuntu candidate manifest became a directory")
+            os.unlink("manifest.json", dir_fd=root_fd)
+        require(not os.listdir(root_fd),
+                "partial Ubuntu candidate contains unexpected members")
+    finally:
+        os.close(root_fd)
+    named = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+    if named.st_dev == created.st_dev and named.st_ino == created.st_ino:
+        os.rmdir(name, dir_fd=parent_fd)
 
 
 def write_candidate_output(destination, lock, manifest, metadata_inputs,
                            package_inputs):
     """Write exact candidate bytes without selecting, zipping or uploading them."""
     validate_candidate_manifest(lock, manifest)
-    supplied_destination = Path(destination)
-    require(supplied_destination.is_absolute()
-            and not supplied_destination.is_symlink(),
-            "Ubuntu candidate output destination is aliased")
-    parent = supplied_destination.parent.resolve(strict=True)
-    require(parent == supplied_destination.parent,
-            "Ubuntu candidate output parent is aliased")
-    destination = parent / supplied_destination.name
-    partial = parent / (destination.name + ".partial")
-    require(not destination.exists() and not destination.is_symlink()
-            and not partial.exists() and not partial.is_symlink(),
-            "Ubuntu candidate output destination already exists")
+    destination = _canonical_absolute_path(
+        destination, "Ubuntu candidate output destination")
+    require(_safe_leaf(destination.name),
+            "Ubuntu candidate output destination name is unsafe")
+    partial_name = destination.name + ".partial"
+    require(_safe_leaf(partial_name),
+            "Ubuntu candidate partial output name is unsafe")
     expected_metadata = {}
     for release, index in zip(
             manifest["release_metadata"], manifest["package_indexes"], strict=True):
@@ -856,32 +1287,80 @@ def write_candidate_output(destination, lock, manifest, metadata_inputs,
             and isinstance(package_inputs, dict)
             and set(package_inputs) == {row["filename"] for row in manifest["packages"]},
             "Ubuntu candidate output inputs are incomplete")
-    partial.mkdir(mode=0o755)
+    anchor = _DirectoryAnchor(
+        destination.parent, "Ubuntu candidate output parent")
+    partial_fd = metadata_fd = payloads_fd = manifest_fd = None
+    created = None
+    renamed = False
     try:
-        metadata = partial / "metadata"
-        payloads = partial / "packages"
-        metadata.mkdir(mode=0o755)
-        payloads.mkdir(mode=0o755)
+        _name_absent_at(
+            anchor.fd, destination.name, "Ubuntu candidate output destination")
+        _name_absent_at(
+            anchor.fd, partial_name, "Ubuntu candidate partial output")
+        os.mkdir(partial_name, PRIVATE_DIRECTORY_MODE, dir_fd=anchor.fd)
+        partial_fd = _open_private_directory_at(
+            anchor.fd, partial_name, "Ubuntu candidate partial output")
+        created = os.fstat(partial_fd)
+        os.mkdir("metadata", PRIVATE_DIRECTORY_MODE, dir_fd=partial_fd)
+        os.mkdir("packages", PRIVATE_DIRECTORY_MODE, dir_fd=partial_fd)
+        metadata_fd = _open_private_directory_at(
+            partial_fd, "metadata", "Ubuntu candidate metadata directory")
+        payloads_fd = _open_private_directory_at(
+            partial_fd, "packages", "Ubuntu candidate package directory")
         for name in sorted(expected_metadata):
             row = expected_metadata[name]
             _copy_exact(
-                metadata_inputs[name], metadata / name, row["bytes"], row["sha256"])
+                metadata_inputs[name], metadata_fd, name,
+                row["bytes"], row["sha256"])
         for name in sorted(expected_packages):
             row = expected_packages[name]
             _copy_exact(
-                package_inputs[row["filename"]], payloads / name,
+                package_inputs[row["filename"]], payloads_fd, name,
                 row["bytes"], row["sha256"])
         raw = (json.dumps(manifest, indent=2) + "\n").encode()
-        require(len(raw) <= packages.MAX_METADATA_BYTES,
+        require(0 < len(raw) <= packages.MAX_METADATA_BYTES,
                 "Ubuntu candidate manifest exceeds its byte bound")
-        (partial / "manifest.json").write_bytes(raw)
-        (partial / "manifest.json").chmod(0o644)
-        validate_candidate_output(partial, lock)
-        partial.rename(destination)
-        return validate_candidate_output(destination, lock)
+        manifest_fd, manifest_created = _create_private_regular_at(
+            partial_fd, "manifest.json", "Ubuntu candidate manifest")
+        _write_all(manifest_fd, raw)
+        _finish_private_output(
+            partial_fd, "manifest.json", manifest_fd, manifest_created,
+            len(raw), sha256_bytes(raw), "Ubuntu candidate manifest")
+        os.close(manifest_fd)
+        manifest_fd = None
+        validated = _validate_candidate_output_fd(partial_fd, lock)
+        os.rename(
+            partial_name, destination.name,
+            src_dir_fd=anchor.fd, dst_dir_fd=anchor.fd)
+        renamed = True
+        named = os.stat(
+            destination.name, dir_fd=anchor.fd, follow_symlinks=False)
+        require(_directory_identity(named)
+                == _directory_identity(os.fstat(partial_fd)),
+                "Ubuntu candidate output identity changed during rename")
+        anchor.verify()
+        return validated
     except BaseException:
-        shutil.rmtree(partial, ignore_errors=True)
+        if manifest_fd is not None:
+            os.close(manifest_fd)
+            manifest_fd = None
+        if payloads_fd is not None:
+            os.close(payloads_fd)
+            payloads_fd = None
+        if metadata_fd is not None:
+            os.close(metadata_fd)
+            metadata_fd = None
+        if partial_fd is not None:
+            os.close(partial_fd)
+            partial_fd = None
+        if created is not None and not renamed:
+            _remove_candidate_tree_at(anchor.fd, partial_name, created)
         raise
+    finally:
+        for descriptor in (manifest_fd, payloads_fd, metadata_fd, partial_fd):
+            if descriptor is not None:
+                os.close(descriptor)
+        anchor.close()
 
 
 def release_record(source, binding, payload, signature):
@@ -977,7 +1456,7 @@ def validate_candidate_manifest(lock, manifest):
             "Ubuntu package candidate or pending contract fields changed")
     require(type(manifest.get("schema")) is int and manifest["schema"] == 1
             and manifest.get("state") == "candidate-unselected"
-            and manifest.get("producer_passed") is True
+            and manifest.get("producer_passed") is False
             and all(manifest.get(field) is False for field in CANDIDATE_CLAIMS)
             and manifest.get("contract_sha256") == _contract_sha256(lock)
             and manifest.get("scope") == CANDIDATE_SCOPE,
@@ -1060,8 +1539,8 @@ def validate_candidate_manifest(lock, manifest):
     verification = manifest.get("verification")
     require(isinstance(verification, dict)
             and set(verification) == VERIFICATION_FIELDS
-            and all(verification[field] is True for field in VERIFICATION_FIELDS),
-            "Ubuntu candidate verification evidence is incomplete")
+            and all(verification[field] is False for field in VERIFICATION_FIELDS),
+            "unselected Ubuntu candidate made a verification claim")
     return manifest
 
 
@@ -1072,7 +1551,7 @@ def candidate_manifest(lock, releases, indexes, package_rows, *, verified_at,
     manifest = {
         "schema": 1,
         "state": "candidate-unselected",
-        "producer_passed": True,
+        "producer_passed": False,
         **{field: False for field in CANDIDATE_CLAIMS},
         "contract_sha256": _contract_sha256(lock),
         "rootfs": lock.get("rootfs"),
@@ -1089,7 +1568,10 @@ def candidate_manifest(lock, releases, indexes, package_rows, *, verified_at,
         "tools": tools,
         "command_hashes": command_hashes,
         "download_order": download_order,
-        "verification": {field: True for field in VERIFICATION_FIELDS},
+        # Hash-only observations cannot prove that a hosted command ran.  The
+        # dormant candidate therefore makes no verification claim; a later
+        # producer must bind raw results, tool fds, argv and input identities.
+        "verification": {field: False for field in VERIFICATION_FIELDS},
         "scope": CANDIDATE_SCOPE,
     }
     return validate_candidate_manifest(lock, manifest)

@@ -4,10 +4,13 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 import io
 import lzma
+import os
 from pathlib import Path
+import stat
 import tarfile
 import tempfile
 import unittest
+from unittest import mock
 
 from image.container import ubuntu_fixture_inputs as inputs
 from image.container import ubuntu_fixture_package_build as build
@@ -46,6 +49,23 @@ def release_bytes(source, index_bytes, *, date=None, valid_until=None):
         "SHA256:\n"
         f" {digest} {len(index_bytes)} main/binary-amd64/Packages.xz\n"
     ).encode()
+
+
+def write_private(path, raw):
+    path.write_bytes(raw)
+    path.chmod(0o600)
+
+
+def mkdir_private(path):
+    path.mkdir(mode=0o700)
+
+
+def staged_repository(base):
+    repository = base / "repo"
+    mkdir_private(repository)
+    for source in packages.EXPECTED_SOURCES:
+        mkdir_private(repository / source["suite"])
+    return repository, repository / "noble"
 
 
 class FakeResponse(io.BytesIO):
@@ -175,7 +195,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         }
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "Packages.xz"
-            path.write_bytes(self.index)
+            write_private(path, self.index)
             rows = build.find_requested_packages(
                 path, self.source, self.binding["index"], requested)
         self.assertEqual(set(rows), set(requested))
@@ -192,7 +212,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         }
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "Packages.xz"
-            path.write_bytes(self.index)
+            write_private(path, self.index)
             bad_binding = copy.deepcopy(self.binding["index"])
             bad_binding["sha256"] = "0" * 64
             with self.assertRaises(ValueError):
@@ -210,7 +230,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                 format=lzma.FORMAT_XZ,
                 preset=0,
             )
-            path.write_bytes(duplicated)
+            write_private(path, duplicated)
             duplicate_binding = {
                 "path": "main/binary-amd64/Packages.xz",
                 "bytes": len(duplicated),
@@ -220,11 +240,126 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                 build.find_requested_packages(
                     path, self.source, duplicate_binding, requested)
 
+    def test_private_index_rejects_symlinks_hardlinks_modes_and_owner(self):
+        requested = {
+            self.paths["git"]: {
+                "bytes": len(self.payloads["git"]),
+                "sha256": hashlib.sha256(self.payloads["git"]).hexdigest(),
+            }
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            direct = base / "direct"
+            mkdir_private(direct)
+            index = direct / "Packages.xz"
+            write_private(index, self.index)
+
+            component_link = base / "component-link"
+            component_link.symlink_to(direct, target_is_directory=True)
+            with self.assertRaises(ValueError):
+                build.find_requested_packages(
+                    component_link / "Packages.xz", self.source,
+                    self.binding["index"], requested)
+
+            leaf_link = direct / "leaf.xz"
+            leaf_link.symlink_to(index)
+            with self.assertRaises(ValueError):
+                build.find_requested_packages(
+                    leaf_link, self.source, self.binding["index"], requested)
+
+            hardlink = direct / "hardlink.xz"
+            os.link(index, hardlink)
+            with self.assertRaises(ValueError):
+                build.find_requested_packages(
+                    index, self.source, self.binding["index"], requested)
+            hardlink.unlink()
+
+            index.chmod(0o640)
+            with self.assertRaises(ValueError):
+                build.find_requested_packages(
+                    index, self.source, self.binding["index"], requested)
+            index.chmod(0o600)
+
+            info = index.stat()
+            changed_owner = mock.Mock(
+                st_mode=stat.S_IFREG | 0o600, st_nlink=1,
+                st_uid=os.geteuid() + 1, st_gid=os.getegid(),
+                st_size=info.st_size,
+            )
+            with self.assertRaises(ValueError):
+                build._require_private_regular(
+                    changed_owner, info.st_size, "hostile owner")
+
+    def test_index_descriptor_rejects_leaf_swap_mode_and_size_changes(self):
+        requested = {
+            self.paths["git"]: {
+                "bytes": len(self.payloads["git"]),
+                "sha256": hashlib.sha256(self.payloads["git"]).hexdigest(),
+            }
+        }
+        real_iter = build._iter_control_stanzas
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            path = base / "Packages.xz"
+            write_private(path, self.index)
+            saved = base / "saved.xz"
+
+            def swapped(descriptor):
+                path.rename(saved)
+                write_private(path, self.index)
+                yield from real_iter(descriptor)
+
+            with mock.patch.object(build, "_iter_control_stanzas", swapped), \
+                    self.assertRaises(ValueError):
+                build.find_requested_packages(
+                    path, self.source, self.binding["index"], requested)
+
+        for mutation in ("mode", "size"):
+            with self.subTest(mutation=mutation), \
+                    tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / "Packages.xz"
+                write_private(path, self.index)
+
+                def changed(descriptor):
+                    if mutation == "mode":
+                        path.chmod(0o640)
+                    else:
+                        with path.open("ab") as stream:
+                            stream.write(b"changed")
+                    yield from real_iter(descriptor)
+
+                with mock.patch.object(build, "_iter_control_stanzas", changed), \
+                        self.assertRaises(ValueError):
+                    build.find_requested_packages(
+                        path, self.source, self.binding["index"], requested)
+
+    def test_every_opened_index_component_uses_nofollow_and_cloexec(self):
+        requested = {
+            self.paths["git"]: {
+                "bytes": len(self.payloads["git"]),
+                "sha256": hashlib.sha256(self.payloads["git"]).hexdigest(),
+            }
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "Packages.xz"
+            write_private(path, self.index)
+            observed = []
+            real_open = os.open
+
+            def tracked(path_value, flags, *args, **kwargs):
+                observed.append(flags)
+                return real_open(path_value, flags, *args, **kwargs)
+
+            with mock.patch.object(build.os, "open", tracked):
+                build.find_requested_packages(
+                    path, self.source, self.binding["index"], requested)
+        self.assertTrue(observed)
+        self.assertTrue(all(flags & os.O_NOFOLLOW for flags in observed))
+        self.assertTrue(all(flags & os.O_CLOEXEC for flags in observed))
+
     def test_file_uri_plan_binds_signed_sha256_size_suite_and_order(self):
         with tempfile.TemporaryDirectory() as directory:
-            repository = Path(directory) / "repo"
-            suite = repository / "noble"
-            suite.mkdir(parents=True)
+            repository, suite = staged_repository(Path(directory))
             lines = []
             for name in ("git", "python3", "ca-certificates"):
                 payload = self.payloads[name]
@@ -245,9 +380,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
 
     def test_uri_plan_rejects_network_rows_duplicates_and_weak_hashes(self):
         with tempfile.TemporaryDirectory() as directory:
-            repository = Path(directory) / "repo"
-            suite = repository / "noble"
-            suite.mkdir(parents=True)
+            repository, suite = staged_repository(Path(directory))
             payload = self.payloads["git"]
             digest = hashlib.sha256(payload).hexdigest()
             uri = (suite / self.paths["git"]).as_uri()
@@ -267,11 +400,9 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
     def test_uri_plan_binds_index_rows_and_downloads_payloads_sequentially(self):
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
-            repository = base / "repo"
-            suite = repository / "noble"
-            suite.mkdir(parents=True)
+            repository, suite = staged_repository(base)
             index_path = base / "Packages.xz"
-            index_path.write_bytes(self.index)
+            write_private(index_path, self.index)
             lines = []
             order = ("git", "python3", "ca-certificates")
             for name in order:
@@ -290,7 +421,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                 packages.EXPECTED_SOURCES,
             )
             downloads = base / "downloads"
-            downloads.mkdir()
+            mkdir_private(downloads)
             observed = []
             by_url = {
                 self.source["base_url"] + "/" + self.paths[name]: self.payloads[name]
@@ -405,6 +536,34 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                 )
             self.assertFalse(truncated.exists())
 
+    def test_exact_download_rejects_a_named_leaf_swap_while_fd_stays_open(self):
+        url = "https://archive.ubuntu.com/ubuntu/pool/main/p/pkg.deb"
+        payload = b"descriptor-bound package"
+        digest = hashlib.sha256(payload).hexdigest()
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            destination = base / "pkg.deb"
+            displaced = base / "displaced.deb"
+
+            class SwapResponse(FakeResponse):
+                changed = False
+
+                def read(self, size=-1):
+                    if not self.changed:
+                        self.changed = True
+                        destination.rename(displaced)
+                        write_private(destination, b"hostile replacement")
+                    return super().read(size)
+
+            with self.assertRaises(ValueError):
+                build.download_exact(
+                    url, destination, len(payload), digest,
+                    opener=lambda request, timeout: SwapResponse(
+                        payload, request.full_url),
+                )
+            self.assertEqual(destination.read_bytes(), b"hostile replacement")
+            self.assertEqual(displaced.read_bytes(), payload)
+
     def test_authenticated_rootfs_status_is_read_without_extracting_the_archive(self):
         status = b"Package: base-files\nStatus: install ok installed\n"
         with tempfile.TemporaryDirectory() as directory:
@@ -417,6 +576,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                 unrelated_payload = b"fixture\n"
                 unrelated.size = len(unrelated_payload)
                 bundle.addfile(unrelated, io.BytesIO(unrelated_payload))
+            archive.chmod(0o600)
             binding = {
                 "bytes": archive.stat().st_size,
                 "sha256": hashlib.sha256(archive.read_bytes()).hexdigest(),
@@ -427,7 +587,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             "bytes": len(status), "sha256": hashlib.sha256(status).hexdigest(),
         })
 
-    def test_candidate_manifest_is_verified_but_ineligible_for_consumption(self):
+    def test_candidate_manifest_is_unverified_and_ineligible_for_consumption(self):
         lock = packages.unique_json(
             ROOT, "image/container/ubuntu-fixture-packages.lock.json")
         versions = {
@@ -508,7 +668,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             download_order=[row["sha256"] for row in package_rows],
         )
         validated = build.validate_candidate_manifest(lock, manifest)
-        self.assertIs(validated["producer_passed"], True)
+        self.assertIs(validated["producer_passed"], False)
         self.assertIs(validated["selected"], False)
         for field in inputs.CLAIM_FIELDS:
             self.assertIs(validated[field], False)
@@ -521,9 +681,34 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         with self.assertRaises(ValueError):
             build.validate_candidate_manifest(changed_lock, manifest)
         changed = copy.deepcopy(manifest)
-        changed["verification"]["offline_dpkg_plan"] = False
+        changed["verification"]["offline_dpkg_plan"] = True
         with self.assertRaises(ValueError):
             build.validate_candidate_manifest(lock, changed)
+        changed = copy.deepcopy(manifest)
+        changed["producer_passed"] = True
+        with self.assertRaises(ValueError):
+            build.validate_candidate_manifest(lock, changed)
+        forged_hashes = copy.deepcopy(manifest)
+        forged_hashes["command_hashes"] = {
+            name: "f" * 64 for name in forged_hashes["command_hashes"]
+        }
+        self.assertTrue(all(
+            value is False
+            for value in build.validate_candidate_manifest(
+                lock, forged_hashes)["verification"].values()
+        ))
+        malformed = copy.deepcopy(manifest)
+        malformed["command_hashes"]["apt_update"] = 7
+        with self.assertRaises(ValueError):
+            build.validate_candidate_manifest(lock, malformed)
+        malformed = copy.deepcopy(manifest)
+        malformed["verified_at"] = True
+        with self.assertRaises(ValueError):
+            build.validate_candidate_manifest(lock, malformed)
+        extra = copy.deepcopy(manifest)
+        extra["producer"] = {"run_id": 1, "head_sha": "0" * 40}
+        with self.assertRaises(ValueError):
+            build.validate_candidate_manifest(lock, extra)
         changed = copy.deepcopy(manifest)
         changed["download_order"].reverse()
         self.assertEqual(
@@ -539,17 +724,17 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             base = Path(directory)
             staged_metadata = base / "staged-metadata"
             staged_packages = base / "staged-packages"
-            staged_metadata.mkdir()
-            staged_packages.mkdir()
+            mkdir_private(staged_metadata)
+            mkdir_private(staged_packages)
             metadata_inputs = {}
             for name, raw in metadata_contents.items():
                 path = staged_metadata / name
-                path.write_bytes(raw)
+                write_private(path, raw)
                 metadata_inputs[name] = path
             package_inputs = {}
             for row in package_rows:
                 path = staged_packages / Path(row["filename"]).name
-                path.write_bytes(self.payloads[row["package"]])
+                write_private(path, self.payloads[row["package"]])
                 package_inputs[row["filename"]] = path
             output = base / "candidate"
             written = build.write_candidate_output(
@@ -563,6 +748,45 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             changed.write_bytes(b"changed")
             with self.assertRaises(ValueError):
                 build.validate_candidate_output(output, lock)
+            write_private(changed, self.payloads[package_rows[0]["package"]])
+
+            backing = base / "hardlink-backing.deb"
+            write_private(backing, self.payloads[package_rows[0]["package"]])
+            changed.unlink()
+            os.link(backing, changed)
+            with self.assertRaises(ValueError):
+                build.validate_candidate_output(output, lock)
+            changed.unlink()
+            backing.unlink()
+            write_private(changed, self.payloads[package_rows[0]["package"]])
+
+            metadata = output / "metadata"
+            metadata_real = output / "metadata-real"
+            metadata.rename(metadata_real)
+            metadata.symlink_to(metadata_real, target_is_directory=True)
+            with self.assertRaises(ValueError):
+                build.validate_candidate_output(output, lock)
+            metadata.unlink()
+            metadata_real.rename(metadata)
+
+            manifest_path = output / "manifest.json"
+            manifest_real = output / "manifest-real.json"
+            manifest_path.rename(manifest_real)
+            manifest_path.symlink_to(manifest_real)
+            with self.assertRaises(ValueError):
+                build.validate_candidate_output(output, lock)
+            manifest_path.unlink()
+            manifest_real.rename(manifest_path)
+
+            manifest_path.chmod(0o640)
+            with self.assertRaises(ValueError):
+                build.validate_candidate_output(output, lock)
+            manifest_path.chmod(0o600)
+
+            alias = base / "candidate-alias"
+            alias.symlink_to(output, target_is_directory=True)
+            with self.assertRaises(ValueError):
+                build.validate_candidate_output(alias, lock)
 
     def test_candidate_producer_is_not_wired_to_build_upload_or_consumption(self):
         workflow = (ROOT / ".github/workflows/container-fixtures.yml").read_text()
