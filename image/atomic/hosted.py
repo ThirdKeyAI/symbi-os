@@ -10,6 +10,8 @@ import re
 from image.atomic.contract import (create_disk,require_disk,sha256,unique_json,
                                    unpack_oci,validate_report,installer_mounts,
                                    directory_source,installer_policy)
+from image.atomic.update_contract import negative_signature_payloads
+from image.atomic.update_process import TIMEOUT_SECONDS,run_update_controller
 from image.boot.inputs import require_desktop_image
 from image.boot.preflight import expected_inputs,validate_loaded_image,validate_report as validate_preflight
 from image.launcher.probes.bounded_process import run_bounded
@@ -49,7 +51,13 @@ def main():
     def save(): (evidence/'result.json').write_text(json.dumps(record,indent=2)+'\n')
     def run(name,command,timeout=60,check=True):
         record['active_command']={'name':name,'command':command};save()
-        result=run_bounded(command,evidence/(name+'-stdout.log'),evidence/(name+'-stderr.log'),timeout,1024**2)
+        if name=='signed-update-and-rollback':
+            if timeout!=TIMEOUT_SECONDS: raise ValueError('Fixed Atomic controller deadline changed')
+            result=run_update_controller(command,evidence/(name+'-stdout.log'),
+                                         evidence/(name+'-stderr.log'))
+        else:
+            result=run_bounded(command,evidence/(name+'-stdout.log'),
+                               evidence/(name+'-stderr.log'),timeout,1024**2)
         record['commands'].append({'name':name,'exit_code':result.returncode});del record['active_command'];save()
         if check: result.check_returncode()
         return result
@@ -134,6 +142,7 @@ def main():
                 or sha256(signing_output/'good-public.asc')!=signed.get('public_key_sha256')
                 or sha256(signing_output/'signature-1')!=signed.get('signature_sha256')):
             raise ValueError('Ephemeral source authentication acceptance incomplete')
+        negative_signature_payloads(signing_output,signed)
         shutil.copyfile(signing_output/'signature-1',storage/'signed/signature-1')
         record['source_authentication']=signed
         from image.signing import render as render_trust
