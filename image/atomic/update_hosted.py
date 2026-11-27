@@ -3,6 +3,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import stat
 import uuid
@@ -15,7 +16,8 @@ from image.atomic.update_contract import (NEGATIVE_CASES, NEGATIVE_UPDATE_SOURCE
                                           negative_signature_payloads,
                                           require_update_base, update_policy,
                                           validate_artifact_metadata, validate_report)
-from image.atomic.update_boot import validate_transition_failure_report
+from image.atomic.update_boot import (positive_qemu_command,
+                                      validate_transition_failure_report)
 from image.atomic.update_process import TIMEOUT_SECONDS
 from image.boot.inputs import unpack_desktop_image
 
@@ -74,6 +76,104 @@ def _read_bounded_regular(path):
         os.close(descriptor)
 
 
+def _missing_report_diagnostic(controller, payloads):
+    """Bind one clean QEMU exit with no report to content-free metadata."""
+    if controller.get("failure") != "ValueError: missing bounded update phase report":
+        return None
+    command = positive_qemu_command()
+    command_hash = hashlib.sha256(json.dumps(
+        command, separators=(",", ":")).encode()).hexdigest()
+    if controller.get("commands") != [command]:
+        return None
+    inputs = controller.get("inputs")
+    expected_inputs = {
+        "update_boot.py", "update_guest.py", "update_boot_failure.py",
+        "expected.json", "update-policy.json", "update-o.service", "s.service",
+        "update-b.service", "update-f.service", "expected-positive.json",
+        *("expected-" + case + ".json" for case in NEGATIVE_CASES),
+    }
+    if (not isinstance(inputs, dict) or set(inputs) != expected_inputs
+            or any(not isinstance(value, str)
+                   or re.fullmatch(r"[a-f0-9]{64}", value) is None
+                   for value in inputs.values())):
+        return None
+    report_name = "same-path-positive.json"
+    report_raw = payloads.get(report_name) if report_name in payloads else None
+    report = ({"name": report_name, "state": "absent", "bytes": 0,
+               "sha256": None} if report_raw is None else
+              {"name": report_name, "state": "empty", "bytes": len(report_raw),
+               "sha256": hashlib.sha256(report_raw).hexdigest()})
+    if report_raw not in (None, b""):
+        return None
+    phase = controller.get("phase_failure")
+    if (not isinstance(phase, dict) or set(phase) != {
+            "label", "command_sha256", "exit_code", "log_name", "serial_name",
+            "report",
+            }
+            or phase.get("label") != "same-path-positive"
+            or phase.get("command_sha256") != command_hash
+            or phase.get("exit_code") != 0
+            or phase.get("log_name") != "qemu-same-path-positive.log"
+            or phase.get("serial_name") != "same-path-positive-serial.log"
+            or phase.get("report") != report):
+        return None
+    if controller.get("child_cleanup") != {
+            "attempted": False, "terminated": False, "killed": False, "errors": []}:
+        return None
+    limits = controller.get("limits")
+    final = controller.get("cgroup_final")
+    if (limits != {"memory.max": "3221225472", "memory.swap.max": "0",
+                   "cpu.max": "200000 100000", "pids.max": "64"}
+            or not isinstance(final, dict)
+            or set(final) != {*limits, "memory.peak", "memory.events", "cpu.stat"}
+            or final.get("memory.max") != limits["memory.max"]
+            or final.get("memory.swap.max") != "0"
+            or re.fullmatch(r"[0-9]+", final.get("memory.peak", "")) is None):
+        return None
+    try:
+        events = dict(line.split() for line in final["memory.events"].splitlines())
+    except (TypeError, ValueError):
+        return None
+    event_names = {"max", "oom", "oom_kill", "oom_group_kill"}
+    if (not event_names <= set(events)
+            or any(re.fullmatch(r"[0-9]+", events[name]) is None
+                   for name in event_names)):
+        return None
+    diagnostic = {
+        "schema": 1, "passed": False, "release_qualified": False,
+        "diagnostic": "missing-update-phase-report",
+        "scope": "Content-free transport diagnostics; no transition or update claim",
+        "phase": "same-path-positive",
+        "process": {"command_sha256": command_hash, "exit_code": 0,
+                    "cleanup_signal_sent": False},
+        "report": report,
+        "outputs": {"serial_name": phase["serial_name"],
+                    "qemu_log_name": phase["log_name"]},
+        "inputs": inputs,
+        "resources": {"memory.max": final["memory.max"],
+                      "memory.peak": final["memory.peak"],
+                      "memory.swap.max": final["memory.swap.max"],
+                      "memory.events": {name: events[name]
+                                        for name in sorted(event_names)}},
+    }
+    return (json.dumps(diagnostic, sort_keys=True, separators=(",", ":"))
+            + "\n").encode()
+
+
+def _fixed_missing_report_controller(inputs):
+    result = {
+        "schema": 1, "passed": False, "guest_booted": False,
+        "release_qualified": False, "active_phase": "same-path-positive",
+        "failure": "same-path-positive exited without a report; compact diagnostic validated",
+        "negative_reports": [], "phase_reports": [],
+        "inputs": {name: inputs[name] for name in (
+            "update_boot.py", "update_guest.py", "update_boot_failure.py")},
+        "phase_diagnostic_validated": True,
+        "transition_failure_validated": False,
+    }
+    return (json.dumps(result, sort_keys=True, separators=(",", ":")) + "\n").encode()
+
+
 def _transition_failure_publication(payloads):
     """Select only safe same-path failure payloads, or the ordinary-path sentinel."""
     controller_raw = payloads.get("result.json")
@@ -118,6 +218,11 @@ def _transition_failure_publication(payloads):
     if embedded is not None:
         validated_embedded = validate_transition_failure_report(embedded, runner_hash)
     if not report_claimed:
+        diagnostic = _missing_report_diagnostic(controller, payloads)
+        if diagnostic is not None:
+            return [("controller-result.json",
+                     _fixed_missing_report_controller(controller["inputs"])),
+                    ("same-path-positive-diagnostic.json", diagnostic)]
         return [("controller-result.json",
                  _fixed_transition_failure_controller(runner_hash, False))]
     try:

@@ -1,0 +1,27 @@
+{
+  "run_id": 46004435476,
+  "source_commit": "658964d475c2f431abb96ab37d784c427fccfc0c",
+  "artifact": {
+    "name": "atomic-development-boot-generic.zip",
+    "bytes": 69563,
+    "sha256": "de930f68fb18e43a1aee596bbbc583cce03aacd3980c2c55f4e3fdb86290a3cd",
+    "safe_files": 94
+  },
+  "observed": [
+    "Source authentication, predecessor installation and update-source construction completed before the first same-path-positive phase.",
+    "The controller stopped with ValueError: missing bounded update phase report before any negative, persistent update or rollback phase.",
+    "The retained update evidence contains only the fixed 381-byte controller sentinel; it contains no phase report, serial log or QEMU log.",
+    "The outer 5 GiB cgroup reached memory.max and recorded 169716 max events, but recorded zero OOM, OOM-kill and swap events; cleanup completed."
+  ],
+  "source_bound_inference": [
+    "The missing-report branch is reachable only after the QEMU child exits with status zero.",
+    "Both guest report producers used one unchecked unbuffered write, so a short or zero virtio-port write could be followed by clean service completion and poweroff.",
+    "Poweroff is requested from ExecStopPost after the writer process returns; the retained evidence does not establish a poweroff-ordering race.",
+    "The publication policy discarded private serial and QEMU content when the report was absent or invalid, so the native probe outcome cannot be recovered from this artifact."
+  ],
+  "correction": [
+    "Retry bounded virtio-port writes until every byte is accepted and fail on a zero or invalid write result.",
+    "For the exact clean-QEMU missing-report path, retain a content-free structured diagnostic bound to the QEMU command hash, exit status, fixed output names, absent-or-empty report identity, injected input hashes, cleanup state and resource counters.",
+    "Keep raw serial, QEMU output and private overlays out of retained evidence, and do not change update acceptance or claim an SELinux transition."
+  ]
+}

@@ -36,7 +36,8 @@ from image.atomic.update_boot_failure import (JOURNAL_MAX_BYTES,
                                               JOURNAL_MAX_LINE_BYTES,
                                               _SENSITIVE_ASSIGNMENT as PRODUCER_SENSITIVE,
                                               bounded_journal_excerpt,
-                                              service_properties)
+                                              service_properties,
+                                              write_report as write_failure_report)
 from image.atomic.update_process import TIMEOUT_SECONDS, validate_update_controller_command
 from image.atomic.update_guest import (UPDATE_COMMAND_TIMEOUT_SECONDS,
                                        BOOTC_CONTEXT, BOOTC_LABEL_REFERENCE,
@@ -60,7 +61,8 @@ from image.atomic.update_guest import (UPDATE_COMMAND_TIMEOUT_SECONDS,
                                        _bootc_file_observation,
                                        fixed_bootc_transition,
                                        fixed_bootc_operation,
-                                       fixed_bootc_status)
+                                       fixed_bootc_status,
+                                       write_channel)
 from image.atomic.update_hosted import retain_controller_output, run_update
 from image.atomic.hosted import (RETAINED_REPORT_MAX_BYTES,
                                  validate_retained_preflight)
@@ -69,6 +71,45 @@ from image.boot.preflight import expected_inputs
 
 
 class AtomicUpdateTests(unittest.TestCase):
+    class ShortWriter:
+        def __init__(self, maximum):
+            self.maximum = maximum
+            self.raw = bytearray()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def write(self, raw):
+            count = min(self.maximum, len(raw))
+            self.raw.extend(raw[:count])
+            return count
+
+    def test_virtio_report_writers_complete_short_writes_and_reject_zero(self):
+        payload = b'{"passed":false}\n'
+        guest = self.ShortWriter(3)
+        with patch.object(Path, "exists", return_value=True), \
+                patch.object(Path, "open", return_value=guest):
+            write_channel(payload, Path("/unused-channel"))
+        self.assertEqual(bytes(guest.raw), payload)
+
+        failure = self.ShortWriter(5)
+        with patch.object(Path, "exists", return_value=True), \
+                patch.object(Path, "open", return_value=failure):
+            write_failure_report({"passed": False}, Path("/unused-channel"))
+        self.assertEqual(json.loads(bytes(failure.raw)), {"passed": False})
+
+        for writer in (write_channel,
+                       lambda raw, channel: write_failure_report(
+                           {"passed": False}, channel)):
+            with self.subTest(writer=writer), \
+                    patch.object(Path, "exists", return_value=True), \
+                    patch.object(Path, "open", return_value=self.ShortWriter(0)), \
+                    self.assertRaises(RuntimeError):
+                writer(payload, Path("/unused-channel"))
+
     def test_disposable_vm_deadline_exceeds_the_longest_guest_command(self):
         self.assertEqual(UPDATE_COMMAND_TIMEOUT_SECONDS, 1200)
         self.assertEqual(DISPOSABLE_PHASE_TIMEOUT_SECONDS, 1800)
@@ -124,6 +165,109 @@ class AtomicUpdateTests(unittest.TestCase):
             self.assertEqual((evidence / "controller-result.json").read_text(),
                              '{"passed": false}\n')
             self.assertFalse((evidence / "same-path-positive.qcow2").exists())
+
+    @staticmethod
+    def missing_report_controller():
+        command = positive_qemu_command()
+        command_hash = hashlib.sha256(json.dumps(
+            command, separators=(",", ":")).encode()).hexdigest()
+        names = {
+            "update_boot.py", "update_guest.py", "update_boot_failure.py",
+            "expected.json", "update-policy.json", "update-o.service", "s.service",
+            "update-b.service", "update-f.service", "expected-positive.json",
+            *("expected-" + case + ".json" for case in (
+                "unsigned", "wrong-key", "wrong-reference", "altered-signature")),
+        }
+        limits = {"memory.max": "3221225472", "memory.swap.max": "0",
+                  "cpu.max": "200000 100000", "pids.max": "64"}
+        return {
+            "schema": 1, "passed": False, "guest_booted": False,
+            "release_qualified": False, "active_phase": "same-path-positive",
+            "failure": "ValueError: missing bounded update phase report",
+            "negative_reports": [], "phase_reports": [],
+            "commands": [command], "inputs": {name: "a" * 64 for name in names},
+            "phase_failure": {
+                "label": "same-path-positive", "command_sha256": command_hash,
+                "exit_code": 0, "log_name": "qemu-same-path-positive.log",
+                "serial_name": "same-path-positive-serial.log",
+                "report": {"name": "same-path-positive.json", "state": "empty",
+                           "bytes": 0, "sha256": hashlib.sha256(b"").hexdigest()},
+            },
+            "child_cleanup": {"attempted": False, "terminated": False,
+                              "killed": False, "errors": []},
+            "limits": limits,
+            "cgroup_final": {**limits, "memory.peak": "2147483648",
+                             "memory.events": ("low 0\nhigh 0\nmax 17\noom 0\n"
+                                               "oom_kill 0\noom_group_kill 0\n"),
+                             "cpu.stat": "usage_usec 1\n"},
+        }
+
+    def test_missing_report_retains_only_content_free_bound_diagnostic(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            output, evidence = root / "output", root / "evidence"
+            output.mkdir()
+            evidence.mkdir()
+            controller = self.missing_report_controller()
+            (output / "result.json").write_text(json.dumps(controller) + "\n")
+            (output / "same-path-positive.json").write_bytes(b"")
+            (output / "same-path-positive-serial.log").write_text(
+                "API_TOKEN=must-not-be-retained\n")
+            (output / "qemu-same-path-positive.log").write_text(
+                "PRIVATE_KEY=must-not-be-retained\n")
+            (output / "same-path-positive.qcow2").write_bytes(b"private disk")
+            retained = retain_controller_output(output, evidence)
+            self.assertEqual(retained, ["controller-result.json",
+                                        "same-path-positive-diagnostic.json"])
+            summary = json.loads((evidence / "controller-result.json").read_bytes())
+            self.assertTrue(summary["phase_diagnostic_validated"])
+            self.assertFalse(summary["transition_failure_validated"])
+            diagnostic = json.loads(
+                (evidence / "same-path-positive-diagnostic.json").read_bytes())
+            self.assertEqual(diagnostic["diagnostic"], "missing-update-phase-report")
+            self.assertEqual(diagnostic["process"]["exit_code"], 0)
+            self.assertEqual(diagnostic["report"]["state"], "empty")
+            self.assertEqual(diagnostic["resources"]["memory.events"], {
+                "max": "17", "oom": "0", "oom_group_kill": "0", "oom_kill": "0"})
+            retained_raw = b"".join(path.read_bytes() for path in evidence.iterdir())
+            self.assertNotIn(b"API_TOKEN", retained_raw)
+            self.assertNotIn(b"PRIVATE_KEY", retained_raw)
+            self.assertFalse((evidence / "same-path-positive-serial.log").exists())
+            self.assertFalse((evidence / "qemu-same-path-positive.log").exists())
+            self.assertFalse((evidence / "same-path-positive.qcow2").exists())
+
+    def test_missing_report_diagnostic_rejects_identity_mutations(self):
+        for case in ("command", "exit", "report", "input", "cleanup", "resource"):
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                output, evidence = root / "output", root / "evidence"
+                output.mkdir()
+                evidence.mkdir()
+                controller = self.missing_report_controller()
+                if case == "command":
+                    controller["commands"][0][-1] = "--help"
+                elif case == "exit":
+                    controller["phase_failure"]["exit_code"] = 1
+                elif case == "report":
+                    controller["phase_failure"]["report"]["sha256"] = "b" * 64
+                elif case == "input":
+                    controller["inputs"]["update_guest.py"] = "not-a-hash"
+                elif case == "cleanup":
+                    controller["child_cleanup"]["attempted"] = True
+                else:
+                    controller["cgroup_final"]["memory.peak"] = "not-a-number"
+                (output / "result.json").write_text(json.dumps(controller) + "\n")
+                (output / "same-path-positive.json").write_bytes(b"")
+                (output / "same-path-positive-serial.log").write_text(
+                    "API_TOKEN=must-not-be-retained\n")
+                retained = retain_controller_output(output, evidence)
+                self.assertEqual(retained, ["controller-result.json"])
+                summary = json.loads(
+                    (evidence / "controller-result.json").read_bytes())
+                self.assertFalse(summary["transition_failure_validated"])
+                self.assertNotIn("phase_diagnostic_validated", summary)
+                self.assertEqual([path.name for path in evidence.iterdir()],
+                                 ["controller-result.json"])
 
     def test_transition_failure_report_is_retained_without_private_overlay(self):
         with tempfile.TemporaryDirectory() as temporary:
