@@ -24,6 +24,7 @@ from image.atomic.update_contract import (NEGATIVE_UPDATE_SOURCE, POSITIVE_OVERL
                                           validate_artifact_metadata)
 from image.atomic.update_boot import (DISPOSABLE_PHASE_TIMEOUT_SECONDS,
                                       TRANSITION_COLLECTOR_STAGES,
+                                      TRANSITION_COLLECTOR_STAGE_OPERATION_SHA256,
                                       _SENSITIVE_ASSIGNMENT as VALIDATOR_SENSITIVE,
                                       qemu_command, negative_qemu_command,
                                       positive_qemu_command,
@@ -42,25 +43,35 @@ from image.atomic.update_boot_failure import (JOURNAL_MAX_BYTES,
                                               SOURCE_CAPTURE_COMMAND,
                                               SOURCE_JOURNAL_COMMAND,
                                               COLLECTOR_STAGES,
+                                              COLLECTOR_STAGE_OPERATION_SHA256,
+                                              SERVICE_PROPERTIES_COMMAND,
                                               AVC_COMMAND_SHA256,
                                               AVC_FAILURE_REASONS,
                                               AvcEvidenceError,
+                                              CollectorCommandError,
                                               _SENSITIVE_ASSIGNMENT as PRODUCER_SENSITIVE,
                                               _kill_and_reap,
                                               bounded_command_result,
+                                              collector_event,
+                                              collector_stage_command,
                                               bounded_avc_evidence,
                                               collector_failure_detail,
+                                              collector_failure_reason,
                                               fixed_command as fixed_failure_command,
                                               parse_avc_evidence,
                                               parse_source_capture,
                                               monitor_properties,
                                               bounded_journal_excerpt,
                                               close_collector,
+                                              emit_stop_post_receipt,
+                                              load_collector_state,
                                               open_collector_channel,
+                                              persist_collector_state,
                                               safe_collector_event,
                                               service_properties,
                                               write_collector_event,
                                               write_report as write_failure_report)
+from image.atomic import update_boot_failure as failure_collector
 from image.atomic.update_process import TIMEOUT_SECONDS, validate_update_controller_command
 from image.atomic.update_guest import (UPDATE_COMMAND_TIMEOUT_SECONDS,
                                        BOOTC_CONTEXT, BOOTC_LABEL_REFERENCE,
@@ -160,7 +171,9 @@ class AtomicUpdateTests(unittest.TestCase):
         return (json.dumps(record) + "\n").encode()
 
     def collector_stream(self, stage="avc-journal", failure_kind="command-exit",
-                         failure_detail=None):
+                         failure_detail=None, reason=None,
+                         command_observation=None, terminated=False,
+                         service_exit_code=None):
         writer = self.ShortWriter(4096)
         runner_hash = "a" * 64
         sequence = 0
@@ -173,12 +186,79 @@ class AtomicUpdateTests(unittest.TestCase):
                 stage=current)
             sequence += 1
             if current == stage:
+                if failure_detail is not None:
+                    detail_observation = failure_detail["command"]
+                    command_observation = (
+                        None if detail_observation["exit_code"] is None else {
+                            "exit_code": detail_observation["exit_code"],
+                            "timed_out": detail_observation["timed_out"],
+                            "stdout_bytes": detail_observation["stdout_bytes"],
+                            "stdout_truncated": detail_observation["stdout_truncated"],
+                            "stderr_bytes": detail_observation["stderr_bytes"],
+                            "stderr_truncated": detail_observation["stderr_truncated"],
+                        })
+                    reason = failure_detail["reason"]
+                if reason is None:
+                    if current == "avc-journal" and failure_kind == "command-exit":
+                        reason = "unexpected-exit"
+                        command_observation = self.stage_command_observation(
+                            current, exit_code=2)
+                    else:
+                        reason = current + "-rejected"
                 write_collector_event(
-                    writer, "collector-failed", runner_hash, sequence=sequence,
+                    writer, ("collector-terminated" if terminated
+                             else "collector-failed"), runner_hash,
+                    sequence=sequence,
                     stage=current,
-                    failure_kind=failure_kind, failure_detail=failure_detail)
+                    failure_kind=failure_kind, failure_detail=failure_detail,
+                    reason=reason, command_observation=command_observation,
+                    service_exit_code=service_exit_code)
                 break
+            observation = (self.stage_command_observation(current)
+                           if current in {
+                               "service-properties", "source-journal",
+                               "avc-journal", "bounded-journal",
+                           } else None)
+            write_collector_event(
+                writer, "collector-stage-result", runner_hash,
+                sequence=sequence, stage=current, reason="accepted",
+                command_observation=observation)
+            sequence += 1
         return bytes(writer.raw)
+
+    @staticmethod
+    def stage_command_observation(stage, *, exit_code=0, timed_out=False,
+                                  stdout_bytes=1, stdout_truncated=False,
+                                  stderr_bytes=0, stderr_truncated=False):
+        if stage == "avc-journal" and exit_code == 1:
+            stdout_bytes = 0
+        return {
+            "exit_code": exit_code,
+            "timed_out": timed_out,
+            "stdout_bytes": stdout_bytes,
+            "stdout_truncated": stdout_truncated,
+            "stderr_bytes": stderr_bytes,
+            "stderr_truncated": stderr_truncated,
+        }
+
+    @staticmethod
+    def stage_command_result(stage, *, exit_code=0, stdout=b"record", stderr=b"",
+                             timed_out=False, stdout_truncated=False,
+                             stderr_truncated=False):
+        return {
+            "command": {
+                "service-properties": SERVICE_PROPERTIES_COMMAND,
+                "source-journal": SOURCE_JOURNAL_COMMAND,
+                "avc-journal": AVC_JOURNAL_COMMAND,
+                "bounded-journal": failure_collector.JOURNAL_COMMAND,
+            }[stage],
+            "exit_code": exit_code,
+            "timed_out": timed_out,
+            "stdout": stdout,
+            "stderr": stderr,
+            "stdout_truncated": stdout_truncated,
+            "stderr_truncated": stderr_truncated,
+        }
 
     def completed_collector_stream(self, report_raw):
         writer = self.ShortWriter(4096)
@@ -191,6 +271,16 @@ class AtomicUpdateTests(unittest.TestCase):
             write_collector_event(
                 writer, "collector-stage", runner_hash, sequence=sequence,
                 stage=stage)
+            sequence += 1
+            observation = (self.stage_command_observation(stage)
+                           if stage in {
+                               "service-properties", "source-journal",
+                               "avc-journal", "bounded-journal",
+                           } else None)
+            write_collector_event(
+                writer, "collector-stage-result", runner_hash,
+                sequence=sequence, stage=stage, reason="accepted",
+                command_observation=observation)
             sequence += 1
         write_collector_event(
             writer, "collector-completed", runner_hash, sequence=sequence,
@@ -255,7 +345,14 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertEqual(observed["terminal"], {
             "event": "collector-failed", "stage": "avc-journal",
             "failure_kind": "command-exit",
+            "reason": "unexpected-exit",
+            "command_result": self.stage_command_observation(
+                "avc-journal", exit_code=2),
         })
+        self.assertEqual(observed["completed_stages"], [
+            "service-properties", "source-journal", "monitor",
+            "identity-correlation",
+        ])
         self.assertIsNone(observed["suffix"])
         self.assertFalse(observed["passed"])
         self.assertFalse(observed["release_qualified"])
@@ -264,6 +361,7 @@ class AtomicUpdateTests(unittest.TestCase):
         partial = validate_collector_diagnostic(receipt, "a" * 64)
         self.assertTrue(partial["receipt"])
         self.assertEqual(partial["stages"], [])
+        self.assertEqual(partial["completed_stages"], [])
         self.assertIsNone(partial["terminal"])
 
         writer = self.ShortWriter(4096)
@@ -276,6 +374,16 @@ class AtomicUpdateTests(unittest.TestCase):
                 writer, "collector-stage", "a" * 64, sequence=sequence,
                 stage=stage)
             sequence += 1
+            observation = (self.stage_command_observation(stage)
+                           if stage in {
+                               "service-properties", "source-journal",
+                               "avc-journal", "bounded-journal",
+                           } else None)
+            write_collector_event(
+                writer, "collector-stage-result", "a" * 64,
+                sequence=sequence, stage=stage, reason="accepted",
+                command_observation=observation)
+            sequence += 1
         report = {"bytes": 321, "sha256": "b" * 64}
         write_collector_event(
             writer, "collector-completed", "a" * 64, sequence=sequence,
@@ -286,6 +394,9 @@ class AtomicUpdateTests(unittest.TestCase):
             "stage": "primary-report-write",
             "report": report,
         })
+        self.assertEqual(completed["completed_stages"], list(COLLECTOR_STAGES))
+        self.assertEqual(COLLECTOR_STAGE_OPERATION_SHA256,
+                         TRANSITION_COLLECTOR_STAGE_OPERATION_SHA256)
 
     def test_collector_field_type_mutations_fail_closed(self):
         invalid_json_values = ([], {}, True, None)
@@ -363,11 +474,17 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertNotIn("must-not-be-retained", json.dumps(detail, sort_keys=True))
         raw = self.collector_stream(
             failure_kind="invalid-evidence", failure_detail=detail)
-        self.assertLessEqual(max(map(len, raw.splitlines())), 1024)
+        self.assertLessEqual(max(map(len, raw.splitlines())), 1280)
         observed = validate_collector_diagnostic(raw, "a" * 64)
         self.assertEqual(observed["terminal"], {
             "event": "collector-failed", "stage": "avc-journal",
             "failure_kind": "invalid-evidence", "failure_detail": detail,
+            "reason": "stderr-truncated",
+            "command_result": {
+                "exit_code": 1, "timed_out": False,
+                "stdout_bytes": 0, "stdout_truncated": False,
+                "stderr_bytes": 1, "stderr_truncated": True,
+            },
         })
 
         terminal = json.loads(raw.splitlines()[-1])
@@ -428,13 +545,65 @@ class AtomicUpdateTests(unittest.TestCase):
                     self.ShortWriter(4096), "collector-failed", "a" * 64,
                     sequence=6, stage="avc-journal",
                     failure_kind=changed.get("failure_kind"),
-                    failure_detail=changed.get("failure_detail"))
+                    failure_detail=changed.get("failure_detail"),
+                    reason=changed.get("reason"),
+                    command_observation=changed.get("command_result"))
 
         with self.assertRaises(ValueError):
             write_collector_event(
                 self.ShortWriter(4096), "collector-failed", "a" * 64,
                 sequence=2, stage="source-journal",
-                failure_kind="invalid-evidence", failure_detail=detail)
+                failure_kind="invalid-evidence", failure_detail=detail,
+                reason="source-journal-rejected", command_observation=None)
+
+    def test_avc_receipt_without_detail_binds_exit_and_output_precedence(self):
+        exit_zero_nonempty = self.stage_command_observation("avc-journal")
+        exit_one_nonempty = self.stage_command_observation(
+            "avc-journal", exit_code=1)
+        exit_one_nonempty["stdout_bytes"] = 10
+        exit_zero_empty = self.stage_command_observation(
+            "avc-journal", stdout_bytes=0)
+        cases = (
+            (exit_zero_nonempty, "stdout-invalid-utf8", (
+                "records-output-empty", "no-match-output-nonempty")),
+            (exit_one_nonempty, "no-match-output-nonempty", (
+                "stdout-invalid-utf8", "avc-journal-rejected",
+                "records-output-empty")),
+            (exit_zero_empty, "records-output-empty", (
+                "stdout-invalid-utf8", "avc-journal-rejected",
+                "no-match-output-nonempty")),
+        )
+        for observation, valid_reason, invalid_reasons in cases:
+            raw = self.collector_stream(
+                stage="avc-journal", failure_kind="invalid-evidence",
+                failure_detail=None, reason=valid_reason,
+                command_observation=observation)
+            accepted = validate_collector_diagnostic(raw, "a" * 64)
+            with self.subTest(valid_reason=valid_reason):
+                self.assertEqual(accepted["terminal"]["reason"], valid_reason)
+                self.assertNotIn("failure_detail", accepted["terminal"])
+
+            prefix = b"\n".join(raw.splitlines()[:-1]) + b"\n"
+            terminal = json.loads(raw.splitlines()[-1])
+            for invalid_reason in invalid_reasons:
+                with self.subTest(observation=observation,
+                                  invalid_reason=invalid_reason), \
+                        self.assertRaises(ValueError):
+                    write_collector_event(
+                        self.ShortWriter(4096), "collector-failed", "a" * 64,
+                        sequence=6, stage="avc-journal",
+                        failure_kind="invalid-evidence", failure_detail=None,
+                        reason=invalid_reason,
+                        command_observation=observation)
+
+                changed = copy.deepcopy(terminal)
+                changed["reason"] = invalid_reason
+                candidate = prefix + (json.dumps(
+                    changed, sort_keys=True, separators=(",", ":"))
+                    + "\n").encode()
+                rejected = validate_collector_diagnostic(candidate, "a" * 64)
+                self.assertIsNone(rejected["terminal"])
+                self.assertEqual(rejected["suffix"]["state"], "invalid")
 
     def test_avc_command_status_predicates_reject_every_ambiguous_result(self):
         source = {
@@ -516,6 +685,120 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertIsNotNone(detail)
         self.assertEqual(detail["command"]["exit_code"], None)
         self.assertTrue(detail["command"]["timed_out"])
+
+    def test_collector_stage_command_binds_fixed_identity_and_status(self):
+        valid = self.stage_command_result(
+            "service-properties", stdout=b"Result=exit-code\n")
+        runner = Mock(return_value=valid)
+        raw, observation = collector_stage_command(
+            "service-properties", SERVICE_PROPERTIES_COMMAND,
+            timeout=10, stdout_max=4096, run=runner)
+        self.assertEqual(raw, "Result=exit-code\n")
+        self.assertEqual(observation, self.stage_command_observation(
+            "service-properties", stdout_bytes=len(valid["stdout"])))
+        runner.assert_called_once_with(
+            SERVICE_PROPERTIES_COMMAND, timeout=10, stdout_max=4096,
+            stderr_max=8 * 1024)
+
+        for stage, command, timeout, stdout_max, stderr_max in (
+                ("service-properties", SERVICE_PROPERTIES_COMMAND, 9, 4096,
+                 8 * 1024),
+                ("service-properties", SERVICE_PROPERTIES_COMMAND, 10, 4095,
+                 8 * 1024),
+                ("service-properties", ["/usr/bin/true"], 10, 4096,
+                 8 * 1024),
+                ("source-journal", SERVICE_PROPERTIES_COMMAND, 5, 64 * 1024,
+                 8 * 1024)):
+            with self.subTest(identity=(stage, timeout, stdout_max)), \
+                    self.assertRaisesRegex(ValueError, "identity differs"):
+                collector_stage_command(
+                    stage, command, timeout=timeout, stdout_max=stdout_max,
+                    stderr_max=stderr_max, run=Mock())
+
+        invalid_statuses = (None, True, 1.0, -2**31 - 1, 256)
+        for exit_code in invalid_statuses:
+            result = self.stage_command_result(
+                "service-properties", exit_code=exit_code, stdout=b"")
+            with self.subTest(exit_code=exit_code), \
+                    self.assertRaises(CollectorCommandError) as caught:
+                collector_stage_command(
+                    "service-properties", SERVICE_PROPERTIES_COMMAND,
+                    timeout=10, stdout_max=4096,
+                    run=Mock(return_value=result))
+            self.assertEqual(caught.exception.reason, "command-result-invalid")
+            self.assertIsNone(caught.exception.observation)
+
+        cases = (
+            ("command-timeout", self.stage_command_result(
+                "service-properties", exit_code=-9, stdout=b"",
+                timed_out=True)),
+            ("stdout-truncated", self.stage_command_result(
+                "service-properties", stdout=b"x" * 4097,
+                stdout_truncated=True)),
+            ("stderr-truncated", self.stage_command_result(
+                "service-properties", stdout=b"", stderr=b"x" * 8193,
+                stderr_truncated=True)),
+            ("stderr-nonempty", self.stage_command_result(
+                "service-properties", stdout=b"", stderr=b"x")),
+            ("unexpected-exit", self.stage_command_result(
+                "service-properties", exit_code=2, stdout=b"")),
+            ("stdout-invalid-utf8", self.stage_command_result(
+                "service-properties", stdout=b"\xff")),
+        )
+        for reason, result in cases:
+            with self.subTest(reason=reason), \
+                    self.assertRaises(CollectorCommandError) as caught:
+                collector_stage_command(
+                    "service-properties", SERVICE_PROPERTIES_COMMAND,
+                    timeout=10, stdout_max=4096,
+                    run=Mock(return_value=result))
+            self.assertEqual(caught.exception.reason, reason)
+            self.assertIsNotNone(caught.exception.observation)
+
+        for reason, error in (
+                ("command-timeout", subprocess.TimeoutExpired(
+                    SERVICE_PROPERTIES_COMMAND, 10)),
+                ("spawn-permission", PermissionError("denied")),
+                ("spawn-os-error", OSError("failed")),
+                ("command-cleanup-failed", RuntimeError("unreaped"))):
+            with self.subTest(exception=reason), \
+                    self.assertRaises(CollectorCommandError) as caught:
+                collector_stage_command(
+                    "service-properties", SERVICE_PROPERTIES_COMMAND,
+                    timeout=10, stdout_max=4096,
+                    run=Mock(side_effect=error))
+            self.assertEqual(caught.exception.reason, reason)
+            self.assertIsNone(caught.exception.observation)
+
+    def test_service_properties_parser_rejection_emits_exact_stage_receipt(self):
+        writer = self.ShortWriter(4096)
+        observation = self.stage_command_observation(
+            "service-properties", stdout_bytes=len(b"malformed\n"))
+        with patch.object(Path, "read_text",
+                          return_value="Symbi-Hosted-Update-Probe"), \
+                patch.object(Path, "exists", return_value=False), \
+                patch.object(sys, "argv", ["symbi-update-failure.py"]), \
+                patch("image.atomic.update_boot_failure.os.geteuid",
+                      return_value=0), \
+                patch("image.atomic.update_boot_failure.sha256",
+                      return_value="a" * 64), \
+                patch("image.atomic.update_boot_failure.open_collector_channel",
+                      return_value=writer), \
+                patch("image.atomic.update_boot_failure.persist_collector_state"), \
+                patch("image.atomic.update_boot_failure.collector_stage_command",
+                      return_value=("malformed\n", observation)), \
+                self.assertRaises(ValueError):
+            failure_collector.main()
+        normalized = validate_collector_diagnostic(bytes(writer.raw), "a" * 64)
+        self.assertEqual(normalized["completed_stages"], [])
+        self.assertEqual(normalized["terminal"], {
+            "event": "collector-failed",
+            "stage": "service-properties",
+            "failure_kind": "invalid-evidence",
+            "reason": "service-properties-rejected",
+            "command_result": observation,
+        })
+        self.assertNotIn("malformed", bytes(writer.raw).decode())
 
     def test_avc_journal_malformed_types_nesting_and_surrogates_are_normalized(self):
         source = {
@@ -739,6 +1022,364 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertEqual(
             observation["sha256"], hashlib.sha256(bytes(primary.raw)).hexdigest())
 
+    def test_stop_post_receipts_bind_timeout_signal_exit_and_transport(self):
+        runner_hash = "a" * 64
+        observation = self.stage_command_observation(
+            "service-properties", stdout_bytes=128)
+        with tempfile.TemporaryDirectory() as temporary:
+            state_path = Path(temporary) / "collector-state.json"
+            cases = (
+                ("timeout", False,
+                 {"SERVICE_RESULT": "timeout", "EXIT_CODE": "killed",
+                  "EXIT_STATUS": "TERM"},
+                 "service-timeout", "timeout", None),
+                ("signal", False,
+                 {"SERVICE_RESULT": "signal", "EXIT_CODE": "killed",
+                  "EXIT_STATUS": "ABRT"},
+                 "service-signal", "unexpected", None),
+                ("exit", False,
+                 {"SERVICE_RESULT": "exit-code", "EXIT_CODE": "exited",
+                  "EXIT_STATUS": "7"},
+                 "service-exit", "command-exit", 7),
+                ("transport", True,
+                 {"SERVICE_RESULT": "signal", "EXIT_CODE": "killed",
+                  "EXIT_STATUS": "KILL"},
+                 "transport-loss", "transport", None),
+            )
+            for (label, transport_lost, environment, reason, failure_kind,
+                 service_exit) in cases:
+                state = {
+                    "sequence": 2,
+                    "stage": "service-properties",
+                    "command_result": observation,
+                    "terminal": False,
+                    "transport_lost": transport_lost,
+                }
+                persist_collector_state(state, runner_hash, state_path)
+                terminal_writer = self.ShortWriter(4096)
+                with self.subTest(case=label), \
+                        patch("image.atomic.update_boot_failure."
+                              "open_collector_channel",
+                              return_value=terminal_writer):
+                    self.assertTrue(emit_stop_post_receipt(
+                        runner_hash, state_path=state_path,
+                        channel=Path("/unused"), environment=environment))
+                prefix = self.ShortWriter(4096)
+                write_collector_event(
+                    prefix, "collector-started", runner_hash, sequence=0)
+                write_collector_event(
+                    prefix, "collector-stage", runner_hash, sequence=1,
+                    stage="service-properties")
+                normalized = validate_collector_diagnostic(
+                    bytes(prefix.raw) + bytes(terminal_writer.raw), runner_hash)
+                self.assertEqual(normalized["terminal"], {
+                    "event": "collector-emergency",
+                    "stage": "service-properties",
+                    "failure_kind": failure_kind,
+                    "reason": reason,
+                    "command_result": observation,
+                    "service_exit_code": service_exit,
+                    "prepared_sequence": 2,
+                })
+                self.assertEqual(normalized["emergency"], normalized["terminal"])
+                self.assertIsNone(normalized["suffix"])
+
+            persist_collector_state({
+                "sequence": 2,
+                "stage": "service-properties",
+                "command_result": observation,
+                "terminal": False,
+                "transport_lost": False,
+            }, runner_hash, state_path)
+            malformed_writer = self.ShortWriter(4096)
+            with patch("image.atomic.update_boot_failure.open_collector_channel",
+                       return_value=malformed_writer):
+                self.assertFalse(emit_stop_post_receipt(
+                    runner_hash, state_path=state_path,
+                    environment={"SERVICE_RESULT": []}))
+            self.assertEqual(bytes(malformed_writer.raw), b"")
+
+            unknown_status_writer = self.ShortWriter(4096)
+            with patch("image.atomic.update_boot_failure.open_collector_channel",
+                       return_value=unknown_status_writer):
+                self.assertTrue(emit_stop_post_receipt(
+                    runner_hash, state_path=state_path,
+                    environment={"SERVICE_RESULT": "exit-code",
+                                 "EXIT_CODE": "exited", "EXIT_STATUS": []}))
+            self.assertIsNone(
+                json.loads(bytes(unknown_status_writer.raw).splitlines()[-1])[
+                    "service_exit_code"])
+
+        for invalid in (-1, 256, True, 1.0, [], {}):
+            with self.subTest(service_exit=invalid), self.assertRaises(ValueError):
+                write_collector_event(
+                    self.ShortWriter(4096), "collector-terminated",
+                    runner_hash, sequence=2, stage="service-properties",
+                    failure_kind="command-exit", reason="service-exit",
+                    command_observation=observation,
+                    service_exit_code=invalid)
+
+    def test_collector_state_rejects_special_links_and_recovers_write_loss(self):
+        runner_hash = "a" * 64
+        observation = self.stage_command_observation(
+            "service-properties", stdout_bytes=128)
+        state = {
+            "output": self.ShortWriter(0),
+            "sequence": 2,
+            "stage": "service-properties",
+            "command_result": observation,
+            "terminal": False,
+            "transport_lost": False,
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            state_path = root / "collector-state.json"
+
+            def persist_in_test(current, current_hash):
+                return persist_collector_state(
+                    current, current_hash, state_path)
+
+            with patch("image.atomic.update_boot_failure.persist_collector_state",
+                       side_effect=persist_in_test):
+                self.assertFalse(collector_event(
+                    state, "collector-stage-result", runner_hash,
+                    stage="service-properties", reason="accepted",
+                    command_observation=observation))
+            retained = load_collector_state(state_path)
+            self.assertTrue(retained["transport_lost"])
+            self.assertEqual(retained["sequence"], 2)
+            self.assertIsNone(state["output"])
+
+            writer = self.ShortWriter(4096)
+            with patch("image.atomic.update_boot_failure.open_collector_channel",
+                       return_value=writer):
+                self.assertTrue(emit_stop_post_receipt(
+                    runner_hash, state_path=state_path,
+                    environment={"SERVICE_RESULT": "timeout"}))
+            terminal = json.loads(bytes(writer.raw).splitlines()[-1])
+            self.assertEqual(terminal["reason"], "transport-loss")
+            self.assertEqual(terminal["command_result"], observation)
+            self.assertNotIn("stdout", terminal["command_result"])
+
+            safe_target = root / "safe-target"
+            safe_target.write_text("safe")
+            safe_target.chmod(0o600)
+            special_cases = []
+            symlink = root / "state-symlink"
+            symlink.symlink_to(safe_target)
+            special_cases.append(symlink)
+            hardlink = root / "state-hardlink"
+            os.link(safe_target, hardlink)
+            special_cases.append(hardlink)
+            fifo = root / "state-fifo"
+            os.mkfifo(fifo)
+            special_cases.append(fifo)
+            socket_path = root / "state-socket"
+            listener = socket.socket(socket.AF_UNIX)
+            try:
+                listener.bind(str(socket_path))
+                special_cases.append(socket_path)
+                for path in special_cases:
+                    with self.subTest(path=path.name), \
+                            self.assertRaises(ValueError):
+                        load_collector_state(path)
+                    with self.subTest(persist=path.name), \
+                            self.assertRaises(ValueError):
+                        persist_collector_state(state, runner_hash, path)
+            finally:
+                listener.close()
+
+            interrupted = root / "interrupted.json"
+            with patch("image.atomic.update_boot_failure._write_all",
+                       side_effect=RuntimeError("short write")), \
+                    self.assertRaisesRegex(RuntimeError, "short write"):
+                persist_collector_state(state, runner_hash, interrupted)
+            self.assertFalse(interrupted.exists())
+            self.assertEqual(
+                list(root.glob("." + interrupted.name + ".*")), [])
+
+            race_path = root / "race-state.json"
+            safe_state = {
+                "sequence": 2, "stage": "service-properties",
+                "command_result": observation, "terminal": False,
+                "transport_lost": False,
+            }
+            real_read = os.read
+
+            def replace_name(descriptor, maximum):
+                raw = real_read(descriptor, maximum)
+                old = race_path.with_name(race_path.name + ".old")
+                race_path.rename(old)
+                race_path.write_bytes(raw)
+                race_path.chmod(0o600)
+                return raw
+
+            persist_collector_state(safe_state, runner_hash, race_path)
+            with patch("image.atomic.update_boot_failure.os.read",
+                       side_effect=replace_name), self.assertRaisesRegex(
+                           ValueError, "name changed"):
+                load_collector_state(race_path)
+
+            race_path.unlink()
+            persist_collector_state(safe_state, runner_hash, race_path)
+
+            def change_mode(descriptor, maximum):
+                raw = real_read(descriptor, maximum)
+                race_path.chmod(0o644)
+                return raw
+
+            with patch("image.atomic.update_boot_failure.os.read",
+                       side_effect=change_mode), self.assertRaisesRegex(
+                           ValueError, "name changed"):
+                load_collector_state(race_path)
+
+            race_path.chmod(0o600)
+            link_after_open = root / "race-state-link"
+
+            def add_link(descriptor, maximum):
+                raw = real_read(descriptor, maximum)
+                os.link(race_path, link_after_open)
+                return raw
+
+            with patch("image.atomic.update_boot_failure.os.read",
+                       side_effect=add_link), self.assertRaisesRegex(
+                           ValueError, "name changed"):
+                load_collector_state(race_path)
+
+    def test_emergency_frame_recovers_each_write_boundary(self):
+        runner_hash = "a" * 64
+        observation = self.stage_command_observation(
+            "service-properties", stdout_bytes=128)
+
+        def started_prefix():
+            writer = self.ShortWriter(4096)
+            write_collector_event(
+                writer, "collector-started", runner_hash, sequence=0)
+            return bytes(writer.raw)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+
+            startup_state = root / "startup.json"
+            persist_collector_state({
+                "sequence": 0, "stage": None, "command_result": None,
+                "terminal": False, "transport_lost": True,
+            }, runner_hash, startup_state)
+            startup_writer = self.ShortWriter(4096)
+            with patch("image.atomic.update_boot_failure.open_collector_channel",
+                       return_value=startup_writer):
+                self.assertTrue(emit_stop_post_receipt(
+                    runner_hash, state_path=startup_state,
+                    environment={"SERVICE_RESULT": "timeout"}))
+            startup = validate_collector_diagnostic(
+                bytes(startup_writer.raw), runner_hash)
+            self.assertEqual(startup["terminal"]["stage"], None)
+            self.assertEqual(startup["terminal"]["reason"], "transport-loss")
+            self.assertEqual(startup["terminal"]["prepared_sequence"], 0)
+            self.assertEqual(startup["stages"], [])
+
+            zero_state_path = root / "zero.json"
+            zero_state = {
+                "output": self.ShortWriter(0), "sequence": 1,
+                "stage": None, "command_result": None, "terminal": False,
+                "transport_lost": False,
+            }
+
+            def persist_zero(current, current_hash):
+                persist_collector_state(current, current_hash, zero_state_path)
+
+            with patch("image.atomic.update_boot_failure.persist_collector_state",
+                       side_effect=persist_zero):
+                self.assertFalse(collector_event(
+                    zero_state, "collector-stage", runner_hash,
+                    stage="service-properties"))
+            zero_emergency = self.ShortWriter(4096)
+            with patch("image.atomic.update_boot_failure.open_collector_channel",
+                       return_value=zero_emergency):
+                self.assertTrue(emit_stop_post_receipt(
+                    runner_hash, state_path=zero_state_path,
+                    environment={"SERVICE_RESULT": "timeout"}))
+            zero = validate_collector_diagnostic(
+                started_prefix() + bytes(zero_emergency.raw), runner_hash)
+            self.assertEqual(zero["stages"], [])
+            self.assertEqual(zero["terminal"]["stage"], "service-properties")
+            self.assertEqual(zero["terminal"]["reason"], "transport-loss")
+            self.assertIsNone(zero["suffix"])
+
+            partial_state_path = root / "partial.json"
+            partial_writer = self.ShortWriter(19)
+            partial_state = {
+                "output": partial_writer, "sequence": 1, "stage": None,
+                "command_result": None, "terminal": False,
+                "transport_lost": False,
+            }
+
+            def persist_partial(current, current_hash):
+                persist_collector_state(
+                    current, current_hash, partial_state_path)
+
+            with patch("image.atomic.update_boot_failure.persist_collector_state",
+                       side_effect=persist_partial):
+                self.assertFalse(collector_event(
+                    partial_state, "collector-stage", runner_hash,
+                    stage="service-properties"))
+            partial_emergency = self.ShortWriter(4096)
+            with patch("image.atomic.update_boot_failure.open_collector_channel",
+                       return_value=partial_emergency):
+                self.assertTrue(emit_stop_post_receipt(
+                    runner_hash, state_path=partial_state_path,
+                    environment={"SERVICE_RESULT": "signal"}))
+            partial = validate_collector_diagnostic(
+                started_prefix() + bytes(partial_writer.raw)
+                + bytes(partial_emergency.raw), runner_hash)
+            self.assertEqual(partial["terminal"]["reason"], "transport-loss")
+            self.assertEqual(partial["suffix"]["state"], "truncated")
+
+            full_state_path = root / "full.json"
+            full_writer = self.ShortWriter(4096)
+            full_state = {
+                "output": full_writer, "sequence": 1, "stage": None,
+                "command_result": None, "terminal": False,
+                "transport_lost": False,
+            }
+            persist_calls = 0
+
+            def fail_after_full_write(current, current_hash):
+                nonlocal persist_calls
+                persist_calls += 1
+                if persist_calls == 1:
+                    persist_collector_state(
+                        current, current_hash, full_state_path)
+                    return
+                raise OSError("state commit interrupted")
+
+            with patch("image.atomic.update_boot_failure.persist_collector_state",
+                       side_effect=fail_after_full_write):
+                self.assertTrue(collector_event(
+                    full_state, "collector-stage", runner_hash,
+                    stage="service-properties"))
+            full_emergency = self.ShortWriter(4096)
+            with patch("image.atomic.update_boot_failure.open_collector_channel",
+                       return_value=full_emergency):
+                self.assertTrue(emit_stop_post_receipt(
+                    runner_hash, state_path=full_state_path,
+                    environment={"SERVICE_RESULT": "signal"}))
+            full = validate_collector_diagnostic(
+                started_prefix() + bytes(full_writer.raw)
+                + bytes(full_emergency.raw), runner_hash)
+            self.assertEqual(full["stages"], ["service-properties"])
+            self.assertEqual(full["terminal"]["reason"], "service-signal")
+            self.assertEqual(full["terminal"]["prepared_sequence"], 1)
+            self.assertIsNone(full["suffix"])
+
+            repeated = self.ShortWriter(4096)
+            with patch("image.atomic.update_boot_failure.open_collector_channel",
+                       return_value=repeated):
+                self.assertFalse(emit_stop_post_receipt(
+                    runner_hash, state_path=full_state_path,
+                    environment={"SERVICE_RESULT": "signal"}))
+            self.assertEqual(bytes(repeated.raw), b"")
+
     def test_collector_stream_rejects_unordered_or_unreviewed_content(self):
         raw = self.collector_stream()
         lines = raw.splitlines()
@@ -766,6 +1407,100 @@ class AtomicUpdateTests(unittest.TestCase):
                 self.assertTrue(observed["receipt"])
                 self.assertEqual(observed["suffix"]["state"], state)
                 self.assertNotIn("must-not-pass", json.dumps(observed))
+
+        observation = self.stage_command_observation(
+            "service-properties", stdout_bytes=128)
+        terminated = self.collector_stream(
+            stage="service-properties", failure_kind="command-exit",
+            reason="service-exit", command_observation=observation,
+            terminated=True, service_exit_code=7)
+        lines = terminated.splitlines(keepends=True)
+        terminal = json.loads(lines[-1])
+        mutations = []
+        for value in (-1, 256, True, 1.0, [], {}):
+            changed = copy.deepcopy(terminal)
+            changed["service_exit_code"] = value
+            mutations.append(("service-exit", value, changed))
+        for key, value in (
+                ("reason", "service-timeout"),
+                ("failure_kind", "permission"),
+                ("command_sha256", "b" * 64)):
+            changed = copy.deepcopy(terminal)
+            changed[key] = value
+            mutations.append((key, value, changed))
+        for key, value in (
+                ("stdout_bytes", 4097),
+                ("stdout_truncated", True),
+                ("timed_out", [])):
+            changed = copy.deepcopy(terminal)
+            changed["command_result"][key] = value
+            mutations.append(("command-result-" + key, value, changed))
+        prefix = b"".join(lines[:-1])
+        for label, value, changed in mutations:
+            candidate = prefix + (json.dumps(
+                changed, sort_keys=True, separators=(",", ":")) + "\n").encode()
+            with self.subTest(termination=label, value=value):
+                observed = validate_collector_diagnostic(candidate, "a" * 64)
+                self.assertIsNone(observed["terminal"])
+                self.assertEqual(observed["suffix"]["state"], "invalid")
+
+    def test_collector_failure_cross_bindings_match_runtime_precedence(self):
+        timeout = self.stage_command_observation(
+            "service-properties", exit_code=-9, timed_out=True,
+            stdout_bytes=0)
+        valid = self.collector_stream(
+            stage="service-properties", failure_kind="timeout",
+            reason="command-timeout", command_observation=timeout)
+        lines = valid.splitlines(keepends=True)
+        terminal = json.loads(lines[-1])
+        cases = []
+
+        changed = copy.deepcopy(terminal)
+        changed["reason"] = "service-properties-rejected"
+        changed["failure_kind"] = "invalid-evidence"
+        cases.append(("parser-rejection-with-timeout", changed))
+
+        changed = copy.deepcopy(terminal)
+        changed["failure_kind"] = "permission"
+        cases.append(("timeout-kind", changed))
+
+        changed = copy.deepcopy(terminal)
+        changed["reason"] = "command-result-invalid"
+        changed["failure_kind"] = "invalid-evidence"
+        changed["command_result"] = self.stage_command_observation(
+            "service-properties")
+        cases.append(("invalid-result-with-valid-observation", changed))
+
+        changed = copy.deepcopy(terminal)
+        changed["reason"] = "stdout-invalid-utf8"
+        changed["failure_kind"] = "invalid-evidence"
+        changed["command_result"] = self.stage_command_observation(
+            "service-properties", stdout_bytes=0)
+        cases.append(("utf8-without-output", changed))
+
+        changed = copy.deepcopy(terminal)
+        changed["command_result"] = self.stage_command_observation(
+            "service-properties", exit_code=-9, timed_out=True,
+            stdout_bytes=4097, stdout_truncated=True)
+        cases.append(("simultaneous-flags", changed))
+
+        prefix = b"".join(lines[:-1])
+        for label, changed in cases:
+            arguments = {
+                "failure_kind": changed["failure_kind"],
+                "reason": changed["reason"],
+                "command_observation": changed["command_result"],
+            }
+            with self.subTest(producer=label), self.assertRaises(ValueError):
+                write_collector_event(
+                    self.ShortWriter(4096), "collector-failed", "a" * 64,
+                    sequence=2, stage="service-properties", **arguments)
+            candidate = prefix + (json.dumps(
+                changed, sort_keys=True, separators=(",", ":")) + "\n").encode()
+            with self.subTest(host=label):
+                observed = validate_collector_diagnostic(candidate, "a" * 64)
+                self.assertIsNone(observed["terminal"])
+                self.assertEqual(observed["suffix"]["state"], "invalid")
 
     def test_collector_parser_stays_within_a_128_mib_address_space(self):
         receipt = self.collector_stream().splitlines(keepends=True)[0]
@@ -927,7 +1662,10 @@ class AtomicUpdateTests(unittest.TestCase):
             self.assertEqual(
                 diagnostic["collector"]["events"]["terminal"],
                 {"event": "collector-failed", "stage": "avc-journal",
-                 "failure_kind": "command-exit"})
+                 "failure_kind": "command-exit",
+                 "reason": "unexpected-exit",
+                 "command_result": self.stage_command_observation(
+                     "avc-journal", exit_code=2)})
             self.assertEqual(
                 diagnostic["collector"]["observation"]["sha256"],
                 hashlib.sha256(collector_raw).hexdigest())
@@ -1226,7 +1964,7 @@ class AtomicUpdateTests(unittest.TestCase):
             "report-hash": self.completed_collector_stream(raw + b"different"),
             "stage": stage_mutation,
             "terminal": self.collector_stream(
-                stage="primary-report-write", failure_kind="transport"),
+                stage="primary-report-write", failure_kind="invalid-evidence"),
             "event-type": b"".join(collector_lines),
             "invalid-suffix": valid_collector
                               + b'{"API_TOKEN":"must-not-survive"}\n',
@@ -2781,6 +3519,14 @@ class AtomicUpdateTests(unittest.TestCase):
                          "/usr/bin/python3 %d/symbi-update-failure.py")
         self.assertEqual(failure["ExecStopPost"],
                          "/usr/bin/systemctl --no-block poweroff")
+        self.assertEqual([
+            line for line in
+            (root / "image/atomic/update-f.service").read_text().splitlines()
+            if line.startswith("ExecStopPost=")
+        ], [
+            "ExecStopPost=-/usr/bin/python3 %d/symbi-update-failure.py --stop-post",
+            "ExecStopPost=/usr/bin/systemctl --no-block poweroff",
+        ])
         self.assertEqual(failure["NoNewPrivileges"], "yes")
         self.assertEqual(failure["CapabilityBoundingSet"], "")
         self.assertEqual(failure["PrivateMounts"], "yes")

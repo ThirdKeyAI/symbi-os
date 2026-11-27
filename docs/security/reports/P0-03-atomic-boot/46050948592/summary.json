@@ -1,0 +1,189 @@
+{
+  "schema": 1,
+  "card": "P0-03",
+  "run": {
+    "id": 46050948592,
+    "attempt": 1,
+    "event": "workflow_dispatch",
+    "head": "9cfe4ecc26e1f4c9e05d527349a41ea0e6d6821a",
+    "tree": "1ca6470f8317f88cb34bdceb5d92442e575a45af",
+    "parent": "387bbf91dea0a3ec70f8f41ee5d76df23b0c4ab9",
+    "job_id": 140681807393,
+    "job_log_started_utc": "2026-11-27T18:38:17.3852941Z",
+    "job_log_completed_utc": "2026-11-27T19:01:16.1828449Z",
+    "conclusion": "failure"
+  },
+  "artifact": {
+    "id": 15225412501,
+    "name": "atomic-development-boot-generic",
+    "bytes": 71226,
+    "github_digest": "sha256:6147641596bdd59f5bb58be76d8d719cef8341990a67dfdb81851c329c753108",
+    "downloaded_zip_sha256": "6147641596bdd59f5bb58be76d8d719cef8341990a67dfdb81851c329c753108",
+    "zip_integrity": true,
+    "safe_regular_relative_members": 95,
+    "uncompressed_bytes": 153017
+  },
+  "failure": {
+    "stage": "same-path-positive-service-properties",
+    "predecessor_install_passed": true,
+    "qemu_exit_code": 0,
+    "report": {
+      "name": "same-path-positive.json",
+      "state": "empty",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "collector": {
+      "name": "same-path-positive-collector.jsonl",
+      "state": "ready",
+      "bytes": 637,
+      "sha256": "9266a208cd04cca1de5f4ff5403ab947d7684e55d66584be851450f259c79713",
+      "prefix_validated": true,
+      "stream_validated": true,
+      "runner_sha256": "b775ac0a9bda690f796ff039a988055d0018fbd7a353d069e88f5c123c90be02",
+      "stages": [
+        "service-properties"
+      ],
+      "terminal": null,
+      "suffix": null
+    },
+    "service_properties_pre_receipt_observed": true,
+    "service_properties_result_observed": false,
+    "source_context_stage_reached": false,
+    "avc_query_stage_reached": false,
+    "transition_failure_validated": false,
+    "phase_diagnostic_validated": true,
+    "interpretation": "The bounded collector proves only that service-properties was about to run. It contains no post-command status, fixed rejection reason or emergency service result, so the empty report cannot distinguish a service timeout, signal, transport loss, command exit or parser rejection."
+  },
+  "reachability": {
+    "source_authentication_positive": true,
+    "source_signature_negative_controls": {
+      "unsigned": true,
+      "wrong-key": true,
+      "wrong-reference": true,
+      "altered-signature": true
+    },
+    "same_path_qemu_process_completed": true,
+    "in_guest_update_negative_reports": [],
+    "installed_update_phase_reports": [],
+    "updated_boot_phase_reports": [],
+    "rollback_phase_reports": [],
+    "update_acceptance_observed": false,
+    "update_action_observed": false,
+    "updated_boot_observed": false,
+    "rollback_observed": false
+  },
+  "resources": {
+    "outer": {
+      "memory_max": 5368709120,
+      "memory_peak": 5368713216,
+      "memory_swap_max": 0,
+      "cpu_max": "200000 100000",
+      "pids_max": 256,
+      "memory_events": {
+        "max": 169477,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      }
+    },
+    "update_controller": {
+      "memory_max": 3221225472,
+      "memory_peak": 3221225472,
+      "memory_swap_max": 0,
+      "cpu_max": "200000 100000",
+      "pids_max": 64,
+      "memory_events": {
+        "max": 7141,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      }
+    },
+    "added_swap": false
+  },
+  "cleanup": {
+    "containers": {
+      "symbi-atomic-signer": {"removed": true, "absent": true},
+      "symbi-atomic-update-old-installer": {"removed": true, "absent": true},
+      "symbi-atomic-update-old-signer": {"removed": true, "absent": true},
+      "symbi-atomic-update-qemu": {"removed": true, "absent": true}
+    },
+    "loaded_image_removed": true,
+    "loaded_image_absent": true,
+    "loop_list_empty": true,
+    "private_storage_removed": true,
+    "private_runroot_removed": true
+  },
+  "critical_evidence_sha256": {
+    "atomic-update-evidence/controller-result.json": "52f130abd361de30884920cbe4af094afe476682bcb51f808beecc1b2ec47826",
+    "atomic-update-evidence/same-path-positive-diagnostic.json": "de2bc41ff51a8c66b8921f4111a69ba64a78e835a11d2b1e096c2a518cfc2211",
+    "atomic-update-evidence/result.json": "588af235eb4fcb9395f951d06afd8b9edb2d53ea16d8b197985d855a8e808428",
+    "atomic-disk-evidence/result.json": "de84362569272d704d303a53361dd096f2b42d525c4cf6f868916b56846ab1c7",
+    "atomic-disk-evidence/source-authentication/result.json": "c698c27dd15ccf2e92bf72e6f3e31c44bf5c276b0d98c88d0db9857d2059f4f7",
+    "atomic-disk-evidence/systemd-result.txt": "e63ab1f37a1a634bce75cc3cc80ba47afb321709cb47c63da1dc431209ccd885",
+    "atomic-disk-evidence/update-old-loops-stdout.log": "3f1d39e826503300542203478b61c9393220197f672114f5813fa484380802ed",
+    "atomic-disk-evidence/hosted.log": "68a05fa3d538f0a6aca32021e836683c93790dd37e43b51ea1d63773c54c1cd6",
+    "atomic-disk-evidence/signed-update-and-rollback-stderr.log": "6693e1e43b69d81663302a3f8de2f4ec1f0ac6a0fe334ffa215899d5c9e7fb30"
+  },
+  "local_correction": {
+    "status": "implemented-pending-hosted-rerun",
+    "every_stage_has_pre_and_result_receipts": true,
+    "command_receipts_bind_exact_stage_argv_timeout_and_byte_limits": true,
+    "returned_exit_status_requires_builtin_int": true,
+    "failure_reason_result_and_kind_cross_bound": true,
+    "raw_command_content_retained": false,
+    "emergency_receipt": {
+      "independently_framed": true,
+      "binds_last_prepared_sequence_stage_command_and_result": true,
+      "startup_without_stage_supported": true,
+      "zero_partial_and_full_write_boundaries_supported": true,
+      "timeout_signal_exit_resource_protocol_and_transport_allowlisted": true,
+      "diagnostic_failure_cannot_skip_poweroff": true
+    },
+    "state_file": {
+      "maximum_bytes": 1024,
+      "mode": "0600",
+      "regular_single_link_required": true,
+      "descriptor_and_named_inode_rechecked": true,
+      "file_and_directory_fsynced": true
+    },
+    "policy_allow_rule_added": false,
+    "enforcing_mode_changed": false,
+    "resource_limits_changed": false,
+    "update_after_transition_failure": false
+  },
+  "local_verification": {
+    "focused_update_tests": 86,
+    "focused_address_space_cap_bytes": 201326592,
+    "focused_peak_rss_kib": 38124,
+    "focused_process_swaps": 0,
+    "python_ast": "pass",
+    "json_parse": "pass",
+    "diff_check": "pass",
+    "local_image_vm_container_build_or_network": false,
+    "independent_cold_review": "final-frozen-review-passed"
+  },
+  "claims": {
+    "passed": false,
+    "guest_booted": false,
+    "selinux_transition_supported": false,
+    "signed_update_accepted": false,
+    "four_guest_signature_rejections_passed": false,
+    "updated_boot_passed": false,
+    "rollback_passed": false,
+    "release_qualified": false,
+    "os_qualified": false,
+    "p0_03_qualified": false
+  },
+  "retention": {
+    "raw_logs_committed": false,
+    "raw_serial_committed": false,
+    "raw_journal_committed": false,
+    "raw_collector_committed": false,
+    "disk_images_committed": false,
+    "private_keys_committed": false,
+    "downloaded_artifact_path": "/tmp/symbi-p003-run-46050948592-audit-20261127/atomic-development-boot-generic.zip",
+    "note": "Only compact content-free facts and hashes are retained in Git; raw evidence remains outside the repository."
+  }
+}

@@ -55,11 +55,64 @@ AVC_STDERR_MAX_BYTES = 0
 REPORT_MAX_BYTES = 128 * 1024
 SCOPE = "Bounded explicit-transition diagnostics; no update action ran"
 COLLECTOR_SCOPE = "Bounded collector progress; no transition or update claim"
-COLLECTOR_MAX_EVENT_BYTES = 1024
+COLLECTOR_MAX_EVENT_BYTES = 1280
+COLLECTOR_STATE_MAX_BYTES = 1024
+COLLECTOR_STATE = Path("/run/symbi-update-failure-state.json")
+COLLECTOR_EMERGENCY_MAGIC = b"SYMBI-TRANSITION-COLLECTOR-EMERGENCY-V1"
 COLLECTOR_STAGES = (
     "service-properties", "source-journal", "monitor", "identity-correlation",
     "avc-journal", "bounded-journal", "report-build", "primary-report-write",
 )
+SERVICE_PROPERTIES_COMMAND = [
+    "/usr/bin/systemctl", "show", LAUNCHER_UNIT,
+    "--property=" + STATUS_PROPERTIES,
+]
+COLLECTOR_STAGE_OPERATIONS = {
+    "service-properties": SERVICE_PROPERTIES_COMMAND,
+    "source-journal": SOURCE_JOURNAL_COMMAND,
+    "monitor": ["builtin", "monitor-properties"],
+    "identity-correlation": ["builtin", "identity-correlation"],
+    "avc-journal": AVC_JOURNAL_COMMAND,
+    "bounded-journal": JOURNAL_COMMAND,
+    "report-build": ["builtin", "report-build"],
+    "primary-report-write": ["builtin", "primary-report-write", str(CHANNEL)],
+}
+COLLECTOR_COMMAND_STAGES = frozenset({
+    "service-properties", "source-journal", "avc-journal", "bounded-journal",
+})
+COLLECTOR_COMMAND_LIMITS = {
+    "service-properties": (10, 4096, COMMAND_STDERR_MAX_BYTES),
+    "source-journal": (5, STRUCTURED_JOURNAL_MAX_BYTES,
+                       COMMAND_STDERR_MAX_BYTES),
+    "avc-journal": (5, STRUCTURED_JOURNAL_MAX_BYTES, AVC_STDERR_MAX_BYTES),
+    "bounded-journal": (10, COMMAND_STDOUT_MAX_BYTES,
+                        COMMAND_STDERR_MAX_BYTES),
+}
+COLLECTOR_STAGE_OPERATION_SHA256 = {
+    stage: hashlib.sha256(json.dumps(
+        command, separators=(",", ":")).encode()).hexdigest()
+    for stage, command in COLLECTOR_STAGE_OPERATIONS.items()
+}
+COLLECTOR_COMMAND_FAILURE_REASONS = frozenset({
+    "command-timeout", "spawn-permission", "spawn-os-error",
+    "command-result-invalid", "stdout-truncated", "stderr-truncated",
+    "stderr-nonempty", "unexpected-exit", "stdout-invalid-utf8",
+    "command-cleanup-failed",
+})
+COLLECTOR_STAGE_REJECTION_REASON = {
+    "service-properties": "service-properties-rejected",
+    "source-journal": "source-journal-rejected",
+    "monitor": "monitor-rejected",
+    "identity-correlation": "identity-correlation-rejected",
+    "avc-journal": "avc-journal-rejected",
+    "bounded-journal": "bounded-journal-rejected",
+    "report-build": "report-build-rejected",
+    "primary-report-write": "primary-report-write-rejected",
+}
+COLLECTOR_TERMINATION_REASONS = frozenset({
+    "service-timeout", "service-signal", "service-exit",
+    "service-resource", "service-protocol", "transport-loss",
+})
 AVC_FAILURE_REASONS = frozenset({
     "command-timeout", "spawn-permission", "spawn-os-error",
     "command-result-invalid", "stdout-truncated", "stderr-truncated",
@@ -111,6 +164,17 @@ class AvcEvidenceError(ValueError):
         self.observation = observation
         self.failure_kind = failure_kind
         super().__init__("AVC evidence rejected: " + reason)
+
+
+class CollectorCommandError(ValueError):
+    """Carry one fixed command rejection and no command content."""
+
+    def __init__(self, reason, observation=None):
+        if reason not in COLLECTOR_COMMAND_FAILURE_REASONS:
+            raise ValueError("invalid collector command failure reason")
+        self.reason = reason
+        self.observation = observation
+        super().__init__("collector command rejected: " + reason)
 
 
 def sha256(path):
@@ -510,6 +574,108 @@ def bounded_command_result(command, *, timeout, stdout_max, stderr_max):
     }
 
 
+def _collector_command_observation(result, command, *, stdout_max, stderr_max):
+    """Reduce a bounded command result to content-free process facts."""
+    required = {
+        "command", "exit_code", "timed_out", "stdout", "stderr",
+        "stdout_truncated", "stderr_truncated",
+    }
+    if (not isinstance(result, dict) or set(result) != required
+            or result.get("command") != command
+            or type(result.get("exit_code")) is not int
+            or not -2**31 <= result["exit_code"] <= 255
+            or type(result.get("timed_out")) is not bool
+            or not isinstance(result.get("stdout"), bytes)
+            or not isinstance(result.get("stderr"), bytes)
+            or type(result.get("stdout_truncated")) is not bool
+            or type(result.get("stderr_truncated")) is not bool
+            or len(result["stdout"]) > stdout_max + 1
+            or len(result["stderr"]) > stderr_max + 1
+            or result["stdout_truncated"] != (len(result["stdout"]) == stdout_max + 1)
+            or result["stderr_truncated"] != (len(result["stderr"]) == stderr_max + 1)
+            or sum((result["timed_out"], result["stdout_truncated"],
+                    result["stderr_truncated"])) > 1):
+        raise CollectorCommandError("command-result-invalid")
+    return {
+        "exit_code": result["exit_code"],
+        "timed_out": result["timed_out"],
+        "stdout_bytes": len(result["stdout"]),
+        "stdout_truncated": result["stdout_truncated"],
+        "stderr_bytes": len(result["stderr"]),
+        "stderr_truncated": result["stderr_truncated"],
+    }
+
+
+def _valid_collector_command_observation(observation, stage):
+    limits = COLLECTOR_COMMAND_LIMITS.get(stage)
+    if limits is None:
+        return observation is None
+    _timeout, stdout_max, stderr_max = limits
+    if (not isinstance(observation, dict)
+            or set(observation) != {
+                "exit_code", "timed_out", "stdout_bytes", "stdout_truncated",
+                "stderr_bytes", "stderr_truncated",
+            }
+            or type(observation.get("exit_code")) is not int
+            or not -2**31 <= observation["exit_code"] <= 255
+            or type(observation.get("timed_out")) is not bool
+            or type(observation.get("stdout_bytes")) is not int
+            or not 0 <= observation["stdout_bytes"] <= stdout_max + 1
+            or type(observation.get("stdout_truncated")) is not bool
+            or observation["stdout_truncated"]
+               != (observation["stdout_bytes"] == stdout_max + 1)
+            or type(observation.get("stderr_bytes")) is not int
+            or not 0 <= observation["stderr_bytes"] <= stderr_max + 1
+            or type(observation.get("stderr_truncated")) is not bool
+            or observation["stderr_truncated"]
+               != (observation["stderr_bytes"] == stderr_max + 1)
+            or sum((observation["timed_out"],
+                    observation["stdout_truncated"],
+                    observation["stderr_truncated"])) > 1):
+        return False
+    return True
+
+
+def collector_stage_command(stage, command, *, timeout, stdout_max,
+                            stderr_max=COMMAND_STDERR_MAX_BYTES, run=None):
+    """Run one allowlisted stage command and return UTF-8 plus a safe receipt."""
+    if (stage not in COLLECTOR_COMMAND_STAGES
+            or command != COLLECTOR_STAGE_OPERATIONS.get(stage)
+            or (timeout, stdout_max, stderr_max)
+               != COLLECTOR_COMMAND_LIMITS.get(stage)):
+        raise ValueError("collector stage command identity differs")
+    run = bounded_command_result if run is None else run
+    try:
+        result = run(command, timeout=timeout, stdout_max=stdout_max,
+                     stderr_max=stderr_max)
+    except subprocess.TimeoutExpired:
+        raise CollectorCommandError("command-timeout")
+    except PermissionError:
+        raise CollectorCommandError("spawn-permission")
+    except OSError:
+        raise CollectorCommandError("spawn-os-error")
+    except RuntimeError:
+        raise CollectorCommandError("command-cleanup-failed")
+    observation = _collector_command_observation(
+        result, command, stdout_max=stdout_max, stderr_max=stderr_max)
+    if observation["timed_out"]:
+        raise CollectorCommandError("command-timeout", observation)
+    if observation["stdout_truncated"]:
+        raise CollectorCommandError("stdout-truncated", observation)
+    if observation["stderr_truncated"]:
+        raise CollectorCommandError("stderr-truncated", observation)
+    if observation["stderr_bytes"]:
+        raise CollectorCommandError("stderr-nonempty", observation)
+    accepted_exit_codes = {0, 1} if stage == "avc-journal" else {0}
+    if observation["exit_code"] not in accepted_exit_codes:
+        raise CollectorCommandError("unexpected-exit", observation)
+    try:
+        raw = result["stdout"].decode("utf-8", errors="strict")
+    except UnicodeDecodeError:
+        raise CollectorCommandError("stdout-invalid-utf8", observation)
+    return raw, observation
+
+
 def _empty_avc_observation(*, timed_out=False):
     empty_hash = hashlib.sha256(b"").hexdigest()
     return {
@@ -758,23 +924,48 @@ def open_collector_channel(channel=COLLECTOR_CHANNEL):
         return None
 
 
-def collector_failure_kind(error):
-    """Reduce an exception to a fixed, content-free diagnostic class."""
-    if isinstance(error, AvcEvidenceError):
-        return error.failure_kind
-    if isinstance(error, subprocess.TimeoutExpired):
-        return "timeout"
-    if isinstance(error, subprocess.CalledProcessError):
-        return "command-exit"
-    if isinstance(error, PermissionError):
-        return "permission"
-    if isinstance(error, OSError):
-        return "os-error"
-    if isinstance(error, (UnicodeError, json.JSONDecodeError, ValueError)):
-        return "invalid-evidence"
-    if isinstance(error, RuntimeError):
-        return "transport"
-    return "unexpected"
+def collector_failure_reason(stage, error):
+    """Map a failure to one stage-scoped, allowlisted rejection reason."""
+    if isinstance(error, AvcEvidenceError) and stage == "avc-journal":
+        return error.reason
+    if isinstance(error, CollectorCommandError):
+        return error.reason
+    return COLLECTOR_STAGE_REJECTION_REASON.get(stage)
+
+
+def collector_receipt_failure_kind(reason):
+    """Bind each fixed rejection reason to one normalized failure class."""
+    return {
+        "command-timeout": "timeout",
+        "spawn-permission": "permission",
+        "spawn-os-error": "os-error",
+        "unexpected-exit": "command-exit",
+        "command-cleanup-failed": "transport",
+    }.get(reason, "invalid-evidence")
+
+
+def collector_termination_failure_kind(reason):
+    return {
+        "service-timeout": "timeout",
+        "service-signal": "unexpected",
+        "service-exit": "command-exit",
+        "service-resource": "unexpected",
+        "service-protocol": "invalid-evidence",
+        "transport-loss": "transport",
+    }.get(reason)
+
+
+def collector_failure_observation(stage, error, current=None):
+    """Return only validated content-free command process facts."""
+    observation = current
+    if isinstance(error, CollectorCommandError):
+        observation = error.observation
+    elif isinstance(error, AvcEvidenceError):
+        observation = _collector_observation_from_avc(error.observation)
+    if observation is None:
+        return None
+    return observation if _valid_collector_command_observation(
+        observation, stage) else None
 
 
 def _valid_avc_command_observation(observation):
@@ -805,7 +996,10 @@ def _valid_avc_command_observation(observation):
             or observation["stdout_truncated"]
                != (observation["stdout_bytes"] == STRUCTURED_JOURNAL_MAX_BYTES + 1)
             or observation["stderr_truncated"]
-               != (observation["stderr_bytes"] == AVC_STDERR_MAX_BYTES + 1)):
+               != (observation["stderr_bytes"] == AVC_STDERR_MAX_BYTES + 1)
+            or sum((observation["timed_out"],
+                    observation["stdout_truncated"],
+                    observation["stderr_truncated"])) > 1):
         return False
     empty_hash = hashlib.sha256(b"").hexdigest()
     if ((observation["stdout_bytes"] == 0)
@@ -814,6 +1008,21 @@ def _valid_avc_command_observation(observation):
                != (observation["stderr_sha256"] == empty_hash)):
         return False
     return True
+
+
+def _collector_observation_from_avc(observation):
+    if not _valid_avc_command_observation(observation):
+        return None
+    if type(observation["exit_code"]) is not int:
+        return None
+    return {
+        "exit_code": observation["exit_code"],
+        "timed_out": observation["timed_out"],
+        "stdout_bytes": observation["stdout_bytes"],
+        "stdout_truncated": observation["stdout_truncated"],
+        "stderr_bytes": observation["stderr_bytes"],
+        "stderr_truncated": observation["stderr_truncated"],
+    }
 
 
 def _valid_avc_failure_detail(detail):
@@ -880,16 +1089,97 @@ def collector_failure_detail(error):
     return detail
 
 
+def _valid_stage_receipt(stage, reason, observation, *, accepted=False,
+                         terminated=False):
+    if stage not in COLLECTOR_STAGES or not isinstance(reason, str):
+        return False
+    if accepted:
+        if reason != "accepted":
+            return False
+        if stage in COLLECTOR_COMMAND_STAGES:
+            if not _valid_collector_command_observation(observation, stage):
+                return False
+            allowed = {0, 1} if stage == "avc-journal" else {0}
+            return (not observation["timed_out"]
+                    and not observation["stdout_truncated"]
+                    and not observation["stderr_truncated"]
+                    and observation["stderr_bytes"] == 0
+                    and observation["exit_code"] in allowed)
+        return observation is None
+    if terminated:
+        return (reason in COLLECTOR_TERMINATION_REASONS
+                and (observation is None
+                     or _valid_collector_command_observation(observation, stage)))
+    allowed = {COLLECTOR_STAGE_REJECTION_REASON[stage]}
+    if stage in COLLECTOR_COMMAND_STAGES:
+        allowed |= set(COLLECTOR_COMMAND_FAILURE_REASONS)
+    if stage == "avc-journal":
+        allowed |= set(AVC_FAILURE_REASONS)
+    if reason not in allowed:
+        return False
+    if observation is None:
+        return (reason in {
+            "spawn-permission", "spawn-os-error", "command-result-invalid",
+            "command-cleanup-failed",
+        } or (stage not in COLLECTOR_COMMAND_STAGES
+              and reason == COLLECTOR_STAGE_REJECTION_REASON[stage]))
+    if not _valid_collector_command_observation(observation, stage):
+        return False
+    if reason == "command-timeout":
+        return observation["timed_out"]
+    if observation["timed_out"]:
+        return False
+    if reason == "stdout-truncated":
+        return observation["stdout_truncated"]
+    if observation["stdout_truncated"]:
+        return False
+    if reason == "stderr-truncated":
+        return observation["stderr_truncated"]
+    if observation["stderr_truncated"]:
+        return False
+    if reason == "stderr-nonempty":
+        return observation["stderr_bytes"] > 0
+    if observation["stderr_bytes"]:
+        return False
+    if reason == "unexpected-exit":
+        return observation["exit_code"] not in ({0, 1} if stage == "avc-journal" else {0})
+    if observation["exit_code"] not in (
+            {0, 1} if stage == "avc-journal" else {0}):
+        return False
+    if reason in {
+            "spawn-permission", "spawn-os-error", "command-result-invalid",
+            "command-cleanup-failed",
+            }:
+        return False
+    if stage == "avc-journal":
+        if observation["exit_code"] == 1:
+            return (reason == "no-match-output-nonempty"
+                    and observation["stdout_bytes"] > 0)
+        if observation["stdout_bytes"] == 0:
+            return reason == "records-output-empty"
+        if reason in {"no-match-output-nonempty", "records-output-empty"}:
+            return False
+    if reason == "stdout-invalid-utf8":
+        return observation["stdout_bytes"] > 0
+    if reason == COLLECTOR_STAGE_REJECTION_REASON[stage]:
+        return True
+    if stage != "avc-journal":
+        return False
+    return reason in AVC_FAILURE_REASONS
+
+
 def write_collector_event(output, event, runner_hash, *, sequence, stage=None,
-                          failure_kind=None, failure_detail=None,
-                          report_observation=None):
+                          failure_kind=None, failure_detail=None, reason=None,
+                          command_observation=None, report_observation=None,
+                          service_exit_code=None):
     """Write one canonical, allowlisted progress event without raw failure text."""
     if (not isinstance(event, str)
             or event not in {"collector-started", "collector-stage",
-                             "collector-failed", "collector-completed"}
+                             "collector-stage-result", "collector-failed",
+                             "collector-terminated", "collector-completed"}
             or not isinstance(runner_hash, str)
             or re.fullmatch(r"[a-f0-9]{64}", runner_hash) is None
-            or type(sequence) is not int or not 0 <= sequence <= 9):
+            or type(sequence) is not int or not 0 <= sequence < 18):
         raise ValueError("invalid collector progress event")
     record = {
         "schema": 1,
@@ -902,25 +1192,62 @@ def write_collector_event(output, event, runner_hash, *, sequence, stage=None,
         "runner_sha256": runner_hash,
         "scope": COLLECTOR_SCOPE,
     }
-    if event in {"collector-stage", "collector-failed", "collector-completed"}:
+    stage_events = {
+        "collector-stage", "collector-stage-result", "collector-failed",
+        "collector-terminated", "collector-completed",
+    }
+    if event in stage_events:
         if not isinstance(stage, str) or stage not in COLLECTOR_STAGES:
             raise ValueError("invalid collector progress stage")
         record["stage"] = stage
+        record["command_sha256"] = COLLECTOR_STAGE_OPERATION_SHA256[stage]
     elif stage is not None:
         raise ValueError("collector start cannot name a stage")
-    if event == "collector-failed":
+    if event == "collector-stage-result":
+        if (failure_kind is not None or failure_detail is not None
+                or not _valid_stage_receipt(
+                    stage, reason, command_observation, accepted=True)):
+            raise ValueError("invalid collector stage result")
+        record["reason"] = reason
+        record["command_result"] = command_observation
+    elif event in {"collector-failed", "collector-terminated"}:
         if not isinstance(failure_kind, str) or failure_kind not in {
                 "timeout", "command-exit", "permission", "os-error",
                 "invalid-evidence", "transport", "unexpected"}:
             raise ValueError("invalid collector failure kind")
+        if not _valid_stage_receipt(
+                stage, reason, command_observation,
+                terminated=event == "collector-terminated"):
+            raise ValueError("invalid collector failure receipt")
+        if (event == "collector-failed"
+                and failure_kind != collector_receipt_failure_kind(reason)):
+            raise ValueError("collector failure kind differs from its reason")
+        if (event == "collector-terminated"
+                and failure_kind
+                    != collector_termination_failure_kind(reason)):
+            raise ValueError("collector termination kind differs from its reason")
         record["failure_kind"] = failure_kind
+        record["reason"] = reason
+        record["command_result"] = command_observation
+        if event == "collector-terminated":
+            if (service_exit_code is not None
+                    and (type(service_exit_code) is not int
+                         or not 0 <= service_exit_code <= 255)):
+                raise ValueError("invalid collector service exit code")
+            record["service_exit_code"] = service_exit_code
+        elif service_exit_code is not None:
+            raise ValueError("stage failure cannot name a service exit code")
         if failure_detail is not None:
-            if (stage != "avc-journal"
+            if (event != "collector-failed" or stage != "avc-journal"
                     or not _valid_avc_failure_detail(failure_detail)
-                    or failure_kind != _avc_failure_kind(failure_detail["reason"])):
+                    or failure_kind != _avc_failure_kind(failure_detail["reason"])
+                    or reason != failure_detail["reason"]
+                    or command_observation
+                       != _collector_observation_from_avc(
+                           failure_detail["command"])):
                 raise ValueError("invalid AVC collector failure detail")
             record["failure_detail"] = failure_detail
-    elif failure_kind is not None:
+    elif failure_kind is not None or reason is not None:
         raise ValueError("non-failure collector event named a failure")
     elif failure_detail is not None:
         raise ValueError("non-failure collector event named AVC failure detail")
@@ -936,6 +1263,12 @@ def write_collector_event(output, event, runner_hash, *, sequence, stage=None,
         record["report"] = report_observation
     elif report_observation is not None:
         raise ValueError("non-completion collector event named a report")
+    if (event not in {"collector-stage-result", "collector-failed",
+                      "collector-terminated"}
+            and command_observation is not None):
+        raise ValueError("event cannot name a command result")
+    if event != "collector-terminated" and service_exit_code is not None:
+        raise ValueError("event cannot name a service exit code")
     raw = (json.dumps(record, sort_keys=True, separators=(",", ":"),
                       allow_nan=False) + "\n").encode()
     if not 0 < len(raw) <= COLLECTOR_MAX_EVENT_BYTES:
@@ -943,6 +1276,62 @@ def write_collector_event(output, event, runner_hash, *, sequence, stage=None,
     written = (os.write(output, raw) if type(output) is int else output.write(raw))
     if type(written) is not int or written != len(raw):
         raise RuntimeError("collector progress channel did not accept one event")
+
+
+def write_collector_emergency(output, runner_hash, state, *, failure_kind,
+                              reason, service_exit_code=None):
+    """Write one independently framed stop-post receipt after any torn event."""
+    stage = state.get("stage")
+    command_sha256 = state.get("command_sha256")
+    command_result = state.get("command_result")
+    prepared_sequence = state.get("sequence")
+    if (not isinstance(runner_hash, str)
+            or re.fullmatch(r"[a-f0-9]{64}", runner_hash) is None
+            or state.get("runner_sha256") != runner_hash
+            or type(prepared_sequence) is not int
+            or not 0 <= prepared_sequence <= 18
+            or not isinstance(reason, str)
+            or reason not in COLLECTOR_TERMINATION_REASONS
+            or not isinstance(failure_kind, str)
+            or failure_kind != collector_termination_failure_kind(reason)
+            or (service_exit_code is not None
+                and (type(service_exit_code) is not int
+                     or not 0 <= service_exit_code <= 255))):
+        raise ValueError("invalid collector emergency receipt")
+    if stage is None:
+        if command_sha256 is not None or command_result is not None:
+            raise ValueError("startup emergency receipt named a command")
+    elif (stage not in COLLECTOR_STAGES
+          or command_sha256 != COLLECTOR_STAGE_OPERATION_SHA256[stage]
+          or not _valid_stage_receipt(
+              stage, reason, command_result, terminated=True)):
+        raise ValueError("invalid collector emergency stage")
+    record = {
+        "schema": 1,
+        "passed": False,
+        "release_qualified": False,
+        "diagnostic": "transition-evidence-collector-emergency",
+        "event": "collector-emergency",
+        "unit": LAUNCHER_UNIT,
+        "runner_sha256": runner_hash,
+        "scope": COLLECTOR_SCOPE,
+        "stage": stage,
+        "command_sha256": command_sha256,
+        "prepared_sequence": prepared_sequence,
+        "failure_kind": failure_kind,
+        "reason": reason,
+        "command_result": command_result,
+        "service_exit_code": service_exit_code,
+    }
+    payload = (json.dumps(record, sort_keys=True, separators=(",", ":"),
+                          allow_nan=False) + "\n").encode()
+    if not 0 < len(payload) <= COLLECTOR_MAX_EVENT_BYTES:
+        raise ValueError("collector emergency receipt exceeded its bound")
+    framed = b"\n" + COLLECTOR_EMERGENCY_MAGIC + b"\n" + payload
+    written = (os.write(output, framed)
+               if type(output) is int else output.write(framed))
+    if type(written) is not int or written != len(framed):
+        raise RuntimeError("collector emergency channel rejected its frame")
 
 
 def _close_collector_output(output):
@@ -981,38 +1370,314 @@ def close_collector(state):
             pass
 
 
+def _collector_state_record(state, runner_hash):
+    stage = state.get("stage")
+    command_sha256 = (COLLECTOR_STAGE_OPERATION_SHA256.get(stage)
+                      if stage is not None else None)
+    command_result = state.get("command_result")
+    if (not isinstance(runner_hash, str)
+            or re.fullmatch(r"[a-f0-9]{64}", runner_hash) is None
+            or (stage is not None and stage not in COLLECTOR_STAGES)
+            or type(state.get("sequence")) is not int
+            or not 0 <= state["sequence"] <= 18
+            or type(state.get("terminal")) is not bool
+            or type(state.get("transport_lost")) is not bool
+            or (command_result is not None
+                and not _valid_collector_command_observation(
+                    command_result, stage))):
+        raise ValueError("invalid collector emergency state")
+    return {
+        "schema": 1,
+        "runner_sha256": runner_hash,
+        "stage": stage,
+        "command_sha256": command_sha256,
+        "sequence": state["sequence"],
+        "terminal": state["terminal"],
+        "transport_lost": state["transport_lost"],
+        "command_result": command_result,
+    }
+
+
+def persist_collector_state(state, runner_hash, path=COLLECTOR_STATE):
+    """Atomically retain only the current content-free collector position."""
+    path = Path(path)
+    record = _collector_state_record(state, runner_hash)
+    raw = (json.dumps(record, sort_keys=True, separators=(",", ":"),
+                      allow_nan=False) + "\n").encode()
+    if not 0 < len(raw) <= COLLECTOR_STATE_MAX_BYTES:
+        raise ValueError("collector emergency state exceeded its bound")
+    try:
+        current = path.lstat()
+    except FileNotFoundError:
+        current = None
+    if current is not None and (path.is_symlink()
+                                or not stat.S_ISREG(current.st_mode)
+                                or current.st_nlink != 1
+                                or current.st_uid != os.geteuid()
+                                or stat.S_IMODE(current.st_mode) != 0o600):
+        raise ValueError("unsafe collector emergency state")
+    temporary = path.with_name("." + path.name + "." + str(os.getpid()))
+    descriptor = None
+    created = False
+    try:
+        descriptor = os.open(
+            temporary,
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_CLOEXEC | os.O_NOFOLLOW,
+            0o600,
+        )
+        created = True
+        _write_all(os.fdopen(descriptor, "wb", buffering=0, closefd=False), raw,
+                   "collector emergency state")
+        os.fsync(descriptor)
+        os.close(descriptor)
+        descriptor = None
+        os.replace(temporary, path)
+        created = False
+        directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
+        try:
+            os.fsync(directory)
+        finally:
+            os.close(directory)
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+        if created:
+            try:
+                temporary.unlink()
+            except FileNotFoundError:
+                pass
+
+
+def load_collector_state(path=COLLECTOR_STATE):
+    """Read one descriptor-bound emergency state file without following links."""
+    path = Path(path)
+    before = path.lstat()
+    if (path.is_symlink() or not stat.S_ISREG(before.st_mode)
+            or before.st_nlink != 1 or before.st_uid != os.geteuid()
+            or stat.S_IMODE(before.st_mode) != 0o600
+            or not 0 < before.st_size <= COLLECTOR_STATE_MAX_BYTES):
+        raise ValueError("unsafe collector emergency state")
+    descriptor = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
+    try:
+        opened = os.fstat(descriptor)
+        if ((opened.st_dev, opened.st_ino) != (before.st_dev, before.st_ino)
+                or not stat.S_ISREG(opened.st_mode) or opened.st_nlink != 1
+                or opened.st_uid != os.geteuid()
+                or stat.S_IMODE(opened.st_mode) != 0o600):
+            raise ValueError("collector emergency state identity differs")
+        raw = os.read(descriptor, COLLECTOR_STATE_MAX_BYTES + 1)
+        opened_after = os.fstat(descriptor)
+        after = path.lstat()
+        if ((opened_after.st_dev, opened_after.st_ino)
+                != (opened.st_dev, opened.st_ino)
+                or opened_after.st_size != opened.st_size
+                or opened_after.st_nlink != 1
+                or opened_after.st_uid != os.geteuid()
+                or stat.S_IMODE(opened_after.st_mode) != 0o600
+                or (after.st_dev, after.st_ino)
+                   != (opened_after.st_dev, opened_after.st_ino)
+                or after.st_size != opened_after.st_size
+                or after.st_nlink != opened_after.st_nlink
+                or after.st_uid != opened_after.st_uid
+                or stat.S_IMODE(after.st_mode)
+                   != stat.S_IMODE(opened_after.st_mode)):
+            raise ValueError("collector emergency state name changed")
+    finally:
+        os.close(descriptor)
+    if len(raw) != opened.st_size or not raw.endswith(b"\n"):
+        raise ValueError("invalid collector emergency state bytes")
+    record = _unique_json(raw.decode("utf-8", errors="strict"),
+                          "collector emergency state")
+    canonical = (json.dumps(record, sort_keys=True, separators=(",", ":"),
+                            allow_nan=False) + "\n").encode()
+    if canonical != raw or set(record) != {
+            "schema", "runner_sha256", "stage", "command_sha256", "sequence",
+            "terminal", "transport_lost", "command_result",
+            }:
+        raise ValueError("noncanonical collector emergency state")
+    if (type(record.get("schema")) is not int or record["schema"] != 1
+            or not isinstance(record.get("runner_sha256"), str)
+            or re.fullmatch(r"[a-f0-9]{64}", record["runner_sha256"]) is None
+            or (record.get("stage") is not None
+                and record["stage"] not in COLLECTOR_STAGES)
+            or (record.get("stage") is None
+                and (record.get("command_sha256") is not None
+                     or record.get("command_result") is not None))
+            or (record.get("stage") is not None
+                and record.get("command_sha256")
+                    != COLLECTOR_STAGE_OPERATION_SHA256[record["stage"]])
+            or type(record.get("sequence")) is not int
+            or not 0 <= record["sequence"] <= 18
+            or type(record.get("terminal")) is not bool
+            or type(record.get("transport_lost")) is not bool
+            or (record.get("command_result") is not None
+                and not _valid_collector_command_observation(
+                    record["command_result"], record["stage"]))):
+        raise ValueError("invalid collector emergency state")
+    return record
+
+
+def collector_event(state, event, runner_hash, *, stage=None, **fields):
+    """Emit one receipt and persist enough state for ExecStopPost recovery."""
+    if stage is not None:
+        state["stage"] = stage
+    if "command_observation" in fields:
+        state["command_result"] = fields["command_observation"]
+    if event == "collector-stage":
+        state["command_result"] = None
+    try:
+        persist_collector_state(state, runner_hash)
+    except BaseException:
+        state["transport_lost"] = True
+    emitted = safe_collector_event(
+        state, event, runner_hash, stage=stage, **fields)
+    if not emitted:
+        state["transport_lost"] = True
+    if emitted and event in {
+            "collector-failed", "collector-terminated", "collector-completed"}:
+        state["terminal"] = True
+    try:
+        persist_collector_state(state, runner_hash)
+    except BaseException:
+        state["transport_lost"] = True
+    return emitted
+
+
+def remember_command_observation(state, runner_hash, observation):
+    """Best-effort state for stop-post; failure cannot stop primary evidence."""
+    state["command_result"] = observation
+    try:
+        persist_collector_state(state, runner_hash)
+    except BaseException:
+        state["transport_lost"] = True
+
+
+def _stop_post_reason(state, environment):
+    if state["transport_lost"]:
+        return "transport-loss", "transport"
+    service_result = environment.get("SERVICE_RESULT", "")
+    if not isinstance(service_result, str):
+        return None, None
+    if service_result in {"timeout", "watchdog"}:
+        return "service-timeout", "timeout"
+    if service_result in {"signal", "core-dump"}:
+        return "service-signal", "unexpected"
+    if service_result in {"resources", "oom-kill"}:
+        return "service-resource", "unexpected"
+    if service_result == "protocol":
+        return "service-protocol", "invalid-evidence"
+    if service_result in {"exit-code", "start-limit-hit"}:
+        return "service-exit", "command-exit"
+    return None, None
+
+
+def _stop_post_exit_code(environment):
+    if environment.get("EXIT_CODE") != "exited":
+        return None
+    value = environment.get("EXIT_STATUS", "")
+    if (not isinstance(value, str)
+            or re.fullmatch(r"[0-9]{1,3}", value) is None):
+        return None
+    status = int(value)
+    return status if 0 <= status <= 255 else None
+
+
+def emit_stop_post_receipt(runner_hash, *, state_path=COLLECTOR_STATE,
+                           channel=COLLECTOR_CHANNEL, environment=None):
+    """Emit one final systemd result after the main collector was interrupted."""
+    environment = os.environ if environment is None else environment
+    try:
+        state = load_collector_state(state_path)
+    except BaseException:
+        return False
+    if state["runner_sha256"] != runner_hash or state["terminal"]:
+        return False
+    reason, failure_kind = _stop_post_reason(state, environment)
+    if reason is None:
+        return False
+    output = open_collector_channel(channel)
+    if output is None:
+        return False
+    try:
+        write_collector_emergency(
+            output, runner_hash, state,
+            failure_kind=failure_kind, reason=reason,
+            service_exit_code=_stop_post_exit_code(environment),
+        )
+    except BaseException:
+        return False
+    finally:
+        try:
+            _close_collector_output(output)
+        except BaseException:
+            pass
+    state["terminal"] = True
+    try:
+        persist_collector_state(state, runner_hash, state_path)
+    except BaseException:
+        pass
+    return True
+
+
 def main():
     product = Path("/sys/class/dmi/id/product_name").read_text().strip()
     if (os.geteuid() != 0 or product != "Symbi-Hosted-Update-Probe"
-            or Path("/run/.containerenv").exists() or len(sys.argv) != 1):
+            or Path("/run/.containerenv").exists()
+            or sys.argv[1:] not in ([], ["--stop-post"])):
         raise SystemExit("Use only the disposable hosted update guest")
     runner_hash = sha256(Path(__file__))
-    collector = {"output": open_collector_channel(), "sequence": 0}
+    if sys.argv[1:] == ["--stop-post"]:
+        emit_stop_post_receipt(runner_hash)
+        return
+    collector = {
+        "output": open_collector_channel(),
+        "sequence": 0,
+        "stage": None,
+        "command_result": None,
+        "terminal": False,
+        "transport_lost": False,
+    }
     stage = None
+    command_observation = None
     try:
-        safe_collector_event(collector, "collector-started", runner_hash)
+        collector_event(collector, "collector-started", runner_hash)
 
         stage = "service-properties"
-        safe_collector_event(
+        command_observation = None
+        collector_event(
             collector, "collector-stage", runner_hash, stage=stage)
-        properties = service_properties(fixed_command([
-            "/usr/bin/systemctl", "show", LAUNCHER_UNIT,
-            "--property=" + STATUS_PROPERTIES,
-        ], timeout=10, stdout_max=4096))
+        raw, command_observation = collector_stage_command(
+            stage, SERVICE_PROPERTIES_COMMAND, timeout=10, stdout_max=4096)
+        remember_command_observation(collector, runner_hash, command_observation)
+        properties = service_properties(raw)
+        collector_event(
+            collector, "collector-stage-result", runner_hash, stage=stage,
+            reason="accepted", command_observation=command_observation)
 
         stage = "source-journal"
-        safe_collector_event(
+        command_observation = None
+        collector_event(
             collector, "collector-stage", runner_hash, stage=stage)
-        source = parse_source_capture(fixed_command(
-            SOURCE_JOURNAL_COMMAND, timeout=5,
-            stdout_max=STRUCTURED_JOURNAL_MAX_BYTES), properties["InvocationID"])
+        raw, command_observation = collector_stage_command(
+            stage, SOURCE_JOURNAL_COMMAND, timeout=5,
+            stdout_max=STRUCTURED_JOURNAL_MAX_BYTES)
+        remember_command_observation(collector, runner_hash, command_observation)
+        source = parse_source_capture(raw, properties["InvocationID"])
+        collector_event(
+            collector, "collector-stage-result", runner_hash, stage=stage,
+            reason="accepted", command_observation=command_observation)
 
         stage = "monitor"
-        safe_collector_event(
+        command_observation = None
+        collector_event(
             collector, "collector-stage", runner_hash, stage=stage)
         monitor = monitor_properties()
+        collector_event(
+            collector, "collector-stage-result", runner_hash, stage=stage,
+            reason="accepted", command_observation=None)
         stage = "identity-correlation"
-        safe_collector_event(
+        command_observation = None
+        collector_event(
             collector, "collector-stage", runner_hash, stage=stage)
         if (monitor["invocation_id"] != properties["InvocationID"]
                 or monitor["service_result"] != properties["Result"]
@@ -1022,19 +1687,37 @@ def main():
                        - int(properties["ExecMainStartTimestampMonotonic"]))
                    > JOURNAL_CORRELATION_MARGIN_USEC):
             raise ValueError("transition diagnostic identities differ")
+        collector_event(
+            collector, "collector-stage-result", runner_hash, stage=stage,
+            reason="accepted", command_observation=None)
 
         stage = "avc-journal"
-        safe_collector_event(
+        command_observation = None
+        collector_event(
             collector, "collector-stage", runner_hash, stage=stage)
         avc = bounded_avc_evidence(source, properties)
+        command_observation = _collector_observation_from_avc(
+            avc["command_observation"])
+        remember_command_observation(collector, runner_hash, command_observation)
+        collector_event(
+            collector, "collector-stage-result", runner_hash, stage=stage,
+            reason="accepted", command_observation=command_observation)
 
         stage = "bounded-journal"
-        safe_collector_event(
+        command_observation = None
+        collector_event(
             collector, "collector-stage", runner_hash, stage=stage)
-        journal = bounded_journal_excerpt(fixed_command(
-            JOURNAL_COMMAND, timeout=10, stdout_max=COMMAND_STDOUT_MAX_BYTES))
+        raw, command_observation = collector_stage_command(
+            stage, JOURNAL_COMMAND, timeout=10,
+            stdout_max=COMMAND_STDOUT_MAX_BYTES)
+        remember_command_observation(collector, runner_hash, command_observation)
+        journal = bounded_journal_excerpt(raw)
+        collector_event(
+            collector, "collector-stage-result", runner_hash, stage=stage,
+            reason="accepted", command_observation=command_observation)
         stage = "report-build"
-        safe_collector_event(
+        command_observation = None
+        collector_event(
             collector, "collector-stage", runner_hash, stage=stage)
         report = {
             "schema": 1,
@@ -1053,21 +1736,33 @@ def main():
             "diagnostic_stages": list(COLLECTOR_STAGES[:-1]),
             "scope": SCOPE,
         }
+        collector_event(
+            collector, "collector-stage-result", runner_hash, stage=stage,
+            reason="accepted", command_observation=None)
 
         stage = "primary-report-write"
-        safe_collector_event(
+        command_observation = None
+        collector_event(
             collector, "collector-stage", runner_hash, stage=stage)
         report_observation = write_report(report)
-        safe_collector_event(
+        collector_event(
+            collector, "collector-stage-result", runner_hash, stage=stage,
+            reason="accepted", command_observation=None)
+        collector_event(
             collector, "collector-completed", runner_hash, stage=stage,
             report_observation=report_observation)
     except BaseException as error:
         if stage is not None:
             try:
-                safe_collector_event(
+                observation = collector_failure_observation(
+                    stage, error, command_observation)
+                collector_event(
                     collector, "collector-failed", runner_hash, stage=stage,
-                    failure_kind=collector_failure_kind(error),
-                    failure_detail=collector_failure_detail(error))
+                    failure_kind=collector_receipt_failure_kind(
+                        collector_failure_reason(stage, error)),
+                    failure_detail=collector_failure_detail(error),
+                    reason=collector_failure_reason(stage, error),
+                    command_observation=observation)
             except BaseException:
                 pass
         raise

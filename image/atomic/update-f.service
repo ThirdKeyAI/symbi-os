@@ -9,6 +9,7 @@ Type=oneshot
 ImportCredential=symbi-update-failure.py
 ExecStartPre=/usr/bin/systemctl --quiet is-failed b.service
 ExecStart=/usr/bin/python3 %d/symbi-update-failure.py
+ExecStopPost=-/usr/bin/python3 %d/symbi-update-failure.py --stop-post
 ExecStopPost=/usr/bin/systemctl --no-block poweroff
 Environment=PYTHONDONTWRITEBYTECODE=1
 Environment=LANG=C.UTF-8

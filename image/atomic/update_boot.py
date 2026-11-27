@@ -11,6 +11,10 @@ import time
 
 MAX_REPORT = 128 * 1024
 MAX_COLLECTOR_DIAGNOSTIC = 16 * 1024
+TRANSITION_COLLECTOR_MAX_EVENT_BYTES = 1280
+TRANSITION_COLLECTOR_EMERGENCY_MAGIC = (
+    b"SYMBI-TRANSITION-COLLECTOR-EMERGENCY-V1"
+)
 DISPOSABLE_PHASE_TIMEOUT_SECONDS = 1800
 NEGATIVE_CASES = ("unsigned", "wrong-key", "wrong-reference", "altered-signature")
 NEGATIVE_UPDATE_SOURCE = "/run/symbi-update-negative/source"
@@ -21,6 +25,14 @@ TRANSITION_COLLECTOR_STAGES = (
     "service-properties", "source-journal", "monitor", "identity-correlation",
     "avc-journal", "bounded-journal", "report-build", "primary-report-write",
 )
+TRANSITION_STATUS_PROPERTIES = (
+    "Result,ExecMainCode,ExecMainStatus,ActiveState,SubState,InvocationID,"
+    "ExecMainPID,ExecMainStartTimestampMonotonic,ExecMainExitTimestampMonotonic"
+)
+TRANSITION_SERVICE_PROPERTIES_COMMAND = [
+    "/usr/bin/systemctl", "show", "b.service",
+    "--property=" + TRANSITION_STATUS_PROPERTIES,
+]
 TRANSITION_COLLECTOR_FAILURE_KINDS = {
     "timeout", "command-exit", "permission", "os-error", "invalid-evidence",
     "transport", "unexpected",
@@ -57,6 +69,46 @@ TRANSITION_AVC_MAX_RECORDS = 32
 TRANSITION_JOURNAL_CORRELATION_MARGIN_USEC = 120 * 1_000_000
 TRANSITION_AVC_COMMAND_SHA256 = hashlib.sha256(json.dumps(
     TRANSITION_AVC_JOURNAL_COMMAND, separators=(",", ":")).encode()).hexdigest()
+TRANSITION_COLLECTOR_STAGE_OPERATIONS = {
+    "service-properties": TRANSITION_SERVICE_PROPERTIES_COMMAND,
+    "source-journal": TRANSITION_SOURCE_JOURNAL_COMMAND,
+    "monitor": ["builtin", "monitor-properties"],
+    "identity-correlation": ["builtin", "identity-correlation"],
+    "avc-journal": TRANSITION_AVC_JOURNAL_COMMAND,
+    "bounded-journal": TRANSITION_FAILURE_JOURNAL_COMMAND,
+    "report-build": ["builtin", "report-build"],
+    "primary-report-write": [
+        "builtin", "primary-report-write", "/dev/virtio-ports/org.symbi.update",
+    ],
+}
+TRANSITION_COLLECTOR_COMMAND_STAGES = frozenset({
+    "service-properties", "source-journal", "avc-journal", "bounded-journal",
+})
+TRANSITION_COLLECTOR_STAGE_OPERATION_SHA256 = {
+    stage: hashlib.sha256(json.dumps(
+        command, separators=(",", ":")).encode()).hexdigest()
+    for stage, command in TRANSITION_COLLECTOR_STAGE_OPERATIONS.items()
+}
+TRANSITION_COLLECTOR_COMMAND_FAILURE_REASONS = frozenset({
+    "command-timeout", "spawn-permission", "spawn-os-error",
+    "command-result-invalid", "stdout-truncated", "stderr-truncated",
+    "stderr-nonempty", "unexpected-exit", "stdout-invalid-utf8",
+    "command-cleanup-failed",
+})
+TRANSITION_COLLECTOR_STAGE_REJECTION_REASON = {
+    "service-properties": "service-properties-rejected",
+    "source-journal": "source-journal-rejected",
+    "monitor": "monitor-rejected",
+    "identity-correlation": "identity-correlation-rejected",
+    "avc-journal": "avc-journal-rejected",
+    "bounded-journal": "bounded-journal-rejected",
+    "report-build": "report-build-rejected",
+    "primary-report-write": "primary-report-write-rejected",
+}
+TRANSITION_COLLECTOR_TERMINATION_REASONS = frozenset({
+    "service-timeout", "service-signal", "service-exit",
+    "service-resource", "service-protocol", "transport-loss",
+})
 TRANSITION_AVC_FAILURE_REASONS = frozenset({
     "command-timeout", "spawn-permission", "spawn-os-error",
     "command-result-invalid", "stdout-truncated", "stderr-truncated",
@@ -160,7 +212,11 @@ def _valid_transition_avc_command_observation(observation):
             or observation["stdout_truncated"]
                != (observation["stdout_bytes"] == TRANSITION_AVC_MAX_BYTES + 1)
             or observation["stderr_truncated"]
-               != (observation["stderr_bytes"] == TRANSITION_AVC_STDERR_MAX_BYTES + 1)):
+               != (observation["stderr_bytes"]
+                   == TRANSITION_AVC_STDERR_MAX_BYTES + 1)
+            or sum((observation["timed_out"],
+                    observation["stdout_truncated"],
+                    observation["stderr_truncated"])) > 1):
         return False
     empty_hash = hashlib.sha256(b"").hexdigest()
     return not (((observation["stdout_bytes"] == 0)
@@ -224,6 +280,229 @@ def _transition_avc_failure_kind(reason):
     }.get(reason, "invalid-evidence")
 
 
+def _transition_command_limits(stage):
+    return {
+        "service-properties": (4096, 8 * 1024),
+        "source-journal": (64 * 1024, 8 * 1024),
+        "avc-journal": (TRANSITION_AVC_MAX_BYTES,
+                        TRANSITION_AVC_STDERR_MAX_BYTES),
+        "bounded-journal": (64 * 1024, 8 * 1024),
+    }.get(stage)
+
+
+def _valid_transition_command_observation(observation, stage):
+    limits = _transition_command_limits(stage)
+    if limits is None:
+        return observation is None
+    stdout_max, stderr_max = limits
+    if (not isinstance(observation, dict)
+            or set(observation) != {
+                "exit_code", "timed_out", "stdout_bytes", "stdout_truncated",
+                "stderr_bytes", "stderr_truncated",
+            }
+            or type(observation.get("exit_code")) is not int
+            or not -2**31 <= observation["exit_code"] <= 255
+            or type(observation.get("timed_out")) is not bool
+            or type(observation.get("stdout_bytes")) is not int
+            or not 0 <= observation["stdout_bytes"] <= stdout_max + 1
+            or type(observation.get("stdout_truncated")) is not bool
+            or observation["stdout_truncated"]
+               != (observation["stdout_bytes"] == stdout_max + 1)
+            or type(observation.get("stderr_bytes")) is not int
+            or not 0 <= observation["stderr_bytes"] <= stderr_max + 1
+            or type(observation.get("stderr_truncated")) is not bool
+            or observation["stderr_truncated"]
+               != (observation["stderr_bytes"] == stderr_max + 1)
+            or sum((observation["timed_out"],
+                    observation["stdout_truncated"],
+                    observation["stderr_truncated"])) > 1):
+        return False
+    return True
+
+
+def _transition_observation_from_avc(observation):
+    if not _valid_transition_avc_command_observation(observation):
+        return None
+    if type(observation["exit_code"]) is not int:
+        return None
+    return {
+        "exit_code": observation["exit_code"],
+        "timed_out": observation["timed_out"],
+        "stdout_bytes": observation["stdout_bytes"],
+        "stdout_truncated": observation["stdout_truncated"],
+        "stderr_bytes": observation["stderr_bytes"],
+        "stderr_truncated": observation["stderr_truncated"],
+    }
+
+
+def _valid_transition_stage_receipt(stage, reason, observation, *, accepted=False,
+                                    terminated=False):
+    if stage not in TRANSITION_COLLECTOR_STAGES or not isinstance(reason, str):
+        return False
+    if accepted:
+        if reason != "accepted":
+            return False
+        if stage in TRANSITION_COLLECTOR_COMMAND_STAGES:
+            if not _valid_transition_command_observation(observation, stage):
+                return False
+            allowed = {0, 1} if stage == "avc-journal" else {0}
+            return (not observation["timed_out"]
+                    and not observation["stdout_truncated"]
+                    and not observation["stderr_truncated"]
+                    and observation["stderr_bytes"] == 0
+                    and observation["exit_code"] in allowed)
+        return observation is None
+    if terminated:
+        return (reason in TRANSITION_COLLECTOR_TERMINATION_REASONS
+                and (observation is None
+                     or _valid_transition_command_observation(observation, stage)))
+    allowed = {TRANSITION_COLLECTOR_STAGE_REJECTION_REASON[stage]}
+    if stage in TRANSITION_COLLECTOR_COMMAND_STAGES:
+        allowed |= set(TRANSITION_COLLECTOR_COMMAND_FAILURE_REASONS)
+    if stage == "avc-journal":
+        allowed |= set(TRANSITION_AVC_FAILURE_REASONS)
+    if reason not in allowed:
+        return False
+    if observation is None:
+        return (reason in {
+            "spawn-permission", "spawn-os-error", "command-result-invalid",
+            "command-cleanup-failed",
+        } or (stage not in TRANSITION_COLLECTOR_COMMAND_STAGES
+              and reason
+                  == TRANSITION_COLLECTOR_STAGE_REJECTION_REASON[stage]))
+    if not _valid_transition_command_observation(observation, stage):
+        return False
+    if reason == "command-timeout":
+        return observation["timed_out"]
+    if observation["timed_out"]:
+        return False
+    if reason == "stdout-truncated":
+        return observation["stdout_truncated"]
+    if observation["stdout_truncated"]:
+        return False
+    if reason == "stderr-truncated":
+        return observation["stderr_truncated"]
+    if observation["stderr_truncated"]:
+        return False
+    if reason == "stderr-nonempty":
+        return observation["stderr_bytes"] > 0
+    if observation["stderr_bytes"]:
+        return False
+    if reason == "unexpected-exit":
+        return observation["exit_code"] not in (
+            {0, 1} if stage == "avc-journal" else {0})
+    if observation["exit_code"] not in (
+            {0, 1} if stage == "avc-journal" else {0}):
+        return False
+    if reason in {
+            "spawn-permission", "spawn-os-error", "command-result-invalid",
+            "command-cleanup-failed",
+            }:
+        return False
+    if stage == "avc-journal":
+        if observation["exit_code"] == 1:
+            return (reason == "no-match-output-nonempty"
+                    and observation["stdout_bytes"] > 0)
+        if observation["stdout_bytes"] == 0:
+            return reason == "records-output-empty"
+        if reason in {"no-match-output-nonempty", "records-output-empty"}:
+            return False
+    if reason == "stdout-invalid-utf8":
+        return observation["stdout_bytes"] > 0
+    if reason == TRANSITION_COLLECTOR_STAGE_REJECTION_REASON[stage]:
+        return True
+    if stage != "avc-journal":
+        return False
+    return reason in TRANSITION_AVC_FAILURE_REASONS
+
+
+def _transition_receipt_failure_kind(reason):
+    return {
+        "command-timeout": "timeout",
+        "spawn-permission": "permission",
+        "spawn-os-error": "os-error",
+        "unexpected-exit": "command-exit",
+        "command-cleanup-failed": "transport",
+    }.get(reason, "invalid-evidence")
+
+
+def _transition_termination_failure_kind(reason):
+    return {
+        "service-timeout": "timeout",
+        "service-signal": "unexpected",
+        "service-exit": "command-exit",
+        "service-resource": "unexpected",
+        "service-protocol": "invalid-evidence",
+        "transport-loss": "transport",
+    }.get(reason)
+
+
+def _validate_transition_emergency(line_raw, runner_hash):
+    """Validate one independently framed stop-post recovery receipt."""
+    if (not isinstance(line_raw, bytes)
+            or not 0 < len(line_raw) + 1
+               <= TRANSITION_COLLECTOR_MAX_EVENT_BYTES):
+        raise ValueError("invalid transition collector emergency receipt")
+
+    def reject_constant(_value):
+        raise ValueError("non-finite collector emergency number")
+
+    def unique(pairs):
+        value = {}
+        for key, item in pairs:
+            if key in value:
+                raise ValueError("duplicate collector emergency key")
+            value[key] = item
+        return value
+
+    record = json.loads(
+        line_raw.decode("utf-8", errors="strict"),
+        object_pairs_hook=unique, parse_constant=reject_constant)
+    canonical = json.dumps(
+        record, sort_keys=True, separators=(",", ":"),
+        allow_nan=False).encode()
+    required = {
+        "schema", "passed", "release_qualified", "diagnostic", "event",
+        "unit", "runner_sha256", "scope", "stage", "command_sha256",
+        "prepared_sequence", "failure_kind", "reason", "command_result",
+        "service_exit_code",
+    }
+    if (canonical != line_raw or not isinstance(record, dict)
+            or set(record) != required
+            or type(record.get("schema")) is not int
+            or record["schema"] != 1
+            or record.get("passed") is not False
+            or record.get("release_qualified") is not False
+            or record.get("diagnostic")
+               != "transition-evidence-collector-emergency"
+            or record.get("event") != "collector-emergency"
+            or record.get("unit") != "b.service"
+            or record.get("runner_sha256") != runner_hash
+            or record.get("scope") != TRANSITION_COLLECTOR_SCOPE
+            or type(record.get("prepared_sequence")) is not int
+            or not 0 <= record["prepared_sequence"] <= 18
+            or record.get("reason") not in TRANSITION_COLLECTOR_TERMINATION_REASONS
+            or record.get("failure_kind")
+               != _transition_termination_failure_kind(record.get("reason"))
+            or (record.get("service_exit_code") is not None
+                and (type(record["service_exit_code"]) is not int
+                     or not 0 <= record["service_exit_code"] <= 255))):
+        raise ValueError("invalid transition collector emergency receipt")
+    stage = record["stage"]
+    if stage is None:
+        if (record["command_sha256"] is not None
+                or record["command_result"] is not None):
+            raise ValueError("startup emergency receipt named a command")
+    elif (stage not in TRANSITION_COLLECTOR_STAGES
+          or record["command_sha256"]
+             != TRANSITION_COLLECTOR_STAGE_OPERATION_SHA256[stage]
+          or not _valid_transition_stage_receipt(
+              stage, record["reason"], record["command_result"],
+              terminated=True)):
+        raise ValueError("invalid transition collector emergency stage")
+    return record
+
+
 def validate_collector_diagnostic(raw, runner_hash):
     """Validate and normalize the isolated transition-collector event stream."""
     if (not isinstance(raw, bytes) or not 0 < len(raw) <= MAX_COLLECTOR_DIAGNOSTIC
@@ -239,22 +518,36 @@ def validate_collector_diagnostic(raw, runner_hash):
         "runner_sha256": runner_hash,
         "scope": TRANSITION_COLLECTOR_SCOPE,
     }
+    emergency = None
+    stream_raw = raw
+    marker = b"\n" + TRANSITION_COLLECTOR_EMERGENCY_MAGIC + b"\n"
+    marker_offset = raw.rfind(marker)
+    if marker_offset >= 0:
+        emergency_raw = raw[marker_offset + len(marker):]
+        if (not emergency_raw.endswith(b"\n")
+                or b"\n" in emergency_raw[:-1]):
+            raise ValueError("invalid transition collector emergency frame")
+        emergency = _validate_transition_emergency(
+            emergency_raw[:-1], runner_hash)
+        stream_raw = raw[:marker_offset]
     events = []
     event_offsets = []
     offset = 0
     suffix = None
-    while offset < len(raw):
-        end = raw.find(b"\n", offset)
+    maximum_events = len(TRANSITION_COLLECTOR_STAGES) * 2 + 2
+    while offset < len(stream_raw):
+        end = stream_raw.find(b"\n", offset)
         if end < 0:
-            remaining = raw[offset:]
+            remaining = stream_raw[offset:]
             suffix = {"state": "truncated", "bytes": len(remaining),
                       "sha256": hashlib.sha256(remaining).hexdigest()}
             break
-        line_raw = raw[offset:end]
+        line_raw = stream_raw[offset:end]
         next_offset = end + 1
         try:
-            if (not 0 < len(line_raw) <= 1024
-                    or len(events) >= len(TRANSITION_COLLECTOR_STAGES) + 2):
+            if (not 0 < len(line_raw) + 1
+                    <= TRANSITION_COLLECTOR_MAX_EVENT_BYTES
+                    or len(events) >= maximum_events):
                 raise ValueError("transition collector event exceeded its bound")
 
             def reject_constant(_value):
@@ -268,115 +561,201 @@ def validate_collector_diagnostic(raw, runner_hash):
                     value[key] = item
                 return value
 
-            line = line_raw.decode("utf-8", errors="strict")
             event = json.loads(
-                line, object_pairs_hook=unique, parse_constant=reject_constant)
+                line_raw.decode("utf-8", errors="strict"),
+                object_pairs_hook=unique, parse_constant=reject_constant)
             canonical = json.dumps(
                 event, sort_keys=True, separators=(",", ":"),
                 allow_nan=False).encode()
             if canonical != line_raw or not isinstance(event, dict):
                 raise ValueError("noncanonical transition collector event")
+            event_name = event.get("event")
+            required = set(common) | {"event", "seq"}
+            stage_events = {
+                "collector-stage", "collector-stage-result", "collector-failed",
+                "collector-terminated", "collector-completed",
+            }
+            if event_name in stage_events:
+                required.update({"stage", "command_sha256"})
+            if event_name == "collector-stage-result":
+                required.update({"reason", "command_result"})
+            elif event_name == "collector-failed":
+                required.update({
+                    "failure_kind", "reason", "command_result",
+                })
+                if "failure_detail" in event:
+                    required.add("failure_detail")
+            elif event_name == "collector-terminated":
+                required.update({
+                    "failure_kind", "reason", "command_result",
+                    "service_exit_code",
+                })
+            elif event_name == "collector-completed":
+                required.add("report")
+            if (set(event) != required
+                    or type(event.get("schema")) is not int
+                    or event.get("schema") != 1
+                    or event.get("passed") is not False
+                    or event.get("release_qualified") is not False
+                    or type(event.get("seq")) is not int
+                    or event.get("seq") != len(events)
+                    or any(event.get(key) != value
+                           for key, value in common.items())
+                    or (event_name in stage_events
+                        and (event.get("stage") not in TRANSITION_COLLECTOR_STAGES
+                             or event.get("command_sha256")
+                                != TRANSITION_COLLECTOR_STAGE_OPERATION_SHA256[
+                                    event["stage"]]))):
+                raise ValueError("invalid transition collector event")
         except (UnicodeError, ValueError, TypeError, RecursionError,
                 json.JSONDecodeError):
-            remaining = raw[offset:]
-            suffix = {"state": "invalid", "bytes": len(remaining),
-                      "sha256": hashlib.sha256(remaining).hexdigest()}
-            break
-        event_name = event.get("event") if isinstance(event, dict) else None
-        if not isinstance(event_name, str):
-            remaining = raw[offset:]
-            suffix = {"state": "invalid", "bytes": len(remaining),
-                      "sha256": hashlib.sha256(remaining).hexdigest()}
-            break
-        required = set(common) | {"event", "seq"}
-        if event_name in {"collector-stage", "collector-completed"}:
-            required.add("stage")
-            if event_name == "collector-completed":
-                required.add("report")
-        elif event_name == "collector-failed":
-            required.update({"stage", "failure_kind"})
-            if "failure_detail" in event:
-                required.add("failure_detail")
-        if (set(event) != required
-                or type(event.get("schema")) is not int
-                or event.get("schema") != 1
-                or event.get("passed") is not False
-                or event.get("release_qualified") is not False
-                or type(event.get("seq")) is not int
-                or event.get("seq") != len(events)
-                or any(event.get(key) != value for key, value in common.items())):
-            remaining = raw[offset:]
+            remaining = stream_raw[offset:]
             suffix = {"state": "invalid", "bytes": len(remaining),
                       "sha256": hashlib.sha256(remaining).hexdigest()}
             break
         event_offsets.append(offset)
         events.append(event)
         offset = next_offset
-    if not events:
+    if events and events[0]["event"] != "collector-started":
+        if emergency is None:
+            raise ValueError("transition collector receipt is absent")
+        suffix = {"state": "invalid", "bytes": len(stream_raw),
+                  "sha256": hashlib.sha256(stream_raw).hexdigest()}
+        events = []
+        event_offsets = []
+    if not events and emergency is None:
         raise ValueError("transition collector receipt is absent")
-    if events[0]["event"] != "collector-started":
-        raise ValueError("transition collector receipt is absent")
+
+    def invalid_suffix(index):
+        start = event_offsets[index]
+        return {"state": "invalid", "bytes": len(stream_raw) - start,
+                "sha256": hashlib.sha256(stream_raw[start:]).hexdigest()}
+
     stages = []
+    completed_stages = []
+    pending = None
     terminal = None
     for index, event in enumerate(events[1:], 1):
         event_name = event["event"]
-        if terminal is not None:
-            invalid_offset = event_offsets[index]
-            suffix = {"state": "invalid", "bytes": len(raw) - invalid_offset,
-                      "sha256": hashlib.sha256(raw[invalid_offset:]).hexdigest()}
-            break
-        if event_name == "collector-stage":
-            if (len(stages) >= len(TRANSITION_COLLECTOR_STAGES)
-                    or event["stage"] != TRANSITION_COLLECTOR_STAGES[len(stages)]):
-                invalid_offset = event_offsets[index]
-                suffix = {"state": "invalid", "bytes": len(raw) - invalid_offset,
-                          "sha256": hashlib.sha256(raw[invalid_offset:]).hexdigest()}
-                break
-            stages.append(event["stage"])
-        elif event_name == "collector-failed":
-            if (not stages or event["stage"] != stages[-1]
-                    or not isinstance(event.get("failure_kind"), str)
-                    or event["failure_kind"] not in TRANSITION_COLLECTOR_FAILURE_KINDS
-                    or ("failure_detail" in event
-                        and (event["stage"] != "avc-journal"
-                             or not _valid_transition_avc_failure_detail(
-                                 event["failure_detail"])
-                             or event["failure_kind"]
-                                != _transition_avc_failure_kind(
-                                    event["failure_detail"]["reason"])))):
-                invalid_offset = event_offsets[index]
-                suffix = {"state": "invalid", "bytes": len(raw) - invalid_offset,
-                          "sha256": hashlib.sha256(raw[invalid_offset:]).hexdigest()}
-                break
-            terminal = {"event": event_name, "stage": event["stage"],
-                        "failure_kind": event["failure_kind"]}
-            if "failure_detail" in event:
-                terminal["failure_detail"] = event["failure_detail"]
-        elif event_name == "collector-completed":
-            if (stages != list(TRANSITION_COLLECTOR_STAGES)
-                    or event["stage"] != TRANSITION_COLLECTOR_STAGES[-1]):
-                invalid_offset = event_offsets[index]
-                suffix = {"state": "invalid", "bytes": len(raw) - invalid_offset,
-                          "sha256": hashlib.sha256(raw[invalid_offset:]).hexdigest()}
-                break
+        valid = terminal is None
+        if valid and event_name == "collector-stage":
+            valid = (pending is None
+                     and len(stages) < len(TRANSITION_COLLECTOR_STAGES)
+                     and event["stage"] == TRANSITION_COLLECTOR_STAGES[len(stages)])
+            if valid:
+                pending = event["stage"]
+                stages.append(pending)
+        elif valid and event_name == "collector-stage-result":
+            valid = (pending == event["stage"]
+                     and _valid_transition_stage_receipt(
+                         event["stage"], event.get("reason"),
+                         event.get("command_result"), accepted=True))
+            if valid:
+                completed_stages.append(pending)
+                pending = None
+        elif valid and event_name == "collector-failed":
+            detail = event.get("failure_detail")
+            detail_present = "failure_detail" in event
+            valid = (pending == event["stage"]
+                     and isinstance(event.get("failure_kind"), str)
+                     and event["failure_kind"]
+                        == _transition_receipt_failure_kind(
+                            event.get("reason"))
+                     and _valid_transition_stage_receipt(
+                         event["stage"], event.get("reason"),
+                         event.get("command_result"))
+                     and (not detail_present
+                          or (event["stage"] == "avc-journal"
+                              and detail is not None
+                              and _valid_transition_avc_failure_detail(detail)
+                              and detail["reason"] == event["reason"]
+                              and event["failure_kind"]
+                                 == _transition_avc_failure_kind(detail["reason"])
+                              and event["command_result"]
+                                 == _transition_observation_from_avc(
+                                     detail["command"]))))
+            if valid:
+                terminal = {
+                    "event": event_name, "stage": event["stage"],
+                    "failure_kind": event["failure_kind"],
+                    "reason": event["reason"],
+                    "command_result": event["command_result"],
+                }
+                if detail is not None:
+                    terminal["failure_detail"] = detail
+        elif valid and event_name == "collector-terminated":
+            service_exit = event.get("service_exit_code")
+            expected_kind = _transition_termination_failure_kind(
+                event.get("reason"))
+            valid = (pending == event["stage"]
+                     and event.get("failure_kind") == expected_kind
+                     and (service_exit is None
+                          or (type(service_exit) is int
+                              and 0 <= service_exit <= 255))
+                     and _valid_transition_stage_receipt(
+                         event["stage"], event.get("reason"),
+                         event.get("command_result"), terminated=True))
+            if valid:
+                terminal = {
+                    "event": event_name, "stage": event["stage"],
+                    "failure_kind": event["failure_kind"],
+                    "reason": event["reason"],
+                    "command_result": event["command_result"],
+                    "service_exit_code": service_exit,
+                }
+        elif valid and event_name == "collector-completed":
             report = event.get("report")
-            if (not isinstance(report, dict)
-                    or set(report) != {"bytes", "sha256"}
-                    or type(report.get("bytes")) is not int
-                    or not 0 < report["bytes"] <= MAX_REPORT
-                    or not isinstance(report.get("sha256"), str)
-                    or re.fullmatch(r"[a-f0-9]{64}", report["sha256"]) is None):
-                invalid_offset = event_offsets[index]
-                suffix = {"state": "invalid", "bytes": len(raw) - invalid_offset,
-                          "sha256": hashlib.sha256(raw[invalid_offset:]).hexdigest()}
-                break
-            terminal = {"event": event_name, "stage": event["stage"],
-                        "report": report}
+            valid = (pending is None
+                     and stages == list(TRANSITION_COLLECTOR_STAGES)
+                     and completed_stages == list(TRANSITION_COLLECTOR_STAGES)
+                     and event["stage"] == TRANSITION_COLLECTOR_STAGES[-1]
+                     and isinstance(report, dict)
+                     and set(report) == {"bytes", "sha256"}
+                     and type(report.get("bytes")) is int
+                     and 0 < report["bytes"] <= MAX_REPORT
+                     and isinstance(report.get("sha256"), str)
+                     and re.fullmatch(r"[a-f0-9]{64}", report["sha256"])
+                        is not None)
+            if valid:
+                terminal = {"event": event_name, "stage": event["stage"],
+                            "report": report}
         else:
-            invalid_offset = event_offsets[index]
-            suffix = {"state": "invalid", "bytes": len(raw) - invalid_offset,
-                      "sha256": hashlib.sha256(raw[invalid_offset:]).hexdigest()}
+            valid = False
+        if not valid:
+            suffix = invalid_suffix(index)
             break
+    emergency_terminal = None
+    if emergency is not None:
+        prepared = emergency["prepared_sequence"]
+        stage = emergency["stage"]
+        sequence_compatible = prepared in {
+            len(events), max(0, len(events) - 1),
+        }
+        stage_compatible = False
+        if stage is None:
+            stage_compatible = not stages and pending is None
+        elif pending == stage:
+            stage_compatible = True
+        elif terminal is not None and terminal.get("stage") == stage:
+            stage_compatible = True
+        elif completed_stages and completed_stages[-1] == stage:
+            stage_compatible = True
+        elif (pending is None and len(stages) < len(TRANSITION_COLLECTOR_STAGES)
+              and stage == TRANSITION_COLLECTOR_STAGES[len(stages)]):
+            stage_compatible = True
+        if not sequence_compatible or not stage_compatible:
+            raise ValueError("collector emergency state does not bind its prefix")
+        emergency_terminal = {
+            "event": emergency["event"],
+            "stage": stage,
+            "failure_kind": emergency["failure_kind"],
+            "reason": emergency["reason"],
+            "command_result": emergency["command_result"],
+            "service_exit_code": emergency["service_exit_code"],
+            "prepared_sequence": prepared,
+        }
+        if terminal is None:
+            terminal = emergency_terminal
     return {
         "schema": 1,
         "passed": False,
@@ -386,7 +765,9 @@ def validate_collector_diagnostic(raw, runner_hash):
         "scope": TRANSITION_COLLECTOR_SCOPE,
         "receipt": True,
         "stages": stages,
+        "completed_stages": completed_stages,
         "terminal": terminal,
+        "emergency": emergency_terminal,
         "suffix": suffix,
     }
 
