@@ -298,7 +298,8 @@ def run_update(root, group, podman, image_id, storage, containers, run, pins,
                                      current_digest)
         inputs = storage / "update-boot-input"
         inputs.mkdir(mode=0o755)
-        for name in ("update_boot.py", "update_guest.py", "update-o.service"):
+        for name in ("update_boot.py", "update_guest.py", "update-o.service",
+                     "s.service", "update-b.service"):
             shutil.copyfile(root / "image/atomic" / name, inputs / name)
             (inputs / name).chmod(0o644)
         (inputs / "atomic.raw").touch(mode=0o644)

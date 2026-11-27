@@ -2,7 +2,6 @@
 Description=Fixed bootc status collector for the disposable hosted VM
 ConditionPathExists=!/etc/initrd-release
 After=local-fs.target
-Before=o.service
 
 [Service]
 Type=oneshot
