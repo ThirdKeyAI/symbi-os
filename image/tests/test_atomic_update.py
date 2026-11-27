@@ -97,7 +97,8 @@ from image.atomic.update_guest import (UPDATE_COMMAND_TIMEOUT_SECONDS,
                                        fixed_bootc_operation,
                                        fixed_bootc_status,
                                        write_channel)
-from image.atomic.update_hosted import retain_controller_output, run_update
+from image.atomic.update_hosted import (_lifecycle_observation,
+                                        retain_controller_output, run_update)
 from image.atomic.hosted import (RETAINED_REPORT_MAX_BYTES,
                                  validate_retained_preflight)
 from image.boot.inputs import require_desktop_image
@@ -1672,7 +1673,7 @@ class AtomicUpdateTests(unittest.TestCase):
             self.assertFalse((evidence / "same-path-positive.qcow2").exists())
 
     @staticmethod
-    def missing_report_controller(collector_raw=None):
+    def missing_report_controller(collector_raw=None, serial_raw=None, qemu_raw=None):
         command = positive_qemu_command()
         command_hash = hashlib.sha256(json.dumps(
             command, separators=(",", ":")).encode()).hexdigest()
@@ -1694,6 +1695,13 @@ class AtomicUpdateTests(unittest.TestCase):
              "bytes": len(collector_raw),
              "sha256": hashlib.sha256(collector_raw).hexdigest()}
         )
+        def observation(name, raw):
+            return ({"name": name, "state": "absent", "bytes": 0,
+                     "sha256": None}
+                    if raw is None else
+                    {"name": name, "state": "empty" if raw == b"" else "ready",
+                     "bytes": len(raw),
+                     "sha256": hashlib.sha256(raw).hexdigest()})
         return {
             "schema": 1, "passed": False, "guest_booted": False,
             "release_qualified": False, "active_phase": "same-path-positive",
@@ -1704,6 +1712,8 @@ class AtomicUpdateTests(unittest.TestCase):
                 "label": "same-path-positive", "command_sha256": command_hash,
                 "exit_code": 0, "log_name": "qemu-same-path-positive.log",
                 "serial_name": "same-path-positive-serial.log",
+                "log": observation("qemu-same-path-positive.log", qemu_raw),
+                "serial": observation("same-path-positive-serial.log", serial_raw),
                 "report": {"name": "same-path-positive.json", "state": "empty",
                            "bytes": 0, "sha256": hashlib.sha256(b"").hexdigest()},
                 "collector": collector,
@@ -1725,15 +1735,21 @@ class AtomicUpdateTests(unittest.TestCase):
             output.mkdir()
             evidence.mkdir()
             collector_raw = self.collector_stream()
-            controller = self.missing_report_controller(collector_raw)
+            serial_raw = b"".join((
+                b"API_TOKEN=must-not-be-retained\n",
+                b"console: SYMBI_UPDATE_LIFECYCLE=b-enter\n",
+                b"console: SYMBI_UPDATE_LIFECYCLE=f-enter\n",
+                b"console: SYMBI_UPDATE_LIFECYCLE=f-stop\n",
+            ))
+            qemu_raw = b"PRIVATE_KEY=must-not-be-retained\n"
+            controller = self.missing_report_controller(
+                collector_raw, serial_raw, qemu_raw)
             (output / "result.json").write_text(json.dumps(controller) + "\n")
             (output / "same-path-positive.json").write_bytes(b"")
             (output / "same-path-positive-collector.jsonl").write_bytes(
                 collector_raw)
-            (output / "same-path-positive-serial.log").write_text(
-                "API_TOKEN=must-not-be-retained\n")
-            (output / "qemu-same-path-positive.log").write_text(
-                "PRIVATE_KEY=must-not-be-retained\n")
+            (output / "same-path-positive-serial.log").write_bytes(serial_raw)
+            (output / "qemu-same-path-positive.log").write_bytes(qemu_raw)
             (output / "same-path-positive.qcow2").write_bytes(b"private disk")
             retained = retain_controller_output(output, evidence)
             self.assertEqual(retained, ["controller-result.json",
@@ -1748,6 +1764,21 @@ class AtomicUpdateTests(unittest.TestCase):
             self.assertEqual(diagnostic["diagnostic"], "missing-update-phase-report")
             self.assertEqual(diagnostic["process"]["exit_code"], 0)
             self.assertEqual(diagnostic["report"]["state"], "empty")
+            self.assertEqual(diagnostic["outputs"]["qemu"], {
+                "name": "qemu-same-path-positive.log", "state": "ready",
+                "bytes": len(qemu_raw),
+                "sha256": hashlib.sha256(qemu_raw).hexdigest(),
+            })
+            self.assertEqual(diagnostic["outputs"]["serial"], {
+                "name": "same-path-positive-serial.log", "state": "ready",
+                "bytes": len(serial_raw),
+                "sha256": hashlib.sha256(serial_raw).hexdigest(),
+            })
+            self.assertEqual(diagnostic["outputs"]["lifecycle"], {
+                "state": "valid", "events": ["b-enter", "f-enter", "f-stop"],
+                "last_event": "f-stop", "boundary": "f-stopped",
+                "marker_count": 3,
+            })
             self.assertTrue(diagnostic["collector"]["prefix_validated"])
             self.assertTrue(diagnostic["collector"]["stream_validated"])
             self.assertEqual(
@@ -1776,7 +1807,9 @@ class AtomicUpdateTests(unittest.TestCase):
     def test_missing_report_diagnostic_rejects_identity_and_type_mutations(self):
         cases = (
             "command", "exit", "exit-false", "exit-float", "report",
-            "report-bytes-false", "input", "cleanup", "cleanup-int",
+            "report-bytes-false", "log", "log-bytes-false", "log-name-list",
+            "log-state-null", "log-sha-list", "serial", "serial-extra",
+            "input", "cleanup", "cleanup-int",
             "schema-true", "resource", "cpu-max", "pids-max",
             "duplicate-events", "integer-peak", "integer-events",
             "malformed-counter", "extra-counter",
@@ -1787,7 +1820,9 @@ class AtomicUpdateTests(unittest.TestCase):
                 output, evidence = root / "output", root / "evidence"
                 output.mkdir()
                 evidence.mkdir()
-                controller = self.missing_report_controller()
+                serial_raw = b"API_TOKEN=must-not-be-retained\n"
+                controller = self.missing_report_controller(
+                    serial_raw=serial_raw)
                 if case == "command":
                     controller["commands"][0][-1] = "--help"
                 elif case == "exit":
@@ -1800,6 +1835,20 @@ class AtomicUpdateTests(unittest.TestCase):
                     controller["phase_failure"]["report"]["sha256"] = "b" * 64
                 elif case == "report-bytes-false":
                     controller["phase_failure"]["report"]["bytes"] = False
+                elif case == "log":
+                    controller["phase_failure"]["log"]["sha256"] = "b" * 64
+                elif case == "log-bytes-false":
+                    controller["phase_failure"]["log"]["bytes"] = False
+                elif case == "log-name-list":
+                    controller["phase_failure"]["log"]["name"] = []
+                elif case == "log-state-null":
+                    controller["phase_failure"]["log"]["state"] = None
+                elif case == "log-sha-list":
+                    controller["phase_failure"]["log"]["sha256"] = []
+                elif case == "serial":
+                    controller["phase_failure"]["serial"]["bytes"] = False
+                elif case == "serial-extra":
+                    controller["phase_failure"]["serial"]["extra"] = False
                 elif case == "input":
                     controller["inputs"]["update_guest.py"] = "not-a-hash"
                 elif case == "cleanup":
@@ -1826,8 +1875,7 @@ class AtomicUpdateTests(unittest.TestCase):
                     controller["cgroup_final"]["memory.events"] += "unexpected 0\n"
                 (output / "result.json").write_text(json.dumps(controller) + "\n")
                 (output / "same-path-positive.json").write_bytes(b"")
-                (output / "same-path-positive-serial.log").write_text(
-                    "API_TOKEN=must-not-be-retained\n")
+                (output / "same-path-positive-serial.log").write_bytes(serial_raw)
                 retained = retain_controller_output(output, evidence)
                 self.assertEqual(retained, ["controller-result.json"])
                 summary = json.loads(
@@ -1836,6 +1884,62 @@ class AtomicUpdateTests(unittest.TestCase):
                 self.assertNotIn("phase_diagnostic_validated", summary)
                 self.assertEqual([path.name for path in evidence.iterdir()],
                                  ["controller-result.json"])
+
+    def test_missing_report_binds_empty_outputs_and_absent_lifecycle(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            output, evidence = root / "output", root / "evidence"
+            output.mkdir()
+            evidence.mkdir()
+            controller = self.missing_report_controller(b"", b"", b"")
+            (output / "result.json").write_text(json.dumps(controller) + "\n")
+            (output / "same-path-positive.json").write_bytes(b"")
+            (output / "same-path-positive-collector.jsonl").write_bytes(b"")
+            (output / "same-path-positive-serial.log").write_bytes(b"")
+            (output / "qemu-same-path-positive.log").write_bytes(b"")
+            retained = retain_controller_output(output, evidence)
+            self.assertEqual(retained, ["controller-result.json",
+                                        "same-path-positive-diagnostic.json"])
+            summary = json.loads((evidence / "controller-result.json").read_bytes())
+            self.assertFalse(summary["passed"])
+            self.assertFalse(summary["guest_booted"])
+            self.assertFalse(summary["release_qualified"])
+            self.assertFalse(summary["transition_failure_validated"])
+            diagnostic = json.loads(
+                (evidence / "same-path-positive-diagnostic.json").read_bytes())
+            self.assertEqual(diagnostic["collector"]["observation"]["state"], "empty")
+            self.assertEqual(diagnostic["outputs"]["qemu"]["state"], "empty")
+            self.assertEqual(diagnostic["outputs"]["serial"]["state"], "empty")
+            self.assertEqual(diagnostic["outputs"]["lifecycle"], {
+                "state": "absent", "events": [], "last_event": None,
+                "boundary": "unobserved", "marker_count": 0,
+            })
+
+    def test_missing_report_normalizes_invalid_lifecycle_without_raw_content(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            output, evidence = root / "output", root / "evidence"
+            output.mkdir()
+            evidence.mkdir()
+            serial_raw = (b"SYMBI_UPDATE_LIFECYCLE=b-enter\n"
+                          b"SYMBI_UPDATE_LIFECYCLE=API_TOKEN=not-retained\n")
+            controller = self.missing_report_controller(
+                b"", serial_raw=serial_raw)
+            (output / "result.json").write_text(json.dumps(controller) + "\n")
+            (output / "same-path-positive.json").write_bytes(b"")
+            (output / "same-path-positive-collector.jsonl").write_bytes(b"")
+            (output / "same-path-positive-serial.log").write_bytes(serial_raw)
+            retained = retain_controller_output(output, evidence)
+            self.assertEqual(retained, ["controller-result.json",
+                                        "same-path-positive-diagnostic.json"])
+            raw = (evidence / "same-path-positive-diagnostic.json").read_bytes()
+            self.assertNotIn(b"API_TOKEN", raw)
+            self.assertNotIn(b"not-retained", raw)
+            lifecycle = json.loads(raw)["outputs"]["lifecycle"]
+            self.assertEqual(lifecycle, {
+                "state": "invalid", "events": [], "last_event": None,
+                "boundary": "invalid", "marker_count": 2,
+            })
 
     def test_missing_report_normalizes_a_secret_bearing_truncated_suffix(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -3615,6 +3719,7 @@ class AtomicUpdateTests(unittest.TestCase):
             (root / "image/atomic/update-f.service").read_text().splitlines()
             if line.startswith("ExecStopPost=")
         ], [
+            "ExecStopPost=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=f-stop",
             "ExecStopPost=-/usr/bin/python3 %d/symbi-update-failure.py --stop-post",
             "ExecStopPost=/usr/bin/systemctl --no-block poweroff",
         ])
@@ -3633,6 +3738,126 @@ class AtomicUpdateTests(unittest.TestCase):
                    "ActiveState=inactive\nSubState=dead\n")
         with self.assertRaisesRegex(ValueError, "transition probe did not complete"):
             fixed_bootc_transition(Mock(return_value=skipped))
+
+    def test_update_service_lifecycle_markers_are_best_effort_and_ordered(self):
+        root = Path(__file__).resolve().parents[2]
+        expected = {
+            "update-b.service": [
+                "ExecStartPre=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=b-enter",
+                "ExecStartPost=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=b-success",
+            ],
+            "update-f.service": [
+                "ExecStartPre=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=f-enter",
+                "ExecStartPost=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=f-success",
+                "ExecStopPost=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=f-stop",
+            ],
+            "update-o.service": [
+                "ExecStartPre=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=o-enter",
+                "ExecStartPost=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=o-success",
+                "ExecStopPost=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=o-stop",
+            ],
+        }
+        for name, markers in expected.items():
+            with self.subTest(name=name):
+                lines = (root / "image/atomic" / name).read_text().splitlines()
+                positions = [lines.index(marker) for marker in markers]
+                self.assertEqual(positions, sorted(positions))
+                self.assertTrue(all(lines.count(marker) == 1 for marker in markers))
+                self.assertTrue(all(marker.startswith(("ExecStartPre=-", "ExecStartPost=-",
+                                                       "ExecStopPost=-"))
+                                    for marker in markers))
+                self.assertTrue(all("/bin/sh" not in marker and "%" not in marker
+                                    for marker in markers))
+        transition_lines = (root / "image/atomic/update-b.service").read_text().splitlines()
+        self.assertLess(
+            transition_lines.index(
+                "ExecStartPre=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=b-enter"),
+            transition_lines.index("ExecStartPre=/usr/bin/cat /proc/self/attr/current"))
+        self.assertLess(
+            transition_lines.index(
+                "ExecStart=/usr/bin/runcon system_u:system_r:install_t:s0 "
+                "/usr/bin/bootc --version"),
+            transition_lines.index(
+                "ExecStartPost=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=b-success"))
+        failure_lines = (root / "image/atomic/update-f.service").read_text().splitlines()
+        self.assertLess(
+            failure_lines.index("ExecStartPre=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=f-enter"),
+            failure_lines.index(
+                "ExecStartPre=/usr/bin/systemctl --quiet is-failed b.service"))
+        self.assertLess(
+            failure_lines.index("ExecStart=/usr/bin/python3 %d/symbi-update-failure.py"),
+            failure_lines.index(
+                "ExecStartPost=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=f-success"))
+        self.assertLess(
+            failure_lines.index("ExecStopPost=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=f-stop"),
+            failure_lines.index(
+                "ExecStopPost=-/usr/bin/python3 %d/symbi-update-failure.py --stop-post"))
+        success_lines = (root / "image/atomic/update-o.service").read_text().splitlines()
+        self.assertLess(
+            success_lines.index("ExecStartPre=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=o-enter"),
+            success_lines.index(
+                "ExecStart=/usr/bin/python3 %d/symbi-update.py "
+                "%d/symbi-update-expected.json %d/symbi-update-policy.json"))
+        self.assertLess(
+            success_lines.index(
+                "ExecStart=/usr/bin/python3 %d/symbi-update.py "
+                "%d/symbi-update-expected.json %d/symbi-update-policy.json"),
+            success_lines.index(
+                "ExecStartPost=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=o-success"))
+        self.assertLess(
+            success_lines.index("ExecStopPost=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=o-stop"),
+            success_lines.index("ExecStopPost=/usr/bin/systemctl --no-block poweroff"))
+
+    def test_lifecycle_observation_normalizes_only_fixed_marker_sequences(self):
+        failure_raw = b"".join((
+            b"private API_TOKEN=not-retained\n",
+            b"console: SYMBI_UPDATE_LIFECYCLE=b-enter\n",
+            b"console: SYMBI_UPDATE_LIFECYCLE=f-enter\n",
+            b"console: SYMBI_UPDATE_LIFECYCLE=f-success\n",
+            b"console: SYMBI_UPDATE_LIFECYCLE=f-stop\r\n",
+        ))
+        self.assertEqual(_lifecycle_observation(failure_raw), {
+            "state": "valid",
+            "events": ["b-enter", "f-enter", "f-success", "f-stop"],
+            "last_event": "f-stop",
+            "boundary": "f-stopped",
+            "marker_count": 4,
+        })
+        success_raw = b"".join(
+            b"SYMBI_UPDATE_LIFECYCLE=" + event + b"\n"
+            for event in (b"b-enter", b"b-success", b"o-enter",
+                          b"o-success", b"o-stop"))
+        self.assertEqual(_lifecycle_observation(success_raw), {
+            "state": "valid",
+            "events": ["b-enter", "b-success", "o-enter", "o-success", "o-stop"],
+            "last_event": "o-stop",
+            "boundary": "o-stopped",
+            "marker_count": 5,
+        })
+        self.assertEqual(_lifecycle_observation(b"unreviewed secret bytes\n"), {
+            "state": "absent", "events": [], "last_event": None,
+            "boundary": "unobserved", "marker_count": 0,
+        })
+        for case, raw in {
+            "duplicate": (b"SYMBI_UPDATE_LIFECYCLE=b-enter\n" * 2),
+            "reordered": (b"SYMBI_UPDATE_LIFECYCLE=o-enter\n"
+                          b"SYMBI_UPDATE_LIFECYCLE=b-enter\n"),
+            "unknown": b"SYMBI_UPDATE_LIFECYCLE=private-value\n",
+            "non-ascii": b"SYMBI_UPDATE_LIFECYCLE=b-enter\xff\n",
+            "trailing": b"SYMBI_UPDATE_LIFECYCLE=b-enter private-value\n",
+            "multiple": (b"SYMBI_UPDATE_LIFECYCLE=b-enter "
+                         b"SYMBI_UPDATE_LIFECYCLE=b-success\n"),
+        }.items():
+            with self.subTest(case=case):
+                normalized = _lifecycle_observation(raw)
+                self.assertEqual(normalized["state"], "invalid")
+                self.assertEqual(normalized["events"], [])
+                self.assertIsNone(normalized["last_event"])
+                self.assertEqual(normalized["boundary"], "invalid")
+                self.assertNotIn(b"private-value", json.dumps(normalized).encode())
+        for raw in (None, "SYMBI_UPDATE_LIFECYCLE=b-enter", bytearray()):
+            with self.subTest(raw_type=type(raw).__name__), self.assertRaises(ValueError):
+                _lifecycle_observation(raw)
 
     @staticmethod
     def root_file_stat(real_fstat, changed_gid_path=None):

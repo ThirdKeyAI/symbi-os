@@ -10,8 +10,10 @@ Type=oneshot
 RemainAfterExit=yes
 User=root
 Group=root
+ExecStartPre=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=b-enter
 ExecStartPre=/usr/bin/cat /proc/self/attr/current
 ExecStart=/usr/bin/runcon system_u:system_r:install_t:s0 /usr/bin/bootc --version
+ExecStartPost=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=b-success
 UMask=0077
 CapabilityBoundingSet=
 AmbientCapabilities=

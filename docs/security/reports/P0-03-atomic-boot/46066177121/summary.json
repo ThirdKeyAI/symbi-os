@@ -1,0 +1,202 @@
+{
+  "schema": 1,
+  "card": "P0-03",
+  "run": {
+    "id": 46066177121,
+    "attempt": 1,
+    "event": "workflow_dispatch",
+    "branch": "card/P0-03-selinux-fix",
+    "head": "e94ba633ea249e2e204bf496007a52f94571aa96",
+    "tree": "1e963bff8edfb4ff7608f51b9e3a0d7c10464ac4",
+    "parent": "50bc70b8d2046aeb244b983a9038fced20e110f2",
+    "job_id": 140731919659,
+    "job_name": "install-and-boot",
+    "native_step_started_utc": "2026-11-27T20:50:25Z",
+    "artifact_created_utc": "2026-11-27T21:10:07Z",
+    "conclusion": "failure",
+    "evidence_upload_succeeded": true
+  },
+  "artifact": {
+    "id": 15232246079,
+    "name": "atomic-development-boot-generic",
+    "bytes": 71115,
+    "github_digest": "sha256:d8ed57c0abc1f35b697b458c477e19f6058d3b927dcff1099d935248028c24eb",
+    "downloaded_zip_sha256": "d8ed57c0abc1f35b697b458c477e19f6058d3b927dcff1099d935248028c24eb",
+    "zip_integrity": true,
+    "safe_regular_relative_members": 95,
+    "uncompressed_bytes": 152746,
+    "largest_member_bytes": 88681,
+    "created_utc": "2026-11-27T21:10:07Z",
+    "expires_utc_date": "2026-12-11"
+  },
+  "failure": {
+    "stage": "same-path-positive-pre-collector-unresolved",
+    "predecessor_install_passed": true,
+    "qemu_exit_code": 0,
+    "qemu_command_sha256": "42320908c2d3b60b36254929b1c8929f8b9e652eb9503bb9446baed634cb44f3",
+    "cleanup_signal_sent": false,
+    "report": {
+      "name": "same-path-positive.json",
+      "state": "empty",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "collector": {
+      "name": "same-path-positive-collector.jsonl",
+      "state": "empty",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "events": null,
+      "prefix_validated": false,
+      "stream_validated": false
+    },
+    "phase_diagnostic_validated": true,
+    "transition_failure_validated": false,
+    "guest_lifecycle_boundary_observed": false,
+    "qemu_log_observation_retained": false,
+    "serial_observation_retained": false,
+    "resource_termination_proven": false,
+    "interpretation": "The exact QEMU process exited zero, but both bounded guest evidence channels are empty. The service graph permits either the transition-failure or success branch to power off the guest. This artifact cannot distinguish failure before b.service entry, failure after b.service entry but before the failure collector, or entry into the success service before its update runner. No behavioral correction is supported by this run."
+  },
+  "reachability": {
+    "source_authentication_positive": true,
+    "source_signature_negative_controls": {
+      "unsigned": true,
+      "wrong-key": true,
+      "wrong-reference": true,
+      "altered-signature": true
+    },
+    "same_path_qemu_process_completed": true,
+    "in_guest_update_negative_reports": [],
+    "installed_update_phase_reports": [],
+    "updated_boot_phase_reports": [],
+    "rollback_phase_reports": [],
+    "update_acceptance_observed": false,
+    "update_action_observed": false,
+    "updated_boot_observed": false,
+    "rollback_observed": false
+  },
+  "resources": {
+    "outer": {
+      "memory_max": 5368709120,
+      "memory_peak": 5368713216,
+      "memory_swap_max": 0,
+      "cpu_max": "200000 100000",
+      "pids_max": 256,
+      "memory_events": {
+        "max": 169688,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      }
+    },
+    "update_controller": {
+      "memory_max": 3221225472,
+      "memory_peak": 3221225472,
+      "memory_swap_max": 0,
+      "cpu_max": "200000 100000",
+      "pids_max": 64,
+      "memory_events": {
+        "max": 7280,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      }
+    },
+    "predecessor_installer_limits": {
+      "memory_max": 2147483648,
+      "memory_swap_max": 0,
+      "cpu_max": "100000 100000",
+      "pids_max": 128
+    },
+    "added_swap": false
+  },
+  "cleanup": {
+    "containers": {
+      "symbi-atomic-signer": {"removed": true, "absent": true},
+      "symbi-atomic-update-old-installer": {"removed": true, "absent": true},
+      "symbi-atomic-update-old-signer": {"removed": true, "absent": true},
+      "symbi-atomic-update-qemu": {"removed": true, "absent": true}
+    },
+    "loaded_image_removed": true,
+    "loaded_image_absent": true,
+    "loop_list_empty": true,
+    "private_storage_removed": true,
+    "private_runroot_removed": true
+  },
+  "critical_evidence_sha256": {
+    "atomic-update-evidence/controller-result.json": "b60e5fbaea2fb5a53b87c84b5d1d35a74c559a493ef8fb71422a1d0cc6150222",
+    "atomic-update-evidence/same-path-positive-diagnostic.json": "f89b56c35f98e628b108b5fb66614f80eb0885a52ae45bc1c8ff3f03bdf75dd3",
+    "atomic-update-evidence/result.json": "07ff2a0ecb591fd5b553dec8d4efcab7d799ab8103571cdd13f130bcc18feb70",
+    "atomic-disk-evidence/result.json": "001fd9d34be7be92089acae6d4953f837a43f99faea0a8d82cbe8edfe5c4a969",
+    "atomic-disk-evidence/source-authentication/result.json": "ad0b528440d87445b76f7aa3712d0510e55a6e5284d0bbb2cf1489867e2c8639",
+    "atomic-disk-evidence/systemd-result.txt": "223679ad19f2f8f7687fb3eb391e5a151e47463746026c9dbac8f270d300396b",
+    "atomic-disk-evidence/update-old-loops-stdout.log": "3f1d39e826503300542203478b61c9393220197f672114f5813fa484380802ed",
+    "atomic-disk-evidence/hosted.log": "078399aeaebdad93db0c17253bc6a11587444f8ca2788ecb0d514babf7f6ed6f",
+    "atomic-disk-evidence/signed-update-and-rollback-stderr.log": "62bf3060e0f84500dd227f0e78416dfe9c9a35f488189b31968e2eec14cc6664"
+  },
+  "local_correction": {
+    "status": "instrumented-pending-hosted-rerun",
+    "behavioral_correction_added": false,
+    "best_effort_fixed_ascii_markers": [
+      "b-enter", "b-success", "f-enter", "f-success", "f-stop",
+      "o-enter", "o-success", "o-stop"
+    ],
+    "marker_failure_changes_unit_result": false,
+    "serial_observation_fields": ["name", "state", "bytes", "sha256"],
+    "qemu_log_observation_fields": ["name", "state", "bytes", "sha256"],
+    "lifecycle_observation_fields": [
+      "state", "events", "last_event", "boundary", "marker_count"
+    ],
+    "absent_markers_distinct": true,
+    "unknown_duplicate_or_reordered_markers_result": "invalid",
+    "raw_serial_or_qemu_log_retained": false,
+    "acceptance_predicate_changed": false,
+    "policy_allow_rule_added": false,
+    "enforcing_mode_changed": false,
+    "resource_limits_changed": false,
+    "update_after_transition_failure": false
+  },
+  "local_verification": {
+    "status": "pass",
+    "focused_update_tests": 92,
+    "focused_address_space_cap_bytes": 134217728,
+    "focused_peak_rss_kib": 38328,
+    "focused_process_swaps": 0,
+    "complete_image_tests": 371,
+    "complete_address_space_cap_bytes": 402653184,
+    "complete_peak_rss_kib": 61868,
+    "complete_process_swaps": 0,
+    "enclosing_cgroup_oom_after_tests": 0,
+    "enclosing_cgroup_oom_kill_after_tests": 0,
+    "enclosing_cgroup_oom_group_kill_after_tests": 0,
+    "python_ast": "pass",
+    "json_parse": "pass",
+    "diff_check": "pass",
+    "forbidden_constraint_matches_in_patch": 0,
+    "local_image_vm_container_build_or_network": false,
+    "independent_cold_review": "pending"
+  },
+  "claims": {
+    "passed": false,
+    "guest_booted": false,
+    "selinux_transition_supported": false,
+    "signed_update_accepted": false,
+    "four_guest_signature_rejections_passed": false,
+    "updated_boot_passed": false,
+    "rollback_passed": false,
+    "release_qualified": false,
+    "os_qualified": false,
+    "p0_03_qualified": false
+  },
+  "retention": {
+    "raw_logs_committed": false,
+    "raw_serial_committed": false,
+    "raw_journal_committed": false,
+    "raw_collector_committed": false,
+    "disk_images_committed": false,
+    "private_keys_committed": false,
+    "downloaded_artifact_path": "/tmp/symbi-p0-03-rerun-evidence.hFbddw/artifact.zip",
+    "note": "Only compact content-free facts and hashes are retained in Git; raw evidence remains outside the repository."
+  }
+}

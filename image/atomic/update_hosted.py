@@ -16,7 +16,8 @@ from image.atomic.update_contract import (NEGATIVE_CASES, NEGATIVE_UPDATE_SOURCE
                                           negative_signature_payloads,
                                           require_update_base, update_policy,
                                           validate_artifact_metadata, validate_report)
-from image.atomic.update_boot import (MAX_COLLECTOR_DIAGNOSTIC,
+from image.atomic.update_boot import (MAX_COLLECTOR_DIAGNOSTIC, MAX_QEMU_LOG,
+                                      MAX_SERIAL_LOG,
                                       TRANSITION_COLLECTOR_STAGES,
                                       positive_qemu_command,
                                       validate_collector_diagnostic,
@@ -27,6 +28,82 @@ from image.boot.inputs import unpack_desktop_image
 
 MAX_SOURCE_BYTES = 13 * 1024**3
 MAX_PUBLIC_OUTPUT_BYTES = 2 * 1024**2
+LIFECYCLE_MARKER = b"SYMBI_UPDATE_LIFECYCLE="
+LIFECYCLE_BOUNDARIES = {
+    (): "unobserved",
+    ("b-enter",): "b-entered",
+    ("b-enter", "b-success"): "b-succeeded",
+    ("b-enter", "f-enter"): "f-entered",
+    ("b-enter", "f-enter", "f-success"): "f-succeeded",
+    ("b-enter", "f-enter", "f-stop"): "f-stopped",
+    ("b-enter", "f-enter", "f-success", "f-stop"): "f-stopped",
+    ("b-enter", "b-success", "o-enter"): "o-entered",
+    ("b-enter", "b-success", "o-enter", "o-success"): "o-succeeded",
+    ("b-enter", "b-success", "o-enter", "o-stop"): "o-stopped",
+    ("b-enter", "b-success", "o-enter", "o-success", "o-stop"): "o-stopped",
+}
+
+
+def _output_observation(name, raw, maximum):
+    if raw is None:
+        return {"name": name, "state": "absent", "bytes": 0, "sha256": None}
+    if not isinstance(raw, bytes):
+        raise ValueError("output observation requires bytes")
+    if raw == b"":
+        return {"name": name, "state": "empty", "bytes": 0,
+                "sha256": hashlib.sha256(b"").hexdigest()}
+    if len(raw) > maximum:
+        return {"name": name, "state": "oversized", "bytes": len(raw),
+                "sha256": None}
+    return {"name": name, "state": "ready", "bytes": len(raw),
+            "sha256": hashlib.sha256(raw).hexdigest()}
+
+
+def _matches_output_observation(candidate, expected):
+    return (isinstance(candidate, dict)
+            and set(candidate) == {"name", "state", "bytes", "sha256"}
+            and isinstance(candidate.get("name"), str)
+            and isinstance(candidate.get("state"), str)
+            and type(candidate.get("bytes")) is int
+            and (candidate.get("sha256") is None
+                 or isinstance(candidate.get("sha256"), str))
+            and candidate == expected)
+
+
+def _lifecycle_observation(raw):
+    """Normalize fixed console receipts without retaining surrounding output."""
+    if not isinstance(raw, bytes):
+        raise ValueError("lifecycle observation requires bytes")
+    events = []
+    marker_count = 0
+    invalid = False
+    for line in raw.split(b"\n"):
+        line = line.removesuffix(b"\r")
+        occurrences = line.count(LIFECYCLE_MARKER)
+        if occurrences == 0:
+            continue
+        marker_count += occurrences
+        if occurrences != 1:
+            invalid = True
+            continue
+        value = line.split(LIFECYCLE_MARKER, 1)[1]
+        try:
+            event = value.decode("ascii")
+        except UnicodeDecodeError:
+            invalid = True
+            continue
+        events.append(event)
+    sequence = tuple(events)
+    if invalid or sequence not in LIFECYCLE_BOUNDARIES:
+        return {"state": "invalid", "events": [], "last_event": None,
+                "boundary": "invalid", "marker_count": marker_count}
+    if not sequence:
+        return {"state": "absent", "events": [], "last_event": None,
+                "boundary": LIFECYCLE_BOUNDARIES[sequence], "marker_count": 0}
+    return {"state": "valid", "events": list(sequence),
+            "last_event": sequence[-1],
+            "boundary": LIFECYCLE_BOUNDARIES[sequence],
+            "marker_count": marker_count}
 
 
 def _controller_output_names():
@@ -101,30 +178,18 @@ def _missing_report_diagnostic(controller, payloads):
                    or re.fullmatch(r"[a-f0-9]{64}", value) is None
                    for value in inputs.values())):
         return None
-    def observation(name, raw, maximum):
-        if raw is None:
-            return {"name": name, "state": "absent", "bytes": 0, "sha256": None}
-        if raw == b"":
-            return {"name": name, "state": "empty", "bytes": 0,
-                    "sha256": hashlib.sha256(b"").hexdigest()}
-        if len(raw) > maximum:
-            return {"name": name, "state": "oversized", "bytes": len(raw),
-                    "sha256": None}
-        return {"name": name, "state": "ready", "bytes": len(raw),
-                "sha256": hashlib.sha256(raw).hexdigest()}
-
     report_name = "same-path-positive.json"
     report_raw = payloads.get(report_name) if report_name in payloads else None
     if report_raw is not None and not isinstance(report_raw, bytes):
         return None
-    report = observation(report_name, report_raw, 128 * 1024)
+    report = _output_observation(report_name, report_raw, 128 * 1024)
     if report_raw not in (None, b""):
         return None
     collector_name = "same-path-positive-collector.jsonl"
     collector_raw = payloads.get(collector_name)
     if collector_raw is not None and not isinstance(collector_raw, bytes):
         return None
-    collector = observation(
+    collector = _output_observation(
         collector_name, collector_raw, MAX_COLLECTOR_DIAGNOSTIC)
     collector_events = None
     collector_prefix_validated = False
@@ -144,30 +209,35 @@ def _missing_report_diagnostic(controller, payloads):
                 return None
     elif collector["state"] not in {"absent", "empty"}:
         return None
+    log_name = "qemu-same-path-positive.log"
+    log_raw = payloads.get(log_name) if log_name in payloads else None
+    serial_name = "same-path-positive-serial.log"
+    serial_raw = payloads.get(serial_name) if serial_name in payloads else None
+    if ((log_raw is not None and not isinstance(log_raw, bytes))
+            or (serial_raw is not None and not isinstance(serial_raw, bytes))):
+        return None
+    log = _output_observation(log_name, log_raw, MAX_QEMU_LOG)
+    serial = _output_observation(serial_name, serial_raw, MAX_SERIAL_LOG)
+    lifecycle = _lifecycle_observation(serial_raw or b"")
     phase = controller.get("phase_failure")
     phase_report = phase.get("report") if isinstance(phase, dict) else None
     phase_collector = phase.get("collector") if isinstance(phase, dict) else None
+    phase_log = phase.get("log") if isinstance(phase, dict) else None
+    phase_serial = phase.get("serial") if isinstance(phase, dict) else None
     if (not isinstance(phase, dict) or set(phase) != {
             "label", "command_sha256", "exit_code", "log_name", "serial_name",
-            "report", "collector",
+            "log", "serial", "report", "collector",
             }
             or phase.get("label") != "same-path-positive"
             or phase.get("command_sha256") != command_hash
             or type(phase.get("exit_code")) is not int
             or phase.get("exit_code") != 0
-            or phase.get("log_name") != "qemu-same-path-positive.log"
-            or phase.get("serial_name") != "same-path-positive-serial.log"
-            or not isinstance(phase_report, dict)
-            or set(phase_report) != {"name", "state", "bytes", "sha256"}
-            or not isinstance(phase_report.get("name"), str)
-            or not isinstance(phase_report.get("state"), str)
-            or type(phase_report.get("bytes")) is not int
-            or (phase_report.get("sha256") is not None
-                and not isinstance(phase_report.get("sha256"), str))
-            or phase_report != report
-            or not isinstance(phase_collector, dict)
-            or set(phase_collector) != {"name", "state", "bytes", "sha256"}
-            or phase_collector != collector):
+            or phase.get("log_name") != log_name
+            or phase.get("serial_name") != serial_name
+            or not _matches_output_observation(phase_log, log)
+            or not _matches_output_observation(phase_serial, serial)
+            or not _matches_output_observation(phase_report, report)
+            or not _matches_output_observation(phase_collector, collector)):
         return None
     cleanup = controller.get("child_cleanup")
     if (not isinstance(cleanup, dict)
@@ -212,8 +282,8 @@ def _missing_report_diagnostic(controller, payloads):
         "process": {"command_sha256": command_hash, "exit_code": 0,
                     "cleanup_signal_sent": False},
         "report": report,
-        "outputs": {"serial_name": phase["serial_name"],
-                    "qemu_log_name": phase["log_name"]},
+        "outputs": {"qemu": log, "serial": serial,
+                    "lifecycle": lifecycle},
         "collector": {"observation": collector,
                       "prefix_validated": collector_prefix_validated,
                       "stream_validated": collector_stream_validated,
@@ -398,12 +468,19 @@ def retain_controller_output(output, evidence):
             raise ValueError("unexpected update controller output: " + path.name)
         names.add(path.name)
     retained = []
+    def retained_maximum(name):
+        if name.endswith("-collector.jsonl"):
+            return MAX_COLLECTOR_DIAGNOSTIC
+        if name == "qemu-same-path-positive.log":
+            return MAX_QEMU_LOG
+        return MAX_PUBLIC_OUTPUT_BYTES
+
     cached = {name: _read_bounded_regular(
-                  output / name,
-                  MAX_COLLECTOR_DIAGNOSTIC if name.endswith("-collector.jsonl")
-                  else MAX_PUBLIC_OUTPUT_BYTES)
+                  output / name, retained_maximum(name))
               for name in ("result.json", "same-path-positive.json",
-                           "same-path-positive-collector.jsonl")
+                           "same-path-positive-collector.jsonl",
+                           "qemu-same-path-positive.log",
+                           "same-path-positive-serial.log")
               if name in names}
     payloads = _transition_failure_publication(cached)
     if payloads is None:

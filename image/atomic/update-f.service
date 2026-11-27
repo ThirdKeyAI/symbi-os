@@ -7,8 +7,11 @@ OnFailure=poweroff.target
 [Service]
 Type=oneshot
 ImportCredential=symbi-update-failure.py
+ExecStartPre=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=f-enter
 ExecStartPre=/usr/bin/systemctl --quiet is-failed b.service
 ExecStart=/usr/bin/python3 %d/symbi-update-failure.py
+ExecStartPost=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=f-success
+ExecStopPost=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=f-stop
 ExecStopPost=-/usr/bin/python3 %d/symbi-update-failure.py --stop-post
 ExecStopPost=/usr/bin/systemctl --no-block poweroff
 Environment=PYTHONDONTWRITEBYTECODE=1

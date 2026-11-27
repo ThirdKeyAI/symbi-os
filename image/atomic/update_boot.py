@@ -11,6 +11,8 @@ import time
 
 MAX_REPORT = 128 * 1024
 MAX_COLLECTOR_DIAGNOSTIC = 16 * 1024
+MAX_QEMU_LOG = 1024 * 1024
+MAX_SERIAL_LOG = 2 * 1024 * 1024
 TRANSITION_COLLECTOR_MAX_EVENT_BYTES = 1280
 TRANSITION_COLLECTOR_EMERGENCY_MAGIC = (
     b"SYMBI-TRANSITION-COLLECTOR-EMERGENCY-V1"
@@ -1458,8 +1460,8 @@ def main():
                                               "HOME": "/output", "TMPDIR": "/output"})
                 while child.poll() is None:
                     bounded_outputs = [
-                        (serial_name, 2 * 1024 * 1024),
-                        (log_name, 1024 * 1024),
+                        (serial_name, MAX_SERIAL_LOG),
+                        (log_name, MAX_QEMU_LOG),
                         (report_name, MAX_REPORT),
                     ]
                     if collector_name is not None:
@@ -1479,6 +1481,10 @@ def main():
                 "exit_code": child.returncode,
                 "log_name": log_name,
                 "serial_name": serial_name,
+                "log": _phase_report_observation(
+                    output / log_name, log_name, MAX_QEMU_LOG),
+                "serial": _phase_report_observation(
+                    output / serial_name, serial_name, MAX_SERIAL_LOG),
                 "report": _phase_report_observation(output / report_name, report_name),
             }
             if collector_name is not None:
