@@ -20,13 +20,14 @@ FEDORA_PACKAGE_EVIDENCE_FIELDS = {
     "signature_verified", "key_fingerprint",
 }
 FEDORA_DISCOVERY_FIELDS = {
-    "workflow", "profile", "run_id", "run_attempt", "source_commit", "base",
+    "repository", "workflow", "profile", "run_id", "run_attempt", "source_commit", "base",
     "requirements_sha256", "repository_configuration_sha256",
     "rpm_manifest_sha256", "input_bindings_sha256", "package_count", "artifact",
 }
 FEDORA_INSTALLATION_FIELDS = {
     "image_source_commit", "image_manifest_sha256", "before_inventory_sha256",
-    "after_inventory_sha256", "installed_nevras", "daemon_configuration_sha256",
+    "after_inventory_sha256", "source_inventory_sha256", "requested_root_nevras",
+    "added_nevras", "rpm_transaction_empty", "daemon_configuration_sha256", "image_producer",
 }
 REPOSITORY_FINGERPRINT = "6F1DF85E3A71C24918E727D56FC6D554E32BD943"
 SHARED_BOOT_STATUS_INPUTS = {
@@ -52,6 +53,21 @@ FIXTURE_DRIVERS = {"test-filesystem-grants.py", "test-source-broker.py", "test-g
 def require(condition, message):
     if not condition:
         raise ValueError(message)
+
+
+def rpm_name_from_nevra(nevra):
+    """Parse the exact RPM name without accepting a requested-name prefix."""
+    require(isinstance(nevra, str) and nevra and not any(ch.isspace() for ch in nevra),
+            "Fedora package NEVRA is malformed")
+    versioned, separator, architecture = nevra.rpartition(".")
+    require(separator == "." and re.fullmatch(r"[A-Za-z0-9_]+", architecture or ""),
+            "Fedora package NEVRA architecture is malformed")
+    fields = versioned.rsplit("-", 2)
+    require(len(fields) == 3
+            and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9+_.-]*", fields[0] or "")
+            and fields[1] and fields[2],
+            "Fedora package NEVRA name, version or release is malformed")
+    return fields[0]
 
 
 def sha256(path):
@@ -235,15 +251,23 @@ def validate_fedora_contract(contract, runsc, root, image_source_commit):
     repository = unique_json(root / "image/hyprland/package-repository-inputs.json")
     images = unique_json(root / "image/desktop-images.lock.json")
     selected_image = images.get("images", {}).get("generic", {})
+    candidate_lock = unique_json(root / "image/container/fedora-runtime-candidates.lock.json")
+    from image.container.runtime_image_inputs import validate_selection, validate_source_package_plan
+    validate_selection(root, candidate_lock)
 
     discovery = contract.get("discovery")
     require(isinstance(discovery, dict) and set(discovery) == FEDORA_DISCOVERY_FIELDS,
             "Fedora discovery binding fields are incomplete or expanded")
-    require(discovery.get("workflow") == ".github/workflows/fedora-packages.yml"
-            and discovery.get("profile") == "container-runtime"
-            and type(discovery.get("run_id")) is int and discovery["run_id"] > 0
-            and type(discovery.get("run_attempt")) is int and discovery["run_attempt"] > 0
-            and re.fullmatch(r"[a-f0-9]{40}", discovery.get("source_commit", ""))
+    require(candidate_lock.get("selected") is True
+            and candidate_lock.get("installed") is False
+            and candidate_lock.get("qualified") is False
+            and candidate_lock.get("os_qualified") is False
+            and discovery.get("repository") == candidate_lock.get("repository")
+            and discovery.get("workflow") == candidate_lock.get("workflow")
+            and discovery.get("profile") == candidate_lock.get("profile")
+            and discovery.get("run_id") == candidate_lock.get("run_id")
+            and discovery.get("run_attempt") == candidate_lock.get("run_attempt")
+            and discovery.get("source_commit") == candidate_lock.get("source_commit")
             and discovery.get("base") == pins["variants"]["generic"]["image"]
             and discovery.get("requirements_sha256") == sha256(requirements_path)
             and discovery.get("repository_configuration_sha256")
@@ -254,11 +278,7 @@ def validate_fedora_contract(contract, runsc, root, image_source_commit):
     artifact = discovery.get("artifact")
     require(isinstance(artifact, dict)
             and set(artifact) == {"id", "name", "bytes", "sha256"}
-            and type(artifact.get("id")) is int and artifact["id"] > 0
-            and artifact.get("name") == "container-runtime-rpm-candidates"
-            and type(artifact.get("bytes")) is int
-            and 0 < artifact["bytes"] <= 2 * 1024**3 + 64 * 1024**2
-            and re.fullmatch(r"[a-f0-9]{64}", artifact.get("sha256", "")),
+            and artifact == candidate_lock.get("candidate_artifact"),
             "Fedora discovery candidate artifact identity is invalid")
 
     packages = contract.get("packages")
@@ -267,12 +287,15 @@ def validate_fedora_contract(contract, runsc, root, image_source_commit):
             "Fedora runtime package closure is empty or exceeds the discovery bound")
     filenames = set()
     nevras = set()
+    package_names = set()
+    package_nevras_by_name = {}
     total_bytes = 0
     for package in packages:
         require(isinstance(package, dict) and set(package) == FEDORA_PACKAGE_EVIDENCE_FIELDS,
                 "Fedora package must contain only actual RPM discovery evidence fields")
         filename = package.get("filename")
         nevra = package.get("nevra")
+        package_name = rpm_name_from_nevra(nevra)
         size = package.get("bytes")
         require(isinstance(filename, str) and filename.endswith(".rpm")
                 and filename == Path(filename).name
@@ -287,32 +310,53 @@ def validate_fedora_contract(contract, runsc, root, image_source_commit):
                 and package.get("signature_verified") is True
                 and isinstance(package.get("key_fingerprint"), str)
                 and package["key_fingerprint"].upper()
-                == FEDORA_REPOSITORY_FINGERPRINT,
+                == FEDORA_REPOSITORY_FINGERPRINT
+                and package_name not in package_names,
                 "Fedora package closure has invalid RPM signature evidence or duplicate identity")
         filenames.add(filename)
         nevras.add(nevra)
+        package_names.add(package_name)
+        package_nevras_by_name[package_name] = nevra
         total_bytes += size
-    require(total_bytes <= 2 * 1024**3,
-            "Fedora runtime package closure exceeds the discovery byte bound")
-    require(all(any(nevra.startswith(name + "-") for nevra in nevras)
-                for name in requested),
+    require(discovery.get("package_count") == candidate_lock.get("package_count")
+            and total_bytes == candidate_lock.get("package_bytes"),
+            "Fedora runtime package closure differs from the selected artifact bound")
+    require(set(requested).issubset(package_names),
             "Fedora runtime package closure omits a requested package")
 
     installation = contract.get("installation")
+    source_plan = candidate_lock.get("source_package_plan")
+    source_binding = validate_source_package_plan(
+        root, candidate_lock, source_plan.get("requested_root_nevras")
+        if isinstance(source_plan, dict) else None)
     require(isinstance(installation, dict)
             and set(installation) == FEDORA_INSTALLATION_FIELDS,
             "Fedora installation binding fields are incomplete or expanded")
     require(re.fullmatch(r"[a-f0-9]{40}", image_source_commit or "")
             and installation.get("image_source_commit") == image_source_commit
             and image_source_commit == selected_image.get("tested_commit")
+            and installation.get("image_producer") == candidate_lock.get("source_image_producer")
             and installation.get("image_manifest_sha256")
             == selected_image.get("manifest_sha256")
             and re.fullmatch(r"[a-f0-9]{64}", installation.get("before_inventory_sha256", ""))
             and re.fullmatch(r"[a-f0-9]{64}", installation.get("after_inventory_sha256", ""))
-            and installation.get("installed_nevras") == sorted(nevras)
+            and isinstance(source_plan, dict)
+            and installation.get("source_inventory_sha256")
+            == source_binding.get("source_inventory_sha256")
+            and installation.get("before_inventory_sha256")
+            == installation.get("source_inventory_sha256")
+            and installation.get("after_inventory_sha256")
+            == installation.get("source_inventory_sha256")
+            and installation.get("requested_root_nevras")
+            == source_binding.get("requested_root_nevras")
+            and installation.get("requested_root_nevras")
+            == {name: package_nevras_by_name.get(name) for name in sorted(requested)}
+            and installation.get("added_nevras") == source_binding.get("additive_nevras") == []
+            and installation.get("rpm_transaction_empty") is True
+            and source_plan.get("replacements_allowed") is False
             and installation.get("daemon_configuration_sha256")
             == sha256(root / "image/container/daemon.json"),
-            "Fedora installation is not bound to the retained image and complete RPM closure")
+            "Fedora installation is not bound to the unchanged source inventory and signed roots")
     require(contract.get("runsc_package_sha256") == runsc["package_sha256"]
             and contract.get("runsc_repository_fingerprint") == runsc["signing_fingerprint"],
             "Fedora contract uses different runsc package provenance")

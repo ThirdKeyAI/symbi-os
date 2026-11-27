@@ -1,0 +1,68 @@
+name: Container runtime candidate image
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: container-runtime-image-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  image:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 110
+    steps:
+      - name: Check out the proposed installer revision
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Download exact discovery and source-image artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache
+          readarray -t values < <(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          candidates=json.loads(Path('image/container/fedora-runtime-candidates.lock.json').read_text())
+          images=json.loads(Path('image/desktop-images.lock.json').read_text())
+          print(candidates['run_id'])
+          print(candidates['candidate_artifact']['id'])
+          print(candidates['evidence_artifact']['id'])
+          print(candidates['source_image_producer']['run_id'])
+          print(images['images']['generic']['artifact']['id'])
+          PY
+          )
+          [[ ${#values[@]} == 5 ]] || exit 1
+          timeout 30 gh api "repos/ThirdKeyAI/symbi-os/actions/runs/${values[0]}" > .cache/container-runtime-run.json
+          timeout 30 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/${values[1]}" > .cache/container-runtime-candidate-artifact.json
+          timeout 300 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/${values[1]}/zip" > .cache/container-runtime-rpm-candidates.zip
+          timeout 30 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/${values[2]}" > .cache/container-runtime-evidence-artifact.json
+          timeout 120 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/${values[2]}/zip" > .cache/container-runtime-fedora-evidence.zip
+          timeout 30 gh api "repos/ThirdKeyAI/symbi-os/actions/runs/${values[3]}" > .cache/atomic-image-run.json
+          timeout 30 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/${values[4]}" > .cache/atomic-image-artifact.json
+          timeout 1200 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/${values[4]}/zip" > .cache/atomic-development-image.zip
+      - name: Authenticate and prepare the exact offline inputs
+        run: bash scripts/check-container-runtime-image.sh prepare
+      - name: Build and inspect the unqualified runtime candidate
+        run: bash scripts/check-container-runtime-image.sh build
+      - name: Retain bounded public installation evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: container-runtime-image-evidence
+          path: .cache/container-runtime-image-evidence/
+          retention-days: 14
+          if-no-files-found: error
+      - name: Retain the installed development image and generated contract
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: container-runtime-development-image
+          path: .cache/container-runtime-image-output/
+          compression-level: 0
+          retention-days: 3
+          if-no-files-found: error

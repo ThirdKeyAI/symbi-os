@@ -34,6 +34,40 @@ unchanged, and both negative controls passed. The retained
 not install packages, select gVisor, create `fedora-runtime.lock.json`, or set
 `os_qualified` true.
 
+## Candidate image installation
+
+`fedora-runtime-candidates.lock.json` selects successful discovery run
+`45940456063` at exact source commit
+`6927b6514e564f92544c7c24a674738f82b2a09c`. It binds the workflow and
+repository identities, the 108 signed RPMs (116,875,288 bytes), and both hosted
+artifact ZIP digests. The separate `Container runtime candidate image` workflow
+authenticates those API records and the retained desktop OCI before extracting
+anything. It also rechecks the discovery summary, input bindings, complete
+closure manifest, Fedora key and gVisor's signed repository metadata.
+
+The hosted build has no network and one job under a 2 GiB, one-CPU, zero-swap
+subtree. The 108-RPM empty-database closure is provenance and solvability
+evidence; it is not treated as an install delta because it contains clean-root
+provider choices that differ from the Secureblue variant. The build verifies
+every RPM signature again, binds the retained 2,184-package source inventory,
+and requires the exact `moby-engine`, `docker-cli` and `container-selinux` NEVRAs
+in both the signed closure and source image. The reviewed RPM transaction is
+empty: before and after inventory hashes must match, and no addition or
+replacement is allowed. The authenticated gVisor files and reviewed daemon
+configuration must have absent destinations and are copied without executing
+runsc. A read-only, unprivileged probe then checks the unchanged package
+inventory, exact roots, file hashes, ownership, modes and daemon configuration.
+Any future source-aware additive RPM transaction requires a separate reviewed
+lock and hosted evidence; this candidate cannot infer one from the clean-root
+closure.
+
+The workflow emits a derived development OCI and `fedora-runtime.lock.json`.
+The contract records before/after inventory hashes and is accepted by the same
+fail-closed validator used by native preflight. It deliberately keeps
+`qualified`, `os_qualified` and `release_qualified` false. A successful image
+build establishes installation evidence only; daemon startup, the six native
+fixture runs, managed route, escape suite and required review still block P0-05.
+
 `gvisor-inputs.json` fixes release `release-20261123.1`, its commit and tag
 object, the complete x86_64 bzip2 archive, the publisher checksum list, license,
 and every archive member. The passive hosted intake refuses aliases, duplicate
@@ -42,10 +76,11 @@ members. It neither extracts nor executes the archive. The tag and commit are
 unsigned and no GitHub attestation was found, so this candidate remains
 unselected and cannot establish release or OS qualification by itself.
 
-`daemon.json` is a reviewed configuration input, **not installed or enabled on
-the host or current image overlay**. After the packages and runsc pin are ready,
-validate it with the exact `dockerd --validate --config-file` executable before
-installing it into the image. It selects systemd cgroup v2, SELinux, seccomp's
+`daemon.json` is a reviewed configuration input and is never installed or
+enabled on the host. The hosted candidate-image stage installs its exact bytes
+only after the signed package closure and gVisor payload pass. Native
+qualification must validate it with the exact `dockerd --validate --config-file`
+executable before starting the daemon. It selects systemd cgroup v2, SELinux, seccomp's
 default profile, no-new-privileges and explicit `runsc` registration; live restore
 is off because daemon loss can otherwise outlive worker cleanup. It does not set
 `hosts`, avoiding conflicts with the package's socket activation. Qualify that
@@ -88,14 +123,15 @@ container and confirms cleanup. Proxy settings and image environment values are
 excluded from retained daemon/inspection metadata.
 
 It then runs the reviewed upstream filesystem-grant, source-broker and Git-source
-drivers from merge `be3bef1dababb49a68450a883dc1ba97fa6322b0`, separately from
-the installed runtime's exact source checkout. Each complete driver runs once
-with runc and once with runsc. Validation requires the exact 9/9/14 supported
-case sets, the selected runtime in actual worker observations, unchanged source,
-binary, deployment, runsc and driver hashes, and empty worker, lease and
-container state after every run. Failure is retained; discard the VM after an
-uncertain creation/cleanup or timeout. No global Docker prune, daemon restart or
-host-policy change is performed.
+drivers from merge `cd4b34282ade880c8ac3d5136d31ff80cde92794`, separately
+from the installed runtime's exact source checkout. That merge retains PR 24's
+driver bytes and adds PR 25's serialized lifecycle CI. Each complete driver runs
+once with runc and once with runsc. Validation requires the exact 9/9/14
+supported case sets, the selected runtime in actual worker observations,
+unchanged source, binary, deployment, runsc and driver hashes, and empty worker,
+lease and container state after every run. Failure is retained; discard the VM
+after an uncertain creation/cleanup or timeout. No global Docker prune, daemon
+restart or host-policy change is performed.
 
 These are infrastructure probes and bounded tool-worker fixtures. The report
 keeps `qualified: false` even if all six runs pass. The reviewed drivers now have

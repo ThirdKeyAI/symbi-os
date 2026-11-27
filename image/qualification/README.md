@@ -92,16 +92,17 @@ python3 image/qualification/containers.py \
 ```
 
 The runtime checkout remains the exact source of the installed binary. A
-separate clean fixture checkout is pinned to reviewed merge
-`be3bef1dababb49a68450a883dc1ba97fa6322b0`; its tree and all three driver
-digests are checked independently. The driver inspects the daemon, fixture image
-and each bounded runc/runsc probe, then runs all three complete fixture drivers
-once with runc and once with runsc. Each of the six reports must contain the
-exact supported cases, only the selected observed runtime, and no remaining
-workers, leases or containers. The two source trees, binary, runsc, deployment,
-fixture image and driver hashes are rechecked afterward. Its `qualified` field
-deliberately remains false until the managed route, escape suite and required
-reviews are complete.
+separate clean fixture checkout is pinned to merged revision
+`cd4b34282ade880c8ac3d5136d31ff80cde92794`. That revision retains PR 24's
+reviewed fixture drivers and adds PR 25's serialized lifecycle CI; its tree and
+all three driver digests are checked independently. The driver inspects the
+daemon, fixture image and each bounded runc/runsc probe, then runs all three
+complete fixture drivers once with runc and once with runsc. Each of the six
+reports must contain the exact supported cases, only the selected observed
+runtime, and no remaining workers, leases or containers. The two source trees,
+binary, runsc, deployment, fixture image and driver hashes are rechecked
+afterward. Its `qualified` field deliberately remains false until the managed
+route, escape suite and required reviews are complete.
 
 ## Hosted container gate preparation
 

@@ -66,7 +66,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           repository: ThirdKeyAI/Symbiont
-          ref: be3bef1dababb49a68450a883dc1ba97fa6322b0
+          ref: cd4b34282ade880c8ac3d5136d31ff80cde92794
           path: .cache/container-fixture-source
           persist-credentials: false
       - name: Validate container inputs before large image transfer

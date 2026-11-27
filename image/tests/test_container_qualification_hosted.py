@@ -66,13 +66,21 @@ class FedoraContainerController(unittest.TestCase):
             (ROOT / "image/hyprland/package-repository-inputs.json").read_text())
         desktop = json.loads((ROOT / "image/desktop-images.lock.json").read_text())
         selected_image = desktop["images"]["generic"]
-        package_names = [*requirements["packages"], "libcontainer-support"]
+        candidate_lock = json.loads(
+            (ROOT / "image/container/fedora-runtime-candidates.lock.json").read_text())
+        source_plan = candidate_lock["source_package_plan"]
+        package_names = [*requirements["packages"], "libcontainer-support"] + [
+            f"dependency-{index:03}" for index in range(candidate_lock["package_count"] - 4)
+        ]
+        sizes = [1024 + index for index in range(len(package_names))]
+        sizes[-1] += candidate_lock["package_bytes"] - sum(sizes)
         packages = [
             {
                 "filename": name + "-1-1.x86_64.rpm",
-                "bytes": 1024 + index,
-                "sha256": format(index + 1, "x") * 64,
-                "nevra": name + "-1-1.x86_64",
+                "bytes": sizes[index],
+                "sha256": f"{index + 1:064x}",
+                "nevra": source_plan["requested_root_nevras"].get(
+                    name, name + "-1-1.x86_64"),
                 "vendor": "Fedora Project",
                 "license": "Apache-2.0",
                 "signature_verified": True,
@@ -89,11 +97,12 @@ class FedoraContainerController(unittest.TestCase):
             "release_qualified": False,
             "requested_packages": requirements["packages"],
             "discovery": {
-                "workflow": ".github/workflows/fedora-packages.yml",
-                "profile": "container-runtime",
-                "run_id": 123,
-                "run_attempt": 1,
-                "source_commit": "1" * 40,
+                "repository": candidate_lock["repository"],
+                "workflow": candidate_lock["workflow"],
+                "profile": candidate_lock["profile"],
+                "run_id": candidate_lock["run_id"],
+                "run_attempt": candidate_lock["run_attempt"],
+                "source_commit": candidate_lock["source_commit"],
                 "base": base["variants"]["generic"]["image"],
                 "requirements_sha256": self.module.sha256(
                     ROOT / "image/container/runtime-requirements.json"),
@@ -101,21 +110,20 @@ class FedoraContainerController(unittest.TestCase):
                     "selected_configuration_sha256"],
                 "rpm_manifest_sha256": "a" * 64,
                 "input_bindings_sha256": "b" * 64,
-                "package_count": len(packages),
-                "artifact": {
-                    "id": 456,
-                    "name": "container-runtime-rpm-candidates",
-                    "bytes": 8192,
-                    "sha256": "c" * 64,
-                },
+                "package_count": candidate_lock["package_count"],
+                "artifact": candidate_lock["candidate_artifact"],
             },
             "packages": packages,
             "installation": {
                 "image_source_commit": selected_image["tested_commit"],
                 "image_manifest_sha256": selected_image["manifest_sha256"],
-                "before_inventory_sha256": "d" * 64,
-                "after_inventory_sha256": "e" * 64,
-                "installed_nevras": sorted(row["nevra"] for row in packages),
+                "image_producer": candidate_lock["source_image_producer"],
+                "before_inventory_sha256": source_plan["inventory"]["canonical_sha256"],
+                "after_inventory_sha256": source_plan["inventory"]["canonical_sha256"],
+                "source_inventory_sha256": source_plan["inventory"]["canonical_sha256"],
+                "requested_root_nevras": source_plan["requested_root_nevras"],
+                "added_nevras": [],
+                "rpm_transaction_empty": True,
                 "daemon_configuration_sha256": self.module.sha256(
                     ROOT / "image/container/daemon.json"),
             },
@@ -145,8 +153,6 @@ class FedoraContainerController(unittest.TestCase):
             row for row in candidate["packages"]
             if not row["nevra"].startswith("container-selinux-")]
         candidate["discovery"]["package_count"] = len(candidate["packages"])
-        candidate["installation"]["installed_nevras"] = sorted(
-            row["nevra"] for row in candidate["packages"])
         with self.assertRaises(ValueError):
             self.module.validate_fedora_contract(
                 candidate, identity, ROOT, selected_image["tested_commit"])
@@ -175,10 +181,28 @@ class FedoraContainerController(unittest.TestCase):
             self.module.validate_fedora_contract(
                 candidate, identity, ROOT, selected_image["tested_commit"])
         candidate = copy.deepcopy(contract)
-        candidate["installation"]["installed_nevras"].pop()
+        package = next(row for row in candidate["packages"]
+                       if row["nevra"].startswith("container-selinux-"))
+        package["filename"] = "container-selinux-evil-1-1.x86_64.rpm"
+        package["nevra"] = "container-selinux-evil-1-1.x86_64"
         with self.assertRaises(ValueError):
             self.module.validate_fedora_contract(
                 candidate, identity, ROOT, selected_image["tested_commit"])
+        for field, value in (
+            ("source_inventory_sha256", "0" * 64),
+            ("before_inventory_sha256", "0" * 64),
+            ("added_nevras", ["libzstd-1.6.0-1.fc45.x86_64"]),
+            ("rpm_transaction_empty", False),
+            ("requested_root_nevras", {
+                **source_plan["requested_root_nevras"],
+                "moby-engine": "moby-engine-0-0.fc45.x86_64",
+            }),
+        ):
+            candidate = copy.deepcopy(contract)
+            candidate["installation"][field] = value
+            with self.subTest(installation=field), self.assertRaises(ValueError):
+                self.module.validate_fedora_contract(
+                    candidate, identity, ROOT, selected_image["tested_commit"])
         candidate = copy.deepcopy(contract)
         candidate["files"]["usr/bin/runsc"]["sha256"] = "0" * 64
         with self.assertRaises(ValueError):
@@ -199,9 +223,9 @@ class FedoraContainerController(unittest.TestCase):
         self.assertTrue(all(len(value) == 64 for value in result["shared_boot_status_inputs"].values()))
         self.assertNotIn("gvisor-inputs.json", json.dumps(result))
         self.assertEqual(result["fixture_source"]["revision"],
-                         "be3bef1dababb49a68450a883dc1ba97fa6322b0")
+                         "cd4b34282ade880c8ac3d5136d31ff80cde92794")
         self.assertEqual(result["fixture_source"]["tree"],
-                         "207616f4326f83b00c2c8717294f4689c969d093")
+                         "2b2379d0de4eaaf4a57cf52c96355015bb3dc25d")
         self.assertEqual(result["fixture_source"]["runtime_source_revision"],
                          "deddb9e997244d2289c217ad76b8fde0e9b0339b")
 
@@ -284,7 +308,7 @@ class FedoraContainerController(unittest.TestCase):
         self.assertIn("permissions:\n  contents: read\n  actions: read", workflow)
         self.assertIn("inputs.qualification", workflow)
         self.assertIn("check-container-qualification.sh", workflow)
-        self.assertIn("be3bef1dababb49a68450a883dc1ba97fa6322b0", workflow)
+        self.assertIn("cd4b34282ade880c8ac3d5136d31ff80cde92794", workflow)
         self.assertIn("path: .cache/container-fixture-source", workflow)
         self.assertLess(
             workflow.index("Validate container inputs before large image transfer"),
