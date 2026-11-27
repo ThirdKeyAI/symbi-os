@@ -77,3 +77,24 @@ Selected reports, signature results and resource counters are retained under
 This clears the live Ubuntu tool-worker fixture gap for PR 24. P0-05 remains
 open: the selected signed Fedora deployment, managed-CLI broker and escape-suite
 acceptance, plus required reviews, are not established by these six drivers.
+
+## Native fixture OCI export remains disabled
+
+The prepared exporter is not an extension of the passing evidence above. The
+current Dockerfile resolves Python, Git and CA packages live, and this workflow
+tested fixture commit `c1fac8aab6c5d399abb39036ba35b9636212e17f`; the native
+contract binds merge `cd4b34282ade880c8ac3d5136d31ff80cde92794`. The
+`native-fixture-build.lock.json` prerequisite slot therefore remains pending.
+Activation requires a reviewed full package closure authenticated by signed
+Ubuntu Release/InRelease and Packages metadata, exact package identities,
+sizes and hashes, sequential verified downloads, and an offline
+`docker build --network=none`. The same producer run must exercise all six
+profiles from the required merge, then cold-load the generated OCI and resolve
+`localhost/symbi-ci/native-fixture@<manifest digest>`.
+
+The dormant exporter itself uses only Python's standard library. It streams one
+Docker-save image into OCI after checking the config digest and every layer
+against ordered `diff_id` values, fixes gzip and tar metadata, caps compressed
+output at 512 MiB and expanded verification at 1 GiB, and deletes partial
+output on failure. The consumer-format verification runs before any output
+could be retained. No artifact upload step is enabled.

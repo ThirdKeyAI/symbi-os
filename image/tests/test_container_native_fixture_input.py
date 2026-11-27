@@ -146,6 +146,10 @@ class NativeFixtureInput(unittest.TestCase):
             },
             "fixture_source": self.source,
             "archive": archive_binding,
+            "tested_image": {
+                "descriptor": "sha256:" + "7" * 64,
+                "config_digest": image_id,
+            },
             "image": {
                 "repository": inputs.IMAGE_REPOSITORY,
                 "image_id": image_id,
@@ -265,6 +269,18 @@ class NativeFixtureInput(unittest.TestCase):
                 inputs.consume_fixture_bundle(
                     bundle, selection, run, metadata, Path(directory) / "prepared",
                     self.source)
+
+            selection, run, metadata, bundle, archive, manifest = self.ready_fixture(directory)
+            changed = copy.deepcopy(manifest)
+            changed["tested_image"]["descriptor"] = changed["image"]["image_id"]
+            raw = (json.dumps(changed, indent=2) + "\n").encode()
+            selection["manifest"]["sha256"] = digest(raw)
+            self.write_bundle(bundle, raw, archive)
+            self.bind_outer(selection, metadata, bundle)
+            with self.assertRaises(ValueError):
+                inputs.consume_fixture_bundle(
+                    bundle, selection, run, metadata,
+                    Path(directory) / "same-descriptor", self.source)
 
             selection, run, metadata, bundle, archive, manifest = self.ready_fixture(directory)
             changed = copy.deepcopy(manifest)
