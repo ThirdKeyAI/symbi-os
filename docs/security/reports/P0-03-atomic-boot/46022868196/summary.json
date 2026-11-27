@@ -1,0 +1,152 @@
+{
+  "schema": 1,
+  "card": "P0-03",
+  "run": {
+    "id": 46022868196,
+    "attempt": 1,
+    "event": "workflow_dispatch",
+    "head": "d7789b8affa243d8a595ea625078d083c2230f0a",
+    "tree": "4e3ac01e53abd4441ad572d8123e07cbe60bdb74",
+    "parent": "6aabe008d9a534c09b10adfae89fd35f66547f4b",
+    "job_id": 140586697051,
+    "run_started_utc": "2026-11-27T15:12:51Z",
+    "run_completed_utc": "2026-11-27T15:35:43Z",
+    "job_started_utc": "2026-11-27T15:12:56Z",
+    "job_completed_utc": "2026-11-27T15:35:43Z",
+    "native_step_started_utc": "2026-11-27T15:21:17Z",
+    "native_step_completed_utc": "2026-11-27T15:35:38Z",
+    "conclusion": "failure"
+  },
+  "artifact": {
+    "id": 15212700344,
+    "name": "atomic-development-boot-generic",
+    "bytes": 70967,
+    "github_digest": "sha256:9a7620d3c76a3cae3d4c96cf670014d3b85ff56e2869ddad85b0e0a63568ff86",
+    "downloaded_zip_sha256": "9a7620d3c76a3cae3d4c96cf670014d3b85ff56e2869ddad85b0e0a63568ff86",
+    "zip_integrity": true,
+    "safe_regular_relative_members": 95,
+    "uncompressed_bytes": 152290
+  },
+  "failure": {
+    "stage": "same-path-positive",
+    "predecessor_install_passed": true,
+    "qemu_exit_code": 0,
+    "report": {
+      "name": "same-path-positive.json",
+      "state": "empty",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "controller_failure": "missing bounded update phase report",
+    "source_context_captured": false,
+    "avc_captured": false,
+    "collector_stage_observed": null,
+    "collector_failure_observed": null,
+    "transition_failure_validated": false,
+    "phase_diagnostic_validated": true,
+    "interpretation": "The guest process exited cleanly but produced no primary report. The retained content-free transport diagnostic cannot locate the failure inside the guest collector. It does not establish a source context, AVC, transition result, or update result."
+  },
+  "reachability": {
+    "source_authentication_positive": true,
+    "source_signature_negative_controls": {
+      "unsigned": true,
+      "wrong-key": true,
+      "wrong-reference": true,
+      "altered-signature": true
+    },
+    "same_path_qemu_process_completed": true,
+    "in_guest_update_negative_reports": [],
+    "installed_update_phase_reports": [],
+    "updated_boot_phase_reports": [],
+    "rollback_phase_reports": [],
+    "update_acceptance_observed": false,
+    "update_action_observed": false,
+    "updated_boot_observed": false,
+    "rollback_observed": false
+  },
+  "resources": {
+    "outer": {
+      "memory_max": 5368709120,
+      "memory_peak": 5368713216,
+      "memory_swap_max": 0,
+      "cpu_max": "200000 100000",
+      "pids_max": 256,
+      "memory_events": {
+        "max": 171300,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      }
+    },
+    "update_controller": {
+      "memory_max": 3221225472,
+      "memory_peak": 3221225472,
+      "memory_swap_max": 0,
+      "cpu_max": "200000 100000",
+      "pids_max": 64,
+      "memory_events": {
+        "max": 6935,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      }
+    },
+    "predecessor_installer_limits": {
+      "memory_max": 2147483648,
+      "memory_swap_max": 0,
+      "cpu_max": "100000 100000",
+      "pids_max": 128
+    },
+    "added_swap": false
+  },
+  "cleanup": {
+    "containers": {
+      "symbi-atomic-signer": {
+        "removed": true,
+        "absent": true
+      },
+      "symbi-atomic-update-old-installer": {
+        "removed": true,
+        "absent": true
+      },
+      "symbi-atomic-update-old-signer": {
+        "removed": true,
+        "absent": true
+      },
+      "symbi-atomic-update-qemu": {
+        "removed": true,
+        "absent": true
+      }
+    },
+    "loaded_image_removed": true,
+    "loaded_image_absent": true,
+    "loop_list_empty": true,
+    "private_storage_removed": true,
+    "private_runroot_removed": true
+  },
+  "critical_evidence_sha256": {
+    "atomic-update-evidence/controller-result.json": "47a599bf1cfaeb45309479b9b3557488475eb79c188d35c8c8036fd9f536bd2b",
+    "atomic-update-evidence/same-path-positive-diagnostic.json": "4024453a8b2e6a3fc952ce5fb57a264ddb98b66768b694006b09709b79c01a0c",
+    "atomic-update-evidence/result.json": "341c6decc949c5fd1d3419376e17bdc9f37619ae01df23d72f2fbaf5c65b1ded",
+    "atomic-disk-evidence/result.json": "c173725565ee25499fde411483b2e61022c2e748661e1b25ffbaa79ec216d890",
+    "atomic-disk-evidence/signed-update-and-rollback-stderr.log": "0274df4d6f476c5536248cdf4f21b4fa2cdcbc5be6dbdcc99e1ffff16cda6fd9",
+    "atomic-disk-evidence/hosted.log": "b8f72570140392f81e03235dbfa70df17dc9fe52d62b9432a0651169b8b2a2f8",
+    "atomic-disk-evidence/systemd-result.txt": "2204305eff4f0c6fb67e26f88648a256b88f3965a6984c130c5527e0ad5059ee",
+    "atomic-disk-evidence/source-authentication/result.json": "c8d5ac6631523c6f7ddcc4cfb1eed4837159e2aaa18424b5e7287b872a88185e"
+  },
+  "claims": {
+    "passed": false,
+    "guest_booted": false,
+    "release_qualified": false,
+    "os_qualified": false,
+    "p0_03_qualified": false
+  },
+  "retention": {
+    "raw_logs_committed": false,
+    "raw_serial_committed": false,
+    "raw_journal_committed": false,
+    "disk_images_committed": false,
+    "private_keys_committed": false,
+    "note": "Only compact content-free facts and hashes are retained in Git; the downloaded artifact remains outside the repository."
+  }
+}

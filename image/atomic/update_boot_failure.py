@@ -5,12 +5,14 @@ import os
 from pathlib import Path
 import re
 import selectors
+import stat
 import subprocess
 import sys
 import time
 
 
 CHANNEL = Path("/dev/virtio-ports/org.symbi.update")
+COLLECTOR_CHANNEL = Path("/dev/virtio-ports/org.symbi.update.diagnostic")
 LAUNCHER_UNIT = "b.service"
 SOURCE_CAPTURE_COMMAND = ["/usr/bin/cat", "/proc/self/attr/current"]
 BOOTC_CONTEXT = "system_u:system_r:install_t:s0"
@@ -51,6 +53,12 @@ COMMAND_STDOUT_MAX_BYTES = 64 * 1024
 COMMAND_STDERR_MAX_BYTES = 8 * 1024
 REPORT_MAX_BYTES = 128 * 1024
 SCOPE = "Bounded explicit-transition diagnostics; no update action ran"
+COLLECTOR_SCOPE = "Bounded collector progress; no transition or update claim"
+COLLECTOR_MAX_EVENT_BYTES = 1024
+COLLECTOR_STAGES = (
+    "service-properties", "source-journal", "monitor", "identity-correlation",
+    "avc-journal", "bounded-journal", "report-build", "primary-report-write",
+)
 _SENSITIVE_COMPONENT = (
     r"(?:(?:api|private)[_.-]key|authorization|authentication|auth|cookie|"
     r"credential|password|passwd|passphrase|secret|token|jwt|pat|key)"
@@ -444,12 +452,143 @@ def write_report(report, channel=CHANNEL):
     while not channel.exists() and time.monotonic() < deadline:
         time.sleep(0.1)
     with channel.open("wb", buffering=0) as output:
-        offset = 0
-        while offset < len(raw):
-            written = output.write(raw[offset:])
-            if type(written) is not int or not 0 < written <= len(raw) - offset:
-                raise RuntimeError("transition report channel stopped accepting data")
-            offset += written
+        _write_all(output, raw, "transition report channel")
+    return {"bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest()}
+
+
+def _write_all(output, raw, description):
+    offset = 0
+    while offset < len(raw):
+        written = output.write(raw[offset:])
+        if type(written) is not int or not 0 < written <= len(raw) - offset:
+            raise RuntimeError(description + " stopped accepting data")
+        offset += written
+
+
+def open_collector_channel(channel=COLLECTOR_CHANNEL):
+    """Open the auxiliary port without waiting; absence cannot block the report."""
+    descriptor = None
+    try:
+        channel = Path(channel)
+        flags = os.O_WRONLY | os.O_CLOEXEC | os.O_NONBLOCK
+        descriptor = os.open(channel, flags)
+        if not stat.S_ISCHR(os.fstat(descriptor).st_mode):
+            os.close(descriptor)
+            return None
+        return descriptor
+    except BaseException:
+        if descriptor is not None:
+            try:
+                os.close(descriptor)
+            except BaseException:
+                pass
+        return None
+
+
+def collector_failure_kind(error):
+    """Reduce an exception to a fixed, content-free diagnostic class."""
+    if isinstance(error, subprocess.TimeoutExpired):
+        return "timeout"
+    if isinstance(error, subprocess.CalledProcessError):
+        return "command-exit"
+    if isinstance(error, PermissionError):
+        return "permission"
+    if isinstance(error, OSError):
+        return "os-error"
+    if isinstance(error, (UnicodeError, json.JSONDecodeError, ValueError)):
+        return "invalid-evidence"
+    if isinstance(error, RuntimeError):
+        return "transport"
+    return "unexpected"
+
+
+def write_collector_event(output, event, runner_hash, *, sequence, stage=None,
+                          failure_kind=None, report_observation=None):
+    """Write one canonical, allowlisted progress event without raw failure text."""
+    if (event not in {"collector-started", "collector-stage", "collector-failed",
+                      "collector-completed"}
+            or re.fullmatch(r"[a-f0-9]{64}", runner_hash or "") is None
+            or type(sequence) is not int or not 0 <= sequence <= 9):
+        raise ValueError("invalid collector progress event")
+    record = {
+        "schema": 1,
+        "passed": False,
+        "release_qualified": False,
+        "diagnostic": "transition-evidence-collector",
+        "event": event,
+        "seq": sequence,
+        "unit": LAUNCHER_UNIT,
+        "runner_sha256": runner_hash,
+        "scope": COLLECTOR_SCOPE,
+    }
+    if event in {"collector-stage", "collector-failed", "collector-completed"}:
+        if stage not in COLLECTOR_STAGES:
+            raise ValueError("invalid collector progress stage")
+        record["stage"] = stage
+    elif stage is not None:
+        raise ValueError("collector start cannot name a stage")
+    if event == "collector-failed":
+        if failure_kind not in {
+                "timeout", "command-exit", "permission", "os-error",
+                "invalid-evidence", "transport", "unexpected"}:
+            raise ValueError("invalid collector failure kind")
+        record["failure_kind"] = failure_kind
+    elif failure_kind is not None:
+        raise ValueError("non-failure collector event named a failure")
+    if event == "collector-completed":
+        if (not isinstance(report_observation, dict)
+                or set(report_observation) != {"bytes", "sha256"}
+                or type(report_observation.get("bytes")) is not int
+                or not 0 < report_observation["bytes"] <= REPORT_MAX_BYTES
+                or re.fullmatch(
+                    r"[a-f0-9]{64}", report_observation.get("sha256", "")) is None):
+            raise ValueError("invalid completed primary-report observation")
+        record["report"] = report_observation
+    elif report_observation is not None:
+        raise ValueError("non-completion collector event named a report")
+    raw = (json.dumps(record, sort_keys=True, separators=(",", ":"),
+                      allow_nan=False) + "\n").encode()
+    if not 0 < len(raw) <= COLLECTOR_MAX_EVENT_BYTES:
+        raise ValueError("collector progress event exceeded its bound")
+    written = (os.write(output, raw) if type(output) is int else output.write(raw))
+    if type(written) is not int or written != len(raw):
+        raise RuntimeError("collector progress channel did not accept one event")
+
+
+def _close_collector_output(output):
+    if type(output) is int:
+        os.close(output)
+    else:
+        output.close()
+
+
+def safe_collector_event(state, event, runner_hash, **fields):
+    """Disable auxiliary diagnostics after any failure without masking evidence."""
+    output = state.get("output")
+    if output is None:
+        return False
+    try:
+        write_collector_event(
+            output, event, runner_hash, sequence=state["sequence"], **fields)
+    except BaseException:
+        try:
+            _close_collector_output(output)
+        except BaseException:
+            pass
+        state["output"] = None
+        return False
+    state["sequence"] += 1
+    return True
+
+
+def close_collector(state):
+    output = state.get("output")
+    state["output"] = None
+    if output is not None:
+        try:
+            _close_collector_output(output)
+        except BaseException:
+            pass
 
 
 def main():
@@ -457,43 +596,91 @@ def main():
     if (os.geteuid() != 0 or product != "Symbi-Hosted-Update-Probe"
             or Path("/run/.containerenv").exists() or len(sys.argv) != 1):
         raise SystemExit("Use only the disposable hosted update guest")
-    properties = service_properties(fixed_command([
-        "/usr/bin/systemctl", "show", LAUNCHER_UNIT,
-        "--property=" + STATUS_PROPERTIES,
-    ], timeout=10, stdout_max=4096))
-    source = parse_source_capture(fixed_command(
-        SOURCE_JOURNAL_COMMAND, timeout=5,
-        stdout_max=STRUCTURED_JOURNAL_MAX_BYTES), properties["InvocationID"])
-    monitor = monitor_properties()
-    if (monitor["invocation_id"] != properties["InvocationID"]
-            or monitor["service_result"] != properties["Result"]
-            or monitor["exit_status"] != properties["ExecMainStatus"]
-            or source["invocation_id"] != properties["InvocationID"]
-            or abs(source["receipt_monotonic_usec"]
-                   - int(properties["ExecMainStartTimestampMonotonic"]))
-               > JOURNAL_CORRELATION_MARGIN_USEC):
-        raise ValueError("transition diagnostic identities differ")
-    avc = bounded_avc_evidence(source, properties)
-    probe = source
-    journal = bounded_journal_excerpt(fixed_command(
-        JOURNAL_COMMAND, timeout=10, stdout_max=COMMAND_STDOUT_MAX_BYTES))
-    report = {
-        "schema": 1,
-        "passed": False,
-        "guest_booted": True,
-        "release_qualified": False,
-        "product": product,
-        "diagnostic": "bootc-transition-probe-failure",
-        "unit": LAUNCHER_UNIT,
-        "runner_sha256": sha256(Path(__file__)),
-        "service": properties,
-        "monitor": monitor,
-        "probe": probe,
-        "avc": avc,
-        "journal": journal,
-        "scope": SCOPE,
-    }
-    write_report(report)
+    runner_hash = sha256(Path(__file__))
+    collector = {"output": open_collector_channel(), "sequence": 0}
+    stage = None
+    try:
+        safe_collector_event(collector, "collector-started", runner_hash)
+
+        stage = "service-properties"
+        safe_collector_event(
+            collector, "collector-stage", runner_hash, stage=stage)
+        properties = service_properties(fixed_command([
+            "/usr/bin/systemctl", "show", LAUNCHER_UNIT,
+            "--property=" + STATUS_PROPERTIES,
+        ], timeout=10, stdout_max=4096))
+
+        stage = "source-journal"
+        safe_collector_event(
+            collector, "collector-stage", runner_hash, stage=stage)
+        source = parse_source_capture(fixed_command(
+            SOURCE_JOURNAL_COMMAND, timeout=5,
+            stdout_max=STRUCTURED_JOURNAL_MAX_BYTES), properties["InvocationID"])
+
+        stage = "monitor"
+        safe_collector_event(
+            collector, "collector-stage", runner_hash, stage=stage)
+        monitor = monitor_properties()
+        stage = "identity-correlation"
+        safe_collector_event(
+            collector, "collector-stage", runner_hash, stage=stage)
+        if (monitor["invocation_id"] != properties["InvocationID"]
+                or monitor["service_result"] != properties["Result"]
+                or monitor["exit_status"] != properties["ExecMainStatus"]
+                or source["invocation_id"] != properties["InvocationID"]
+                or abs(source["receipt_monotonic_usec"]
+                       - int(properties["ExecMainStartTimestampMonotonic"]))
+                   > JOURNAL_CORRELATION_MARGIN_USEC):
+            raise ValueError("transition diagnostic identities differ")
+
+        stage = "avc-journal"
+        safe_collector_event(
+            collector, "collector-stage", runner_hash, stage=stage)
+        avc = bounded_avc_evidence(source, properties)
+
+        stage = "bounded-journal"
+        safe_collector_event(
+            collector, "collector-stage", runner_hash, stage=stage)
+        journal = bounded_journal_excerpt(fixed_command(
+            JOURNAL_COMMAND, timeout=10, stdout_max=COMMAND_STDOUT_MAX_BYTES))
+        stage = "report-build"
+        safe_collector_event(
+            collector, "collector-stage", runner_hash, stage=stage)
+        report = {
+            "schema": 1,
+            "passed": False,
+            "guest_booted": True,
+            "release_qualified": False,
+            "product": product,
+            "diagnostic": "bootc-transition-probe-failure",
+            "unit": LAUNCHER_UNIT,
+            "runner_sha256": runner_hash,
+            "service": properties,
+            "monitor": monitor,
+            "probe": source,
+            "avc": avc,
+            "journal": journal,
+            "scope": SCOPE,
+        }
+
+        stage = "primary-report-write"
+        safe_collector_event(
+            collector, "collector-stage", runner_hash, stage=stage)
+        report_observation = write_report(report)
+        safe_collector_event(
+            collector, "collector-completed", runner_hash, stage=stage,
+            report_observation=report_observation)
+    except BaseException as error:
+        if stage is not None:
+            try:
+                safe_collector_event(
+                    collector, "collector-failed", runner_hash, stage=stage,
+                    failure_kind=collector_failure_kind(error))
+            except BaseException:
+                pass
+        raise
+    finally:
+        close_collector(collector)
 
 
 if __name__ == "__main__":

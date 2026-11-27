@@ -10,11 +10,21 @@ import time
 
 
 MAX_REPORT = 128 * 1024
+MAX_COLLECTOR_DIAGNOSTIC = 16 * 1024
 DISPOSABLE_PHASE_TIMEOUT_SECONDS = 1800
 NEGATIVE_CASES = ("unsigned", "wrong-key", "wrong-reference", "altered-signature")
 NEGATIVE_UPDATE_SOURCE = "/run/symbi-update-negative/source"
 POSITIVE_OVERLAY_CASE = "valid-signature"
 TRANSITION_FAILURE_SCOPE = "Bounded explicit-transition diagnostics; no update action ran"
+TRANSITION_COLLECTOR_SCOPE = "Bounded collector progress; no transition or update claim"
+TRANSITION_COLLECTOR_STAGES = (
+    "service-properties", "source-journal", "monitor", "identity-correlation",
+    "avc-journal", "bounded-journal", "report-build", "primary-report-write",
+)
+TRANSITION_COLLECTOR_FAILURE_KINDS = {
+    "timeout", "command-exit", "permission", "os-error", "invalid-evidence",
+    "transport", "unexpected",
+}
 TRANSITION_FAILURE_JOURNAL_COMMAND = [
     "/usr/bin/journalctl", "--unit=b.service", "--boot=0", "--no-pager",
     "--output=short-monotonic", "--lines=24",
@@ -72,7 +82,7 @@ def sha256(path):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
-def _phase_report_observation(path, name):
+def _phase_report_observation(path, name, maximum=MAX_REPORT):
     """Describe the exact report endpoint after one QEMU process exits."""
     path = Path(path)
     try:
@@ -86,7 +96,7 @@ def _phase_report_observation(path, name):
     if info.st_size == 0:
         return {"name": name, "state": "empty", "bytes": 0,
                 "sha256": hashlib.sha256(b"").hexdigest()}
-    if info.st_size > MAX_REPORT:
+    if info.st_size > maximum:
         return {"name": name, "state": "oversized", "bytes": info.st_size,
                 "sha256": None}
     return {"name": name, "state": "ready", "bytes": info.st_size,
@@ -105,6 +115,153 @@ def unique_json(raw):
     if not isinstance(value, dict):
         raise ValueError("update report must be an object")
     return value
+
+
+def validate_collector_diagnostic(raw, runner_hash):
+    """Validate and normalize the isolated transition-collector event stream."""
+    if (not isinstance(raw, bytes) or not 0 < len(raw) <= MAX_COLLECTOR_DIAGNOSTIC
+            or re.fullmatch(r"[a-f0-9]{64}", runner_hash or "") is None):
+        raise ValueError("invalid transition collector stream")
+    common = {
+        "schema": 1,
+        "passed": False,
+        "release_qualified": False,
+        "diagnostic": "transition-evidence-collector",
+        "unit": "b.service",
+        "runner_sha256": runner_hash,
+        "scope": TRANSITION_COLLECTOR_SCOPE,
+    }
+    events = []
+    event_offsets = []
+    offset = 0
+    suffix = None
+    while offset < len(raw):
+        end = raw.find(b"\n", offset)
+        if end < 0:
+            remaining = raw[offset:]
+            suffix = {"state": "truncated", "bytes": len(remaining),
+                      "sha256": hashlib.sha256(remaining).hexdigest()}
+            break
+        line_raw = raw[offset:end]
+        next_offset = end + 1
+        try:
+            if (not 0 < len(line_raw) <= 1024
+                    or len(events) >= len(TRANSITION_COLLECTOR_STAGES) + 2):
+                raise ValueError("transition collector event exceeded its bound")
+
+            def reject_constant(_value):
+                raise ValueError("non-finite collector number")
+
+            def unique(pairs):
+                value = {}
+                for key, item in pairs:
+                    if key in value:
+                        raise ValueError("duplicate transition collector key")
+                    value[key] = item
+                return value
+
+            line = line_raw.decode("utf-8", errors="strict")
+            event = json.loads(
+                line, object_pairs_hook=unique, parse_constant=reject_constant)
+            canonical = json.dumps(
+                event, sort_keys=True, separators=(",", ":"),
+                allow_nan=False).encode()
+            if canonical != line_raw or not isinstance(event, dict):
+                raise ValueError("noncanonical transition collector event")
+        except (UnicodeError, ValueError, json.JSONDecodeError):
+            remaining = raw[offset:]
+            suffix = {"state": "invalid", "bytes": len(remaining),
+                      "sha256": hashlib.sha256(remaining).hexdigest()}
+            break
+        event_name = event.get("event") if isinstance(event, dict) else None
+        required = set(common) | {"event", "seq"}
+        if event_name in {"collector-stage", "collector-completed"}:
+            required.add("stage")
+            if event_name == "collector-completed":
+                required.add("report")
+        elif event_name == "collector-failed":
+            required.update({"stage", "failure_kind"})
+        if (set(event) != required
+                or type(event.get("schema")) is not int
+                or event.get("schema") != 1
+                or event.get("passed") is not False
+                or event.get("release_qualified") is not False
+                or type(event.get("seq")) is not int
+                or event.get("seq") != len(events)
+                or any(event.get(key) != value for key, value in common.items())):
+            remaining = raw[offset:]
+            suffix = {"state": "invalid", "bytes": len(remaining),
+                      "sha256": hashlib.sha256(remaining).hexdigest()}
+            break
+        event_offsets.append(offset)
+        events.append(event)
+        offset = next_offset
+    if not events:
+        raise ValueError("transition collector receipt is absent")
+    if events[0]["event"] != "collector-started":
+        raise ValueError("transition collector receipt is absent")
+    stages = []
+    terminal = None
+    for index, event in enumerate(events[1:], 1):
+        event_name = event["event"]
+        if terminal is not None:
+            invalid_offset = event_offsets[index]
+            suffix = {"state": "invalid", "bytes": len(raw) - invalid_offset,
+                      "sha256": hashlib.sha256(raw[invalid_offset:]).hexdigest()}
+            break
+        if event_name == "collector-stage":
+            if (len(stages) >= len(TRANSITION_COLLECTOR_STAGES)
+                    or event["stage"] != TRANSITION_COLLECTOR_STAGES[len(stages)]):
+                invalid_offset = event_offsets[index]
+                suffix = {"state": "invalid", "bytes": len(raw) - invalid_offset,
+                          "sha256": hashlib.sha256(raw[invalid_offset:]).hexdigest()}
+                break
+            stages.append(event["stage"])
+        elif event_name == "collector-failed":
+            if (not stages or event["stage"] != stages[-1]
+                    or event["failure_kind"] not in TRANSITION_COLLECTOR_FAILURE_KINDS):
+                invalid_offset = event_offsets[index]
+                suffix = {"state": "invalid", "bytes": len(raw) - invalid_offset,
+                          "sha256": hashlib.sha256(raw[invalid_offset:]).hexdigest()}
+                break
+            terminal = {"event": event_name, "stage": event["stage"],
+                        "failure_kind": event["failure_kind"]}
+        elif event_name == "collector-completed":
+            if (stages != list(TRANSITION_COLLECTOR_STAGES)
+                    or event["stage"] != TRANSITION_COLLECTOR_STAGES[-1]):
+                invalid_offset = event_offsets[index]
+                suffix = {"state": "invalid", "bytes": len(raw) - invalid_offset,
+                          "sha256": hashlib.sha256(raw[invalid_offset:]).hexdigest()}
+                break
+            report = event.get("report")
+            if (not isinstance(report, dict)
+                    or set(report) != {"bytes", "sha256"}
+                    or type(report.get("bytes")) is not int
+                    or not 0 < report["bytes"] <= MAX_REPORT
+                    or re.fullmatch(r"[a-f0-9]{64}", report.get("sha256", "")) is None):
+                invalid_offset = event_offsets[index]
+                suffix = {"state": "invalid", "bytes": len(raw) - invalid_offset,
+                          "sha256": hashlib.sha256(raw[invalid_offset:]).hexdigest()}
+                break
+            terminal = {"event": event_name, "stage": event["stage"],
+                        "report": report}
+        else:
+            invalid_offset = event_offsets[index]
+            suffix = {"state": "invalid", "bytes": len(raw) - invalid_offset,
+                      "sha256": hashlib.sha256(raw[invalid_offset:]).hexdigest()}
+            break
+    return {
+        "schema": 1,
+        "passed": False,
+        "release_qualified": False,
+        "diagnostic": "transition-evidence-collector",
+        "runner_sha256": runner_hash,
+        "scope": TRANSITION_COLLECTOR_SCOPE,
+        "receipt": True,
+        "stages": stages,
+        "terminal": terminal,
+        "suffix": suffix,
+    }
 
 
 def validate_transition_failure_report(report, runner_hash):
@@ -330,13 +487,16 @@ def firmware_arguments(directory=Path("/inputs"), expected_filename="expected.js
     return result
 
 
-def _qemu_command(overlay, report, serial, expected_filename,
+def _qemu_command(overlay, report, serial, expected_filename, collector=None,
                   directory=Path("/inputs"), output=Path("/output")):
     if (directory != Path("/inputs") or output != Path("/output")
             or any(not isinstance(value, str) or not value.startswith("/output/")
-                   for value in (overlay, report, serial))):
+                   for value in (overlay, report, serial))
+            or (collector is not None
+                and (not isinstance(collector, str)
+                     or not collector.startswith("/output/")))):
         raise ValueError("fixed update QEMU paths and mounts required")
-    return [
+    command = [
         "/usr/bin/qemu-system-x86_64", "-machine", "q35,dump-guest-core=off",
         "-accel", "tcg,thread=single", "-cpu", "max", "-m", "2048M", "-smp", "1",
         "-nodefaults", "-no-user-config", "-no-reboot", "-net", "none",
@@ -350,6 +510,14 @@ def _qemu_command(overlay, report, serial, expected_filename,
         "-device", "virtio-rng-pci", "-device", "virtio-serial-pci",
         "-chardev", "file,id=report,path=" + report,
         "-device", "virtserialport,chardev=report,name=org.symbi.update",
+    ]
+    if collector is not None:
+        command += [
+            "-chardev", "file,id=collector,path=" + collector,
+            "-device", "virtserialport,chardev=collector,"
+                       "name=org.symbi.update.diagnostic",
+        ]
+    return command + [
         "-serial", "file:" + serial, "-monitor", "none", "-display", "none",
         *firmware_arguments(directory, expected_filename),
     ]
@@ -359,7 +527,8 @@ def qemu_command(index, directory=Path("/inputs"), output=Path("/output")):
     if type(index) is not int or not 0 <= index <= 2:
         raise ValueError("fixed update QEMU phase required")
     return _qemu_command("/output/guest.qcow2", f"/output/phase-{index}.json",
-                         f"/output/serial-{index}.log", "expected.json", directory, output)
+                         f"/output/serial-{index}.log", "expected.json",
+                         directory=directory, output=output)
 
 
 def negative_qemu_command(case, directory=Path("/inputs"), output=Path("/output")):
@@ -368,14 +537,16 @@ def negative_qemu_command(case, directory=Path("/inputs"), output=Path("/output"
     return _qemu_command(f"/output/negative-{case}.qcow2",
                          f"/output/negative-{case}.json",
                          f"/output/negative-{case}-serial.log",
-                         f"expected-{case}.json", directory, output)
+                         f"expected-{case}.json", directory=directory, output=output)
 
 
 def positive_qemu_command(directory=Path("/inputs"), output=Path("/output")):
     return _qemu_command("/output/same-path-positive.qcow2",
                          "/output/same-path-positive.json",
                          "/output/same-path-positive-serial.log",
-                         "expected-positive.json", directory, output)
+                         "expected-positive.json",
+                         "/output/same-path-positive-collector.jsonl",
+                         directory, output)
 
 
 def validate_source_device(report, expected):
@@ -723,7 +894,8 @@ def main():
                                check=True, timeout=30)
             return path, (path.stat().st_dev, path.stat().st_ino)
 
-        def run_qemu(command, label, report_name, serial_name, timeout):
+        def run_qemu(command, label, report_name, serial_name, timeout,
+                     collector_name=None):
             nonlocal child
             record["active_phase"] = label
             record["commands"] = record.get("commands", []) + [command]
@@ -736,9 +908,15 @@ def main():
                                          env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8",
                                               "HOME": "/output", "TMPDIR": "/output"})
                 while child.poll() is None:
-                    for name, maximum in ((serial_name, 2 * 1024 * 1024),
-                                          (log_name, 1024 * 1024),
-                                          (report_name, MAX_REPORT)):
+                    bounded_outputs = [
+                        (serial_name, 2 * 1024 * 1024),
+                        (log_name, 1024 * 1024),
+                        (report_name, MAX_REPORT),
+                    ]
+                    if collector_name is not None:
+                        bounded_outputs.append(
+                            (collector_name, MAX_COLLECTOR_DIAGNOSTIC))
+                    for name, maximum in bounded_outputs:
                         path = output / name
                         if path.exists() and path.stat().st_size > maximum:
                             raise ValueError("update guest output exceeded its bound: " + name)
@@ -754,6 +932,10 @@ def main():
                 "serial_name": serial_name,
                 "report": _phase_report_observation(output / report_name, report_name),
             }
+            if collector_name is not None:
+                phase_process["collector"] = _phase_report_observation(
+                    output / collector_name, collector_name,
+                    MAX_COLLECTOR_DIAGNOSTIC)
             if child.returncode != 0:
                 record["phase_failure"] = phase_process
                 raise RuntimeError("update QEMU phase failed; inspect original logs")
@@ -767,7 +949,8 @@ def main():
         positive_overlay, positive_identity = create_overlay("same-path-positive.qcow2")
         path, elapsed = run_qemu(
             positive_qemu_command(), "same-path-positive", "same-path-positive.json",
-            "same-path-positive-serial.log", DISPOSABLE_PHASE_TIMEOUT_SECONDS)
+            "same-path-positive-serial.log", DISPOSABLE_PHASE_TIMEOUT_SECONDS,
+            "same-path-positive-collector.jsonl")
         positive_report = unique_json(path.read_bytes())
         if positive_report.get("diagnostic") == "bootc-transition-probe-failure":
             record["transition_failure"] = validate_transition_failure_report(

@@ -16,7 +16,9 @@ from image.atomic.update_contract import (NEGATIVE_CASES, NEGATIVE_UPDATE_SOURCE
                                           negative_signature_payloads,
                                           require_update_base, update_policy,
                                           validate_artifact_metadata, validate_report)
-from image.atomic.update_boot import (positive_qemu_command,
+from image.atomic.update_boot import (MAX_COLLECTOR_DIAGNOSTIC,
+                                      positive_qemu_command,
+                                      validate_collector_diagnostic,
                                       validate_transition_failure_report)
 from image.atomic.update_process import TIMEOUT_SECONDS
 from image.boot.inputs import unpack_desktop_image
@@ -28,7 +30,8 @@ MAX_PUBLIC_OUTPUT_BYTES = 2 * 1024**2
 
 def _controller_output_names():
     public = {"result.json"}
-    overlays = {"same-path-positive.qcow2", "guest.qcow2"}
+    overlays = {"same-path-positive.qcow2", "guest.qcow2",
+                "same-path-positive-collector.jsonl"}
     public.update({"prepare-same-path-positive.qcow2.log",
                    "qemu-same-path-positive.log",
                    "same-path-positive-serial.log", "same-path-positive.json",
@@ -45,7 +48,7 @@ def _controller_output_names():
     return public, overlays
 
 
-def _read_bounded_regular(path):
+def _read_bounded_regular(path, maximum=MAX_PUBLIC_OUTPUT_BYTES):
     flags = os.O_RDONLY | os.O_CLOEXEC | os.O_NONBLOCK
     if hasattr(os, "O_NOFOLLOW"):
         flags |= os.O_NOFOLLOW
@@ -53,10 +56,10 @@ def _read_bounded_regular(path):
     try:
         before = os.fstat(descriptor)
         if (not stat.S_ISREG(before.st_mode) or before.st_nlink != 1
-                or before.st_size > MAX_PUBLIC_OUTPUT_BYTES):
+                or before.st_size > maximum):
             raise ValueError("unsafe or oversized update controller output: " + path.name)
         chunks = []
-        remaining = MAX_PUBLIC_OUTPUT_BYTES + 1
+        remaining = maximum + 1
         while remaining:
             chunk = os.read(descriptor, min(128 * 1024, remaining))
             if not chunk:
@@ -97,21 +100,55 @@ def _missing_report_diagnostic(controller, payloads):
                    or re.fullmatch(r"[a-f0-9]{64}", value) is None
                    for value in inputs.values())):
         return None
+    def observation(name, raw, maximum):
+        if raw is None:
+            return {"name": name, "state": "absent", "bytes": 0, "sha256": None}
+        if raw == b"":
+            return {"name": name, "state": "empty", "bytes": 0,
+                    "sha256": hashlib.sha256(b"").hexdigest()}
+        if len(raw) > maximum:
+            return {"name": name, "state": "oversized", "bytes": len(raw),
+                    "sha256": None}
+        return {"name": name, "state": "ready", "bytes": len(raw),
+                "sha256": hashlib.sha256(raw).hexdigest()}
+
     report_name = "same-path-positive.json"
     report_raw = payloads.get(report_name) if report_name in payloads else None
     if report_raw is not None and not isinstance(report_raw, bytes):
         return None
-    report = ({"name": report_name, "state": "absent", "bytes": 0,
-               "sha256": None} if report_raw is None else
-              {"name": report_name, "state": "empty", "bytes": len(report_raw),
-               "sha256": hashlib.sha256(report_raw).hexdigest()})
+    report = observation(report_name, report_raw, 128 * 1024)
     if report_raw not in (None, b""):
+        return None
+    collector_name = "same-path-positive-collector.jsonl"
+    collector_raw = payloads.get(collector_name)
+    if collector_raw is not None and not isinstance(collector_raw, bytes):
+        return None
+    collector = observation(
+        collector_name, collector_raw, MAX_COLLECTOR_DIAGNOSTIC)
+    collector_events = None
+    collector_prefix_validated = False
+    collector_stream_validated = False
+    if collector["state"] == "ready":
+        try:
+            collector_events = validate_collector_diagnostic(
+                collector_raw, inputs["update_boot_failure.py"])
+        except ValueError:
+            collector_events = None
+        if collector_events is not None:
+            collector_prefix_validated = True
+            collector_stream_validated = collector_events["suffix"] is None
+            if (isinstance(collector_events.get("terminal"), dict)
+                    and collector_events["terminal"].get("event")
+                    == "collector-completed"):
+                return None
+    elif collector["state"] not in {"absent", "empty"}:
         return None
     phase = controller.get("phase_failure")
     phase_report = phase.get("report") if isinstance(phase, dict) else None
+    phase_collector = phase.get("collector") if isinstance(phase, dict) else None
     if (not isinstance(phase, dict) or set(phase) != {
             "label", "command_sha256", "exit_code", "log_name", "serial_name",
-            "report",
+            "report", "collector",
             }
             or phase.get("label") != "same-path-positive"
             or phase.get("command_sha256") != command_hash
@@ -126,7 +163,10 @@ def _missing_report_diagnostic(controller, payloads):
             or type(phase_report.get("bytes")) is not int
             or (phase_report.get("sha256") is not None
                 and not isinstance(phase_report.get("sha256"), str))
-            or phase_report != report):
+            or phase_report != report
+            or not isinstance(phase_collector, dict)
+            or set(phase_collector) != {"name", "state", "bytes", "sha256"}
+            or phase_collector != collector):
         return None
     cleanup = controller.get("child_cleanup")
     if (not isinstance(cleanup, dict)
@@ -173,6 +213,10 @@ def _missing_report_diagnostic(controller, payloads):
         "report": report,
         "outputs": {"serial_name": phase["serial_name"],
                     "qemu_log_name": phase["log_name"]},
+        "collector": {"observation": collector,
+                      "prefix_validated": collector_prefix_validated,
+                      "stream_validated": collector_stream_validated,
+                      "events": collector_events},
         "inputs": inputs,
         "resources": {"cpu.max": final["cpu.max"],
                       "memory.max": final["memory.max"],
@@ -182,11 +226,13 @@ def _missing_report_diagnostic(controller, payloads):
                       "memory.events": {name: events[name]
                                         for name in sorted(published_event_names)}},
     }
-    return (json.dumps(diagnostic, sort_keys=True, separators=(",", ":"))
-            + "\n").encode()
+    raw = (json.dumps(diagnostic, sort_keys=True, separators=(",", ":"))
+           + "\n").encode()
+    return raw, collector_prefix_validated, collector_stream_validated
 
 
-def _fixed_missing_report_controller(inputs):
+def _fixed_missing_report_controller(inputs, collector_prefix_validated,
+                                     collector_stream_validated):
     result = {
         "schema": 1, "passed": False, "guest_booted": False,
         "release_qualified": False, "active_phase": "same-path-positive",
@@ -195,6 +241,8 @@ def _fixed_missing_report_controller(inputs):
         "inputs": {name: inputs[name] for name in (
             "update_boot.py", "update_guest.py", "update_boot_failure.py")},
         "phase_diagnostic_validated": True,
+        "collector_prefix_validated": collector_prefix_validated,
+        "collector_stream_validated": collector_stream_validated,
         "transition_failure_validated": False,
     }
     return (json.dumps(result, sort_keys=True, separators=(",", ":")) + "\n").encode()
@@ -246,10 +294,13 @@ def _transition_failure_publication(payloads):
     if embedded is not None:
         validated_embedded = validate_transition_failure_report(embedded, runner_hash)
     if not report_claimed:
-        diagnostic = _missing_report_diagnostic(controller, payloads)
-        if diagnostic is not None:
+        diagnostic_result = _missing_report_diagnostic(controller, payloads)
+        if diagnostic_result is not None:
+            diagnostic, prefix_validated, stream_validated = diagnostic_result
             return [("controller-result.json",
-                     _fixed_missing_report_controller(controller["inputs"])),
+                     _fixed_missing_report_controller(
+                         controller["inputs"], prefix_validated,
+                         stream_validated)),
                     ("same-path-positive-diagnostic.json", diagnostic)]
         return [("controller-result.json",
                  _fixed_transition_failure_controller(runner_hash, False))]
@@ -302,8 +353,12 @@ def retain_controller_output(output, evidence):
             raise ValueError("unexpected update controller output: " + path.name)
         names.add(path.name)
     retained = []
-    cached = {name: _read_bounded_regular(output / name)
-              for name in ("result.json", "same-path-positive.json")
+    cached = {name: _read_bounded_regular(
+                  output / name,
+                  MAX_COLLECTOR_DIAGNOSTIC if name.endswith("-collector.jsonl")
+                  else MAX_PUBLIC_OUTPUT_BYTES)
+              for name in ("result.json", "same-path-positive.json",
+                           "same-path-positive-collector.jsonl")
               if name in names}
     payloads = _transition_failure_publication(cached)
     if payloads is None:

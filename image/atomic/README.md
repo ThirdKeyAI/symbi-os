@@ -646,3 +646,30 @@ sanitized report, then fails the phase as before. The update service cannot run
 after probe failure. This diagnostic changes no SELinux policy, signature rule,
 resource limit or qualification claim. A fresh hosted run must identify the
 actual denial before the launcher design changes.
+
+The same-path positive VM also exposes a second, isolated virtio-serial port for
+collector progress. The failure reporter opens that port once with
+`O_NONBLOCK`; absence, a short write, `EAGAIN`, close failure or any other
+auxiliary error disables progress reporting without delaying or masking the
+primary transition report. Other update VMs do not expose this port. The
+positive host bounds it to 16 KiB and treats its raw JSONL as private
+intermediate data.
+
+After the fixed environment and runner-identity checks, the reporter emits a
+canonical receipt and then one ordered receipt before each fallible operation:
+service properties, source journal, monitor binding, identity correlation, AVC
+journal, bounded journal, report construction and primary report transfer. A
+terminal event contains only a fixed failure kind, or the byte count and
+SHA-256 of a completed primary report. Sequence numbers, field types, runner
+hash, order, canonical encoding and false qualification claims are validated
+exactly. A complete valid prefix survives a partial or malformed suffix; only
+the suffix byte count and SHA-256 are published. Raw progress, serial, QEMU
+output and overlays are never published by this path.
+
+The primary report remains authoritative. A valid primary transition report is
+accepted even if auxiliary progress is absent or malformed. When the primary
+report is absent or empty, the publisher binds normalized progress to the exact
+positive command, endpoint observation, QEMU exit, input hashes, cleanup state
+and resource counters. An invalid first progress event cannot suppress the
+independently validated content-free missing-report diagnostic. Every such path
+still fails the gate and makes no transition, update, release or OS claim.

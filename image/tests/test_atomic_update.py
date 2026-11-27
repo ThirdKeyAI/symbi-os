@@ -4,11 +4,13 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import resource
 import signal
 import shutil
 import socket
 import stat
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import Mock, patch
@@ -21,11 +23,13 @@ from image.atomic.update_contract import (NEGATIVE_UPDATE_SOURCE, POSITIVE_OVERL
                                           validate_report, require_update_base,
                                           validate_artifact_metadata)
 from image.atomic.update_boot import (DISPOSABLE_PHASE_TIMEOUT_SECONDS,
+                                      TRANSITION_COLLECTOR_STAGES,
                                       _SENSITIVE_ASSIGNMENT as VALIDATOR_SENSITIVE,
                                       qemu_command, negative_qemu_command,
                                       positive_qemu_command,
                                       firmware_arguments,
                                       stop_child,
+                                      validate_collector_diagnostic,
                                       validate_transition_failure_report,
                                       validate_phase_report,
                                       validate_negative_report,
@@ -37,6 +41,7 @@ from image.atomic.update_boot_failure import (JOURNAL_MAX_BYTES,
                                               AVC_JOURNAL_COMMAND,
                                               SOURCE_CAPTURE_COMMAND,
                                               SOURCE_JOURNAL_COMMAND,
+                                              COLLECTOR_STAGES,
                                               _SENSITIVE_ASSIGNMENT as PRODUCER_SENSITIVE,
                                               bounded_avc_evidence,
                                               fixed_command as fixed_failure_command,
@@ -44,7 +49,11 @@ from image.atomic.update_boot_failure import (JOURNAL_MAX_BYTES,
                                               parse_source_capture,
                                               monitor_properties,
                                               bounded_journal_excerpt,
+                                              close_collector,
+                                              open_collector_channel,
+                                              safe_collector_event,
                                               service_properties,
+                                              write_collector_event,
                                               write_report as write_failure_report)
 from image.atomic.update_process import TIMEOUT_SECONDS, validate_update_controller_command
 from image.atomic.update_guest import (UPDATE_COMMAND_TIMEOUT_SECONDS,
@@ -95,6 +104,26 @@ class AtomicUpdateTests(unittest.TestCase):
             self.raw.extend(raw[:count])
             return count
 
+    def collector_stream(self, stage="avc-journal", failure_kind="command-exit"):
+        writer = self.ShortWriter(4096)
+        runner_hash = "a" * 64
+        sequence = 0
+        write_collector_event(
+            writer, "collector-started", runner_hash, sequence=sequence)
+        sequence += 1
+        for current in COLLECTOR_STAGES:
+            write_collector_event(
+                writer, "collector-stage", runner_hash, sequence=sequence,
+                stage=current)
+            sequence += 1
+            if current == stage:
+                write_collector_event(
+                    writer, "collector-failed", runner_hash, sequence=sequence,
+                    stage=current,
+                    failure_kind=failure_kind)
+                break
+        return bytes(writer.raw)
+
     def test_virtio_report_writers_complete_short_writes_and_reject_zero(self):
         payload = b'{"passed":false}\n'
         guest = self.ShortWriter(3)
@@ -117,6 +146,187 @@ class AtomicUpdateTests(unittest.TestCase):
                     patch.object(Path, "open", return_value=self.ShortWriter(0)), \
                     self.assertRaises(RuntimeError):
                 writer(payload, Path("/unused-channel"))
+
+        collector = self.ShortWriter(4096)
+        write_collector_event(
+            collector, "collector-started", "a" * 64, sequence=0)
+        self.assertEqual(
+            json.loads(bytes(collector.raw)),
+            {"schema": 1, "passed": False, "release_qualified": False,
+             "diagnostic": "transition-evidence-collector",
+             "event": "collector-started", "seq": 0, "unit": "b.service",
+             "runner_sha256": "a" * 64,
+             "scope": "Bounded collector progress; no transition or update claim"},
+        )
+        with self.assertRaises(RuntimeError):
+            write_collector_event(
+                self.ShortWriter(0), "collector-started", "a" * 64,
+                sequence=0)
+        with self.assertRaises(RuntimeError):
+            write_collector_event(
+                self.ShortWriter(4), "collector-started", "a" * 64,
+                sequence=0)
+
+    def test_collector_stream_binds_receipt_order_stage_and_failure(self):
+        self.assertEqual(COLLECTOR_STAGES, TRANSITION_COLLECTOR_STAGES)
+        raw = self.collector_stream()
+        observed = validate_collector_diagnostic(raw, "a" * 64)
+        self.assertTrue(observed["receipt"])
+        self.assertEqual(observed["stages"], [
+            "service-properties", "source-journal", "monitor",
+            "identity-correlation", "avc-journal",
+        ])
+        self.assertEqual(observed["terminal"], {
+            "event": "collector-failed", "stage": "avc-journal",
+            "failure_kind": "command-exit",
+        })
+        self.assertIsNone(observed["suffix"])
+        self.assertFalse(observed["passed"])
+        self.assertFalse(observed["release_qualified"])
+
+        receipt = raw.splitlines(keepends=True)[0]
+        partial = validate_collector_diagnostic(receipt, "a" * 64)
+        self.assertTrue(partial["receipt"])
+        self.assertEqual(partial["stages"], [])
+        self.assertIsNone(partial["terminal"])
+
+        writer = self.ShortWriter(4096)
+        sequence = 0
+        write_collector_event(
+            writer, "collector-started", "a" * 64, sequence=sequence)
+        sequence += 1
+        for stage in COLLECTOR_STAGES:
+            write_collector_event(
+                writer, "collector-stage", "a" * 64, sequence=sequence,
+                stage=stage)
+            sequence += 1
+        report = {"bytes": 321, "sha256": "b" * 64}
+        write_collector_event(
+            writer, "collector-completed", "a" * 64, sequence=sequence,
+            stage=COLLECTOR_STAGES[-1], report_observation=report)
+        completed = validate_collector_diagnostic(bytes(writer.raw), "a" * 64)
+        self.assertEqual(completed["terminal"], {
+            "event": "collector-completed",
+            "stage": "primary-report-write",
+            "report": report,
+        })
+
+    def test_auxiliary_collector_failures_never_block_the_primary_report(self):
+        with patch("image.atomic.update_boot_failure.os.open",
+                   side_effect=FileNotFoundError):
+            self.assertIsNone(open_collector_channel(Path("/missing")))
+        with patch("image.atomic.update_boot_failure.os.open", return_value=17) as opener, \
+                patch("image.atomic.update_boot_failure.os.fstat",
+                      return_value=SimpleNamespace(st_mode=stat.S_IFCHR)):
+            self.assertEqual(open_collector_channel(Path("/collector")), 17)
+            flags = opener.call_args.args[1]
+            self.assertTrue(flags & os.O_WRONLY)
+            self.assertTrue(flags & os.O_CLOEXEC)
+            self.assertTrue(flags & os.O_NONBLOCK)
+            self.assertFalse(flags & getattr(os, "O_NOFOLLOW", 0))
+
+        with patch("image.atomic.update_boot_failure.os.open", return_value=29), \
+                patch("image.atomic.update_boot_failure.os.fstat",
+                      return_value=SimpleNamespace(st_mode=stat.S_IFREG)), \
+                patch("image.atomic.update_boot_failure.os.close") as closer:
+            self.assertIsNone(open_collector_channel(Path("/not-a-device")))
+            closer.assert_called_once_with(29)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            link = Path(temporary) / "collector"
+            link.symlink_to("/dev/null")
+            descriptor = open_collector_channel(link)
+            self.assertIsInstance(descriptor, int)
+            os.close(descriptor)
+
+        state = {"output": self.ShortWriter(0), "sequence": 0}
+        self.assertFalse(safe_collector_event(
+            state, "collector-started", "a" * 64))
+        self.assertIsNone(state["output"])
+
+        state = {"output": 19, "sequence": 0}
+        with patch("image.atomic.update_boot_failure.os.write", return_value=1), \
+                patch("image.atomic.update_boot_failure.os.close") as closer:
+            self.assertFalse(safe_collector_event(
+                state, "collector-started", "a" * 64))
+            closer.assert_called_once_with(19)
+        self.assertIsNone(state["output"])
+
+        state = {"output": 23, "sequence": 0}
+        with patch("image.atomic.update_boot_failure.os.write",
+                   side_effect=BlockingIOError), \
+                patch("image.atomic.update_boot_failure.os.close"):
+            self.assertFalse(safe_collector_event(
+                state, "collector-started", "a" * 64))
+        self.assertIsNone(state["output"])
+
+        class BrokenClose(self.ShortWriter):
+            def close(self):
+                raise OSError("close failed")
+
+        state = {"output": BrokenClose(16), "sequence": 0}
+        close_collector(state)
+        self.assertIsNone(state["output"])
+
+        primary = self.ShortWriter(5)
+        with patch.object(Path, "exists", return_value=True), \
+                patch.object(Path, "open", return_value=primary):
+            observation = write_failure_report(
+                {"passed": False}, Path("/primary-report"))
+        self.assertEqual(json.loads(bytes(primary.raw)), {"passed": False})
+        self.assertEqual(observation["bytes"], len(bytes(primary.raw)))
+        self.assertEqual(
+            observation["sha256"], hashlib.sha256(bytes(primary.raw)).hexdigest())
+
+    def test_collector_stream_rejects_unordered_or_unreviewed_content(self):
+        raw = self.collector_stream()
+        lines = raw.splitlines()
+        receipt_mutations = [
+            b"\n".join(lines[1:]) + b"\n",
+            raw.replace(b'"runner_sha256":"' + b"a" * 64,
+                        b'"runner_sha256":"' + b"b" * 64, 1),
+            lines[0].replace(b'"schema":1', b'"schema":1.0') + b"\n",
+            lines[0].replace(b'"passed":false', b'"passed":0') + b"\n",
+            lines[0].replace(b'"seq":0', b'"seq":false') + b"\n",
+            lines[0].replace(b'"schema":1', b'"schema":NaN') + b"\n",
+        ]
+        for mutation in receipt_mutations:
+            with self.subTest(mutation=mutation[:80]), self.assertRaises(ValueError):
+                validate_collector_diagnostic(mutation, "a" * 64)
+
+        for mutation, state in (
+            (b"\n".join([lines[0], lines[2], lines[1], *lines[3:]]) + b"\n",
+             "invalid"),
+            (raw + b'{"API_TOKEN":"must-not-pass"}\n', "invalid"),
+            (raw + b'{"partial_secret":"must-not-pass"', "truncated"),
+        ):
+            with self.subTest(state=state):
+                observed = validate_collector_diagnostic(mutation, "a" * 64)
+                self.assertTrue(observed["receipt"])
+                self.assertEqual(observed["suffix"]["state"], state)
+                self.assertNotIn("must-not-pass", json.dumps(observed))
+
+    def test_collector_parser_stays_within_a_128_mib_address_space(self):
+        receipt = self.collector_stream().splitlines(keepends=True)[0]
+        script = (
+            "from image.atomic.update_boot import validate_collector_diagnostic;"
+            "import sys;"
+            "assert validate_collector_diagnostic(sys.stdin.buffer.read(),"
+            "'a'*64)['receipt'] is True"
+        )
+
+        def limit_address_space():
+            resource.setrlimit(resource.RLIMIT_AS, (128 * 1024**2, 128 * 1024**2))
+
+        completed = subprocess.run(
+            [sys.executable, "-c", script], input=receipt,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=10,
+            env={"PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+                 "LANG": "C.UTF-8", "PYTHONDONTWRITEBYTECODE": "1"},
+            preexec_fn=limit_address_space,
+            check=False,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr.decode())
 
     def test_disposable_vm_deadline_exceeds_the_longest_guest_command(self):
         self.assertEqual(UPDATE_COMMAND_TIMEOUT_SECONDS, 1200)
@@ -175,7 +385,7 @@ class AtomicUpdateTests(unittest.TestCase):
             self.assertFalse((evidence / "same-path-positive.qcow2").exists())
 
     @staticmethod
-    def missing_report_controller():
+    def missing_report_controller(collector_raw=None):
         command = positive_qemu_command()
         command_hash = hashlib.sha256(json.dumps(
             command, separators=(",", ":")).encode()).hexdigest()
@@ -188,6 +398,15 @@ class AtomicUpdateTests(unittest.TestCase):
         }
         limits = {"memory.max": "3221225472", "memory.swap.max": "0",
                   "cpu.max": "200000 100000", "pids.max": "64"}
+        collector = (
+            {"name": "same-path-positive-collector.jsonl", "state": "absent",
+             "bytes": 0, "sha256": None}
+            if collector_raw is None else
+            {"name": "same-path-positive-collector.jsonl",
+             "state": "empty" if collector_raw == b"" else "ready",
+             "bytes": len(collector_raw),
+             "sha256": hashlib.sha256(collector_raw).hexdigest()}
+        )
         return {
             "schema": 1, "passed": False, "guest_booted": False,
             "release_qualified": False, "active_phase": "same-path-positive",
@@ -200,6 +419,7 @@ class AtomicUpdateTests(unittest.TestCase):
                 "serial_name": "same-path-positive-serial.log",
                 "report": {"name": "same-path-positive.json", "state": "empty",
                            "bytes": 0, "sha256": hashlib.sha256(b"").hexdigest()},
+                "collector": collector,
             },
             "child_cleanup": {"attempted": False, "terminated": False,
                               "killed": False, "errors": []},
@@ -217,9 +437,12 @@ class AtomicUpdateTests(unittest.TestCase):
             output, evidence = root / "output", root / "evidence"
             output.mkdir()
             evidence.mkdir()
-            controller = self.missing_report_controller()
+            collector_raw = self.collector_stream()
+            controller = self.missing_report_controller(collector_raw)
             (output / "result.json").write_text(json.dumps(controller) + "\n")
             (output / "same-path-positive.json").write_bytes(b"")
+            (output / "same-path-positive-collector.jsonl").write_bytes(
+                collector_raw)
             (output / "same-path-positive-serial.log").write_text(
                 "API_TOKEN=must-not-be-retained\n")
             (output / "qemu-same-path-positive.log").write_text(
@@ -230,12 +453,23 @@ class AtomicUpdateTests(unittest.TestCase):
                                         "same-path-positive-diagnostic.json"])
             summary = json.loads((evidence / "controller-result.json").read_bytes())
             self.assertTrue(summary["phase_diagnostic_validated"])
+            self.assertTrue(summary["collector_prefix_validated"])
+            self.assertTrue(summary["collector_stream_validated"])
             self.assertFalse(summary["transition_failure_validated"])
             diagnostic = json.loads(
                 (evidence / "same-path-positive-diagnostic.json").read_bytes())
             self.assertEqual(diagnostic["diagnostic"], "missing-update-phase-report")
             self.assertEqual(diagnostic["process"]["exit_code"], 0)
             self.assertEqual(diagnostic["report"]["state"], "empty")
+            self.assertTrue(diagnostic["collector"]["prefix_validated"])
+            self.assertTrue(diagnostic["collector"]["stream_validated"])
+            self.assertEqual(
+                diagnostic["collector"]["events"]["terminal"],
+                {"event": "collector-failed", "stage": "avc-journal",
+                 "failure_kind": "command-exit"})
+            self.assertEqual(
+                diagnostic["collector"]["observation"]["sha256"],
+                hashlib.sha256(collector_raw).hexdigest())
             self.assertEqual(diagnostic["resources"]["cpu.max"], "200000 100000")
             self.assertEqual(diagnostic["resources"]["pids.max"], "64")
             self.assertEqual(diagnostic["resources"]["memory.events"], {
@@ -245,6 +479,8 @@ class AtomicUpdateTests(unittest.TestCase):
             self.assertNotIn(b"PRIVATE_KEY", retained_raw)
             self.assertFalse((evidence / "same-path-positive-serial.log").exists())
             self.assertFalse((evidence / "qemu-same-path-positive.log").exists())
+            self.assertFalse(
+                (evidence / "same-path-positive-collector.jsonl").exists())
             self.assertFalse((evidence / "same-path-positive.qcow2").exists())
 
     def test_missing_report_diagnostic_rejects_identity_and_type_mutations(self):
@@ -311,6 +547,63 @@ class AtomicUpdateTests(unittest.TestCase):
                 self.assertEqual([path.name for path in evidence.iterdir()],
                                  ["controller-result.json"])
 
+    def test_missing_report_normalizes_a_secret_bearing_truncated_suffix(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            output, evidence = root / "output", root / "evidence"
+            output.mkdir()
+            evidence.mkdir()
+            valid = self.collector_stream()
+            secret_suffix = b'{"API_TOKEN":"must-not-be-retained"'
+            raw = valid + secret_suffix
+            controller = self.missing_report_controller(raw)
+            (output / "result.json").write_text(json.dumps(controller) + "\n")
+            (output / "same-path-positive.json").write_bytes(b"")
+            (output / "same-path-positive-collector.jsonl").write_bytes(raw)
+            retained = retain_controller_output(output, evidence)
+            self.assertEqual(retained, ["controller-result.json",
+                                        "same-path-positive-diagnostic.json"])
+            diagnostic_raw = (
+                evidence / "same-path-positive-diagnostic.json").read_bytes()
+            self.assertNotIn(b"API_TOKEN", diagnostic_raw)
+            self.assertNotIn(b"must-not-be-retained", diagnostic_raw)
+            diagnostic = json.loads(diagnostic_raw)
+            self.assertTrue(diagnostic["collector"]["prefix_validated"])
+            self.assertFalse(diagnostic["collector"]["stream_validated"])
+            suffix = diagnostic["collector"]["events"]["suffix"]
+            self.assertEqual(suffix["state"], "truncated")
+            self.assertEqual(suffix["bytes"], len(secret_suffix))
+            self.assertEqual(
+                suffix["sha256"], hashlib.sha256(secret_suffix).hexdigest())
+            self.assertFalse(
+                (evidence / "same-path-positive-collector.jsonl").exists())
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            output, evidence = root / "output", root / "evidence"
+            output.mkdir()
+            evidence.mkdir()
+            raw = b'{"API_TOKEN":"malformed-first-event"}\n'
+            controller = self.missing_report_controller(raw)
+            (output / "result.json").write_text(json.dumps(controller) + "\n")
+            (output / "same-path-positive.json").write_bytes(b"")
+            (output / "same-path-positive-collector.jsonl").write_bytes(raw)
+            retained = retain_controller_output(output, evidence)
+            self.assertEqual(retained, ["controller-result.json",
+                                        "same-path-positive-diagnostic.json"])
+            retained_raw = b"".join(
+                path.read_bytes() for path in evidence.iterdir())
+            self.assertNotIn(b"API_TOKEN", retained_raw)
+            self.assertNotIn(b"malformed-first-event", retained_raw)
+            diagnostic = json.loads(
+                (evidence / "same-path-positive-diagnostic.json").read_bytes())
+            self.assertFalse(diagnostic["collector"]["prefix_validated"])
+            self.assertFalse(diagnostic["collector"]["stream_validated"])
+            self.assertIsNone(diagnostic["collector"]["events"])
+            self.assertEqual(
+                diagnostic["collector"]["observation"]["sha256"],
+                hashlib.sha256(raw).hexdigest())
+
     def test_transition_failure_report_is_retained_without_private_overlay(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -328,6 +621,8 @@ class AtomicUpdateTests(unittest.TestCase):
                 "b.service: API_TOKEN=short\n")
             (output / "qemu-same-path-positive.log").write_text(
                 "guest console API_TOKEN=short\n")
+            (output / "same-path-positive-collector.jsonl").write_text(
+                '{"API_TOKEN":"unreviewed-auxiliary"}\n')
             (output / "same-path-positive.qcow2").write_bytes(b"private disk")
             retained = retain_controller_output(output, evidence)
             self.assertEqual(retained,
@@ -347,6 +642,8 @@ class AtomicUpdateTests(unittest.TestCase):
                 "same-path-positive failed; bounded transition report validated")
             self.assertEqual((evidence / "same-path-positive.json").read_bytes(), raw)
             self.assertFalse((evidence / "same-path-positive.qcow2").exists())
+            self.assertFalse(
+                (evidence / "same-path-positive-collector.jsonl").exists())
             retained_raw = b"".join(path.read_bytes() for path in evidence.iterdir())
             self.assertNotIn(b"API_TOKEN", retained_raw)
             self.assertNotIn(b"API_TOKEN=short", retained_raw)
@@ -448,6 +745,17 @@ class AtomicUpdateTests(unittest.TestCase):
                         stream.truncate(2 * 1024**2 + 1)
                 with self.assertRaises((OSError, ValueError)):
                     retain_controller_output(output, evidence)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            output, evidence = root / "output", root / "evidence"
+            output.mkdir()
+            evidence.mkdir()
+            (output / "result.json").write_text('{"passed":false}\n')
+            with (output / "same-path-positive-collector.jsonl").open("wb") as stream:
+                stream.truncate(16 * 1024 + 1)
+            with self.assertRaisesRegex(ValueError, "unsafe or oversized"):
+                retain_controller_output(output, evidence)
 
     def test_failed_update_refuses_existing_evidence_destination(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -946,6 +1254,7 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertNotIn("file=/inputs/update.raw,format=raw,if=virtio", joined)
         self.assertIn("-net none", joined)
         self.assertIn("phase-1.json", joined)
+        self.assertNotIn("org.symbi.update.diagnostic", joined)
         firmware = firmware_arguments()
         self.assertIn("systemd.extra-unit.o.service", " ".join(firmware))
         self.assertIn("systemd.extra-unit.s.service", " ".join(firmware))
@@ -1343,12 +1652,19 @@ class AtomicUpdateTests(unittest.TestCase):
             self.assertIn(
                 "virtio-blk-pci,drive=symbi-update-source,serial=SYMBIUPDATE", joined)
             self.assertNotIn("file=/output/guest.qcow2", joined)
+            self.assertNotIn("org.symbi.update.diagnostic", joined)
         self.assertEqual(len({tuple(command) for command in commands.values()}), 4)
         positive = " ".join(positive_qemu_command())
         self.assertIn(
             "file=/output/same-path-positive.qcow2,format=qcow2,"
             "if=none,id=symbi-boot-disk", positive)
         self.assertIn("path=/output/same-path-positive.json", positive)
+        self.assertIn(
+            "file,id=collector,path=/output/same-path-positive-collector.jsonl",
+            positive)
+        self.assertIn(
+            "virtserialport,chardev=collector,name=org.symbi.update.diagnostic",
+            positive)
         self.assertIn("file=/inputs/expected-positive.json", positive)
         self.assertNotIn("file=/output/guest.qcow2", positive)
         self.assertNotIn("file=/output/negative-", positive)
@@ -1362,6 +1678,9 @@ class AtomicUpdateTests(unittest.TestCase):
                 "unsigned", "wrong-key", "wrong-reference", "altered-signature")),
             *(qemu_command(index) for index in range(3)),
         ]
+        self.assertIn("org.symbi.update.diagnostic", " ".join(commands[0]))
+        for command in commands[1:]:
+            self.assertNotIn("org.symbi.update.diagnostic", " ".join(command))
         for command in commands:
             with self.subTest(report=command[command.index("-chardev") + 1]):
                 drives = [command[index + 1] for index, value in enumerate(command)
