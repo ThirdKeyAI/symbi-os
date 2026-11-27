@@ -15,6 +15,13 @@ import sys
 import time
 import zlib
 
+if __package__:
+    from .symbi_mountinfo import (canonical_major_minor, observe_visible_mount,
+                                  validate_mount_observation)
+else:
+    from symbi_mountinfo import (canonical_major_minor, observe_visible_mount,
+                                 validate_mount_observation)
+
 
 MAX_ARTIFACT_BYTES = 2 * 1024 * 1024
 MAX_TOTAL_ARTIFACT_BYTES = 12 * 1024 * 1024
@@ -50,29 +57,15 @@ def validate_source_device(expected):
         raise ValueError("unsafe qualification source-device record")
     observed = unique_json(SOURCE_RECORD.read_bytes())
     source = expected.get("source_disk")
-    required = {"path", "TYPE", "LABEL", "UUID"}
+    required = {"path", "major_minor", "TYPE", "LABEL", "UUID"}
     if (not isinstance(source, dict) or not isinstance(observed, dict)
             or set(observed) != required
             or re.fullmatch(r"/dev/vd[a-z]{1,3}", observed.get("path", "")) is None
+            or not canonical_major_minor(observed.get("major_minor"))
             or observed.get("TYPE") != source.get("filesystem")
             or observed.get("LABEL") != source.get("label")
             or observed.get("UUID") != source.get("uuid")):
         raise ValueError("qualification source-device record differs")
-    mounted = subprocess.run(
-        ["/usr/bin/findmnt", "-n", "-o", "SOURCE,FSTYPE,OPTIONS",
-         "--target", str(SOURCE_ROOT)], stdin=subprocess.DEVNULL,
-        capture_output=True, text=True, timeout=15,
-        env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8"})
-    if (len(mounted.stdout.encode()) > 32 * 1024
-            or len(mounted.stderr.encode()) > 32 * 1024):
-        raise ValueError("qualification mount inspection exceeded its bound")
-    mounted.check_returncode()
-    fields = mounted.stdout.split()
-    mounted_source = fields[0].split("[", 1)[0] if fields else ""
-    if (len(fields) != 3 or mounted_source != observed["path"] or fields[1] != "ext4"
-            or not {"ro", "nosuid", "nodev", "noexec"}.issubset(
-                set(fields[2].split(",")))):
-        raise ValueError("qualification source mount differs from its root record")
     return observed
 
 
@@ -218,13 +211,23 @@ def main():
         if sorted(path.name for path in Path("/sys/class/net").iterdir()) != ["lo"]:
             raise ValueError("qualification guest gained a network interface")
         source_root = SOURCE_ROOT
+        source_device = validate_source_device(expected)
+        source_mount = observe_visible_mount(source_root)
+        record["source_mount_observation"] = source_mount
+        validate_mount_observation(source_mount, mountpoint=str(source_root),
+                                   source=source_device["path"],
+                                   major_minor=source_device["major_minor"])
+        source_info = source_root.lstat()
+        if (f"{os.major(source_info.st_dev)}:{os.minor(source_info.st_dev)}"
+                != source_device["major_minor"]):
+            raise ValueError("qualification source mount differs from its root record")
         flags = os.statvfs(source_root).f_flag
         required_flags = os.ST_RDONLY | os.ST_NOSUID
         for name in ("ST_NODEV", "ST_NOEXEC"):
             required_flags |= getattr(os, name, 0)
         if flags & required_flags != required_flags:
             raise ValueError("source disk mount lost read-only execution restrictions")
-        record["source_device"] = validate_source_device(expected)
+        record["source_device"] = source_device
         source = source_root / "source"
         manifest_path = source_root / "manifest.json"
         if source.is_symlink() or manifest_path.is_symlink() or source.stat().st_uid != 10001:

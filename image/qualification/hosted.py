@@ -23,6 +23,7 @@ QUALIFICATION_FILES = {
     "vertical_slice.py": "image/qualification/vertical_slice.py",
     "status_server.py": "image/qualification/status_server.py",
     "source_mount.py": "image/qualification/source_mount.py",
+    "symbi_mountinfo.py": "image/qualification/symbi_mountinfo.py",
     "fstab.extra": "image/qualification/fstab.extra",
     "m.service": "image/qualification/m.service",
     "p.service": "image/qualification/p.service",

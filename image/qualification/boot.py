@@ -11,6 +11,13 @@ import subprocess
 import time
 import zlib
 
+if __package__:
+    from .symbi_mountinfo import (canonical_major_minor,
+                                  validate_mount_observation)
+else:
+    from symbi_mountinfo import (canonical_major_minor,
+                                 validate_mount_observation)
+
 
 MAX_ARTIFACT_BYTES = 2 * 1024 * 1024
 MAX_TOTAL_ARTIFACT_BYTES = 12 * 1024 * 1024
@@ -105,6 +112,7 @@ def firmware_arguments(directory):
         ("symbi-runner.py", "guest.py"),
         ("symbi-prepare.py", "prepare.py"),
         ("symbi-source-mount.py", "source_mount.py"),
+        ("symbi_mountinfo.py", "symbi_mountinfo.py"),
         ("symbi-expected.json", "expected.json"),
         ("symbi-sysusers.conf", "sysusers.conf"),
     ]
@@ -151,14 +159,19 @@ def validate_source_device(report, expected):
         source = expected["source_disk"]
     except (KeyError, TypeError) as error:
         raise ValueError("qualification source-device evidence is missing") from error
-    required = {"path", "TYPE", "LABEL", "UUID"}
+    required = {"path", "major_minor", "TYPE", "LABEL", "UUID"}
     if (not isinstance(observed, dict) or not isinstance(source, dict)
             or set(observed) != required
             or re.fullmatch(r"/dev/vd[a-z]{1,3}", observed.get("path", "")) is None
+            or not canonical_major_minor(observed.get("major_minor"))
             or observed.get("TYPE") != source.get("filesystem")
             or observed.get("LABEL") != source.get("label")
             or observed.get("UUID") != source.get("uuid")):
         raise ValueError("qualification source-device evidence differs")
+    validate_mount_observation(
+        report.get("source_mount_observation"),
+        mountpoint="/run/symbi-qualification/source",
+        source=observed["path"], major_minor=observed["major_minor"])
 
 
 def _safe_artifact_name(name):
