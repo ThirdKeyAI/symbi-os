@@ -1,0 +1,207 @@
+{
+  "artifact": {
+    "bytes": 8161,
+    "crc_passed": true,
+    "digest": "sha256:0eeeb2b04c904cb754f682184bb85dd8e2fa96860e3d60e0b40690aea5ae4343",
+    "entries": 19,
+    "id": 15228329933,
+    "name": "container-ubuntu-fixture-package-evidence",
+    "safe_zip": {
+      "all_entries_regular": true,
+      "no_absolute_or_parent_paths": true,
+      "no_duplicate_paths": true,
+      "no_links_or_special_nodes": true
+    },
+    "uncompressed_bytes": 20180
+  },
+  "authenticated_inputs": {
+    "noble_inrelease": {
+      "bytes": 255850,
+      "sha256": "cdb2f31d809f589719a53c6ad15f255b27569c4059542ada282aaa21b8e164b0",
+      "signing_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C"
+    },
+    "noble_packages_xz": {
+      "bytes": 1401160,
+      "sha256": "2a6a199e1031a5c279cb346646d594993f35b1c03dd4a82aaa0323980dd92451"
+    },
+    "noble_release": {
+      "bytes": 254968,
+      "codename_matches": true,
+      "control_fields_valid": true,
+      "date_fields": 1,
+      "label_matches": true,
+      "origin_matches": true,
+      "sha256": "26758a13cecfaff9ff274d31ea9a4633674a999bd130c09f6ecd66a4b8071184",
+      "suite_matches": true,
+      "valid_until_fields": 0
+    },
+    "noble_updates_inrelease": {
+      "bytes": 126125,
+      "sha256": "10dc47ad967e0513d877e0d55621c7393568894c4dbba1049232251630cb43c7",
+      "signing_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C"
+    },
+    "noble_updates_release": {
+      "bytes": 125243,
+      "codename_matches": true,
+      "control_fields_valid": true,
+      "date_fields": 1,
+      "label_matches": true,
+      "origin_matches": true,
+      "sha256": "4f6eec3b38e20f3aed19b9c801517370910e5b3f65350b8bcf164a4ba9821140",
+      "suite_matches": true,
+      "valid_until_fields": 0
+    },
+    "rootfs": {
+      "bytes": 30028293,
+      "sha256": "e77b6f10c2590cef872b33ee9f635a0e3fd1f57fb074c0e52b5c7f56147a0c86"
+    },
+    "rootfs_checksum": {
+      "bytes": 1884,
+      "sha256": "30f23cec3a46679bcf21dbe0c0a0ab51440e9b2f5ac69b3ae1d4a7a71c0ffc69"
+    },
+    "rootfs_checksum_signature": {
+      "bytes": 833,
+      "sha256": "5164e25bab9ff0467fc83415c8f759bb79cbd4e0264b9a11f49ff1e6a10a4c1f",
+      "signing_fingerprint": "843938DF228D22F7B3742BC0D94AA3F0EFE21092"
+    }
+  },
+  "audit": {
+    "bindings_checked": 336,
+    "bindings_passed": 336,
+    "release_date_value_retained": false,
+    "raw_rejected_row_content_retained": false
+  },
+  "claims": {
+    "authoritative": false,
+    "candidate_emitted": false,
+    "container_qualified": false,
+    "discovery_emitted": false,
+    "os_qualified": false,
+    "pins_emitted": false,
+    "producer_passed": false,
+    "qualified": false,
+    "release_qualified": false,
+    "selected": false,
+    "signature_qualified": false
+  },
+  "compatibility_review": {
+    "noble_security_current_inrelease_bytes": 126127,
+    "noble_security_current_inrelease_sha256": "a3849ffa5d069c5a6cc929dc55e1fd946aff6e3da4f97d88f20059b6b7d6d203",
+    "noble_security_current_release_bytes": 125245,
+    "noble_security_current_release_sha256": "f727232a81edd57f1bddd477cdbbd11bd17d1ebec66a23bc8d151e5b21116541",
+    "noble_security_date_within_rolling_bound": true,
+    "noble_security_valid_until_fields": 0,
+    "noble_updates_exact_bytes_refetched": true,
+    "noble_updates_signature_reverified": true,
+    "noble_updates_valid_until_fields": 0,
+    "signing_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C"
+  },
+  "failure": {
+    "error": "Ubuntu Release Valid-Until is missing or oversized",
+    "later_suites_started": false,
+    "noble_updates_packages_xz_downloaded": false,
+    "phase": "noble-updates-release-freshness",
+    "predicate": null,
+    "reason": "valid-until-rejected"
+  },
+  "independent_review": "pending",
+  "ledger": {
+    "bytes": 15682,
+    "last_kind": "release-rejected",
+    "last_predicate": null,
+    "last_reason": "valid-until-rejected",
+    "last_suite": "noble-updates",
+    "schema": 2,
+    "sha256": "fb82ffea3bfef36a16a416bfe89edf473678f530e6de92af5409693324168949",
+    "strict_sequences": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ]
+  },
+  "local_correction": {
+    "apt_valid_until_max_gate_implemented": false,
+    "apt_valid_until_max_gate_required_before_produce": true,
+    "future_clock_skew_seconds": 900,
+    "immutable_noble_policy_unchanged": true,
+    "rolling_maximum_age_days": 14,
+    "rolling_mode": "rolling-date",
+    "rolling_optional_valid_until_only_shortens": true,
+    "rolling_suites": [
+      "noble-updates",
+      "noble-security"
+    ]
+  },
+  "local_verification": {
+    "affected_address_space_cap_bytes": 134217728,
+    "affected_peak_rss_kib": 41380,
+    "affected_tests": 80,
+    "complete_address_space_cap_bytes": 201326592,
+    "complete_allocator_arenas": 1,
+    "complete_image_tests": 607,
+    "complete_peak_rss_kib": 66852,
+    "complete_qualification_tests": 40,
+    "process_swaps": 0
+  },
+  "provenance": {
+    "contract_sha256": "a226f4f33053ff9f9f14ab12a26c84c035aae3c02c1f64b59f9d5f736e3e5ecc",
+    "lock_sha256": "94d6f84024639b880060ac93825b4d3f1408f9f3a73b6e8087faac1748268b6c"
+  },
+  "resources": {
+    "fallback": {
+      "exec_main_status": 1,
+      "oom_auditable": true,
+      "oom_observed": false,
+      "result": "exit-code",
+      "swap_current_available": false,
+      "zero_swap": false
+    },
+    "primary": {
+      "cpu_quota_per_sec_usec": 100000,
+      "cpu_quota_period_usec": 100000,
+      "memory_current_bytes": 52633600,
+      "memory_events": {
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "memory_max_bytes": 2147483648,
+      "memory_peak_bytes": 53448704,
+      "memory_swap_current_bytes": 0,
+      "memory_swap_max_bytes": 0,
+      "memory_swap_peak_bytes": 0,
+      "pids_current": 1,
+      "pids_max": 128,
+      "pids_peak": 16,
+      "zero_swap": true
+    }
+  },
+  "retention": {
+    "candidate_present": false,
+    "post_unit_candidate_validated": false,
+    "private_work_retained": true,
+    "producer_exit_status": 1,
+    "recursive_path_cleanup_performed": false
+  },
+  "run": {
+    "attempt": 1,
+    "branch": "card/P0-05-package-producer",
+    "conclusion": "failure",
+    "event": "workflow_dispatch",
+    "head_sha": "7093d639cbb9fed29e1c9b91c75e4d24299c4eef",
+    "head_tree": "3abfee06536d6b2e8ff9a85554cefac3d29c9e8f",
+    "id": 46062644361,
+    "job_id": 140720351653,
+    "mode": "discover",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46062644361",
+    "workflow": ".github/workflows/ubuntu-fixture-packages.yml"
+  },
+  "schema": 1
+}

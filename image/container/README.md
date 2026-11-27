@@ -298,6 +298,19 @@ the bound packages one at a time, validate the unselected candidate twice and
 reach the conditional candidate upload. The Dockerfile, native producer, image
 consumer and public pending lock remain unchanged.
 
+Freshness is bound to each exact source URL, suite, codename and signer. The
+immutable noble pocket has a unique signed `Date`, no `Valid-Until`, a 15-minute
+future-skew ceiling and a reviewed 1,830-day maximum age. The rolling
+noble-updates and noble-security pockets have the same future-skew check and a
+14-day maximum signed-`Date` age. They may omit `Valid-Until`; when present, the
+single field must be unexpired, strictly after `Date`, and no more than 14 days
+after `Date`, so it can only shorten the rolling bound. The Python validation is
+the authoritative discovery check. Before `produce` can be enabled, its offline
+APT source rows must independently impose matching per-source
+`valid-until-max` bounds of 1,830 days for noble and 14 days for the two rolling
+pockets. That APT configuration is a mandatory pre-production gate and is not
+implemented by this discovery slice.
+
 Candidate output is moved from an isolated held staging directory with atomic
 no-replace semantics and accepted only after the complete nested identity and
 content binding is revalidated through the held destination root. Within that
