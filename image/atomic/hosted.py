@@ -6,6 +6,7 @@ from pathlib import Path
 import secrets
 import shutil
 import re
+import stat
 
 from image.atomic.contract import (create_disk,require_disk,sha256,unique_json,
                                    unpack_oci,validate_report,installer_mounts,
@@ -15,6 +16,449 @@ from image.atomic.update_process import TIMEOUT_SECONDS,run_update_controller
 from image.boot.inputs import require_desktop_image
 from image.boot.preflight import expected_inputs,validate_loaded_image,validate_report as validate_preflight
 from image.launcher.probes.bounded_process import run_bounded
+
+
+RETAINED_REPORT_MAX_BYTES = 1024**2
+RETAINED_PREFLIGHT_LIMITS = {
+    'prepare': {'memory.max': '1073741824', 'memory.swap.max': '0',
+                'cpu.max': '100000 100000', 'pids.max': '64'},
+    'inspect': {'memory.max': '4294967296', 'memory.swap.max': '0',
+                'cpu.max': '200000 100000', 'pids.max': '256'},
+}
+RETAINED_PREFLIGHT_SCOPE = (
+    'Read-only saved development image preflight; no disk, installation, boot or '
+    'release qualification')
+RETAINED_PREFLIGHT_KEYS = {
+    'prepare': {'schema', 'phase', 'passed', 'source_commit', 'image_source_commit',
+                'variant', 'base', 'expected_inputs', 'guest_booted', 'os_qualified',
+                'installation_attempted', 'lock_sha256', 'limits', 'cgroup_final',
+                'scope', 'commands', 'artifact', 'verified_archive'},
+    'inspect': {'schema', 'phase', 'passed', 'source_commit', 'image_source_commit',
+                'variant', 'base', 'expected_inputs', 'guest_booted', 'os_qualified',
+                'installation_attempted', 'lock_sha256', 'limits', 'cgroup_final',
+                'scope', 'commands', 'disk_free_before_load', 'loaded_image',
+                'probe_hashes', 'installed_files', 'install_requirements',
+                'boot_inputs', 'kernel_copy', 'cleanup', 'image_removed'},
+}
+RETAINED_INSPECT_COMMANDS = [
+    {'name': name, 'exit_code': exit_code}
+    for name, exit_code in (
+        ('load-image', 0), ('inspect-image', 0), ('create-kernel-copy', 0),
+        ('kernel-copy-before', 0), ('copy-vmlinuz', 0),
+        ('copy-initramfs.img', 0), ('kernel-copy-after', 0),
+        ('installed-files', 0), ('boot-inputs', 0),
+        ('cleanup-symbi-atomic-kernel-copy', 0),
+        ('absent-symbi-atomic-kernel-copy', 1),
+        ('cleanup-symbi-atomic-installed-files', 0),
+        ('absent-symbi-atomic-installed-files', 1),
+        ('cleanup-symbi-atomic-boot-inputs', 0),
+        ('absent-symbi-atomic-boot-inputs', 1), ('remove-image', 0),
+        ('image-absent', 1))
+]
+RETAINED_RECONCILIATION_CHECKS = [
+    'GitHub reports success for the exact workflow head and all workflow steps',
+    'The original evidence ZIP size and SHA-256 match authenticated artifact metadata',
+    'Both retained reports match their lock hashes and reject duplicate JSON keys',
+    'The exact complete desktop-image lock, generic artifact, image source and manifest match',
+    'Installed inputs, boot inputs and cleanup passed without swap, OOM or OOM kill',
+]
+RETAINED_BOOT_INPUT_KEYS = {
+    'schema', 'os_qualified', 'guest_booted', 'uid', 'cap_eff',
+    'no_new_privileges', 'root_readonly', 'interfaces', 'limits', 'os',
+    'selinux', 'packages', 'bootc_version', 'kernel', 'root_fs',
+    'install_configuration', 'install_options', 'trust', 'backend_files',
+    'tools', 'commands', 'cgroup_final', 'kernel_source_sha256', 'scope',
+}
+RETAINED_BACKEND_FILES = {
+    '/usr/lib/ostree/prepare-root.conf': {
+        'bytes': 52,
+        'mode': 0o644,
+        'sha256': '06e212012ede5dfecf598f8cdb57bdb17450bb2a3e957598d2e0d23effff10d7',
+        'text': '[composefs]\nenabled = yes\n[sysroot]\nreadonly = true\n',
+        'uid': 0,
+    },
+}
+RETAINED_TOOLS = {
+    name: {'path': '/usr/bin/' + name, 'present': True}
+    for name in ('bootc', 'bootupctl', 'grub2-install', 'grub2-mkconfig',
+                 'mkfs.btrfs', 'mkfs.ext4', 'mkfs.xfs', 'qemu-img',
+                 'qemu-system-x86_64', 'xorriso')
+}
+
+
+def _exact_hex(value, length):
+    return (isinstance(value, str)
+            and re.fullmatch(r'[0-9a-f]{' + str(length) + r'}', value) is not None)
+
+
+def _validate_retained_json(value):
+    """Reject non-JSON numbers such as NaN and unexpected real-valued fields."""
+    if value is None or isinstance(value, (str, bool)) or type(value) is int:
+        return
+    if isinstance(value, list):
+        for item in value:
+            _validate_retained_json(item)
+        return
+    if isinstance(value, dict) and all(isinstance(key, str) for key in value):
+        for item in value.values():
+            _validate_retained_json(item)
+        return
+    raise ValueError('Retained preflight contains a noncanonical JSON value')
+
+
+def _read_retained_report(directory, name):
+    """Read one bounded regular report once from an already checked directory."""
+    flags = os.O_RDONLY | os.O_CLOEXEC | os.O_NONBLOCK | os.O_NOFOLLOW
+    try:
+        descriptor = os.open(name, flags, dir_fd=directory)
+    except OSError as error:
+        raise ValueError('Retained preflight report is not a direct regular file') from error
+    try:
+        info = os.fstat(descriptor)
+        if (not stat.S_ISREG(info.st_mode) or info.st_nlink != 1
+                or not 0 < info.st_size <= RETAINED_REPORT_MAX_BYTES):
+            raise ValueError('Retained preflight report is not a bounded regular file')
+        with os.fdopen(descriptor, 'rb', closefd=False) as source:
+            raw = source.read(RETAINED_REPORT_MAX_BYTES + 1)
+        final = os.fstat(descriptor)
+        if (len(raw) != info.st_size or final.st_dev != info.st_dev
+                or final.st_ino != info.st_ino or final.st_mode != info.st_mode
+                or final.st_nlink != info.st_nlink or final.st_size != info.st_size):
+            raise ValueError('Retained preflight report changed while reading')
+        return raw
+    finally:
+        os.close(descriptor)
+
+
+def _validate_retained_resources(item, phase):
+    limits = RETAINED_PREFLIGHT_LIMITS[phase]
+    final = item.get('cgroup_final')
+    expected_final = set(limits) | {'memory.peak', 'memory.events', 'cpu.stat'}
+    if (item.get('limits') != limits or not isinstance(final, dict)
+            or set(final) != expected_final
+            or any(final.get(name) != value for name, value in limits.items())
+            or not isinstance(final.get('memory.peak'), str)
+            or not final['memory.peak'].isdigit()
+            or not isinstance(final.get('cpu.stat'), str)
+            or not final['cpu.stat'].strip()):
+        raise ValueError('Retained preflight resource record changed')
+    if int(final['memory.peak']) > int(limits['memory.max']) + 4096:
+        raise ValueError('Retained preflight exceeded its memory limit')
+    _validate_no_oom(final)
+
+
+def _validate_no_oom(final):
+    if (not isinstance(final, dict)
+            or not isinstance(final.get('memory.peak'), str)
+            or not final['memory.peak'].isdigit()
+            or not isinstance(final.get('cpu.stat'), str)
+            or not final['cpu.stat'].strip()
+            or not isinstance(final.get('memory.events'), str)):
+        raise ValueError('Retained preflight resource record changed')
+    events = {}
+    for line in final['memory.events'].splitlines():
+        fields = line.split()
+        if (len(fields) != 2 or fields[0] in events
+                or not fields[1].isdigit()):
+            raise ValueError('Malformed retained preflight memory events')
+        events[fields[0]] = fields[1]
+    if set(events) != {'low', 'high', 'max', 'oom', 'oom_kill',
+                       'oom_group_kill', 'sock_throttled'}:
+        raise ValueError('Malformed retained preflight memory events')
+    if any(events.get(name) != '0' for name in ('oom', 'oom_kill', 'oom_group_kill')):
+        raise ValueError('Retained preflight observed an OOM event')
+    return events
+
+
+def _validate_retained_envelope(item, phase, readiness, selected, manifest,
+                                expected, current_lock):
+    if (not isinstance(item, dict) or set(item) != RETAINED_PREFLIGHT_KEYS[phase]
+            or type(item.get('schema')) is not int
+            or item.get('schema') != 1 or item.get('phase') != phase
+            or item.get('passed') is not True
+            or item.get('source_commit') != readiness['source_commit']
+            or item.get('image_source_commit') != selected['tested_commit']
+            or item.get('variant') != 'generic'
+            or item.get('base') != manifest['base']
+            or item.get('expected_inputs') != expected
+            or item.get('guest_booted') is not False
+            or item.get('os_qualified') is not False
+            or item.get('installation_attempted') is not False
+            or item.get('lock_sha256') != current_lock
+            or item.get('scope') != RETAINED_PREFLIGHT_SCOPE
+            or item.get('commands') != (
+                RETAINED_INSPECT_COMMANDS if phase == 'inspect' else [])):
+        raise ValueError('Exact saved-image preflight has not passed')
+    _validate_retained_resources(item, phase)
+
+
+def _validate_retained_reconciliation(item, readiness, selected, current_lock,
+                                      reports):
+    keys = {'schema', 'passed', 'workflow_run', 'workflow', 'source_commit',
+            'variant', 'image_source_commit', 'manifest_digest',
+            'desktop_images_lock_sha256', 'retained_reports', 'evidence_artifact',
+            'development_image_artifact', 'checks', 'resource_observation',
+            'os_qualified', 'release_qualified', 'scope'}
+    evidence = item.get('evidence_artifact') if isinstance(item, dict) else None
+    development = item.get('development_image_artifact') if isinstance(item, dict) else None
+    resources = item.get('resource_observation') if isinstance(item, dict) else None
+    expected_reports = {phase + '.json': readiness[phase + '_sha256']
+                        for phase in ('inspect', 'prepare')}
+    inspect_final = reports['inspect']['cgroup_final']
+    events = _validate_no_oom(inspect_final)
+    expected_resources = {
+        'prepare_memory_peak_bytes': int(reports['prepare']['cgroup_final']['memory.peak']),
+        'inspect_memory_peak_bytes': int(inspect_final['memory.peak']),
+        'inspect_memory_max_events': int(events['max']),
+        'swap_max_bytes': 0,
+        'oom': 0,
+        'oom_kill': 0,
+        'oom_group_kill': 0,
+    }
+    selected_artifact = selected['artifact']
+    if (not isinstance(item, dict) or set(item) != keys
+            or type(item.get('schema')) is not int or item.get('schema') != 1
+            or item.get('passed') is not True
+            or item.get('workflow_run') != readiness['preflight_run']
+            or item.get('workflow') != 'Atomic image preflight'
+            or item.get('source_commit') != readiness['source_commit']
+            or item.get('variant') != 'generic'
+            or item.get('image_source_commit') != selected['tested_commit']
+            or item.get('manifest_digest') != readiness['manifest_digest']
+            or item.get('desktop_images_lock_sha256') != current_lock
+            or item.get('retained_reports') != expected_reports
+            or not isinstance(evidence, dict)
+            or set(evidence) != {'id', 'name', 'bytes', 'sha256', 'expires_at'}
+            or type(evidence.get('id')) is not int or evidence['id'] <= 0
+            or evidence.get('id') != readiness['evidence_artifact_id']
+            or evidence.get('name') != 'atomic-image-preflight-generic'
+            or type(evidence.get('bytes')) is not int
+            or not 0 < evidence['bytes'] <= RETAINED_REPORT_MAX_BYTES
+            or evidence.get('bytes') != readiness['evidence_artifact_bytes']
+            or not _exact_hex(evidence.get('sha256'), 64)
+            or evidence.get('sha256') != readiness['evidence_artifact_sha256']
+            or not isinstance(evidence.get('expires_at'), str)
+            or not isinstance(development, dict)
+            or set(development) != {'id', 'name', 'bytes', 'sha256'}
+            or development != {'id': selected_artifact['id'],
+                               'name': selected_artifact['name'],
+                               'bytes': selected_artifact['bytes'],
+                               'sha256': selected_artifact['sha256']}
+            or item.get('checks') != RETAINED_RECONCILIATION_CHECKS
+            or not isinstance(resources, dict) or resources != expected_resources
+            or item.get('os_qualified') is not False
+            or item.get('release_qualified') is not False
+            or item.get('scope') != ('Exact generic development-image preflight; no '
+                                     'installation, boot, update, NVIDIA, desktop or '
+                                     'release qualification')):
+        raise ValueError('Independent preflight reconciliation changed')
+
+
+def _validate_retained_boot_inputs(item, expected):
+    final = item.get('cgroup_final') if isinstance(item, dict) else None
+    if (not isinstance(final, dict)
+            or set(final) != {'memory.peak', 'memory.events', 'cpu.stat'}):
+        raise ValueError('Retained boot-input resource record changed')
+    _validate_no_oom(final)
+    if int(final['memory.peak']) > int(item['limits']['memory.max']) + 4096:
+        raise ValueError('Retained boot-input probe exceeded its memory limit')
+    if (item.get('backend_files') != RETAINED_BACKEND_FILES
+            or item.get('tools') != RETAINED_TOOLS
+            or item.get('install_configuration') != item.get('root_fs')):
+        raise ValueError('Retained boot-input provenance changed')
+    commands = item.get('commands')
+    expected_commands = [
+        ['/usr/bin/rpm', '-q', 'bootc', 'kernel-core', '--qf',
+         '%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n'],
+        ['/usr/bin/bootc', '--version'],
+        ['/usr/bin/bootc', 'install', 'print-configuration'],
+        ['/usr/bin/bootc', 'install', 'print-configuration', '--all'],
+        ['/usr/bin/bootc', 'install', 'to-disk', '--help'],
+    ]
+    if (not isinstance(commands, list) or len(commands) != len(expected_commands)
+            or any(not isinstance(row, dict)
+                   or set(row) != {'command', 'exit_code', 'stderr', 'stdout'}
+                   or row.get('command') != command
+                   or row.get('exit_code') != 0 or row.get('stderr') != ''
+                   or not isinstance(row.get('stdout'), str) or not row['stdout']
+                   for row, command in zip(commands, expected_commands))
+            or commands[0]['stdout'].splitlines() != expected['packages']
+            or commands[1]['stdout'] != 'bootc ' + expected['bootc_version'] + '\n'):
+        raise ValueError('Retained boot-input command history changed')
+    for row in commands[2:4]:
+        if unique_json(row['stdout'].encode()) != item['root_fs']:
+            raise ValueError('Retained boot-input configuration output changed')
+    if any(option not in commands[4]['stdout'] for option in
+           ('--source-imgref', '--target-imgref', '--enforce-container-sigpolicy',
+            '--generic-image', '--via-loopback', '--filesystem')):
+        raise ValueError('Retained boot-input installer help is incomplete')
+
+
+def validate_retained_preflight(root, readiness, selected, manifest, expected):
+    """Authenticate the retained generic preflight against the current image lock."""
+    readiness_keys = {'schema', 'variant', 'preflight_run', 'source_commit',
+                      'inspect_sha256', 'prepare_sha256',
+                      'independent_check_sha256', 'manifest_digest',
+                      'kernel_observation_sha256', 'repository_id',
+                      'evidence_artifact_id', 'evidence_artifact_bytes',
+                      'evidence_artifact_sha256'}
+    if (not isinstance(readiness, dict) or set(readiness) != readiness_keys
+            or type(readiness.get('schema')) is not int
+            or readiness.get('schema') != 1 or readiness.get('variant') != 'generic'
+            or type(readiness.get('repository_id')) is not int
+            or readiness['repository_id'] <= 0
+            or type(readiness.get('evidence_artifact_id')) is not int
+            or readiness['evidence_artifact_id'] <= 0
+            or type(readiness.get('evidence_artifact_bytes')) is not int
+            or not 0 < readiness['evidence_artifact_bytes'] <= RETAINED_REPORT_MAX_BYTES
+            or not _exact_hex(readiness.get('evidence_artifact_sha256'), 64)
+            or type(readiness.get('preflight_run')) is not int
+            or readiness['preflight_run'] <= 0
+            or not _exact_hex(readiness.get('source_commit'), 40)
+            or any(not _exact_hex(readiness.get(name + '_sha256'), 64)
+                   for name in ('inspect', 'prepare', 'independent_check'))
+            or not _exact_hex(readiness.get('kernel_observation_sha256'), 64)
+            or not isinstance(readiness.get('manifest_digest'), str)
+            or re.fullmatch(r'sha256:[0-9a-f]{64}', readiness['manifest_digest']) is None):
+        raise ValueError('Unknown preflight readiness binding')
+    previous = root / 'docs/security/reports/P0-03-atomic-preflight' / str(
+        readiness['preflight_run'])
+    try:
+        previous_info = previous.lstat()
+    except OSError as error:
+        raise ValueError('Missing preflight evidence directory') from error
+    if (previous.resolve() != previous
+            or not stat.S_ISDIR(previous_info.st_mode)):
+        raise ValueError('Linked preflight evidence')
+    reports = {}
+    current_lock = sha256(root / 'image/desktop-images.lock.json')
+    flags = os.O_RDONLY | os.O_CLOEXEC | os.O_DIRECTORY | os.O_NOFOLLOW
+    try:
+        directory = os.open(previous, flags)
+    except OSError as error:
+        raise ValueError('Preflight evidence directory is not direct') from error
+    try:
+        opened_info = os.fstat(directory)
+        if (opened_info.st_dev != previous_info.st_dev
+                or opened_info.st_ino != previous_info.st_ino
+                or not stat.S_ISDIR(opened_info.st_mode)):
+            raise ValueError('Preflight evidence directory changed while opening')
+        for name in ('inspect', 'prepare', 'independent_check'):
+            raw = _read_retained_report(directory, name.replace('_', '-') + '.json')
+            if hashlib.sha256(raw).hexdigest() != readiness[name + '_sha256']:
+                raise ValueError('Preflight evidence bytes changed')
+            item = unique_json(raw)
+            _validate_retained_json(item)
+            reports[name] = item
+            if name != 'independent_check':
+                _validate_retained_envelope(item, name, readiness, selected, manifest,
+                                            expected, current_lock)
+    finally:
+        os.close(directory)
+    _validate_retained_reconciliation(reports['independent_check'], readiness,
+                                      selected, current_lock, reports)
+    artifact = reports['prepare'].get('artifact', {})
+    selected_artifact = selected['artifact']
+    workflow = artifact.get('workflow_run', {}) if isinstance(artifact, dict) else {}
+    artifact_keys = {'id', 'node_id', 'name', 'size_in_bytes', 'url',
+                     'archive_download_url', 'expired', 'digest', 'created_at',
+                     'updated_at', 'expires_at', 'workflow_run'}
+    workflow_keys = {'id', 'repository_id', 'head_repository_id', 'head_branch',
+                     'head_sha'}
+    if (not isinstance(artifact, dict) or set(artifact) != artifact_keys
+            or not isinstance(workflow, dict) or set(workflow) != workflow_keys
+            or artifact.get('id') != selected_artifact['id']
+            or artifact.get('name') != selected_artifact['name']
+            or artifact.get('size_in_bytes') != selected_artifact['bytes']
+            or artifact.get('digest') != 'sha256:' + selected_artifact['sha256']
+            or artifact.get('expired') is not False
+            or workflow.get('id') != selected['run_id']
+            or workflow.get('repository_id') != readiness['repository_id']
+            or workflow.get('head_repository_id') != readiness['repository_id']
+            or workflow.get('head_sha') != selected['tested_commit']):
+        raise ValueError('Retained preflight used a different hosted image artifact')
+    inspect = reports['inspect']
+    boot_inputs = inspect.get('boot_inputs')
+    requirements = validate_preflight(boot_inputs, expected)
+    loaded = validate_loaded_image([inspect.get('loaded_image')],
+                                   manifest['archive']['image_id'])
+    installed = inspect.get('installed_files')
+    kernel_copy = inspect.get('kernel_copy')
+    cleanup = inspect.get('cleanup')
+    cleanup_names = {'symbi-atomic-kernel-copy', 'symbi-atomic-installed-files',
+                     'symbi-atomic-boot-inputs'}
+    installed_keys = {'passed', 'os_qualified', 'installed_files_checked',
+                      'installed_package_count',
+                      'all_package_identities_preserved_after_build', 'fonts',
+                      'uid', 'limits', 'scope'}
+    fonts = installed.get('fonts') if isinstance(installed, dict) else None
+    font_keys = {'checked', 'scanned_fonts', 'families', 'monospace_family',
+                 'monospace_file'}
+    if (not isinstance(inspect.get('loaded_image'), dict)
+            or set(inspect['loaded_image']) != {'Id', 'Digest', 'Architecture', 'Os'}
+            or type(inspect.get('disk_free_before_load')) is not int
+            or inspect['disk_free_before_load'] <= 0
+            or not isinstance(installed, dict) or set(installed) != installed_keys
+            or installed.get('passed') is not True
+            or installed.get('os_qualified') is not False
+            or installed.get('installed_files_checked') != 212
+            or installed.get('installed_package_count') != 2184
+            or installed.get('all_package_identities_preserved_after_build') is not True
+            or installed.get('uid') != 10001
+            or installed.get('limits') != boot_inputs.get('limits')
+            or installed.get('scope') != ('Installed bytes and native font parsing '
+                                          'only; no boot or containment qualification')
+            or not isinstance(fonts, dict) or set(fonts) != font_keys
+            or fonts.get('checked') is not True
+            or fonts.get('scanned_fonts') != 98
+            or not isinstance(fonts.get('families'), list)
+            or len(fonts['families']) != 50
+            or any(not isinstance(family, str) or not family for family in fonts['families'])
+            or len(set(fonts['families'])) != 50
+            or not {'JetBrainsMono Nerd Font', 'JetBrainsMono Nerd Font Mono',
+                    'Symbols Nerd Font'}.issubset(fonts['families'])
+            or fonts.get('monospace_family') != 'JetBrainsMono Nerd Font'
+            or fonts.get('monospace_file') != ('/usr/share/fonts/symbi-nerd-fonts/'
+                                                'JetBrainsMono/'
+                                                'JetBrainsMonoNerdFont-Regular.ttf')
+            or not isinstance(boot_inputs, dict)
+            or set(boot_inputs) != RETAINED_BOOT_INPUT_KEYS
+            or boot_inputs.get('scope') != ('Read-only installed boot inputs; SELinux '
+                                             'enforcement, actual installation and boot '
+                                             'remain untested')
+            or inspect.get('install_requirements') != requirements):
+        raise ValueError('Retained installed-payload preflight is incomplete')
+    _validate_retained_boot_inputs(boot_inputs, expected)
+    expected_probe_hashes = {
+        'probe.py': sha256(root / 'image/boot/probe.py'),
+        'verify.py': sha256(root / 'image/desktop/verify.py'),
+        'font_verify.py': sha256(root / 'image/fonts/verify.py'),
+        'expected.json': hashlib.sha256((json.dumps(expected) + '\n').encode()).hexdigest(),
+    }
+    if inspect.get('probe_hashes') != expected_probe_hashes:
+        raise ValueError('Retained preflight probe inputs changed')
+    kernel_observation = hashlib.sha256(
+        (json.dumps(boot_inputs['kernel'], sort_keys=True) + '\n').encode()).hexdigest()
+    if (not isinstance(kernel_copy, dict)
+            or set(kernel_copy) != {'source_container', 'never_started', 'kernel',
+                                    'private_payload_removed', 'observation_sha256'}
+            or kernel_copy.get('source_container') != 'symbi-atomic-kernel-copy'
+            or kernel_copy.get('never_started') is not True
+            or kernel_copy.get('private_payload_removed') is not True
+            or kernel_copy.get('kernel') != boot_inputs['kernel']
+            or kernel_observation != readiness['kernel_observation_sha256']
+            or kernel_copy.get('observation_sha256') != kernel_observation
+            or boot_inputs.get('kernel_source_sha256') != kernel_observation):
+        raise ValueError('Retained protected-kernel observation is incomplete')
+    if (not isinstance(cleanup, dict) or set(cleanup) != cleanup_names
+            or any(cleanup.get(name) != {'removed': True, 'absent': True}
+                   for name in cleanup_names)
+            or inspect.get('image_removed') is not True):
+        raise ValueError('Retained preflight cleanup is incomplete')
+    if (loaded['Digest'] != readiness['manifest_digest']
+            or reports['prepare'].get('verified_archive') != manifest['archive']):
+        raise ValueError('Preflight describes a different OCI image')
+    return reports
 
 
 def main():
@@ -61,25 +505,7 @@ def main():
     podman=None;containers=[];storage=None;disk=None;identity=None;boot_output=None;runroot=None;disk_readonly=False;signing_output=None
     try:
         readiness=unique_json((root/'image/atomic/preflight.lock.json').read_bytes())
-        if readiness['schema']!=1 or readiness['variant']!='generic' or type(readiness['preflight_run']) is not int:
-            raise ValueError('Unknown preflight readiness binding')
-        previous=root/'docs/security/reports/P0-03-atomic-preflight'/str(readiness['preflight_run'])
-        if previous.resolve()!=previous: raise ValueError('Linked preflight evidence')
-        reports={}
-        for phase in ('inspect','prepare'):
-            path=previous/(phase+'.json')
-            if sha256(path)!=readiness[phase+'_sha256']: raise ValueError('Preflight evidence bytes changed')
-            item=unique_json(path.read_bytes());reports[phase]=item
-            if (item['passed'] is not True or item['source_commit']!=readiness['source_commit']
-                    or item['image_source_commit']!=selected['tested_commit'] or item['variant']!='generic'
-                    or item['expected_inputs']!=expected or item['guest_booted'] is not False
-                    or item['os_qualified'] is not False or item['installation_attempted'] is not False
-                    or item['lock_sha256']!=sha256(root/'image/desktop-images.lock.json')):
-                raise ValueError('Exact saved-image preflight has not passed')
-        validate_preflight(reports['inspect']['boot_inputs'],expected)
-        if (reports['inspect']['loaded_image']['Digest']!=readiness['manifest_digest']
-                or reports['prepare']['verified_archive']!=manifest['archive']):
-            raise ValueError('Preflight describes a different OCI image')
+        validate_retained_preflight(root, readiness, selected, manifest, expected)
         record['preflight']=readiness
         # The existing bounded prepare phase verifies the current GitHub artifact
         # metadata and streams its complete ZIP/manifest/OCI hashes again.

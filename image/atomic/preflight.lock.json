@@ -1,9 +1,15 @@
 {
   "schema": 1,
   "variant": "generic",
-  "preflight_run": 45901694620,
-  "source_commit": "370ac0af566cd94d7452fd415c59d3def9619b85",
-  "inspect_sha256": "2d59f4ae0f2e7d81d1c6072b9cd5da8dfd0a28d257f49b51aef5a2f5657839c5",
-  "prepare_sha256": "9a7d078d63be07dfc075b78d52537527a0761f3ec1b8077b700cf17c1bbe6ee5",
+  "preflight_run": 45910498271,
+  "repository_id": 1472078858,
+  "evidence_artifact_id": 15160430947,
+  "evidence_artifact_bytes": 62578,
+  "evidence_artifact_sha256": "3e2258ea3a49e8fd689137c3865b8370fbccc523de1ca7a2b58de057213593ed",
+  "source_commit": "4f435550c1ab63de6adadb2c028f832d53d88255",
+  "inspect_sha256": "27c31bf795033a708072f364091b443d8b164d62d40392b4553a0b1fe2f9849f",
+  "prepare_sha256": "1cb4c4e93548304853146822cb579d04c4816f7f2cab9db195f869a7f95ac1c3",
+  "independent_check_sha256": "3b70718698b71d58bb0cbd08c7ff96fdf7315919b8055420e52a16925814be5b",
+  "kernel_observation_sha256": "2ab9db85f1492ddb0628b0fd8b7552a94f63d228d30a8a94660776506d94cf96",
   "manifest_digest": "sha256:1dcf72c2e3eda7e5480269b1559e3b5527c77fdb70d28983d4e29baa03b8de6e"
 }

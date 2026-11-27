@@ -8,8 +8,8 @@ installation route.
 Passing it does not establish desktop, sandbox, release, NVIDIA or rollback
 qualification.
 
-The current prerequisite passed in [preflight 45901694620](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45901694620)
-at `370ac0af566cd94d7452fd415c59d3def9619b85` against the exact generic image
+The current prerequisite passed in [preflight 45910498271](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45910498271)
+at `4f435550c1ab63de6adadb2c028f832d53d88255` against the exact generic image
 built at `d436c6ee8a7ed159afa59db9bd82377ae8ea2389`: complete saved-archive
 identity, 212 installed files, 2,184 packages, protected kernel/initramfs hashes,
 bootc options, exact secureblue/Fedora identity and enforcing trust
@@ -457,3 +457,16 @@ use, then reclaims
 only the three exact, direct evidence directories after the systemd unit stops
 and revalidates them first. The failed run does not establish a signature
 refusal, boot, update or rollback result.
+
+[Run 45914576818](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45914576818)
+then downloaded both retained images, authenticated and streamed the current
+image, and refused before disk installation. Its preflight lock still named run
+45901694620, whose complete desktop-image lock hash preceded the current NVIDIA
+entry. The exact current lock had already passed preflight 45910498271 at
+`4f43555`. The retained
+62,578-byte evidence artifact, its GitHub digest, both report hashes, exact
+generic image artifact, manifest and resource results were independently
+reconciled, and the preflight lock now names that run. The failed attempt used
+a zero-swap limit and launched no installer or VM; its failure record recorded
+zero peak swap and zero OOM, OOM-kill and OOM-group-kill counters. Native update
+acceptance still requires a fresh exact-head run.

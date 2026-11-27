@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "passed": true,
+  "workflow_run": 45910498271,
+  "workflow": "Atomic image preflight",
+  "source_commit": "4f435550c1ab63de6adadb2c028f832d53d88255",
+  "variant": "generic",
+  "image_source_commit": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+  "manifest_digest": "sha256:1dcf72c2e3eda7e5480269b1559e3b5527c77fdb70d28983d4e29baa03b8de6e",
+  "desktop_images_lock_sha256": "089a05b34982fa989164c9e98ea4d7f6eb6cbeb456acb41fd263d16373fd5747",
+  "retained_reports": {
+    "inspect.json": "27c31bf795033a708072f364091b443d8b164d62d40392b4553a0b1fe2f9849f",
+    "prepare.json": "1cb4c4e93548304853146822cb579d04c4816f7f2cab9db195f869a7f95ac1c3"
+  },
+  "evidence_artifact": {
+    "id": 15160430947,
+    "name": "atomic-image-preflight-generic",
+    "bytes": 62578,
+    "sha256": "3e2258ea3a49e8fd689137c3865b8370fbccc523de1ca7a2b58de057213593ed",
+    "expires_at": "2026-12-10T23:28:09Z"
+  },
+  "development_image_artifact": {
+    "id": 15142163489,
+    "name": "desktop-development-image-generic",
+    "bytes": 4177411378,
+    "sha256": "0bcc28c23b186794a3874e8b051b1f425939c5940f340a4dc59c4f9ffe23757d"
+  },
+  "checks": [
+    "GitHub reports success for the exact workflow head and all workflow steps",
+    "The original evidence ZIP size and SHA-256 match authenticated artifact metadata",
+    "Both retained reports match their lock hashes and reject duplicate JSON keys",
+    "The exact complete desktop-image lock, generic artifact, image source and manifest match",
+    "Installed inputs, boot inputs and cleanup passed without swap, OOM or OOM kill"
+  ],
+  "resource_observation": {
+    "prepare_memory_peak_bytes": 27254784,
+    "inspect_memory_peak_bytes": 4294971392,
+    "inspect_memory_max_events": 32546,
+    "swap_max_bytes": 0,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0
+  },
+  "os_qualified": false,
+  "release_qualified": false,
+  "scope": "Exact generic development-image preflight; no installation, boot, update, NVIDIA, desktop or release qualification"
+}
