@@ -1,5 +1,6 @@
 """Inert acceptance tests for the offline hosted Landlock qualification boot."""
 import base64
+import copy
 from contextlib import redirect_stdout
 import hashlib
 import io
@@ -14,11 +15,15 @@ import unittest
 from unittest import mock
 import zlib
 
+from image.atomic.hosted import run_hosted_command
+from image.launcher.probes.bounded_process import run_bounded
 from image.qualification import landlock as landlock_driver
 from image.qualification.boot import (firmware_arguments, qemu_command,
                                       validate_guest_report)
 from image.qualification.guest import collect_public_artifacts
 from image.qualification.hosted import validate_source_checkout
+from image.qualification.hosted_process import (TIMEOUT_SECONDS,
+                                                validate_landlock_controller_command)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -34,6 +39,28 @@ def settings(name):
 
 
 class HostedLandlock(unittest.TestCase):
+    landlock_unit = "symbi-landlock-123456-1"
+    landlock_cgroup = "/system.slice/" + landlock_unit + ".service"
+    landlock_image = "sha256:" + "9" * 64
+
+    def landlock_controller_command(self):
+        storage = ROOT / ".cache/atomic-disk-storage"
+        return [
+            "podman", "--cgroup-manager=cgroupfs", "--root", str(storage / "root"),
+            "--runroot", "/run/" + self.landlock_unit, "run", "--rm",
+            "--name=symbi-landlock-qemu", "--pull=never", "--network=none",
+            "--pid=private", "--cgroup-parent=" + self.landlock_cgroup,
+            "--env=LANG=C.UTF-8", "--env=PYTHONDONTWRITEBYTECODE=1", "--read-only",
+            "--user=10001:10001", "--cap-drop=ALL",
+            "--security-opt=no-new-privileges", "--memory=3g", "--memory-swap=3g",
+            "--cpus=2", "--pids-limit=64",
+            "--mount", f"type=bind,src={storage / 'landlock-input'},dst=/inputs,ro",
+            "--mount", f"type=bind,src={storage / 'disk/atomic.raw'},dst=/inputs/atomic.raw,ro",
+            "--mount", f"type=bind,src={storage / 'landlock-source.raw'},dst=/inputs/source.raw,ro",
+            "--mount", f"type=bind,src={storage / 'landlock-output'},dst=/output",
+            "--entrypoint=/usr/bin/python3", self.landlock_image, "/inputs/boot.py",
+        ]
+
     def expected(self):
         return {
             "nonce": "a" * 32,
@@ -240,6 +267,93 @@ class HostedLandlock(unittest.TestCase):
         self.assertIn("file=/inputs/source.raw,format=raw,if=virtio,readonly=on", joined)
         for forbidden in ("-virtfs", "-fsdev", "hostfwd", "-nic", "-kernel", "-initrd"):
             self.assertNotIn(forbidden, command)
+
+    def test_landlock_controller_uses_only_its_fixed_extended_runner(self):
+        command = self.landlock_controller_command()
+        self.assertEqual(validate_landlock_controller_command(
+            command, self.landlock_cgroup, self.landlock_image), command)
+        completed = subprocess.CompletedProcess(command, 0, "", "")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with self.assertRaises(ValueError):
+                run_bounded(command, root / "shared-out", root / "shared-err",
+                            TIMEOUT_SECONDS, 1024**2)
+            with mock.patch("image.atomic.hosted.run_landlock_controller",
+                            return_value=completed) as dedicated, \
+                    mock.patch("image.atomic.hosted.run_bounded") as shared:
+                observed = run_hosted_command(
+                    "landlock", "landlock-qualification", command,
+                    root / "out", root / "err", TIMEOUT_SECONDS,
+                    self.landlock_cgroup, self.landlock_image)
+            self.assertIs(observed, completed)
+            dedicated.assert_called_once_with(
+                command, root / "out", root / "err",
+                self.landlock_cgroup, self.landlock_image)
+            shared.assert_not_called()
+            with self.assertRaises(ValueError):
+                run_hosted_command("landlock", "landlock-qualification", command,
+                                   root / "out", root / "err", TIMEOUT_SECONDS - 1,
+                                   self.landlock_cgroup, self.landlock_image)
+            with self.assertRaises(ValueError):
+                run_hosted_command("", "landlock-qualification", command,
+                                   root / "out", root / "err", TIMEOUT_SECONDS,
+                                   self.landlock_cgroup, self.landlock_image)
+
+    def test_landlock_extended_runner_rejects_command_shape_mutations(self):
+        command = self.landlock_controller_command()
+        mutations = []
+        changed = copy.deepcopy(command)
+        changed.insert(1, "--remote")
+        mutations.append(changed)
+        changed = copy.deepcopy(command)
+        changed[3] = "/tmp/other/atomic-disk-storage/root"
+        mutations.append(changed)
+        changed = copy.deepcopy(command)
+        changed[changed.index("--memory=3g")] = "--memory=4g"
+        mutations.append(changed)
+        changed = copy.deepcopy(command)
+        changed.insert(changed.index("--entrypoint=/usr/bin/python3"), "--privileged")
+        mutations.append(changed)
+        changed = copy.deepcopy(command)
+        changed[changed.index("--mount") + 1] = \
+            "type=bind,src=/tmp/other,dst=/inputs,ro"
+        mutations.append(changed)
+        changed = copy.deepcopy(command)
+        changed[-2] = "latest"
+        mutations.append(changed)
+        changed = copy.deepcopy(command)
+        changed[changed.index("--cgroup-parent=" + self.landlock_cgroup)] = \
+            "--cgroup-parent=/escape.slice/" + self.landlock_unit + ".service"
+        mutations.append(changed)
+        changed = copy.deepcopy(command)
+        changed[-2] = "sha256:" + "8" * 64
+        mutations.append(changed)
+        completed = subprocess.CompletedProcess(command, 0, "", "")
+        def validate_only(candidate, _stdout, _stderr, expected_cgroup, expected_image):
+            validate_landlock_controller_command(candidate, expected_cgroup, expected_image)
+            return completed
+        for changed in mutations:
+            with self.subTest(command=changed), self.assertRaises(ValueError):
+                validate_landlock_controller_command(
+                    changed, self.landlock_cgroup, self.landlock_image)
+            with mock.patch("image.atomic.hosted.run_landlock_controller",
+                            side_effect=validate_only):
+                with self.subTest(dispatch=changed), self.assertRaises(ValueError):
+                    run_hosted_command(
+                        "landlock", "landlock-qualification", changed,
+                        Path("/tmp/out"), Path("/tmp/err"), TIMEOUT_SECONDS,
+                        self.landlock_cgroup, self.landlock_image)
+
+    def test_landlock_deadlines_remain_nested_and_bounded(self):
+        self.assertEqual(TIMEOUT_SECONDS, 6000)
+        boot = (ROOT / "image/qualification/boot.py").read_text()
+        service = (ROOT / "image/qualification/l.service").read_text()
+        wrapper = (ROOT / "scripts/check-landlock-qualification.sh").read_text()
+        workflow = (ROOT / ".github/workflows/landlock-qualification.yml").read_text()
+        self.assertIn("time.monotonic() - started >= 5700", boot)
+        self.assertIn("RuntimeMaxSec=95min", service)
+        self.assertIn("RuntimeMaxSec=145min", wrapper)
+        self.assertIn("timeout-minutes: 165", workflow)
 
     def test_bounded_public_report_is_authenticated_and_expanded(self):
         report = self.report()

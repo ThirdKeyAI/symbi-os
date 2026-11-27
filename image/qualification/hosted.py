@@ -11,6 +11,8 @@ import subprocess
 import tomllib
 import uuid
 
+from image.qualification.hosted_process import TIMEOUT_SECONDS
+
 
 SOURCE_DISK_BYTES = 2 * 1024**3
 MAX_SOURCE_BYTES = 1024**3
@@ -253,7 +255,7 @@ def run_landlock(root, group, podman, image_id, atomic_disk, storage, containers
         (evidence / "source-manifest.json").write_text(
             json.dumps(source_disk["source_manifest"], indent=2) + "\n")
         (evidence / "result.json").write_text(json.dumps(result, indent=2) + "\n")
-        status = run("landlock-qualification", command, 6000, check=False)
+        status = run("landlock-qualification", command, TIMEOUT_SECONDS, check=False)
         result["container_exit_code"] = status.returncode
         if not (output / "result.json").is_file():
             raise ValueError("hosted qualification controller produced no result")
