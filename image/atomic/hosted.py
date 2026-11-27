@@ -509,16 +509,24 @@ def stop_after_container_candidate_boot(record,observation):
                      +','.join(blockers))
 
 
+def enforce_appliance_final_status(qualification,record):
+    """Cancel a pending appliance return when final cleanup invalidated the result."""
+    if qualification=='appliance' and record.get('passed') is not True:
+        raise RuntimeError('Interactive appliance or final cleanup did not pass')
+
+
 def main():
     qualification=os.environ.get('SYMBI_QUALIFICATION','')
     if (os.environ.get('GITHUB_ACTIONS')!='true' or os.environ.get('RUNNER_ENVIRONMENT')!='github-hosted'
-            or os.environ.get('SYMBI_IMAGE_VARIANT')!='generic' or qualification not in ('','landlock','update','containers')
+            or os.environ.get('SYMBI_IMAGE_VARIANT')!='generic'
+            or qualification not in ('','landlock','update','containers','appliance')
             or os.geteuid()!=0):
         raise SystemExit('Use the disposable hosted generic Atomic install/boot unit')
     root=Path.cwd().resolve()
     process=Path('/sys/fs/cgroup')/Path(Path('/proc/self/cgroup').read_text().strip().split('::',1)[1]).relative_to('/')
     group=process.parent
-    unit_prefix={'landlock':'symbi-landlock-','containers':'symbi-container-'}.get(
+    unit_prefix={'landlock':'symbi-landlock-','containers':'symbi-container-',
+                 'appliance':'symbi-appliance-'}.get(
         qualification,'symbi-atomic-disk-')
     if (process.name!='supervisor' or not group.name.startswith(unit_prefix)
             or not group.name.endswith('.service') or (group/'cgroup.procs').read_text().strip()):
@@ -617,9 +625,12 @@ def main():
                     or prepared['lock_sha256']!=sha256(root/'image/desktop-images.lock.json')):
                 raise ValueError('Current hosted image intake has not passed')
             archive=root/'.cache/atomic-image-inputs'/manifest['archive']['name']
+            archive_sha=sha256(archive) if archive.is_file() and not archive.is_symlink() else None
             if (archive.is_symlink() or not archive.is_file() or archive.stat().st_size!=manifest['archive']['bytes']
-                    or sha256(archive)!=manifest['archive']['sha256']):
+                    or archive_sha!=manifest['archive']['sha256']):
                 raise ValueError('Verified development archive changed')
+            if qualification=='appliance':
+                record['production_oci_before']={'bytes':archive.stat().st_size,'sha256':archive_sha}
             manifest_digest=readiness['manifest_digest']
         storage=root/'.cache/atomic-disk-storage';storage.mkdir(mode=0o700)
         info=storage.lstat()
@@ -688,8 +699,13 @@ def main():
         record['disk']=identity
         installer_input=storage/'installer-input';installer_input.mkdir(mode=0o700)
         (installer_input/'signed').mkdir(mode=0o700)
-        for name in ('install.py','contract.py'):
-            shutil.copyfile(root/'image/atomic'/name,installer_input/name)
+        if qualification=='appliance':
+            shutil.copyfile(root/'image/appliance/install.py',installer_input/'install.py')
+            shutil.copyfile(root/'image/appliance/contract.py',installer_input/'contract.py')
+            shutil.copyfile(root/'image/atomic/contract.py',installer_input/'atomic_contract.py')
+        else:
+            for name in ('install.py','contract.py'):
+                shutil.copyfile(root/'image/atomic'/name,installer_input/name)
         (installer_input/'original-policy.json').write_bytes(policy_bytes)
         shutil.copyfile(signing_output/'good-public.asc',installer_input/'test-public.asc')
         (installer_input/'install-policy.json').write_text(json.dumps(local_policy,indent=2)+'\n')
@@ -711,6 +727,40 @@ def main():
         loops=unique_json(run('disk-loops-after-install',['losetup','--json','--list','--output','NAME,BACK-FILE','--associated',str(disk)]).stdout)
         if loops.get('loopdevices') not in (None,[]): raise ValueError('Installer left attached loop devices')
         record['installation_completed']=True;record['disk_sha256']=sha256(disk);save()
+        if qualification=='appliance':
+            from image.appliance.hosted import produce_appliance, source_tree
+            source_binding={
+                'repository':'ThirdKeyAI/symbi-os',
+                'source_commit':record['source_commit'],
+                'source_tree':source_tree(root,record['source_commit']),
+                'image_source_commit':selected['tested_commit'],
+                'image_run_id':selected['run_id'],
+                'image_artifact_id':selected['artifact']['id'],
+                'image_artifact_sha256':selected['artifact']['sha256'],
+                'oci_manifest_digest':manifest_digest,
+                'installed_raw_sha256':record['disk_sha256'],
+            }
+            os.chmod(disk,0o444,follow_symlinks=False);disk_readonly=True
+            record['scope']=('HIGHLY EXPERIMENTAL offline development appliance producer; '
+                             'no release, signature, security or containment qualification')
+            record['appliance']=produce_appliance(root,group,podman,image_id,disk,
+                                                   source_binding,containers,run)
+            if (archive.is_symlink() or not archive.is_file()
+                    or archive.stat().st_size!=record['production_oci_before']['bytes']):
+                raise ValueError('Retained production OCI path changed during appliance production')
+            record['production_oci_after']={
+                'bytes':archive.stat().st_size,'sha256':sha256(archive)}
+            if record['production_oci_after']!=record['production_oci_before']:
+                raise ValueError('Retained production OCI bytes changed during appliance production')
+            record['guest_booted']=record['appliance']['guest_booted'] is True
+            record['graphical_desktop_observed']=(
+                record['appliance']['graphical_desktop_observed'] is True)
+            record['artifact_retained']=record['appliance']['artifact_retained'] is True
+            record['independent_reboot_passed']=(
+                record['appliance']['independent_reboot_passed'] is True)
+            record['passed']=all((record['guest_booted'],record['graphical_desktop_observed'],
+                                  record['artifact_retained'],record['independent_reboot_passed']))
+            return
         expected['manifest_digest']=manifest_digest
         payload=unique_json((root/'docs/security/reports/P0-03-desktop'/str(selected['run_id'])/'preparation.json').read_bytes())
         expected['payload']={**payload['payload'],**payload['overlay']}
@@ -843,7 +893,23 @@ def main():
         events=dict(line.split() for line in record['cgroup_final']['memory.events'].splitlines())
         if (any(record['cgroup_final'][n]!=v for n,v in limits.items())
                 or any(events.get(n)!='0' for n in ('oom','oom_kill','oom_group_kill'))): record['passed']=False
+        if qualification=='appliance' and record.get('passed') is not True:
+            for name in ('passed','guest_booted','graphical_desktop_observed',
+                         'artifact_retained','independent_reboot_passed'):
+                record[name]=False
+            if isinstance(record.get('appliance'),dict):
+                for name in ('passed','guest_booted','graphical_desktop_observed',
+                             'artifact_retained','independent_reboot_passed'):
+                    record['appliance'][name]=False
+                source_binding=record['appliance'].get('source_binding')
+                if isinstance(source_binding,dict):
+                    from image.appliance.hosted import invalidate_appliance_output
+                    try:
+                        record['appliance']=invalidate_appliance_output(root,source_binding)
+                    except (OSError,ValueError) as error:
+                        record['appliance_invalidation_error']=type(error).__name__
         save()
+        enforce_appliance_final_status(qualification,record)
     if not record['passed']: raise RuntimeError('Atomic install/boot or cleanup did not pass')
 
 
