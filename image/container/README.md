@@ -119,18 +119,19 @@ and hash plus `/etc/docker/daemon.json` from the generated
 links in every path component; it also requires the unchanged source RPM
 inventory.
 The outer native controller remains at 4 GiB, two CPUs and zero swap, matching
-the existing Landlock gate. A successful observation records only a candidate
-boot pass: `qualified`, `os_qualified` and `release_qualified` stay false, and
-`native-fedora-six-run-matrix`, managed-route, escape-suite and review blockers
-remain. This stage does not invoke the daemon/fixture controller, and no fixture
-profile runs. Its bounded evidence records `candidate_boot_passed=true`, runs
-cleanup, and then leaves the overall qualification workflow nonzero until the
-six-profile controller and remaining gates pass.
+the existing Landlock gate. On a future successful observation, it will record
+only a candidate boot pass: `qualified`, `os_qualified` and
+`release_qualified` stay false, and `native-fedora-six-run-matrix`, managed-route,
+escape-suite and review blockers remain. This stage does not invoke the
+daemon/fixture controller, and no fixture profile runs. Its bounded evidence
+will record `candidate_boot_passed=true`, run cleanup, and then leave the overall
+qualification workflow nonzero until the six-profile controller and remaining
+gates pass.
 
-The committed selector is still pending, so this install/boot path has not run
-against a real derived artifact. No native-containment result can be inferred
-until the producer and selector are retained and the later six-profile
-controller passes.
+The committed selector is still pending, so this candidate install/boot path has
+not run against a real derived artifact, and the native second qualification
+boot remains pending. No native-containment result can be inferred until the
+producer and selector are retained and the later six-profile controller passes.
 
 `gvisor-inputs.json` fixes release `release-20261123.1`, its commit and tag
 object, the complete x86_64 bzip2 archive, the publisher checksum list, license,
