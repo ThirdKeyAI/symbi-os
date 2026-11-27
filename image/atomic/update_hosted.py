@@ -99,6 +99,8 @@ def _missing_report_diagnostic(controller, payloads):
         return None
     report_name = "same-path-positive.json"
     report_raw = payloads.get(report_name) if report_name in payloads else None
+    if report_raw is not None and not isinstance(report_raw, bytes):
+        return None
     report = ({"name": report_name, "state": "absent", "bytes": 0,
                "sha256": None} if report_raw is None else
               {"name": report_name, "state": "empty", "bytes": len(report_raw),
@@ -106,39 +108,61 @@ def _missing_report_diagnostic(controller, payloads):
     if report_raw not in (None, b""):
         return None
     phase = controller.get("phase_failure")
+    phase_report = phase.get("report") if isinstance(phase, dict) else None
     if (not isinstance(phase, dict) or set(phase) != {
             "label", "command_sha256", "exit_code", "log_name", "serial_name",
             "report",
             }
             or phase.get("label") != "same-path-positive"
             or phase.get("command_sha256") != command_hash
+            or type(phase.get("exit_code")) is not int
             or phase.get("exit_code") != 0
             or phase.get("log_name") != "qemu-same-path-positive.log"
             or phase.get("serial_name") != "same-path-positive-serial.log"
-            or phase.get("report") != report):
+            or not isinstance(phase_report, dict)
+            or set(phase_report) != {"name", "state", "bytes", "sha256"}
+            or not isinstance(phase_report.get("name"), str)
+            or not isinstance(phase_report.get("state"), str)
+            or type(phase_report.get("bytes")) is not int
+            or (phase_report.get("sha256") is not None
+                and not isinstance(phase_report.get("sha256"), str))
+            or phase_report != report):
         return None
-    if controller.get("child_cleanup") != {
-            "attempted": False, "terminated": False, "killed": False, "errors": []}:
+    cleanup = controller.get("child_cleanup")
+    if (not isinstance(cleanup, dict)
+            or set(cleanup) != {"attempted", "terminated", "killed", "errors"}
+            or any(type(cleanup.get(name)) is not bool
+                   for name in ("attempted", "terminated", "killed"))
+            or cleanup != {"attempted": False, "terminated": False,
+                           "killed": False, "errors": []}):
         return None
     limits = controller.get("limits")
     final = controller.get("cgroup_final")
-    if (limits != {"memory.max": "3221225472", "memory.swap.max": "0",
-                   "cpu.max": "200000 100000", "pids.max": "64"}
+    expected_limits = {"memory.max": "3221225472", "memory.swap.max": "0",
+                       "cpu.max": "200000 100000", "pids.max": "64"}
+    if (not isinstance(limits, dict)
+            or limits != expected_limits
             or not isinstance(final, dict)
-            or set(final) != {*limits, "memory.peak", "memory.events", "cpu.stat"}
-            or final.get("memory.max") != limits["memory.max"]
-            or final.get("memory.swap.max") != "0"
-            or re.fullmatch(r"[0-9]+", final.get("memory.peak", "")) is None):
+            or set(final) != {*expected_limits, "memory.peak", "memory.events",
+                              "cpu.stat"}
+            or any(not isinstance(value, str) for value in final.values())
+            or any(final.get(name) != value
+                   for name, value in expected_limits.items())
+            or re.fullmatch(r"[0-9]+", final["memory.peak"]) is None
+            or not final["cpu.stat"].strip()):
         return None
-    try:
-        events = dict(line.split() for line in final["memory.events"].splitlines())
-    except (TypeError, ValueError):
+    events = {}
+    for line in final["memory.events"].splitlines():
+        fields = line.split()
+        if (len(fields) != 2 or fields[0] in events
+                or re.fullmatch(r"[0-9]+", fields[1]) is None):
+            return None
+        events[fields[0]] = fields[1]
+    expected_event_names = {"low", "high", "max", "oom", "oom_kill",
+                            "oom_group_kill", "sock_throttled"}
+    if set(events) != expected_event_names:
         return None
-    event_names = {"max", "oom", "oom_kill", "oom_group_kill"}
-    if (not event_names <= set(events)
-            or any(re.fullmatch(r"[0-9]+", events[name]) is None
-                   for name in event_names)):
-        return None
+    published_event_names = {"max", "oom", "oom_kill", "oom_group_kill"}
     diagnostic = {
         "schema": 1, "passed": False, "release_qualified": False,
         "diagnostic": "missing-update-phase-report",
@@ -150,11 +174,13 @@ def _missing_report_diagnostic(controller, payloads):
         "outputs": {"serial_name": phase["serial_name"],
                     "qemu_log_name": phase["log_name"]},
         "inputs": inputs,
-        "resources": {"memory.max": final["memory.max"],
+        "resources": {"cpu.max": final["cpu.max"],
+                      "memory.max": final["memory.max"],
                       "memory.peak": final["memory.peak"],
                       "memory.swap.max": final["memory.swap.max"],
+                      "pids.max": final["pids.max"],
                       "memory.events": {name: events[name]
-                                        for name in sorted(event_names)}},
+                                        for name in sorted(published_event_names)}},
     }
     return (json.dumps(diagnostic, sort_keys=True, separators=(",", ":"))
             + "\n").encode()
@@ -197,7 +223,14 @@ def _transition_failure_publication(payloads):
             raise ValueError("transition failure evidence escaped its controller phase")
         return None
     failure = controller.get("failure")
-    if (controller.get("schema") != 1
+    inputs = controller.get("inputs")
+    runner_hash = (inputs.get("update_boot_failure.py")
+                   if isinstance(inputs, dict) else None)
+    if (not isinstance(runner_hash, str) or len(runner_hash) != 64
+            or any(character not in "0123456789abcdef" for character in runner_hash)):
+        raise ValueError("transition diagnostic runner hash is absent")
+    if (type(controller.get("schema")) is not int
+            or controller.get("schema") != 1
             or controller.get("passed") is not False
             or controller.get("guest_booted") is not False
             or controller.get("release_qualified") is not False
@@ -207,13 +240,8 @@ def _transition_failure_publication(payloads):
             or not isinstance(failure, str)
             or not 0 < len(failure.encode()) <= 512
             or any(character < " " or character > "~" for character in failure)):
-        raise ValueError("invalid same-path failure controller result")
-    inputs = controller.get("inputs")
-    runner_hash = (inputs.get("update_boot_failure.py")
-                   if isinstance(inputs, dict) else None)
-    if (not isinstance(runner_hash, str) or len(runner_hash) != 64
-            or any(character not in "0123456789abcdef" for character in runner_hash)):
-        raise ValueError("transition diagnostic runner hash is absent")
+        return [("controller-result.json",
+                 _fixed_transition_failure_controller(runner_hash, False))]
     validated_embedded = None
     if embedded is not None:
         validated_embedded = validate_transition_failure_report(embedded, runner_hash)
