@@ -1,13 +1,17 @@
-"""Pure validators for a future signed Ubuntu fixture package closure.
+"""Pending anchors and dormant shapes for an Ubuntu fixture package closure.
 
 This module performs no discovery, download, extraction, package installation or
-image build.  It validates retained metadata objects supplied by a separate,
-reviewed producer.  The committed input lock remains pending and cannot select
-or consume an artifact.
+image build.  Only the immutable rootfs, request and source anchors participate
+in the pending public check.  The private metadata, package and artifact helpers
+are non-authoritative shape checks: they do not verify signatures, freshness,
+index membership, solver output, workflow identity or artifact bytes and must
+never authorize selection, consumption or a build.
 """
 import json
-from pathlib import PurePosixPath
+import os
+from pathlib import Path, PurePosixPath
 import re
+import stat
 from urllib.parse import urlsplit
 
 
@@ -33,6 +37,7 @@ MAX_PACKAGE_BYTES = 1024**3
 MAX_PACKAGE_COUNT = 4096
 MAX_CLOSURE_BYTES = 4 * 1024**3
 MAX_ARTIFACT_BYTES = 2 * 1024**3
+MAX_CONTROL_FILE_BYTES = 64 * 1024
 
 ROOTFS_FIELDS = {"archive", "url", "bytes", "sha256", "checksum", "keyring"}
 CHECKSUM_FIELDS = {
@@ -53,7 +58,7 @@ SOURCE_METADATA_FIELDS = {
 }
 RELEASE_FIELDS = {
     "suite", "mode", "inrelease", "release", "signature",
-    "signature_verified", "signer_fingerprint", "index",
+    "signer_fingerprint", "index",
 }
 PAYLOAD_FIELDS = {"filename", "url", "bytes", "sha256"}
 RELEASE_INDEX_FIELDS = {"path", "bytes", "sha256"}
@@ -155,7 +160,11 @@ def full_fingerprint(value):
             and re.fullmatch(r"[A-F0-9]{40}", value) is not None)
 
 
-def unique_json_bytes(raw):
+def unique_json_bytes(raw, maximum=MAX_CONTROL_FILE_BYTES):
+    require(type(maximum) is int and maximum > 0
+            and isinstance(raw, bytes) and 0 < len(raw) <= maximum,
+            "Ubuntu fixture JSON is empty or exceeds its byte bound")
+
     def unique(pairs):
         result = {}
         for key, value in pairs:
@@ -164,7 +173,9 @@ def unique_json_bytes(raw):
         return result
 
     value = json.loads(
-        raw, object_pairs_hook=unique,
+        raw.decode("utf-8"), object_pairs_hook=unique,
+        parse_float=lambda item: (_ for _ in ()).throw(
+            ValueError("noncanonical Ubuntu fixture JSON float")),
         parse_constant=lambda item: (_ for _ in ()).throw(
             ValueError("noncanonical Ubuntu fixture JSON number")),
     )
@@ -172,8 +183,64 @@ def unique_json_bytes(raw):
     return value
 
 
-def unique_json(path):
-    return unique_json_bytes(path.read_bytes())
+def read_bounded_control_file(root, relative_path, description,
+                              maximum=MAX_CONTROL_FILE_BYTES):
+    """Read from an anchored root fd with O_NOFOLLOW on every path component.
+
+    Descriptor-relative traversal keeps every lookup below the opened root even
+    if names are concurrently renamed.  The final file must be a bounded,
+    single-link regular file and remain the same inode and size for the read.
+    """
+    require(type(maximum) is int and maximum > 0
+            and isinstance(description, str) and description,
+            "Ubuntu fixture control-file bound is invalid")
+    name = str(relative_path)
+    path = PurePosixPath(name)
+    require(name and "\\" not in name and not path.is_absolute()
+            and str(path) == name
+            and all(part not in ("", ".", "..") for part in path.parts),
+            description + " path is unsafe or aliased")
+    root_path = Path(root).resolve(strict=True)
+    directory_flags = (
+        os.O_RDONLY | os.O_CLOEXEC | os.O_DIRECTORY | os.O_NOFOLLOW)
+    file_flags = os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW
+    directory_fd = os.open(root_path, directory_flags)
+    file_fd = None
+    try:
+        for part in path.parts[:-1]:
+            next_fd = os.open(part, directory_flags, dir_fd=directory_fd)
+            os.close(directory_fd)
+            directory_fd = next_fd
+        file_fd = os.open(path.parts[-1], file_flags, dir_fd=directory_fd)
+        stream = os.fdopen(file_fd, "rb")
+        file_fd = None
+        with stream:
+            before = os.fstat(stream.fileno())
+            require(stat.S_ISREG(before.st_mode) and before.st_nlink == 1
+                    and 0 < before.st_size <= maximum,
+                    description
+                    + " must be one bounded direct regular file")
+            raw = stream.read(maximum + 1)
+            after = os.fstat(stream.fileno())
+        require(len(raw) == before.st_size == after.st_size
+                and before.st_dev == after.st_dev
+                and before.st_ino == after.st_ino
+                and before.st_mode == after.st_mode
+                and before.st_nlink == after.st_nlink == 1
+                and before.st_mtime_ns == after.st_mtime_ns
+                and before.st_ctime_ns == after.st_ctime_ns,
+                description + " changed while reading")
+        return raw
+    finally:
+        if file_fd is not None:
+            os.close(file_fd)
+        os.close(directory_fd)
+
+
+def unique_json(root, relative_path, maximum=MAX_CONTROL_FILE_BYTES):
+    raw = read_bounded_control_file(
+        root, relative_path, "Ubuntu fixture JSON", maximum)
+    return unique_json_bytes(raw, maximum)
 
 
 def _safe_filename(value, suffix=None):
@@ -228,7 +295,8 @@ def validate_rootfs(rootfs):
 
 def validate_request(request):
     require(isinstance(request, dict) and set(request) == REQUEST_FIELDS
-            and request == EXPECTED_REQUEST,
+            and request == EXPECTED_REQUEST
+            and request.get("install_recommends") is False,
             "Ubuntu package request, root order or no-recommends policy changed")
     return request
 
@@ -264,8 +332,8 @@ def _validate_payload(row, expected_filename, expected_url, maximum, description
             description + " is malformed or changed")
 
 
-def validate_metadata(releases, indexes, sources):
-    """Validate signed InRelease records and their exact amd64 package indexes."""
+def _validate_retained_metadata_shape(releases, indexes, sources):
+    """Check a dormant retained shape; do not infer signature or freshness."""
     validate_sources(sources)
     require(isinstance(releases, list) and isinstance(indexes, list)
             and len(releases) == len(sources) == len(indexes),
@@ -273,16 +341,15 @@ def validate_metadata(releases, indexes, sources):
     index_hashes = {}
     for source, release, index in zip(sources, releases, indexes, strict=True):
         require(isinstance(release, dict) and set(release) == RELEASE_FIELDS,
-                "Ubuntu signed-release fields changed")
+                "Ubuntu retained release fields changed")
         require(release.get("suite") == source["suite"]
                 and release.get("mode") == "inrelease"
                 and release.get("release") is None
                 and release.get("signature") is None
-                and release.get("signature_verified") is True
                 and release.get("signer_fingerprint")
                 == source["metadata"]["signer_fingerprint"]
                 and full_fingerprint(release["signer_fingerprint"]),
-                "Ubuntu metadata signature mode or signer is invalid")
+                "Ubuntu retained metadata mode or signer field is invalid")
         _validate_payload(
             release.get("inrelease"), source["suite"] + "_InRelease",
             source["metadata"]["inrelease_url"], MAX_METADATA_BYTES,
@@ -296,7 +363,7 @@ def validate_metadata(releases, indexes, sources):
                 and type(release_index.get("bytes")) is int
                 and 0 < release_index["bytes"] <= MAX_INDEX_BYTES
                 and exact_hash(release_index.get("sha256")),
-                "Ubuntu signed release has no exact amd64 index binding")
+                "Ubuntu retained release has no exact amd64 index reference")
         require(isinstance(index, dict) and set(index) == INDEX_FIELDS
                 and index.get("suite") == source["suite"]
                 and index.get("component") == "main"
@@ -327,10 +394,11 @@ def package_identity(row):
     )
 
 
-def validate_packages(packages, releases, indexes, sources, expected_count,
-                      expected_bytes):
-    """Bind exact package rows to the authenticated binary-amd64 indexes."""
-    index_hashes = validate_metadata(releases, indexes, sources)
+def _validate_retained_package_shape(packages, releases, indexes, sources,
+                                     expected_count, expected_bytes):
+    """Check dormant row consistency, not index membership or solver output."""
+    index_hashes = _validate_retained_metadata_shape(
+        releases, indexes, sources)
     require(type(expected_count) is int
             and 0 < expected_count <= MAX_PACKAGE_COUNT
             and type(expected_bytes) is int
@@ -340,7 +408,7 @@ def validate_packages(packages, releases, indexes, sources, expected_count,
     require(packages == sorted(packages, key=package_identity),
             "Ubuntu package rows are not in canonical identity order")
     source_by_suite = {source["suite"]: source for source in sources}
-    identities, package_slots, filenames, urls = set(), set(), set(), set()
+    identities, package_names, filenames, urls = set(), set(), set(), set()
     total = 0
     for row in packages:
         source = row.get("source") if isinstance(row, dict) else None
@@ -370,15 +438,16 @@ def validate_packages(packages, releases, indexes, sources, expected_count,
                 and source.get("component") == "main"
                 and source.get("index_architecture") == "amd64"
                 and source.get("index_sha256") == index_hashes.get(suite),
-                "Ubuntu package row is unsafe or not from a signed amd64 index")
+                "Ubuntu package row is unsafe or has an invalid index reference")
         identity = (name, version, architecture)
-        package_slot = (name, architecture)
-        require(identity not in identities and package_slot not in package_slots
+        # This amd64-only shape retains no Debian Multi-Arch declaration, so a
+        # package name can resolve to only one all-or-amd64 row.
+        require(identity not in identities and name not in package_names
                 and filename not in filenames
                 and row["url"] not in urls,
                 "Ubuntu package closure has a duplicate package identity")
         identities.add(identity)
-        package_slots.add(package_slot)
+        package_names.add(name)
         filenames.add(filename)
         urls.add(row["url"])
         total += row["bytes"]
@@ -392,8 +461,8 @@ def validate_packages(packages, releases, indexes, sources, expected_count,
     return len(packages), total
 
 
-def validate_candidate_artifact(candidate):
-    """Validate an observed artifact candidate without selecting it."""
+def _validate_candidate_artifact_shape(candidate):
+    """Check a dormant unselected candidate shape; never select it."""
     run = candidate.get("run") if isinstance(candidate, dict) else None
     require(isinstance(candidate, dict)
             and set(candidate) == CANDIDATE_ARTIFACT_FIELDS
@@ -411,22 +480,28 @@ def validate_candidate_artifact(candidate):
     return candidate
 
 
-def validate_artifact_metadata(metadata, candidate):
-    """Match a retained API subset to an unselected artifact candidate."""
-    validate_candidate_artifact(candidate)
+def _validate_artifact_metadata_shape(metadata, candidate):
+    """Correlate dormant shapes without authenticating a run or artifact."""
+    _validate_candidate_artifact_shape(candidate)
     workflow = metadata.get("workflow_run") if isinstance(metadata, dict) else None
     run = candidate["run"]
     require(isinstance(metadata, dict)
             and set(metadata) == ARTIFACT_METADATA_FIELDS
             and isinstance(workflow, dict)
             and set(workflow) == ARTIFACT_WORKFLOW_FIELDS
+            and type(metadata.get("id")) is int and metadata["id"] > 0
             and metadata.get("id") == candidate["id"]
             and metadata.get("name") == candidate["name"]
+            and type(metadata.get("size_in_bytes")) is int
+            and metadata["size_in_bytes"] > 0
             and metadata.get("size_in_bytes") == candidate["bytes"]
             and metadata.get("digest") == "sha256:" + candidate["sha256"]
             and metadata.get("expired") is False
+            and type(workflow.get("id")) is int and workflow["id"] > 0
             and workflow.get("id") == run["id"]
             and workflow.get("head_sha") == run["head_sha"]
+            and type(workflow.get("repository_id")) is int
+            and type(workflow.get("head_repository_id")) is int
             and workflow.get("repository_id") == REPOSITORY["id"]
             and workflow.get("head_repository_id") == REPOSITORY["id"],
             "Ubuntu package artifact metadata differs from the candidate")

@@ -17,7 +17,6 @@ def release_row(source, marker):
         },
         "release": None,
         "signature": None,
-        "signature_verified": True,
         "signer_fingerprint": packages.ARCHIVE_SIGNER_FINGERPRINT,
         "index": {
             "path": "main/binary-amd64/Packages.xz",
@@ -80,6 +79,14 @@ class UbuntuFixturePackageContract(unittest.TestCase):
         ]
         self.rows.sort(key=packages.package_identity)
 
+    def test_dormant_positive_shapes_have_no_public_validator_names(self):
+        for name in (
+            "validate_metadata", "validate_packages",
+            "validate_candidate_artifact", "validate_artifact_metadata",
+        ):
+            with self.subTest(name=name):
+                self.assertFalse(hasattr(packages, name))
+
     def test_immutable_rootfs_request_and_source_anchors_pass(self):
         packages.validate_rootfs(copy.deepcopy(packages.EXPECTED_ROOTFS))
         packages.validate_request(copy.deepcopy(packages.EXPECTED_REQUEST))
@@ -127,6 +134,8 @@ class UbuntuFixturePackageContract(unittest.TestCase):
             ("suites", ["noble", "noble-security", "noble-updates"]),
             ("roots", ["git", "python3", "ca-certificates"]),
             ("install_recommends", True),
+            ("install_recommends", 0),
+            ("install_recommends", 0.0),
         ):
             changed = copy.deepcopy(packages.EXPECTED_REQUEST)
             changed[field] = value
@@ -161,8 +170,8 @@ class UbuntuFixturePackageContract(unittest.TestCase):
             with self.subTest(changed=changed), self.assertRaises(ValueError):
                 packages.validate_sources(changed)
 
-    def test_signed_metadata_and_amd64_indexes_pass(self):
-        observed = packages.validate_metadata(
+    def test_dormant_metadata_shape_and_amd64_index_links_pass(self):
+        observed = packages._validate_retained_metadata_shape(
             self.releases, self.indexes, self.sources)
         self.assertEqual(observed, {
             source["suite"]: index["sha256"]
@@ -180,7 +189,6 @@ class UbuntuFixturePackageContract(unittest.TestCase):
         for field, value in (
             ("signer_fingerprint", None),
             ("signer_fingerprint", "871920D1991BC93C"),
-            ("signature_verified", False),
             ("mode", "detached"),
         ):
             changed = copy.deepcopy(self.releases)
@@ -188,6 +196,9 @@ class UbuntuFixturePackageContract(unittest.TestCase):
             cases.append((changed, self.indexes))
         changed = copy.deepcopy(self.releases)
         changed[0]["inrelease"]["filename"] = "../InRelease"
+        cases.append((changed, self.indexes))
+        changed = copy.deepcopy(self.releases)
+        changed[0]["signature_verified"] = True
         cases.append((changed, self.indexes))
         changed = copy.deepcopy(self.indexes)
         changed[0]["architecture"] = "arm64"
@@ -204,10 +215,11 @@ class UbuntuFixturePackageContract(unittest.TestCase):
         for releases, indexes in cases:
             with self.subTest(releases=releases, indexes=indexes), \
                     self.assertRaises(ValueError):
-                packages.validate_metadata(releases, indexes, self.sources)
+                packages._validate_retained_metadata_shape(
+                    releases, indexes, self.sources)
 
-    def test_package_rows_are_bound_to_signed_amd64_indexes(self):
-        count, total = packages.validate_packages(
+    def test_dormant_package_rows_have_consistent_index_references(self):
+        count, total = packages._validate_retained_package_shape(
             self.rows, self.releases, self.indexes, self.sources,
             len(self.rows), sum(row["bytes"] for row in self.rows))
         self.assertEqual(count, 3)
@@ -232,6 +244,17 @@ class UbuntuFixturePackageContract(unittest.TestCase):
         changed.append(duplicate_slot)
         changed.sort(key=packages.package_identity)
         cases.append((changed, len(changed), sum(row["bytes"] for row in changed)))
+        changed = copy.deepcopy(self.rows)
+        duplicate_name = copy.deepcopy(changed[0])
+        duplicate_name["architecture"] = "amd64"
+        duplicate_name["filename"] = duplicate_name["filename"].replace(
+            "_all.deb", "_amd64.deb")
+        duplicate_name["url"] = (
+            self.sources[0]["base_url"] + "/" + duplicate_name["filename"])
+        duplicate_name["sha256"] = "d" * 64
+        changed.append(duplicate_name)
+        changed.sort(key=packages.package_identity)
+        cases.append((changed, len(changed), sum(row["bytes"] for row in changed)))
         for path, value in (
             ((0, "architecture"), "arm64"),
             ((0, "filename"), "../package.deb"),
@@ -254,14 +277,14 @@ class UbuntuFixturePackageContract(unittest.TestCase):
         cases.append((changed, len(changed), sum(row["bytes"] for row in changed)))
         for rows, count, total in cases:
             with self.subTest(rows=rows), self.assertRaises(ValueError):
-                packages.validate_packages(
+                packages._validate_retained_package_shape(
                     rows, self.releases, self.indexes, self.sources, count, total)
         with self.assertRaises(ValueError):
-            packages.validate_packages(
+            packages._validate_retained_package_shape(
                 self.rows, self.releases, self.indexes, self.sources,
                 len(self.rows) + 1, sum(row["bytes"] for row in self.rows))
         with self.assertRaises(ValueError):
-            packages.validate_packages(
+            packages._validate_retained_package_shape(
                 self.rows, self.releases, self.indexes, self.sources,
                 len(self.rows), sum(row["bytes"] for row in self.rows) + 1)
 
@@ -270,6 +293,9 @@ class UbuntuFixturePackageContract(unittest.TestCase):
             packages.unique_json_bytes(b'{"schema":1,"schema":1}')
         with self.assertRaises(ValueError):
             packages.unique_json_bytes(b'{"schema":NaN}')
+        for value in (b"1.0", b"1e0", b"Infinity", b"-Infinity"):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                packages.unique_json_bytes(b'{"schema":' + value + b"}")
         self.assertEqual(packages.unique_json_bytes(b'{"schema":1}'), {"schema": 1})
 
     def test_candidate_artifact_metadata_is_unselected_and_exact(self):
@@ -294,24 +320,26 @@ class UbuntuFixturePackageContract(unittest.TestCase):
                 "head_repository_id": packages.REPOSITORY["id"],
             },
         }
-        packages.validate_candidate_artifact(candidate)
-        packages.validate_artifact_metadata(metadata, candidate)
+        packages._validate_candidate_artifact_shape(candidate)
+        packages._validate_artifact_metadata_shape(metadata, candidate)
         for field, value in (
             ("selected", True), ("name", "other"), ("bytes", 0),
-            ("sha256", "short"),
+            ("sha256", "short"), ("id", True), ("id", 123.0),
+            ("bytes", 4096.0),
         ):
             changed = copy.deepcopy(candidate)
             changed[field] = value
             with self.subTest(field=field), self.assertRaises(ValueError):
-                packages.validate_candidate_artifact(changed)
+                packages._validate_candidate_artifact_shape(changed)
         changed = copy.deepcopy(candidate)
         changed["run"]["head_sha"] = "short"
         with self.assertRaises(ValueError):
-            packages.validate_candidate_artifact(changed)
+            packages._validate_candidate_artifact_shape(changed)
         metadata_mutations = []
         for field, value in (
             ("expired", True), ("id", 124),
-            ("digest", "sha256:" + "c" * 64),
+            ("digest", "sha256:" + "c" * 64), ("id", 123.0),
+            ("size_in_bytes", 4096.0),
         ):
             changed = copy.deepcopy(metadata)
             changed[field] = value
@@ -322,12 +350,20 @@ class UbuntuFixturePackageContract(unittest.TestCase):
         changed = copy.deepcopy(metadata)
         changed["workflow_run"]["repository_id"] = 1
         metadata_mutations.append(changed)
+        for field, value in (
+            ("id", 456.0),
+            ("repository_id", float(packages.REPOSITORY["id"])),
+            ("head_repository_id", float(packages.REPOSITORY["id"])),
+        ):
+            changed = copy.deepcopy(metadata)
+            changed["workflow_run"][field] = value
+            metadata_mutations.append(changed)
         changed = copy.deepcopy(metadata)
         changed["unexpected"] = True
         metadata_mutations.append(changed)
         for changed in metadata_mutations:
             with self.subTest(metadata=changed), self.assertRaises(ValueError):
-                packages.validate_artifact_metadata(changed, candidate)
+                packages._validate_artifact_metadata_shape(changed, candidate)
 
 
 if __name__ == "__main__":

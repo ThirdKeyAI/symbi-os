@@ -1,8 +1,10 @@
 """Pending-lock and public-entry tests for offline Ubuntu fixture inputs."""
 import copy
 import json
+import os
 from pathlib import Path
 import subprocess
+import tempfile
 import unittest
 
 from image.container import ubuntu_fixture_inputs as inputs
@@ -15,7 +17,8 @@ ROOT = Path(__file__).resolve().parents[2]
 class UbuntuFixtureInputContract(unittest.TestCase):
     def setUp(self):
         self.path = ROOT / "image/container/ubuntu-fixture-packages.lock.json"
-        self.lock = packages.unique_json(self.path)
+        self.lock = packages.unique_json(
+            ROOT, "image/container/ubuntu-fixture-packages.lock.json")
 
     def test_committed_pending_contract_is_complete_but_not_usable(self):
         result = inputs.validate_pending_lock(ROOT, copy.deepcopy(self.lock))
@@ -75,6 +78,49 @@ class UbuntuFixtureInputContract(unittest.TestCase):
         for changed in cases:
             with self.subTest(changed=changed), self.assertRaises(ValueError):
                 inputs.validate_pending_lock(ROOT, changed)
+
+    def test_boolean_integer_and_float_aliases_fail_closed(self):
+        cases = []
+        for value in (0, 0.0):
+            changed = copy.deepcopy(self.lock)
+            changed["package_request"]["install_recommends"] = value
+            cases.append(changed)
+        for field in inputs.CLAIM_FIELDS:
+            for value in (0, 0.0):
+                changed = copy.deepcopy(self.lock)
+                changed[field] = value
+                cases.append(changed)
+        for field in ("schema", "package_count", "package_bytes"):
+            for value in (False, 0.0):
+                changed = copy.deepcopy(self.lock)
+                changed[field] = value
+                cases.append(changed)
+        for changed in cases:
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                inputs.validate_pending_lock(ROOT, changed)
+
+    def test_native_fixture_pin_schema_runtime_and_claim_are_exact(self):
+        fixture = packages.unique_json(
+            ROOT, "image/container/native-fixture.lock.json")
+        inputs._validate_native_fixture_pin(
+            inputs.EXPECTED_FIXTURE_SOURCE, copy.deepcopy(fixture))
+        cases = []
+        for field, value in (
+            ("runtime_source_revision", "0" * 40),
+            ("qualified", True),
+            ("schema", True),
+            ("pull_request", 25.0),
+        ):
+            changed = copy.deepcopy(fixture)
+            changed[field] = value
+            cases.append(changed)
+        changed = copy.deepcopy(fixture)
+        changed["unexpected"] = True
+        cases.append(changed)
+        for changed in cases:
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                inputs._validate_native_fixture_pin(
+                    inputs.EXPECTED_FIXTURE_SOURCE, changed)
 
     def test_every_claim_status_and_readiness_mutation_fails_closed(self):
         for flag in inputs.CLAIM_FIELDS:
@@ -146,6 +192,8 @@ class UbuntuFixtureInputContract(unittest.TestCase):
         }
         with self.assertRaises(ValueError):
             inputs.validate_artifact_for_use(ROOT, self.lock, candidate, metadata)
+        with self.assertRaises(ValueError):
+            inputs.validate_artifact_for_use(ROOT, self.lock, None, None)
         for mode in ("consume", "build", "materialize"):
             with self.subTest(mode=mode), self.assertRaises(ValueError):
                 inputs.require_mode(ROOT, self.lock, mode)
@@ -155,6 +203,43 @@ class UbuntuFixtureInputContract(unittest.TestCase):
         duplicate = raw.replace('"schema": 1,', '"schema": 1,\n  "schema": 1,', 1)
         with self.assertRaises(ValueError):
             packages.unique_json_bytes(duplicate.encode())
+
+    def test_control_file_reads_are_bounded_direct_and_under_root(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            good = root / "good.json"
+            good.write_bytes(b'{"schema":1}')
+            self.assertEqual(
+                packages.unique_json(root, "good.json"), {"schema": 1})
+
+            alias = root / "alias.json"
+            alias.symlink_to(good.name)
+            with self.assertRaises(OSError):
+                packages.unique_json(root, "alias.json")
+
+            real = root / "real"
+            real.mkdir()
+            (real / "value.json").write_bytes(b'{"schema":1}')
+            directory_alias = root / "directory-alias"
+            directory_alias.symlink_to(real, target_is_directory=True)
+            with self.assertRaises(OSError):
+                packages.unique_json(
+                    root, "directory-alias/value.json")
+
+            oversized = root / "oversized.json"
+            oversized.write_bytes(b" " * (packages.MAX_CONTROL_FILE_BYTES + 1))
+            with self.assertRaises(ValueError):
+                packages.unique_json(root, "oversized.json")
+
+            hardlink = root / "hardlink.json"
+            os.link(good, hardlink)
+            with self.assertRaises(ValueError):
+                packages.unique_json(root, "hardlink.json")
+
+            with self.assertRaises(ValueError):
+                packages.unique_json(root, "real//value.json")
+            with self.assertRaises(ValueError):
+                packages.unique_json(root, "../value.json")
 
     def test_public_check_passes_only_pending_schema_validation(self):
         script = ROOT / "scripts/check-container-ubuntu-packages.sh"
