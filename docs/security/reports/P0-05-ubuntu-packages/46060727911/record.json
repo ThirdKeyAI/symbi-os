@@ -1,0 +1,188 @@
+{
+  "artifact": {
+    "bytes": 6941,
+    "crc_passed": true,
+    "digest": "sha256:0e0b65524bf1a3b9fc2f9acb1dee124bbbaeb473d4876b6cc01ab2c4026fb3c0",
+    "entries": 17,
+    "id": 15228252810,
+    "name": "container-ubuntu-fixture-package-evidence",
+    "safe_zip": {
+      "all_entries_regular_mode_0600": true,
+      "no_absolute_or_parent_paths": true,
+      "no_duplicate_paths": true,
+      "no_links_or_special_nodes": true
+    },
+    "uncompressed_bytes": 15067
+  },
+  "authenticated_inputs": {
+    "noble_inrelease": {
+      "bytes": 255850,
+      "sha256": "cdb2f31d809f589719a53c6ad15f255b27569c4059542ada282aaa21b8e164b0",
+      "signing_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C",
+      "status_stdout_sha256": "7ec5b58ee1da8ade1dcc942f55d19b5efab3bfd6dd671434e12f1716f8a687cc"
+    },
+    "noble_release": {
+      "age_days_at_run": 946,
+      "bytes": 254968,
+      "codename_matches": true,
+      "control_fields_valid": true,
+      "date_fields": 1,
+      "label_matches": true,
+      "origin_matches": true,
+      "released_at_utc": "2024-04-25T15:10:33Z",
+      "sha256": "26758a13cecfaff9ff274d31ea9a4633674a999bd130c09f6ecd66a4b8071184",
+      "sha256_fields": 1,
+      "suite_matches": true,
+      "valid_until_fields": 0,
+      "within_reviewed_immutable_age": true
+    },
+    "rootfs": {
+      "bytes": 30028293,
+      "sha256": "e77b6f10c2590cef872b33ee9f635a0e3fd1f57fb074c0e52b5c7f56147a0c86"
+    },
+    "rootfs_checksums": {
+      "signing_fingerprint": "843938DF228D22F7B3742BC0D94AA3F0EFE21092",
+      "status_stdout_sha256": "b6d4d35b3ca11dfd61000a00036f39778f02f849df0b273b75a36cab9d665739"
+    }
+  },
+  "claims": {
+    "authoritative": false,
+    "candidate_emitted": false,
+    "container_qualified": false,
+    "discovery_emitted": false,
+    "os_qualified": false,
+    "pins_emitted": false,
+    "producer_passed": false,
+    "qualified": false,
+    "release_qualified": false,
+    "selected": false,
+    "signature_qualified": false
+  },
+  "failure": {
+    "diagnosis": "The authenticated inventory contains canonical zero-size rows, but the global size grammar admitted only positive decimals. The exact target row is unique and has a canonical positive size.",
+    "error": "ReleaseInventoryRejection: Ubuntu Release SHA256 size syntax changed",
+    "evidence_limit": "No rejected SHA256 row content is retained or committed.",
+    "later_suites_started": false,
+    "packages_xz_downloaded": false,
+    "phase": "noble-release-index-inventory",
+    "predicate": "sha256-size-syntax",
+    "reason": "index-inventory-rejected"
+  },
+  "independent_review": "pending",
+  "inventory_classification": {
+    "canonical_positive_sizes": 842,
+    "canonical_zero_sizes": 28,
+    "duplicate_paths": 0,
+    "invalid_digests": 0,
+    "invalid_paths": 0,
+    "row_content_retained": false,
+    "sha256_rows": 870,
+    "source": "Bounded independent refetch matched the retained InRelease bytes, SHA-256 and pinned signature.",
+    "target_canonical_positive_size": true,
+    "target_occurrences": 1
+  },
+  "ledger": {
+    "bytes": 11204,
+    "last_kind": "release-rejected",
+    "last_predicate": "sha256-size-syntax",
+    "last_reason": "index-inventory-rejected",
+    "schema": 2,
+    "sha256": "6c1b87d604fd8e1eb1d0b71cc15577c3da2d7d4879ed2950d30fa07f9e61b96b",
+    "strict_sequences": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ]
+  },
+  "local_correction": {
+    "bad_digest_rejected": true,
+    "duplicate_path_rejected": true,
+    "global_size_pattern": "0|[1-9][0-9]*",
+    "leading_zero_rejected": true,
+    "nondigit_rejected": true,
+    "signed_decimal_rejected": true,
+    "target_maximum_bytes_unchanged": true,
+    "target_positive_required": true,
+    "target_zero_or_oversize_predicate": "target-index-byte-bound",
+    "unsafe_path_rejected": true
+  },
+  "local_verification": {
+    "affected_address_space_cap_bytes": 134217728,
+    "affected_peak_rss_kib": 41008,
+    "affected_tests": 78,
+    "complete_address_space_cap_bytes": 201326592,
+    "complete_image_tests": 605,
+    "complete_peak_rss_kib": 66748,
+    "complete_qualification_tests": 40,
+    "process_swaps": 0
+  },
+  "provenance": {
+    "command_output_descriptors_match": true,
+    "contract_sha256": "a226f4f33053ff9f9f14ab12a26c84c035aae3c02c1f64b59f9d5f736e3e5ecc",
+    "gpgv_tool_bytes": 310416,
+    "gpgv_tool_sha256": "f14d026b9eae172c432e015bce227483293b4966f2f3fdcfa582f71d3dbb2ae8",
+    "git_tool_bytes": 4640384,
+    "git_tool_sha256": "08ca4d2ee4d8915e86f1faaa52603752507c57af1d16d451dec9992bc9b6d801",
+    "lock_sha256": "94d6f84024639b880060ac93825b4d3f1408f9f3a73b6e8087faac1748268b6c"
+  },
+  "resources": {
+    "fallback": {
+      "cpu_usage_nsec": 522653000,
+      "exec_main_code": 1,
+      "exec_main_status": 1,
+      "memory_max_bytes": 2147483648,
+      "memory_peak_bytes": 262144,
+      "memory_swap_current": "[not set]",
+      "memory_swap_max_bytes": 0,
+      "memory_swap_peak_bytes": 0,
+      "oom_auditable": true,
+      "oom_observed": false,
+      "zero_swap": false
+    },
+    "primary": {
+      "cpu_usage_usec": 508583,
+      "memory_current_bytes": 50229248,
+      "memory_events": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "memory_max_bytes": 2147483648,
+      "memory_peak_bytes": 50774016,
+      "memory_swap_current_bytes": 0,
+      "memory_swap_max_bytes": 0,
+      "memory_swap_peak_bytes": 0,
+      "pids_current": 1,
+      "pids_max": 128,
+      "pids_peak": 16,
+      "zero_swap": true
+    }
+  },
+  "retention": {
+    "candidate_present": false,
+    "post_unit_candidate_validated": false,
+    "private_work_retained": true,
+    "producer_exit_status": 1,
+    "recursive_path_cleanup_performed": false
+  },
+  "run": {
+    "attempt": 1,
+    "branch": "card/P0-05-package-producer",
+    "conclusion": "failure",
+    "event": "workflow_dispatch",
+    "head_sha": "7e8102e3e5cc1443b7b22de90fce8b1b50e32ea9",
+    "head_tree": "49539ecf85eca21c374e25807cfd4c879910b442",
+    "id": 46060727911,
+    "job_id": 140714050311,
+    "mode": "discover",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46060727911"
+  },
+  "schema": 1
+}

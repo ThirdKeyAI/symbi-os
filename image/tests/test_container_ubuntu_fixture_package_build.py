@@ -301,6 +301,15 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             build.expected_freshness_policy(self.source))
         self.assertEqual(binding["index"], self.binding["index"])
 
+    def test_release_accepts_canonical_zero_for_irrelevant_sha256_row(self):
+        irrelevant = (
+            f" {'f' * 64} 0 main/binary-arm64/Packages.xz\n"
+        ).encode()
+        binding = build.validate_signed_release(
+            self.release + irrelevant, self.source, NOW,
+            build.expected_freshness_policy(self.source))
+        self.assertEqual(binding["index"], self.binding["index"])
+
     def test_release_rejects_oversized_exact_target_sha256_row(self):
         digest = hashlib.sha256(self.index).hexdigest()
         target = (
@@ -324,11 +333,39 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                 "target-index-byte-bound")
             self.assertNotIn(size_text, str(caught.exception))
 
+    def test_release_rejects_zero_exact_target_with_fixed_byte_bound(self):
+        digest = hashlib.sha256(self.index).hexdigest()
+        target = (
+            f" {digest} {len(self.index)} main/binary-amd64/Packages.xz\n"
+        ).encode()
+        zero = f" {digest} 0 main/binary-amd64/Packages.xz\n".encode()
+        with self.assertRaises(build.ReleaseInventoryRejection) as caught:
+            build.validate_signed_release(
+                self.release.replace(target, zero), self.source, NOW,
+                build.expected_freshness_policy(self.source))
+        self.assertEqual(
+            build.release_rejection_reason(caught.exception),
+            "index-inventory-rejected")
+        self.assertEqual(
+            build.release_rejection_predicate(caught.exception),
+            "target-index-byte-bound")
+        self.assertNotIn(zero.strip().decode(), str(caught.exception))
+
     def test_release_rejects_invalid_irrelevant_sha256_rows(self):
         digest = "f" * 64
         valid = f" {digest} 1 main/binary-arm64/Packages.xz\n"
         cases = (
             (f" {digest} malformed main/binary-arm64/Packages.xz\n",
+             "sha256-size-syntax"),
+            (f" {digest} 00 main/binary-arm64/Packages.xz\n",
+             "sha256-size-syntax"),
+            (f" {digest} 01 main/binary-arm64/Packages.xz\n",
+             "sha256-size-syntax"),
+            (f" {digest} +1 main/binary-arm64/Packages.xz\n",
+             "sha256-size-syntax"),
+            (f" {digest} -1 main/binary-arm64/Packages.xz\n",
+             "sha256-size-syntax"),
+            (f" {digest} 1x main/binary-arm64/Packages.xz\n",
              "sha256-size-syntax"),
             (f" {digest} 1 ../main/binary-arm64/Packages.xz\n",
              "sha256-path-safety"),

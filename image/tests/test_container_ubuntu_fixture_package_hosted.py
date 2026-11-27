@@ -857,7 +857,8 @@ class UbuntuHostedProducerTests(unittest.TestCase):
                     hosted.packages, "read_bounded_control_file",
                     return_value=inventory_release), \
                 self.assertRaisesRegex(
-                    hosted.build.ReleaseInventoryRejection, "size syntax"):
+                    hosted.build.ReleaseInventoryRejection,
+                    "index size exceeds its bound"):
             hosted._run_metadata(
                 lock, contract, Path(directory), Path(directory), Runner(),
                 hosted.datetime(2026, 11, 27, 12, 0,
@@ -871,7 +872,7 @@ class UbuntuHostedProducerTests(unittest.TestCase):
         self.assertEqual(
             inventory_ledger.calls[-1][-2], "index-inventory-rejected")
         self.assertEqual(
-            inventory_ledger.calls[-1][-1], "sha256-size-syntax")
+            inventory_ledger.calls[-1][-1], "target-index-byte-bound")
 
     def test_phase_ledger_rejects_mutation_order_duplicates_and_cross_binding(self):
         with tempfile.TemporaryDirectory() as directory:
