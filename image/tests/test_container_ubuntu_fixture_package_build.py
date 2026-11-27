@@ -122,6 +122,126 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         self.binding = build.validate_signed_release(
             self.release, self.source, NOW)
 
+    def candidate_fixture(self):
+        lock = packages.unique_json(
+            ROOT, "image/container/ubuntu-fixture-packages.lock.json")
+        versions = {
+            "python3": "3.12.3-0ubuntu2",
+            "git": "1:2.43.0-1ubuntu7.1",
+            "ca-certificates": "20240203",
+        }
+        package_rows = []
+        for name in sorted(self.payloads):
+            payload = self.payloads[name]
+            package_rows.append({
+                "package": name,
+                "version": versions[name],
+                "architecture": "all" if name == "ca-certificates" else "amd64",
+                "filename": self.paths[name],
+                "url": self.source["base_url"] + "/" + self.paths[name],
+                "bytes": len(payload),
+                "sha256": hashlib.sha256(payload).hexdigest(),
+                "source": {
+                    "suite": "noble", "component": "main",
+                    "index_architecture": "amd64",
+                    "index_sha256": self.binding["index"]["sha256"],
+                },
+            })
+        package_rows.sort(key=packages.package_identity)
+        release_rows = []
+        index_rows = []
+        metadata_contents = {}
+        for sequence, source in enumerate(packages.EXPECTED_SOURCES):
+            if source["suite"] == "noble":
+                index_bytes = self.index
+                release = self.release
+                binding = self.binding
+            else:
+                marker = (source["suite"] + " package index").encode()
+                marker_path = (
+                    "pool/main/s/suite-marker/"
+                    + source["suite"] + "-marker_1_amd64.deb"
+                )
+                index_bytes = lzma.compress(
+                    package_stanza(
+                        source["suite"] + "-marker", "1", "amd64",
+                        marker_path, marker,
+                    ),
+                    format=lzma.FORMAT_XZ,
+                    preset=0,
+                )
+                release = release_bytes(source, index_bytes)
+                binding = build.validate_signed_release(release, source, NOW)
+            release_rows.append(build.release_record(
+                source, binding,
+                {
+                    "bytes": len(release),
+                    "sha256": hashlib.sha256(release).hexdigest(),
+                },
+                {
+                    "signing_fingerprint": packages.ARCHIVE_SIGNER_FINGERPRINT,
+                    "status_sha256": format(sequence + 1, "064x"),
+                },
+            ))
+            index_row = build.index_record(source, binding["index"])
+            index_rows.append(index_row)
+            metadata_contents[source["suite"] + "_InRelease"] = release
+            metadata_contents[index_row["filename"]] = index_bytes
+        manifest = build.candidate_manifest(
+            lock, release_rows, index_rows, package_rows,
+            verified_at=NOW,
+            base_status={"bytes": 100, "sha256": "a" * 64},
+            tools={
+                "apt_get": {"version": "apt 2.8.3", "sha256": "b" * 64},
+                "dpkg": {"version": "Debian dpkg 1.22.6", "sha256": "c" * 64},
+                "gpgv": {"version": "gpgv 2.4.4", "sha256": "d" * 64},
+            },
+            command_hashes={name: character * 64 for name, character in (
+                ("apt_update", "1"), ("apt_uri_plan", "2"),
+                ("apt_simulation", "3"), ("dpkg_plan", "4"),
+            )},
+            download_order=[row["sha256"] for row in package_rows],
+        )
+        return lock, manifest, metadata_contents, package_rows
+
+    def stage_candidate_inputs(self, base, metadata_contents, package_rows):
+        staged_metadata = base / "staged-metadata"
+        staged_packages = base / "staged-packages"
+        mkdir_private(staged_metadata)
+        mkdir_private(staged_packages)
+        metadata_inputs = {}
+        for name, raw in metadata_contents.items():
+            path = staged_metadata / name
+            write_private(path, raw)
+            metadata_inputs[name] = path
+        package_inputs = {}
+        for row in package_rows:
+            path = staged_packages / Path(row["filename"]).name
+            write_private(path, self.payloads[row["package"]])
+            package_inputs[row["filename"]] = path
+        return metadata_inputs, package_inputs
+
+    def download_fixture(self):
+        _, _, _, package_rows = self.candidate_fixture()
+        plan = [{
+            "sequence": sequence,
+            "suite": row["source"]["suite"],
+            "filename": row["filename"],
+            "destination": Path(row["filename"]).name,
+            "bytes": row["bytes"],
+            "sha256": row["sha256"],
+        } for sequence, row in enumerate(package_rows)]
+        return plan, package_rows
+
+    def synthetic_rootfs_lock(self, archive):
+        lock = packages.unique_json(
+            ROOT, "image/container/ubuntu-fixture-packages.lock.json")
+        rootfs = copy.deepcopy(packages.EXPECTED_ROOTFS)
+        rootfs["bytes"] = archive.stat().st_size
+        rootfs["sha256"] = hashlib.sha256(archive.read_bytes()).hexdigest()
+        lock["rootfs"] = rootfs
+        return lock, rootfs
+
     def test_gpgv_status_requires_one_exact_signature_and_no_bad_status(self):
         fingerprint = packages.ARCHIVE_SIGNER_FINGERPRINT
         status = (
@@ -239,6 +359,50 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             with self.assertRaises(ValueError):
                 build.find_requested_packages(
                     path, self.source, duplicate_binding, requested)
+
+    def test_index_binding_and_compressed_size_reject_before_hash_or_parse(self):
+        requested = {
+            self.paths["git"]: {
+                "bytes": len(self.payloads["git"]),
+                "sha256": hashlib.sha256(
+                    self.payloads["git"]).hexdigest(),
+            }
+        }
+        invalid = []
+        extra = copy.deepcopy(self.binding["index"])
+        extra["unexpected"] = "caller evidence"
+        invalid.append(extra)
+        boolean_size = copy.deepcopy(self.binding["index"])
+        boolean_size["bytes"] = True
+        invalid.append(boolean_size)
+        oversized = copy.deepcopy(self.binding["index"])
+        oversized["bytes"] = packages.MAX_INDEX_BYTES + 1
+        invalid.append(oversized)
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "Packages.xz"
+            write_private(path, self.index)
+            with mock.patch.object(build, "_fd_sha256") as digest, \
+                    mock.patch.object(build, "_iter_control_stanzas") as parse:
+                for binding in invalid:
+                    with self.subTest(binding=binding), self.assertRaises(ValueError):
+                        build.find_requested_packages(
+                            path, self.source, binding, requested)
+                digest.assert_not_called()
+                parse.assert_not_called()
+
+            sparse = Path(directory) / "sparse-Packages.xz"
+            with sparse.open("wb") as stream:
+                stream.truncate(packages.MAX_INDEX_BYTES + 1)
+            sparse.chmod(0o600)
+            maximum = copy.deepcopy(self.binding["index"])
+            maximum["bytes"] = packages.MAX_INDEX_BYTES
+            with mock.patch.object(build, "_fd_sha256") as digest, \
+                    mock.patch.object(build, "_iter_control_stanzas") as parse, \
+                    self.assertRaises(ValueError):
+                build.find_requested_packages(
+                    sparse, self.source, maximum, requested)
+            digest.assert_not_called()
+            parse.assert_not_called()
 
     def test_private_index_rejects_symlinks_hardlinks_modes_and_owner(self):
         requested = {
@@ -444,6 +608,102 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             [hashlib.sha256(self.payloads[name]).hexdigest() for name in order],
         )
 
+    def test_download_preflight_rejects_every_bad_plan_before_opener(self):
+        plan, rows = self.download_fixture()
+        cases = []
+
+        changed_plan, changed_rows = copy.deepcopy(plan), copy.deepcopy(rows)
+        changed_rows[0]["url"] = (
+            "https://unreviewed.invalid/" + changed_rows[0]["filename"])
+        cases.append(("unreviewed host", changed_plan, changed_rows))
+
+        changed_plan, changed_rows = copy.deepcopy(plan), copy.deepcopy(rows)
+        changed_plan[0]["extra"] = "caller field"
+        cases.append(("plan extra", changed_plan, changed_rows))
+
+        changed_plan, changed_rows = copy.deepcopy(plan), copy.deepcopy(rows)
+        changed_rows[0]["extra"] = "caller field"
+        cases.append(("package extra", changed_plan, changed_rows))
+
+        changed_plan, changed_rows = copy.deepcopy(plan), copy.deepcopy(rows)
+        changed_plan[0]["sequence"] = True
+        cases.append(("boolean sequence", changed_plan, changed_rows))
+
+        changed_plan, changed_rows = copy.deepcopy(plan), copy.deepcopy(rows)
+        changed_plan[0]["bytes"] = True
+        changed_rows[0]["bytes"] = True
+        cases.append(("boolean bytes", changed_plan, changed_rows))
+
+        changed_plan, changed_rows = copy.deepcopy(plan), copy.deepcopy(rows)
+        changed_rows[1] = copy.deepcopy(changed_rows[0])
+        changed_plan[1].update({
+            "suite": changed_rows[1]["source"]["suite"],
+            "filename": changed_rows[1]["filename"],
+            "destination": "duplicate.deb",
+            "bytes": changed_rows[1]["bytes"],
+            "sha256": changed_rows[1]["sha256"],
+        })
+        cases.append(("duplicate identity", changed_plan, changed_rows))
+
+        source = packages.EXPECTED_SOURCES[0]
+        oversized_plan = []
+        oversized_rows = []
+        for sequence in range(5):
+            filename = f"pool/main/p/package-{sequence}/package-{sequence}_1_amd64.deb"
+            digest = format(sequence + 1, "064x")
+            oversized_rows.append({
+                "package": f"package-{sequence}",
+                "version": "1",
+                "architecture": "amd64",
+                "filename": filename,
+                "url": source["base_url"] + "/" + filename,
+                "bytes": packages.MAX_PACKAGE_BYTES,
+                "sha256": digest,
+                "source": {
+                    "suite": source["suite"],
+                    "component": "main",
+                    "index_architecture": "amd64",
+                    "index_sha256": "f" * 64,
+                },
+            })
+            oversized_plan.append({
+                "sequence": sequence,
+                "suite": source["suite"],
+                "filename": filename,
+                "destination": f"package-{sequence}.deb",
+                "bytes": packages.MAX_PACKAGE_BYTES,
+                "sha256": digest,
+            })
+        cases.append(("aggregate bytes", oversized_plan, oversized_rows))
+
+        with tempfile.TemporaryDirectory() as directory:
+            downloads = Path(directory) / "downloads"
+            mkdir_private(downloads)
+            for description, changed_plan, changed_rows in cases:
+                calls = []
+
+                def opener(*args, **kwargs):
+                    calls.append((args, kwargs))
+                    raise AssertionError("invalid download reached opener")
+
+                with self.subTest(description=description), \
+                        self.assertRaises(ValueError):
+                    build.download_package_plan(
+                        changed_plan, changed_rows, downloads, opener=opener)
+                self.assertEqual(calls, [])
+
+            calls = []
+            with mock.patch.object(
+                    build.time, "monotonic", side_effect=(100.0, 701.0)), \
+                    self.assertRaises(ValueError):
+                build.download_package_plan(
+                    plan, rows, downloads,
+                    opener=lambda *args, **kwargs: calls.append(
+                        (args, kwargs)),
+                )
+            self.assertEqual(calls, [])
+            self.assertEqual(list(downloads.iterdir()), [])
+
     def test_apt_simulation_must_match_every_planned_identity_and_remove_nothing(self):
         rows = [
             {
@@ -517,6 +777,8 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             self.assertEqual(result, {"bytes": len(payload), "sha256": digest})
             self.assertEqual(path.read_bytes(), payload)
             self.assertEqual(len(calls), 1)
+            self.assertGreater(calls[0][1], 0)
+            self.assertLessEqual(calls[0][1], build.DOWNLOAD_TIMEOUT_SECONDS)
 
             redirected = Path(directory) / "redirected.deb"
             with self.assertRaises(ValueError):
@@ -567,7 +829,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
     def test_authenticated_rootfs_status_is_read_without_extracting_the_archive(self):
         status = b"Package: base-files\nStatus: install ok installed\n"
         with tempfile.TemporaryDirectory() as directory:
-            archive = Path(directory) / "rootfs.tar.gz"
+            archive = Path(directory) / packages.ROOTFS_ARCHIVE
             with tarfile.open(archive, "w:gz") as bundle:
                 member = tarfile.TarInfo("./var/lib/dpkg/status")
                 member.size = len(status)
@@ -577,96 +839,237 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                 unrelated.size = len(unrelated_payload)
                 bundle.addfile(unrelated, io.BytesIO(unrelated_payload))
             archive.chmod(0o600)
-            binding = {
-                "bytes": archive.stat().st_size,
-                "sha256": hashlib.sha256(archive.read_bytes()).hexdigest(),
-            }
-            raw, record = build.extract_base_dpkg_status(archive, binding)
+            lock, rootfs = self.synthetic_rootfs_lock(archive)
+            with mock.patch.object(packages, "EXPECTED_ROOTFS", rootfs):
+                raw, record = build.extract_base_dpkg_status(archive, lock)
         self.assertEqual(raw, status)
         self.assertEqual(record, {
             "bytes": len(status), "sha256": hashlib.sha256(status).hexdigest(),
         })
 
-    def test_candidate_manifest_is_unverified_and_ineligible_for_consumption(self):
+    def test_rootfs_status_rejects_caller_binding_and_bad_lock_before_open(self):
         lock = packages.unique_json(
             ROOT, "image/container/ubuntu-fixture-packages.lock.json")
-        versions = {
-            "python3": "3.12.3-0ubuntu2",
-            "git": "1:2.43.0-1ubuntu7.1",
-            "ca-certificates": "20240203",
-        }
-        package_rows = []
-        for name in sorted(self.payloads):
-            payload = self.payloads[name]
-            package_rows.append({
-                "package": name,
-                "version": versions[name],
-                "architecture": "all" if name == "ca-certificates" else "amd64",
-                "filename": self.paths[name],
-                "url": self.source["base_url"] + "/" + self.paths[name],
-                "bytes": len(payload),
-                "sha256": hashlib.sha256(payload).hexdigest(),
-                "source": {
-                    "suite": "noble", "component": "main",
-                    "index_architecture": "amd64",
-                    "index_sha256": self.binding["index"]["sha256"],
-                },
-            })
-        package_rows.sort(key=packages.package_identity)
-        release_rows = []
-        index_rows = []
-        metadata_contents = {}
-        for sequence, source in enumerate(packages.EXPECTED_SOURCES):
-            if source["suite"] == "noble":
-                index_bytes = self.index
-                release = self.release
-                binding = self.binding
-            else:
-                marker = (source["suite"] + " package index").encode()
-                marker_path = (
-                    "pool/main/s/suite-marker/"
-                    + source["suite"] + "-marker_1_amd64.deb"
-                )
-                index_bytes = lzma.compress(
-                    package_stanza(
-                        source["suite"] + "-marker", "1", "amd64",
-                        marker_path, marker,
-                    ),
-                    format=lzma.FORMAT_XZ,
-                    preset=0,
-                )
-                release = release_bytes(source, index_bytes)
-                binding = build.validate_signed_release(release, source, NOW)
-            release_rows.append(build.release_record(
-                source, binding,
-                {
-                    "bytes": len(release),
-                    "sha256": hashlib.sha256(release).hexdigest(),
-                },
-                {
-                    "signing_fingerprint": packages.ARCHIVE_SIGNER_FINGERPRINT,
-                    "status_sha256": format(sequence + 1, "064x"),
-                },
-            ))
-            index_row = build.index_record(source, binding["index"])
-            index_rows.append(index_row)
-            metadata_contents[source["suite"] + "_InRelease"] = release
-            metadata_contents[index_row["filename"]] = index_bytes
-        manifest = build.candidate_manifest(
-            lock, release_rows, index_rows, package_rows,
-            verified_at=NOW,
-            base_status={"bytes": 100, "sha256": "a" * 64},
-            tools={
-                "apt_get": {"version": "apt 2.8.3", "sha256": "b" * 64},
-                "dpkg": {"version": "Debian dpkg 1.22.6", "sha256": "c" * 64},
-                "gpgv": {"version": "gpgv 2.4.4", "sha256": "d" * 64},
-            },
-            command_hashes={name: character * 64 for name, character in (
-                ("apt_update", "1"), ("apt_uri_plan", "2"),
-                ("apt_simulation", "3"), ("dpkg_plan", "4"),
-            )},
-            download_order=[row["sha256"] for row in package_rows],
-        )
+        path = Path("/tmp") / packages.ROOTFS_ARCHIVE
+        invalid = []
+        extra = copy.deepcopy(lock)
+        extra["rootfs"]["unexpected"] = "caller evidence"
+        invalid.append(extra)
+        boolean_size = copy.deepcopy(lock)
+        boolean_size["rootfs"]["bytes"] = True
+        invalid.append(boolean_size)
+        self_consistent = copy.deepcopy(lock)
+        self_consistent["rootfs"]["archive"] = "caller-rootfs.tar.gz"
+        self_consistent["rootfs"]["bytes"] = 1
+        self_consistent["rootfs"]["sha256"] = "0" * 64
+        invalid.append(self_consistent)
+        invalid.append({
+            "bytes": packages.ROOTFS_BYTES,
+            "sha256": packages.ROOTFS_SHA256,
+        })
+        with mock.patch.object(build, "_open_private_path") as opened:
+            for changed in invalid:
+                with self.subTest(changed=changed), self.assertRaises(ValueError):
+                    build.extract_base_dpkg_status(path, changed)
+            opened.assert_not_called()
+
+    def test_rootfs_tar_bounds_are_checked_before_status_extraction(self):
+        status = b"Package: base-files\nStatus: install ok installed\n"
+        with tempfile.TemporaryDirectory() as directory:
+            archive = Path(directory) / packages.ROOTFS_ARCHIVE
+            with tarfile.open(archive, "w:gz") as bundle:
+                member = tarfile.TarInfo("./var/lib/dpkg/status")
+                member.size = len(status)
+                bundle.addfile(member, io.BytesIO(status))
+                unrelated = tarfile.TarInfo("./var/lib/dpkg/available")
+                unrelated.size = 1
+                bundle.addfile(unrelated, io.BytesIO(b"x"))
+            archive.chmod(0o600)
+            lock, rootfs = self.synthetic_rootfs_lock(archive)
+            with mock.patch.object(packages, "EXPECTED_ROOTFS", rootfs), \
+                    mock.patch.object(build, "MAX_BASE_TAR_MEMBERS", 1), \
+                    mock.patch.object(
+                        build, "_read_scanned_base_status") as extracted, \
+                    self.assertRaises(ValueError):
+                build.extract_base_dpkg_status(archive, lock)
+            extracted.assert_not_called()
+
+            with mock.patch.object(packages, "EXPECTED_ROOTFS", rootfs), \
+                    mock.patch.object(
+                        build, "MAX_BASE_TAR_EXPANDED_BYTES", len(status) - 1), \
+                    mock.patch.object(
+                        build, "_read_scanned_base_status") as extracted, \
+                    self.assertRaises(ValueError):
+                build.extract_base_dpkg_status(archive, lock)
+            extracted.assert_not_called()
+
+    def test_candidate_publish_source_swap_uses_held_stage_and_fails_closed(self):
+        lock, manifest, metadata_contents, package_rows = self.candidate_fixture()
+        token = "1" * 32
+        stage_name = ".ubuntu-package-candidate-" + token
+        real_publish = build._rename_noreplace
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            metadata_inputs, package_inputs = self.stage_candidate_inputs(
+                base, metadata_contents, package_rows)
+            output = base / "candidate"
+            displaced_stage = base / "displaced-stage"
+
+            def swap_outer_stage(source_fd, source_name,
+                                 destination_fd, destination_name):
+                (base / stage_name).rename(displaced_stage)
+                mkdir_private(base / stage_name)
+                mkdir_private(base / stage_name / "candidate")
+                return real_publish(
+                    source_fd, source_name, destination_fd, destination_name)
+
+            with mock.patch.object(build.secrets, "token_hex", return_value=token), \
+                    mock.patch.object(
+                        build, "_rename_noreplace", swap_outer_stage), \
+                    self.assertRaises(ValueError):
+                build.write_candidate_output(
+                    output, lock, manifest, metadata_inputs, package_inputs)
+            self.assertEqual(
+                build.validate_candidate_output(output, lock), manifest)
+            self.assertTrue((base / stage_name / "candidate").is_dir())
+            self.assertTrue(displaced_stage.is_dir())
+            self.assertEqual(list(displaced_stage.iterdir()), [])
+
+    def test_candidate_publish_never_clobbers_raced_destination(self):
+        lock, manifest, metadata_contents, package_rows = self.candidate_fixture()
+        token = "2" * 32
+        stage_name = ".ubuntu-package-candidate-" + token
+        real_publish = build._rename_noreplace
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            metadata_inputs, package_inputs = self.stage_candidate_inputs(
+                base, metadata_contents, package_rows)
+            output = base / "candidate"
+
+            def race_destination(source_fd, source_name,
+                                 destination_fd, destination_name):
+                write_private(output, b"raced destination")
+                return real_publish(
+                    source_fd, source_name, destination_fd, destination_name)
+
+            with mock.patch.object(build.secrets, "token_hex", return_value=token), \
+                    mock.patch.object(
+                        build, "_rename_noreplace", race_destination), \
+                    self.assertRaises(FileExistsError):
+                build.write_candidate_output(
+                    output, lock, manifest, metadata_inputs, package_inputs)
+            self.assertEqual(output.read_bytes(), b"raced destination")
+            self.assertFalse((base / stage_name).exists())
+
+    def test_candidate_post_publish_mismatch_leaves_both_names_untouched(self):
+        lock, manifest, metadata_contents, package_rows = self.candidate_fixture()
+        token = "3" * 32
+        stage_name = ".ubuntu-package-candidate-" + token
+        real_publish = build._rename_noreplace
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            metadata_inputs, package_inputs = self.stage_candidate_inputs(
+                base, metadata_contents, package_rows)
+            output = base / "candidate"
+            displaced = base / "published-original"
+
+            def replace_after_publish(source_fd, source_name,
+                                      destination_fd, destination_name):
+                result = real_publish(
+                    source_fd, source_name, destination_fd, destination_name)
+                output.rename(displaced)
+                write_private(output, b"post-publish replacement")
+                return result
+
+            with mock.patch.object(build.secrets, "token_hex", return_value=token), \
+                    mock.patch.object(
+                        build, "_rename_noreplace", replace_after_publish), \
+                    self.assertRaises(ValueError):
+                build.write_candidate_output(
+                    output, lock, manifest, metadata_inputs, package_inputs)
+            self.assertEqual(output.read_bytes(), b"post-publish replacement")
+            self.assertEqual(
+                build.validate_candidate_output(displaced, lock), manifest)
+            self.assertFalse((base / stage_name).exists())
+
+    def test_candidate_cleanup_leaves_replacement_objects_untouched(self):
+        lock, manifest, metadata_contents, package_rows = self.candidate_fixture()
+        real_copy = build._copy_exact
+        for sequence, replacement in enumerate(
+                ("symlink", "hardlink", "fifo", "directory"), start=4):
+            token = format(sequence, "032x")
+            stage_name = ".ubuntu-package-candidate-" + token
+            with self.subTest(replacement=replacement), \
+                    tempfile.TemporaryDirectory() as directory:
+                base = Path(directory)
+                metadata_inputs, package_inputs = self.stage_candidate_inputs(
+                    base, metadata_contents, package_rows)
+                output = base / "candidate"
+                changed = False
+
+                def replace_created(source, destination_fd, destination_name,
+                                    expected_bytes, expected_sha256):
+                    nonlocal changed
+                    identity = real_copy(
+                        source, destination_fd, destination_name,
+                        expected_bytes, expected_sha256)
+                    if changed:
+                        return identity
+                    changed = True
+                    if replacement == "directory":
+                        metadata = base / stage_name / "candidate" / "metadata"
+                        metadata.rename(metadata.with_name("metadata.saved"))
+                        mkdir_private(metadata)
+                    else:
+                        saved = destination_name + ".saved"
+                        os.rename(
+                            destination_name, saved,
+                            src_dir_fd=destination_fd,
+                            dst_dir_fd=destination_fd)
+                        if replacement == "symlink":
+                            os.symlink(
+                                saved, destination_name, dir_fd=destination_fd)
+                        elif replacement == "hardlink":
+                            os.link(
+                                saved, destination_name,
+                                src_dir_fd=destination_fd,
+                                dst_dir_fd=destination_fd,
+                                follow_symlinks=False)
+                        else:
+                            os.mkfifo(
+                                destination_name, 0o600, dir_fd=destination_fd)
+                    raise ValueError("injected candidate copy failure")
+
+                with mock.patch.object(
+                        build.secrets, "token_hex", return_value=token), \
+                        mock.patch.object(build, "_copy_exact", replace_created), \
+                        self.assertRaises(ValueError):
+                    build.write_candidate_output(
+                        output, lock, manifest,
+                        metadata_inputs, package_inputs)
+                stage = base / stage_name / "candidate"
+                self.assertTrue(stage.is_dir())
+                self.assertFalse(output.exists())
+                if replacement == "directory":
+                    self.assertTrue((stage / "metadata").is_dir())
+                    self.assertTrue((stage / "metadata.saved").is_dir())
+                else:
+                    metadata = stage / "metadata"
+                    replacement_path = next(
+                        path for path in metadata.iterdir()
+                        if not path.name.endswith(".saved"))
+                    saved_path = metadata / (replacement_path.name + ".saved")
+                    self.assertTrue(saved_path.exists())
+                    if replacement == "symlink":
+                        self.assertTrue(replacement_path.is_symlink())
+                    elif replacement == "hardlink":
+                        self.assertEqual(replacement_path.stat().st_nlink, 2)
+                    else:
+                        self.assertTrue(stat.S_ISFIFO(
+                            replacement_path.lstat().st_mode))
+
+    def test_candidate_manifest_is_unverified_and_ineligible_for_consumption(self):
+        lock, manifest, metadata_contents, package_rows = self.candidate_fixture()
         validated = build.validate_candidate_manifest(lock, manifest)
         self.assertIs(validated["producer_passed"], False)
         self.assertIs(validated["selected"], False)
@@ -722,20 +1125,8 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
-            staged_metadata = base / "staged-metadata"
-            staged_packages = base / "staged-packages"
-            mkdir_private(staged_metadata)
-            mkdir_private(staged_packages)
-            metadata_inputs = {}
-            for name, raw in metadata_contents.items():
-                path = staged_metadata / name
-                write_private(path, raw)
-                metadata_inputs[name] = path
-            package_inputs = {}
-            for row in package_rows:
-                path = staged_packages / Path(row["filename"]).name
-                write_private(path, self.payloads[row["package"]])
-                package_inputs[row["filename"]] = path
+            metadata_inputs, package_inputs = self.stage_candidate_inputs(
+                base, metadata_contents, package_rows)
             output = base / "candidate"
             written = build.write_candidate_output(
                 output, lock, manifest, metadata_inputs, package_inputs)
