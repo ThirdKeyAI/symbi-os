@@ -1,0 +1,204 @@
+{
+  "schema": 1,
+  "passed": false,
+  "qualified": false,
+  "run": {
+    "id": 46017732919,
+    "attempt": 1,
+    "event": "push",
+    "workflow": ".github/workflows/landlock-qualification.yml",
+    "head_branch": "card/P0-04-hosted-fix",
+    "head_sha": "3016b5308ce3a24ed8c47ce844c44625314d0f10",
+    "head_tree": "cbfebe3db9bc45b9f815937821d669ffb44f991c",
+    "job_id": 140569072004,
+    "job_name": "qualify",
+    "conclusion": "failure",
+    "started_at": "2026-11-27T14:38:27Z",
+    "completed_at": "2026-11-27T15:00:58Z",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46017732919"
+  },
+  "artifact": {
+    "id": 15207543763,
+    "name": "fedora-landlock-qualification",
+    "bytes": 82139,
+    "expires_at": "2026-12-11T15:00:55Z",
+    "digest": "sha256:e634c1c66768fe8c4f115ec023d99830dcdf4d0273d39fac88332b7a86e3894d",
+    "downloaded_zip_digest_matched": true,
+    "safe_regular_relative_members": 106,
+    "expanded_bytes": 227884,
+    "unsafe_or_encrypted_members": 0
+  },
+  "bindings": {
+    "image_source_commit": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+    "image_manifest_digest": "sha256:1dcf72c2e3eda7e5480269b1559e3b5527c77fdb70d28983d4e29baa03b8de6e",
+    "container_image_id": "sha256:46561dc6a11f404965d63aa3065017f94d37cc3ac3a261a9e5579ffba0f4cc40",
+    "installed_disk_sha256": "081d5a9278cce63d425a72ea8c6584e00cea765aabc00d10ac20db4e7b8484b6",
+    "runtime_source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+    "runtime_source_tree": "d22a931559cbfccdeb78b27eeb9e5008afb4d53b",
+    "runtime_binary_sha256": "1e90af1fe424ec37ad716bbc1e069c0bc7a78f59c49871b7e79506bda69f49c7",
+    "source_disk_sha256": "55440356449a29038705a249233e3e60fcc7c78937ecc86b59fb66f195142855",
+    "landlock_boot_input_sha256": "c84dd58eed54fde7ea80d082b6254b4413f41fafcbbef0463ad643c5081bb7c4"
+  },
+  "retained_evidence_sha256": {
+    "atomic-disk-evidence/result.json": "52fde5ef24b117890a1aa7f72697dd27b343bc429e4a5e93d8879329ca33f8e2",
+    "atomic-disk-evidence/guest-result.json": "fa685c7abf7895fb67f22b0bf838ba4d85ac93d4d6768d341979bc7c23dab3ea",
+    "atomic-disk-evidence/guest-report.json": "edb175bf1222877d8f866cde977717fd1f863942b99ca4d292093343d74d0d78",
+    "atomic-disk-evidence/systemd-result.txt": "b8884529f3b0a300c3f4419e9852fc344a2d54bbe4d10c60819fc65b99ffe79e",
+    "landlock-qualification-evidence/result.json": "316e32269f1e286011cdb11b6632f1e7bc70a61454e4f85a5d86a8b1937c768f",
+    "landlock-qualification-evidence/guest/result.json": "16c07a0cffa59a219cb4a77743296800d14a6c69d4d7d82b38903858c382fa98",
+    "landlock-qualification-evidence/source-manifest.json": "3a410322c097d7c2ce96e90da2dadfa4e37e676da178fffb6ed50b07554be21e",
+    "landlock-qualification-evidence/expected.json": "6f3f6dcf7a050bb0d381fe90bf18e8863a6a6eaa6fdf3f4839d6fa05cd8a0d83"
+  },
+  "observation": {
+    "source_authentication_passed": true,
+    "source_negative_controls": {
+      "unsigned_rejected": true,
+      "wrong_key_rejected": true,
+      "wrong_reference_rejected": true,
+      "altered_signature_rejected": true
+    },
+    "installation_completed": true,
+    "first_guest": {
+      "accepted": true,
+      "qemu_exit_code": 0,
+      "elapsed_seconds": 381.20563088300014,
+      "tcg_threading": "multi",
+      "virtual_cpu_topology": "cpus=2,sockets=1,cores=2,threads=1",
+      "guest_memory_mib": 1536,
+      "inventory_count": 2184,
+      "inventory_sha256": "7af38020fc34399648c491a007e089982395582ad2f79448fb853a57c93effc4",
+      "payload_count": 212,
+      "payload_verified": true,
+      "selinux": "Enforcing",
+      "sysroot_readonly": true,
+      "usr_readonly": true,
+      "capabilities_zero": true,
+      "no_new_privileges": true
+    },
+    "failure_stage": "second controller QEMU process identity capture immediately after direct Popen",
+    "failure": "PermissionError: [Errno 13] Permission denied: '/proc/5/exe'",
+    "second_guest": {
+      "qemu_started": true,
+      "qmp_socket_created": true,
+      "process_identity_captured": false,
+      "qmp_peer_authenticated": false,
+      "qmp_operation_attempted": false,
+      "progress_bytes": 0,
+      "qemu_log_bytes": 0,
+      "serial_log_bytes": 0,
+      "report_bytes": 0,
+      "guest_booted": false,
+      "landlock_acceptance_started": false,
+      "inner_exit_proven": false
+    },
+    "resources": {
+      "hosted_parent": {
+        "memory_high_bytes": 4294967296,
+        "memory_max_bytes": 5368709120,
+        "memory_peak_bytes": 4297175040,
+        "memory_high_events": 66932,
+        "memory_max_events": 118419,
+        "oom_events": 0,
+        "oom_kill_events": 0,
+        "oom_group_kill_events": 0,
+        "swap_max_bytes": 0,
+        "systemd_memory_swap_peak_bytes": 0,
+        "cpu_quota": "200000 100000",
+        "pids_max": 256
+      },
+      "first_guest_controller": {
+        "memory_max_bytes": 3221225472,
+        "memory_peak_bytes": 3221225472,
+        "memory_max_events": 3944,
+        "oom_events": 0,
+        "oom_kill_events": 0,
+        "oom_group_kill_events": 0,
+        "swap_max_bytes": 0,
+        "cpu_quota": "200000 100000",
+        "pids_max": 64
+      },
+      "second_guest_controller": {
+        "memory_max_bytes": 3221225472,
+        "memory_peak_bytes": 27029504,
+        "memory_max_events": 0,
+        "oom_events": 0,
+        "oom_kill_events": 0,
+        "oom_group_kill_events": 0,
+        "swap_max_bytes": 0,
+        "cpu_quota": "200000 100000",
+        "pids_max": 64
+      }
+    },
+    "cleanup": {
+      "inner_private_leaf_removal_refused_without_exit_proof": true,
+      "outer_exact_container_absence_proven": true,
+      "deferred_regular_evidence_retained_after_outer_absence": true,
+      "retained_regular_bytes": 4791,
+      "retained_private_residue_names": [
+        "guest.qcow2",
+        "qmp.sock"
+      ],
+      "all_four_containers_removed_and_absent": true,
+      "loop_devices_absent": true,
+      "loaded_image_removed": true,
+      "private_storage_removed": true,
+      "private_runroot_removed": true
+    }
+  },
+  "correction": {
+    "prelaunch_binding": [
+      "absolute read-only executable device and inode",
+      "exact argv bytes and SHA-256",
+      "inherited cgroup v2 path"
+    ],
+    "direct_popen_required": true,
+    "default_sigchld_disposition_required": true,
+    "pidfd_mandatory_and_opened_before_poll_or_proc_read": true,
+    "continuous_corroboration": [
+      "direct parent PID",
+      "process start time",
+      "all real/effective/saved/filesystem UID and GID values",
+      "exact cmdline bytes and SHA-256",
+      "exact cgroup v2 path"
+    ],
+    "proc_exe_policy": "accept only EACCES; any other error or readable inode mismatch fails; a successful check cannot later become denied",
+    "qmp_binding": "live pidfd plus exact SO_PEERCRED PID/UID/GID and stable private socket identity",
+    "signal_binding": "SIGTERM and SIGKILL only through pidfd_send_signal",
+    "exit_binding": "pidfd readiness plus direct Popen return code before socket or overlay removal",
+    "same_task_reexec_limit": "when proc exe remains EACCES, a same-task exec with identical argv is not independently observable; the authenticated read-only QEMU binary remains trusted controller code",
+    "ptrace_or_capability_added": false,
+    "container_privilege_network_or_mount_boundary_changed": false,
+    "native_rerun_required": true
+  },
+  "local_verification": {
+    "fail_first_proc_exe_eacces_regression": true,
+    "focused_hosted_landlock_tests": 34,
+    "focused_seconds": 0.195,
+    "focused_peak_rss_kib": 34460,
+    "focused_address_limit_bytes": 134217728,
+    "focused_swaps": 0,
+    "full_image_tests": 398,
+    "full_image_seconds": 2.321,
+    "full_image_peak_rss_kib": 59656,
+    "full_image_address_limit_bytes": 402653184,
+    "full_image_swaps": 0,
+    "qualification_tests": 35,
+    "qualification_seconds": 0.104,
+    "qualification_peak_rss_kib": 26376,
+    "qualification_address_limit_bytes": 134217728,
+    "qualification_swaps": 0,
+    "python_syntax": true,
+    "shell_syntax": true,
+    "json_parse": true,
+    "diff_check": true,
+    "independent_semantics_review": true,
+    "local_image_vm_container_cargo_network_or_build_run": false
+  },
+  "claims": {
+    "accepted_guest_boot": false,
+    "landlock_qualified": false,
+    "containment_qualified": false,
+    "os_qualified": false,
+    "release_qualified": false
+  }
+}

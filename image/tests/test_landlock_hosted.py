@@ -2,12 +2,14 @@
 import base64
 import copy
 from contextlib import redirect_stdout
+import errno
 import hashlib
 import io
 import json
 import os
 from pathlib import Path
 import shutil
+import signal
 import socket
 import struct
 import subprocess
@@ -21,13 +23,16 @@ from image.atomic.hosted import LANDLOCK_PARENT_LIMITS, run_hosted_command
 from image.launcher.probes.bounded_process import run_bounded
 from image.qualification import landlock as landlock_driver
 from image.qualification.boot import (MAX_QMP_MESSAGE_BYTES,
+                                      capture_process_identity,
                                       discard_control_socket, discard_overlay,
                                       firmware_arguments, overlay_command,
                                       path_identity, qemu_command, qmp_request,
+                                      prepare_process_identity,
                                       stop_child, validate_guest_report,
                                       validate_peer_credentials,
                                       validate_process_state,
                                       validate_socket_info,
+                                      verify_process_identity,
                                       write_progress_sample)
 from image.qualification.guest import collect_public_artifacts
 from image.qualification.hosted import (QUALIFICATION_FILES,
@@ -343,13 +348,12 @@ class HostedLandlock(unittest.TestCase):
             with self.subTest(raw=changed), self.assertRaises(ValueError):
                 validate_source_identity(changed, expected)
 
-        identity = {"pid": 4242, "starttime": 777,
+        identity = {"pid": 4242, "ppid": 1, "starttime": 777,
                     "executable_device": 8, "executable_inode": 9,
-                    "uid": 10001, "gid": 10001, "pidfd": None}
+                    "uid": 10001, "gid": 10001, "pidfd": 10}
         child = mock.Mock(pid=4242)
         child.poll.return_value = None
-        child.terminate.side_effect = PermissionError("synthetic refusal")
-        child.kill.side_effect = PermissionError("synthetic refusal")
+        send_signal = mock.Mock(side_effect=PermissionError("synthetic refusal"))
         failure = "TimeoutError: Landlock guest did not report"
         qmp = mock.Mock(side_effect=FileNotFoundError("synthetic absent socket"))
         prove_exit = mock.Mock(return_value=False)
@@ -357,13 +361,20 @@ class HostedLandlock(unittest.TestCase):
                   "child_cleanup": stop_child(
                       child, identity, {"path": Path("/output/qmp.sock")},
                       request=qmp, prove_exit=prove_exit,
-                      verify=mock.Mock(return_value=None))}
+                      verify=mock.Mock(return_value=None),
+                      send_signal=send_signal)}
         self.assertEqual(record["failure"], failure)
         self.assertTrue(record["child_cleanup"]["attempted"])
         self.assertFalse(record["child_cleanup"]["qmp_quit"])
         self.assertFalse(record["child_cleanup"]["exit_proven"])
         self.assertEqual(len(record["child_cleanup"]["errors"]), 3)
         qmp.assert_called_once_with({"path": Path("/output/qmp.sock")}, "quit")
+        self.assertEqual(send_signal.call_args_list, [
+            mock.call(identity, signal.SIGTERM),
+            mock.call(identity, signal.SIGKILL),
+        ])
+        child.terminate.assert_not_called()
+        child.kill.assert_not_called()
 
         controlled = mock.Mock(pid=4242)
         controlled.poll.return_value = None
@@ -371,7 +382,7 @@ class HostedLandlock(unittest.TestCase):
         cleanup = stop_child(
             controlled, identity, {"path": Path("/output/qmp.sock")},
             request=qmp, prove_exit=mock.Mock(side_effect=(False, True)),
-            verify=mock.Mock(return_value=None))
+            verify=mock.Mock(return_value=None), send_signal=mock.Mock())
         self.assertTrue(cleanup["qmp_quit"])
         self.assertTrue(cleanup["exit_proven"])
         self.assertFalse(cleanup["terminated"])
@@ -384,7 +395,8 @@ class HostedLandlock(unittest.TestCase):
         cleanup = stop_child(
             reused, identity, {"path": Path("/output/qmp.sock")},
             request=mock.Mock(), prove_exit=mock.Mock(return_value=False),
-            verify=mock.Mock(side_effect=ValueError("PID identity changed")))
+            verify=mock.Mock(side_effect=ValueError("PID identity changed")),
+            send_signal=mock.Mock())
         self.assertFalse(cleanup["exit_proven"])
         reused.terminate.assert_not_called()
         reused.kill.assert_not_called()
@@ -477,9 +489,13 @@ class HostedLandlock(unittest.TestCase):
                 qmp_request(Stream(lines), "query-status")
 
     def test_qmp_peer_socket_and_process_identity_are_exact(self):
-        identity = {"pid": 4242, "starttime": 777,
+        identity = {"pid": 4242, "ppid": 1, "starttime": 777,
                     "executable_device": 8, "executable_inode": 9,
-                    "uid": 10001, "gid": 10001, "pidfd": None}
+                    "executable": "/usr/bin/qemu-system-x86_64",
+                    "cmdline_sha256": "a" * 64, "cmdline_bytes": 128,
+                    "cgroup": "0::/qualification", "uid": 10001,
+                    "gid": 10001, "pidfd": 10,
+                    "proc_exe_verified": False}
         raw = struct.pack("=iII", 4242, 10001, 10001)
         self.assertEqual(validate_peer_credentials(raw, identity),
                          {"pid": 4242, "uid": 10001, "gid": 10001})
@@ -488,16 +504,32 @@ class HostedLandlock(unittest.TestCase):
             with self.subTest(values=values), self.assertRaises(ValueError):
                 validate_peer_credentials(struct.pack("=iII", *values), identity)
         validate_process_state(identity, {
-            "pid": 4242, "starttime": 777,
-            "executable_device": 8, "executable_inode": 9,
-            "uid": 10001, "gid": 10001,
+            "pid": 4242, "ppid": 1, "starttime": 777,
+            "cmdline_sha256": "a" * 64, "cmdline_bytes": 128,
+            "cgroup": "0::/qualification", "uid": 10001, "gid": 10001,
+            "proc_exe_verified": False,
         })
         changed = {key: identity[key] for key in
-                   ("pid", "starttime", "executable_device", "executable_inode",
-                    "uid", "gid")}
-        changed["starttime"] = 778
+                   ("pid", "ppid", "starttime", "cmdline_sha256", "cmdline_bytes",
+                    "cgroup", "uid", "gid", "proc_exe_verified")}
+        for key, value in (("ppid", 2), ("starttime", 778),
+                           ("cmdline_sha256", "b" * 64),
+                           ("cmdline_bytes", 129),
+                           ("cgroup", "0::/reused"), ("uid", 10002)):
+            candidate = dict(changed)
+            candidate[key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                validate_process_state(identity, candidate)
+        executable_denied = dict(changed)
+        executable_denied["proc_exe_verified"] = False
+        executable_verified = dict(identity, proc_exe_verified=True)
         with self.assertRaises(ValueError):
-            validate_process_state(identity, changed)
+            validate_process_state(executable_verified, executable_denied)
+        unavailable = dict(identity, pidfd=None)
+        reader = mock.Mock()
+        with self.assertRaisesRegex(ValueError, "pidfd"):
+            verify_process_identity(unavailable, reader=reader)
+        reader.assert_not_called()
 
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "qmp.sock"
@@ -518,6 +550,107 @@ class HostedLandlock(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     validate_socket_info(path.lstat(), os.geteuid(),
                                          os.getegid(), swapped)
+
+    def test_process_identity_survives_proc_exe_denial_and_rejects_pid_reuse(self):
+        command = [sys.executable, "-c", "import time; time.sleep(30)"]
+        cgroup = Path("/proc/self/cgroup").read_text().strip()
+        prepared = prepare_process_identity(command, cgroup)
+        child = subprocess.Popen(command)
+        identity = None
+        try:
+            with mock.patch("image.qualification.boot.os.pidfd_open", None):
+                with self.assertRaisesRegex(ValueError, "pidfd"):
+                    capture_process_identity(child, prepared)
+            with mock.patch("image.qualification.boot.signal.getsignal",
+                            return_value=signal.SIG_IGN):
+                with self.assertRaisesRegex(ValueError, "pidfd"):
+                    capture_process_identity(child, prepared)
+
+            changed = dict(prepared)
+            changed["cmdline_sha256"] = "0" * 64
+            with self.assertRaisesRegex(ValueError, "identity changed"):
+                capture_process_identity(child, changed)
+
+            changed = dict(prepared)
+            changed["executable_inode"] += 1
+            with self.assertRaisesRegex(ValueError, "executable identity changed"):
+                capture_process_identity(child, changed)
+
+            proc_exe = Path("/proc") / str(child.pid) / "exe"
+            original_stat = Path.stat
+
+            def deny_proc_exe(path, *args, **kwargs):
+                if path == proc_exe:
+                    raise PermissionError(errno.EACCES, "synthetic proc denial",
+                                          str(path))
+                return original_stat(path, *args, **kwargs)
+
+            def forbid_proc_exe(path, *args, **kwargs):
+                if path == proc_exe:
+                    raise PermissionError(errno.EPERM, "synthetic proc refusal",
+                                          str(path))
+                return original_stat(path, *args, **kwargs)
+
+            with mock.patch.object(Path, "stat", forbid_proc_exe):
+                with self.assertRaises(PermissionError):
+                    capture_process_identity(child, prepared)
+
+            with mock.patch.object(Path, "stat", deny_proc_exe):
+                identity = capture_process_identity(child, prepared)
+                self.assertFalse(identity["proc_exe_verified"])
+                self.assertIsInstance(identity["pidfd"], int)
+                verify_process_identity(identity)
+
+            cleanup = stop_child(child, identity)
+            self.assertTrue(cleanup["terminated"])
+            self.assertFalse(cleanup["killed"])
+            self.assertTrue(cleanup["exit_proven"])
+            self.assertEqual(cleanup["errors"], [])
+            observed = {key: identity[key] for key in
+                        ("pid", "ppid", "starttime", "cmdline_sha256", "cmdline_bytes",
+                         "cgroup", "uid", "gid", "proc_exe_verified")}
+            reader = mock.Mock(return_value=observed)
+            with self.assertRaisesRegex(ValueError, "exited"):
+                verify_process_identity(identity, reader=reader)
+            reader.assert_not_called()
+        finally:
+            if child.poll() is None:
+                child.terminate()
+                child.wait(timeout=5)
+            if identity is not None and identity["pidfd"] is not None:
+                os.close(identity["pidfd"])
+
+    def test_process_identity_opens_pidfd_before_poll_or_proc_reads(self):
+        command = [sys.executable, "-c", "pass"]
+        prepared = prepare_process_identity(
+            command, Path("/proc/self/cgroup").read_text().strip())
+        events = []
+        child = mock.Mock(pid=4242, args=command)
+        child.poll.side_effect = lambda: events.append("poll")
+        observed = {"pid": 4242, "ppid": os.getpid(), "starttime": 777,
+                    "cmdline_sha256": prepared["cmdline_sha256"],
+                    "cmdline_bytes": prepared["cmdline_bytes"],
+                    "cgroup": prepared["cgroup"], "uid": os.geteuid(),
+                    "gid": os.getegid(), "proc_exe_verified": False}
+        observations = [observed, dict(observed, proc_exe_verified=True)]
+        reader = mock.Mock(
+            side_effect=lambda *_: (events.append("proc"), observations.pop(0))[1])
+        real_pidfd_open = os.pidfd_open
+
+        def open_pidfd(pid, flags):
+            self.assertEqual((pid, flags), (4242, 0))
+            events.append("pidfd")
+            return real_pidfd_open(os.getpid(), 0)
+
+        identity = None
+        try:
+            with mock.patch("image.qualification.boot.os.pidfd_open", open_pidfd):
+                identity = capture_process_identity(child, prepared, reader=reader)
+            self.assertEqual(events, ["pidfd", "proc", "proc", "poll"])
+            self.assertTrue(identity["proc_exe_verified"])
+        finally:
+            if identity is not None:
+                os.close(identity["pidfd"])
 
     def test_failed_cleanup_residue_does_not_hide_regular_evidence(self):
         with tempfile.TemporaryDirectory() as directory:
