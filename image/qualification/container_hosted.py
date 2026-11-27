@@ -399,14 +399,26 @@ def build_preflight(root, source_commit, image_source_commit, verify=verify_rele
                      "escape-suite-evidence", "required-review"],
         "scope": "Prepared Fedora Atomic container gate; no native or release qualification",
     }
-    contract = root / "image/container/fedora-runtime.lock.json"
-    if not contract.is_file():
-        result["blockers"].insert(0, "missing-fedora-runtime-lock")
+    from image.container.native_image_inputs import validate_consumed_candidate
+    candidate = validate_consumed_candidate(root, source_commit)
+    if candidate.get("ready") is not True:
+        result["blockers"].insert(0, candidate["blocker"])
         result["fedora_runtime_ready"] = False
     else:
+        require(candidate["manifest"].get("source_image_commit") == image_source_commit,
+                "derived container image uses a different retained source image")
+        contract = candidate["contract_path"]
         validate_fedora_contract(unique_json(contract), runsc, root, image_source_commit)
         result["fedora_runtime_ready"] = True
         result["fedora_runtime_lock_sha256"] = sha256(contract)
+        result["container_image_selection"] = {
+            "producer_run_id": candidate["selection"]["producer"]["run_id"],
+            "producer_head_sha": candidate["selection"]["producer"]["head_sha"],
+            "artifact": candidate["selection"]["artifact"],
+            "variant": candidate["selection"]["variant"],
+            "manifest_sha256": candidate["selection"]["manifest"]["sha256"],
+            "archive_sha256": candidate["selection"]["manifest"]["archive"]["sha256"],
+        }
     return result
 
 

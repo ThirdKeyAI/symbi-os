@@ -68,6 +68,49 @@ fail-closed validator used by native preflight. It deliberately keeps
 build establishes installation evidence only; daemon startup, the six native
 fixture runs, managed route, escape suite and required review still block P0-05.
 
+### Native consumer binding
+
+`fedora-runtime-image.lock.json` is the reviewed selector for that generated
+output. It is committed as an exact pending slot: producer run, workflow ID,
+artifact ID, sizes and hashes, manifest hash, contract hash and OCI identity are
+`null`, `selected` is false, and all qualification/signature claims are false.
+The native workflow validates this slot before any multi-gigabyte transfer, so
+the current pending record cannot download or consume an unavailable artifact.
+
+After the producer has actually passed, the `record-selection` subcommand in
+`image.container.native_image_inputs` accepts the real GitHub run metadata,
+artifact metadata and downloaded artifact ZIP. It verifies the successful
+manual workflow through the attempt-specific run endpoint, repository, head
+commit and branch, artifact ID/name/size/digest, the generic-only generated
+manifest, false signature/qualification claims, the complete OCI archive hash,
+the producer-recorded OCI identity and the generated `fedora-runtime.lock.json`.
+The normal contract validator then
+rechecks the signed Fedora closure, selected signed gVisor repository package,
+unchanged source inventory and installed file hashes. The command prints a
+reviewable replacement selector; it does not modify the committed pending slot.
+
+GitHub artifact metadata does not expose the run attempt. The gate therefore
+does not claim an independently authenticated artifact-to-attempt relationship:
+it authenticates the selected attempt record and separately binds the exact
+artifact ID, run ID, head commit, repository, byte count and digest. The
+selected bytes remain exact, while the attempt association remains a review
+constraint until the producer emits an attempt-bound manifest field.
+
+Once that exact replacement is reviewed, the native workflow records a
+structured pending/failure result and requires 30 GiB free before transfer: the
+13 GiB maximum artifact ZIP, 12 GiB maximum streamed OCI and a 5 GiB margin. It
+then downloads only the selected attempt record and artifact, and rechecks
+space before extraction. A one-CPU, 1 GiB, zero-swap, 30-minute hosted input
+unit streams the OCI without unpacking its filesystem and retains the generated
+contract beside it. Its record binds the hosted source/run identity, cgroup and
+zero-OOM observation; native preflight also requires the successful final unit
+result and zero swap. Wrong run, head, artifact, ZIP/manifest/contract/OCI hash,
+signature claim, variant, linked path or resource record fails before an install
+disk is allocated. The
+installed-image boot and six-profile native controller remain a separate gate,
+and the workflow still fails closed before allocating its 60 GiB disk until that
+controller is bound.
+
 `gvisor-inputs.json` fixes release `release-20261123.1`, its commit and tag
 object, the complete x86_64 bzip2 archive, the publisher checksum list, license,
 and every archive member. The passive hosted intake refuses aliases, duplicate

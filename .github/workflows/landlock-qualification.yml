@@ -8,6 +8,8 @@ on:
       - "image/atomic/**"
       - "image/assembly/runtime-development.lock.json"
       - "image/desktop-images.lock.json"
+      - "image/container/fedora-runtime-image.lock.json"
+      - "image/container/native_image_inputs.py"
       - "image/base-images.json"
       - "image/release-trust.json"
       - "image/keys/**"
@@ -19,6 +21,8 @@ on:
       - "scripts/check-landlock-qualification.sh"
       - "scripts/check-container-preflight.sh"
       - "scripts/check-container-qualification.sh"
+      - "scripts/check-container-runtime-native-transfer.sh"
+      - "scripts/check-container-runtime-native-input.sh"
       - ".github/workflows/landlock-qualification.yml"
       - "!image/qualification/README.md"
   workflow_dispatch:
@@ -69,10 +73,8 @@ jobs:
           ref: cd4b34282ade880c8ac3d5136d31ff80cde92794
           path: .cache/container-fixture-source
           persist-credentials: false
-      - name: Validate container inputs before large image transfer
-        if: env.SYMBI_REQUESTED_QUALIFICATION == 'containers'
-        run: bash scripts/check-container-preflight.sh
       - name: Download the exact retained development image
+        if: env.SYMBI_REQUESTED_QUALIFICATION != 'containers'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -89,8 +91,20 @@ jobs:
           )
           timeout 30 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/$artifact" > .cache/atomic-image-artifact.json
           timeout 900 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/$artifact/zip" > .cache/atomic-development-image.zip
+      - name: Validate and download the exact retained container-runtime image
+        if: env.SYMBI_REQUESTED_QUALIFICATION == 'containers'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/check-container-runtime-native-transfer.sh
       - name: Verify metadata and stream the exact retained image
+        if: env.SYMBI_REQUESTED_QUALIFICATION != 'containers'
         run: bash scripts/check-atomic-image.sh prepare
+      - name: Authenticate and stream the exact retained container-runtime image
+        if: env.SYMBI_REQUESTED_QUALIFICATION == 'containers'
+        run: bash scripts/check-container-runtime-native-input.sh
+      - name: Validate the generated Fedora runtime contract
+        if: env.SYMBI_REQUESTED_QUALIFICATION == 'containers'
+        run: bash scripts/check-container-preflight.sh
       - name: Run the selected fail-closed native gate
         run: |
           case "$SYMBI_REQUESTED_QUALIFICATION" in
@@ -107,6 +121,7 @@ jobs:
             .cache/atomic-image-evidence
             .cache/atomic-disk-evidence
             .cache/landlock-qualification-evidence
+            .cache/container-runtime-native-evidence
             .cache/container-qualification-evidence
           if-no-files-found: error
           include-hidden-files: true

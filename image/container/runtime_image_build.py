@@ -243,6 +243,7 @@ def main():
         manifest = {
             "schema": 1, "built": True, "installed": True, "qualified": False,
             "os_qualified": False, "release_qualified": False,
+            "signature_qualified": False, "variant": "generic",
             "source_commit": record["source_commit"], "source_image_commit": source["tested_commit"],
             "source_image_id": source_id, "archive": candidate_archive,
             "contract_sha256": record["contract_sha256"],

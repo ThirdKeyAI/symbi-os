@@ -217,7 +217,7 @@ class FedoraContainerController(unittest.TestCase):
         self.assertFalse(result["native_fixture_matrix_passed"])
         self.assertFalse(result["managed_route_qualified"])
         self.assertFalse(result["escape_suite_qualified"])
-        self.assertIn("missing-fedora-runtime-lock", result["blockers"])
+        self.assertIn("pending-container-runtime-image", result["blockers"])
         self.assertEqual(set(result["shared_boot_status_inputs"]),
                          set(self.module.SHARED_BOOT_STATUS_INPUTS))
         self.assertTrue(all(len(value) == 64 for value in result["shared_boot_status_inputs"].values()))
@@ -280,7 +280,7 @@ class FedoraContainerController(unittest.TestCase):
         self.assertFalse(result["native_fixture_matrix_passed"])
         self.assertIn("native-fedora-six-run-matrix", result["blockers"])
 
-    def test_missing_runtime_lock_preflight_fails_before_native_image_work(self):
+    def test_pending_runtime_image_preflight_fails_before_native_image_work(self):
         prepared = {
             "schema": 1,
             "card": "P0-05",
@@ -288,7 +288,7 @@ class FedoraContainerController(unittest.TestCase):
             "qualified": False,
             "fedora_runtime_ready": False,
             "fixture_source": {"revision": "a" * 40},
-            "blockers": ["missing-fedora-runtime-lock", "native-fedora-six-run-matrix"],
+            "blockers": ["pending-container-runtime-image", "native-fedora-six-run-matrix"],
         }
         with tempfile.TemporaryDirectory() as directory, \
                 mock.patch.object(self.module, "build_preflight", return_value=prepared), \
@@ -296,7 +296,7 @@ class FedoraContainerController(unittest.TestCase):
             result = self.module.run_container_preflight(
                 Path(directory), "1" * 40, "2" * 40)
         self.assertFalse(result["passed"])
-        self.assertIn("missing-fedora-runtime-lock", result["blockers"])
+        self.assertIn("pending-container-runtime-image", result["blockers"])
 
     def test_manual_workflow_is_bounded_and_cannot_claim_qualification(self):
         workflow = (ROOT / ".github/workflows/landlock-qualification.yml").read_text()
@@ -311,10 +311,12 @@ class FedoraContainerController(unittest.TestCase):
         self.assertIn("cd4b34282ade880c8ac3d5136d31ff80cde92794", workflow)
         self.assertIn("path: .cache/container-fixture-source", workflow)
         self.assertLess(
-            workflow.index("Validate container inputs before large image transfer"),
-            workflow.index("Download the exact retained development image"),
+            workflow.index("Validate and download the exact retained container-runtime image"),
+            workflow.index("Authenticate and stream the exact retained container-runtime image"),
         )
+        self.assertIn("bash scripts/check-container-runtime-native-transfer.sh", workflow)
         self.assertIn("bash scripts/check-container-preflight.sh", workflow)
+        self.assertIn("bash scripts/check-container-runtime-native-input.sh", workflow)
         self.assertIn("env.SYMBI_REQUESTED_QUALIFICATION == 'containers'", workflow)
         self.assertIn("run_container_preflight", preflight_script)
         self.assertIn('result.get("passed") is not True', preflight_script)
@@ -326,6 +328,7 @@ class FedoraContainerController(unittest.TestCase):
         self.assertIn("SYMBI_QUALIFICATION=containers", script)
         self.assertIn("qualification not in ('','landlock','update','containers')", atomic)
         self.assertIn("run_container_preflight", atomic)
+        self.assertIn("Fedora container native six-run controller is not yet bound", atomic)
 
 
 if __name__ == "__main__":

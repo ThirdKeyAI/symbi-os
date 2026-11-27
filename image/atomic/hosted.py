@@ -522,6 +522,18 @@ def main():
         return result
     podman=None;containers=[];storage=None;disk=None;identity=None;boot_output=None;runroot=None;disk_readonly=False;signing_output=None
     try:
+        if qualification=='containers':
+            from image.qualification.container_hosted import run_container_preflight
+            record['container_preflight']=run_container_preflight(
+                root,record['source_commit'],record['image_source_commit'])
+            save()
+            if record['container_preflight'].get('passed') is not True:
+                blockers=record['container_preflight'].get('blockers') or ['invalid-container-preflight']
+                raise ValueError('Fedora container inputs remain fail closed: '+','.join(blockers))
+            # The exact derived image and generated contract are now bound.  The
+            # separate installed-image boot and six-profile controller is the
+            # next gate; do not spend a 60 GiB disk or imply qualification here.
+            raise ValueError('Fedora container native six-run controller is not yet bound')
         readiness=unique_json((root/'image/atomic/preflight.lock.json').read_bytes())
         validate_retained_preflight(root, readiness, selected, manifest, expected)
         record['preflight']=readiness
@@ -532,13 +544,6 @@ def main():
                 or prepared['expected_inputs']!=expected or prepared['variant']!='generic'
                 or prepared['lock_sha256']!=sha256(root/'image/desktop-images.lock.json')):
             raise ValueError('Current hosted image intake has not passed')
-        if qualification=='containers':
-            from image.qualification.container_hosted import run_container_preflight
-            record['container_preflight']=run_container_preflight(
-                root,record['source_commit'],record['image_source_commit'])
-            save()
-            blockers=record['container_preflight']['blockers']
-            raise ValueError('Fedora container qualification remains fail closed: '+','.join(blockers))
         archive=root/'.cache/atomic-image-inputs'/manifest['archive']['name']
         if (archive.is_symlink() or not archive.is_file() or archive.stat().st_size!=manifest['archive']['bytes']
                 or sha256(archive)!=manifest['archive']['sha256']):

@@ -114,19 +114,36 @@ separately, re-verifies the retained signed gVisor Debian repository metadata
 offline, and binds the complete package inventory plus the shared P0-04 fixed
 status-service inputs.
 
-The gate currently stops before allocating the 60 GiB install disk because
-`image/container/fedora-runtime.lock.json` does not yet exist. That future lock
-must bind the exact passive workflow run and candidate artifact, then retain the
-full resolved RPM closure using the fields the discovery job actually produces:
-filename, byte count, SHA-256, NEVRA, vendor, license, signature status and the
-Fedora signing-key fingerprint. Fedora deliberately uses `repo_gpgcheck=0`, so
-the lock must not synthesize a per-package `repository_metadata_sha256`; the
-reviewed repository-configuration hash and each RPM's verified signature are
-separate evidence. A later installation record must bind that complete closure
-and every installed gVisor file to the retained development image. The retained
-preflight result keeps `passed`, `qualified`, native-matrix, managed-route and
-escape-suite fields false. This is a bounded fail-closed controller skeleton,
-not Fedora execution evidence.
+The gate currently stops before any multi-gigabyte transfer because
+`image/container/fedora-runtime-image.lock.json` is an explicit pending selector.
+It contains no invented run, artifact or digest. The separate producer generates
+the derived OCI and `fedora-runtime.lock.json`; that generated contract retains
+the full resolved RPM closure using the fields the discovery job actually
+produces: filename, byte count, SHA-256, NEVRA, vendor, license, signature status
+and the Fedora signing-key fingerprint. Fedora deliberately uses
+`repo_gpgcheck=0`, so the contract does not synthesize a per-package
+`repository_metadata_sha256`; the reviewed repository-configuration hash and
+each RPM's verified signature are separate evidence.
+
+After a real successful producer run, the `record-selection` subcommand in
+`image.container.native_image_inputs` can derive a reviewable selector from its
+authenticated run and artifact metadata plus the exact artifact bytes. The
+native workflow then revalidates the
+run/head/repository/workflow, artifact identity and digest, generic variant,
+false signature/qualification claims, generated contract, signed packages,
+installed gVisor files, the complete OCI archive hash and the producer-recorded
+OCI identity under a one-CPU, 1 GiB, zero-swap input unit. A 30 GiB pre-transfer
+disk gate covers the bounded 13 GiB ZIP,
+12 GiB streamed OCI and 5 GiB margin. Pending, metadata and download failures
+retain structured evidence. Acceptance also rechecks the hosted source, run and
+attempt, cgroup limits, zero OOM/swap observation and final systemd result. The
+attempt-specific run endpoint is exact, while GitHub artifact metadata exposes
+only its run/head/repository link and not an independent attempt field. Its
+preflight result can become `passed: true` only for those exact
+bytes while every qualification field remains false. The installed-image boot,
+six-profile native matrix, managed route, escape suite and review are still
+blockers; the controller fails before allocating its 60 GiB disk until the
+native matrix host path is implemented.
 
 ## Hosted Landlock execution
 

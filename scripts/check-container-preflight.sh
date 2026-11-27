@@ -10,6 +10,12 @@ set -euo pipefail
   echo 'Container input preflight requires the exact OS source commit.' >&2
   exit 1
 }
+[[ "${GITHUB_REPOSITORY:-}" == ThirdKeyAI/symbi-os \
+  && "${GITHUB_RUN_ID:-}" =~ ^[1-9][0-9]*$ \
+  && "${GITHUB_RUN_ATTEMPT:-}" =~ ^[1-9][0-9]*$ ]] || {
+  echo 'Container input preflight requires exact hosted run identity.' >&2
+  exit 1
+}
 
 root=$(git rev-parse --show-toplevel)
 cd "$root"
