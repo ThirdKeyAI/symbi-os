@@ -1,0 +1,24 @@
+{
+  "passed": true,
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "source_commit": "6927b6514e564f92544c7c24a674738f82b2a09c",
+  "profile": "container-runtime",
+  "requirements_sha256": "58cf196461bc5c05f98e9420c767d142d2d95c164e7609b6d29c10cc293e8f4e",
+  "repository_configuration_sha256": "535aaceeafda783decd20f72553aa4cf93f281b02555b43d93712710d7048757",
+  "input_bindings_sha256": "f9bb6eb557d65b910308c11d99e6ad8d3be58895c7c16a08a3fcd5ad575a6d79",
+  "packages": 108,
+  "rpm_manifest_sha256": "7c4cd57817c6ecb2f400d1d1b170c49fc8bba513d6667d5c7d23b3fc48329d24",
+  "os_qualified": false,
+  "scope": "Candidate signed package closure; not installed, compiled or qualified",
+  "installed_root_nevras": {
+    "moby-engine": "moby-engine-29.9.3-1.fc45.x86_64",
+    "docker-cli": "docker-cli-29.9.3-1.fc45.x86_64",
+    "container-selinux": "container-selinux-4:2.251.0-1.fc45.noarch"
+  },
+  "downloaded_root_nevras": [
+    "container-selinux-4:2.251.0-1.fc45.noarch",
+    "docker-cli-29.9.3-1.fc45.x86_64",
+    "moby-engine-29.9.3-1.fc45.x86_64"
+  ],
+  "offline_closure_verified": true
+}

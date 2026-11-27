@@ -177,10 +177,14 @@ and commit are unsigned and no GitHub attestation was found, so the input is not
 selected or qualified.
 
 `image/container/runtime-requirements.json` separately requests Fedora
-`moby-engine`, `docker-cli` and `container-selinux`. Hosted discovery must resolve
-and authenticate exact RPMs against the selected Fedora 45 base before any image
-installation. Neither the mutable package catalogue nor the passive gVisor
-intake supplies that acceptance.
+`moby-engine`, `docker-cli` and `container-selinux`. Hosted run 45940456063
+resolved and authenticated a 108-package, 116,875,288-byte candidate closure
+against the selected Fedora 45 base. Its compact manifest is retained under
+`P0-05-fedora-packages/45940456063/`. The passive transaction installed nothing,
+so the candidate does not supply the installed package/file inventory required
+by `image/container/fedora-runtime.lock.json`. Neither the mutable package
+catalogue nor the passive gVisor intake supplies that installed-runtime
+acceptance.
 
 ## P0-03 Fedora compositor development inputs
 

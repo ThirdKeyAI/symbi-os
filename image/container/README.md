@@ -26,6 +26,14 @@ Because the read-only container reports no installable root space, the test
 transaction skips RPM's disk-space check; package bytes are bounded separately,
 and dependency and file-conflict checks remain enabled.
 
+Hosted run 45940456063 passed that passive closure check at exact head
+`6927b6514e564f92544c7c24a674738f82b2a09c`: all 108 signed RPMs totaling
+116,875,288 bytes passed the offline transaction, package inventories stayed
+unchanged, and both negative controls passed. The retained
+`P0-05-fedora-packages/45940456063/` record is candidate evidence only. It does
+not install packages, select gVisor, create `fedora-runtime.lock.json`, or set
+`os_qualified` true.
+
 `gvisor-inputs.json` fixes release `release-20261123.1`, its commit and tag
 object, the complete x86_64 bzip2 archive, the publisher checksum list, license,
 and every archive member. The passive hosted intake refuses aliases, duplicate

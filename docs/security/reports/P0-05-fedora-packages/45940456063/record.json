@@ -1,0 +1,103 @@
+{
+  "candidate_rpm_artifact": {
+    "bytes": 117025835,
+    "digest": "sha256:608c986142d351314c2d217c5704a719e3e6fb2596622f3339d35cd30ac07c98",
+    "id": 15172313799,
+    "name": "container-runtime-rpm-candidates",
+    "retained_in_git": false
+  },
+  "cgroups": {
+    "guest": {
+      "memory_peak_bytes": 471212032,
+      "memory_swap_max": 0,
+      "oom_events": 0,
+      "oom_kill_events": 0
+    },
+    "host": {
+      "memory_peak_bytes": 3236003840,
+      "memory_swap_max": 0,
+      "oom_events": 0,
+      "oom_kill_events": 0
+    }
+  },
+  "closure": {
+    "fedora_signing_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E",
+    "installed_after_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759",
+    "installed_before_sha256": "d72226ef94e271e4211c45ed3dd6803ed9c35de19c3bd47d8a2e17390672c759",
+    "installed_packages_unchanged": true,
+    "negative_controls": {
+      "missing_key_rejected": true,
+      "tampered_package_rejected": true
+    },
+    "offline_closure_verified": true,
+    "package_bytes": 116875288,
+    "packages": 108,
+    "private_database_after_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "private_database_before_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "evidence_artifact": {
+    "bytes": 128889,
+    "digest": "sha256:3dfad18c7bc5cc56f0085e7e02df05b3984446d86d7ba797fb63b6f41d41aa25",
+    "id": 15173200521,
+    "name": "container-runtime-fedora-package-evidence"
+  },
+  "os_qualified": false,
+  "qualified": false,
+  "release_qualified": false,
+  "remaining_gate": "Install the immutable closure in a controlled image build, bind installed package and runsc file inventories into image/container/fedora-runtime.lock.json, then execute the native six-run qualification matrix.",
+  "retained_files": {
+    "candidate-manifest.json": {
+      "bytes": 49924,
+      "sha256": "30205030d5f09045781545bcd1133714da4d9c654b4c213f023b1518d5e40103"
+    },
+    "cgroup-final.json": {
+      "bytes": 461,
+      "sha256": "2463579b9454a29846addc0de91fc171aa1c278d8446a0135f74a814df4c5d8c"
+    },
+    "guest/cgroup-final.json": {
+      "bytes": 449,
+      "sha256": "6719e017ae6f2778a2c8c50d8795e73acd376d84dea079e45fb59d2883be1374"
+    },
+    "input-bindings.json": {
+      "bytes": 856,
+      "sha256": "f9bb6eb557d65b910308c11d99e6ad8d3be58895c7c16a08a3fcd5ad575a6d79"
+    },
+    "result.json": {
+      "bytes": 1168,
+      "sha256": "c9d2a403b8a3552ba70de580f888ccbe896a9e6105bac7f6a8524a020bd253d4"
+    }
+  },
+  "retention": "Selected structured JSON only. The package manifest omits command transcripts. Raw logs and RPM payloads are not committed.",
+  "run": {
+    "conclusion": "success",
+    "head_sha": "6927b6514e564f92544c7c24a674738f82b2a09c",
+    "id": 45940456063,
+    "job_id": 140313317432,
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45940456063",
+    "workflow": "Fedora package input discovery"
+  },
+  "schema": 1,
+  "scope": "Passive signed Fedora package-closure candidate; no image installation, runtime selection, or OS qualification",
+  "source_evidence": {
+    "base-signature.json": {
+      "bytes": 1281,
+      "sha256": "84d643016b3b90fe0a6815be1d9938d96cdfc287a9f8d6419c5bb4af7a14eead"
+    },
+    "guest/missing-key-control.log": {
+      "bytes": 351,
+      "sha256": "d2fa8942d8784554c53c70cf7fa2106e3f1be65206249d452999edf0cc612016"
+    },
+    "guest/offline-closure-test.log": {
+      "bytes": 158,
+      "sha256": "416a216d15e775861d1854fadb6ebb68943d1c9aee631d8e855e7ff7321dbbd3"
+    },
+    "guest/result.json": {
+      "bytes": 131913,
+      "sha256": "7c4cd57817c6ecb2f400d1d1b170c49fc8bba513d6667d5c7d23b3fc48329d24"
+    },
+    "guest/tampered-package-control.log": {
+      "bytes": 753,
+      "sha256": "e21f5f7f3d8b86fa7c69457bd4d67e62ae181c7a9e43585a89c321e4065c9420"
+    }
+  }
+}
