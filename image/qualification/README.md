@@ -149,6 +149,19 @@ the fixed driver and public expectations. The status collector retains its sole
 `bootc status --json` authority. Systemd powers off the VM after either success
 or failure.
 
+The second boot keeps its 2 GiB guest, 3 GiB controller, zero-swap and one-vCPU
+qualification bounds. Its parent unit starts memory pressure at 4 GiB and has a
+5 GiB hard ceiling, leaving one bounded GiB for launch and reclaim after the
+first boot and the installed/source-disk hashes. While QEMU runs, the controller
+appends one fixed process (including wait channel), cgroup (including memory
+pressure), output-size and QMP-status sample every 30 seconds to a JSON-lines
+file capped at 1 MiB; each sample is capped at 8 KiB.
+A private QMP socket under the controller-owned output directory accepts only
+the fixed `query-status` and `quit` operations. It gives the same unprivileged
+controller exact QEMU shutdown authority when discretionary signals are denied.
+The socket and writable overlay must both be removed before output retention;
+the root parent still verifies exact Podman-container absence afterward.
+
 Public evidence is limited to the driver's explicit allowlist. Each file is
 regular, singly linked, owned by the test user, hash-bound and at most 2 MiB; the
 expanded set is at most 12 MiB. The controller rejects private action paths,

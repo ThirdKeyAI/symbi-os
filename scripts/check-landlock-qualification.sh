@@ -11,7 +11,7 @@ mkdir -p "$atomic_evidence"
 unit="symbi-landlock-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
 set +e
 sudo systemd-run --unit="$unit" --wait --pipe --working-directory="$root" \
-  --property=MemoryMax=4G --property=MemorySwapMax=0 --property=CPUQuota=200% \
+  --property=MemoryHigh=4G --property=MemoryMax=5G --property=MemorySwapMax=0 --property=CPUQuota=200% \
   --property=TasksMax=256 --property=RuntimeMaxSec=145min --property=Nice=10 \
   --property=Delegate=yes --property=DelegateSubgroup=supervisor --property=KillMode=control-group \
   /usr/bin/env -i PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \

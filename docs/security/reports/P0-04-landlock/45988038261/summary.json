@@ -1,0 +1,108 @@
+{
+  "schema": 1,
+  "passed": false,
+  "qualified": false,
+  "run": {
+    "id": 45988038261,
+    "head_branch": "card/P0-04-hosted-fix",
+    "head_sha": "3d116c4c5c149b22d1c4b5ebfda3ff0b9a455d2d",
+    "conclusion": "failure",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/45988038261"
+  },
+  "retained_zip": {
+    "name": "fedora-landlock-qualification.zip",
+    "bytes": 81950,
+    "sha256": "0408f8cf281c249c28da4140a1bbe64cf53576a4c9666fdc4aa42701c80e3a89",
+    "safe_files": 105
+  },
+  "bindings": {
+    "image_source_commit": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+    "image_manifest_digest": "sha256:1dcf72c2e3eda7e5480269b1559e3b5527c77fdb70d28983d4e29baa03b8de6e",
+    "installed_disk_sha256": "d37136c4c0e22f4c806b4ce1ba17730bca3d6fb4eaf4db78662a5284e34dd96c",
+    "runtime_source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+    "runtime_binary_sha256": "1e90af1fe424ec37ad716bbc1e069c0bc7a78f59c49871b7e79506bda69f49c7",
+    "source_disk_sha256": "94613b459b8cbac1aff861b2044979126c336521f66cb9df3d80a43a0a7ddddc",
+    "source_disk_filesystem": "ext4",
+    "source_disk_label": "SYMBIQUAL",
+    "source_disk_uuid": "7128d901-a914-4403-b867-ef2315c98e40"
+  },
+  "retained_evidence_sha256": {
+    "atomic-disk-evidence/result.json": "81983273ec29530b3d9fde51c3cdfee5c837425a753ae297a277c63a573ef7a7",
+    "atomic-disk-evidence/guest-result.json": "f4613768ce11fa5fe1f778df4aaf45767fe21592849544f85b2100ac54bf4f82",
+    "atomic-disk-evidence/guest-serial.log": "7309d38db949d3836ac7e6d39dc965322b27a3df740a0b7087ed78f0eed15b2f",
+    "atomic-disk-evidence/landlock-qualification-stderr.log": "e87728fe690979a50651801272f791ac7233bef8243dc4eb7b4f3a176dc5d9e1",
+    "atomic-disk-evidence/systemd-result.txt": "8f9b83f45f0f4cbee8d2957a7b92575af4ec31f0b6b4d1fdb9225ec27eeab56f",
+    "landlock-qualification-evidence/result.json": "574d6b5c17f6d1dec7d0661eb53e333fcb9d018d8f0fdd73a55fced9f30e836b",
+    "landlock-qualification-evidence/guest/result.json": "4810556c5aa800c357f8ddad5ac33e31a3da3b22a6d3c3bfe60a282fe9fbc3a9",
+    "landlock-qualification-evidence/guest/qemu.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "landlock-qualification-evidence/guest/serial.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "landlock-qualification-evidence/guest/report.json": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "observation": {
+    "authenticated_install_passed": true,
+    "ordinary_atomic_boot_passed": true,
+    "ordinary_boot_elapsed_seconds": 409.6954475230001,
+    "ordinary_boot_memory_peak_bytes": 3221225472,
+    "ordinary_boot_memory_max_events": 3539,
+    "second_boot_timeout_seconds": 5700,
+    "second_boot_qemu_log_bytes": 0,
+    "second_boot_serial_log_bytes": 0,
+    "second_boot_report_bytes": 0,
+    "second_boot_controller_memory_peak_bytes": 62672896,
+    "second_boot_controller_memory_max_events": 0,
+    "second_boot_controller_cpu_usec": 38586601,
+    "hosted_parent_memory_max_bytes": 4294967296,
+    "hosted_parent_memory_peak_bytes": 4294971392,
+    "hosted_parent_memory_max_events": 185233,
+    "oom_events": 0,
+    "oom_kill_events": 0,
+    "swap_max_bytes": 0,
+    "inner_signal_cleanup": {
+      "terminated": false,
+      "killed": false,
+      "errors": [
+        "PermissionError: [Errno 13] Permission denied",
+        "PermissionError: [Errno 13] Permission denied"
+      ]
+    },
+    "outer_cleanup_complete": true,
+    "root_cause": "The 4 GiB parent hard ceiling was undersized for the sequential install, first boot, disk hashing and larger 2 GiB second guest launch. The parent hit its limit 185233 times while the Landlock child stayed near launch size, used little CPU and emitted no firmware output, locating the stall before guest execution under hierarchical reclaim pressure.",
+    "evidence_limit": "The retained run has no kernel wait-channel sample, so the exact blocked kernel site is inferred from cgroup, CPU and empty-output evidence."
+  },
+  "correction": {
+    "parent_memory_high_bytes": 4294967296,
+    "parent_memory_max_bytes": 5368709120,
+    "controller_memory_max_bytes": 3221225472,
+    "guest_memory_mib": 2048,
+    "swap_max_bytes": 0,
+    "progress_interval_seconds": 30,
+    "progress_sample_max_bytes": 8192,
+    "progress_total_max_bytes": 1048576,
+    "qmp_path": "/output/qmp.sock",
+    "qmp_operations": [
+      "query-status",
+      "quit"
+    ],
+    "qmp_socket_removed_before_retention": true,
+    "writable_overlay_removed_before_retention": true,
+    "outer_exact_container_absence_check_unchanged": true,
+    "qualification_scope_unchanged": true,
+    "native_rerun_required": true
+  },
+  "local_verification": {
+    "image_tests": 392,
+    "qualification_tests": 35,
+    "shell_syntax": true,
+    "python_syntax": true,
+    "json_and_artifact_bindings": true,
+    "diff_check": true,
+    "local_image_vm_container_cargo_network_or_build_run": false
+  },
+  "claims": {
+    "accepted_guest_boot": false,
+    "landlock_qualified": false,
+    "containment_qualified": false,
+    "os_qualified": false,
+    "release_qualified": false
+  }
+}

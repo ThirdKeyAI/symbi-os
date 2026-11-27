@@ -17,6 +17,12 @@ from image.qualification.hosted_process import (TIMEOUT_SECONDS as LANDLOCK_TIME
                                                 run_landlock_controller)
 
 
+LANDLOCK_PARENT_LIMITS = {'memory.high':'4294967296','memory.max':'5368709120',
+                          'memory.swap.max':'0','cpu.max':'200000 100000','pids.max':'256'}
+DEFAULT_PARENT_LIMITS = {'memory.high':'max','memory.max':'4294967296',
+                         'memory.swap.max':'0','cpu.max':'200000 100000','pids.max':'256'}
+
+
 def run_hosted_command(qualification,name,command,stdout_path,stderr_path,timeout,
                        expected_cgroup_parent=None,expected_image=None):
     """Select the one command allowed beyond the shared process deadline."""
@@ -42,8 +48,10 @@ def main():
     if (process.name!='supervisor' or not group.name.startswith(unit_prefix)
             or not group.name.endswith('.service') or (group/'cgroup.procs').read_text().strip()):
         raise ValueError('Unexpected delegated installer controller')
-    limits={n:(group/n).read_text().strip() for n in ('memory.max','memory.swap.max','cpu.max','pids.max')}
-    if limits!={'memory.max':'4294967296','memory.swap.max':'0','cpu.max':'200000 100000','pids.max':'256'}:
+    limits={n:(group/n).read_text().strip() for n in
+            ('memory.high','memory.max','memory.swap.max','cpu.max','pids.max')}
+    expected_limits=LANDLOCK_PARENT_LIMITS if qualification=='landlock' else DEFAULT_PARENT_LIMITS
+    if limits!=expected_limits:
         raise ValueError('Hosted Atomic resource limits changed')
     required={'cpu','memory','pids'}
     if not required.issubset((group/'cgroup.controllers').read_text().split()): raise ValueError('Missing delegation')

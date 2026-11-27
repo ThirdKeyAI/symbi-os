@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import re
+import socket
 import stat
 import subprocess
 import time
@@ -22,6 +23,10 @@ else:
 MAX_ARTIFACT_BYTES = 2 * 1024 * 1024
 MAX_TOTAL_ARTIFACT_BYTES = 12 * 1024 * 1024
 MAX_REPORT_BYTES = 20 * 1024 * 1024
+MAX_PROGRESS_BYTES = 1024 * 1024
+MAX_PROGRESS_SAMPLE_BYTES = 8192
+PROGRESS_INTERVAL_SECONDS = 30
+MAX_QMP_MESSAGE_BYTES = 16384
 
 
 def sha256(path):
@@ -43,17 +48,77 @@ def unique_json(raw):
     return result
 
 
-def stop_child(child):
+def _qmp_message(stream):
+    raw = stream.readline(MAX_QMP_MESSAGE_BYTES + 1)
+    if (not raw or len(raw) > MAX_QMP_MESSAGE_BYTES
+            or not raw.endswith(b"\n")):
+        raise ValueError("missing or oversized QMP response")
+    return unique_json(raw)
+
+
+def qmp_request(stream, name):
+    """Issue one of the controller's fixed, bounded QMP operations."""
+    if name not in {"qmp_capabilities", "query-status", "quit"}:
+        raise ValueError("unexpected QMP operation")
+    stream.write(json.dumps({"execute": name, "id": name}, separators=(",", ":")).encode()
+                 + b"\n")
+    stream.flush()
+    for _ in range(20):
+        response = _qmp_message(stream)
+        if "event" in response:
+            continue
+        if (response.get("id") != name or "error" in response
+                or "return" not in response):
+            raise ValueError("unexpected QMP response")
+        return response["return"]
+    raise ValueError("QMP response exceeded its event bound")
+
+
+def qmp_command(path, name):
+    """Connect only to the controller-owned QEMU socket and issue a fixed command."""
+    path = Path(path)
+    info = path.lstat()
+    if (not stat.S_ISSOCK(info.st_mode) or info.st_uid != os.geteuid()
+            or info.st_nlink != 1):
+        raise ValueError("unsafe QMP control socket")
+    identity = (info.st_dev, info.st_ino)
+    with socket.socket(socket.AF_UNIX) as channel:
+        channel.settimeout(2)
+        channel.connect(str(path))
+        current = path.lstat()
+        if (current.st_dev, current.st_ino) != identity:
+            raise ValueError("QMP control socket identity changed")
+        with channel.makefile("rwb") as stream:
+            if "QMP" not in _qmp_message(stream):
+                raise ValueError("missing QMP greeting")
+            qmp_request(stream, "qmp_capabilities")
+            return qmp_request(stream, name)
+
+
+def _cleanup_error(error):
+    return (type(error).__name__ + ": " + str(error))[:512]
+
+
+def stop_child(child, qmp_path=None, request=qmp_command):
     """Best-effort QEMU cleanup that never masks the primary gate failure."""
-    result = {"attempted": False, "terminated": False, "killed": False, "errors": []}
+    result = {"attempted": False, "qmp_quit": False, "terminated": False,
+              "killed": False, "errors": []}
     if child is None or child.poll() is not None:
         return result
     result["attempted"] = True
+    if qmp_path is not None:
+        try:
+            request(Path(qmp_path), "quit")
+            result["qmp_quit"] = True
+            child.wait(timeout=10)
+            return result
+        except Exception as error:
+            result["errors"].append(_cleanup_error(error))
     try:
         child.terminate()
         result["terminated"] = True
     except OSError as error:
-        result["errors"].append(type(error).__name__ + ": " + str(error))
+        result["errors"].append(_cleanup_error(error))
     else:
         try:
             child.wait(timeout=10)
@@ -64,13 +129,104 @@ def stop_child(child):
         child.kill()
         result["killed"] = True
     except OSError as error:
-        result["errors"].append(type(error).__name__ + ": " + str(error))
+        result["errors"].append(_cleanup_error(error))
     else:
         try:
             child.wait(timeout=10)
         except subprocess.TimeoutExpired as error:
-            result["errors"].append(type(error).__name__ + ": " + str(error))
+            result["errors"].append(_cleanup_error(error))
     return result
+
+
+def discard_control_socket(path):
+    """Remove only the fixed controller-owned QMP socket before retention."""
+    path = Path(path)
+    result = {"attempted": False, "removed": False, "errors": []}
+    try:
+        info = path.lstat()
+    except FileNotFoundError:
+        result["removed"] = True
+        return result
+    result["attempted"] = True
+    try:
+        if (not stat.S_ISSOCK(info.st_mode) or info.st_uid != os.geteuid()
+                or info.st_nlink != 1):
+            raise ValueError("QMP control socket identity changed before discard")
+        path.unlink()
+        if path.exists() or path.is_symlink():
+            raise ValueError("QMP control socket remains after discard")
+        result["removed"] = True
+    except (OSError, ValueError) as error:
+        result["errors"].append(_cleanup_error(error))
+    return result
+
+
+def write_progress_sample(stream, sample):
+    """Append one small JSON progress record within the fixed evidence ceiling."""
+    if not isinstance(sample, dict):
+        raise ValueError("invalid progress sample")
+    raw = (json.dumps(sample, sort_keys=True, separators=(",", ":")) + "\n").encode()
+    if (len(raw) > MAX_PROGRESS_SAMPLE_BYTES
+            or stream.tell() + len(raw) > MAX_PROGRESS_BYTES):
+        raise ValueError("qualification progress evidence exceeded its bound")
+    stream.write(raw)
+    stream.flush()
+
+
+def _bounded_text(path, maximum):
+    with Path(path).open("rb") as stream:
+        raw = stream.read(maximum + 1)
+    if len(raw) > maximum:
+        raise ValueError("oversized progress input")
+    return raw.decode("utf-8", errors="strict").strip()
+
+
+def progress_snapshot(child, output, group, started, sample):
+    """Capture fixed process, cgroup, output and QMP liveness fields."""
+    snapshot = {"schema": 1, "sample": sample,
+                "elapsed_seconds": int(max(0, time.monotonic() - started)),
+                "outputs": {}}
+    for name in ("qemu.log", "serial.log", "report.json", "guest.qcow2"):
+        path = Path(output) / name
+        try:
+            info = path.lstat()
+        except FileNotFoundError:
+            continue
+        snapshot["outputs"][name] = info.st_size if stat.S_ISREG(info.st_mode) else None
+    process = Path("/proc") / str(child.pid)
+    try:
+        raw = _bounded_text(process / "status", 65536)
+        fields = {key: value.strip() for key, value in
+                  (line.split(":", 1) for line in raw.splitlines() if ":" in line)}
+        snapshot["qemu"] = {key: fields[key] for key in
+                            ("State", "Threads", "VmPeak", "VmSize", "VmRSS")
+                            if key in fields}
+        snapshot["qemu"]["pid"] = child.pid
+        snapshot["qemu"]["returncode"] = child.poll()
+    except (OSError, UnicodeError, ValueError) as error:
+        snapshot["qemu"] = {"error": _cleanup_error(error)}
+    else:
+        try:
+            snapshot["qemu"]["wchan"] = _bounded_text(process / "wchan", 256)
+        except (OSError, UnicodeError, ValueError) as error:
+            snapshot["qemu"]["wchan_error"] = _cleanup_error(error)
+    qmp_path = Path(output) / "qmp.sock"
+    try:
+        status = qmp_command(qmp_path, "query-status")
+        if (not isinstance(status, dict) or len(json.dumps(status)) > 2048):
+            raise ValueError("invalid QMP status")
+        snapshot["qmp"] = status
+    except (OSError, TimeoutError, ValueError) as error:
+        snapshot["qmp"] = {"error": _cleanup_error(error)}
+    snapshot["cgroup"] = {}
+    for name, maximum in (("memory.current", 128), ("memory.peak", 128),
+                          ("memory.events", 4096), ("memory.pressure", 4096),
+                          ("cpu.stat", 4096), ("pids.current", 128)):
+        try:
+            snapshot["cgroup"][name] = _bounded_text(Path(group) / name, maximum)
+        except (OSError, UnicodeError, ValueError) as error:
+            snapshot["cgroup"][name] = _cleanup_error(error)
+    return snapshot
 
 
 def discard_overlay(path, identity=None):
@@ -147,6 +303,7 @@ def qemu_command(inputs=Path("/inputs"), output=Path("/output")):
         "-device", "virtio-rng-pci", "-device", "virtio-serial-pci",
         "-chardev", "file,id=report,path=/output/report.json",
         "-device", "virtserialport,chardev=report,name=org.symbi.qualification",
+        "-qmp", "unix:/output/qmp.sock,server=on,wait=off",
         "-serial", "file:/output/serial.log", "-monitor", "none", "-display", "none",
         *firmware_arguments(inputs),
     ]
@@ -289,6 +446,7 @@ def main():
     child = None
     overlay = output / "guest.qcow2"
     overlay_identity = None
+    qmp_path = output / "qmp.sock"
     try:
         with (output / "prepare-overlay.log").open("x") as log:
             subprocess.run(overlay_command(inputs, output), stdin=subprocess.DEVNULL,
@@ -300,11 +458,14 @@ def main():
         record["command"] = command
         (output / "result.json").write_text(json.dumps(record, indent=2) + "\n")
         started = time.monotonic()
-        with (output / "qemu.log").open("x") as log:
+        with (output / "qemu.log").open("x") as log, \
+                (output / "progress.jsonl").open("xb") as progress:
             child = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=log,
                                      stderr=subprocess.STDOUT,
                                      env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8",
                                           "HOME": "/output", "TMPDIR": "/output"})
+            next_progress = started
+            progress_samples = 0
             while child.poll() is None:
                 for name, maximum in (("serial.log", 2 * 1024 * 1024),
                                       ("qemu.log", 1024 * 1024),
@@ -312,9 +473,21 @@ def main():
                     path = output / name
                     if path.exists() and path.stat().st_size > maximum:
                         raise ValueError("guest output exceeded its bound: " + name)
+                now = time.monotonic()
+                if now >= next_progress:
+                    write_progress_sample(
+                        progress,
+                        progress_snapshot(child, output, group, started, progress_samples),
+                    )
+                    progress_samples += 1
+                    next_progress += PROGRESS_INTERVAL_SECONDS
                 if time.monotonic() - started >= 5700:
                     raise TimeoutError("Landlock guest did not report and power off within 95 minutes")
                 time.sleep(0.5)
+            write_progress_sample(
+                progress,
+                progress_snapshot(child, output, group, started, progress_samples),
+            )
         record["exit_code"] = child.returncode
         record["elapsed_seconds"] = time.monotonic() - started
         if child.returncode != 0:
@@ -345,9 +518,13 @@ def main():
         record["failure"] = type(error).__name__ + ": " + str(error)
         raise
     finally:
-        cleanup = stop_child(child)
+        cleanup = stop_child(child, qmp_path)
         record["child_cleanup"] = cleanup
         if cleanup["attempted"]:
+            record["passed"] = False
+        qmp_cleanup = discard_control_socket(qmp_path)
+        record["qmp_cleanup"] = qmp_cleanup
+        if not qmp_cleanup["removed"] or qmp_cleanup["errors"]:
             record["passed"] = False
         overlay_cleanup = discard_overlay(overlay, overlay_identity)
         record["overlay_cleanup"] = overlay_cleanup
