@@ -1,0 +1,132 @@
+{
+  "schema": 1,
+  "passed": false,
+  "qualified": false,
+  "run": {
+    "id": 46069345762,
+    "attempt": 1,
+    "head_branch": "card/P0-04-hosted-fix",
+    "head_sha": "eeb9a1d10acda652bf0667eeb2d7b0c79673c462",
+    "head_tree": "c402ccb91747ac923483f382382563c424e262d0",
+    "job_id": 140742271867,
+    "job_name": "qualify",
+    "conclusion": "failure",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46069345762"
+  },
+  "artifact": {
+    "id": 15232758595,
+    "name": "fedora-landlock-qualification",
+    "bytes": 82355,
+    "digest": "sha256:a20aac3daadb9199b20dd52e9d5566a75c8ae9f94c060846e4dbf9632ad27eb1",
+    "downloaded_zip_digest_matched": true,
+    "archive_crc_and_strict_json_assertions": 102,
+    "exact_head_cross_binding_topology_resource_cleanup_assertions": 67,
+    "all_assertions_passed": true,
+    "unsafe_duplicate_encrypted_special_or_crc_failed_members": 0
+  },
+  "block_topology_observation": {
+    "schema": 1,
+    "inventory": {
+      "is_list": "pass",
+      "count": "pass",
+      "rows_are_objects": "pass",
+      "device_fields_are_strings": "pass",
+      "devices_unique": "pass",
+      "only_expected_devices": "pass",
+      "exact_devices": "pass"
+    },
+    "root": {
+      "drive": "pass",
+      "qdev": "fail",
+      "inserted": "pass",
+      "file": "pass",
+      "format": "pass",
+      "read_only_type": "pass",
+      "read_only": "pass",
+      "backing_file": "pass",
+      "bootindex_type": "pass",
+      "bootindex": "pass"
+    },
+    "source": {
+      "drive": "pass",
+      "qdev": "fail",
+      "inserted": "pass",
+      "file": "pass",
+      "format": "pass",
+      "read_only_type": "pass",
+      "read_only": "pass",
+      "backing_file": "pass",
+      "bootindex_type": "pass",
+      "bootindex": "pass"
+    }
+  },
+  "observation_audit": {
+    "blocked_predicates": 0,
+    "raw_observed_values_retained": false
+  },
+  "observation": {
+    "failure_stage": "second controller live QMP block-topology validation before guest wait",
+    "failure": "ValueError: QMP block device mapping differs",
+    "topology_accepted": false,
+    "accepted_second_guest_boot": false,
+    "landlock_acceptance_started": false
+  },
+  "resources": {
+    "second_guest_controller": {
+      "memory_max_bytes": 3221225472,
+      "memory_peak_bytes": 64057344,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0,
+      "swap_max_bytes": 0,
+      "cpu_quota": "200000 100000",
+      "pids_max": 64
+    }
+  },
+  "cleanup": {
+    "qmp_quit_sent": true,
+    "exact_qemu_exit_proven": true,
+    "qmp_socket_removed": true,
+    "overlay_removed": true,
+    "all_four_containers_removed_and_absent": true,
+    "loop_devices_absent": true,
+    "loaded_image_removed": true,
+    "private_storage_removed": true,
+    "private_runroot_removed": true
+  },
+  "correction": {
+    "qemu_launch_argv_changed": false,
+    "qom_get_parent_paths_changed": false,
+    "root_qdev_contract": "/machine/peripheral/symbi-atomic-root-device/virtio-backend",
+    "source_qdev_contract": "/machine/peripheral/symbi-qualification-source-device/virtio-backend",
+    "broad_suffix_or_pattern_acceptance": false,
+    "parent_device_id_accepted_as_qdev": false,
+    "accepted_topology_record_includes_qdev_contract": true,
+    "raw_observed_qdev_retained": false,
+    "native_rerun_required": true
+  },
+  "local_verification": {
+    "focused_hosted_landlock_tests": 43,
+    "focused_seconds": 0.211,
+    "focused_peak_rss_kib": 35512,
+    "focused_address_limit_bytes": 134217728,
+    "focused_swaps": 0,
+    "full_image_tests": 407,
+    "qualification_tests": 35,
+    "full_check_seconds": 2.67,
+    "full_check_peak_rss_kib": 62032,
+    "full_check_address_limit_bytes": 201326592,
+    "full_check_swaps": 0,
+    "strict_json": true,
+    "python_ast": true,
+    "diff_check": true,
+    "local_image_vm_container_package_manager_network_cargo_or_build_run": false
+  },
+  "claims": {
+    "accepted_second_guest_boot": false,
+    "landlock_qualified": false,
+    "containment_qualified": false,
+    "os_qualified": false,
+    "release_qualified": false
+  }
+}
