@@ -1208,8 +1208,12 @@ def validate_phase_ledger(value, mode, contract, lock, evidence, source_root,
                         and diagnostics["freshness_policy"] == policy
                         and release_diagnostics["control_fields_valid"] is True
                         and release_diagnostics["date_fields"] == 1
-                        and release_diagnostics["valid_until_fields"]
-                        == (0 if policy["mode"] == "immutable-release" else 1)
+                        and (
+                            release_diagnostics["valid_until_fields"] == 0
+                            if policy["mode"] == "immutable-release"
+                            else release_diagnostics["valid_until_fields"]
+                            in (0, 1)
+                        )
                         and release_diagnostics["sha256_fields"] == 1
                         and all(release_diagnostics[name] is True for name in (
                             "origin_matches", "label_matches", "suite_matches",

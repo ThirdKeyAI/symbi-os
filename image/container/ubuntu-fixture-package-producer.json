@@ -41,7 +41,7 @@
       "codename": "noble",
       "inrelease_url": "https://archive.ubuntu.com/ubuntu/dists/noble-updates/InRelease",
       "signer_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C",
-      "mode": "valid-until",
+      "mode": "rolling-date",
       "maximum_age_days": 14
     },
     {
@@ -49,7 +49,7 @@
       "codename": "noble",
       "inrelease_url": "https://security.ubuntu.com/ubuntu/dists/noble-security/InRelease",
       "signer_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C",
-      "mode": "valid-until",
+      "mode": "rolling-date",
       "maximum_age_days": 14
     }
   ],

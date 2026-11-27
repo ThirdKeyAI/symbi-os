@@ -39,8 +39,7 @@ def package_stanza(name, version, architecture, filename, payload):
 def release_bytes(source, index_bytes, *, date=None, valid_until=DEFAULT_TIME):
     date = NOW - timedelta(hours=1) if date is None else date
     if valid_until is DEFAULT_TIME:
-        valid_until = (None if source["suite"] == "noble"
-                       else NOW + timedelta(days=6))
+        valid_until = None
     digest = hashlib.sha256(index_bytes).hexdigest()
     codename = build.EXPECTED_CODENAMES[source["suite"]]
     expiry = ("" if valid_until is None else
@@ -470,7 +469,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                 ("codename", "jammy"),
                 ("inrelease_url", "https://security.ubuntu.com/ubuntu/dists/noble/InRelease"),
                 ("signer_fingerprint", "A" * 40),
-                ("mode", "valid-until"),
+                ("mode", "rolling-date"),
                 ("maximum_age_days", 1831)):
             changed = copy.deepcopy(policy)
             changed[field] = value
@@ -480,31 +479,100 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                 build.validate_signed_release(
                     self.release, self.source, NOW, changed)
 
-    def test_rolling_pockets_require_one_bounded_unexpired_valid_until(self):
-        source = copy.deepcopy(packages.EXPECTED_SOURCES[1])
-        policy = build.expected_freshness_policy(source)
-        valid = release_bytes(source, self.index)
-        binding = build.validate_signed_release(valid, source, NOW, policy)
-        self.assertGreater(binding["valid_until"], binding["verified_at"])
-        missing = release_bytes(source, self.index, valid_until=None)
-        duplicate = valid.replace(
-            b"Valid-Until: ", b"Valid-Until: ", 1) + (
+    def test_rolling_pockets_bound_date_and_optional_valid_until(self):
+        for source in map(copy.deepcopy, packages.EXPECTED_SOURCES[1:]):
+            policy = build.expected_freshness_policy(source)
+            self.assertEqual(policy["mode"], "rolling-date")
+            self.assertEqual(
+                policy["maximum_age_days"],
+                build.MAX_ROLLING_RELEASE_AGE.days)
+
+            absent = release_bytes(source, self.index, valid_until=None)
+            binding = build.validate_signed_release(
+                absent, source, NOW, policy)
+            self.assertIsNone(binding["valid_until"])
+
+            at_age = release_bytes(
+                source, self.index,
+                date=NOW - build.MAX_ROLLING_RELEASE_AGE,
+                valid_until=None)
+            at_skew = release_bytes(
+                source, self.index,
+                date=NOW + build.MAX_CLOCK_SKEW,
+                valid_until=None)
+            build.validate_signed_release(at_age, source, NOW, policy)
+            build.validate_signed_release(at_skew, source, NOW, policy)
+
+            with_expiry = release_bytes(
+                source, self.index,
+                valid_until=NOW + timedelta(days=1))
+            expiring = build.validate_signed_release(
+                with_expiry, source, NOW, policy)
+            self.assertGreater(expiring["valid_until"], expiring["verified_at"])
+
+            duplicate = with_expiry + (
                 b"Valid-Until: "
-                + build.format_release_time(NOW + timedelta(days=1)).encode()
+                + build.format_release_time(NOW + timedelta(hours=1)).encode()
                 + b"\n")
-        oversized = valid.replace(
-            next(line for line in valid.splitlines(keepends=True)
-                 if line.startswith(b"Valid-Until:")),
-            b"Valid-Until: " + b"1" * 129 + b"\n")
-        excessive = release_bytes(
-            source, self.index,
-            valid_until=NOW + build.MAX_VALIDITY_WINDOW
-            + timedelta(seconds=1))
-        stale = release_bytes(
-            source, self.index, valid_until=NOW - timedelta(seconds=1))
-        for changed in (missing, duplicate, oversized, excessive, stale):
-            with self.subTest(changed=changed), self.assertRaises(ValueError):
-                build.validate_signed_release(changed, source, NOW, policy)
+            duplicate_date = absent + (
+                b"Date: "
+                + build.format_release_time(NOW - timedelta(minutes=1)).encode()
+                + b"\n")
+            malformed_expiry = with_expiry.replace(
+                next(line for line in with_expiry.splitlines(keepends=True)
+                     if line.startswith(b"Valid-Until:")),
+                b"Valid-Until: malformed\n")
+            oversized_expiry = with_expiry.replace(
+                next(line for line in with_expiry.splitlines(keepends=True)
+                     if line.startswith(b"Valid-Until:")),
+                b"Valid-Until: " + b"1" * 129 + b"\n")
+            cases = (
+                release_bytes(
+                    source, self.index,
+                    date=NOW - build.MAX_ROLLING_RELEASE_AGE
+                    - timedelta(seconds=1),
+                    valid_until=None),
+                release_bytes(
+                    source, self.index,
+                    date=NOW + build.MAX_CLOCK_SKEW + timedelta(seconds=1),
+                    valid_until=None),
+                release_bytes(
+                    source, self.index,
+                    valid_until=NOW - timedelta(seconds=1)),
+                release_bytes(
+                    source, self.index,
+                    valid_until=NOW + build.MAX_ROLLING_RELEASE_AGE
+                    + timedelta(seconds=1)),
+                release_bytes(
+                    source, self.index,
+                    valid_until=NOW - timedelta(hours=2)),
+                duplicate,
+                duplicate_date,
+                malformed_expiry,
+                oversized_expiry,
+                absent.replace(
+                    next(line for line in absent.splitlines(keepends=True)
+                         if line.startswith(b"Date:")), b""),
+                absent.replace(
+                    next(line for line in absent.splitlines(keepends=True)
+                         if line.startswith(b"Date:")), b"Date: malformed\n"),
+            )
+            for changed in cases:
+                with self.subTest(suite=source["suite"], changed=changed), \
+                        self.assertRaises(ValueError):
+                    build.validate_signed_release(
+                        changed, source, NOW, policy)
+
+            for field, value in (
+                    ("mode", "valid-until"),
+                    ("maximum_age_days",
+                     build.MAX_ROLLING_RELEASE_AGE.days + 1)):
+                changed_policy = copy.deepcopy(policy)
+                changed_policy[field] = value
+                with self.subTest(suite=source["suite"], field=field), \
+                        self.assertRaises(ValueError):
+                    build.validate_signed_release(
+                        absent, source, NOW, changed_policy)
 
     def test_signed_index_membership_returns_only_exact_requested_rows(self):
         requested = {
@@ -1551,6 +1619,86 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             self.assertEqual(list((base / stage_name).iterdir()), [])
             self.assertEqual(
                 build.validate_candidate_output(output, lock), manifest)
+
+    def test_candidate_revalidates_rolling_date_and_optional_expiry(self):
+        lock, manifest, _, _ = self.candidate_fixture()
+        build.validate_candidate_manifest(lock, manifest)
+        for suite in ("noble-updates", "noble-security"):
+            sequence = next(
+                index for index, row in enumerate(manifest["release_metadata"])
+                if row["suite"] == suite)
+
+            for date in (
+                    NOW - build.MAX_ROLLING_RELEASE_AGE,
+                    NOW + build.MAX_CLOCK_SKEW):
+                boundary = copy.deepcopy(manifest)
+                boundary["release_metadata"][sequence]["signed"]["date"] = \
+                    build._iso_time(date)
+                build.validate_candidate_manifest(lock, boundary)
+
+            with_expiry = copy.deepcopy(manifest)
+            with_expiry["release_metadata"][sequence]["signed"][
+                "valid_until"] = build._iso_time(NOW + timedelta(days=1))
+            build.validate_candidate_manifest(lock, with_expiry)
+
+            cases = []
+            stale_date = copy.deepcopy(manifest)
+            stale_date["release_metadata"][sequence]["signed"]["date"] = \
+                build._iso_time(
+                    NOW - build.MAX_ROLLING_RELEASE_AGE
+                    - timedelta(seconds=1))
+            cases.append(stale_date)
+
+            future_date = copy.deepcopy(manifest)
+            future_date["release_metadata"][sequence]["signed"]["date"] = \
+                build._iso_time(
+                    NOW + build.MAX_CLOCK_SKEW + timedelta(seconds=1))
+            cases.append(future_date)
+
+            stale_expiry = copy.deepcopy(manifest)
+            stale_expiry["release_metadata"][sequence]["signed"][
+                "valid_until"] = build._iso_time(NOW - timedelta(seconds=1))
+            cases.append(stale_expiry)
+
+            excessive_expiry = copy.deepcopy(manifest)
+            excessive_expiry["release_metadata"][sequence]["signed"][
+                "valid_until"] = build._iso_time(
+                    NOW + build.MAX_ROLLING_RELEASE_AGE
+                    + timedelta(seconds=1))
+            cases.append(excessive_expiry)
+
+            before_date = copy.deepcopy(manifest)
+            released = datetime.fromisoformat(
+                before_date["release_metadata"][sequence]["signed"][
+                    "date"].removesuffix("Z") + "+00:00")
+            before_date["release_metadata"][sequence]["signed"][
+                "valid_until"] = build._iso_time(
+                    released - timedelta(seconds=1))
+            cases.append(before_date)
+
+            malformed_date = copy.deepcopy(manifest)
+            malformed_date["release_metadata"][sequence]["signed"][
+                "date"] = "malformed"
+            cases.append(malformed_date)
+
+            malformed_expiry = copy.deepcopy(manifest)
+            malformed_expiry["release_metadata"][sequence]["signed"][
+                "valid_until"] = "malformed"
+            cases.append(malformed_expiry)
+
+            for field, value in (
+                    ("mode", "valid-until"),
+                    ("maximum_age_days",
+                     build.MAX_ROLLING_RELEASE_AGE.days + 1)):
+                cross_bound = copy.deepcopy(manifest)
+                cross_bound["release_metadata"][sequence]["signed"][
+                    "freshness_policy"][field] = value
+                cases.append(cross_bound)
+
+            for changed in cases:
+                with self.subTest(suite=suite, changed=changed), \
+                        self.assertRaises(ValueError):
+                    build.validate_candidate_manifest(lock, changed)
 
     def test_candidate_manifest_is_unverified_and_ineligible_for_consumption(self):
         lock, manifest, metadata_contents, package_rows = self.candidate_fixture()

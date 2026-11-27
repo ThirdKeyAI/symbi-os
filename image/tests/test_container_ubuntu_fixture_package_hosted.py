@@ -88,7 +88,7 @@ class UbuntuHostedProducerTests(unittest.TestCase):
         self.assertEqual(self.contract["state"], "pending-discovery")
         self.assertEqual(
             [row["mode"] for row in self.contract["freshness_policy"]],
-            ["immutable-release", "valid-until", "valid-until"],
+            ["immutable-release", "rolling-date", "rolling-date"],
         )
         self.assertEqual(
             [row["suite"] for row in self.contract["metadata_pins"]],
@@ -129,10 +129,16 @@ class UbuntuHostedProducerTests(unittest.TestCase):
                 ("codename", "jammy"),
                 ("inrelease_url", "https://security.ubuntu.com/ubuntu/dists/noble/InRelease"),
                 ("signer_fingerprint", "A" * 40),
-                ("mode", "valid-until"),
+                ("mode", "rolling-date"),
                 ("maximum_age_days", 1831)):
             changed = copy.deepcopy(self.contract)
             changed["freshness_policy"][0][field] = value
+            cases.append(changed)
+        for field, value in (
+                ("mode", "valid-until"),
+                ("maximum_age_days", 15)):
+            changed = copy.deepcopy(self.contract)
+            changed["freshness_policy"][1][field] = value
             cases.append(changed)
         for contract in cases:
             with self.subTest(contract=contract), self.assertRaises(ValueError):
@@ -489,11 +495,10 @@ class UbuntuHostedProducerTests(unittest.TestCase):
                 ], status, inputs_=({
                     "name": "inrelease-" + suite, **identity,
                 }, retained["archive_keyring"]))
-            expiry = "" if suite == "noble" else "Valid-Until: later\n"
             release = (
                 "Origin: Ubuntu\nLabel: Ubuntu\n"
                 f"Suite: {suite}\nCodename: noble\nDate: now\n"
-                f"{expiry}SHA256:\n"
+                "SHA256:\n"
             ).encode()
             diagnostics = hosted.build.signed_release_diagnostics(
                 release, source)
@@ -617,6 +622,55 @@ class UbuntuHostedProducerTests(unittest.TestCase):
                 self.assertLess(
                     (evidence / "phase-ledger.json").stat().st_size,
                     hosted.MAX_PHASE_LEDGER_BYTES)
+            finally:
+                ledger.close()
+
+    def test_phase_ledger_accepts_only_rolling_zero_or_one_valid_until(self):
+        with tempfile.TemporaryDirectory() as directory:
+            ledger, evidence, run, _, _ = self.ledger_fixture(
+                Path(directory), full=True)
+            try:
+                hosted.validate_phase_ledger(
+                    ledger.value, "discover", self.contract, self.lock,
+                    evidence, ROOT, run)
+                for suite in ("noble-updates", "noble-security"):
+                    with_expiry = copy.deepcopy(ledger.value)
+                    phase = next(
+                        row for row in with_expiry["phases"]
+                        if row["kind"] == "inrelease-signature"
+                        and row["suite"] == suite)
+                    self.assertEqual(
+                        phase["diagnostics"]["release"][
+                            "valid_until_fields"], 0)
+                    phase["diagnostics"]["release"][
+                        "valid_until_fields"] = 1
+                    hosted.validate_phase_ledger(
+                        with_expiry, "discover", self.contract, self.lock,
+                        evidence, ROOT, run)
+
+                    duplicate = copy.deepcopy(with_expiry)
+                    duplicate_phase = next(
+                        row for row in duplicate["phases"]
+                        if row["kind"] == "inrelease-signature"
+                        and row["suite"] == suite)
+                    duplicate_phase["diagnostics"]["release"][
+                        "valid_until_fields"] = 2
+                    with self.assertRaises(ValueError):
+                        hosted.validate_phase_ledger(
+                            duplicate, "discover", self.contract, self.lock,
+                            evidence, ROOT, run)
+
+                immutable_changed = copy.deepcopy(ledger.value)
+                immutable_phase = next(
+                    row for row in immutable_changed["phases"]
+                    if row["kind"] == "inrelease-signature"
+                    and row["suite"] == "noble")
+                immutable_phase["diagnostics"]["release"][
+                    "valid_until_fields"] = 1
+                with self.assertRaises(ValueError):
+                    hosted.validate_phase_ledger(
+                        immutable_changed, "discover", self.contract,
+                        self.lock, evidence, ROOT, run)
             finally:
                 ledger.close()
 
@@ -798,7 +852,7 @@ class UbuntuHostedProducerTests(unittest.TestCase):
         status = self.gpg_status(source["metadata"]["signer_fingerprint"])
         release = (
             "Origin: Ubuntu\nLabel: Ubuntu\nSuite: noble-updates\n"
-            "Codename: noble\nDate: Fri, 27 Nov 2026 11:00:00 GMT\n"
+            "Codename: noble\nDate: Thu, 12 Nov 2026 11:00:00 GMT\n"
             "Architectures: amd64\nComponents: main\nSHA256:\n"
             f" {'2' * 64} 1 main/binary-amd64/Packages.xz\n"
         ).encode()
@@ -825,7 +879,7 @@ class UbuntuHostedProducerTests(unittest.TestCase):
                 mock.patch.object(
                     hosted.packages, "read_bounded_control_file",
                     return_value=release), \
-                self.assertRaisesRegex(ValueError, "Valid-Until"):
+                self.assertRaisesRegex(ValueError, "Date exceeds its age bound"):
             hosted._run_metadata(
                 lock, contract, Path(directory), Path(directory), Runner(),
                 hosted.datetime(2026, 11, 27, 12, 0,
@@ -839,10 +893,13 @@ class UbuntuHostedProducerTests(unittest.TestCase):
         self.assertEqual(ledger.calls[-1][1], "noble-updates")
         self.assertEqual(ledger.calls[-1][2], identity)
         self.assertEqual(
-            ledger.calls[-1][-2], "valid-until-rejected")
+            ledger.calls[-1][-2], "freshness-rejected")
         self.assertIsNone(ledger.calls[-1][-1])
 
         inventory_release = release.replace(
+            b"Date: Thu, 12 Nov 2026 11:00:00 GMT\n",
+            b"Date: Fri, 27 Nov 2026 11:00:00 GMT\n",
+        ).replace(
             b"Architectures: amd64\n",
             b"Valid-Until: Sat, 28 Nov 2026 12:00:00 GMT\n"
             b"Architectures: amd64\n",

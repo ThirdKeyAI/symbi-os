@@ -33,7 +33,7 @@ from image.container import ubuntu_fixture_packages as packages
 
 
 MAX_CLOCK_SKEW = timedelta(minutes=15)
-MAX_VALIDITY_WINDOW = timedelta(days=14)
+MAX_ROLLING_RELEASE_AGE = timedelta(days=14)
 MAX_IMMUTABLE_RELEASE_AGE = timedelta(days=1830)
 MAX_RELEASE_BYTES = packages.MAX_METADATA_BYTES
 MAX_RELEASE_LINE_BYTES = 64 * 1024
@@ -509,10 +509,10 @@ def expected_freshness_policy(source):
         "codename": EXPECTED_CODENAMES[source["suite"]],
         "inrelease_url": source["metadata"]["inrelease_url"],
         "signer_fingerprint": source["metadata"]["signer_fingerprint"],
-        "mode": "immutable-release" if immutable else "valid-until",
+        "mode": "immutable-release" if immutable else "rolling-date",
         "maximum_age_days": (
             MAX_IMMUTABLE_RELEASE_AGE.days if immutable
-            else MAX_VALIDITY_WINDOW.days
+            else MAX_ROLLING_RELEASE_AGE.days
         ),
     }
 
@@ -539,12 +539,16 @@ def _validate_release_freshness(released, valid_until, now, policy):
         require(valid_until is None and now - released <= maximum_age,
                 "Ubuntu immutable Release has an expiry or exceeds its age bound")
     else:
-        require(isinstance(valid_until, datetime)
-                and valid_until.tzinfo is not None
-                and released < valid_until
-                and now < valid_until
-                and valid_until - released <= maximum_age,
-                "Ubuntu rolling Release is stale or has an excessive validity window")
+        require(now - released <= maximum_age,
+                "Ubuntu rolling Release Date exceeds its age bound")
+        if valid_until is not None:
+            require(isinstance(valid_until, datetime)
+                    and valid_until.tzinfo is not None
+                    and released < valid_until
+                    and now < valid_until
+                    and valid_until - released <= maximum_age,
+                    "Ubuntu rolling Release Valid-Until is stale or has an "
+                    "excessive validity window")
 
 
 def signed_release_diagnostics(raw, source):
@@ -716,8 +720,10 @@ def validate_signed_release(raw, source, verified_at, freshness_policy):
                 "Ubuntu immutable Release unexpectedly carries Valid-Until")
         valid_until = None
     else:
-        valid_until = _parse_release_time(
-            fields.get("valid-until"), "Ubuntu Release Valid-Until")
+        valid_until = (None if "valid-until" not in fields else
+                       _parse_release_time(
+                           fields["valid-until"],
+                           "Ubuntu Release Valid-Until"))
     _validate_release_freshness(released, valid_until, now, policy)
     checksum_rows = [row for row in fields.get("sha256", "").splitlines()
                      if row]
@@ -1989,8 +1995,10 @@ def validate_candidate_manifest(lock, manifest):
                     "Ubuntu immutable candidate Release carries an expiry")
             valid_until = None
         else:
-            valid_until = _parse_iso_time(
-                signed["valid_until"], "Ubuntu candidate Release expiry")
+            valid_until = (None if signed["valid_until"] is None else
+                           _parse_iso_time(
+                               signed["valid_until"],
+                               "Ubuntu candidate Release expiry"))
         _validate_release_freshness(released, valid_until, verified, policy)
     count, total = packages._validate_retained_package_shape(
         manifest.get("packages"), base_releases, indexes, sources,

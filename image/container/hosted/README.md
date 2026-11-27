@@ -147,8 +147,12 @@ and finalization primitives for the missing offline package closure. It does
 not invoke system tools or contain or invent repository metadata. For each exact
 reviewed source it can require one pinned-fingerprint `gpgv` result for the
 InRelease file, parse the authenticated Release text, require the exact suite
-and codename, and reject a missing or expired
-`Valid-Until`, an excessive validity window, or a future `Date`. The signed
+and codename, and apply an exact source-bound freshness policy. Noble requires
+no `Valid-Until` and has a reviewed 1,830-day signed-`Date` age ceiling. The
+updates and security pockets have a 14-day signed-`Date` age ceiling and may
+omit `Valid-Until`; one present field must be unexpired, after `Date`, and no
+more than 14 days after `Date`. Every pocket rejects a `Date` more than 15
+minutes in the future. The signed
 SHA-256 row must name exactly `main/binary-amd64/Packages.xz`; selected apt URIs
 are then matched to exact package name, version, architecture, Filename, Size
 and SHA256 fields in that compressed index.
@@ -231,13 +235,13 @@ upload. The candidate manifest still keeps `producer_passed` and every
 verification/selection/qualification field false; structured raw evidence is
 external and cannot turn those booleans true.
 
-If any current Ubuntu suite omits `Valid-Until` or fails another strict field,
-the job must stop; changing the source or freshness policy needs its own review.
-GitHub does not expose a new `workflow_dispatch` file until that workflow path
-exists on the default branch. Hosted discovery is therefore blocked until a
-separately reviewed minimal registration change lands on `main`. The next
-producer step is then one reviewed `discover` dispatch. Its exact raw evidence
-must be inspected before copying the six byte/hash values into the contract. A
-later `produce` dispatch remains unselected; selecting its real run, artifact
-and byte identities is a separate committed review, and only that can unblock
-an offline `docker build --network=none` change.
+The Python validator is authoritative for discovery. Before a `produce` run can
+be enabled, the staged offline APT source rows must also impose exact
+per-source `valid-until-max` bounds: 1,830 days for noble and 14 days for
+noble-updates and noble-security. That independent APT freshness gate is not
+implemented here, so production remains blocked even after discovery yields six
+reviewed byte/hash pins. Each exact discovery artifact must be inspected before
+pins are copied into the contract. A later `produce` dispatch remains
+unselected; selecting its real run, artifact and byte identities is a separate
+committed review, and only that can unblock an offline
+`docker build --network=none` change.
