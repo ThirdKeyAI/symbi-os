@@ -68,10 +68,12 @@ capture_control_group() {
 }
 
 stop_and_reset_unit() {
-  local captured=1 cgroup_path control control_seen deadline key load load_seen parsed snapshot value
+  local cgroup_path control control_seen deadline key load load_seen parsed snapshot value
   (( unit_started == 1 )) || return 0
-  if [[ -z $unit_control_group ]] && ! capture_control_group; then
-    captured=0
+  if [[ -z $unit_control_group ]]; then
+    if ! capture_control_group && (( unit_terminal == 0 )); then
+      return 1
+    fi
   fi
   timeout 30 sudo systemctl stop "$unit" >/dev/null 2>&1 || true
   timeout 30 sudo systemctl reset-failed "$unit" >/dev/null 2>&1 || true
@@ -99,9 +101,9 @@ stop_and_reset_unit() {
           *) parsed=0; break ;;
         esac
       done <<< "$snapshot"
-      if (( parsed == 1 && load_seen == 1 && control_seen == 1 && captured == 1 )) \
+      if (( parsed == 1 && load_seen == 1 && control_seen == 1 )) \
           && [[ $load == not-found && -z $control ]]; then
-        cgroup_path="/sys/fs/cgroup${unit_control_group}"
+        cgroup_path="/sys/fs/cgroup${expected_control_group}"
         if [[ ! -e $cgroup_path && ! -L $cgroup_path ]]; then
           unit_started=0
           return 0
@@ -252,11 +254,14 @@ capture_systemd_result() {
   (( ${#snapshot} <= 8192 )) || return 1
   while IFS='=' read -r key value; do
     if [[ $key == ControlGroup ]]; then
-      if (( control_seen == 1 )) || [[ $value != "$expected_control_group" ]]; then
+      if (( control_seen == 1 )) \
+          || [[ -n $value && $value != "$expected_control_group" ]]; then
         valid=0
         break
       fi
-      unit_control_group=$value
+      if [[ $value == "$expected_control_group" ]]; then
+        unit_control_group=$value
+      fi
       control_seen=1
     elif [[ ! $key =~ ^[A-Za-z][A-Za-z0-9]*$ || -z $value ]] || \
          (( ${#value} > 256 )); then
@@ -379,6 +384,9 @@ if (( evidence_valid == 1 )); then
   fi
 fi
 if (( evidence_valid == 0 )); then
+  printf 'Appliance evidence unavailable: status=%d ownership=%d terminal=%d outcome=%s captured=%d prepared=%d cleanup=%d evidence_status=%d\n' \
+    "$status" "$ownership_status" "$unit_terminal" "${unit_outcome:-unknown}" \
+    "$systemd_captured" "$evidence_prepared" "$cleanup_status" "$evidence_status" >&2
   if ! discard_appliance_output && (( evidence_status == 0 )); then
     evidence_status=10
   fi
