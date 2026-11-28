@@ -32,7 +32,9 @@ from image.appliance.hosted import (EVIDENCE_FILE_LIMITS,
                                     SUCCESS_EVIDENCE_FILES,
                                     _failure_diagnostic, _installed_desktop_bindings,
                                     _sanitize_diagnostic,
-                                    invalidate_appliance_output, produce_appliance,
+                                    create_outer_failure_evidence,
+                                    invalidate_appliance_output, outer_failure_record,
+                                    produce_appliance,
                                     validate_public_artifact,
                                     validate_retained_evidence)
 from image.appliance.prerequisite import (DOWNLOAD_WORKING_MARGIN_BYTES,
@@ -48,6 +50,10 @@ from image.atomic.hosted import MINIMUM_DISK_FREE_BYTES, enforce_appliance_final
 ROOT = Path(__file__).resolve().parents[2]
 EXPECTED_EXPIRY = "2026-11-29T00:00:00Z"
 CHILD_LIMITS = dict(APPLIANCE_CONTAINER_LIMITS)
+OUTER_ENVIRONMENT = {
+    "GITHUB_SHA": "a" * 40,
+    "SYMBI_APPLIANCE_SOURCE_TREE": "9" * 40,
+}
 
 
 def cgroup_final():
@@ -279,6 +285,37 @@ def validate_failure_fixture(root, source=None):
     }
     with mock.patch("image.appliance.hosted._checkout_binding", return_value=checkout):
         return validate_retained_evidence(root)
+
+
+def validate_outer_failure_fixture(root):
+    checkout = {
+        "source_commit": OUTER_ENVIRONMENT["GITHUB_SHA"],
+        "source_tree": OUTER_ENVIRONMENT["SYMBI_APPLIANCE_SOURCE_TREE"],
+    }
+    with mock.patch.dict(os.environ, OUTER_ENVIRONMENT), \
+            mock.patch("image.appliance.hosted._checkout_binding", return_value=checkout):
+        return validate_retained_evidence(root)
+
+
+def write_atomic_outer_failure(root, commands, **values):
+    evidence = root / ".cache/atomic-disk-evidence"
+    evidence.mkdir(parents=True)
+    lock = root / "image/desktop-images.lock.json"
+    lock.parent.mkdir(parents=True)
+    image_source_commit = "b" * 40
+    rewrite_json(lock, {
+        "images": {"generic": {"tested_commit": image_source_commit}},
+    })
+    record = {
+        "schema": 1,
+        "passed": False,
+        "qualification": "appliance",
+        "source_commit": OUTER_ENVIRONMENT["GITHUB_SHA"],
+        "image_source_commit": image_source_commit,
+        "commands": commands,
+        **values,
+    }
+    rewrite_json(evidence / "result.json", record)
 
 
 def rewrite_json(path, value):
@@ -550,6 +587,123 @@ class InteractiveApplianceContract(unittest.TestCase):
                 evidence, "producer-result.json", "producer_result_sha256")
             with self.assertRaisesRegex(ValueError, "OOM event"):
                 validate_fixture(root, expected)
+
+    def test_outer_failure_receipt_captures_only_fixed_stage_status_and_resources(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_atomic_outer_failure(
+                root,
+                [
+                    {"name": "load-image", "exit_code": 0},
+                    {"name": "sign-source", "exit_code": 0},
+                    {"name": "install", "exit_code": 1},
+                ],
+                failure="RuntimeError: bearer must-not-be-retained",
+                active_command={
+                    "name": "install",
+                    "command": ["--password", "must-not-be-retained"],
+                },
+                installation_attempted=True,
+            )
+            stage = root / ".cache/interactive-appliance-stage"
+            artifact = root / ".cache/interactive-appliance-artifact"
+            stage.mkdir(parents=True)
+            artifact.mkdir()
+            (stage / "private.log").write_text("must-not-be-retained")
+            (artifact / "unverified.qcow2").write_bytes(b"unverified")
+            with mock.patch.dict(os.environ, OUTER_ENVIRONMENT):
+                self.assertTrue(create_outer_failure_evidence(root))
+                expected = outer_failure_record(root)
+            evidence = root / ".cache/interactive-appliance-evidence"
+            retained = json.loads((evidence / "result.json").read_text())
+            self.assertEqual(retained, expected)
+            self.assertEqual(retained["evidence_kind"], "outer-systemd-failure")
+            self.assertEqual(retained["stage"], "installation")
+            self.assertEqual(retained["failed_command"], "install")
+            self.assertFalse(retained["inner_evidence_available"])
+            for claim in (
+                "passed", "guest_booted", "graphical_desktop_observed",
+                "artifact_retained", "independent_reboot_passed", "os_qualified",
+                "release_qualified", "signature_qualified",
+            ):
+                self.assertIs(retained[claim], False)
+            retained_bytes = (evidence / "result.json").read_bytes()
+            self.assertNotIn(b"must-not-be-retained", retained_bytes)
+            self.assertFalse(stage.exists())
+            self.assertFalse(artifact.exists())
+            write_outer_systemd_result(
+                evidence / "systemd-result.txt",
+                Result="exit-code", ActiveState="failed", SubState="failed",
+                ExecMainStatus="1", MemoryPeak=str(3 * 1024**3),
+                CPUUsageNSec="1234567",
+            )
+            self.assertGreater(validate_outer_failure_fixture(root), 0)
+
+    def test_outer_failure_falls_back_without_reading_malformed_atomic_content(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_atomic_outer_failure(
+                root,
+                [{"name": "install", "exit_code": 1, "command": "secret"}],
+                failure="token=must-not-be-retained",
+            )
+            with mock.patch.dict(os.environ, OUTER_ENVIRONMENT):
+                self.assertTrue(create_outer_failure_evidence(root))
+            evidence = root / ".cache/interactive-appliance-evidence"
+            retained = json.loads((evidence / "result.json").read_text())
+            self.assertEqual(retained["stage"], "outer-controller")
+            self.assertEqual(retained["failed_command"], "unknown")
+            self.assertNotIn(
+                b"must-not-be-retained", (evidence / "result.json").read_bytes())
+            write_outer_systemd_result(
+                evidence / "systemd-result.txt",
+                Result="exit-code", ActiveState="failed", SubState="failed",
+                ExecMainStatus="1",
+            )
+            self.assertGreater(validate_outer_failure_fixture(root), 0)
+
+    def test_outer_failure_never_relabels_existing_inner_evidence(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_atomic_outer_failure(
+                root, [{"name": "install", "exit_code": 1}],
+                installation_attempted=True,
+            )
+            evidence = root / ".cache/interactive-appliance-evidence"
+            evidence.mkdir(parents=True)
+            original = b'{"schema":1,"passed":true,"malformed":true}\n'
+            (evidence / "result.json").write_bytes(original)
+            with mock.patch.dict(os.environ, OUTER_ENVIRONMENT):
+                self.assertFalse(create_outer_failure_evidence(root))
+            self.assertEqual((evidence / "result.json").read_bytes(), original)
+            self.assertEqual({path.name for path in evidence.iterdir()}, {"result.json"})
+
+    def test_outer_failure_requires_exact_checkout_and_terminal_failure(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_atomic_outer_failure(
+                root, [{"name": "install", "exit_code": 1}],
+                installation_attempted=True,
+            )
+            with mock.patch.dict(os.environ, OUTER_ENVIRONMENT):
+                self.assertTrue(create_outer_failure_evidence(root))
+            evidence = root / ".cache/interactive-appliance-evidence"
+            write_outer_systemd_result(
+                evidence / "systemd-result.txt",
+                Result="exit-code", ActiveState="failed", SubState="failed",
+                ExecMainStatus="1",
+            )
+            wrong = {
+                "source_commit": "b" * 40,
+                "source_tree": OUTER_ENVIRONMENT["SYMBI_APPLIANCE_SOURCE_TREE"],
+            }
+            with mock.patch.dict(os.environ, OUTER_ENVIRONMENT), \
+                    mock.patch("image.appliance.hosted._checkout_binding", return_value=wrong), \
+                    self.assertRaisesRegex(ValueError, "checkout"):
+                validate_retained_evidence(root)
+            write_outer_systemd_result(evidence / "systemd-result.txt")
+            with self.assertRaisesRegex(ValueError, "systemd success"):
+                validate_outer_failure_fixture(root)
 
     def test_retained_failure_evidence_has_only_controller_and_systemd_records(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -2098,9 +2252,23 @@ class InteractiveApplianceContract(unittest.TestCase):
             step for step in steps
             if step["name"] == "Install and independently reboot the offline graphical appliance")
         self.assertEqual(install_step["id"], "appliance")
+        evidence_upload = next(
+            step for step in steps
+            if step["name"] == "Retain bounded appliance evidence including failures")
+        self.assertEqual(
+            evidence_upload["if"],
+            "${{ always() && steps.appliance.outputs.evidence_ready == 'true' }}",
+        )
+        for name in (
+            "Revalidate the exact public appliance artifact before upload",
+            "Retain the compressed HIGHLY EXPERIMENTAL qcow2 for two days",
+        ):
+            public_step = next(step for step in steps if step["name"] == name)
+            self.assertEqual(public_step["if"], "success()")
         script = (ROOT / "scripts/check-interactive-appliance.sh").read_text()
         self.assertNotIn("| tee", script)
         self.assertIn("--sanitize-failure", script)
+        self.assertIn("--create-outer-failure", script)
         self.assertIn("--validate-evidence", script)
         self.assertNotIn("validated-small-evidence", script)
         self.assertIn("rm -f -- \"$evidence_ready\"", script)
@@ -2127,13 +2295,19 @@ class InteractiveApplianceContract(unittest.TestCase):
         self.assertIn("--property=MemoryMax", script)
         self.assertIn("--property=MemorySwapMax", script)
         self.assertIn("SYMBI_APPLIANCE_EXPECTED_EXPIRY", script)
-        collect = script.index("elif ! write_systemd_result")
+        self.assertIn("SYMBI_APPLIANCE_SOURCE_TREE", script)
+        self.assertIn('source_tree=$(git rev-parse \'HEAD^{tree}\')', script)
+        collect = script.index("capture_systemd_result || true")
         cleanup = script.index("if ! stop_and_reset_unit", collect)
+        create = script.index("if ! create_outer_evidence", cleanup)
+        write = script.index("if ! write_systemd_result", create)
         validate = script.index("elif ! validate_evidence", cleanup)
         output = script.index("printf 'evidence_ready=true", validate)
         self.assertLess(cleanup, output)
         self.assertLess(collect, cleanup)
-        self.assertLess(cleanup, validate)
+        self.assertLess(cleanup, create)
+        self.assertLess(create, write)
+        self.assertLess(write, validate)
         self.assertLess(validate, output)
         prepare = (ROOT / "scripts/check-atomic-image.sh").read_text()
         self.assertIn("RuntimeMaxSec=15min", prepare)

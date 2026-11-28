@@ -49,8 +49,13 @@ PY
 cat > "$commands/git" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
-[[ ${1:-} == rev-parse && ${2:-} == --show-toplevel ]]
-printf '%s\n' "$FIXTURE_ROOT"
+[[ ${1:-} == rev-parse ]] || exit 2
+case "${2:-}" in
+  --show-toplevel) printf '%s\n' "$FIXTURE_ROOT" ;;
+  HEAD) printf 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n' ;;
+  'HEAD^{tree}') printf 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n' ;;
+  *) exit 2 ;;
+esac
 SH
 
 cat > "$commands/sudo" <<'SH'
@@ -175,7 +180,7 @@ status=$?
 set -e
 
 [[ $status -ne 0 ]]
-[[ -e $fixture/validator-observed-stop-race ]]
+[[ ! -e $fixture/validator-observed-stop-race ]]
 [[ ! -s $temporary/github-output ]]
 [[ ! -e $fixture/.cache/interactive-appliance-evidence ]]
 [[ ! -e $fixture/.cache/interactive-appliance-artifact ]]

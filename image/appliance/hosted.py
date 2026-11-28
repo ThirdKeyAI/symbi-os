@@ -93,6 +93,25 @@ EVIDENCE_FILE_LIMITS = {
 }
 SUCCESS_EVIDENCE_FILES = frozenset(EVIDENCE_FILE_LIMITS)
 FAILURE_EVIDENCE_FILES = frozenset({"result.json", "systemd-result.txt"})
+OUTER_FAILURE_KIND = "outer-systemd-failure"
+OUTER_FAILURE_ATOMIC_RESULT_MAX_BYTES = 256 * 1024
+OUTER_FAILURE_COMMAND_STAGES = {
+    "load-image": "image-load",
+    "inspect-image": "image-inspection",
+    "sign-source": "source-authentication",
+    "install": "installation",
+    "disk-loops-after-install": "installation-validation",
+    "interactive-appliance-producer": "producer",
+    "interactive-appliance-reboot": "reboot",
+}
+OUTER_FAILURE_STAGES = frozenset({
+    "outer-controller", "image-load", "image-inspection",
+    "source-authentication", "installation", "installation-validation",
+    "appliance-initialization", "producer", "reboot", "cleanup",
+})
+OUTER_FAILURE_CLEANUP_COMMANDS = frozenset({
+    "disk-loops-cleanup", "disk-loops-absent", "remove-image", "image-absent",
+})
 SYSTEMD_RESULT_KEYS = frozenset({
     "LoadState", "Type", "RemainAfterExit", "ActiveState", "SubState",
     "Result", "OOMPolicy", "MemoryMax", "MemoryPeak", "MemorySwapMax",
@@ -152,6 +171,128 @@ def _manifest_expiry(value=None):
 
 def _schema_one(record):
     return isinstance(record, dict) and type(record.get("schema")) is int and record["schema"] == 1
+
+
+def _explicit_checkout_binding():
+    """Return the workflow-bound checkout without invoking git as root."""
+    commit = os.environ.get("GITHUB_SHA")
+    tree = os.environ.get("SYMBI_APPLIANCE_SOURCE_TREE")
+    if (not isinstance(commit, str) or re.fullmatch(r"[0-9a-f]{40}", commit) is None
+            or not isinstance(tree, str) or re.fullmatch(r"[0-9a-f]{40}", tree) is None):
+        raise ValueError("Explicit appliance checkout binding required")
+    return {"source_commit": commit, "source_tree": tree}
+
+
+def _outer_failure_progress(root, checkout):
+    """Extract only fixed enums and integers from the private Atomic result."""
+    unavailable = ("outer-controller", "unknown")
+    try:
+        raw = _bounded_regular(
+            root / ".cache/atomic-disk-evidence/result.json",
+            OUTER_FAILURE_ATOMIC_RESULT_MAX_BYTES,
+        )
+        record = unique_json(raw)
+        lock = unique_json(_bounded_regular(
+            root / "image/desktop-images.lock.json", 1024 * 1024))
+        selected_commit = lock["images"]["generic"]["tested_commit"]
+    except (OSError, ValueError, TypeError, UnicodeError, json.JSONDecodeError):
+        return unavailable
+    commands = record.get("commands")
+    if (not _schema_one(record) or record.get("passed") is not False
+            or record.get("qualification") != "appliance"
+            or record.get("source_commit") != checkout["source_commit"]
+            or record.get("image_source_commit") != selected_commit
+            or re.fullmatch(r"[0-9a-f]{40}", selected_commit) is None
+            or not isinstance(commands, list) or len(commands) > 256):
+        return unavailable
+    for claim in (
+            "passed", "guest_booted", "graphical_desktop_observed",
+            "artifact_retained", "independent_reboot_passed", "os_qualified",
+            "release_qualified", "signature_qualified"):
+        if claim in record and record[claim] is not False:
+            return unavailable
+
+    def fixed_command(name):
+        stage = OUTER_FAILURE_COMMAND_STAGES.get(name)
+        if stage is not None:
+            return stage, name
+        if (name in OUTER_FAILURE_CLEANUP_COMMANDS
+                or name.startswith("cleanup-")
+                or name.startswith("absent-")
+                or name.startswith("detach-owned-loop-")):
+            return "cleanup", "cleanup"
+        return None
+
+    active = record.get("active_command")
+    if active is not None:
+        if (not isinstance(active, dict) or set(active) != {"name", "command"}
+                or not isinstance(active.get("name"), str)
+                or not isinstance(active.get("command"), list)):
+            return unavailable
+        mapped = fixed_command(active["name"])
+        if mapped is not None:
+            return mapped
+        return unavailable
+    failed = None
+    last_stage = None
+    for item in commands:
+        if (not isinstance(item, dict) or set(item) != {"name", "exit_code"}
+                or not isinstance(item.get("name"), str)
+                or type(item.get("exit_code")) is not int
+                or not 0 <= item["exit_code"] <= 255):
+            return unavailable
+        name, status = item["name"], item["exit_code"]
+        mapped = fixed_command(name)
+        if mapped is not None and mapped[1] != "cleanup":
+            stage = mapped[0]
+            last_stage = stage
+            if status != 0 and failed is None:
+                failed = mapped
+        elif mapped == ("cleanup", "cleanup") and status != 0 and failed is None:
+            failed = mapped
+    if failed is not None:
+        return failed
+    if record.get("installation_completed") is True:
+        stage = "appliance-initialization"
+    elif record.get("installation_attempted") is True:
+        stage = "installation-validation"
+    else:
+        stage = last_stage or "outer-controller"
+    return stage, "unknown"
+
+
+def outer_failure_record(root):
+    """Build a content-free negative receipt for failures before appliance evidence."""
+    root = Path(root).resolve()
+    checkout = _explicit_checkout_binding()
+    stage, command = _outer_failure_progress(root, checkout)
+    if stage not in OUTER_FAILURE_STAGES:
+        raise ValueError("Invalid outer appliance failure stage")
+    cleanup = {
+        "stage_directory_removed": _direct_path_absent(
+            root / ".cache/interactive-appliance-stage"),
+        "user_artifact_absent": _direct_path_absent(
+            root / ".cache/interactive-appliance-artifact"),
+        "screenshot_artifact_absent": _direct_path_absent(
+            root / ".cache/interactive-appliance-evidence/display.ppm"),
+        "non_controller_evidence_removed": True,
+    }
+    return {
+        "schema": 1,
+        "evidence_kind": OUTER_FAILURE_KIND,
+        **{name: False for name in FAILURE_CLAIMS},
+        "source": {
+            "repository": "ThirdKeyAI/symbi-os",
+            "commit": checkout["source_commit"],
+            "tree": checkout["source_tree"],
+        },
+        "stage": stage,
+        "failed_command": command,
+        "failure": "SystemdUnitFailure",
+        "inner_evidence_available": False,
+        "cleanup": cleanup,
+        "scope": SCOPE,
+    }
 
 
 def _bounded_regular(path, maximum):
@@ -589,6 +730,9 @@ def validate_retained_evidence(root, expected_expiry=None):
     if not _schema_one(result):
         raise ValueError("Appliance controller schema changed")
     failure = result.get("passed") is False
+    outer_failure = result.get("evidence_kind") == OUTER_FAILURE_KIND
+    if outer_failure and not failure:
+        raise ValueError("Outer appliance receipt must remain failed")
     if failure:
         if set(entries) != FAILURE_EVIDENCE_FILES:
             _discard_failed_appliance_outputs(root)
@@ -596,8 +740,21 @@ def validate_retained_evidence(root, expected_expiry=None):
         if not _failure_cleanup_complete(root, result):
             _discard_failed_appliance_outputs(root)
             raise ValueError("Appliance failure cleanup is incomplete")
-    source = validate_source_binding(result.get("source_binding"))
     checkout = _checkout_binding(root)
+    if outer_failure:
+        expected_source = {
+            "repository": "ThirdKeyAI/symbi-os",
+            "commit": checkout["source_commit"],
+            "tree": checkout["source_tree"],
+        }
+        if result.get("source") != expected_source:
+            raise ValueError("Outer failure differs from the checkout commit or tree")
+        exact = outer_failure_record(root)
+        if result != exact:
+            raise ValueError("Outer appliance failure receipt changed")
+        _systemd_result(entries["systemd-result.txt"], result)
+        return total
+    source = validate_source_binding(result.get("source_binding"))
     if any(source[name] != value for name, value in checkout.items()):
         raise ValueError("Appliance evidence differs from the checkout commit or tree")
     if failure:
@@ -1118,6 +1275,26 @@ def finalize_failed_appliance_evidence(root):
     return False
 
 
+def create_outer_failure_evidence(root):
+    """Create one content-free receipt when no appliance evidence path was created."""
+    root = Path(root).resolve()
+    evidence = root / ".cache/interactive-appliance-evidence"
+    if not _direct_path_absent(evidence):
+        return False
+    if not _discard_failed_appliance_outputs(root) or not _direct_path_absent(evidence):
+        return False
+    try:
+        _new_directory(evidence)
+        record = outer_failure_record(root)
+        if not _failure_cleanup_complete(root, record):
+            raise ValueError("Outer appliance cleanup is incomplete")
+        _write_controller_record(evidence, record)
+        return True
+    except (OSError, TypeError, UnicodeError, ValueError, json.JSONDecodeError):
+        _discard_failed_appliance_outputs(root)
+        return False
+
+
 def main():
     if (os.environ.get("GITHUB_ACTIONS") != "true"
             or os.environ.get("RUNNER_ENVIRONMENT") != "github-hosted"):
@@ -1128,10 +1305,16 @@ def main():
     if sys.argv[1:] == ["--validate-public-artifact"]:
         validate_public_artifact(Path.cwd().resolve())
         return
-    if sys.argv[1:] != ["--sanitize-failure"] or os.geteuid() != 0:
+    if os.geteuid() != 0:
         raise SystemExit("Use only the hosted failed-appliance sanitizer")
-    if not finalize_failed_appliance_evidence(Path.cwd().resolve()):
-        raise SystemExit("No source-bound appliance failure receipt was available")
+    if sys.argv[1:] == ["--sanitize-failure"]:
+        prepared = finalize_failed_appliance_evidence(Path.cwd().resolve())
+    elif sys.argv[1:] == ["--create-outer-failure"]:
+        prepared = create_outer_failure_evidence(Path.cwd().resolve())
+    else:
+        raise SystemExit("Use only the hosted failed-appliance sanitizer")
+    if not prepared:
+        raise SystemExit("No bounded appliance failure receipt was available")
 
 
 if __name__ == "__main__":
