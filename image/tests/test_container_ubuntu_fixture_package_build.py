@@ -1153,7 +1153,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         ]
         output = (
             "Inst git (1:2.43.0-1ubuntu7.1 Ubuntu:24.04/noble-updates [amd64])\n"
-            "Inst ca-certificates (20240203 Ubuntu:24.04/noble [all])\n"
+            "Inst ca-certificates (20240203 Ubuntu:24.04/noble [all]) []\n"
             "Conf git (1:2.43.0-1ubuntu7.1 Ubuntu:24.04/noble-updates [amd64])\n"
             "Conf ca-certificates (20240203 Ubuntu:24.04/noble [all])\n"
         ).encode()
@@ -1161,11 +1161,53 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         self.assertEqual(result["install_count"], 2)
         for changed in (
             output.replace(b"1:2.43.0-1ubuntu7.1", b"1:2.43.0-1ubuntu7.2", 1),
+            output.replace(b"Inst git (", b"Inst git:all (", 1),
+            output.replace(
+                b"Inst ca-certificates",
+                b"Inst git (1:2.43.0-1ubuntu7.1 Ubuntu:24.04/"
+                b"noble-updates [amd64])\nInst ca-certificates",
+                1,
+            ),
+            output.replace(
+                b"Inst git (1:2.43.0-1ubuntu7.1 Ubuntu:24.04/"
+                b"noble-updates [amd64])\n",
+                b"",
+                1,
+            ),
+            output.replace(
+                b"Conf git (1:2.43.0-1ubuntu7.1 Ubuntu:24.04/"
+                b"noble-updates [amd64])\n",
+                b"",
+                1,
+            ),
             output + b"Remv old-package [1.0]\n",
             output.replace(b"Inst ca-certificates", b"Keep ca-certificates", 1),
+            output.replace(b") []\n", b") [libc6:amd64]\n", 1),
+            output.replace(b") []\n", b") [ ]\n", 1),
+            output.replace(b") []\n", b")  []\n", 1),
+            output.replace(b") []\n", b")[]\n", 1),
+            output.replace(b") []\n", b") [] []\n", 1),
+            output.replace(b") []\n", b") [] trailing\n", 1),
+            b"NOTE: This is only a simulation!\n" + output,
         ):
             with self.subTest(changed=changed), self.assertRaises(ValueError):
                 build.validate_apt_simulation(changed, rows)
+
+    def test_apt_simulation_accepts_observed_empty_dependency_marker(self):
+        rows = [{
+            "package": "libc6",
+            "version": "2.39-0ubuntu8.12",
+            "architecture": "amd64",
+        }]
+        output = (
+            "Inst libc6 (2.39-0ubuntu8.12 Ubuntu:24.04/noble-updates, "
+            "Ubuntu:24.04/noble-security [amd64]) []\n"
+            "Conf libc6 (2.39-0ubuntu8.12 Ubuntu:24.04/noble-updates, "
+            "Ubuntu:24.04/noble-security [amd64])\n"
+        ).encode()
+        result = build.validate_apt_simulation(output, rows)
+        self.assertEqual(result["install_count"], 1)
+        self.assertEqual(result["configure_count"], 1)
 
     def test_commands_are_file_only_no_recommends_no_download_and_no_act(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -1203,6 +1245,10 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         self.assertIn("--no-install-recommends", commands["uris"])
         self.assertIn("--simulate", commands["simulate"])
         self.assertIn("--no-download", commands["simulate"])
+        simulation_note = "APT::Get::Show-User-Simulation-Note=false"
+        self.assertEqual(commands["simulate"].count(simulation_note), 1)
+        self.assertNotIn(simulation_note, commands["update"])
+        self.assertNotIn(simulation_note, commands["uris"])
         self.assertIn("--no-act", commands["dpkg"])
         self.assertIn("--unpack", commands["dpkg"])
         self.assertNotIn("--force-depends", commands["dpkg"])
@@ -1311,6 +1357,18 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                 "-o",
                 "Acquire::IndexTargets::deb::Contents::DefaultEnabled=false",
             ]
+            cases.append(changed)
+
+            simulation_note = "APT::Get::Show-User-Simulation-Note=false"
+            changed = copy.deepcopy(commands)
+            position = changed["simulate"].index(simulation_note)
+            del changed["simulate"][position - 1:position + 1]
+            cases.append(changed)
+
+            changed = copy.deepcopy(commands)
+            position = changed["simulate"].index(simulation_note)
+            changed["simulate"][position] = (
+                "APT::Get::Show-User-Simulation-Note=true")
             cases.append(changed)
 
             changed = copy.deepcopy(commands)

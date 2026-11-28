@@ -1,0 +1,144 @@
+{
+  "artifact": {
+    "bytes": 15640,
+    "compressed_member_bytes": 11870,
+    "crc_passed": true,
+    "digest": "sha256:541a7dd92032df9875801fbb165fd38939668b0c1dee668224de0d1807587a85",
+    "entries": 27,
+    "expires_at": "2026-12-12T06:11:08Z",
+    "id": 15251401689,
+    "name": "container-ubuntu-fixture-package-evidence",
+    "safe_zip": {
+      "all_entries_regular_mode_0600": true,
+      "no_absolute_or_parent_paths": true,
+      "no_casefold_or_normalization_collisions": true,
+      "no_duplicate_paths": true,
+      "no_encrypted_entries": true,
+      "no_links_or_special_nodes": true
+    },
+    "uncompressed_bytes": 59065
+  },
+  "audit": {
+    "archive_members_checked": 27,
+    "artifact_content_executed": false,
+    "command_records_checked": 7,
+    "json_documents_checked": 4,
+    "json_strict_duplicate_free_finite": true,
+    "ledger_phases_checked": 15,
+    "raw_command_streams_checked": 14,
+    "raw_command_streams_match_descriptors": true,
+    "run_head_tree_cross_bound": true
+  },
+  "claims": {
+    "authoritative": false,
+    "candidate_emitted": false,
+    "container_qualified": false,
+    "os_qualified": false,
+    "producer_passed": false,
+    "qualified": false,
+    "release_qualified": false,
+    "selected": false,
+    "signature_qualified": false
+  },
+  "correction": {
+    "apt_simulation_note_disabled_only_for_simulation": true,
+    "arbitrary_output_still_rejected": true,
+    "hosted_production_retest_required": true,
+    "literal_empty_dependency_marker_supported": true,
+    "nonempty_or_extra_trailing_markers_rejected": true,
+    "status": "local-verified-hosted-retest-pending"
+  },
+  "failure": {
+    "apt_simulation": {
+      "bytes": 12151,
+      "configure_rows": 68,
+      "empty_dependency_markers": 1,
+      "install_rows": 68,
+      "sha256": "7bf8ee15d6bfa5a69997857cf1131249657c087079ab7ca191be4dbe8c8dc332",
+      "simulation_note_lines": 4
+    },
+    "apt_uri_plan": {
+      "bytes": 17943,
+      "rows": 68,
+      "sha256": "bd455208d573763d5cb149039ebed08fafb226094781d772537358fee554a482"
+    },
+    "classification": "standard-apt-simulation-output-contract-mismatch",
+    "reason": "offline apt simulation contains removal or unparsed output",
+    "signed_package_rows_retained": false,
+    "uri_destination_identity_replay_passed": true
+  },
+  "ledger": {
+    "bytes": 21105,
+    "last_kind": "packages-download",
+    "last_suite": "noble-security",
+    "phase_count": 15,
+    "schema": 2,
+    "sha256": "479fcad510dd55d3e1490c5882a71fd1b9b0914e2dafdb512367a277256bd3c7",
+    "strict_sequence_end": 15,
+    "strict_sequence_start": 1
+  },
+  "outputs": {
+    "candidate_emitted": false,
+    "package_download_bytes": 0,
+    "package_download_count": 0,
+    "producer_result_emitted": false
+  },
+  "resources": {
+    "primary": {
+      "memory_events": {
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "memory_max_bytes": 2147483648,
+      "memory_peak_bytes": 121270272,
+      "memory_swap_current_bytes": 0,
+      "memory_swap_max_bytes": 0,
+      "memory_swap_peak_bytes": 0,
+      "pids_max": 128,
+      "pids_peak": 16,
+      "zero_swap": true
+    }
+  },
+  "retention": {
+    "candidate_present": false,
+    "post_unit_candidate_validated": false,
+    "private_work_retained": true,
+    "producer_exit_status": 1,
+    "recursive_path_cleanup_performed": false
+  },
+  "run": {
+    "attempt": 1,
+    "branch": "card/P0-05-package-producer",
+    "candidate_upload_step": "skipped",
+    "conclusion": "failure",
+    "event": "workflow_dispatch",
+    "head_sha": "4379d370c43fc72f02bc2afb976bfcda2a8a0ffb",
+    "head_tree": "2fbd319c9371657a48cc3a61d5e49cea92940015",
+    "id": 46115407698,
+    "job_id": 140888003050,
+    "mode": "produce",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46115407698",
+    "workflow": ".github/workflows/ubuntu-fixture-packages.yml"
+  },
+  "schema": 1,
+  "scope": "Fail-closed standard APT simulation parser correction; no candidate, selection or qualification",
+  "verification": {
+    "affected_tests": {
+      "count": 102,
+      "passed": true,
+      "peak_rss_kib": 40884,
+      "swap_operations": 0,
+      "virtual_memory_limit_bytes": 134217728
+    },
+    "evidence_replay": {
+      "configure_rows": 68,
+      "install_rows": 68,
+      "note_removed_stdout_sha256": "ede9a69d76c35fe7aec644057b6033ce62f7bc3ac6539ef580def10a4ff7afe1",
+      "passed": true,
+      "peak_rss_kib": 27152,
+      "swap_operations": 0,
+      "virtual_memory_limit_bytes": 134217728
+    }
+  }
+}

@@ -1086,6 +1086,7 @@ def bind_uri_plan_to_indexes(plan, index_inputs, sources):
 _APT_PLAN_ROW = re.compile(
     r"(Inst|Conf) ([a-z0-9][a-z0-9+.-]*)(?::([a-z0-9]+))?"
     r"(?: \[[^\]\r\n]+\])? \((\S+)(?: [^()\r\n]*)? \[([a-z0-9]+)\]\)"
+    r"(?: \[\])?"
 )
 
 
@@ -1156,8 +1157,11 @@ def _offline_apt_command_argv(apt_root, keyring, roots):
         "update": [*common, "--no-list-cleanup", "update"],
         "uris": [*common, "--quiet=2", "--print-uris", "--download-only",
                  *install],
-        "simulate": [*common, "--quiet=2", "--simulate", "--no-download",
-                      *install],
+        "simulate": [
+            *common,
+            "-o", "APT::Get::Show-User-Simulation-Note=false",
+            "--quiet=2", "--simulate", "--no-download", *install,
+        ],
     }
 
 
