@@ -482,19 +482,21 @@ class AtomicUpdateTests(unittest.TestCase):
 
     def retained_preflight_context(self):
         root = Path(__file__).resolve().parents[2]
-        lock = json.loads((root / "image/desktop-images.lock.json").read_text())
+        fixture = root / "image/tests/fixtures/retained-preflight"
+        lock = json.loads((fixture / "desktop-images.lock.json").read_text())
         pins = json.loads((root / "image/base-images.json").read_text())
         selected = lock["images"]["generic"]
         manifest = require_desktop_image(lock, pins, "generic")
         expected = expected_inputs(root, lock, pins, "generic")
-        readiness = json.loads((root / "image/atomic/preflight.lock.json").read_text())
+        readiness = json.loads((fixture / "preflight.lock.json").read_text())
         return root, selected, manifest, expected, readiness
 
     def retained_preflight_fixture(self, destination):
         source, selected, manifest, expected, readiness = self.retained_preflight_context()
         root = Path(destination)
         (root / "image").mkdir()
-        shutil.copyfile(source / "image/desktop-images.lock.json",
+        fixture = source / "image/tests/fixtures/retained-preflight"
+        shutil.copyfile(fixture / "desktop-images.lock.json",
                         root / "image/desktop-images.lock.json")
         for relative in ("image/boot/probe.py", "image/desktop/verify.py",
                          "image/fonts/verify.py"):
@@ -508,6 +510,13 @@ class AtomicUpdateTests(unittest.TestCase):
                            / str(readiness["preflight_run"]))
         for name in ("inspect.json", "prepare.json", "independent-check.json"):
             shutil.copyfile(source_evidence / name, evidence / name)
+        desktop_source = (source / "docs/security/reports/P0-03-desktop"
+                          / str(selected["run_id"]))
+        desktop_evidence = (root / "docs/security/reports/P0-03-desktop"
+                            / str(selected["run_id"]))
+        desktop_evidence.mkdir(parents=True)
+        shutil.copyfile(desktop_source / "preparation.json",
+                        desktop_evidence / "preparation.json")
         validate_retained_preflight(root, readiness, selected, manifest, expected)
         return root, selected, manifest, expected, copy.deepcopy(readiness), evidence
 
@@ -526,37 +535,72 @@ class AtomicUpdateTests(unittest.TestCase):
     def test_hosted_controller_imports(self):
         self.assertTrue(callable(run_update))
 
+    def test_current_preflight_is_pending_for_the_integrated_image_lock(self):
+        root = Path(__file__).resolve().parents[2]
+        lock_path = root / "image/desktop-images.lock.json"
+        lock = json.loads(lock_path.read_text())
+        pins = json.loads((root / "image/base-images.json").read_text())
+        readiness = json.loads((root / "image/atomic/preflight.lock.json").read_text())
+        selected = lock["images"]["generic"]
+        current_lock_sha256 = hashlib.sha256(lock_path.read_bytes()).hexdigest()
+
+        self.assertEqual((selected["tested_commit"], selected["run_id"],
+                          selected["artifact"]["id"]),
+                         ("22c751096e47d2f5ff74d8e5963a7079fa24576f",
+                          46091256475, 15241381990))
+        nvidia = lock["images"]["nvidia"]
+        self.assertEqual((nvidia["tested_commit"], nvidia["run_id"],
+                          nvidia["artifact"]["id"]),
+                         ("d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+                          45908299514, 15158529973))
+        self.assertEqual(readiness["status"],
+                         "pending-reviewed-integrated-head-preflight")
+        self.assertIs(readiness["selected"], False)
+        self.assertEqual(readiness["desktop_images_lock_sha256"],
+                         current_lock_sha256)
+        self.assertEqual(readiness["required_next_gate"],
+                         "run-and-review-generic-atomic-preflight-at-integrated-head")
+        self.assertTrue(readiness["claims"])
+        self.assertTrue(all(value is False for value in readiness["claims"].values()))
+        historical = readiness["historical_reviewed_preflight"]
+        self.assertNotEqual(historical["desktop_images_lock_sha256"],
+                            current_lock_sha256)
+        for key in ("complete_lock_matches", "integrated_probe_matches", "selected"):
+            self.assertIs(historical[key], False)
+        self.assertTrue((root / historical["evidence"]).is_file())
+
+        manifest = require_desktop_image(lock, pins, "generic")
+        expected = expected_inputs(root, lock, pins, "generic")
+        with self.assertRaisesRegex(ValueError, "Unknown preflight readiness"):
+            validate_retained_preflight(root, readiness, selected, manifest, expected)
+
     def test_retained_preflight_matches_the_complete_current_image_lock(self):
-        root, selected, manifest, expected, readiness = self.retained_preflight_context()
-        reports = validate_retained_preflight(
-            root, readiness, selected, manifest, expected)
-        current_lock_sha256 = hashlib.sha256(
-            (root / "image/desktop-images.lock.json").read_bytes()).hexdigest()
-        self.assertEqual(reports["prepare"]["lock_sha256"], current_lock_sha256)
-
-        stale_run = 45901694620
-        stale_path = root / "docs/security/reports/P0-03-atomic-preflight" / str(stale_run)
-        stale = {
-            **readiness,
-            "preflight_run": stale_run,
-            "source_commit": "370ac0af566cd94d7452fd415c59d3def9619b85",
-            "inspect_sha256": hashlib.sha256(
-                (stale_path / "inspect.json").read_bytes()).hexdigest(),
-            "prepare_sha256": hashlib.sha256(
-                (stale_path / "prepare.json").read_bytes()).hexdigest(),
-        }
-        with self.assertRaisesRegex(ValueError, "Exact saved-image preflight"):
-            validate_retained_preflight(root, stale, selected, manifest, expected)
-
-        mismatched_report = {**readiness, "inspect_sha256": "0" * 64}
-        with self.assertRaisesRegex(ValueError, "evidence bytes changed"):
-            validate_retained_preflight(
-                root, mismatched_report, selected, manifest, expected)
-
         with tempfile.TemporaryDirectory() as temporary:
             fixture = self.retained_preflight_fixture(temporary)
             fixture_root, fixture_selected, fixture_manifest, fixture_expected, \
                 fixture_readiness, evidence = fixture
+            reports = validate_retained_preflight(
+                fixture_root, fixture_readiness, fixture_selected,
+                fixture_manifest, fixture_expected)
+            current_lock_sha256 = hashlib.sha256(
+                (fixture_root / "image/desktop-images.lock.json").read_bytes()).hexdigest()
+            self.assertEqual(reports["prepare"]["lock_sha256"], current_lock_sha256)
+
+            stale = {
+                **fixture_readiness,
+                "source_commit": "370ac0af566cd94d7452fd415c59d3def9619b85",
+            }
+            with self.assertRaisesRegex(ValueError, "Exact saved-image preflight"):
+                validate_retained_preflight(
+                    fixture_root, stale, fixture_selected,
+                    fixture_manifest, fixture_expected)
+
+            mismatched_report = {**fixture_readiness, "inspect_sha256": "0" * 64}
+            with self.assertRaisesRegex(ValueError, "evidence bytes changed"):
+                validate_retained_preflight(
+                    fixture_root, mismatched_report, fixture_selected,
+                    fixture_manifest, fixture_expected)
+
             item = json.loads((evidence / "inspect.json").read_text())
             item["cgroup_final"]["cpu.stat"] += "\n"
             (evidence / "inspect.json").write_text(json.dumps(item) + "\n")
@@ -565,23 +609,25 @@ class AtomicUpdateTests(unittest.TestCase):
                     fixture_root, fixture_readiness, fixture_selected,
                     fixture_manifest, fixture_expected)
 
-        boolean_schema = {**readiness, "schema": True}
-        with self.assertRaisesRegex(ValueError, "Unknown preflight readiness"):
-            validate_retained_preflight(
-                root, boolean_schema, selected, manifest, expected)
-        for field, value in (("preflight_run", -1),
-                             ("preflight_run", "../../45910498271"),
-                             ("repository_id", True),
-                             ("evidence_artifact_id", True),
-                             ("evidence_artifact_bytes", -1),
-                             ("evidence_artifact_sha256", 1),
-                             ("inspect_sha256", 1),
-                             ("kernel_observation_sha256", True),
-                             ("manifest_digest", True)):
-            with self.subTest(field=field), self.assertRaisesRegex(
-                    ValueError, "Unknown preflight readiness"):
+            boolean_schema = {**fixture_readiness, "schema": True}
+            with self.assertRaisesRegex(ValueError, "Unknown preflight readiness"):
                 validate_retained_preflight(
-                    root, {**readiness, field: value}, selected, manifest, expected)
+                    fixture_root, boolean_schema, fixture_selected,
+                    fixture_manifest, fixture_expected)
+            for field, value in (("preflight_run", -1),
+                                 ("preflight_run", "../../45910498271"),
+                                 ("repository_id", True),
+                                 ("evidence_artifact_id", True),
+                                 ("evidence_artifact_bytes", -1),
+                                 ("evidence_artifact_sha256", 1),
+                                 ("inspect_sha256", 1),
+                                 ("kernel_observation_sha256", True),
+                                 ("manifest_digest", True)):
+                with self.subTest(field=field), self.assertRaisesRegex(
+                        ValueError, "Unknown preflight readiness"):
+                    validate_retained_preflight(
+                        fixture_root, {**fixture_readiness, field: value},
+                        fixture_selected, fixture_manifest, fixture_expected)
 
     def test_retained_preflight_rejects_envelope_and_resource_mutations(self):
         mutations = (
@@ -738,6 +784,28 @@ class AtomicUpdateTests(unittest.TestCase):
                     validate_retained_preflight(
                         root, readiness, selected, manifest, expected)
 
+    def test_retained_preflight_binds_the_desktop_preparation_file_count(self):
+        for case in ("changed preparation", "linked evidence"):
+            with self.subTest(case), tempfile.TemporaryDirectory() as temporary:
+                root, selected, manifest, expected, readiness, _evidence = \
+                    self.retained_preflight_fixture(temporary)
+                desktop = (root / "docs/security/reports/P0-03-desktop"
+                           / str(selected["run_id"]))
+                if case == "changed preparation":
+                    path = desktop / "preparation.json"
+                    prepared = json.loads(path.read_text())
+                    prepared["overlay"].pop(next(iter(prepared["overlay"])))
+                    path.write_text(json.dumps(prepared) + "\n")
+                    message = "Retained desktop preparation changed"
+                else:
+                    target = desktop.with_name(desktop.name + "-target")
+                    desktop.rename(target)
+                    desktop.symlink_to(target.name, target_is_directory=True)
+                    message = "Linked retained desktop evidence"
+                with self.assertRaisesRegex(ValueError, message):
+                    validate_retained_preflight(
+                        root, readiness, selected, manifest, expected)
+
     def test_retained_preflight_rejects_unsafe_report_files(self):
         for case in ("symlink", "hardlink", "fifo", "oversize", "parent-symlink"):
             with self.subTest(case), tempfile.TemporaryDirectory() as temporary:
@@ -828,11 +896,15 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertLess(selected["run_id"], current["images"]["generic"]["run_id"])
         evidence_path = root / current["images"]["generic"]["evidence"]
         evidence = json.loads(evidence_path.read_text())
-        self.assertEqual(evidence["source_commit"], current["images"]["generic"]["tested_commit"])
-        self.assertEqual(evidence["image_manifest_sha256"],
-                         current["images"]["generic"]["manifest_sha256"])
-        self.assertEqual(evidence["hosted_image_artifact"]["id"],
+        self.assertEqual(evidence["run"]["head_sha"],
+                         current["images"]["generic"]["tested_commit"])
+        self.assertEqual(evidence["manifest"],
+                         current["images"]["generic"]["manifest"])
+        self.assertEqual(evidence["image_artifact"]["id"],
                          current["images"]["generic"]["artifact"]["id"])
+        self.assertEqual(evidence["image_artifact"]["server_digest"],
+                         "sha256:" + current["images"]["generic"]["artifact"]["sha256"])
+        self.assertEqual(evidence["checks"]["installed_files_checked"], 213)
 
         changed = copy.deepcopy(config)
         changed["image"]["tested_commit"] = current["images"]["generic"]["tested_commit"]

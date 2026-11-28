@@ -18,10 +18,14 @@ from image.appliance.contract import (ARTIFACT_NAME, SCOPE, SDDM_CONFIGURATION,
     validate_source_binding)
 from image.appliance.hosted import (_installed_desktop_bindings,
                                     invalidate_appliance_output, produce_appliance)
+from image.appliance.prerequisite import (DOWNLOAD_WORKING_MARGIN_BYTES,
+    require_download_capacity, required_free_before_download,
+    validate_appliance_prerequisites)
 from image.appliance.reboot import (bounded_log, ppm_observation,
                                     require_empty_output)
-from image.appliance.verify import bound_regular, path_absent, reviewed_launcher
-from image.atomic.hosted import enforce_appliance_final_status
+from image.appliance.verify import (bound_regular, observe_bounded_walker,
+                                    path_absent, reviewed_launcher)
+from image.atomic.hosted import MINIMUM_DISK_FREE_BYTES, enforce_appliance_final_status
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -60,6 +64,14 @@ def guest(expected):
                             "persistent_units_absent": True, "credentials_absent": True},
         "desktop_components": {"Hyprland": True, "Waybar": True, "Walker": True,
                                "portal": True, "first_login_seeded": True},
+        "walker_launch": {
+            "unit": "symbi-appliance-walker.service", "executable": "/usr/bin/walker",
+            "observed": True, "stop_succeeded": True, "stopped": True,
+            "timeout_seconds": 30,
+            "limits": {"memory_max": "512M", "memory_swap_max": "0",
+                       "cpu_quota": "100%", "tasks_max": "64",
+                       "runtime_max_seconds": "60", "no_new_privileges": "yes"},
+        },
         "scope": SCOPE,
     }
 
@@ -114,6 +126,15 @@ class InteractiveApplianceContract(unittest.TestCase):
             self.assertNotIn("user,", joined)
         self.assertIn("gtk,gl=off", user_launch_arguments())
 
+    def test_both_hosted_boots_use_reviewed_tcg_topology(self):
+        for command in (provision_qemu_arguments(), reboot_qemu_arguments()):
+            self.assertEqual(command[command.index("-accel") + 1], "tcg,thread=multi")
+            self.assertEqual(
+                command[command.index("-smp") + 1],
+                "cpus=2,sockets=1,cores=2,threads=1",
+            )
+            self.assertNotIn("tcg,thread=single", command)
+
     def test_reboot_uses_overlay_instead_of_writable_retained_disk(self):
         joined = " ".join(reboot_qemu_arguments())
         self.assertIn("file=/output/reboot-overlay.qcow2", joined)
@@ -140,8 +161,54 @@ class InteractiveApplianceContract(unittest.TestCase):
         self.assertNotIn("CAP_SYS_ADMIN", verifier_unit)
         self.assertIn("persistent_scripts_absent", verify)
         self.assertIn("persistent_units_absent", verify)
+        self.assertIn("observe_bounded_walker(account.pw_uid)", verify)
+        self.assertIn('"/usr/bin/systemd-run", "--user", "--collect"', verify)
+        self.assertIn("executable in user_executables(uid)", verify)
+        self.assertNotIn('"Walker": True', verify)
         self.assertIn("HIGHLY EXPERIMENTAL disposable development appliance only", SDDM_CONFIGURATION)
         self.assertIn("no password or key", SDDM_CONFIGURATION)
+
+    def test_walker_acceptance_launches_observes_and_stops_bounded_unit(self):
+        processes = [set(), {"/usr/bin/walker"}, set()]
+        with mock.patch("image.appliance.verify.user_executables",
+                        side_effect=processes), \
+                mock.patch("image.appliance.verify.run") as launch, \
+                mock.patch("image.appliance.verify.user_systemctl",
+                           return_value=mock.Mock(returncode=0)) as systemctl:
+            evidence = observe_bounded_walker(1000)
+        command = launch.call_args.args[0]
+        for argument in ("--collect", "--service-type=exec", "--property=MemoryMax=512M",
+                         "--property=MemorySwapMax=0", "--property=CPUQuota=100%",
+                         "--property=TasksMax=64", "--property=RuntimeMaxSec=60",
+                         "--property=NoNewPrivileges=yes", "/usr/bin/walker"):
+            self.assertIn(argument, command)
+        self.assertTrue(evidence["observed"])
+        self.assertTrue(evidence["stop_succeeded"])
+        self.assertTrue(evidence["stopped"])
+        self.assertEqual(systemctl.call_args_list[1].args,
+                         ("stop", "symbi-appliance-walker.service"))
+
+        with mock.patch("image.appliance.verify.user_executables",
+                        return_value={"/usr/bin/walker"}), \
+                mock.patch("image.appliance.verify.run") as no_launch:
+            with self.assertRaisesRegex(ValueError, "already running"):
+                observe_bounded_walker(1000)
+        no_launch.assert_not_called()
+
+    def test_walker_rejects_nonzero_stop_even_after_process_absence(self):
+        processes = [set(), {"/usr/bin/walker"}, set()]
+        results = [mock.Mock(returncode=0), mock.Mock(returncode=1),
+                   mock.Mock(returncode=0)]
+        with mock.patch("image.appliance.verify.user_executables",
+                        side_effect=processes) as executables, \
+                mock.patch("image.appliance.verify.run"), \
+                mock.patch("image.appliance.verify.user_systemctl",
+                           side_effect=results) as systemctl:
+            with self.assertRaisesRegex(ValueError, "did not stop successfully"):
+                observe_bounded_walker(1000)
+        self.assertEqual(executables.call_count, 3)
+        self.assertEqual(systemctl.call_args_list[1].args,
+                         ("stop", "symbi-appliance-walker.service"))
 
     def test_source_binding_rejects_every_identity_change(self):
         original = source_binding()
@@ -165,6 +232,11 @@ class InteractiveApplianceContract(unittest.TestCase):
             ("fixture_user", {**report["fixture_user"], "password_locked": False}),
             ("fixture_cleanup", {**report["fixture_cleanup"], "persistent_units_absent": False}),
             ("desktop_components", {**report["desktop_components"], "portal": False}),
+            ("walker_launch", {**report["walker_launch"], "observed": False}),
+            ("walker_launch", {**report["walker_launch"], "stop_succeeded": False}),
+            ("walker_launch", {**report["walker_launch"], "stopped": False}),
+            ("walker_launch", {**report["walker_launch"], "limits": {
+                **report["walker_launch"]["limits"], "memory_max": "1G"}}),
         ]
         for key, value in changes:
             changed = copy.deepcopy(report); changed[key] = value
@@ -434,6 +506,26 @@ class InteractiveApplianceContract(unittest.TestCase):
         self.assertNotIn(".cache/atomic-image-evidence/", workflow)
         self.assertNotIn("pull_request:", workflow)
         self.assertNotIn("push:", workflow)
+        steps = document["jobs"]["produce"]["steps"]
+        self.assertEqual(document["jobs"]["produce"]["timeout-minutes"], 240)
+        expected_timeouts = {
+            "Check out the explicitly selected producer revision": 5,
+            "Require reviewed preflight and runner capacity before download": 2,
+            "Download the exact retained generic development OCI": 20,
+            "Verify metadata and stream the exact retained OCI": 20,
+            "Install and independently reboot the offline graphical appliance": 130,
+            "Retain bounded appliance evidence including failures": 10,
+            "Retain the compressed HIGHLY EXPERIMENTAL qcow2 for two days": 30,
+        }
+        self.assertEqual({step["name"]: step["timeout-minutes"] for step in steps},
+                         expected_timeouts)
+        self.assertEqual(sum(expected_timeouts.values()), 217)
+        self.assertEqual(240 - sum(expected_timeouts.values()), 23)
+        gate = workflow.index("python3 -m image.appliance.prerequisite")
+        download = workflow.index("Download the exact retained generic development OCI")
+        self.assertLess(gate, download)
+        self.assertIn("timeout 30 gh api", workflow)
+        self.assertIn("timeout 900 gh api", workflow)
         evidence_step = workflow.index("Retain bounded appliance evidence including failures")
         qcow2_step = workflow.index("Retain the compressed HIGHLY EXPERIMENTAL qcow2")
         self.assertLess(evidence_step, qcow2_step)
@@ -441,6 +533,27 @@ class InteractiveApplianceContract(unittest.TestCase):
         self.assertNotIn("| tee", script)
         self.assertIn("--sanitize-failure", script)
         self.assertIn("> 4096", script)
+        self.assertIn("RuntimeMaxSec=115min", script)
+        prepare = (ROOT / "scripts/check-atomic-image.sh").read_text()
+        self.assertIn("RuntimeMaxSec=15min", prepare)
+
+    def test_pre_download_gate_rejects_pending_selector_before_capacity(self):
+        with mock.patch("image.appliance.prerequisite.require_download_capacity") as capacity:
+            with self.assertRaisesRegex(ValueError, "Unknown preflight readiness"):
+                validate_appliance_prerequisites(ROOT, available_bytes=10**15)
+        capacity.assert_not_called()
+
+    def test_pre_download_capacity_has_controller_floor_and_working_margin(self):
+        lock = json.loads((ROOT / "image/desktop-images.lock.json").read_text())
+        selected = lock["images"]["generic"]
+        self.assertEqual(selected["artifact"]["bytes"], 4177424549)
+        expected = (MINIMUM_DISK_FREE_BYTES + selected["artifact"]["bytes"]
+                    + DOWNLOAD_WORKING_MARGIN_BYTES)
+        self.assertEqual(expected, 69675675813)
+        self.assertEqual(required_free_before_download(selected), expected)
+        self.assertEqual(require_download_capacity(selected, expected), expected)
+        with self.assertRaisesRegex(ValueError, "before downloading"):
+            require_download_capacity(selected, expected - 1)
 
     def test_hosted_hook_never_changes_the_production_oci(self):
         hosted = (ROOT / "image/atomic/hosted.py").read_text()
