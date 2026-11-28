@@ -1972,7 +1972,8 @@ def _prepare_offline_tree(work, lock, releases, metadata_inputs,
             metadata_inputs[suite + "_main_binary-amd64_Packages.xz"],
             index_dir / "Packages.xz")
     for relative in (
-            "etc/apt", "var/lib/apt/lists/partial", "var/cache/apt/archives/partial",
+            "etc/apt/sources.list.d", "var/lib/apt/lists/partial",
+            "var/cache/apt/archives/partial",
             "var/lib/dpkg/updates", "var/lib/dpkg/info", "var/lib/dpkg/triggers"):
         (apt_root / relative).mkdir(parents=True, mode=0o700)
     status_path = apt_root / "var/lib/dpkg/status"
@@ -2044,8 +2045,10 @@ def _produce(root, lock, contract, work, evidence, output, runner,
     keyring = root / contract["retained_inputs"]["archive_keyring"]
     commands = build.offline_apt_commands(
         apt_root, repository, keyring, lock["package_request"]["roots"])
+    sources = build.validate_offline_sources_list(
+        commands.get("sources_list"), repository, keyring, lock["sources"])
     sources_path = apt_root / "etc/apt/sources.list"
-    sources_path.write_text(commands["sources_list"], encoding="utf-8")
+    sources_path.write_text(sources, encoding="utf-8")
     os.chmod(sources_path, 0o600)
     command_rows = {}
     for name in ("update", "uris"):

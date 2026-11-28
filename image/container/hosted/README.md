@@ -200,9 +200,13 @@ cold load, selection or qualification is enabled by this slice.
 The manual ubuntu-fixture-packages.yml workflow remains workflow_dispatch only.
 Its checked-in contract is now ready with the six exact InRelease and
 Packages.xz byte/hash identities independently reviewed from run 46070755519.
-The ready state rejects discovery and permits only the still-unrun production
-path. No candidate, selection, producer pass, image consumer or qualification
-claim follows from the pin review.
+The ready state rejects discovery and permits only production. The first
+production attempt authenticated all pins and then failed before package
+planning because its source-list value repeated etc/apt below the private APT
+root. The corrected command binds an explicit private Dir::Etc, one private
+source list and an empty private source-parts directory. No candidate,
+selection, producer pass, image consumer or qualification claim follows before
+an exact rerun.
 
 The wrapper creates a bounded
 transient unit for either mode; inside it, pending `produce` refuses before
@@ -240,13 +244,13 @@ upload. The candidate manifest still keeps `producer_passed` and every
 verification/selection/qualification field false; structured raw evidence is
 external and cannot turn those booleans true.
 
-The Python validator is authoritative for discovery. Before a `produce` run can
-be enabled, the staged offline APT source rows must also impose exact
-per-source `valid-until-max` bounds: 1,830 days for noble and 14 days for
-noble-updates and noble-security. That independent APT freshness gate is not
-implemented here, so production remains blocked even after discovery yields six
-reviewed byte/hash pins. Each exact discovery artifact must be inspected before
-pins are copied into the contract. A later `produce` dispatch remains
+The Python validator authenticates each Release before production. The staged
+offline APT source rows independently impose exact per-source
+`valid-until-max` bounds: 1,830 days for noble and 14 days for noble-updates
+and noble-security, with `Check-Valid-Until` enabled. Production revalidates
+the complete exact row set before writing the private source list or running
+APT. Each exact discovery artifact must be inspected before pins are copied
+into the contract. A later `produce` dispatch remains
 unselected; selecting its real run, artifact and byte identities is a separate
 committed review, and only that can unblock an offline
 `docker build --network=none` change.

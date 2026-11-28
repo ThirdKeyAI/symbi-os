@@ -1151,6 +1151,100 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         self.assertIn("--unpack", commands["dpkg"])
         self.assertNotIn("--force-depends", commands["dpkg"])
 
+    def test_offline_apt_paths_resolve_only_inside_the_private_root(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            apt_root = (base / "apt-root").resolve()
+            commands = build.offline_apt_commands(
+                apt_root, base / "repo", base / "archive.gpg",
+                packages.EXPECTED_REQUEST["roots"],
+            )
+
+        expected_options = {
+            "Dir": str(apt_root),
+            "Dir::Etc": "etc/apt",
+            "Dir::Etc::sourcelist": "sources.list",
+            "Dir::Etc::sourceparts": "sources.list.d",
+        }
+        for name in ("update", "uris", "simulate"):
+            argv = commands[name]
+            options = {
+                argv[index + 1].split("=", 1)[0]:
+                argv[index + 1].split("=", 1)[1]
+                for index, value in enumerate(argv[:-1])
+                if value == "-o" and "=" in argv[index + 1]
+            }
+            self.assertEqual(
+                {key: options.get(key) for key in expected_options},
+                expected_options,
+            )
+            apt_etc = Path(options["Dir"]) / options["Dir::Etc"]
+            self.assertEqual(
+                apt_etc / options["Dir::Etc::sourcelist"],
+                apt_root / "etc/apt/sources.list",
+            )
+            self.assertEqual(
+                apt_etc / options["Dir::Etc::sourceparts"],
+                apt_root / "etc/apt/sources.list.d",
+            )
+            self.assertNotIn(
+                "Dir::Etc::sourcelist=etc/apt/sources.list", argv)
+            self.assertNotIn("Dir::Etc::sourceparts=-", argv)
+            self.assertNotIn("/etc/apt/sources.list", argv)
+            self.assertNotIn("/etc/apt/sources.list.d", argv)
+
+    def test_offline_source_rows_bind_each_reviewed_freshness_limit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            repository = (base / "repo").resolve()
+            keyring = (base / "archive.gpg").resolve()
+            rendered = build.offline_sources_list(
+                repository, keyring, packages.EXPECTED_SOURCES)
+
+        expected = []
+        for source, maximum_days in zip(
+                packages.EXPECTED_SOURCES, (1830, 14, 14), strict=True):
+            suite = source["suite"]
+            expected.append(
+                "deb [arch=amd64 "
+                f"signed-by={keyring} "
+                "check-valid-until=yes "
+                f"valid-until-max={maximum_days * 24 * 60 * 60}] "
+                f"{(repository / suite).as_uri()} {suite} main"
+            )
+        self.assertEqual(rendered, "\n".join(expected) + "\n")
+        self.assertEqual(rendered.count("check-valid-until=yes"), 3)
+        self.assertEqual(rendered.count("valid-until-max=1209600"), 2)
+        self.assertEqual(rendered.count("valid-until-max=158112000"), 1)
+
+    def test_offline_source_validator_rejects_missing_or_changed_freshness(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            repository = base / "repo"
+            keyring = base / "archive.gpg"
+            rendered = build.offline_sources_list(
+                repository, keyring, packages.EXPECTED_SOURCES)
+            cases = (
+                rendered.replace(" check-valid-until=yes", "", 1),
+                rendered.replace("check-valid-until=yes",
+                                 "check-valid-until=no", 1),
+                rendered.replace(" valid-until-max=158112000", "", 1),
+                rendered.replace("valid-until-max=158112000",
+                                 "valid-until-max=1209600", 1),
+                rendered + "deb file:///etc/apt noble main\n",
+            )
+            for changed in cases:
+                with self.subTest(changed=changed), self.assertRaises(ValueError):
+                    build.validate_offline_sources_list(
+                        changed, repository, keyring,
+                        packages.EXPECTED_SOURCES)
+            self.assertEqual(
+                build.validate_offline_sources_list(
+                    rendered, repository, keyring,
+                    packages.EXPECTED_SOURCES),
+                rendered,
+            )
+
     def test_exact_download_is_streamed_and_failed_private_bytes_are_retained(self):
         url = "https://archive.ubuntu.com/ubuntu/pool/main/p/pkg.deb"
         payload = b"0123456789" * 10000
