@@ -1,0 +1,154 @@
+{
+  "artifact": {
+    "api_and_local_digest_match": true,
+    "bytes": 10350,
+    "compressed_member_bytes": 7116,
+    "crc_passed": true,
+    "digest": "sha256:86f4efe9832147004c0fbe508f1ea0779ec8173281b60a5947e7b483060a445e",
+    "entries": 23,
+    "id": 15243540370,
+    "name": "container-ubuntu-fixture-package-evidence",
+    "safe_zip": {
+      "all_entries_regular_mode_0600": true,
+      "no_absolute_or_parent_paths": true,
+      "no_duplicate_paths": true,
+      "no_encrypted_entries": true,
+      "no_links_or_special_nodes": true
+    },
+    "uncompressed_bytes": 34836
+  },
+  "audit": {
+    "command_stream_receipts_bound": 14,
+    "contract_and_lock_cross_bound": true,
+    "freshness_authenticated": true,
+    "json_strict_duplicate_free": true,
+    "ledger_phases_checked": 15,
+    "metadata_pins_match_reviewed_contract": true,
+    "metadata_signatures_authenticated": true,
+    "offline_sources_exact_private_file_repositories_only": true,
+    "rootfs_authenticated": true,
+    "run_head_tree_job_cross_bound": true
+  },
+  "claims": {
+    "authoritative": false,
+    "candidate_emitted": false,
+    "container_qualified": false,
+    "os_qualified": false,
+    "producer_passed": false,
+    "qualified": false,
+    "release_qualified": false,
+    "selected": false,
+    "signature_qualified": false
+  },
+  "correction": {
+    "complete_ordered_apt_argv_required": true,
+    "fixed_offline_option": "Acquire::IndexTargets::deb::CNF::DefaultEnabled=false",
+    "fresh_exact_head_run_required": true,
+    "status": "implemented-unrun",
+    "strict_command_policy_validator": true
+  },
+  "failure": {
+    "apt_update": {
+      "stderr": {
+        "bytes": 1205,
+        "sha256": "f56dfa1bec395566dab776f2ef28cd01add92f821fc392d4192e276b7ecfbe29"
+      },
+      "stdout": {
+        "bytes": 7409,
+        "sha256": "682433af241ca908530ff451c2984dff041e03fe0b832b29e699bf03b546037c"
+      }
+    },
+    "classification": "apt-global-command-not-found-index-target",
+    "first_failed_gate": "offline-apt-update",
+    "host_etc_apt_sources_used": false,
+    "http_or_https_sources_used": false,
+    "missing_index": "main/cnf/Commands-amd64",
+    "reason": "global command-not-found index target requested an index absent from the fixed file repositories",
+    "requested_suites": [
+      "noble",
+      "noble-updates",
+      "noble-security"
+    ],
+    "timed_out": false
+  },
+  "ledger": {
+    "bytes": 21105,
+    "last_kind": "packages-download",
+    "last_suite": "noble-security",
+    "phase_count": 15,
+    "schema": 2,
+    "sha256": "50a76a0c6e3bbea0a379d94cd3e7b1e82e561ec419b78c22c2ff39f60b90aae4",
+    "state": "partial-evidence",
+    "strict_sequence_end": 15,
+    "strict_sequence_start": 1
+  },
+  "outputs": {
+    "candidate_emitted": false,
+    "candidate_upload_step": "skipped",
+    "post_unit_candidate_validated": false,
+    "producer_result_emitted": false
+  },
+  "provenance": {
+    "cgroup_final": {
+      "bytes": 865,
+      "sha256": "f980b5fdcff17411715e60555e24ff93719e794fa96914437ed8577127bc939f"
+    },
+    "cleanup": {
+      "bytes": 261,
+      "sha256": "e392aaa76691649ecb99169717f48f56a2d94fbc6f5613273e29abe2252817d7"
+    },
+    "contract_sha256": "2a7e36739933aea9d4e2d16e9c9d7dcd45f719f69fe33066f38ad1bc133224d8",
+    "hosted_stderr": {
+      "bytes": 305,
+      "sha256": "a29689911e435c742bc45b90782c450ad3cc1ac702bf4acb6c1d4a91d35ca4f4"
+    },
+    "lock_sha256": "94d6f84024639b880060ac93825b4d3f1408f9f3a73b6e8087faac1748268b6c",
+    "systemd_fallback": {
+      "bytes": 750,
+      "sha256": "d3e907337d0e68320b7f324b9e43c9655b402a043f3611924bbcb384caaed99e"
+    },
+    "systemd_result": {
+      "bytes": 353,
+      "sha256": "1978c4d5c823c2b4d6ff064dfc3ce84251c8ae2051fb564fc6c5a4a70401da36"
+    }
+  },
+  "resources": {
+    "cpu_max": "100000 100000",
+    "memory_events": {
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memory_max_bytes": 2147483648,
+    "memory_peak_bytes": 86925312,
+    "memory_swap_current_bytes": 0,
+    "memory_swap_max_bytes": 0,
+    "memory_swap_peak_bytes": 0,
+    "pids_max": 128,
+    "pids_peak": 13,
+    "zero_swap": true
+  },
+  "retention": {
+    "candidate_present": false,
+    "post_unit_candidate_validated": false,
+    "private_work_retained": true,
+    "producer_exit_status": 1,
+    "recursive_path_cleanup_performed": false
+  },
+  "run": {
+    "attempt": 1,
+    "branch": "card/P0-05-package-producer",
+    "conclusion": "failure",
+    "event": "workflow_dispatch",
+    "head_sha": "28af0bafd8240defc89de790ecef793c7b5a2603",
+    "head_tree": "c3e520ca27ee7ff19b29f1e3fbacec7913a560b5",
+    "id": 46095238182,
+    "job_id": 140824964401,
+    "mode": "produce",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46095238182",
+    "workflow": ".github/workflows/ubuntu-fixture-packages.yml"
+  },
+  "schema": 1,
+  "scope": "Failed unselected production attempt; authenticated private file repositories only, with no package candidate, selection or qualification"
+}
