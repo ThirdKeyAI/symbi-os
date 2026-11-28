@@ -77,6 +77,18 @@ mouse bindings and paired actions such as Alt+Tab. Execution arguments, personal
 paths and shell contents are omitted. It is reference data, not a configuration
 loader or a claim that these actions work in Symbi OS.
 
+The static [coverage ledger](../image/desktop/shortcut-coverage.json) accounts
+for every reference entry against the current source overlay: 56 have a
+non-no-op handler, 14 keep their chord as an explicit no-op reservation, and
+120 remain blocked because the overlay has no corresponding binding. Here,
+`implemented` means only that source code contains a reviewed handler. The
+validator makes no claim about compositor parsing, installed commands, desktop
+interaction, boot, OS qualification or security qualification. Any reference
+count or order change, unaccounted overlay chord, reused chord, or handler,
+description and option change requires an explicit ledger update. The checker
+also rejects block comments, control-flow wrappers and executable Lua outside
+the exact one-line binding form so source text cannot hide an accounted chord.
+
 Preserve every existing chord and its intended action while translating from
 the installed compositor's configuration to the pinned maintained compositor's
 Lua API. Keep user overrides. Do not reuse a currently occupied shortcut for a
