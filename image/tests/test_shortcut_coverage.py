@@ -40,8 +40,8 @@ class ShortcutCoverageTests(unittest.TestCase):
         self.assertEqual(result["reference_bindings"], 190)
         self.assertEqual(result["shipped_bindings"], 70)
         self.assertEqual(result["status_counts"], {
-            "implemented": 56,
-            "reserved": 14,
+            "implemented": 59,
+            "reserved": 11,
             "blocked": 120,
         })
         self.assertIs(result["runtime_tested"], False)

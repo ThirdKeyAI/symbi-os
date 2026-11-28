@@ -2,9 +2,15 @@
   "layer": "top",
   "position": "top",
   "height": 26,
-  "modules-left": ["hyprland/workspaces"],
+  "modules-left": ["custom/menu", "hyprland/workspaces"],
   "modules-center": ["clock"],
   "modules-right": ["network", "pulseaudio", "battery"],
+  "custom/menu": {
+    "format": "Menu",
+    "on-click": "/usr/bin/python3 /usr/libexec/symbi-desktop-commands.py menu",
+    "on-click-right": "/usr/bin/python3 /usr/libexec/symbi-desktop-commands.py terminal",
+    "tooltip-format": "Desktop menu\n\nSuper + Alt + Space"
+  },
   "hyprland/workspaces": {"on-click": "activate", "format": "{name}"},
   "clock": {"format": "{:%a %H:%M}", "tooltip": false},
   "network": {"format-wifi": "Wi-Fi", "format-ethernet": "Ethernet", "format-disconnected": "Offline", "interval": 30},

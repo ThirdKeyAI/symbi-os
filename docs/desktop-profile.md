@@ -78,8 +78,8 @@ paths and shell contents are omitted. It is reference data, not a configuration
 loader or a claim that these actions work in Symbi OS.
 
 The static [coverage ledger](../image/desktop/shortcut-coverage.json) accounts
-for every reference entry against the current source overlay: 56 have a
-non-no-op handler, 14 keep their chord as an explicit no-op reservation, and
+for every reference entry against the current source overlay: 59 have a
+non-no-op handler, 11 keep their chord as an explicit no-op reservation, and
 120 remain blocked because the overlay has no corresponding binding. Here,
 `implemented` means only that source code contains a reviewed handler. The
 validator makes no claim about compositor parsing, installed commands, desktop
@@ -241,18 +241,18 @@ requirements; the built images still have their minimal Foot profile.
 
 ## First implementation tranche
 
-The image defaults now include a shared, reviewable Lua binding file with 69
-named chords. It implements 56 compositor, ten-workspace and media bindings and
-keeps 13 unavailable menu/application chords reserved with `no_op`. The existing
+The image defaults now include a shared, reviewable Lua binding file with 70
+named chords. It implements 59 compositor, menu, ten-workspace and media bindings
+and keeps 11 unavailable application chords reserved with `no_op`. The existing
 Super+Space launcher and Super+Alt+Space main-menu meanings are preserved. This
 is the first working subset of the 190-entry reference; every omitted or
 reserved entry still needs explicit booted-session accounting.
 
 Tokyo Night is selected from shipped local Hyprland, Waybar and Walker data.
-Kitty and tmux profiles carry the selected presentation and terminal-key
-behavior without copying Kitty remote control or tmux shell hooks. Foot remains
-the active terminal until Kitty 0.51.0 and its bundled dependency closure pass
-native review. The profiles do not claim that Kitty or tmux is installed.
+Kitty, Foot and tmux profiles carry the selected presentation and terminal-key
+behavior without copying Kitty remote control or tmux shell hooks. The terminal
+resolver prefers Kitty and uses Foot until Kitty 0.51.0 and its bundled dependency
+closure pass native review. The profiles do not claim that Kitty or tmux is installed.
 
 A separate Nerd Fonts v3.5.1 intake pins JetBrains Mono and Symbols Only release
 assets and notices. Exact cached assets passed passive bounded inventory without
