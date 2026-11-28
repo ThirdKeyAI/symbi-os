@@ -201,7 +201,7 @@ its public validator rejects a populated candidate. No image build, OCI export,
 cold load, selection or qualification is enabled by this slice.
 
 The manual ubuntu-fixture-packages.yml workflow remains workflow_dispatch only.
-Its checked-in contract is now ready with the six exact InRelease and
+Its checked-in contract was promoted to ready with the six exact InRelease and
 Packages.xz byte/hash identities independently reviewed from run 46107541478.
 The ready state rejects discovery and permits only production. Production run
 46109461949 authenticated those pins, completed the private offline APT update
@@ -215,6 +215,14 @@ plan with that signed row's SHA-256. Encoded separators, traversal,
 unnecessary escapes and literal aliases still fail closed. No candidate,
 selection, producer pass, image consumer or qualification claim followed. A
 fresh exact-head run is required; every claim remains false.
+
+Production runs 46112459016 and 46112713726 subsequently stopped before any
+candidate when rolling noble-updates metadata no longer matched the reviewed
+pin. Discovery run 46112845334 was correctly blocked because the contract was
+still ready. The contract is now `pending-discovery` with every InRelease and
+Packages.xz byte/hash binding cleared. A fresh authenticated discovery and
+independent review are required before production can run again; locally
+observed current metadata is not used as a pin.
 
 The wrapper creates a bounded
 transient unit for either mode; inside it, pending `produce` refuses before
