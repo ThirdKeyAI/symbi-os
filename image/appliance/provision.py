@@ -27,6 +27,15 @@ PROVISION_COMMAND_TIMEOUTS = {
     "select-graphical-target": 10,
     "enable-display-manager": 15,
 }
+SYSTEMCTL_OFFLINE = (
+    "/usr/bin/systemctl", "--root=/", "--no-reload", "--quiet",
+)
+SELECT_GRAPHICAL_TARGET_COMMAND = (
+    *SYSTEMCTL_OFFLINE, "set-default", "graphical.target",
+)
+ENABLE_DISPLAY_MANAGER_COMMAND = (
+    *SYSTEMCTL_OFFLINE, "enable", "--force", "sddm.service",
+)
 PROVISION_LOCAL_WORK_BUDGET_SECONDS = 30
 PROVISION_SERVICE_TIMEOUT_SECONDS = 120
 VERIFIER_SERVICE_TIMEOUT_SECONDS = 420
@@ -173,12 +182,8 @@ def main():
     with autologin.open("x") as stream:
         stream.write(SDDM_CONFIGURATION)
     autologin.chmod(0o644)
-    run_phase("select-graphical-target", [
-        "/usr/bin/systemctl", "set-default", "graphical.target",
-    ])
-    run_phase("enable-display-manager", [
-        "/usr/bin/systemctl", "enable", "--force", "sddm.service",
-    ])
+    run_phase("select-graphical-target", SELECT_GRAPHICAL_TARGET_COMMAND)
+    run_phase("enable-display-manager", ENABLE_DISPLAY_MANAGER_COMMAND)
     state = {
         "schema": 1, "nonce": expected["nonce"], "source_binding": expected["source_binding"],
         "expected_sha256": digest(expected_path), "provision_sha256": digest(Path(__file__)),

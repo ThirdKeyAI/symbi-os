@@ -47,6 +47,7 @@ from image.appliance.reboot import (bounded_log, ppm_observation,
                                     require_empty_output)
 from image.appliance.verify import (bound_regular, observe_bounded_walker,
                                     path_absent,
+                                    persistent_systemd_alias_is_exact,
                                     persistent_fixture_boot_references_absent,
                                     reviewed_launcher,
                                     transient_boot_dropin_is_exact)
@@ -1005,6 +1006,97 @@ class InteractiveApplianceContract(unittest.TestCase):
             self.assertTrue(persistent_fixture_boot_references_absent(
                 (root,), os.geteuid()))
 
+    def test_persistent_systemd_aliases_are_exact_and_direct(self):
+        owner_uid = os.geteuid()
+
+        def fixture(base, alias_name="default.target",
+                    target_name="graphical.target"):
+            config = base / "etc/systemd/system"
+            vendor = base / "usr/lib/systemd/system"
+            config.mkdir(parents=True)
+            vendor.mkdir(parents=True)
+            for directory in (
+                    base / "etc", base / "etc/systemd", config,
+                    base / "usr", base / "usr/lib", vendor.parent, vendor):
+                directory.chmod(0o755)
+            target = vendor / target_name
+            target.write_text("[Unit]\nDescription=Graphical Interface\n")
+            target.chmod(0o644)
+            alias = config / alias_name
+            alias.symlink_to(target)
+            return config, vendor, alias, target
+
+        for alias_name, target_name in (
+                ("default.target", "graphical.target"),
+                ("display-manager.service", "sddm.service")):
+            with self.subTest(alias_name=alias_name), tempfile.TemporaryDirectory() as temporary:
+                base = Path(temporary)
+                config, vendor, _, _ = fixture(
+                    base, alias_name, target_name)
+                self.assertTrue(persistent_systemd_alias_is_exact(
+                    alias_name, target_name, config_root=config,
+                    vendor_root=vendor, anchor=base, owner_uid=owner_uid))
+
+        cases = (
+            "regular-alias", "relative-alias", "same-basename-shadow",
+            "missing-target", "symlink-target", "directory-target",
+            "fifo-target", "empty-target", "writable-target",
+            "writable-config-ancestor", "writable-vendor-ancestor",
+            "symlink-config-ancestor", "symlink-vendor-ancestor",
+        )
+        for case in cases:
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as temporary:
+                base = Path(temporary)
+                config, vendor, alias, target = fixture(base)
+                if case == "regular-alias":
+                    alias.unlink()
+                    alias.write_text(os.fspath(target))
+                elif case == "relative-alias":
+                    alias.unlink()
+                    alias.symlink_to("graphical.target")
+                elif case == "same-basename-shadow":
+                    shadow = base / "shadow/graphical.target"
+                    shadow.parent.mkdir()
+                    shadow.write_text("[Unit]\nDescription=Shadow\n")
+                    shadow.chmod(0o644)
+                    alias.unlink()
+                    alias.symlink_to(shadow)
+                elif case == "missing-target":
+                    target.unlink()
+                elif case == "symlink-target":
+                    actual = base / "actual.target"
+                    actual.write_text("[Unit]\nDescription=Actual\n")
+                    actual.chmod(0o644)
+                    target.unlink()
+                    target.symlink_to(actual)
+                elif case == "directory-target":
+                    target.unlink()
+                    target.mkdir()
+                elif case == "fifo-target":
+                    target.unlink()
+                    os.mkfifo(target)
+                elif case == "empty-target":
+                    target.write_text("")
+                elif case == "writable-target":
+                    target.chmod(0o664)
+                elif case == "writable-config-ancestor":
+                    config.parent.chmod(0o775)
+                elif case == "writable-vendor-ancestor":
+                    vendor.parent.chmod(0o775)
+                elif case == "symlink-config-ancestor":
+                    systemd = config.parent
+                    relocated = base / "systemd-relocated"
+                    systemd.rename(relocated)
+                    systemd.symlink_to(relocated)
+                elif case == "symlink-vendor-ancestor":
+                    systemd = vendor.parent
+                    relocated = base / "vendor-systemd-relocated"
+                    systemd.rename(relocated)
+                    systemd.symlink_to(relocated)
+                self.assertFalse(persistent_systemd_alias_is_exact(
+                    "default.target", "graphical.target", config_root=config,
+                    vendor_root=vendor, anchor=base, owner_uid=owner_uid))
+
     def test_both_boots_have_interactive_devices_and_no_network(self):
         for command in (provision_qemu_arguments(), reboot_qemu_arguments(), user_launch_arguments()):
             joined = " ".join(command)
@@ -1065,12 +1157,24 @@ class InteractiveApplianceContract(unittest.TestCase):
         self.assertIn("no password or key", SDDM_CONFIGURATION)
 
     def test_provision_uses_no_persistent_fixture_boot_transaction(self):
+        from image.appliance import provision
+
         unit = (ROOT / "image/appliance/p.service").read_text()
         self.assertIn("Before=display-manager.service sddm.service upgrade-on-boot.service", unit)
         source = (ROOT / "image/appliance/provision.py").read_text()
         self.assertNotIn("rpm-ostree", source)
         self.assertNotIn("systemd.wants=", source)
+        self.assertNotIn("daemon-reload", source)
         self.assertIn("transient_boot_units", source)
+        self.assertEqual(provision.SYSTEMCTL_OFFLINE, (
+            "/usr/bin/systemctl", "--root=/", "--no-reload", "--quiet",
+        ))
+        self.assertEqual(provision.SELECT_GRAPHICAL_TARGET_COMMAND, (
+            *provision.SYSTEMCTL_OFFLINE, "set-default", "graphical.target",
+        ))
+        self.assertEqual(provision.ENABLE_DISPLAY_MANAGER_COMMAND, (
+            *provision.SYSTEMCTL_OFFLINE, "enable", "--force", "sddm.service",
+        ))
 
     def test_provision_and_first_boot_time_budgets_are_statically_closed(self):
         from image.appliance import contract, provision, verify

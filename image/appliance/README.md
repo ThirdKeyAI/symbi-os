@@ -15,6 +15,13 @@ its current verifier without making an installation, boot, OS, signature or
 release claim. The appliance producer's reviewed pre-download prerequisite is
 therefore present.
 
+No downloadable appliance has passed validation yet. Hosted run `46167625881` at
+source commit `42db24b80ac04741fdced8dbce38e72ef45c7962` timed out while selecting the
+graphical target and retained only bounded failure artifact `15272582324`
+(`sha256:196e758ee3708a3cf88561470d6ce51caf5aca7371b64307b0849052b7a1984a`).
+It published no qcow2. Its all-false receipt records zero swap and zero OOM kills
+and confirms that cleanup removed every incomplete public output.
+
 The producer consumes the exact retained generic OCI selected by
 `image/desktop-images.lock.json`; the OCI bytes remain read-only and unchanged. The
 controller requires at least 60 GiB free after preparation, then installs a separate
@@ -44,7 +51,17 @@ observed as `/usr/bin/walker`, receive an exact successful `systemctl stop`, and
 absent after that stop within fixed deadlines. QEMU supplies one binary systemd
 credential whose exact drop-in starts the two fixture units only for the first boot.
 The installer writes no fixture `systemd.wants` kernel argument, so provisioning
-does not stage an `rpm-ostree` deployment to remove one. The guest then proves that
+does not stage an `rpm-ostree` deployment to remove one. Persistent default-target
+and display-manager selection uses client-side unit-file
+operations only: `systemctl --root=/ --no-reload --quiet set-default
+graphical.target` and `systemctl --root=/ --no-reload --quiet enable --force
+sddm.service`. This boot already selects the graphical target through its bootc
+kernel argument, and the ephemeral verifier unit directly wants and follows SDDM,
+so no live-manager reload is required. Verification requires exact root-owned
+aliases from `/etc/systemd/system` to the corresponding direct, root-owned,
+non-writable regular units under `/usr/lib/systemd/system`. Symlinked or writable
+directory ancestors, relative or chained aliases, broken links, vendor-unit
+symlinks, and same-basename shadows are rejected. The guest then proves that
 the exact root-owned drop-in is loaded from
 `/run/systemd/generator.early/graphical.target.d/symbi-appliance.conf`, that no
 other loaded drop-in names either fixture unit, and that no fixture unit, target

@@ -65,11 +65,16 @@ PERSISTENT_SYSTEMD_UNIT_ROOTS = (
     Path("/usr/local/lib/systemd/system"),
     Path("/usr/lib/systemd/system"),
 )
+PERSISTENT_SYSTEMD_ALIASES = (
+    ("default.target", "graphical.target"),
+    ("display-manager.service", "sddm.service"),
+)
 FIXTURE_UNIT_NAMES = ("p.service", "v.service")
 MAX_SYSTEMD_ROOT_ENTRIES = 8192
 MAX_SYSTEMD_DROPIN_ENTRIES = 256
 MAX_SYSTEMD_DROPIN_BYTES = 64 * 1024
 MAX_SYSTEMD_DROPIN_TOTAL_BYTES = 2 * 1024 * 1024
+MAX_SYSTEMD_UNIT_BYTES = 128 * 1024
 FIXTURE_UNIT_REFERENCE = re.compile(
     rb"(?<![A-Za-z0-9_.@:-])(?:p|v)\.service(?![A-Za-z0-9_.@:-])"
 )
@@ -287,6 +292,89 @@ def bounded_root_regular(path, maximum, owner_uid=0, required_mode=None,
         return None
     finally:
         os.close(descriptor)
+
+
+def open_direct_safe_directory(path, anchor=Path("/"), owner_uid=0):
+    """Open a directory through direct, owned, non-writable components."""
+    path = Path(path)
+    anchor = Path(anchor)
+    if (not path.is_absolute() or not anchor.is_absolute()
+            or type(owner_uid) is not int or owner_uid < 0):
+        return None
+    try:
+        relative = path.relative_to(anchor)
+    except ValueError:
+        return None
+    if any(component in {"", ".", ".."} for component in relative.parts):
+        return None
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW
+    try:
+        descriptor = os.open(os.fspath(anchor), flags)
+    except OSError:
+        return None
+    try:
+        for component in (None, *relative.parts):
+            if component is not None:
+                child = os.open(component, flags, dir_fd=descriptor)
+                os.close(descriptor)
+                descriptor = child
+            info = os.fstat(descriptor)
+            if (not stat.S_ISDIR(info.st_mode) or info.st_uid != owner_uid
+                    or info.st_mode & 0o022):
+                os.close(descriptor)
+                return None
+        return descriptor
+    except OSError:
+        os.close(descriptor)
+        return None
+
+
+def persistent_systemd_alias_is_exact(
+        alias_name, target_name, *,
+        config_root=Path("/etc/systemd/system"),
+        vendor_root=Path("/usr/lib/systemd/system"),
+        anchor=Path("/"), owner_uid=0):
+    """Bind one persistent alias to one direct, safe vendor unit."""
+    if (alias_name, target_name) not in PERSISTENT_SYSTEMD_ALIASES:
+        return False
+    config_descriptor = open_direct_safe_directory(
+        config_root, anchor, owner_uid)
+    if config_descriptor is None:
+        return False
+    vendor_descriptor = None
+    target_descriptor = None
+    try:
+        vendor_descriptor = open_direct_safe_directory(
+            vendor_root, anchor, owner_uid)
+        if vendor_descriptor is None:
+            return False
+        before = os.stat(
+            alias_name, dir_fd=config_descriptor, follow_symlinks=False)
+        if (not stat.S_ISLNK(before.st_mode) or before.st_uid != owner_uid
+                or before.st_nlink != 1):
+            return False
+        link = os.readlink(alias_name, dir_fd=config_descriptor)
+        after = os.stat(
+            alias_name, dir_fd=config_descriptor, follow_symlinks=False)
+        if ((before.st_dev, before.st_ino, before.st_mode, before.st_uid)
+                != (after.st_dev, after.st_ino, after.st_mode, after.st_uid)
+                or link != os.fspath(Path(vendor_root) / target_name)):
+            return False
+        target_descriptor = os.open(
+            target_name, os.O_PATH | os.O_CLOEXEC | os.O_NOFOLLOW,
+            dir_fd=vendor_descriptor)
+        target = os.fstat(target_descriptor)
+        return (stat.S_ISREG(target.st_mode) and target.st_uid == owner_uid
+                and not target.st_mode & 0o022
+                and 0 < target.st_size <= MAX_SYSTEMD_UNIT_BYTES)
+    except OSError:
+        return False
+    finally:
+        if target_descriptor is not None:
+            os.close(target_descriptor)
+        if vendor_descriptor is not None:
+            os.close(vendor_descriptor)
+        os.close(config_descriptor)
 
 
 def systemd_config_references_fixture(raw):
@@ -857,8 +945,12 @@ def main():
         timeout=remaining_timeout(
             application_deadline, FIXED_COMMAND_TIMEOUTS["get-default"]),
     ).stdout.strip()
-    display_link = Path("/etc/systemd/system/display-manager.service")
-    if not display_link.is_symlink() or display_link.resolve().name != "sddm.service":
+    if (default_target != "graphical.target"
+            or not persistent_systemd_alias_is_exact(
+                "default.target", "graphical.target")):
+        raise ValueError("The persistent default target is not graphical.target")
+    if not persistent_systemd_alias_is_exact(
+            "display-manager.service", "sddm.service"):
         raise ValueError("SDDM is not the enabled display manager")
     production_files = expected.get("production_files")
     required_production = {
