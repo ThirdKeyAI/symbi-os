@@ -249,9 +249,10 @@ Discovery runs as the hosted account with empty ambient and bounding capability
 sets and namespace creation denied. The dormant production branch alone permits
 a network namespace and grants `CAP_SYS_ADMIN` for its exact `unshare --net`
 calls. Both modes have a private mount and temporary namespace, strict read-only
-system/home trees, and one exact writable cache subtree. The production
-capability/namespace combination has not run on Ubuntu 24.04; a failure there
-must stop production rather than broaden the sandbox.
+system/home trees, and one exact writable cache subtree. Run `46142528811`
+successfully exercised the production capability/namespace combination on
+Ubuntu 24.04; any failure there must stop production rather than broaden the
+sandbox.
 
 After a separate review commits all six discovered identities and changes the
 contract to `ready`, the production path stages only `file:` repositories and
@@ -312,6 +313,21 @@ Independent review selected metadata artifact `15257187872` and its exact
 4,637,216 ZIP bytes, seven payload members and manifest. The checked-in state is
 now `ready`, with canonical contract SHA-256
 `2c22f3e33c7081c4011a78a247b5f8f845a3386ac4ce44db0d07a03b84a6d841`.
-It permits one manual unselected production attempt. Production remains unrun;
-no package candidate, image input, selection or qualification follows from the
-promotion.
+It permitted one manual unselected production attempt. Run `46142528811`
+completed that path at exact head
+`6cf7c43f90216c4622dff44cc8f3db6771718cc5` and tree
+`ec1c3e625a30e9142ad7364cf1cc857bfd26379c`, producing 68 exact package
+archives totaling 36,832,124 bytes. Their order SHA-256 is
+`cb07815cc13c85b68e7b24934885e0d83d73cd9c37bc1052b0d7df65075bce77`.
+Native `dpkg --no-act` parsed and prepared that exact order while accepting
+only the fixed `python3-minimal` to `python3.12-minimal` `>=` and `python3` to
+`python3-minimal` `=` Pre-Depends diagnostics.
+
+The candidate remains `candidate-unselected`; its manifest keeps
+`producer_passed`, selection and every qualification field false. It proves
+signed metadata, exact package download and order, and native dry-run
+parse/prepare only. It does not prove installed or configured state, maintainer
+scripts, container isolation, selection, OS qualification or release
+qualification. The pending public package lock remains unchanged because a
+separate reviewed selection is required before any offline image consumer can
+use the candidate.

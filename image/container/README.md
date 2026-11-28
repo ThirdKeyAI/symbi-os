@@ -376,7 +376,7 @@ selection and qualification field remains false. The ready state permits one
 manual unselected production attempt. Production run
 `46138934586` reached the exact networkless 68-archive `dpkg --no-act` argv
 and then failed closed because dry-run package state does not accumulate across
-archives. No package or image candidate is available.
+archives. That run emitted no package or image candidate.
 
 The ordered networkless APT simulation proves the exact signed closure and
 install order. Native `dpkg` parses and prepares every exact staged archive
@@ -390,3 +390,25 @@ triggers, maintainer scripts, container behavior, selection or qualification.
 The precise failed-run record, native-proof split and upstream dpkg references
 are retained in
 [the P0-05 card](../../docs/cards/P0-05.md).
+
+The corrected manual production run
+[46142528811](https://github.com/ThirdKeyAI/symbi-os/actions/runs/46142528811)
+passed at exact head `6cf7c43f90216c4622dff44cc8f3db6771718cc5` and tree
+`ec1c3e625a30e9142ad7364cf1cc857bfd26379c`. It emitted an unselected
+68-package candidate totaling 36,832,124 package bytes; the candidate manifest
+SHA-256 is `2e769f967bd255041b3db571646bd20008cfa253d6e16cf869beb7992c6a98c8`
+and the order SHA-256 is
+`cb07815cc13c85b68e7b24934885e0d83d73cd9c37bc1052b0d7df65075bce77`.
+The only accepted native dry-run dependency diagnostics were
+`python3-minimal` Pre-Depends `python3.12-minimal` with `>=` and `python3`
+Pre-Depends `python3-minimal` with `=`.
+
+This proves signed metadata, exact package download and order, and native
+`dpkg --no-act` parse/prepare only. It does not prove installed or configured
+state, maintainer scripts, container isolation, selection, OS qualification or
+release qualification. The manifest remains `candidate-unselected` with
+`producer_passed` and every selection or qualification field false. The public
+pending lock is unchanged because it requires a separate reviewed selection;
+the unselected candidate cannot authorize its own consumption. Exact run,
+artifact, resource and proof-limit details are retained in
+[the compact record](../../docs/security/reports/P0-05-ubuntu-packages/46142528811/record.json).
