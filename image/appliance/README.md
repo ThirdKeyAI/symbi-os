@@ -15,6 +15,27 @@ its current verifier without making an installation, boot, OS, signature or
 release claim. The appliance producer's reviewed pre-download prerequisite is
 therefore present.
 
+No downloadable appliance has passed validation yet. Hosted run `46167625881` at
+source commit `42db24b80ac04741fdced8dbce38e72ef45c7962` timed out while selecting the
+graphical target and retained only bounded failure artifact `15272582324`
+(`sha256:196e758ee3708a3cf88561470d6ce51caf5aca7371b64307b0849052b7a1984a`).
+It published no qcow2. Its all-false receipt records zero swap and zero OOM kills
+and confirms that cleanup removed every incomplete public output.
+
+Hosted run `46171450135` at source commit
+`c75f6ff00acd48d4c7fa1e622b9922d64320eedd` failed closed in the producer after
+29 minutes 45 seconds and retained bounded failure artifact `15275305675`
+(`sha256:058812eb90c73dbf0b7c7de362d55e3208b031c042f4b35613191112c290f11c`).
+It published no qcow2 and every qualification claim remained false. The outer
+unit used zero swap and systemd classified it as an ordinary process exit, not an
+outer OOM kill. Its reported peak was exactly one 4 KiB page above the 5 GiB
+limit. That accounting value alone is not an OOM determination: two earlier runs
+reported the same one-page difference, and run `46167625881` retained zero inner
+OOM, OOM-kill, and OOM-group-kill counters. Run `46171450135` retained no child
+resource receipt, and the old path did not distinguish a missing, unreadable, or
+invalid child result from a receipt rejected by its strict 4 GiB peak check.
+Inner or descendant OOM behavior in this run therefore remains indeterminate.
+
 The producer consumes the exact retained generic OCI selected by
 `image/desktop-images.lock.json`; the OCI bytes remain read-only and unchanged. The
 controller requires at least 60 GiB free after preparation, then installs a separate
@@ -41,19 +62,34 @@ clearly labelled SDDM autologin drop-in. The guest must observe SDDM, Hyprland,
 Waybar, the Hyprland portal payload, and the complete first-login seed. Walker must
 also be launched through a 512 MiB, zero-swap, one-CPU, 64-task transient user unit,
 observed as `/usr/bin/walker`, receive an exact successful `systemctl stop`, and be
-absent after that stop within fixed deadlines. Before the base image's background
-updater can open an rpm-ostree transaction, the provisioning unit removes both
-temporary boot wants in one bounded transaction. The guest then proves that neither
-want nor any provisioning script or unit was persisted. The six provisioning
-command deadlines total 300 seconds. Local work has a 30-second reserve and the
-360-second unit deadline retains another 30-second margin. Provisioning, the
+absent after that stop within fixed deadlines. QEMU supplies one binary systemd
+credential whose exact drop-in starts the two fixture units only for the first boot.
+The installer writes no fixture `systemd.wants` kernel argument, so provisioning
+does not stage an `rpm-ostree` deployment to remove one. Persistent default-target
+and display-manager selection uses client-side unit-file
+operations only: `systemctl --root=/ --no-reload --quiet set-default
+graphical.target` and `systemctl --root=/ --no-reload --quiet enable --force
+sddm.service`. This boot already selects the graphical target through its bootc
+kernel argument, and the ephemeral verifier unit directly wants and follows SDDM,
+so no live-manager reload is required. Verification requires exact root-owned
+aliases from `/etc/systemd/system` to the corresponding direct, root-owned,
+non-writable regular units under `/usr/lib/systemd/system`. Symlinked or writable
+directory ancestors, relative or chained aliases, broken links, vendor-unit
+symlinks, and same-basename shadows are rejected. The guest then proves that
+the exact root-owned drop-in is loaded from
+`/run/systemd/generator.early/graphical.target.d/symbi-appliance.conf`, that no
+other loaded drop-in names either fixture unit, and that no fixture unit, target
+link, target drop-in, or credential was written to a persistent systemd or
+credential-store root. The five provisioning
+command deadlines total 60 seconds. Local work has a 30-second reserve and the
+120-second unit deadline retains another 30-second margin. Provisioning, the
 420-second verifier, 180 seconds of boot and success-only shutdown work, and a
-240-second controller margin close exactly inside the first boot's 1,200-second deadline.
-The verifier's monotonic application budget is 390 seconds: 260 for the graphical
-session and portal, 45 for the exact fixed-command inventory, 70 for Walker's
+480-second controller margin close exactly inside the first boot's 1,200-second deadline.
+The verifier's monotonic application budget is 400 seconds: 260 for the graphical
+session and portal, 55 for the exact fixed-command inventory, 70 for Walker's
 launch and cleanup lifecycle, and 15 for local validation and report emission.
 Every verifier subprocess has an explicit deadline clamped to that outer budget,
-both graphical polls have finite attempt counts, and the unit retains 30 seconds
+both graphical polls have finite attempt counts, and the unit retains 20 seconds
 of service margin. Only the verifier unit's successful completion requests poweroff.
 A verifier failure or timeout leaves QEMU running until the host rejects it at the
 1,200-second controller deadline, including when the report channel received every
@@ -84,14 +120,17 @@ captured while the unit is still loaded and synced to the evidence filesystem. T
 wrapper then stops and resets the unit, requires both `LoadState=not-found` and the
 captured control-group path to be gone, and validates the final evidence inventory
 and contents only after no unit descendant can still write them. A collection,
-cleanup, swap, OOM, or final-validation failure removes the evidence and public
-output and emits no upload marker.
-A failed run instead can retain exactly the all-false controller receipt and
-fixed-field systemd record only when the source-bound appliance controller created
-evidence and the wrapper then sanitized and validated that exact pair. Earlier
-preparation failures, failed sanitization, failed evidence validation, and failed
-outer-unit collection produce no `interactive-appliance-evidence` artifact; their
-workflow logs remain available. Immediately before the successful download upload,
+cleanup, swap, local outer-unit OOM, or final-validation failure removes the
+evidence and public output and emits no upload marker.
+A failed run can retain exactly one all-false receipt plus the fixed-field systemd
+record. When the appliance controller produced a receipt, the wrapper removes every
+other output and validates that source-bound inner receipt. When the outer unit
+started, reached a terminal failure, and produced a valid systemd record but no inner
+evidence path, the wrapper can instead create a content-free outer receipt with a
+fixed stage, failed-command class, cleanup result, and `inner_evidence_available=false`.
+Failures before the unit starts or reaches a captured terminal state, and any failed
+cleanup or evidence validation, produce no `interactive-appliance-evidence` artifact;
+their workflow logs remain available. Immediately before the successful download upload,
 a separate validator accepts only the qcow2, manifest, and screenshot, rehashes all
 three, scans them for credential markers, and cross-checks them against the
 seven-day evidence. The manifest expiry comes from the hosted workflow clock rather
@@ -100,6 +139,28 @@ bounded evidence may already have uploaded and remains a record of the earlier
 controller result; it is not proof that the rejected public bytes were delivered.
 After the two-day artifact expires, the longer-lived evidence can still establish
 what the independent reboot observed, but it cannot rehash the absent qcow2 bytes.
+
+The diagnostic retry keeps the 5 GiB outer limit, 4 GiB child limits, and zero-swap
+policy unchanged. Failure evidence assigns each child result one fixed state:
+missing, unreadable, invalid schema, rejected resource receipt, accepted receipt,
+or the exact one-page peak case. That last state is diagnostic only; successful
+receipts still reject every peak above 4 GiB. Before resetting the outer unit, the
+wrapper captures the exact bounded `cgroup.events` bytes before and after the
+`memory.events` and `memory.events.local` reads. Both cgroup snapshots must be
+identical, empty, and unfrozen. Hierarchical memory events may diagnose a child OOM,
+but any local outer-unit OOM counter remains non-uploadable.
+Before its existing explicit container removal and absence check, the controller
+requires the named producer container to be exited and retains only its numeric
+`State.ExitCode` and boolean `State.OOMKilled`. The diagnostic receipt is written
+only after the first successful producer remove-and-absence check; the outer
+controller repeats that cleanup before the unit can finish. Any capture, validation,
+cleanup, or absence-check failure removes the evidence and cannot authorize an
+upload. Only after every outer cleanup completes does the controller mint a
+source-bound, one-use cleanup receipt; the wrapper consumes it before adopting inner
+evidence. A missing or malformed receipt blocks adoption of a pre-existing inner
+receipt. The content-free outer fallback remains limited to a terminal failed unit
+that created no inner evidence path and whose wrapper-level capture and cleanup both
+succeed. Raw inspect output, logs, and arbitrary paths are not retained.
 
 ## Download and inspect a successful run
 
@@ -260,15 +321,24 @@ exercise physical NVIDIA hardware.
 Run the `HIGHLY EXPERIMENTAL interactive appliance` workflow manually only at a
 reviewed commit whose strict lock selects preflight run `46125049529`. Ordinary
 pushes and pull requests never schedule it. A controller failure before the evidence
-upload can retain only the bounded controller and systemd files with all success and
-qualification claims false after the wrapper validates both records. The controller
-record contains a fixed stage, source commit/tree, local cleanup, exact cgroup
-receipts, and any source-bound child-result diagnostic. At most the approved QEMU and
-serial log tails are embedded; host paths, URLs, credentials, control characters,
-and key material are redacted, while links, special files, and oversized inputs are
-rejected. An earlier preparation failure,
-an outer-unit collection or OOM failure, or any failure to sanitize or validate the
-pair retains no appliance evidence artifact. A later public revalidation failure
+upload can retain only a bounded all-false receipt and the systemd record after the
+wrapper validates both files. If the appliance controller produced the receipt, it
+contains a fixed stage, source commit/tree, local cleanup, exact cgroup
+receipts, and any source-bound child-result diagnostic. That diagnostic is limited to
+the child-result type, a fixed producer phase and process status, byte counts for the
+approved QEMU and serial logs, explicitly untrusted allowlisted observations of
+lifecycle sentinels and traceback classes from bare output or the exact fixed
+systemd console identifiers, and bounded guest-report state/size
+metadata. Log-derived observations are diagnostic hints only and cannot satisfy a
+gate or qualification claim. No private-input digest, log text, result message, or
+arbitrary excerpt is retained. Missing, empty, linked,
+hard-linked, special, unreadable, changing, and oversized inputs receive fixed refusal
+states. If the terminal outer unit produced no inner evidence, the wrapper may instead
+create the content-free outer receipt described above; it carries no child diagnostic
+or cgroup receipt. A failure before unit start or captured terminal state, an
+outer-unit collection or OOM failure, or any failure to clean up or validate the pair
+retains no appliance evidence artifact.
+A later public revalidation failure
 blocks the qcow2 while the already uploaded diagnostic evidence can remain. The
 qcow2 upload is the final,
 success-gated workflow step, so an earlier failure cannot publish it. Artifact

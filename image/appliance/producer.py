@@ -33,6 +33,40 @@ def load_guest_report(path):
     return unique_json(path.read_bytes())
 
 
+def producer_failure_status(phase, error, child):
+    """Return bounded process state without retaining exception text or arguments."""
+    qemu_exit = child.returncode if child is not None else None
+    if type(qemu_exit) is not int or not -255 <= qemu_exit <= 255:
+        qemu_exit = None
+    failed_phase = phase
+    exit_code = None
+    timeout = None
+    if isinstance(error, subprocess.TimeoutExpired):
+        kind = "subprocess-timeout"
+        timeout = error.timeout if type(error.timeout) in {int, float} else None
+    elif isinstance(error, TimeoutError):
+        kind = "controller-timeout"
+        timeout = FIRST_BOOT_TIMEOUT_SECONDS
+    elif isinstance(error, subprocess.CalledProcessError):
+        kind = "subprocess-exit"
+        exit_code = error.returncode
+    elif phase == "first-boot" and qemu_exit not in {None, 0}:
+        kind = "qemu-exit"
+        exit_code = qemu_exit
+    else:
+        kind = "exception"
+        if phase == "first-boot" and qemu_exit == 0:
+            failed_phase = "guest-report"
+    if type(exit_code) is not int or not -255 <= exit_code <= 255:
+        exit_code = None
+    if type(timeout) not in {int, float} or not 0 < timeout <= FIRST_BOOT_TIMEOUT_SECONDS:
+        timeout = None
+    return {
+        "phase": failed_phase, "kind": kind, "exit_code": exit_code,
+        "timeout_seconds": timeout, "qemu_exit_code": qemu_exit,
+    }
+
+
 def await_first_boot_report(child, start, evidence):
     """Accept a report only after one timely, clean, success-triggered QEMU exit."""
     while child.poll() is None:
@@ -72,12 +106,14 @@ def main():
     result = failure_record(source, "producer-incomplete")
     result.update({"limits": limits, "command": provision_qemu_arguments()})
     child = None
+    phase = "initialization"
     work, evidence, public = output / "work", output / "evidence", output / "public"
     try:
         if output.is_symlink() or not output.is_dir() or any(output.iterdir()):
             raise ValueError("Appliance producer requires a new empty output directory")
         for path in (work, evidence, public):
             path.mkdir(mode=0o700)
+        phase = "input-validation"
         raw = inputs / "atomic.raw"
         if (raw.is_symlink() or not raw.is_file() or raw.stat().st_size != VIRTUAL_DISK_BYTES
                 or sha256(raw) != source["installed_raw_sha256"]):
@@ -90,6 +126,7 @@ def main():
             ["/usr/bin/qemu-system-x86_64", "--version"], text=True, timeout=15)
         result["tools"] = {name: sha256(Path("/usr/bin") / name)
                            for name in ("qemu-system-x86_64", "qemu-img")}
+        phase = "raw-conversion"
         with (evidence / "convert-raw.log").open("x") as log:
             subprocess.run(["/usr/bin/qemu-img", "convert", "-f", "raw", "-O", "qcow2",
                             str(raw), str(work / "provisioned.qcow2")],
@@ -97,6 +134,7 @@ def main():
                            check=True, timeout=1200)
         command = provision_qemu_arguments()
         start = time.monotonic()
+        phase = "first-boot"
         with (evidence / "provision-qemu.log").open("x") as log:
             child = subprocess.Popen(command, stdin=subprocess.DEVNULL, stdout=log,
                                      stderr=subprocess.STDOUT,
@@ -111,6 +149,7 @@ def main():
         if report.get("autologin_sha256") != expected.get("sddm_config_sha256"):
             raise ValueError("Development-only SDDM configuration changed")
         artifact_path = public / ARTIFACT_NAME
+        phase = "artifact-compression"
         with (evidence / "compress-qcow2.log").open("x") as log:
             subprocess.run(["/usr/bin/qemu-img", "convert", "-f", "qcow2", "-O", "qcow2", "-c",
                             str(work / "provisioned.qcow2"), str(artifact_path)],
@@ -119,6 +158,7 @@ def main():
             subprocess.run(["/usr/bin/qemu-img", "check", "-f", "qcow2", str(artifact_path)],
                            stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT,
                            check=True, timeout=300)
+        phase = "artifact-validation"
         info = json.loads(subprocess.check_output(
             ["/usr/bin/qemu-img", "info", "--output=json", str(artifact_path)],
             timeout=30, text=True))
@@ -142,7 +182,10 @@ def main():
             "tools": result["tools"], "scope": SCOPE,
         }
     except Exception as error:
-        result = failure_record(source, type(error).__name__ + ": " + str(error)) | {"limits": limits}
+        result = failure_record(source, type(error).__name__ + ": " + str(error)) | {
+            "limits": limits,
+            "producer_status": producer_failure_status(phase, error, child),
+        }
         raise
     finally:
         if child is not None and child.poll() is None:

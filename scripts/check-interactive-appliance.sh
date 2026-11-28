@@ -26,6 +26,18 @@ fi
 [[ "${SYMBI_IMAGE_VARIANT:-}" == generic && "${SYMBI_QUALIFICATION:-}" == appliance ]] || exit 2
 [[ "${SYMBI_APPLIANCE_EXPECTED_EXPIRY:-}" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$ ]] || exit 2
 [[ "${GITHUB_RUN_ID:-}" =~ ^[0-9]+$ && "${GITHUB_RUN_ATTEMPT:-}" =~ ^[0-9]+$ ]] || exit 2
+[[ "${GITHUB_SHA:-}" =~ ^[0-9a-f]{40}$ ]] || exit 2
+source_commit=$(git rev-parse HEAD)
+source_tree=$(git rev-parse 'HEAD^{tree}')
+[[ $source_commit == "$GITHUB_SHA" && $source_tree =~ ^[0-9a-f]{40}$ ]] || exit 2
+
+consume_cleanup_receipt() {
+  sudo /usr/bin/env -i PATH=/usr/sbin:/usr/bin:/sbin:/bin PYTHONPATH="$root" \
+    GITHUB_ACTIONS=true RUNNER_ENVIRONMENT=github-hosted \
+    "GITHUB_SHA=$source_commit" "SYMBI_APPLIANCE_SOURCE_TREE=$source_tree" \
+    PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -m image.appliance.hosted \
+    --consume-cleanup-receipt
+}
 for path in "${paths[@]}"; do
   if [[ -e $path || -L $path ]]; then
     echo "Appliance output path must be new: $path" >&2
@@ -64,10 +76,12 @@ capture_control_group() {
 }
 
 stop_and_reset_unit() {
-  local captured=1 cgroup_path control control_seen deadline key load load_seen parsed snapshot value
+  local cgroup_path control control_seen deadline key load load_seen parsed snapshot value
   (( unit_started == 1 )) || return 0
-  if [[ -z $unit_control_group ]] && ! capture_control_group; then
-    captured=0
+  if [[ -z $unit_control_group ]]; then
+    if ! capture_control_group && (( unit_terminal == 0 )); then
+      return 1
+    fi
   fi
   timeout 30 sudo systemctl stop "$unit" >/dev/null 2>&1 || true
   timeout 30 sudo systemctl reset-failed "$unit" >/dev/null 2>&1 || true
@@ -95,9 +109,9 @@ stop_and_reset_unit() {
           *) parsed=0; break ;;
         esac
       done <<< "$snapshot"
-      if (( parsed == 1 && load_seen == 1 && control_seen == 1 && captured == 1 )) \
+      if (( parsed == 1 && load_seen == 1 && control_seen == 1 )) \
           && [[ $load == not-found && -z $control ]]; then
-        cgroup_path="/sys/fs/cgroup${unit_control_group}"
+        cgroup_path="/sys/fs/cgroup${expected_control_group}"
         if [[ ! -e $cgroup_path && ! -L $cgroup_path ]]; then
           unit_started=0
           return 0
@@ -189,73 +203,128 @@ if (( unit_started == 1 && unit_terminal == 0 )); then
   stop_and_reset_unit || true
 fi
 ownership_status=0
-for path in "$cache/atomic-disk-evidence" "$cache/interactive-appliance-evidence" \
-            "$cache/interactive-appliance-artifact"; do
-  if [[ -e $path || -L $path ]]; then
-    if [[ -L $path || ! -d $path ]] || \
-       [[ -n "$(sudo find -P "$path" -xdev ! -type d ! \( -type f -links 1 \) -print -quit)" ]]; then
-      echo "Refusing unsafe appliance output: $path" >&2
-      ownership_status=3
-    elif ! sudo find -P "$path" -xdev \( -type d -o \( -type f -links 1 \) \) \
-      -exec chown --no-dereference "$(id -u):$(id -g)" -- {} +; then
-      ownership_status=4
-    fi
-  fi
-done
-
+inner_evidence_absent=0
+inner_cleanup_receipt=0
 sanitize_evidence() {
   sudo /usr/bin/env -i PATH=/usr/sbin:/usr/bin:/sbin:/bin PYTHONPATH="$root" \
     GITHUB_ACTIONS=true RUNNER_ENVIRONMENT=github-hosted \
+    "GITHUB_SHA=$source_commit" "SYMBI_APPLIANCE_SOURCE_TREE=$source_tree" \
     PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -m image.appliance.hosted --sanitize-failure
+}
+
+create_outer_evidence() {
+  sudo /usr/bin/env -i PATH=/usr/sbin:/usr/bin:/sbin:/bin PYTHONPATH="$root" \
+    GITHUB_ACTIONS=true RUNNER_ENVIRONMENT=github-hosted \
+    "GITHUB_SHA=$source_commit" "SYMBI_APPLIANCE_SOURCE_TREE=$source_tree" \
+    PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -m image.appliance.hosted \
+    --create-outer-failure
 }
 
 adopt_evidence() {
   local directory="$cache/interactive-appliance-evidence"
+  if (( inner_evidence_absent == 0 && inner_cleanup_receipt != 1 )); then
+    return 1
+  fi
   [[ -d $directory && ! -L $directory ]] || return 1
   [[ -z "$(sudo find -P "$directory" -xdev ! -type d ! \( -type f -links 1 \) -print -quit)" ]] || return 1
   sudo find -P "$directory" -xdev \( -type d -o \( -type f -links 1 \) \) \
     -exec chown --no-dereference "$(id -u):$(id -g)" -- {} +
 }
 
-write_systemd_result() {
-  local control_seen=0 key raw resource temporary valid=1 value
+systemd_result=
+systemd_captured=0
+outer_cgroup_events_before_base64=
+outer_cgroup_events_after_base64=
+outer_memory_events_base64=
+outer_memory_events_local_base64=
+
+capture_outer_memory_events() {
+  local cgroup_after cgroup_before cgroup_path events events_local resource
+  [[ $unit_control_group == "$expected_control_group" ]] || return 1
+  cgroup_path="/sys/fs/cgroup${expected_control_group}"
+  timeout 5 sudo /usr/bin/test -d "$cgroup_path" || return 1
+  timeout 5 sudo /usr/bin/test ! -L "$cgroup_path" || return 1
+  for resource in cgroup.events memory.events memory.events.local; do
+    timeout 5 sudo /usr/bin/test -f "$cgroup_path/$resource" || return 1
+    timeout 5 sudo /usr/bin/test ! -L "$cgroup_path/$resource" || return 1
+  done
+  cgroup_before=$(timeout 5 sudo /usr/bin/base64 --wrap=0 -- \
+    "$cgroup_path/cgroup.events") || return 1
+  events=$(timeout 5 sudo /usr/bin/base64 --wrap=0 -- \
+    "$cgroup_path/memory.events") || return 1
+  events_local=$(timeout 5 sudo /usr/bin/base64 --wrap=0 -- \
+    "$cgroup_path/memory.events.local") || return 1
+  cgroup_after=$(timeout 5 sudo /usr/bin/base64 --wrap=0 -- \
+    "$cgroup_path/cgroup.events") || return 1
+  [[ -n $cgroup_before && ${#cgroup_before} -le 2048 \
+      && -n $cgroup_after && ${#cgroup_after} -le 2048 \
+      && -n $events && ${#events} -le 2048 \
+      && -n $events_local && ${#events_local} -le 2048 ]] || return 1
+  outer_cgroup_events_before_base64=$cgroup_before
+  outer_cgroup_events_after_base64=$cgroup_after
+  outer_memory_events_base64=$events
+  outer_memory_events_local_base64=$events_local
+}
+
+capture_systemd_result() {
+  local canonical='' control_seen=0 key snapshot valid=1 value
   (( unit_started == 1 && unit_terminal == 1 )) || return 1
-  resource="$cache/interactive-appliance-evidence/systemd-result.txt"
-  [[ ! -e $resource && ! -L $resource ]] || return 1
-  raw=$(mktemp --tmpdir="$(dirname "$resource")" .systemd-result.raw.XXXXXX) || return 1
-  temporary=$(mktemp --tmpdir="$(dirname "$resource")" .systemd-result.XXXXXX) || {
-    rm -f -- "$raw"
-    return 1
-  }
-  # The adopted evidence directory is intentionally written by the runner shell.
-  # shellcheck disable=SC2024
-  if ! sudo systemctl show "$unit" --property=LoadState --property=Type \
+  if ! snapshot=$(sudo systemctl show "$unit" --property=LoadState --property=Type \
       --property=RemainAfterExit --property=ActiveState --property=SubState \
       --property=Result --property=OOMPolicy --property=MemoryPeak \
       --property=MemoryMax --property=MemorySwapMax --property=MemorySwapPeak \
       --property=CPUUsageNSec --property=ExecMainCode \
-      --property=ExecMainStatus --property=ControlGroup > "$raw"; then
-    rm -f -- "$raw" "$temporary"
+      --property=ExecMainStatus --property=ControlGroup); then
     return 1
   fi
+  (( ${#snapshot} <= 8192 )) || return 1
   while IFS='=' read -r key value; do
     if [[ $key == ControlGroup ]]; then
-      if (( control_seen == 1 )) || [[ $value != "$expected_control_group" ]]; then
+      if (( control_seen == 1 )) \
+          || [[ -n $value && $value != "$expected_control_group" ]]; then
         valid=0
         break
       fi
-      unit_control_group=$value
+      if [[ $value == "$expected_control_group" ]]; then
+        unit_control_group=$value
+      fi
       control_seen=1
-    elif [[ ! $key =~ ^[A-Za-z][A-Za-z0-9]*$ || -z $value ]]; then
+    elif [[ ! $key =~ ^[A-Za-z][A-Za-z0-9]*$ || -z $value ]] || \
+         (( ${#value} > 256 )); then
       valid=0
       break
-    elif ! printf '%s=%s\n' "$key" "$value" >> "$temporary"; then
+    elif ! printf -v canonical '%s%s=%s\n' "$canonical" "$key" "$value"; then
       valid=0
       break
     fi
-  done < "$raw"
-  rm -f -- "$raw"
-  if (( valid == 0 || control_seen == 0 )); then
+    if (( ${#canonical} > 4096 )); then
+      valid=0
+      break
+    fi
+  done <<< "$snapshot"
+  if (( valid == 0 || control_seen == 0 )) || [[ -z $canonical ]]; then
+    return 1
+  fi
+  capture_outer_memory_events || return 1
+  if ! printf -v canonical \
+      '%sCgroupEventsBeforeBase64=%s\nCgroupMemoryEventsBase64=%s\nCgroupMemoryEventsLocalBase64=%s\nCgroupEventsAfterBase64=%s\n' \
+      "$canonical" "$outer_cgroup_events_before_base64" \
+      "$outer_memory_events_base64" "$outer_memory_events_local_base64" \
+      "$outer_cgroup_events_after_base64"; then
+    return 1
+  fi
+  (( ${#canonical} <= 4096 )) || return 1
+  systemd_result=$canonical
+  systemd_captured=1
+}
+
+write_systemd_result() {
+  local resource temporary
+  (( systemd_captured == 1 )) || return 1
+  resource="$cache/interactive-appliance-evidence/systemd-result.txt"
+  [[ ! -e $resource && ! -L $resource ]] || return 1
+  temporary=$(mktemp --tmpdir="$(dirname "$resource")" .systemd-result.XXXXXX) || return 1
+  if ! printf '%s' "$systemd_result" > "$temporary"; then
     rm -f -- "$temporary"
     return 1
   fi
@@ -271,6 +340,7 @@ write_systemd_result() {
 validate_evidence() {
   /usr/bin/env -i PATH=/usr/sbin:/usr/bin:/sbin:/bin PYTHONPATH="$root" \
     GITHUB_ACTIONS=true RUNNER_ENVIRONMENT=github-hosted PYTHONDONTWRITEBYTECODE=1 \
+    "GITHUB_SHA=$source_commit" "SYMBI_APPLIANCE_SOURCE_TREE=$source_tree" \
     "SYMBI_APPLIANCE_EXPECTED_EXPIRY=$SYMBI_APPLIANCE_EXPECTED_EXPIRY" \
     /usr/bin/python3 -m image.appliance.hosted --validate-evidence
 }
@@ -295,21 +365,68 @@ discard_appliance_output() {
 evidence_prepared=0
 evidence_status=0
 evidence_valid=0
-if (( status != 0 || ownership_status != 0 )) && ! sanitize_evidence; then
-  evidence_status=4
-elif ! adopt_evidence; then
-  evidence_status=4
-elif ! write_systemd_result; then
-  evidence_status=5
-else
-  evidence_prepared=1
+fallback_requested=0
+capture_systemd_result || true
+if (( systemd_captured == 1 )); then
+  if [[ ! -e $cache/interactive-appliance-evidence && \
+        ! -L $cache/interactive-appliance-evidence ]]; then
+    inner_evidence_absent=1
+  fi
+  if (( inner_evidence_absent == 0 )) && consume_cleanup_receipt; then
+    inner_cleanup_receipt=1
+  elif (( inner_evidence_absent == 1 )) \
+      && [[ -e $evidence_ready || -L $evidence_ready ]]; then
+    rm -f -- "$evidence_ready" || ownership_status=5
+    [[ ! -e $evidence_ready && ! -L $evidence_ready ]] || ownership_status=5
+  fi
+fi
+if (( systemd_captured == 1 \
+      && (inner_evidence_absent == 1 || inner_cleanup_receipt == 1) )); then
+  for path in "$cache/atomic-disk-evidence" "$cache/interactive-appliance-evidence" \
+              "$cache/interactive-appliance-artifact"; do
+    if [[ -e $path || -L $path ]]; then
+      if [[ -L $path || ! -d $path ]] || \
+         [[ -n "$(sudo find -P "$path" -xdev ! -type d ! \( -type f -links 1 \) -print -quit)" ]]; then
+        echo "Refusing unsafe appliance output: $path" >&2
+        ownership_status=3
+      elif ! sudo find -P "$path" -xdev \( -type d -o \( -type f -links 1 \) \) \
+        -exec chown --no-dereference "$(id -u):$(id -g)" -- {} +; then
+        ownership_status=4
+      fi
+    fi
+  done
+fi
+if (( status != 0 && ownership_status == 0 && inner_evidence_absent == 1 \
+      && unit_started == 1 && unit_terminal == 1 && systemd_captured == 1 )) \
+    && [[ $unit_outcome == failure ]]; then
+  fallback_requested=1
+fi
+if (( fallback_requested == 0 )); then
+  if (( status != 0 || ownership_status != 0 )) && ! sanitize_evidence; then
+    evidence_status=4
+  elif ! adopt_evidence; then
+    evidence_status=4
+  else
+    evidence_prepared=1
+  fi
 fi
 cleanup_status=0
 if ! stop_and_reset_unit; then
   cleanup_status=9
 fi
+if (( fallback_requested == 1 && cleanup_status == 0 )); then
+  if ! create_outer_evidence; then
+    evidence_status=4
+  elif ! adopt_evidence; then
+    evidence_status=4
+  else
+    evidence_prepared=1
+  fi
+fi
 if (( evidence_prepared == 1 && cleanup_status == 0 )); then
-  if ! adopt_evidence; then
+  if ! write_systemd_result; then
+    evidence_status=5
+  elif ! adopt_evidence; then
     evidence_status=6
   elif ! validate_evidence; then
     evidence_status=7
@@ -331,6 +448,9 @@ if (( evidence_valid == 1 )); then
   fi
 fi
 if (( evidence_valid == 0 )); then
+  printf 'Appliance evidence unavailable: status=%d ownership=%d terminal=%d outcome=%s captured=%d prepared=%d cleanup=%d evidence_status=%d\n' \
+    "$status" "$ownership_status" "$unit_terminal" "${unit_outcome:-unknown}" \
+    "$systemd_captured" "$evidence_prepared" "$cleanup_status" "$evidence_status" >&2
   if ! discard_appliance_output && (( evidence_status == 0 )); then
     evidence_status=10
   fi

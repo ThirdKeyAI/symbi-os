@@ -12,6 +12,7 @@ import stat
 
 
 USERNAME = "symbi-test"
+STATUS_PREFIX = "SYMBI_APPLIANCE_STATUS:"
 SDDM_CONFIGURATION = """# HIGHLY EXPERIMENTAL disposable development appliance only.
 # This locked account has no password or key and is not present in the product image.
 [Autologin]
@@ -25,13 +26,21 @@ PROVISION_COMMAND_TIMEOUTS = {
     "lock-fixture-account": 10,
     "select-graphical-target": 10,
     "enable-display-manager": 15,
-    "remove-fixture-boot-wants": 240,
 }
+SYSTEMCTL_OFFLINE = (
+    "/usr/bin/systemctl", "--root=/", "--no-reload", "--quiet",
+)
+SELECT_GRAPHICAL_TARGET_COMMAND = (
+    *SYSTEMCTL_OFFLINE, "set-default", "graphical.target",
+)
+ENABLE_DISPLAY_MANAGER_COMMAND = (
+    *SYSTEMCTL_OFFLINE, "enable", "--force", "sddm.service",
+)
 PROVISION_LOCAL_WORK_BUDGET_SECONDS = 30
-PROVISION_SERVICE_TIMEOUT_SECONDS = 360
+PROVISION_SERVICE_TIMEOUT_SECONDS = 120
 VERIFIER_SERVICE_TIMEOUT_SECONDS = 420
 FIRST_BOOT_ORCHESTRATION_BUDGET_SECONDS = 180
-FIRST_BOOT_CONTROLLER_MARGIN_SECONDS = 240
+FIRST_BOOT_CONTROLLER_MARGIN_SECONDS = 480
 FIRST_BOOT_TIMEOUT_SECONDS = 1200
 PROVISION_SUBPROCESS_BUDGET_SECONDS = sum(PROVISION_COMMAND_TIMEOUTS.values())
 PROVISION_PHASE_BUDGET_SECONDS = (
@@ -96,21 +105,31 @@ def run(command, *, timeout):
     return result.stdout
 
 
+def status(name):
+    """Emit one fixed public-safe lifecycle marker to the private serial log."""
+    print(STATUS_PREFIX + name, flush=True)
+
+
 def run_phase(name, command):
     """Run one named phase with its reviewed hard deadline."""
-    return run(command, timeout=PROVISION_COMMAND_TIMEOUTS[name])
-
-
-def remove_fixture_boot_wants():
-    """Stage one bounded deployment without the two first-boot fixture wants."""
-    run_phase("remove-fixture-boot-wants", [
-        "/usr/bin/rpm-ostree", "kargs",
-        "--delete-if-present=systemd.wants=p.service",
-        "--delete-if-present=systemd.wants=v.service",
-    ])
+    status("provision-phase-start:" + name)
+    try:
+        result = run(command, timeout=PROVISION_COMMAND_TIMEOUTS[name])
+    except subprocess.TimeoutExpired:
+        status("provision-phase-timeout:" + name)
+        raise
+    except subprocess.CalledProcessError:
+        status("provision-phase-exit:" + name)
+        raise
+    except Exception:
+        status("provision-phase-error:" + name)
+        raise
+    status("provision-phase-complete:" + name)
+    return result
 
 
 def main():
+    status("provision-start")
     product = Path("/sys/class/dmi/id/product_name").read_text().strip()
     if (os.geteuid() != 0 or product != "Symbi-Interactive-Appliance"
             or Path("/run/.containerenv").exists() or len(sys.argv) != 2):
@@ -163,24 +182,24 @@ def main():
     with autologin.open("x") as stream:
         stream.write(SDDM_CONFIGURATION)
     autologin.chmod(0o644)
-    run_phase("select-graphical-target", [
-        "/usr/bin/systemctl", "set-default", "graphical.target",
-    ])
-    run_phase("enable-display-manager", [
-        "/usr/bin/systemctl", "enable", "--force", "sddm.service",
-    ])
-    remove_fixture_boot_wants()
+    run_phase("select-graphical-target", SELECT_GRAPHICAL_TARGET_COMMAND)
+    run_phase("enable-display-manager", ENABLE_DISPLAY_MANAGER_COMMAND)
     state = {
         "schema": 1, "nonce": expected["nonce"], "source_binding": expected["source_binding"],
         "expected_sha256": digest(expected_path), "provision_sha256": digest(Path(__file__)),
         "kernel": platform.release(), "account_created": True, "password_set": False,
         "authorized_key_written": False, "production_image_modified": False,
-        "autologin_sha256": digest(autologin), "boot_wants_removed": True,
+        "autologin_sha256": digest(autologin), "transient_boot_units": True,
     }
     target = Path("/run/symbi-appliance-provision.json")
     target.write_text(json.dumps(state, sort_keys=True) + "\n")
     target.chmod(0o600)
+    status("provision-complete")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except (Exception, SystemExit):
+        status("provision-failed")
+        raise

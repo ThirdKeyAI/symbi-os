@@ -1,4 +1,5 @@
 """Fail-closed contract for the hosted interactive development appliance."""
+import base64
 from datetime import datetime, timedelta, timezone
 import hashlib
 import json
@@ -12,6 +13,7 @@ VIRTUAL_DISK_BYTES = 24 * 1024**3
 RETENTION_DAYS = 2
 FIRST_BOOT_TIMEOUT_SECONDS = 20 * 60
 APPLIANCE_CONTAINER_MEMORY_BYTES = 4 * 1024**3
+APPLIANCE_FAILURE_MEMORY_PEAK_TOLERANCE_BYTES = 4096
 APPLIANCE_CONTROLLER_MEMORY_BYTES = 5 * 1024**3
 APPLIANCE_CONTROLLER_MARGIN_BYTES = (
     APPLIANCE_CONTROLLER_MEMORY_BYTES - APPLIANCE_CONTAINER_MEMORY_BYTES
@@ -32,7 +34,53 @@ FAILURE_LOG_BOUNDS = {
         "reboot-serial.log": 4 * 1024**2,
     },
 }
-FAILURE_EXCERPT_BYTES = 16 * 1024
+FAILURE_REJECTION_REASONS = frozenset({
+    "empty", "missing", "oversized", "unsafe", "unreadable", "changed",
+})
+GUEST_REPORT_STATES = frozenset({
+    "absent", "bounded", "empty", "oversized", "unsafe", "unreadable", "changed",
+})
+PRODUCER_FAILURE_PHASES = frozenset({
+    "initialization", "input-validation", "raw-conversion", "first-boot",
+    "guest-report", "artifact-compression", "artifact-validation",
+})
+PRODUCER_FAILURE_KINDS = frozenset({
+    "exception", "qemu-exit", "subprocess-exit", "subprocess-timeout",
+    "controller-timeout",
+})
+PRODUCER_SUBPROCESS_TIMEOUTS = {
+    "input-validation": frozenset({15}),
+    "raw-conversion": frozenset({1200}),
+    "artifact-compression": frozenset({300, 1200}),
+    "artifact-validation": frozenset({30}),
+}
+FAILURE_ERROR_CLASSES = frozenset({
+    "CalledProcessError", "JSONDecodeError", "MemoryError", "OSError",
+    "RuntimeError", "TimeoutError", "TimeoutExpired", "ValueError",
+})
+CHILD_RESULT_STATES = frozenset({
+    "accepted", "missing", "unreadable", "invalid-schema",
+    "resource-receipt-rejected", "resource-receipt-one-page-peak",
+})
+PRODUCER_CONTAINER_NAME = "symbi-interactive-appliance-producer"
+PRODUCER_ATTEMPT_STAGES = frozenset({
+    "producer", "artifact-validation", "reboot-preparation", "reboot",
+    "retention", "cleanup",
+})
+PROVISION_STATUS_PHASES = (
+    "selinux-enforcement", "create-fixture-account", "lock-fixture-account",
+    "select-graphical-target", "enable-display-manager",
+)
+FAILURE_STATUS_SENTINELS = frozenset({
+    "provision-start", "provision-complete", "provision-failed",
+    "verifier-start", "verifier-provision-receipt-accepted",
+    "verifier-graphical-session-observed", "verifier-walker-observed",
+    "verifier-report-write-start", "verifier-report-write-complete", "verifier-failed",
+} | {
+    f"provision-phase-{outcome}:{phase}"
+    for phase in PROVISION_STATUS_PHASES
+    for outcome in ("start", "complete", "exit", "timeout", "error")
+})
 SCOPE = (
     "HIGHLY EXPERIMENTAL offline development appliance; no release, signature, "
     "security, containment or production-account qualification"
@@ -48,6 +96,8 @@ User=symbi-test
 Session=symbi.desktop
 Relogin=true
 """
+TRANSIENT_BOOT_CREDENTIAL = "systemd.unit-dropin.graphical.target~symbi-appliance"
+TRANSIENT_BOOT_DROPIN = b"[Unit]\nWants=p.service v.service\n"
 
 
 def sha256(path):
@@ -85,7 +135,6 @@ def installer_arguments(manifest_digest):
         "--enforce-container-sigpolicy", "--filesystem=btrfs", "--generic-image",
         "--via-loopback", "--karg=console=ttyS0,115200n8", "--karg=selinux=1",
         "--karg=enforcing=1", "--karg=systemd.unit=graphical.target",
-        "--karg=systemd.wants=p.service", "--karg=systemd.wants=v.service",
         "/output/atomic.raw",
     ]
 
@@ -107,6 +156,15 @@ def firmware_arguments(directory=Path("/inputs")):
             raise ValueError("QEMU firmware credential name is too long")
         result += ["-fw_cfg", f"name={name},file={directory / filename}"]
     return result
+
+
+def transient_boot_arguments():
+    """Start fixture units from an in-memory system credential for this boot only."""
+    encoded = base64.b64encode(TRANSIENT_BOOT_DROPIN).decode("ascii")
+    credential = (
+        "io.systemd.credential.binary:" + TRANSIENT_BOOT_CREDENTIAL + "=" + encoded
+    )
+    return ["-smbios", "type=11,value=" + credential]
 
 
 def interactive_devices():
@@ -133,7 +191,7 @@ def provision_qemu_arguments():
         "-device", "virtserialport,chardev=report,name=org.symbi.appliance",
         "-serial", "file:/output/evidence/provision-serial.log",
         "-monitor", "none", "-display", "none",
-        *firmware_arguments(),
+        *firmware_arguments(), *transient_boot_arguments(),
     ]
 
 
@@ -174,43 +232,7 @@ def failure_record(source_binding, reason):
     }
 
 
-def _safe_diagnostic_text(value, maximum):
-    """Accept only bounded printable text after the controller has redacted it."""
-    if not isinstance(value, str):
-        return False
-    try:
-        encoded = value.encode("utf-8")
-    except UnicodeError:
-        return False
-    if not 0 < len(encoded) <= maximum:
-        return False
-    if any(
-        (ord(character) < 32 and character not in "\n\t")
-        or 127 <= ord(character) <= 159
-        for character in value
-    ):
-        return False
-    lower = value.lower()
-    forbidden = (
-        "-----begin private key-----", "-----begin rsa private key-----",
-        "-----begin openssh private key-----", "authorization: bearer ",
-        "authorization: basic ",
-        "github_pat_", "ghp_", "glpat-", "ssh-rsa ", "ssh-ed25519 ",
-    )
-    if (any(token in lower for token in forbidden)
-            or re.search(r"-----begin [a-z ]*private key-----", lower)):
-        return False
-    if (re.search(
-            r"(?i)\b[A-Z0-9_]*(?:PASSWORD|PASSWD|TOKEN|SECRET|API_KEY|"
-            r"PRIVATE_KEY|ACCESS_KEY)[A-Z0-9_]*\s*[:=]", value)
-            or re.search(r"(?i)\b(?:https?|ssh)://", value)):
-        return False
-    if re.search(r"(?<![A-Za-z0-9._-])/(?:[^\s\"'<>]+)", value):
-        return False
-    return True
-
-
-def validate_resource_receipt(value):
+def _validate_resource_receipt(value, peak_maximum):
     limit_keys = set(APPLIANCE_CONTAINER_LIMITS)
     final_keys = limit_keys | {"memory.peak", "memory.events", "cpu.stat"}
     if (not isinstance(value, dict) or set(value) != {"limits", "cgroup_final"}
@@ -224,7 +246,7 @@ def validate_resource_receipt(value):
     if (any(not isinstance(final.get(name), str) for name in final_keys)
             or not 0 < len(final["memory.peak"]) <= 20
             or re.fullmatch(r"[0-9]+", final["memory.peak"]) is None
-            or int(final["memory.peak"]) > APPLIANCE_CONTAINER_MEMORY_BYTES
+            or int(final["memory.peak"]) > peak_maximum
             or not 0 < len(final["memory.events"]) <= 4096
             or not 0 < len(final["cpu.stat"]) <= 4096):
         return False
@@ -243,45 +265,204 @@ def validate_resource_receipt(value):
     return True
 
 
+def validate_resource_receipt(value):
+    """Validate a success-capable child receipt against the exact 4 GiB limit."""
+    return _validate_resource_receipt(value, APPLIANCE_CONTAINER_MEMORY_BYTES)
+
+
+def classify_failure_resource_receipt(value):
+    """Classify bounded failure evidence without relaxing any success receipt."""
+    if validate_resource_receipt(value):
+        return "accepted"
+    tolerated = APPLIANCE_CONTAINER_MEMORY_BYTES + \
+        APPLIANCE_FAILURE_MEMORY_PEAK_TOLERANCE_BYTES
+    if (_validate_resource_receipt(value, tolerated)
+            and int(value["cgroup_final"]["memory.peak"]) == tolerated):
+        return "resource-receipt-one-page-peak"
+    return "resource-receipt-rejected"
+
+
+def validate_failure_resource_receipt(value):
+    return classify_failure_resource_receipt(value) in {
+        "accepted", "resource-receipt-one-page-peak",
+    }
+
+
+def _validate_child_results(value, resources):
+    if (not isinstance(value, dict)
+            or any(phase not in FAILURE_LOG_BOUNDS for phase in value)
+            or not set(resources).issubset(value)):
+        return False
+    for phase, state in value.items():
+        if not isinstance(state, str) or state not in CHILD_RESULT_STATES:
+            return False
+        receipt = resources.get(phase)
+        expected = (classify_failure_resource_receipt(receipt)
+                    if receipt is not None else None)
+        if state in {"accepted", "resource-receipt-one-page-peak"}:
+            if expected != state:
+                return False
+        elif receipt is not None:
+            return False
+    return True
+
+
+def _validate_producer_container(value):
+    if value is None:
+        return True
+    if (not isinstance(value, dict)
+            or set(value) != {"name", "State"}
+            or value.get("name") != PRODUCER_CONTAINER_NAME
+            or not isinstance(value.get("State"), dict)
+            or set(value["State"]) != {"ExitCode", "OOMKilled"}
+            or type(value["State"].get("ExitCode")) is not int
+            or not 0 <= value["State"]["ExitCode"] <= 255
+            or type(value["State"].get("OOMKilled")) is not bool):
+        return False
+    return True
+
+
 def _validate_failure_diagnostics(value):
     if (not isinstance(value, dict)
             or any(phase not in FAILURE_LOG_BOUNDS for phase in value)):
         return False
     for phase, diagnostic in value.items():
-        if not isinstance(diagnostic, dict) or set(diagnostic) != {"result", "logs", "rejected"}:
+        if (not isinstance(diagnostic, dict)
+                or set(diagnostic) != {"result", "logs", "rejected", "guest_report"}):
             return False
         result = diagnostic["result"]
         if (not isinstance(result, dict)
-                or set(result) != {"bytes", "sha256", "failure_type", "message", "redacted"}
-                or type(result["bytes"]) is not int or not 0 < result["bytes"] <= 256*1024
-                or not exact_hash(result["sha256"])
+                or set(result) != {"failure_type", "producer_status"}
                 or not isinstance(result["failure_type"], str)
-                or re.fullmatch(r"[A-Za-z][A-Za-z0-9_.]{0,63}", result["failure_type"]) is None
-                or not _safe_diagnostic_text(result["message"], 4096)
-                or type(result["redacted"]) is not bool):
+                or re.fullmatch(r"[A-Za-z][A-Za-z0-9_.]{0,63}", result["failure_type"]) is None):
+            return False
+        producer_status = result["producer_status"]
+        if phase == "reboot":
+            if producer_status is not None:
+                return False
+        elif not producer_failure_type_matches(
+                producer_status, result["failure_type"]):
             return False
         allowed = FAILURE_LOG_BOUNDS[phase]
         logs, rejected = diagnostic["logs"], diagnostic["rejected"]
         if (not isinstance(logs, dict) or any(name not in allowed for name in logs)
-                or not isinstance(rejected, list) or rejected != sorted(set(rejected))
-                or any(name not in allowed for name in rejected)
-                or set(logs).intersection(rejected)):
+                or not isinstance(rejected, dict) or any(name not in allowed for name in rejected)
+                or any(not isinstance(reason, str)
+                       or reason not in FAILURE_REJECTION_REASONS
+                       for reason in rejected.values())
+                or set(logs).intersection(rejected)
+                or set(logs).union(rejected) != set(allowed)):
             return False
         for name, item in logs.items():
             if (not isinstance(item, dict)
-                    or set(item) != {"bytes", "sha256", "excerpt", "truncated", "redacted"}
+                    or set(item) != {
+                        "bytes", "authority", "observed_sentinels",
+                        "observed_error_classes",
+                    }
                     or type(item["bytes"]) is not int
                     or not 0 < item["bytes"] <= allowed[name]
-                    or not exact_hash(item["sha256"])
-                    or not _safe_diagnostic_text(item["excerpt"], FAILURE_EXCERPT_BYTES)
-                    or type(item["truncated"]) is not bool
-                    or type(item["redacted"]) is not bool):
+                    or item["authority"] != "untrusted-log-observation"
+                    or not isinstance(item["observed_sentinels"], list)
+                    or any(not isinstance(value, str)
+                           for value in item["observed_sentinels"])
+                    or item["observed_sentinels"] != sorted(
+                        set(item["observed_sentinels"]))
+                    or any(value not in FAILURE_STATUS_SENTINELS
+                           for value in item["observed_sentinels"])
+                    or not isinstance(item["observed_error_classes"], list)
+                    or any(not isinstance(value, str)
+                           for value in item["observed_error_classes"])
+                    or item["observed_error_classes"] != sorted(
+                        set(item["observed_error_classes"]))
+                    or any(value not in FAILURE_ERROR_CLASSES
+                           for value in item["observed_error_classes"])):
                 return False
+        guest_report = diagnostic["guest_report"]
+        if phase == "reboot":
+            if guest_report is not None:
+                return False
+        elif (not isinstance(guest_report, dict)
+              or not isinstance(guest_report.get("state"), str)
+              or guest_report.get("state") not in GUEST_REPORT_STATES):
+            return False
+        elif guest_report["state"] == "bounded":
+            if (set(guest_report) != {"state", "bytes"}
+                    or type(guest_report["bytes"]) is not int
+                    or not 0 < guest_report["bytes"] <= 128 * 1024):
+                return False
+        elif set(guest_report) != {"state"}:
+            return False
     return True
 
 
+def validate_producer_failure_status(value):
+    """Validate structured producer progress without retaining exception text."""
+    if (not isinstance(value, dict)
+            or set(value) != {
+                "phase", "kind", "exit_code", "timeout_seconds", "qemu_exit_code",
+            }
+            or not isinstance(value.get("phase"), str)
+            or value.get("phase") not in PRODUCER_FAILURE_PHASES
+            or not isinstance(value.get("kind"), str)
+            or value.get("kind") not in PRODUCER_FAILURE_KINDS):
+        return False
+    for name in ("exit_code", "qemu_exit_code"):
+        status = value[name]
+        if status is not None and (type(status) is not int or not -255 <= status <= 255):
+            return False
+    timeout = value["timeout_seconds"]
+    if timeout is not None and type(timeout) is not int:
+        return False
+    phase, kind = value["phase"], value["kind"]
+    exit_code, qemu_exit = value["exit_code"], value["qemu_exit_code"]
+    if phase in {"initialization", "input-validation", "raw-conversion"}:
+        if qemu_exit is not None:
+            return False
+    elif phase in {
+        "guest-report", "artifact-compression", "artifact-validation",
+    } and qemu_exit != 0:
+        return False
+    if phase == "guest-report" and kind != "exception":
+        return False
+    if kind in {"qemu-exit", "subprocess-exit"}:
+        if exit_code in {None, 0} or timeout is not None:
+            return False
+        if kind == "qemu-exit":
+            return phase == "first-boot" and qemu_exit == exit_code
+        return phase in {
+            "input-validation", "raw-conversion",
+            "artifact-compression", "artifact-validation",
+        }
+    if kind in {"subprocess-timeout", "controller-timeout"}:
+        if exit_code is not None or timeout is None:
+            return False
+        if kind == "controller-timeout":
+            return phase == "first-boot" and timeout == FIRST_BOOT_TIMEOUT_SECONDS
+        return (phase in PRODUCER_SUBPROCESS_TIMEOUTS
+                and timeout in PRODUCER_SUBPROCESS_TIMEOUTS[phase])
+    if exit_code is not None or timeout is not None:
+        return False
+    if phase == "first-boot" and qemu_exit is not None:
+        return False
+    return True
+
+
+def producer_failure_type_matches(status, failure_type):
+    """Bind typed process status to the matching private exception class."""
+    if not validate_producer_failure_status(status):
+        return False
+    expected = {
+        "qemu-exit": "RuntimeError",
+        "subprocess-exit": "CalledProcessError",
+        "subprocess-timeout": "TimeoutExpired",
+        "controller-timeout": "TimeoutError",
+    }.get(status["kind"])
+    return expected is None or failure_type == expected
+
+
 def controller_failure_record(source_binding, stage, error_type, cleanup, resources,
-                              diagnostics=None):
+                              diagnostics=None, child_results=None,
+                              producer_container=None):
     """Return a bounded, path-free failure receipt for the hosted controller."""
     source = validate_source_binding(source_binding)
     if stage not in CONTROLLER_STAGES:
@@ -298,12 +479,32 @@ def controller_failure_record(source_binding, stage, error_type, cleanup, resour
         raise ValueError("Invalid appliance cleanup receipt")
     if (not isinstance(resources, dict)
             or any(name not in {"producer", "reboot"} for name in resources)
-            or any(not validate_resource_receipt(value) for value in resources.values())):
+            or any(not validate_failure_resource_receipt(value)
+                   for value in resources.values())):
         raise ValueError("Invalid appliance resource receipt")
     diagnostics = {} if diagnostics is None else diagnostics
     if (not _validate_failure_diagnostics(diagnostics)
             or not set(diagnostics).issubset(resources)):
         raise ValueError("Invalid appliance failure diagnostics")
+    child_results = {} if child_results is None else child_results
+    if not _validate_child_results(child_results, resources):
+        raise ValueError("Invalid appliance child-result state")
+    if not _validate_producer_container(producer_container):
+        raise ValueError("Invalid appliance producer container state")
+    external_invalidation = (
+        stage == "cleanup" and error_type == "AtomicControllerFailure")
+    if external_invalidation:
+        if (resources or diagnostics or child_results
+                or producer_container is not None):
+            raise ValueError("External appliance invalidation retained child state")
+    elif stage in PRODUCER_ATTEMPT_STAGES:
+        if set(child_results) != set(FAILURE_LOG_BOUNDS):
+            raise ValueError("Incomplete appliance child-result state")
+        if producer_container is None:
+            raise ValueError("Missing appliance producer container state")
+    elif (child_results not in ({}, {"producer": "missing", "reboot": "missing"})
+          or producer_container is not None):
+        raise ValueError("Unexpected pre-producer appliance child state")
     result = failure_record(source, error_type)
     result.update({
         "stage": stage,
@@ -311,6 +512,8 @@ def controller_failure_record(source_binding, stage, error_type, cleanup, resour
         "cleanup": cleanup,
         "resources": resources,
         "diagnostics": diagnostics,
+        "child_results": child_results,
+        "producer_container": producer_container,
     })
     return result
 
@@ -376,7 +579,7 @@ def validate_guest_report(report, expected, probe_hash, expected_hash):
                 "authorized_keys_absent": True,
             }
             and report.get("fixture_cleanup") == {
-                "boot_wants_removed": True, "persistent_scripts_absent": True,
+                "persistent_boot_wants_absent": True, "persistent_scripts_absent": True,
                 "persistent_units_absent": True, "credentials_absent": True,
             }
             and report.get("desktop_components") == {

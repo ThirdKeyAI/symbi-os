@@ -1,5 +1,7 @@
 """Prepare two isolated containers for appliance production and cold reboot."""
 from datetime import datetime, timedelta, timezone
+import base64
+import binascii
 import hashlib
 import json
 import os
@@ -12,10 +14,15 @@ import re
 import sys
 
 from image.appliance.contract import (APPLIANCE_CONTAINER_LIMITS, ARTIFACT_NAME,
-                                      FAILURE_EXCERPT_BYTES, FAILURE_LOG_BOUNDS,
+                                      CHILD_RESULT_STATES,
+                                      FAILURE_ERROR_CLASSES, FAILURE_LOG_BOUNDS,
+                                      FAILURE_REJECTION_REASONS, FAILURE_STATUS_SENTINELS,
+                                      PRODUCER_CONTAINER_NAME,
                                       RETENTION_DAYS, SDDM_CONFIGURATION, SCOPE,
                                       build_manifest,
+                                      classify_failure_resource_receipt,
                                       controller_failure_record, failure_record, sha256,
+                                      producer_failure_type_matches,
                                       provision_qemu_arguments, unique_json,
                                       validate_guest_report, validate_reboot_report,
                                       validate_resource_receipt,
@@ -39,20 +46,8 @@ FAILURE_CLAIMS = (
     "signature_qualified",
 )
 INNER_FAILURE_KEYS = set(failure_record({}, "")).union({"limits", "cgroup_final"})
-SENSITIVE_PATTERNS = (
-    re.compile(r"(?is)-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----"),
-    re.compile(r"(?is)-----BEGIN [A-Z ]*PRIVATE KEY-----.*"),
-    re.compile(r"(?im)\bauthorization\s*:\s*(?:bearer|basic)\s+[^\r\n]*"),
-    re.compile(
-        r"(?im)\b[A-Z0-9_]*(?:PASSWORD|PASSWD|TOKEN|SECRET|API_KEY|"
-        r"PRIVATE_KEY|ACCESS_KEY)[A-Z0-9_]*\s*[:=][^\r\n]*"
-    ),
-    re.compile(r"(?i)\b(?:github_pat_|gh[pousr]_|glpat-)[A-Za-z0-9_-]+"),
-    re.compile(r"(?i)\bssh-(?:rsa|ed25519)\s+[A-Za-z0-9+/=]+(?:\s+[^\n]+)?"),
-)
-URL_PATTERN = re.compile(r"(?i)\b(?:https?|ssh)://[^\s\"'<>]+")
-ABSOLUTE_PATH_PATTERN = re.compile(r"(?<![A-Za-z0-9._-])/(?:[^\s\"'<>]+)")
 OUTER_MEMORY_MAX_BYTES = 5 * 1024**3
+SYSTEMD_UINT64_MAX = (1 << 64) - 1
 CREDENTIAL_TOKENS = (b"PRIVATE KEY-----", b"ssh-rsa ", b"ssh-ed25519 ")
 PRODUCER_RESULT_KEYS = frozenset({
     "schema", "passed", "guest_booted", "graphical_desktop_observed",
@@ -93,10 +88,35 @@ EVIDENCE_FILE_LIMITS = {
 }
 SUCCESS_EVIDENCE_FILES = frozenset(EVIDENCE_FILE_LIMITS)
 FAILURE_EVIDENCE_FILES = frozenset({"result.json", "systemd-result.txt"})
+OUTER_FAILURE_KIND = "outer-systemd-failure"
+OUTER_FAILURE_ATOMIC_RESULT_MAX_BYTES = 256 * 1024
+OUTER_FAILURE_COMMAND_STAGES = {
+    "load-image": "image-load",
+    "inspect-image": "image-inspection",
+    "sign-source": "source-authentication",
+    "install": "installation",
+    "disk-loops-after-install": "installation-validation",
+    "interactive-appliance-producer": "producer",
+    "interactive-appliance-reboot": "reboot",
+}
+OUTER_FAILURE_STAGES = frozenset({
+    "outer-controller", "image-load", "image-inspection",
+    "source-authentication", "installation", "installation-validation",
+    "appliance-initialization", "producer", "reboot", "cleanup",
+})
+OUTER_FAILURE_CLEANUP_COMMANDS = frozenset({
+    "disk-loops-cleanup", "disk-loops-absent", "remove-image", "image-absent",
+})
 SYSTEMD_RESULT_KEYS = frozenset({
     "LoadState", "Type", "RemainAfterExit", "ActiveState", "SubState",
     "Result", "OOMPolicy", "MemoryMax", "MemoryPeak", "MemorySwapMax",
     "MemorySwapPeak", "CPUUsageNSec", "ExecMainCode", "ExecMainStatus",
+    "CgroupEventsBeforeBase64", "CgroupEventsAfterBase64",
+    "CgroupMemoryEventsBase64", "CgroupMemoryEventsLocalBase64",
+})
+OUTER_CGROUP_EVENT_KEYS = frozenset({"populated", "frozen"})
+OUTER_MEMORY_EVENT_KEYS = frozenset({
+    "low", "high", "max", "oom", "oom_kill", "oom_group_kill",
 })
 PUBLIC_ARTIFACT_FILES = frozenset({ARTIFACT_NAME, "manifest.json", "display.ppm"})
 PUBLIC_ARTIFACT_LIMITS = {
@@ -154,6 +174,128 @@ def _schema_one(record):
     return isinstance(record, dict) and type(record.get("schema")) is int and record["schema"] == 1
 
 
+def _explicit_checkout_binding():
+    """Return the workflow-bound checkout without invoking git as root."""
+    commit = os.environ.get("GITHUB_SHA")
+    tree = os.environ.get("SYMBI_APPLIANCE_SOURCE_TREE")
+    if (not isinstance(commit, str) or re.fullmatch(r"[0-9a-f]{40}", commit) is None
+            or not isinstance(tree, str) or re.fullmatch(r"[0-9a-f]{40}", tree) is None):
+        raise ValueError("Explicit appliance checkout binding required")
+    return {"source_commit": commit, "source_tree": tree}
+
+
+def _outer_failure_progress(root, checkout):
+    """Extract only fixed enums and integers from the private Atomic result."""
+    unavailable = ("outer-controller", "unknown")
+    try:
+        raw = _bounded_regular(
+            root / ".cache/atomic-disk-evidence/result.json",
+            OUTER_FAILURE_ATOMIC_RESULT_MAX_BYTES,
+        )
+        record = unique_json(raw)
+        lock = unique_json(_bounded_regular(
+            root / "image/desktop-images.lock.json", 1024 * 1024))
+        selected_commit = lock["images"]["generic"]["tested_commit"]
+    except (OSError, ValueError, TypeError, UnicodeError, json.JSONDecodeError):
+        return unavailable
+    commands = record.get("commands")
+    if (not _schema_one(record) or record.get("passed") is not False
+            or record.get("qualification") != "appliance"
+            or record.get("source_commit") != checkout["source_commit"]
+            or record.get("image_source_commit") != selected_commit
+            or re.fullmatch(r"[0-9a-f]{40}", selected_commit) is None
+            or not isinstance(commands, list) or len(commands) > 256):
+        return unavailable
+    for claim in (
+            "passed", "guest_booted", "graphical_desktop_observed",
+            "artifact_retained", "independent_reboot_passed", "os_qualified",
+            "release_qualified", "signature_qualified"):
+        if claim in record and record[claim] is not False:
+            return unavailable
+
+    def fixed_command(name):
+        stage = OUTER_FAILURE_COMMAND_STAGES.get(name)
+        if stage is not None:
+            return stage, name
+        if (name in OUTER_FAILURE_CLEANUP_COMMANDS
+                or name.startswith("cleanup-")
+                or name.startswith("absent-")
+                or name.startswith("detach-owned-loop-")):
+            return "cleanup", "cleanup"
+        return None
+
+    active = record.get("active_command")
+    if active is not None:
+        if (not isinstance(active, dict) or set(active) != {"name", "command"}
+                or not isinstance(active.get("name"), str)
+                or not isinstance(active.get("command"), list)):
+            return unavailable
+        mapped = fixed_command(active["name"])
+        if mapped is not None:
+            return mapped
+        return unavailable
+    failed = None
+    last_stage = None
+    for item in commands:
+        if (not isinstance(item, dict) or set(item) != {"name", "exit_code"}
+                or not isinstance(item.get("name"), str)
+                or type(item.get("exit_code")) is not int
+                or not 0 <= item["exit_code"] <= 255):
+            return unavailable
+        name, status = item["name"], item["exit_code"]
+        mapped = fixed_command(name)
+        if mapped is not None and mapped[1] != "cleanup":
+            stage = mapped[0]
+            last_stage = stage
+            if status != 0 and failed is None:
+                failed = mapped
+        elif mapped == ("cleanup", "cleanup") and status != 0 and failed is None:
+            failed = mapped
+    if failed is not None:
+        return failed
+    if record.get("installation_completed") is True:
+        stage = "appliance-initialization"
+    elif record.get("installation_attempted") is True:
+        stage = "installation-validation"
+    else:
+        stage = last_stage or "outer-controller"
+    return stage, "unknown"
+
+
+def outer_failure_record(root):
+    """Build a content-free negative receipt for failures before appliance evidence."""
+    root = Path(root).resolve()
+    checkout = _explicit_checkout_binding()
+    stage, command = _outer_failure_progress(root, checkout)
+    if stage not in OUTER_FAILURE_STAGES:
+        raise ValueError("Invalid outer appliance failure stage")
+    cleanup = {
+        "stage_directory_removed": _direct_path_absent(
+            root / ".cache/interactive-appliance-stage"),
+        "user_artifact_absent": _direct_path_absent(
+            root / ".cache/interactive-appliance-artifact"),
+        "screenshot_artifact_absent": _direct_path_absent(
+            root / ".cache/interactive-appliance-evidence/display.ppm"),
+        "non_controller_evidence_removed": True,
+    }
+    return {
+        "schema": 1,
+        "evidence_kind": OUTER_FAILURE_KIND,
+        **{name: False for name in FAILURE_CLAIMS},
+        "source": {
+            "repository": "ThirdKeyAI/symbi-os",
+            "commit": checkout["source_commit"],
+            "tree": checkout["source_tree"],
+        },
+        "stage": stage,
+        "failed_command": command,
+        "failure": "SystemdUnitFailure",
+        "inner_evidence_available": False,
+        "cleanup": cleanup,
+        "scope": SCOPE,
+    }
+
+
 def _bounded_regular(path, maximum):
     """Read one direct regular file without following links or blocking on specials."""
     try:
@@ -206,115 +348,170 @@ def _bounded_regular(path, maximum):
         os.close(directory)
 
 
-def _sanitize_diagnostic(raw, maximum):
-    """Return printable path-free text and whether any content was removed."""
-    if isinstance(raw, bytes):
-        text = raw.decode("utf-8", errors="replace")
-    elif isinstance(raw, str):
-        text = raw
-    else:
-        raise TypeError("Diagnostic input must be text or bytes")
-    text = text.replace("\r\n", "\n").replace("\r", "\n")
-    redacted = "\ufffd" in text
-    text = text.replace("\ufffd", "?")
-    for pattern in SENSITIVE_PATTERNS:
-        changed, count = pattern.subn("<redacted>", text)
-        text, redacted = changed, redacted or count > 0
-    changed, count = URL_PATTERN.subn("<url>", text)
-    text, redacted = changed, redacted or count > 0
-    changed, count = ABSOLUTE_PATH_PATTERN.subn("<path>", text)
-    text, redacted = changed, redacted or count > 0
-    printable = "".join(
-        character
-        if character in "\n\t" or (ord(character) >= 32 and not 127 <= ord(character) <= 159)
-        else "?"
-        for character in text
-    )
-    redacted = redacted or printable != text
-    encoded = printable.encode("utf-8")
-    if len(encoded) > maximum:
-        printable = encoded[-maximum:].decode("utf-8", errors="ignore")
-        redacted = True
-    printable = printable.strip()
-    if len(printable.encode("utf-8")) > maximum:
-        raise ValueError("Sanitized appliance diagnostic exceeds its byte bound")
-    return printable, redacted
+def _failure_input(path, maximum):
+    """Classify and read one direct failure input without following unsafe paths."""
+    try:
+        parent = path.parent.lstat()
+    except FileNotFoundError:
+        return None, "missing"
+    except OSError:
+        return None, "unreadable"
+    if path.parent.is_symlink() or not stat.S_ISDIR(parent.st_mode):
+        return None, "unsafe"
+    try:
+        info = path.lstat()
+    except FileNotFoundError:
+        return None, "missing"
+    except OSError:
+        return None, "unreadable"
+    if (path.is_symlink() or not stat.S_ISREG(info.st_mode)
+            or info.st_nlink != 1):
+        return None, "unsafe"
+    if info.st_size == 0:
+        return None, "empty"
+    if info.st_size > maximum:
+        return None, "oversized"
+    try:
+        return _bounded_regular(path, maximum), None
+    except OSError:
+        return None, "unreadable"
+    except ValueError:
+        return None, "changed"
+
+
+FAILURE_CONSOLE_PREFIX = re.compile(
+    rb"\A\[[ ]*[0-9]{1,10}\.[0-9]{6}\][ ]+"
+    rb"(?:symbi-appliance-provision|symbi-appliance-verify)"
+    rb"\[[1-9][0-9]{0,9}\]:[ ]+"
+)
+
+
+def _failure_log_payload(candidate):
+    """Remove only the reviewed journald console envelope, never arbitrary text."""
+    match = FAILURE_CONSOLE_PREFIX.match(candidate)
+    return candidate[match.end():] if match is not None else candidate
 
 
 def _failure_log(path, maximum):
-    try:
-        raw = _bounded_regular(path, maximum)
-    except (OSError, ValueError):
-        return None, True
-    # Redact the complete bounded input before selecting a tail. Otherwise a
-    # credential label just before the tail boundary could be discarded while
-    # its value was retained.
-    sanitized, redacted = _sanitize_diagnostic(raw, maximum)
-    excerpt, tail_redacted = _sanitize_diagnostic(sanitized, FAILURE_EXCERPT_BYTES)
-    redacted = redacted or tail_redacted
-    if not excerpt:
-        return None, False
+    raw, refused = _failure_input(path, maximum)
+    if refused is not None:
+        return None, refused
+    status_prefix = b"SYMBI_APPLIANCE_STATUS:"
+    observed = []
+    lines = raw.splitlines()
+    for line in lines:
+        candidate = _failure_log_payload(line.strip())
+        if not candidate.startswith(status_prefix):
+            continue
+        try:
+            sentinel = candidate[len(status_prefix):].decode("ascii")
+        except UnicodeError:
+            continue
+        if sentinel in FAILURE_STATUS_SENTINELS:
+            observed.append(sentinel)
+    error_prefixes = {
+        "CalledProcessError": b"subprocess.CalledProcessError",
+        "JSONDecodeError": b"json.decoder.JSONDecodeError",
+        "MemoryError": b"MemoryError",
+        "OSError": b"OSError",
+        "RuntimeError": b"RuntimeError",
+        "TimeoutError": b"TimeoutError",
+        "TimeoutExpired": b"subprocess.TimeoutExpired",
+        "ValueError": b"ValueError",
+    }
+    if set(error_prefixes) != FAILURE_ERROR_CLASSES:
+        raise ValueError("Incomplete appliance failure error-class allowlist")
+    observed_errors = set()
+    for line in lines:
+        candidate = _failure_log_payload(line.strip())
+        for name, prefix in error_prefixes.items():
+            if candidate == prefix or candidate.startswith(prefix + b":"):
+                observed_errors.add(name)
+    errors = sorted(observed_errors)
     return {
-        "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),
-        "excerpt": excerpt,
-        "truncated": len(raw) > FAILURE_EXCERPT_BYTES,
-        "redacted": redacted,
-    }, False
+        "bytes": len(raw), "authority": "untrusted-log-observation",
+        "observed_sentinels": sorted(set(observed)),
+        "observed_error_classes": errors,
+    }, None
+
+
+def _guest_report_state(output):
+    """Return bounded metadata, never content, for the failed producer report."""
+    raw, refused = _failure_input(output / "evidence/guest-report.json", 128 * 1024)
+    if refused is not None:
+        state = "absent" if refused == "missing" else refused
+        if state not in {"absent", "empty", "oversized", "unsafe", "unreadable", "changed"}:
+            raise ValueError("Unknown guest report failure state")
+        return {"state": state}
+    return {
+        "state": "bounded", "bytes": len(raw),
+    }
 
 
 def _failure_diagnostic(output, phase, source):
-    """Authenticate one result and sanitize its failure before private cleanup."""
+    """Authenticate one result and retain only allowlisted structured metadata."""
     if phase not in FAILURE_LOG_BOUNDS:
         raise ValueError("Unknown appliance failure phase")
     result_path = output / "result.json"
+    raw, refused = _failure_input(result_path, 256 * 1024)
+    if refused is not None:
+        state = "missing" if refused == "missing" else "unreadable"
+        if state not in CHILD_RESULT_STATES:
+            raise ValueError("Unknown appliance child-result state")
+        return None, None, state
     try:
-        raw = _bounded_regular(result_path, 256*1024)
         value = unique_json(raw)
-    except (OSError, ValueError, json.JSONDecodeError):
-        return None, None
-    receipt = {
-        "limits": value.get("limits"), "cgroup_final": value.get("cgroup_final"),
-    }
-    if not validate_resource_receipt(receipt):
-        return None, None
+    except (ValueError, json.JSONDecodeError):
+        return None, None, "invalid-schema"
     failure = value.get("failure")
     try:
         failure_bytes = failure.encode("utf-8") if isinstance(failure, str) else b""
     except UnicodeError:
         failure_bytes = b""
-    if (set(value) != INNER_FAILURE_KEYS
+    expected_keys = INNER_FAILURE_KEYS | ({"producer_status"} if phase == "producer" else set())
+    if (set(value) != expected_keys
             or value.get("schema") != 1 or value.get("source_binding") != source
             or value.get("scope") != SCOPE
             or any(value.get(name) is not False for name in FAILURE_CLAIMS)
             or not isinstance(failure, str)
             or not 0 < len(failure_bytes) <= 4096):
-        return None, receipt
-    failure_type, separator, message = failure.partition(":")
+        return None, None, "invalid-schema"
+    failure_type, separator, _message = failure.partition(":")
     failure_type = failure_type.strip()
     if (not separator or re.fullmatch(r"[A-Za-z][A-Za-z0-9_.]{0,63}", failure_type) is None):
-        return None, receipt
-    message, redacted = _sanitize_diagnostic(message, 4096)
-    if not message:
-        message = failure_type
-    logs, rejected = {}, []
+        return None, None, "invalid-schema"
+    producer_status = value.get("producer_status") if phase == "producer" else None
+    if (phase == "producer"
+            and not producer_failure_type_matches(producer_status, failure_type)):
+        return None, None, "invalid-schema"
+    receipt = {
+        "limits": value.get("limits"), "cgroup_final": value.get("cgroup_final"),
+    }
+    state = classify_failure_resource_receipt(receipt)
+    if state == "resource-receipt-rejected":
+        return None, None, state
+    if state not in {"accepted", "resource-receipt-one-page-peak"}:
+        raise ValueError("Unknown appliance child resource state")
+    logs, rejected = {}, {}
     log_root = output / "evidence" if phase == "producer" else output
     for name, maximum in FAILURE_LOG_BOUNDS[phase].items():
         path = log_root / name
-        if not path.exists() and not path.is_symlink():
-            continue
         item, refused = _failure_log(path, maximum)
-        if refused:
-            rejected.append(name)
-        elif item is not None:
+        if refused is not None:
+            if refused not in FAILURE_REJECTION_REASONS:
+                raise ValueError("Unknown appliance failure rejection")
+            rejected[name] = refused
+        else:
             logs[name] = item
-    return {
+    diagnostic = {
         "result": {
-            "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),
-            "failure_type": failure_type, "message": message, "redacted": redacted,
+            "failure_type": failure_type, "producer_status": producer_status,
         },
         "logs": logs,
-        "rejected": sorted(rejected),
-    }, receipt
+        "rejected": dict(sorted(rejected.items())),
+        "guest_report": _guest_report_state(output) if phase == "producer" else None,
+    }
+    return diagnostic, receipt, state
 
 
 def _remove_local_output(path):
@@ -359,6 +556,91 @@ def _direct_path_absent(path):
     except OSError:
         return False
     return False
+
+
+def consume_appliance_cleanup_receipt(root, source_commit, source_tree):
+    """Consume one exact root-owned receipt without following or reopening it."""
+    if (not isinstance(source_commit, str)
+            or re.fullmatch(r"[0-9a-f]{40}", source_commit) is None
+            or not isinstance(source_tree, str)
+            or re.fullmatch(r"[0-9a-f]{40}", source_tree) is None):
+        raise ValueError("Invalid appliance cleanup source")
+    expected = (
+        f"source_commit={source_commit}\n"
+        f"source_tree={source_tree}\n"
+        "outer_cleanup_complete=true\n"
+    ).encode()
+    name = "interactive-appliance-evidence.ready"
+    directory = descriptor = None
+    try:
+        directory = os.open(
+            root / ".cache",
+            os.O_RDONLY | os.O_CLOEXEC | os.O_DIRECTORY | os.O_NOFOLLOW,
+        )
+        directory_before = os.fstat(directory)
+        directory_named = os.stat(root / ".cache", follow_symlinks=False)
+        directory_identity = (
+            "st_dev", "st_ino", "st_mode", "st_nlink", "st_uid", "st_gid")
+        if (not stat.S_ISDIR(directory_before.st_mode)
+                or any(getattr(directory_before, field)
+                       != getattr(directory_named, field)
+                       for field in directory_identity)):
+            raise ValueError("Appliance cache directory changed")
+        descriptor = os.open(
+            name,
+            os.O_RDONLY | os.O_CLOEXEC | os.O_NONBLOCK | os.O_NOFOLLOW,
+            dir_fd=directory,
+        )
+        before = os.fstat(descriptor)
+        if (not stat.S_ISREG(before.st_mode)
+                or stat.S_IMODE(before.st_mode) != 0o600
+                or before.st_uid != os.geteuid() or before.st_gid != os.getegid()
+                or before.st_nlink != 1 or before.st_size != len(expected)):
+            raise ValueError("Invalid appliance cleanup receipt")
+        raw = b""
+        while len(raw) <= len(expected):
+            chunk = os.read(descriptor, len(expected) + 1 - len(raw))
+            if not chunk:
+                break
+            raw += chunk
+        after = os.fstat(descriptor)
+        identity = (
+            "st_dev", "st_ino", "st_mode", "st_nlink", "st_uid", "st_gid", "st_size")
+        stable_identity = (
+            "st_dev", "st_ino", "st_mode", "st_uid", "st_gid", "st_size")
+        if (raw != expected
+                or any(getattr(before, field) != getattr(after, field) for field in identity)):
+            raise ValueError("Appliance cleanup receipt changed while reading")
+        named = os.stat(name, dir_fd=directory, follow_symlinks=False)
+        if any(getattr(before, field) != getattr(named, field) for field in identity):
+            raise ValueError("Appliance cleanup receipt path changed")
+        os.unlink(name, dir_fd=directory)
+        consumed = os.fstat(descriptor)
+        if (consumed.st_nlink != 0
+                or any(getattr(before, field) != getattr(consumed, field)
+                       for field in stable_identity)):
+            raise ValueError("Appliance cleanup receipt inode survived consumption")
+        try:
+            os.stat(name, dir_fd=directory, follow_symlinks=False)
+        except FileNotFoundError:
+            pass
+        else:
+            raise ValueError("Appliance cleanup receipt survived consumption")
+        os.fsync(directory)
+        directory_after = os.fstat(directory)
+        directory_named = os.stat(root / ".cache", follow_symlinks=False)
+        if (any(getattr(directory_before, field) != getattr(directory_after, field)
+                for field in directory_identity)
+                or any(getattr(directory_before, field) != getattr(directory_named, field)
+                       for field in directory_identity)):
+            raise ValueError("Appliance cache directory changed during consumption")
+    except OSError as error:
+        raise ValueError("Could not consume appliance cleanup receipt") from error
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+        if directory is not None:
+            os.close(directory)
 
 
 def _discard_failed_appliance_outputs(root):
@@ -439,6 +721,77 @@ def _validate_resource_evidence(record):
         raise ValueError("Appliance child CPU evidence is incomplete")
 
 
+def _validate_failure_resource_evidence(record, state):
+    """Validate diagnostic child counters while preserving strict success gates."""
+    observed = classify_failure_resource_receipt(record)
+    if observed != state or observed not in {
+        "accepted", "resource-receipt-one-page-peak",
+    }:
+        raise ValueError("Appliance failure resource classification changed")
+    limits = record["limits"]
+    final = record["cgroup_final"]
+    if (limits != APPLIANCE_CONTAINER_LIMITS
+            or any(final.get(name) != value for name, value in limits.items())):
+        raise ValueError("Appliance child resource limits changed")
+    _decimal(final["memory.peak"], "memory.peak")
+    events = _resource_lines(final["memory.events"], "memory.events")
+    if not {"max", "oom", "oom_kill", "oom_group_kill"}.issubset(events):
+        raise ValueError("Appliance child memory evidence is incomplete")
+    cpu = _resource_lines(final["cpu.stat"], "cpu.stat")
+    if "usage_usec" not in cpu:
+        raise ValueError("Appliance child CPU evidence is incomplete")
+
+
+def _outer_memory_events(value, label):
+    if not isinstance(value, str) or not 0 < len(value) <= 2048:
+        raise ValueError("Invalid appliance outer memory evidence: " + label)
+    try:
+        raw = base64.b64decode(value, validate=True)
+    except (ValueError, binascii.Error) as error:
+        raise ValueError("Invalid appliance outer memory evidence: " + label) from error
+    if (not 0 < len(raw) <= 1024
+            or base64.b64encode(raw).decode("ascii") != value
+            or not raw.endswith(b"\n")):
+        raise ValueError("Invalid appliance outer memory evidence: " + label)
+    try:
+        text = raw.decode("ascii")
+    except UnicodeDecodeError as error:
+        raise ValueError("Invalid appliance outer memory evidence: " + label) from error
+    parsed = _resource_lines(text, label)
+    if set(parsed) != OUTER_MEMORY_EVENT_KEYS:
+        raise ValueError("Incomplete appliance outer memory evidence: " + label)
+    canonical = "".join(f"{name} {number}\n" for name, number in parsed.items())
+    if text != canonical:
+        raise ValueError("Non-canonical appliance outer memory evidence: " + label)
+    return parsed
+
+
+def _outer_cgroup_events(value, label):
+    if not isinstance(value, str) or not 0 < len(value) <= 2048:
+        raise ValueError("Invalid appliance outer cgroup evidence: " + label)
+    try:
+        raw = base64.b64decode(value, validate=True)
+    except (ValueError, binascii.Error) as error:
+        raise ValueError("Invalid appliance outer cgroup evidence: " + label) from error
+    if (not 0 < len(raw) <= 1024
+            or base64.b64encode(raw).decode("ascii") != value
+            or not raw.endswith(b"\n")):
+        raise ValueError("Invalid appliance outer cgroup evidence: " + label)
+    try:
+        text = raw.decode("ascii")
+    except UnicodeDecodeError as error:
+        raise ValueError("Invalid appliance outer cgroup evidence: " + label) from error
+    parsed = _resource_lines(text, label)
+    if set(parsed) != OUTER_CGROUP_EVENT_KEYS:
+        raise ValueError("Incomplete appliance outer cgroup evidence: " + label)
+    canonical = "".join(f"{name} {number}\n" for name, number in parsed.items())
+    if text != canonical:
+        raise ValueError("Non-canonical appliance outer cgroup evidence: " + label)
+    if parsed != {"populated": 0, "frozen": 0}:
+        raise ValueError("Appliance outer cgroup was not empty and unfrozen")
+    return parsed
+
+
 def _systemd_result(path, controller):
     """Parse and bind the fixed-field outer-unit record to the controller outcome."""
     try:
@@ -448,7 +801,12 @@ def _systemd_result(path, controller):
     values = {}
     for line in lines:
         key, separator, value = line.partition("=")
-        if separator != "=" or key in values or key not in SYSTEMD_RESULT_KEYS or len(value) > 256:
+        maximum = (2048 if key in {
+            "CgroupEventsBeforeBase64", "CgroupEventsAfterBase64",
+            "CgroupMemoryEventsBase64", "CgroupMemoryEventsLocalBase64",
+        } else 256)
+        if (separator != "=" or key in values or key not in SYSTEMD_RESULT_KEYS
+                or len(value) > maximum):
             raise ValueError("Invalid appliance systemd result")
         values[key] = value
     if set(values) != SYSTEMD_RESULT_KEYS:
@@ -456,6 +814,23 @@ def _systemd_result(path, controller):
     if (values["LoadState"] != "loaded" or values["Type"] != "oneshot"
             or values["RemainAfterExit"] != "yes"):
         raise ValueError("Appliance systemd unit contract changed")
+    _outer_cgroup_events(
+        values["CgroupEventsBeforeBase64"], "cgroup.events.before")
+    outer_events = _outer_memory_events(
+        values["CgroupMemoryEventsBase64"], "memory.events")
+    outer_local_events = _outer_memory_events(
+        values["CgroupMemoryEventsLocalBase64"], "memory.events.local")
+    _outer_cgroup_events(
+        values["CgroupEventsAfterBase64"], "cgroup.events.after")
+    if values["CgroupEventsBeforeBase64"] != values["CgroupEventsAfterBase64"]:
+        raise ValueError("Appliance outer cgroup state changed during capture")
+    if any(outer_local_events[name] != 0
+           for name in ("oom", "oom_kill", "oom_group_kill")):
+        raise ValueError("Appliance outer cgroup recorded a local OOM event")
+    if controller.get("passed") is True and any(
+            outer_events[name] != 0
+            for name in ("oom", "oom_kill", "oom_group_kill")):
+        raise ValueError("Passed appliance outer cgroup recorded an OOM event")
 
     def systemd_decimal(name, maximum=None):
         number = _decimal(values[name], "systemd." + name, maximum)
@@ -465,7 +840,12 @@ def _systemd_result(path, controller):
 
     if systemd_decimal("MemoryMax") != OUTER_MEMORY_MAX_BYTES:
         raise ValueError("Appliance systemd memory limit changed")
-    systemd_decimal("MemoryPeak", OUTER_MEMORY_MAX_BYTES)
+    memory_peak = systemd_decimal("MemoryPeak", SYSTEMD_UINT64_MAX)
+    if (controller.get("passed") is True
+            and memory_peak > OUTER_MEMORY_MAX_BYTES):
+        raise ValueError(
+            "Out-of-range appliance evidence: passed systemd.MemoryPeak "
+            "exceeded its memory limit")
     if (systemd_decimal("MemorySwapMax") != 0
             or systemd_decimal("MemorySwapPeak") != 0):
         raise ValueError("Appliance systemd unit used swap")
@@ -589,6 +969,9 @@ def validate_retained_evidence(root, expected_expiry=None):
     if not _schema_one(result):
         raise ValueError("Appliance controller schema changed")
     failure = result.get("passed") is False
+    outer_failure = result.get("evidence_kind") == OUTER_FAILURE_KIND
+    if outer_failure and not failure:
+        raise ValueError("Outer appliance receipt must remain failed")
     if failure:
         if set(entries) != FAILURE_EVIDENCE_FILES:
             _discard_failed_appliance_outputs(root)
@@ -596,19 +979,34 @@ def validate_retained_evidence(root, expected_expiry=None):
         if not _failure_cleanup_complete(root, result):
             _discard_failed_appliance_outputs(root)
             raise ValueError("Appliance failure cleanup is incomplete")
-    source = validate_source_binding(result.get("source_binding"))
     checkout = _checkout_binding(root)
+    if outer_failure:
+        expected_source = {
+            "repository": "ThirdKeyAI/symbi-os",
+            "commit": checkout["source_commit"],
+            "tree": checkout["source_tree"],
+        }
+        if result.get("source") != expected_source:
+            raise ValueError("Outer failure differs from the checkout commit or tree")
+        exact = outer_failure_record(root)
+        if result != exact:
+            raise ValueError("Outer appliance failure receipt changed")
+        _systemd_result(entries["systemd-result.txt"], result)
+        return total
+    source = validate_source_binding(result.get("source_binding"))
     if any(source[name] != value for name, value in checkout.items()):
         raise ValueError("Appliance evidence differs from the checkout commit or tree")
     if failure:
         exact = controller_failure_record(
             result.get("source_binding"), result.get("stage"), result.get("failure"),
             result.get("cleanup"), result.get("resources"), result.get("diagnostics"),
+            result.get("child_results"), result.get("producer_container"),
         )
         if result != exact:
             raise ValueError("Appliance failure receipt changed")
-        for resource in result["resources"].values():
-            _validate_resource_evidence(resource)
+        for name, resource in result["resources"].items():
+            _validate_failure_resource_evidence(
+                resource, result["child_results"].get(name))
         _systemd_result(entries["systemd-result.txt"], result)
         return total
 
@@ -879,6 +1277,56 @@ def _expected_guest_contract(root, source, nonce):
     }
 
 
+def _producer_container_state(podman):
+    """Read only the two reviewed terminal State fields from the named producer."""
+    template = (
+        '{"ExitCode":{{.State.ExitCode}},"OOMKilled":{{.State.OOMKilled}},'
+        '"Running":{{.State.Running}},"Status":"{{.State.Status}}"}'
+    )
+    result = subprocess.run(
+        [*podman, "container", "inspect", "--format", template,
+         PRODUCER_CONTAINER_NAME],
+        stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+        timeout=15, check=True,
+    )
+    if not isinstance(result.stdout, bytes) or not 0 < len(result.stdout) <= 128:
+        raise ValueError("Invalid appliance producer container state")
+    state = unique_json(result.stdout)
+    if (set(state) != {"ExitCode", "OOMKilled", "Running", "Status"}
+            or type(state.get("ExitCode")) is not int
+            or not 0 <= state["ExitCode"] <= 255
+            or type(state.get("OOMKilled")) is not bool
+            or state.get("Running") is not False
+            or state.get("Status") != "exited"):
+        raise ValueError("Invalid appliance producer container state")
+    return {
+        "name": PRODUCER_CONTAINER_NAME,
+        "State": {
+            "ExitCode": state["ExitCode"], "OOMKilled": state["OOMKilled"],
+        },
+    }
+
+
+def _remove_producer_container(podman, run):
+    """Remove the inspected producer and prove its exact name is absent."""
+    removed = run(
+        "cleanup-diagnostic-" + PRODUCER_CONTAINER_NAME,
+        [*podman, "rm", "--force", "--ignore", PRODUCER_CONTAINER_NAME],
+        60, check=False,
+    )
+    absent = run(
+        "absent-diagnostic-" + PRODUCER_CONTAINER_NAME,
+        [*podman, "container", "exists", PRODUCER_CONTAINER_NAME],
+        60, check=False,
+    )
+    return (
+        type(getattr(removed, "returncode", None)) is int
+        and removed.returncode == 0
+        and type(getattr(absent, "returncode", None)) is int
+        and absent.returncode == 1
+    )
+
+
 def _produce_appliance(root, group, podman, image_id, disk, source, containers, run,
                        evidence, stage, artifact_output, progress):
     """Run the appliance producer while the public wrapper owns fail-closed cleanup."""
@@ -903,9 +1351,9 @@ def _produce_appliance(root, group, podman, image_id, disk, source, containers, 
               "--user=10001:10001", "--cap-drop=ALL", "--security-opt=no-new-privileges",
               "--memory=4g", "--memory-swap=4g", "--cpus=2", "--pids-limit=64",
               "--cgroup-parent=" + parent, "--env=LANG=C.UTF-8", "--env=PYTHONDONTWRITEBYTECODE=1"]
-    producer_name = "symbi-interactive-appliance-producer"
+    producer_name = PRODUCER_CONTAINER_NAME
     containers.append(producer_name)
-    producer_command = podman + ["run", "--rm", "--name=" + producer_name, *common,
+    producer_command = podman + ["run", "--name=" + producer_name, *common,
         "--mount", f"type=bind,src={program},dst=/inputs,ro",
         "--mount", f"type=bind,src={disk},dst=/inputs/atomic.raw,ro",
         "--mount", f"type=bind,src={output},dst=/output",
@@ -1016,32 +1464,53 @@ def produce_appliance(root, group, podman, image_id, disk, source_binding, conta
             raise RuntimeError("Appliance stage cleanup incomplete")
         return result
     except Exception as error:
-        resources, diagnostics = {}, {}
-        if stage.exists() and not stage.is_symlink():
-            for name, output in (
-                ("producer", stage / "output"),
-                ("reboot", stage / "reboot-output"),
-            ):
-                try:
-                    diagnostic, receipt = _failure_diagnostic(output, name, source)
-                except (OSError, ValueError, TypeError, UnicodeError, json.JSONDecodeError):
-                    # Child output is untrusted failure evidence. It may remove
-                    # diagnostics, but it must never interrupt cleanup or the
-                    # controller's source-bound negative receipt.
-                    diagnostic, receipt = None, None
-                if receipt is not None:
-                    resources[name] = receipt
-                if diagnostic is not None:
-                    diagnostics[name] = diagnostic
+        resources, diagnostics, child_results = {}, {}, {}
+        producer_container = None
+        producer_state_required = PRODUCER_CONTAINER_NAME in containers
+        producer_state_failed = False
+        if producer_state_required:
+            try:
+                producer_container = _producer_container_state(podman)
+            except (OSError, ValueError, subprocess.SubprocessError,
+                    json.JSONDecodeError):
+                producer_state_failed = True
+        for name, output in (
+            ("producer", stage / "output"),
+            ("reboot", stage / "reboot-output"),
+        ):
+            try:
+                diagnostic, receipt, child_state = _failure_diagnostic(
+                    output, name, source)
+            except (OSError, ValueError, TypeError, UnicodeError, json.JSONDecodeError):
+                # Child output is untrusted failure evidence. It may remove
+                # diagnostics, but it must never interrupt cleanup or the
+                # controller's source-bound negative receipt.
+                diagnostic, receipt, child_state = None, None, "unreadable"
+            child_results[name] = child_state
+            if receipt is not None:
+                resources[name] = receipt
+            if diagnostic is not None:
+                diagnostics[name] = diagnostic
         cleanup = {
             "stage_directory_removed": _remove_local_output(stage),
             "user_artifact_absent": _remove_local_output(artifact_output),
             "screenshot_artifact_absent": _remove_local_output(evidence / "display.ppm"),
             "non_controller_evidence_removed": _prune_failure_evidence(evidence),
         }
+        producer_cleanup_failed = False
+        if producer_state_required:
+            try:
+                producer_cleanup_failed = not _remove_producer_container(podman, run)
+            except (OSError, TypeError, ValueError, subprocess.SubprocessError):
+                producer_cleanup_failed = True
+        if producer_state_failed or producer_cleanup_failed:
+            # A named producer must be inspected before the outer controller's
+            # repeated explicit remove/absence cleanup. Without both the bounded
+            # state and a successful first cleanup, retain no diagnostic receipt.
+            raise
         failure = controller_failure_record(
             source, progress["stage"], type(error).__name__, cleanup, resources,
-            diagnostics,
+            diagnostics, child_results, producer_container,
         )
         _write_controller_record(evidence, failure)
         raise
@@ -1092,6 +1561,7 @@ def finalize_failed_appliance_evidence(root):
         exact = controller_failure_record(
             source, result.get("stage"), result.get("failure"),
             result.get("cleanup"), result.get("resources"), result.get("diagnostics"),
+            result.get("child_results"), result.get("producer_container"),
         )
     except (TypeError, UnicodeError, ValueError):
         exact = None
@@ -1118,6 +1588,26 @@ def finalize_failed_appliance_evidence(root):
     return False
 
 
+def create_outer_failure_evidence(root):
+    """Create one content-free receipt when no appliance evidence path was created."""
+    root = Path(root).resolve()
+    evidence = root / ".cache/interactive-appliance-evidence"
+    if not _direct_path_absent(evidence):
+        return False
+    if not _discard_failed_appliance_outputs(root) or not _direct_path_absent(evidence):
+        return False
+    try:
+        _new_directory(evidence)
+        record = outer_failure_record(root)
+        if not _failure_cleanup_complete(root, record):
+            raise ValueError("Outer appliance cleanup is incomplete")
+        _write_controller_record(evidence, record)
+        return True
+    except (OSError, TypeError, UnicodeError, ValueError, json.JSONDecodeError):
+        _discard_failed_appliance_outputs(root)
+        return False
+
+
 def main():
     if (os.environ.get("GITHUB_ACTIONS") != "true"
             or os.environ.get("RUNNER_ENVIRONMENT") != "github-hosted"):
@@ -1128,10 +1618,22 @@ def main():
     if sys.argv[1:] == ["--validate-public-artifact"]:
         validate_public_artifact(Path.cwd().resolve())
         return
-    if sys.argv[1:] != ["--sanitize-failure"] or os.geteuid() != 0:
+    if os.geteuid() != 0:
         raise SystemExit("Use only the hosted failed-appliance sanitizer")
-    if not finalize_failed_appliance_evidence(Path.cwd().resolve()):
-        raise SystemExit("No source-bound appliance failure receipt was available")
+    if sys.argv[1:] == ["--consume-cleanup-receipt"]:
+        consume_appliance_cleanup_receipt(
+            Path.cwd().resolve(), os.environ.get("GITHUB_SHA"),
+            os.environ.get("SYMBI_APPLIANCE_SOURCE_TREE"),
+        )
+        return
+    if sys.argv[1:] == ["--sanitize-failure"]:
+        prepared = finalize_failed_appliance_evidence(Path.cwd().resolve())
+    elif sys.argv[1:] == ["--create-outer-failure"]:
+        prepared = create_outer_failure_evidence(Path.cwd().resolve())
+    else:
+        raise SystemExit("Use only the hosted failed-appliance sanitizer")
+    if not prepared:
+        raise SystemExit("No bounded appliance failure receipt was available")
 
 
 if __name__ == "__main__":

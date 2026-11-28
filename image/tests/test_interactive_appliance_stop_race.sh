@@ -23,11 +23,33 @@ printf '' > "$fixture/image/appliance/__init__.py"
 
 cat > "$fixture/image/appliance/hosted.py" <<'PY'
 from pathlib import Path
+import base64
+import os
+import stat
 import sys
 
 root = Path.cwd()
 evidence = root / ".cache/interactive-appliance-evidence"
+if sys.argv[1:] == ["--consume-cleanup-receipt"]:
+    receipt = root / ".cache/interactive-appliance-evidence.ready"
+    expected = (
+        f"source_commit={os.environ['GITHUB_SHA']}\n"
+        f"source_tree={os.environ['SYMBI_APPLIANCE_SOURCE_TREE']}\n"
+        "outer_cleanup_complete=true\n"
+    ).encode()
+    info = receipt.lstat()
+    if (receipt.is_symlink() or not stat.S_ISREG(info.st_mode)
+            or stat.S_IMODE(info.st_mode) != 0o600
+            or info.st_uid != os.geteuid() or info.st_gid != os.getegid()
+            or info.st_nlink != 1 or receipt.read_bytes() != expected):
+        raise SystemExit(1)
+    receipt.unlink()
+    raise SystemExit(0)
 if sys.argv[1:] == ["--sanitize-failure"]:
+    raise SystemExit(0)
+if sys.argv[1:] == ["--create-outer-failure"]:
+    evidence.mkdir(parents=True)
+    (evidence / "result.json").write_bytes(b'{"passed":false}\n')
     raise SystemExit(0)
 if sys.argv[1:] != ["--validate-evidence"]:
     raise SystemExit(2)
@@ -35,10 +57,29 @@ if sys.argv[1:] != ["--validate-evidence"]:
 names = {path.name for path in evidence.iterdir()}
 receipt = (evidence / "result.json").read_bytes()
 systemd = (evidence / "systemd-result.txt").read_bytes()
-mutated = receipt != b'{"passed":true}\n'
+mutated = receipt not in {b'{"passed":true}\n', b'{"passed":false}\n'}
 added = "stop-time-extra.txt" in names
 credential = b"PRIVATE KEY-----" in systemd
-if mutated or added or credential:
+expected_events = b"low 0\nhigh 0\nmax 7\noom 0\noom_kill 0\noom_group_kill 0\n"
+expected_cgroup_events = b"populated 0\nfrozen 0\n"
+try:
+    fields = dict(line.split(b"=", 1) for line in systemd.splitlines())
+    cgroup_before = base64.b64decode(
+        fields[b"CgroupEventsBeforeBase64"], validate=True)
+    events = base64.b64decode(fields[b"CgroupMemoryEventsBase64"], validate=True)
+    events_local = base64.b64decode(
+        fields[b"CgroupMemoryEventsLocalBase64"], validate=True)
+    cgroup_after = base64.b64decode(
+        fields[b"CgroupEventsAfterBase64"], validate=True)
+    outer_events_valid = (
+        cgroup_before == expected_cgroup_events
+        and events == expected_events
+        and events_local == expected_events
+        and cgroup_after == expected_cgroup_events
+    )
+except (KeyError, ValueError):
+    outer_events_valid = False
+if mutated or added or credential or not outer_events_valid:
     if mutated and added and credential:
         (root / "validator-observed-stop-race").touch()
     raise SystemExit(1)
@@ -49,13 +90,63 @@ PY
 cat > "$commands/git" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
-[[ ${1:-} == rev-parse && ${2:-} == --show-toplevel ]]
-printf '%s\n' "$FIXTURE_ROOT"
+[[ ${1:-} == rev-parse ]] || exit 2
+case "${2:-}" in
+  --show-toplevel) printf '%s\n' "$FIXTURE_ROOT" ;;
+  HEAD) printf 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n' ;;
+  'HEAD^{tree}') printf 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n' ;;
+  *) exit 2 ;;
+esac
 SH
 
 cat > "$commands/sudo" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
+expected=/sys/fs/cgroup/system.slice/symbi-appliance-1-1.service
+if [[ ${1:-} == /usr/bin/test ]]; then
+  if [[ ${2:-} == -d && ${3:-} == "$expected" ]]; then
+    exit 0
+  fi
+  if [[ ${2:-} == '!' && ${3:-} == -L && ${4:-} == "$expected" ]]; then
+    exit 0
+  fi
+  resource=
+  if [[ ${2:-} == -f ]]; then
+    resource=${3:-}
+  elif [[ ${2:-} == '!' && ${3:-} == -L ]]; then
+    resource=${4:-}
+  fi
+  case "$resource" in
+    "$expected/cgroup.events"|"$expected/memory.events"|\
+      "$expected/memory.events.local")
+      exit 0
+      ;;
+  esac
+  exit 1
+fi
+if [[ ${1:-} == /usr/bin/base64 && ${2:-} == --wrap=0 && ${3:-} == -- ]]; then
+  case "${4:-}" in
+    "$expected/cgroup.events")
+      if [[ $RACE_MODE == late-inner-no-receipt \
+          && ! -e $FIXTURE_STATE/late-inner-created ]]; then
+        evidence="$FIXTURE_ROOT/.cache/interactive-appliance-evidence"
+        artifact="$FIXTURE_ROOT/.cache/interactive-appliance-artifact"
+        mkdir -p "$evidence" "$artifact"
+        printf '{"passed":true}\n' > "$evidence/result.json"
+        printf 'late public appliance bytes\n' > "$artifact/fixture.qcow2"
+        touch "$FIXTURE_STATE/late-inner-created"
+      fi
+      printf 'populated 0\nfrozen 0\n' | /usr/bin/base64 --wrap=0
+      exit 0
+      ;;
+    "$expected/memory.events"|"$expected/memory.events.local")
+      printf 'low 0\nhigh 0\nmax 7\noom 0\noom_kill 0\noom_group_kill 0\n' \
+        | /usr/bin/base64 --wrap=0
+      exit 0
+      ;;
+  esac
+  exit 1
+fi
 exec "$@"
 SH
 
@@ -65,8 +156,50 @@ set -euo pipefail
 evidence="$FIXTURE_ROOT/.cache/interactive-appliance-evidence"
 artifact="$FIXTURE_ROOT/.cache/interactive-appliance-artifact"
 mkdir -p "$evidence" "$artifact"
+if [[ $RACE_MODE == terminal-empty-failure || $RACE_MODE == terminal-no-inner \
+    || $RACE_MODE == terminal-mismatched-cgroup ]]; then
+  rm -rf -- "$evidence" "$artifact"
+  touch "$FIXTURE_STATE/writer-done"
+  exit 0
+fi
+if [[ $RACE_MODE == late-inner-no-receipt ]]; then
+  rm -rf -- "$evidence" "$artifact"
+  touch "$FIXTURE_STATE/writer-done"
+  exit 0
+fi
 printf '{"passed":true}\n' > "$evidence/result.json"
 printf 'public appliance bytes\n' > "$artifact/fixture.qcow2"
+if [[ $RACE_MODE != missing-cleanup-receipt ]]; then
+  cat > "$FIXTURE_ROOT/.cache/interactive-appliance-evidence.ready" <<'EOF'
+source_commit=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+source_tree=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+outer_cleanup_complete=true
+EOF
+  case "$RACE_MODE" in
+    receipt-extra-newline)
+      printf '\n' >> "$FIXTURE_ROOT/.cache/interactive-appliance-evidence.ready"
+      ;;
+    receipt-nul)
+      printf '\0' >> "$FIXTURE_ROOT/.cache/interactive-appliance-evidence.ready"
+      ;;
+    receipt-wrong-source)
+      sed -i 's/^source_commit=a/source_commit=c/' \
+        "$FIXTURE_ROOT/.cache/interactive-appliance-evidence.ready"
+      ;;
+    receipt-wrong-mode)
+      chmod 0644 "$FIXTURE_ROOT/.cache/interactive-appliance-evidence.ready"
+      ;;
+    receipt-symlink)
+      rm -f -- "$FIXTURE_ROOT/.cache/interactive-appliance-evidence.ready"
+      ln -s interactive-appliance-evidence/result.json \
+        "$FIXTURE_ROOT/.cache/interactive-appliance-evidence.ready"
+      ;;
+    receipt-hardlink)
+      ln "$FIXTURE_ROOT/.cache/interactive-appliance-evidence.ready" \
+        "$evidence/cleanup-receipt-hardlink"
+      ;;
+  esac
+fi
 if [[ $RACE_MODE == mutate ]]; then
   (
     while [[ ! -e $FIXTURE_STATE/stop-writer ]]; do
@@ -97,7 +230,9 @@ case "$operation" in
         printf 'LoadState=not-found\nControlGroup=\n'
       fi
     elif [[ " $* " == *" --property=MemoryPeak "* ]]; then
-      if [[ $RACE_MODE == cleanup-survival ]]; then
+      if [[ $RACE_MODE == cleanup-survival || $RACE_MODE == terminal-empty-failure \
+          || $RACE_MODE == terminal-no-inner \
+          || $RACE_MODE == terminal-mismatched-cgroup ]]; then
         active=failed
         sub=failed
         result=exit-code
@@ -107,6 +242,13 @@ case "$operation" in
         sub=exited
         result=success
         status=0
+      fi
+      if [[ $RACE_MODE == terminal-empty-failure ]]; then
+        control_group=
+      elif [[ $RACE_MODE == terminal-mismatched-cgroup ]]; then
+        control_group=/system.slice/unexpected.service
+      else
+        control_group=/system.slice/symbi-appliance-1-1.service
       fi
       cat <<EOF
 LoadState=loaded
@@ -123,11 +265,19 @@ MemorySwapPeak=0
 CPUUsageNSec=1
 ExecMainCode=1
 ExecMainStatus=$status
-ControlGroup=/system.slice/symbi-appliance-1-1.service
+ControlGroup=$control_group
 EOF
     elif [[ " $* " == *" --property=ControlGroup "* ]]; then
-      printf 'LoadState=loaded\nControlGroup=/system.slice/symbi-appliance-1-1.service\n'
-    elif [[ $RACE_MODE == cleanup-survival ]]; then
+      if [[ $RACE_MODE == terminal-empty-failure ]]; then
+        printf 'LoadState=loaded\nControlGroup=\n'
+      elif [[ $RACE_MODE == terminal-mismatched-cgroup ]]; then
+        printf 'LoadState=loaded\nControlGroup=/system.slice/unexpected.service\n'
+      else
+        printf 'LoadState=loaded\nControlGroup=/system.slice/symbi-appliance-1-1.service\n'
+      fi
+    elif [[ $RACE_MODE == cleanup-survival || $RACE_MODE == terminal-empty-failure \
+        || $RACE_MODE == terminal-no-inner \
+        || $RACE_MODE == terminal-mismatched-cgroup ]]; then
       printf 'LoadState=loaded\nActiveState=failed\nSubState=failed\n'
     else
       printf 'LoadState=loaded\nActiveState=active\nSubState=exited\n'
@@ -175,7 +325,7 @@ status=$?
 set -e
 
 [[ $status -ne 0 ]]
-[[ -e $fixture/validator-observed-stop-race ]]
+[[ ! -e $fixture/validator-observed-stop-race ]]
 [[ ! -s $temporary/github-output ]]
 [[ ! -e $fixture/.cache/interactive-appliance-evidence ]]
 [[ ! -e $fixture/.cache/interactive-appliance-artifact ]]
@@ -195,6 +345,89 @@ set -e
 [[ ! -s $temporary/github-output ]]
 [[ ! -e $fixture/.cache/interactive-appliance-evidence ]]
 [[ ! -e $fixture/.cache/interactive-appliance-artifact ]]
+
+rm -f -- "$temporary/stop-writer" "$temporary/writer-done" \
+  "$temporary/unit-cleaned" "$temporary/writer.pid"
+printf '' > "$temporary/github-output"
+set +e
+run_wrapper terminal-empty-failure
+status=$?
+set -e
+[[ $status -ne 0 ]]
+[[ ! -s $temporary/github-output ]]
+[[ ! -e $fixture/.cache/interactive-appliance-evidence ]]
+[[ ! -e $fixture/.cache/interactive-appliance-artifact ]]
+
+rm -f -- "$temporary/stop-writer" "$temporary/writer-done" \
+  "$temporary/unit-cleaned" "$temporary/writer.pid"
+printf '' > "$temporary/github-output"
+set +e
+run_wrapper terminal-no-inner
+status=$?
+set -e
+[[ $status -ne 0 ]]
+grep -qx 'evidence_ready=true' "$temporary/github-output"
+[[ -d $fixture/.cache/interactive-appliance-evidence ]]
+[[ ! -e $fixture/.cache/interactive-appliance-artifact ]]
+grep -qx '{"passed":false}' \
+  "$fixture/.cache/interactive-appliance-evidence/result.json"
+rm -rf -- "$fixture/.cache/interactive-appliance-evidence"
+
+rm -f -- "$temporary/stop-writer" "$temporary/writer-done" \
+  "$temporary/unit-cleaned" "$temporary/writer.pid"
+printf '' > "$temporary/github-output"
+set +e
+run_wrapper terminal-mismatched-cgroup
+status=$?
+set -e
+[[ $status -ne 0 ]]
+[[ ! -s $temporary/github-output ]]
+[[ ! -e $fixture/.cache/interactive-appliance-evidence ]]
+[[ ! -e $fixture/.cache/interactive-appliance-artifact ]]
+
+rm -f -- "$temporary/stop-writer" "$temporary/writer-done" \
+  "$temporary/unit-cleaned" "$temporary/writer.pid"
+printf '' > "$temporary/github-output"
+set +e
+run_wrapper missing-cleanup-receipt
+status=$?
+set -e
+[[ $status -ne 0 ]]
+[[ ! -s $temporary/github-output ]]
+[[ ! -e $fixture/.cache/interactive-appliance-evidence ]]
+[[ ! -e $fixture/.cache/interactive-appliance-artifact ]]
+[[ ! -e $fixture/.cache/interactive-appliance-evidence.ready ]]
+
+rm -f -- "$temporary/stop-writer" "$temporary/writer-done" \
+  "$temporary/unit-cleaned" "$temporary/writer.pid" \
+  "$temporary/late-inner-created"
+printf '' > "$temporary/github-output"
+set +e
+run_wrapper late-inner-no-receipt
+status=$?
+set -e
+[[ $status -ne 0 ]]
+[[ -e $temporary/late-inner-created ]]
+[[ ! -s $temporary/github-output ]]
+[[ ! -e $fixture/.cache/interactive-appliance-evidence ]]
+[[ ! -e $fixture/.cache/interactive-appliance-artifact ]]
+[[ ! -e $fixture/.cache/interactive-appliance-evidence.ready ]]
+
+for mode in receipt-extra-newline receipt-nul receipt-wrong-source \
+            receipt-wrong-mode receipt-symlink receipt-hardlink; do
+  rm -f -- "$temporary/stop-writer" "$temporary/writer-done" \
+    "$temporary/unit-cleaned" "$temporary/writer.pid"
+  printf '' > "$temporary/github-output"
+  set +e
+  run_wrapper "$mode"
+  status=$?
+  set -e
+  [[ $status -ne 0 ]]
+  [[ ! -s $temporary/github-output ]]
+  [[ ! -e $fixture/.cache/interactive-appliance-evidence ]]
+  [[ ! -e $fixture/.cache/interactive-appliance-artifact ]]
+  [[ ! -e $fixture/.cache/interactive-appliance-evidence.ready ]]
+done
 
 rm -f -- "$temporary/stop-writer" "$temporary/writer-done" \
   "$temporary/unit-cleaned" "$temporary/writer.pid"

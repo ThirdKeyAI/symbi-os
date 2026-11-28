@@ -3,7 +3,7 @@ Description=HIGHLY EXPERIMENTAL graphical appliance verifier
 ConditionPathExists=!/etc/initrd-release
 Wants=sddm.service
 Requires=p.service
-After=p.service sddm.service graphical.target
+After=p.service sddm.service
 SuccessAction=poweroff
 
 [Service]
@@ -25,6 +25,7 @@ MemoryMax=256M
 MemorySwapMax=0
 CPUQuota=100%
 TasksMax=64
+SyslogIdentifier=symbi-appliance-verify
 TimeoutStartSec=420
 TimeoutStopSec=15
 StandardOutput=journal+console

@@ -543,6 +543,37 @@ def enforce_appliance_final_status(qualification,record):
         raise RuntimeError('Interactive appliance or final cleanup did not pass')
 
 
+def write_appliance_cleanup_receipt(root,source_binding):
+    """Mint the wrapper's one-use gate only after outer cleanup has completed."""
+    from image.appliance.contract import validate_source_binding
+    source=validate_source_binding(source_binding)
+    receipt=root/'.cache/interactive-appliance-evidence.ready'
+    raw=(f"source_commit={source['source_commit']}\n"
+         f"source_tree={source['source_tree']}\n"
+         "outer_cleanup_complete=true\n").encode()
+    descriptor=None
+    created=False
+    try:
+        descriptor=os.open(
+            receipt,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_CLOEXEC|os.O_NOFOLLOW,0o600)
+        created=True
+        with os.fdopen(descriptor,'wb',closefd=False) as output:
+            output.write(raw);output.flush();os.fsync(output.fileno())
+        info=os.fstat(descriptor)
+        if (not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode)!=0o600
+                or info.st_uid!=os.geteuid() or info.st_gid!=os.getegid()
+                or info.st_nlink!=1 or info.st_size!=len(raw)):
+            raise ValueError('Invalid appliance cleanup receipt')
+    except Exception:
+        if created:
+            try: receipt.unlink(missing_ok=True)
+            except OSError: pass
+        raise
+    finally:
+        if descriptor is not None: os.close(descriptor)
+    return receipt
+
+
 def main():
     qualification=os.environ.get('SYMBI_QUALIFICATION','')
     if (os.environ.get('GITHUB_ACTIONS')!='true' or os.environ.get('RUNNER_ENVIRONMENT')!='github-hosted'
@@ -595,7 +626,7 @@ def main():
         record['commands'].append({'name':name,'exit_code':result.returncode});del record['active_command'];save()
         if check: result.check_returncode()
         return result
-    podman=None;containers=[];storage=None;storage_identity=None;disk=None;identity=None;boot_output=None;runroot=None;disk_readonly=False;signing_output=None
+    podman=None;containers=[];storage=None;storage_identity=None;disk=None;identity=None;boot_output=None;runroot=None;disk_readonly=False;signing_output=None;appliance_source_binding=None
     container_candidate=None;manifest_digest=None
     try:
         if qualification=='containers':
@@ -758,7 +789,7 @@ def main():
         record['installation_completed']=True;record['disk_sha256']=sha256(disk);save()
         if qualification=='appliance':
             from image.appliance.hosted import produce_appliance, source_tree
-            source_binding={
+            appliance_source_binding={
                 'repository':'ThirdKeyAI/symbi-os',
                 'source_commit':record['source_commit'],
                 'source_tree':source_tree(root,record['source_commit']),
@@ -773,7 +804,7 @@ def main():
             record['scope']=('HIGHLY EXPERIMENTAL offline development appliance producer; '
                              'no release, signature, security or containment qualification')
             record['appliance']=produce_appliance(root,group,podman,image_id,disk,
-                                                   source_binding,containers,run)
+                                                   appliance_source_binding,containers,run)
             if (archive.is_symlink() or not archive.is_file()
                     or archive.stat().st_size!=record['production_oci_before']['bytes']):
                 raise ValueError('Retained production OCI path changed during appliance production')
@@ -922,22 +953,17 @@ def main():
         events=dict(line.split() for line in record['cgroup_final']['memory.events'].splitlines())
         if (any(record['cgroup_final'][n]!=v for n,v in limits.items())
                 or any(events.get(n)!='0' for n in ('oom','oom_kill','oom_group_kill'))): record['passed']=False
-        if qualification=='appliance' and record.get('passed') is not True:
-            for name in ('passed','guest_booted','graphical_desktop_observed',
-                         'artifact_retained','independent_reboot_passed'):
-                record[name]=False
-            if isinstance(record.get('appliance'),dict):
-                for name in ('passed','guest_booted','graphical_desktop_observed',
-                             'artifact_retained','independent_reboot_passed'):
-                    record['appliance'][name]=False
-                source_binding=record['appliance'].get('source_binding')
-                if isinstance(source_binding,dict):
-                    from image.appliance.hosted import invalidate_appliance_output
-                    try:
-                        record['appliance']=invalidate_appliance_output(root,source_binding)
-                    except (OSError,ValueError) as error:
-                        record['appliance_invalidation_error']=type(error).__name__
         save()
+        appliance_cleanup_complete=(
+            stopped
+            and (disk is None or record.get('loops_absent') is True)
+            and (podman is None or record.get('image_removed') is True)
+            and (storage is None or record.get('private_storage_removed') is True)
+            and (runroot is None or record.get('private_runroot_removed') is True)
+        )
+        if (qualification=='appliance' and appliance_cleanup_complete
+                and isinstance(appliance_source_binding,dict)):
+            write_appliance_cleanup_receipt(root,appliance_source_binding)
         enforce_appliance_final_status(qualification,record)
     if not record['passed']: raise RuntimeError('Atomic install/boot or cleanup did not pass')
 
