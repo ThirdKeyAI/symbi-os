@@ -1,0 +1,113 @@
+{
+  "schema": 1,
+  "passed": false,
+  "qualified": false,
+  "run": {
+    "id": 46096913264,
+    "attempt": 1,
+    "head_branch": "card/P0-04-hosted-fix",
+    "head_sha": "d9f2caebd1545f99a3d313f55785554d80c69b33",
+    "head_tree": "4373f4afd4b323a28fc643b471666a3d14c49d57",
+    "job_id": 140830264535,
+    "job_name": "qualify",
+    "conclusion": "failure",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46096913264"
+  },
+  "artifact": {
+    "id": 15247057621,
+    "name": "fedora-landlock-qualification",
+    "bytes": 96484,
+    "digest": "sha256:efdfb61efba5a77ce5ef2f5b03991feaebb03b3069b1c7893b24f1a8f52326e4",
+    "downloaded_zip_digest_matched": true,
+    "regular_members": 106,
+    "uncompressed_bytes": 417708,
+    "strict_json_or_jsonl_documents": 201,
+    "unsafe_duplicate_encrypted_special_or_crc_failed_members": 0
+  },
+  "bindings": {
+    "image_manifest_digest": "sha256:1a08b504580f8f2f6dda9d913a2cbb4aa7039f4e18ebfb2eed01ce0a8381f9a3",
+    "image_source_commit": "22c751096e47d2f5ff74d8e5963a7079fa24576f",
+    "preflight_run": 46094435550,
+    "preflight_source_commit": "a04cea9737eba9650695f7461fe9e96503695d01",
+    "runtime_source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+    "runtime_source_tree": "d22a931559cbfccdeb78b27eeb9e5008afb4d53b",
+    "source_disk_sha256": "a732dff2b0cde07b13f466866f375cfbfce3b603ef5ead08203bcbd8a6d19042",
+    "source_manifest_sha256": "9e8754da041704201055ace492fa3dabb99d3430d9687e6626c5a76c68d2879e"
+  },
+  "block_topology": {
+    "inventory_predicates_passed": 7,
+    "root_predicates_passed": 10,
+    "source_predicates_passed": 10,
+    "failed_predicates": 0,
+    "blocked_predicates": 0,
+    "raw_observed_values_retained": false,
+    "accepted": true,
+    "root_bootindex": 1,
+    "source_bootindex": -1
+  },
+  "observation": {
+    "installation_completed": true,
+    "ordinary_guest_booted": true,
+    "real_root_udev_coldplug_completed": true,
+    "fixed_source_link": "/dev/disk/by-id/virtio-SYMBIQUAL",
+    "fixed_source_link_observed": false,
+    "device_wait_seconds": 30,
+    "source_filesystem_mounted": false,
+    "source_verification_service_started": false,
+    "guest_report_received": false,
+    "failure": "TimeoutError: Landlock guest did not report and power off within 95 minutes",
+    "first_exact_boundary": "The image-owned event-device serial match did not create the fixed source by-id link during completed udev coldplug."
+  },
+  "resources": {
+    "second_guest_controller": {
+      "memory_max_bytes": 3221225472,
+      "memory_peak_bytes": 3221225472,
+      "memory_max_events": 2424,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0,
+      "swap_max_bytes": 0,
+      "cpu_quota": "200000 100000",
+      "pids_max": 64
+    },
+    "outer_controller": {
+      "memory_max_bytes": 5368709120,
+      "memory_peak_bytes": 4297060352,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0,
+      "swap_max_bytes": 0,
+      "cpu_quota": "200000 100000",
+      "pids_max": 256
+    }
+  },
+  "cleanup": {
+    "qmp_quit_sent": true,
+    "exact_qemu_exit_proven": true,
+    "qmp_socket_removed": true,
+    "overlay_removed": true,
+    "all_four_containers_removed_and_absent": true,
+    "loop_devices_absent": true,
+    "loaded_image_removed": true,
+    "private_storage_removed": true,
+    "private_runroot_removed": true
+  },
+  "correction": {
+    "parent_device_exact_serial_match_required": true,
+    "event_device_serial_match_accepted": false,
+    "device_order_or_fixed_kernel_name_accepted": false,
+    "source_and_root_parent_sysfs_serials_required": true,
+    "source_and_root_major_minor_must_differ": true,
+    "source_read_only_required": true,
+    "mount_and_manifest_binding_preserved": true,
+    "qmp_topology_contract_changed": false,
+    "new_image_preflight_and_native_rerun_required": true
+  },
+  "claims": {
+    "accepted_second_guest_boot": false,
+    "landlock_qualified": false,
+    "containment_qualified": false,
+    "os_qualified": false,
+    "release_qualified": false
+  }
+}

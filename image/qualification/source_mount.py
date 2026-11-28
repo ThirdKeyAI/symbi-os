@@ -25,7 +25,7 @@ SOURCE_SERIAL = "SYMBIQUAL"
 ROOT_SERIAL = "SYMBIROOT"
 EXPECTED_UDEV_RULE = (
     'ACTION=="add|change", SUBSYSTEM=="block", ENV{DEVTYPE}=="disk", '
-    'ATTR{serial}=="SYMBIQUAL", DRIVERS=="virtio_blk", '
+    'ATTRS{serial}=="SYMBIQUAL", DRIVERS=="virtio_blk", '
     'SYMLINK+="disk/by-id/virtio-SYMBIQUAL"\n')
 MAX_BLOCK_DEVICES = 64
 
@@ -116,9 +116,9 @@ def observe_block_inventory(sys_block=Path("/sys/class/block"), dev_root=Path("/
         raise ValueError("invalid qualification block-device inventory")
     rows = []
     for entry in entries:
-        # virtio_blk installs its serial attribute on the gendisk event device;
-        # the virtio_blk driver itself is bound to that device's parent.
-        serial = _bounded_sysfs_text(entry / "serial")
+        # virtio_blk exposes the disk serial on the device bound to the
+        # virtio_blk driver, which is the block event device's parent.
+        serial = _bounded_sysfs_text(entry / "device/serial")
         if serial is None:
             continue
         major_minor = _bounded_sysfs_text(entry / "dev", 32)
