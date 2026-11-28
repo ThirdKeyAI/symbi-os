@@ -670,6 +670,7 @@ Open questions raised: <links, or none>
 | P0-03 | Base image: BlueBuild recipe on secureblue, cosign signing, SBOM, ported Ombuntu defaults | P0-01 | INV-12 | Implementation agent | In review; verified inputs ready, image qualification pending |
 | P0-04 | Qualify Symbiont 3.0's Landlock route on the Fedora Atomic image (platform diagnostic and release driver); retain the report | P0-03 | INV-1, 7 | Implementation agent | In review; failed native boot corrected, exact rerun pending |
 | P0-05 | Container tier on Fedora Atomic: moby-engine or Podman for Symbiont's Docker and gVisor routes; qualify the choice | P0-03 | INV-1 | Implementation agent | In review; Moby candidate boot path, authenticated fixture intake and six-run controller prepared; no candidate boot has run; producer prerequisites, native second qualification boot and managed route pending |
+| P0-06 | HIGHLY EXPERIMENTAL offline interactive development-appliance VM handoff | P0-03 | INV-12 | Implementation agent | In review; controller prepared; blocked on fresh reviewed generic Atomic preflight and hosted runtime evidence |
 | P1-01 | symbi-common: principal IDs, D-Bus types, Symbiont API and journal clients | P0-01 | INV-5 |  | Not started |
 | P1-02 | symbi-run: desktop launcher over Symbiont's managed CLI route (governed mode) | P1-01, P0-04 | INV-7, 13 |  | Not started |
 | P1-03 | symbi-egressd: Symbiont outbound capabilities for APIs; allowlisted CONNECT proxy for workspace mode | P1-01 | INV-1, 5, 6, 7 |  | Not started |
