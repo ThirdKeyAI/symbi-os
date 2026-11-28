@@ -86,12 +86,15 @@ captured control-group path to be gone, and validates the final evidence invento
 and contents only after no unit descendant can still write them. A collection,
 cleanup, swap, OOM, or final-validation failure removes the evidence and public
 output and emits no upload marker.
-A failed run instead can retain exactly the all-false controller receipt and
-fixed-field systemd record only when the source-bound appliance controller created
-evidence and the wrapper then sanitized and validated that exact pair. Earlier
-preparation failures, failed sanitization, failed evidence validation, and failed
-outer-unit collection produce no `interactive-appliance-evidence` artifact; their
-workflow logs remain available. Immediately before the successful download upload,
+A failed run can retain exactly one all-false receipt plus the fixed-field systemd
+record. When the appliance controller produced a receipt, the wrapper removes every
+other output and validates that source-bound inner receipt. When the outer unit
+started, reached a terminal failure, and produced a valid systemd record but no inner
+evidence path, the wrapper can instead create a content-free outer receipt with a
+fixed stage, failed-command class, cleanup result, and `inner_evidence_available=false`.
+Failures before the unit starts or reaches a captured terminal state, and any failed
+cleanup or evidence validation, produce no `interactive-appliance-evidence` artifact;
+their workflow logs remain available. Immediately before the successful download upload,
 a separate validator accepts only the qcow2, manifest, and screenshot, rehashes all
 three, scans them for credential markers, and cross-checks them against the
 seven-day evidence. The manifest expiry comes from the hosted workflow clock rather
@@ -260,15 +263,23 @@ exercise physical NVIDIA hardware.
 Run the `HIGHLY EXPERIMENTAL interactive appliance` workflow manually only at a
 reviewed commit whose strict lock selects preflight run `46125049529`. Ordinary
 pushes and pull requests never schedule it. A controller failure before the evidence
-upload can retain only the bounded controller and systemd files with all success and
-qualification claims false after the wrapper validates both records. The controller
-record contains a fixed stage, source commit/tree, local cleanup, exact cgroup
-receipts, and any source-bound child-result diagnostic. At most the approved QEMU and
-serial log tails are embedded; host paths, URLs, credentials, control characters,
-and key material are redacted, while links, special files, and oversized inputs are
-rejected. An earlier preparation failure,
-an outer-unit collection or OOM failure, or any failure to sanitize or validate the
-pair retains no appliance evidence artifact. A later public revalidation failure
+upload can retain only a bounded all-false receipt and the systemd record after the
+wrapper validates both files. If the appliance controller produced the receipt, it
+contains a fixed stage, source commit/tree, local cleanup, exact cgroup
+receipts, and any source-bound child-result diagnostic. That diagnostic is limited to
+the child-result type, a fixed producer phase and process status, byte counts for the
+approved QEMU and serial logs, explicitly untrusted allowlisted observations of
+lifecycle sentinels and traceback classes, and bounded guest-report state/size
+metadata. Log-derived observations are diagnostic hints only and cannot satisfy a
+gate or qualification claim. No private-input digest, log text, result message, or
+arbitrary excerpt is retained. Missing, empty, linked,
+hard-linked, special, unreadable, changing, and oversized inputs receive fixed refusal
+states. If the terminal outer unit produced no inner evidence, the wrapper may instead
+create the content-free outer receipt described above; it carries no child diagnostic
+or cgroup receipt. A failure before unit start or captured terminal state, an
+outer-unit collection or OOM failure, or any failure to clean up or validate the pair
+retains no appliance evidence artifact.
+A later public revalidation failure
 blocks the qcow2 while the already uploaded diagnostic evidence can remain. The
 qcow2 upload is the final,
 success-gated workflow step, so an earlier failure cannot publish it. Artifact

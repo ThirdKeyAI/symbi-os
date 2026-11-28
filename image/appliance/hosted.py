@@ -12,10 +12,12 @@ import re
 import sys
 
 from image.appliance.contract import (APPLIANCE_CONTAINER_LIMITS, ARTIFACT_NAME,
-                                      FAILURE_EXCERPT_BYTES, FAILURE_LOG_BOUNDS,
+                                      FAILURE_ERROR_CLASSES, FAILURE_LOG_BOUNDS,
+                                      FAILURE_REJECTION_REASONS, FAILURE_STATUS_SENTINELS,
                                       RETENTION_DAYS, SDDM_CONFIGURATION, SCOPE,
                                       build_manifest,
                                       controller_failure_record, failure_record, sha256,
+                                      producer_failure_type_matches,
                                       provision_qemu_arguments, unique_json,
                                       validate_guest_report, validate_reboot_report,
                                       validate_resource_receipt,
@@ -39,19 +41,6 @@ FAILURE_CLAIMS = (
     "signature_qualified",
 )
 INNER_FAILURE_KEYS = set(failure_record({}, "")).union({"limits", "cgroup_final"})
-SENSITIVE_PATTERNS = (
-    re.compile(r"(?is)-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----"),
-    re.compile(r"(?is)-----BEGIN [A-Z ]*PRIVATE KEY-----.*"),
-    re.compile(r"(?im)\bauthorization\s*:\s*(?:bearer|basic)\s+[^\r\n]*"),
-    re.compile(
-        r"(?im)\b[A-Z0-9_]*(?:PASSWORD|PASSWD|TOKEN|SECRET|API_KEY|"
-        r"PRIVATE_KEY|ACCESS_KEY)[A-Z0-9_]*\s*[:=][^\r\n]*"
-    ),
-    re.compile(r"(?i)\b(?:github_pat_|gh[pousr]_|glpat-)[A-Za-z0-9_-]+"),
-    re.compile(r"(?i)\bssh-(?:rsa|ed25519)\s+[A-Za-z0-9+/=]+(?:\s+[^\n]+)?"),
-)
-URL_PATTERN = re.compile(r"(?i)\b(?:https?|ssh)://[^\s\"'<>]+")
-ABSOLUTE_PATH_PATTERN = re.compile(r"(?<![A-Za-z0-9._-])/(?:[^\s\"'<>]+)")
 OUTER_MEMORY_MAX_BYTES = 5 * 1024**3
 SYSTEMD_UINT64_MAX = (1 << 64) - 1
 CREDENTIAL_TOKENS = (b"PRIVATE KEY-----", b"ssh-rsa ", b"ssh-ed25519 ")
@@ -348,64 +337,95 @@ def _bounded_regular(path, maximum):
         os.close(directory)
 
 
-def _sanitize_diagnostic(raw, maximum):
-    """Return printable path-free text and whether any content was removed."""
-    if isinstance(raw, bytes):
-        text = raw.decode("utf-8", errors="replace")
-    elif isinstance(raw, str):
-        text = raw
-    else:
-        raise TypeError("Diagnostic input must be text or bytes")
-    text = text.replace("\r\n", "\n").replace("\r", "\n")
-    redacted = "\ufffd" in text
-    text = text.replace("\ufffd", "?")
-    for pattern in SENSITIVE_PATTERNS:
-        changed, count = pattern.subn("<redacted>", text)
-        text, redacted = changed, redacted or count > 0
-    changed, count = URL_PATTERN.subn("<url>", text)
-    text, redacted = changed, redacted or count > 0
-    changed, count = ABSOLUTE_PATH_PATTERN.subn("<path>", text)
-    text, redacted = changed, redacted or count > 0
-    printable = "".join(
-        character
-        if character in "\n\t" or (ord(character) >= 32 and not 127 <= ord(character) <= 159)
-        else "?"
-        for character in text
-    )
-    redacted = redacted or printable != text
-    encoded = printable.encode("utf-8")
-    if len(encoded) > maximum:
-        printable = encoded[-maximum:].decode("utf-8", errors="ignore")
-        redacted = True
-    printable = printable.strip()
-    if len(printable.encode("utf-8")) > maximum:
-        raise ValueError("Sanitized appliance diagnostic exceeds its byte bound")
-    return printable, redacted
+def _failure_input(path, maximum):
+    """Classify and read one direct failure input without following unsafe paths."""
+    try:
+        parent = path.parent.lstat()
+    except FileNotFoundError:
+        return None, "missing"
+    except OSError:
+        return None, "unreadable"
+    if path.parent.is_symlink() or not stat.S_ISDIR(parent.st_mode):
+        return None, "unsafe"
+    try:
+        info = path.lstat()
+    except FileNotFoundError:
+        return None, "missing"
+    except OSError:
+        return None, "unreadable"
+    if (path.is_symlink() or not stat.S_ISREG(info.st_mode)
+            or info.st_nlink != 1):
+        return None, "unsafe"
+    if info.st_size == 0:
+        return None, "empty"
+    if info.st_size > maximum:
+        return None, "oversized"
+    try:
+        return _bounded_regular(path, maximum), None
+    except OSError:
+        return None, "unreadable"
+    except ValueError:
+        return None, "changed"
 
 
 def _failure_log(path, maximum):
-    try:
-        raw = _bounded_regular(path, maximum)
-    except (OSError, ValueError):
-        return None, True
-    # Redact the complete bounded input before selecting a tail. Otherwise a
-    # credential label just before the tail boundary could be discarded while
-    # its value was retained.
-    sanitized, redacted = _sanitize_diagnostic(raw, maximum)
-    excerpt, tail_redacted = _sanitize_diagnostic(sanitized, FAILURE_EXCERPT_BYTES)
-    redacted = redacted or tail_redacted
-    if not excerpt:
-        return None, False
+    raw, refused = _failure_input(path, maximum)
+    if refused is not None:
+        return None, refused
+    status_prefix = b"SYMBI_APPLIANCE_STATUS:"
+    observed = []
+    lines = raw.splitlines()
+    for line in lines:
+        candidate = line.strip()
+        if not candidate.startswith(status_prefix):
+            continue
+        try:
+            sentinel = candidate[len(status_prefix):].decode("ascii")
+        except UnicodeError:
+            continue
+        if sentinel in FAILURE_STATUS_SENTINELS:
+            observed.append(sentinel)
+    error_prefixes = {
+        "CalledProcessError": b"subprocess.CalledProcessError",
+        "JSONDecodeError": b"json.decoder.JSONDecodeError",
+        "MemoryError": b"MemoryError",
+        "OSError": b"OSError",
+        "RuntimeError": b"RuntimeError",
+        "TimeoutError": b"TimeoutError",
+        "TimeoutExpired": b"subprocess.TimeoutExpired",
+        "ValueError": b"ValueError",
+    }
+    if set(error_prefixes) != FAILURE_ERROR_CLASSES:
+        raise ValueError("Incomplete appliance failure error-class allowlist")
+    observed_errors = set()
+    for line in lines:
+        candidate = line.strip()
+        for name, prefix in error_prefixes.items():
+            if candidate == prefix or candidate.startswith(prefix + b":"):
+                observed_errors.add(name)
+    errors = sorted(observed_errors)
     return {
-        "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),
-        "excerpt": excerpt,
-        "truncated": len(raw) > FAILURE_EXCERPT_BYTES,
-        "redacted": redacted,
-    }, False
+        "bytes": len(raw), "authority": "untrusted-log-observation",
+        "observed_sentinels": sorted(set(observed)),
+        "observed_error_classes": errors,
+    }, None
+
+
+def _guest_report_state(output):
+    """Return bounded metadata, never content, for the failed producer report."""
+    raw, refused = _failure_input(output / "evidence/guest-report.json", 128 * 1024)
+    if refused is not None:
+        state = "absent" if refused == "missing" else refused
+        if state not in {"absent", "empty", "oversized", "unsafe", "unreadable", "changed"}:
+            raise ValueError("Unknown guest report failure state")
+        return {"state": state}
+    return {
+        "state": "bounded", "bytes": len(raw),
+    }
 
 
 def _failure_diagnostic(output, phase, source):
-    """Authenticate one result and sanitize its failure before private cleanup."""
+    """Authenticate one result and retain only allowlisted structured metadata."""
     if phase not in FAILURE_LOG_BOUNDS:
         raise ValueError("Unknown appliance failure phase")
     result_path = output / "result.json"
@@ -424,39 +444,42 @@ def _failure_diagnostic(output, phase, source):
         failure_bytes = failure.encode("utf-8") if isinstance(failure, str) else b""
     except UnicodeError:
         failure_bytes = b""
-    if (set(value) != INNER_FAILURE_KEYS
+    expected_keys = INNER_FAILURE_KEYS | ({"producer_status"} if phase == "producer" else set())
+    if (set(value) != expected_keys
             or value.get("schema") != 1 or value.get("source_binding") != source
             or value.get("scope") != SCOPE
             or any(value.get(name) is not False for name in FAILURE_CLAIMS)
             or not isinstance(failure, str)
             or not 0 < len(failure_bytes) <= 4096):
         return None, receipt
-    failure_type, separator, message = failure.partition(":")
+    failure_type, separator, _message = failure.partition(":")
     failure_type = failure_type.strip()
     if (not separator or re.fullmatch(r"[A-Za-z][A-Za-z0-9_.]{0,63}", failure_type) is None):
         return None, receipt
-    message, redacted = _sanitize_diagnostic(message, 4096)
-    if not message:
-        message = failure_type
-    logs, rejected = {}, []
+    producer_status = value.get("producer_status") if phase == "producer" else None
+    if (phase == "producer"
+            and not producer_failure_type_matches(producer_status, failure_type)):
+        return None, receipt
+    logs, rejected = {}, {}
     log_root = output / "evidence" if phase == "producer" else output
     for name, maximum in FAILURE_LOG_BOUNDS[phase].items():
         path = log_root / name
-        if not path.exists() and not path.is_symlink():
-            continue
         item, refused = _failure_log(path, maximum)
-        if refused:
-            rejected.append(name)
-        elif item is not None:
+        if refused is not None:
+            if refused not in FAILURE_REJECTION_REASONS:
+                raise ValueError("Unknown appliance failure rejection")
+            rejected[name] = refused
+        else:
             logs[name] = item
-    return {
+    diagnostic = {
         "result": {
-            "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),
-            "failure_type": failure_type, "message": message, "redacted": redacted,
+            "failure_type": failure_type, "producer_status": producer_status,
         },
         "logs": logs,
-        "rejected": sorted(rejected),
-    }, receipt
+        "rejected": dict(sorted(rejected.items())),
+        "guest_report": _guest_report_state(output) if phase == "producer" else None,
+    }
+    return diagnostic, receipt
 
 
 def _remove_local_output(path):

@@ -12,6 +12,7 @@ import stat
 
 
 USERNAME = "symbi-test"
+STATUS_PREFIX = "SYMBI_APPLIANCE_STATUS:"
 SDDM_CONFIGURATION = """# HIGHLY EXPERIMENTAL disposable development appliance only.
 # This locked account has no password or key and is not present in the product image.
 [Autologin]
@@ -96,9 +97,27 @@ def run(command, *, timeout):
     return result.stdout
 
 
+def status(name):
+    """Emit one fixed public-safe lifecycle marker to the private serial log."""
+    print(STATUS_PREFIX + name, flush=True)
+
+
 def run_phase(name, command):
     """Run one named phase with its reviewed hard deadline."""
-    return run(command, timeout=PROVISION_COMMAND_TIMEOUTS[name])
+    status("provision-phase-start:" + name)
+    try:
+        result = run(command, timeout=PROVISION_COMMAND_TIMEOUTS[name])
+    except subprocess.TimeoutExpired:
+        status("provision-phase-timeout:" + name)
+        raise
+    except subprocess.CalledProcessError:
+        status("provision-phase-exit:" + name)
+        raise
+    except Exception:
+        status("provision-phase-error:" + name)
+        raise
+    status("provision-phase-complete:" + name)
+    return result
 
 
 def remove_fixture_boot_wants():
@@ -111,6 +130,7 @@ def remove_fixture_boot_wants():
 
 
 def main():
+    status("provision-start")
     product = Path("/sys/class/dmi/id/product_name").read_text().strip()
     if (os.geteuid() != 0 or product != "Symbi-Interactive-Appliance"
             or Path("/run/.containerenv").exists() or len(sys.argv) != 2):
@@ -180,7 +200,12 @@ def main():
     target = Path("/run/symbi-appliance-provision.json")
     target.write_text(json.dumps(state, sort_keys=True) + "\n")
     target.chmod(0o600)
+    status("provision-complete")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except (Exception, SystemExit):
+        status("provision-failed")
+        raise

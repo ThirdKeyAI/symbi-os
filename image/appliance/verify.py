@@ -16,6 +16,7 @@ import time
 
 USERNAME = "symbi-test"
 CHANNEL = Path("/dev/virtio-ports/org.symbi.appliance")
+STATUS_PREFIX = "SYMBI_APPLIANCE_STATUS:"
 SCOPE = (
     "HIGHLY EXPERIMENTAL offline development appliance; no release, signature, "
     "security, containment or production-account qualification"
@@ -55,6 +56,11 @@ PORTAL_POLL_ATTEMPTS = (
     VERIFIER_PHASE_BUDGETS["graphical-session-and-portal"]
     // PORTAL_POLL_INTERVAL_SECONDS
 )
+
+
+def status(name):
+    """Emit one fixed public-safe lifecycle marker to the private serial log."""
+    print(STATUS_PREFIX + name, flush=True)
 
 
 def unique_json(raw):
@@ -504,6 +510,7 @@ def observe_graphical_session(uid, application_deadline):
 
 
 def main():
+    status("verifier-start")
     product = Path("/sys/class/dmi/id/product_name").read_text().strip()
     if (os.geteuid() != 0 or product != "Symbi-Interactive-Appliance"
             or Path("/run/.containerenv").exists() or len(sys.argv) != 2):
@@ -529,10 +536,12 @@ def main():
             or state.get("expected_sha256") != digest(expected_path)
             or state.get("autologin_sha256") != expected.get("sddm_config_sha256")):
         raise ValueError("Ephemeral provisioning receipt is incomplete")
+    status("verifier-provision-receipt-accepted")
     account = pwd.getpwnam(USERNAME)
     wheel = grp.getgrnam("wheel")
     session_executables, portal_executable, executables = observe_graphical_session(
         account.pw_uid, application_deadline)
+    status("verifier-graphical-session-observed")
     default_target = run(
         ["/usr/bin/systemctl", "get-default"],
         timeout=remaining_timeout(
@@ -581,6 +590,7 @@ def main():
     if not verify_seed(expected, account):
         raise ValueError("First-login defaults were not seeded exactly")
     walker_launch = observe_bounded_walker(account.pw_uid, application_deadline)
+    status("verifier-walker-observed")
     executables = user_executables(account.pw_uid, application_deadline)
     if not (session_executables | {portal_executable}).issubset(executables):
         raise ValueError("Desktop session changed during the bounded Walker observation")
@@ -663,8 +673,14 @@ def main():
         local_deadline,
         VERIFIER_PHASE_BUDGETS["local-validation-and-report"],
     )
+    status("verifier-report-write-start")
     write_guest_report(CHANNEL, raw, local_deadline)
+    status("verifier-report-write-complete")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except (Exception, SystemExit):
+        status("verifier-failed")
+        raise

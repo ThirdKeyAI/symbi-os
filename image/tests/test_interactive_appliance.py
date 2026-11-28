@@ -20,18 +20,18 @@ import yaml
 
 from image.appliance.contract import (APPLIANCE_CONTAINER_LIMITS,
     APPLIANCE_CONTAINER_MEMORY_BYTES, APPLIANCE_CONTROLLER_MARGIN_BYTES,
-    APPLIANCE_CONTROLLER_MEMORY_BYTES, ARTIFACT_NAME, FAILURE_EXCERPT_BYTES,
-    SCOPE, SDDM_CONFIGURATION,
+    APPLIANCE_CONTROLLER_MEMORY_BYTES, ARTIFACT_NAME, FAILURE_STATUS_SENTINELS,
+    PROVISION_STATUS_PHASES, SCOPE, SDDM_CONFIGURATION,
     VIRTUAL_DISK_BYTES, build_manifest, controller_failure_record, failure_record,
     firmware_arguments, installer_arguments, provision_qemu_arguments,
     reboot_qemu_arguments, user_launch_arguments, validate_guest_report,
-    validate_reboot_report, validate_source_binding)
+    validate_producer_failure_status, validate_reboot_report,
+    validate_source_binding)
 from image.appliance.hosted import (EVIDENCE_FILE_LIMITS,
                                     MAX_RETAINED_EVIDENCE_BYTES,
                                     PUBLIC_ARTIFACT_FILES,
                                     SUCCESS_EVIDENCE_FILES,
                                     _failure_diagnostic, _installed_desktop_bindings,
-                                    _sanitize_diagnostic,
                                     create_outer_failure_evidence,
                                     invalidate_appliance_output, outer_failure_record,
                                     produce_appliance,
@@ -99,11 +99,21 @@ def artifact():
             "virtual_bytes": VIRTUAL_DISK_BYTES}
 
 
+def producer_status(**changes):
+    value = {
+        "phase": "guest-report", "kind": "exception", "exit_code": None,
+        "timeout_seconds": None, "qemu_exit_code": 0,
+    }
+    value.update(changes)
+    return value
+
+
 def child_failure(reason="RuntimeError: QEMU could not allocate guest memory"):
     source = source_binding()
     result = failure_record(source, reason)
     result.update({
         "limits": dict(APPLIANCE_CONTAINER_LIMITS),
+        "producer_status": producer_status(),
         "cgroup_final": {
             **APPLIANCE_CONTAINER_LIMITS,
             "memory.peak": str(3 * 1024**3),
@@ -1117,6 +1127,176 @@ class InteractiveApplianceContract(unittest.TestCase):
                       RuntimeError, "emitted no bounded guest report")):
                 producer.await_first_boot_report(child, 0.0, Path(temporary))
 
+    def test_producer_failure_status_is_typed_and_consistent(self):
+        from image.appliance import producer
+
+        clean = mock.Mock(returncode=0)
+        failed = mock.Mock(returncode=23)
+        cases = (
+            (
+                "guest-report", producer.producer_failure_status(
+                    "first-boot", RuntimeError("private"), clean),
+                producer_status(),
+            ),
+            (
+                "qemu-exit", producer.producer_failure_status(
+                    "first-boot", RuntimeError("private"), failed),
+                producer_status(
+                    phase="first-boot", kind="qemu-exit", exit_code=23,
+                    qemu_exit_code=23,
+                ),
+            ),
+            (
+                "subprocess-exit", producer.producer_failure_status(
+                    "raw-conversion", subprocess.CalledProcessError(7, ["private"]),
+                    None,
+                ),
+                producer_status(
+                    phase="raw-conversion", kind="subprocess-exit", exit_code=7,
+                    qemu_exit_code=None,
+                ),
+            ),
+            (
+                "subprocess-timeout", producer.producer_failure_status(
+                    "input-validation", subprocess.TimeoutExpired(["private"], 15),
+                    None,
+                ),
+                producer_status(
+                    phase="input-validation", kind="subprocess-timeout",
+                    timeout_seconds=15, qemu_exit_code=None,
+                ),
+            ),
+            (
+                "controller-timeout", producer.producer_failure_status(
+                    "first-boot", TimeoutError("private"), None),
+                producer_status(
+                    phase="first-boot", kind="controller-timeout",
+                    timeout_seconds=producer.FIRST_BOOT_TIMEOUT_SECONDS,
+                    qemu_exit_code=None,
+                ),
+            ),
+            (
+                "late-clean-exit", producer.producer_failure_status(
+                    "first-boot", TimeoutError("private"), clean),
+                producer_status(
+                    phase="first-boot", kind="controller-timeout",
+                    timeout_seconds=producer.FIRST_BOOT_TIMEOUT_SECONDS,
+                    qemu_exit_code=0,
+                ),
+            ),
+        )
+        for name, actual, expected in cases:
+            with self.subTest(name=name):
+                self.assertEqual(actual, expected)
+                self.assertTrue(validate_producer_failure_status(actual))
+                self.assertNotIn("private", json.dumps(actual))
+
+        contradictory = (
+            producer_status(kind="qemu-exit", exit_code=0),
+            producer_status(kind="qemu-exit", exit_code=4, qemu_exit_code=5),
+            producer_status(kind="controller-timeout", timeout_seconds=10),
+            producer_status(phase="guest-report", kind="subprocess-timeout",
+                            timeout_seconds=10),
+            producer_status(phase="initialization", kind="subprocess-exit",
+                            exit_code=7, qemu_exit_code=None),
+            producer_status(phase="initialization", kind="subprocess-timeout",
+                            timeout_seconds=10, qemu_exit_code=None),
+            producer_status(phase="input-validation", kind="subprocess-timeout",
+                            timeout_seconds=999, qemu_exit_code=None),
+            producer_status(phase="raw-conversion", kind="subprocess-timeout",
+                            timeout_seconds=1.5, qemu_exit_code=None),
+            producer_status(phase="artifact-validation", kind="subprocess-timeout",
+                            timeout_seconds=1200, qemu_exit_code=0),
+            producer_status(phase="first-boot", kind="controller-timeout",
+                            timeout_seconds=1, qemu_exit_code=None),
+            producer_status(phase="first-boot", qemu_exit_code=0),
+        )
+        for value in contradictory:
+            with self.subTest(value=value):
+                self.assertFalse(validate_producer_failure_status(value))
+
+        for value in (
+            producer_status(
+                phase="raw-conversion", kind="subprocess-timeout",
+                timeout_seconds=1200, qemu_exit_code=None,
+            ),
+            producer_status(
+                phase="artifact-compression", kind="subprocess-timeout",
+                timeout_seconds=300, qemu_exit_code=0,
+            ),
+            producer_status(
+                phase="artifact-validation", kind="subprocess-timeout",
+                timeout_seconds=30, qemu_exit_code=0,
+            ),
+        ):
+            with self.subTest(valid_timeout=value):
+                self.assertTrue(validate_producer_failure_status(value))
+
+    def test_guest_status_sentinels_are_fixed_and_allowlisted(self):
+        from image.appliance import provision
+
+        emitted = []
+        all_emitted = []
+        phase = "selinux-enforcement"
+        with (mock.patch.object(provision, "status", side_effect=emitted.append),
+              mock.patch.object(provision, "run", return_value="ok")):
+            self.assertEqual(provision.run_phase(phase, ["private"]), "ok")
+        self.assertEqual(emitted, [
+            "provision-phase-start:selinux-enforcement",
+            "provision-phase-complete:selinux-enforcement",
+        ])
+        all_emitted.extend(emitted)
+        for error, outcome in (
+            (subprocess.TimeoutExpired(["private"], 1), "timeout"),
+            (subprocess.CalledProcessError(1, ["private"]), "exit"),
+            (ValueError("private"), "error"),
+        ):
+            emitted = []
+            with (self.subTest(outcome=outcome),
+                  mock.patch.object(provision, "status", side_effect=emitted.append),
+                  mock.patch.object(provision, "run", side_effect=error),
+                  self.assertRaises(type(error))):
+                provision.run_phase(phase, ["private"])
+            self.assertEqual(emitted, [
+                "provision-phase-start:selinux-enforcement",
+                f"provision-phase-{outcome}:selinux-enforcement",
+            ])
+            all_emitted.extend(emitted)
+        for name in all_emitted:
+            self.assertIn(name, FAILURE_STATUS_SENTINELS)
+        self.assertEqual(set(provision.PROVISION_COMMAND_TIMEOUTS),
+                         set(PROVISION_STATUS_PHASES))
+        for phase_name in PROVISION_STATUS_PHASES:
+            for outcome in ("start", "complete", "exit", "timeout", "error"):
+                self.assertIn(
+                    f"provision-phase-{outcome}:{phase_name}",
+                    FAILURE_STATUS_SENTINELS,
+                )
+
+        for filename, expected in (
+            ("provision.py", {
+                "provision-start", "provision-complete", "provision-failed",
+            }),
+            ("verify.py", {
+                "verifier-start", "verifier-provision-receipt-accepted",
+                "verifier-graphical-session-observed", "verifier-walker-observed",
+                "verifier-report-write-start", "verifier-report-write-complete",
+                "verifier-failed",
+            }),
+        ):
+            tree = ast.parse((ROOT / "image/appliance" / filename).read_text())
+            observed = {
+                call.args[0].value
+                for call in ast.walk(tree)
+                if (isinstance(call, ast.Call)
+                    and isinstance(call.func, ast.Name)
+                    and call.func.id == "status" and len(call.args) == 1
+                    and isinstance(call.args[0], ast.Constant)
+                    and isinstance(call.args[0].value, str))
+            }
+            self.assertEqual(observed, expected)
+            self.assertTrue(observed.issubset(FAILURE_STATUS_SENTINELS))
+
     def test_verifier_has_no_implicit_or_unbounded_subprocess_deadline(self):
         from image.appliance import verify
 
@@ -1539,7 +1719,7 @@ class InteractiveApplianceContract(unittest.TestCase):
         atomic = (ROOT / "image/atomic/hosted.py").read_text()
         self.assertIn("'memory.max':'5368709120'", atomic)
 
-    def test_child_failure_retains_only_redacted_digest_bound_diagnostics(self):
+    def test_child_failure_retains_only_allowlisted_structured_metadata(self):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "output"
             evidence = output / "evidence"
@@ -1552,11 +1732,18 @@ class InteractiveApplianceContract(unittest.TestCase):
             (output / "result.json").write_bytes(raw_result)
             qemu = (
                 b"qemu-system-x86_64: cannot allocate RAM at /home/runner/private "
-                b"password=hunter2\n"
+                b"password=hunter2\nMemoryError: secret diagnostic\n"
             )
-            serial = b"kernel: memory allocation failed without OOM kill\n"
+            serial = (
+                b"SYMBI_APPLIANCE_STATUS:provision-start\n"
+                b"SYMBI_APPLIANCE_STATUS:provision-phase-start:selinux-enforcement\n"
+                b"subprocess.CalledProcessError: token=serial-secret\n"
+                b"SYMBI_APPLIANCE_STATUS:provision-phase-exit:selinux-enforcement\n"
+            )
+            guest_report = b'{"private":"guest-report-secret"}\n'
             (evidence / "provision-qemu.log").write_bytes(qemu)
             (evidence / "provision-serial.log").write_bytes(serial)
+            (evidence / "guest-report.json").write_bytes(guest_report)
             (evidence / "unapproved.log").write_text("must not be retained")
 
             diagnostic, receipt = _failure_diagnostic(output, "producer", source_binding())
@@ -1566,15 +1753,34 @@ class InteractiveApplianceContract(unittest.TestCase):
             })
             retained = json.dumps(diagnostic)
             for forbidden in ("/home/runner", "topsecret", "hunter2",
-                              "example.invalid", "unapproved"):
+                              "example.invalid", "serial-secret",
+                              "guest-report-secret", "unapproved"):
                 self.assertNotIn(forbidden, retained)
-            self.assertTrue(diagnostic["result"]["redacted"])
-            self.assertEqual(diagnostic["result"]["sha256"],
-                             hashlib.sha256(raw_result).hexdigest())
-            self.assertEqual(diagnostic["logs"]["provision-qemu.log"]["sha256"],
-                             hashlib.sha256(qemu).hexdigest())
-            self.assertTrue(diagnostic["logs"]["provision-qemu.log"]["redacted"])
-            self.assertEqual(diagnostic["rejected"], [])
+            self.assertEqual(diagnostic["result"]["failure_type"], "RuntimeError")
+            self.assertEqual(diagnostic["result"]["producer_status"],
+                             producer_status())
+            self.assertEqual(diagnostic["result"], {
+                "failure_type": "RuntimeError",
+                "producer_status": producer_status(),
+            })
+            self.assertEqual(diagnostic["logs"]["provision-qemu.log"], {
+                "bytes": len(qemu), "authority": "untrusted-log-observation",
+                "observed_sentinels": [],
+                "observed_error_classes": ["MemoryError"],
+            })
+            self.assertEqual(diagnostic["logs"]["provision-serial.log"], {
+                "bytes": len(serial), "authority": "untrusted-log-observation",
+                "observed_sentinels": [
+                    "provision-phase-exit:selinux-enforcement",
+                    "provision-phase-start:selinux-enforcement",
+                    "provision-start",
+                ],
+                "observed_error_classes": ["CalledProcessError"],
+            })
+            self.assertEqual(diagnostic["guest_report"], {
+                "state": "bounded", "bytes": len(guest_report),
+            })
+            self.assertEqual(diagnostic["rejected"], {})
 
             cleanup = {
                 "stage_directory_removed": True, "user_artifact_absent": True,
@@ -1601,43 +1807,63 @@ class InteractiveApplianceContract(unittest.TestCase):
                     source_binding(), "producer", "CalledProcessError", cleanup,
                     resources, {"producer": unsafe},
                 )
+            unsafe = copy.deepcopy(diagnostic)
+            unsafe["logs"]["provision-qemu.log"]["observed_sentinels"] = [[]]
+            with self.assertRaisesRegex(ValueError, "failure diagnostics"):
+                controller_failure_record(
+                    source_binding(), "producer", "CalledProcessError", cleanup,
+                    resources, {"producer": unsafe},
+                )
+            for mutate in (
+                lambda value: value["logs"].pop("provision-qemu.log"),
+                lambda value: value["logs"].update({"unapproved.log": {
+                    "bytes": 1, "authority": "untrusted-log-observation",
+                    "observed_sentinels": [], "observed_error_classes": [],
+                }}),
+                lambda value: value.update({"unknown": False}),
+            ):
+                unsafe = copy.deepcopy(diagnostic)
+                mutate(unsafe)
+                with self.assertRaisesRegex(ValueError, "failure diagnostics"):
+                    controller_failure_record(
+                        source_binding(), "producer", "CalledProcessError", cleanup,
+                        resources, {"producer": unsafe},
+                    )
             with self.assertRaisesRegex(ValueError, "failure diagnostics"):
                 controller_failure_record(
                     source_binding(), "producer", "CalledProcessError", cleanup,
                     {}, {"producer": diagnostic},
                 )
 
-    def test_child_failure_redacts_before_tail_selection(self):
+    def test_child_failure_preserves_causal_classes_before_a_long_shutdown_tail(self):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "output"
             evidence = output / "evidence"
             evidence.mkdir(parents=True)
             (output / "result.json").write_text(json.dumps(child_failure()) + "\n")
-            secret = b"s" * (FAILURE_EXCERPT_BYTES + 1024)
             raw = (
-                b"AWS_SECRET_ACCESS_KEY=\"" + secret + b"\"\n"
-                b"password='two word secret'\n"
-                b"Authorization: Bearer bearer-value\n"
-                b"safe final diagnostic\n"
+                b"SYMBI_APPLIANCE_STATUS:verifier-report-write-start\n"
+                b"subprocess.TimeoutExpired: timed out before report write\n"
+                + b"shutdown-noise-with-private-value " * 2000
             )
-            (evidence / "provision-qemu.log").write_bytes(raw)
+            (evidence / "provision-serial.log").write_bytes(raw)
 
             diagnostic, receipt = _failure_diagnostic(
                 output, "producer", source_binding()
             )
             self.assertIsNotNone(receipt)
-            item = diagnostic["logs"]["provision-qemu.log"]
-            self.assertTrue(item["truncated"])
-            self.assertTrue(item["redacted"])
-            self.assertIn("safe final diagnostic", item["excerpt"])
-            retained = json.dumps(item)
-            for forbidden in (
-                "AWS_SECRET_ACCESS_KEY", "two word secret", "bearer-value",
-                "s" * 256,
-            ):
-                self.assertNotIn(forbidden, retained)
+            item = diagnostic["logs"]["provision-serial.log"]
+            self.assertEqual(item["bytes"], len(raw))
+            self.assertEqual(item["observed_sentinels"], [
+                "verifier-report-write-start",
+            ])
+            self.assertEqual(item["observed_error_classes"], ["TimeoutExpired"])
+            self.assertEqual(diagnostic["rejected"], {
+                "provision-qemu.log": "missing",
+            })
+            self.assertNotIn("shutdown-noise", json.dumps(diagnostic))
 
-    def test_child_failure_excerpt_is_utf8_bounded_and_control_free(self):
+    def test_child_failure_ignores_unknown_or_malformed_log_tokens(self):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "output"
             evidence = output / "evidence"
@@ -1645,8 +1871,14 @@ class InteractiveApplianceContract(unittest.TestCase):
             result = child_failure()
             (output / "result.json").write_text(json.dumps(result) + "\n")
             raw = (
-                b"prefix\n" + "😀".encode("utf-8") * 5000
-                + b"\x7f\xc2\x80safe-end\n"
+                b"xSYMBI_APPLIANCE_STATUS:provision-start\n"
+                b"SYMBI_APPLIANCE_STATUS:unknown-event\n"
+                b"SYMBI_APPLIANCE_STATUS:provision-start extra\n"
+                b"print('SYMBI_APPLIANCE_STATUS:provision-start')\n"
+                b"TimeoutExpired without a reviewed traceback signature\n"
+                b"MemoryError without a colon\n"
+                b"not really ValueError: forged\n"
+                b"SYMBI_APPLIANCE_STATUS:\xff\xfe\n"
             )
             (evidence / "provision-qemu.log").write_bytes(raw)
 
@@ -1655,37 +1887,49 @@ class InteractiveApplianceContract(unittest.TestCase):
             )
             self.assertIsNotNone(receipt)
             item = diagnostic["logs"]["provision-qemu.log"]
-            excerpt = item["excerpt"]
-            self.assertLessEqual(len(excerpt.encode("utf-8")), FAILURE_EXCERPT_BYTES)
-            self.assertNotIn("\ufffd", excerpt)
-            self.assertNotIn("\x7f", excerpt)
-            self.assertNotIn("\x80", excerpt)
-            self.assertIn("??safe-end", excerpt)
+            self.assertEqual(item["observed_sentinels"], [])
+            self.assertEqual(item["observed_error_classes"], [])
+            self.assertNotIn("unknown-event", json.dumps(diagnostic))
 
-        for character, suffix in (("¢", "x"), ("€", "xy"), ("😀", "x")):
-            with self.subTest(character=character):
-                width = len(character.encode("utf-8"))
-                raw = (
-                    character.encode("utf-8")
-                    * (FAILURE_EXCERPT_BYTES // width + 16)
-                    + suffix.encode("ascii")
+    def test_child_failure_guest_report_state_is_content_free_and_typed(self):
+        cases = {
+            "absent": "absent", "empty": "empty", "bounded": "bounded",
+            "oversized": "oversized", "symlink": "unsafe", "hardlink": "unsafe",
+        }
+        for case, state in cases.items():
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as temporary:
+                output = Path(temporary) / "output"
+                evidence = output / "evidence"
+                evidence.mkdir(parents=True)
+                (output / "result.json").write_text(json.dumps(child_failure()) + "\n")
+                report = evidence / "guest-report.json"
+                raw = b'{"private":"must-not-escape"}\n'
+                if case == "empty":
+                    report.touch()
+                elif case == "bounded":
+                    report.write_bytes(raw)
+                elif case == "oversized":
+                    report.write_bytes(b"x" * (128 * 1024 + 1))
+                elif case == "symlink":
+                    target = evidence / "private-report"
+                    target.write_bytes(raw)
+                    report.symlink_to(target.name)
+                elif case == "hardlink":
+                    target = evidence / "private-report"
+                    target.write_bytes(raw)
+                    os.link(target, report)
+                diagnostic, receipt = _failure_diagnostic(
+                    output, "producer", source_binding()
                 )
-                excerpt, redacted = _sanitize_diagnostic(
-                    raw, FAILURE_EXCERPT_BYTES
-                )
-                self.assertTrue(redacted)
-                self.assertLessEqual(
-                    len(excerpt.encode("utf-8")), FAILURE_EXCERPT_BYTES
-                )
-                self.assertNotIn("\ufffd", excerpt)
-                self.assertTrue(excerpt.endswith(suffix))
-
-        invalid, redacted = _sanitize_diagnostic(
-            b"invalid-utf8:\xff\xfe\xf0\x28\x8c\x28", FAILURE_EXCERPT_BYTES
-        )
-        self.assertTrue(redacted)
-        self.assertNotIn("\ufffd", invalid)
-        self.assertEqual(invalid, "invalid-utf8:???(?(")
+                self.assertIsNotNone(receipt)
+                self.assertEqual(diagnostic["guest_report"]["state"], state)
+                self.assertNotIn("must-not-escape", json.dumps(diagnostic))
+                if state == "bounded":
+                    self.assertEqual(diagnostic["guest_report"], {
+                        "state": "bounded", "bytes": len(raw),
+                    })
+                else:
+                    self.assertEqual(diagnostic["guest_report"], {"state": state})
 
     def test_child_failure_rejects_untyped_resource_text(self):
         cases = (
@@ -1708,9 +1952,13 @@ class InteractiveApplianceContract(unittest.TestCase):
                     (None, None),
                 )
 
-    def test_child_failure_rejects_links_specials_and_oversized_logs(self):
-        cases = ("symlink", "hardlink", "linked-directory", "fifo", "oversized")
-        for case in cases:
+    def test_child_failure_types_every_refused_log_without_reading_it(self):
+        cases = {
+            "symlink": "unsafe", "hardlink": "unsafe",
+            "linked-directory": "unsafe", "fifo": "unsafe",
+            "oversized": "oversized", "empty": "empty", "missing": "missing",
+        }
+        for case, reason in cases.items():
             with self.subTest(case=case), tempfile.TemporaryDirectory() as temporary:
                 output = Path(temporary) / "output"
                 evidence = output / "evidence"
@@ -1733,15 +1981,91 @@ class InteractiveApplianceContract(unittest.TestCase):
                     evidence.symlink_to(target.name)
                 elif case == "fifo":
                     os.mkfifo(log)
-                else:
+                elif case == "oversized":
                     log.write_bytes(b"x" * (2 * 1024**2 + 1))
+                elif case == "empty":
+                    log.touch()
                 diagnostic, receipt = _failure_diagnostic(
                     output, "producer", source_binding()
                 )
                 self.assertIsNotNone(receipt)
                 self.assertEqual(diagnostic["logs"], {})
-                self.assertEqual(diagnostic["rejected"], ["provision-qemu.log"])
+                expected = {
+                    "provision-qemu.log": reason,
+                    "provision-serial.log": (
+                        "unsafe" if case == "linked-directory" else "missing"
+                    ),
+                }
+                self.assertEqual(diagnostic["rejected"], expected)
+                self.assertEqual(
+                    diagnostic["guest_report"],
+                    {"state": "unsafe" if case == "linked-directory" else "absent"},
+                )
                 self.assertNotIn("private", json.dumps(diagnostic))
+
+    def test_child_failure_types_changed_and_unreadable_log_reads(self):
+        from image.appliance import hosted
+
+        for error, reason in ((ValueError("changed"), "changed"),
+                              (OSError("unreadable"), "unreadable")):
+            with self.subTest(reason=reason), tempfile.TemporaryDirectory() as temporary:
+                output = Path(temporary) / "output"
+                evidence = output / "evidence"
+                evidence.mkdir(parents=True)
+                (output / "result.json").write_text(json.dumps(child_failure()) + "\n")
+                (evidence / "provision-qemu.log").write_text("private qemu content")
+                (evidence / "provision-serial.log").write_text(
+                    "SYMBI_APPLIANCE_STATUS:provision-start\n"
+                )
+                original = hosted._bounded_regular
+
+                def fail_selected(path, maximum):
+                    if path.name == "provision-qemu.log":
+                        raise error
+                    return original(path, maximum)
+
+                with mock.patch.object(
+                    hosted, "_bounded_regular", side_effect=fail_selected,
+                ):
+                    diagnostic, receipt = hosted._failure_diagnostic(
+                        output, "producer", source_binding()
+                    )
+                self.assertIsNotNone(receipt)
+                self.assertEqual(diagnostic["rejected"], {
+                    "provision-qemu.log": reason,
+                })
+                self.assertIn("provision-serial.log", diagnostic["logs"])
+                self.assertNotIn("private qemu content", json.dumps(diagnostic))
+
+    def test_reboot_failure_diagnostic_uses_the_same_content_free_schema(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "reboot-output"
+            output.mkdir()
+            result = child_failure("RuntimeError: private reboot failure")
+            result.pop("producer_status")
+            raw_result = (json.dumps(result) + "\n").encode()
+            (output / "result.json").write_bytes(raw_result)
+            qemu = b"private qemu detail\n"
+            serial = b"RuntimeError: private serial detail\n"
+            (output / "reboot-qemu.log").write_bytes(qemu)
+            (output / "reboot-serial.log").write_bytes(serial)
+
+            diagnostic, receipt = _failure_diagnostic(
+                output, "reboot", source_binding()
+            )
+            self.assertIsNotNone(receipt)
+            self.assertEqual(diagnostic["result"], {
+                "failure_type": "RuntimeError", "producer_status": None,
+            })
+            self.assertEqual(diagnostic["rejected"], {})
+            self.assertIsNone(diagnostic["guest_report"])
+            self.assertEqual(
+                diagnostic["logs"]["reboot-serial.log"]["observed_error_classes"],
+                ["RuntimeError"],
+            )
+            serialized = json.dumps(diagnostic)
+            self.assertNotIn("private qemu detail", serialized)
+            self.assertNotIn("private serial detail", serialized)
 
     def test_child_failure_rejects_unsafe_result_file_itself(self):
         for case in ("symlink", "fifo", "oversized"):
@@ -1805,7 +2129,11 @@ class InteractiveApplianceContract(unittest.TestCase):
                 progress["stage"] = "producer"
                 (output / "result.json").write_text(json.dumps(child_failure()) + "\n")
                 (evidence / "provision-qemu.log").write_text(
-                    "qemu-system-x86_64: cannot allocate guest RAM\n"
+                    "MemoryError: cannot allocate guest RAM private-detail\n"
+                )
+                (evidence / "provision-serial.log").write_text(
+                    "SYMBI_APPLIANCE_STATUS:verifier-report-write-start\n"
+                    "private serial content\n"
                 )
                 raise subprocess.CalledProcessError(1, ["podman", "run"])
 
@@ -1825,11 +2153,23 @@ class InteractiveApplianceContract(unittest.TestCase):
                 retained["diagnostics"]["producer"]["result"]["failure_type"],
                 "RuntimeError",
             )
-            self.assertIn(
-                "cannot allocate guest RAM",
-                retained["diagnostics"]["producer"]["logs"]["provision-qemu.log"]["excerpt"],
+            diagnostic = retained["diagnostics"]["producer"]
+            self.assertEqual(
+                diagnostic["logs"]["provision-qemu.log"]["observed_error_classes"],
+                ["MemoryError"],
             )
+            self.assertEqual(
+                diagnostic["logs"]["provision-serial.log"]["observed_sentinels"],
+                ["verifier-report-write-start"],
+            )
+            self.assertEqual(diagnostic["guest_report"], {"state": "absent"})
+            serialized = json.dumps(retained)
+            self.assertNotIn("private-detail", serialized)
+            self.assertNotIn("private serial content", serialized)
             self.assertFalse((root / ".cache/interactive-appliance-stage").exists())
+            evidence = root / ".cache/interactive-appliance-evidence"
+            self.assertEqual(sorted(path.name for path in evidence.iterdir()),
+                             ["result.json"])
             from image.appliance.hosted import finalize_failed_appliance_evidence
             self.assertTrue(finalize_failed_appliance_evidence(root))
             self.assertEqual(
@@ -1839,10 +2179,12 @@ class InteractiveApplianceContract(unittest.TestCase):
                 retained,
             )
             write_outer_systemd_result(
-                root / ".cache/interactive-appliance-evidence/systemd-result.txt",
+                evidence / "systemd-result.txt",
                 Result="exit-code", ActiveState="failed", SubState="failed",
                 ExecMainStatus="1",
             )
+            self.assertEqual(sorted(path.name for path in evidence.iterdir()),
+                             ["result.json", "systemd-result.txt"])
             self.assertGreater(validate_failure_fixture(root), 0)
 
     def test_malformed_child_diagnostic_cannot_interrupt_cleanup(self):
@@ -1855,10 +2197,17 @@ class InteractiveApplianceContract(unittest.TestCase):
         def surrogate(result):
             result["failure"] = "RuntimeError: invalid surrogate \ud800"
 
+        def mismatched_status(result):
+            result["producer_status"] = producer_status(
+                phase="raw-conversion", kind="subprocess-exit", exit_code=7,
+                qemu_exit_code=None,
+            )
+
         for name, corrupt in (
             ("scalar-resource", scalar),
             ("container-resource", container),
             ("surrogate-message", surrogate),
+            ("mismatched-status", mismatched_status),
         ):
             with self.subTest(name=name), tempfile.TemporaryDirectory() as temporary:
                 root = Path(temporary)
@@ -1890,7 +2239,9 @@ class InteractiveApplianceContract(unittest.TestCase):
                 self.assertEqual(retained["stage"], "producer")
                 self.assertEqual(
                     set(retained["resources"]),
-                    {"producer"} if name == "surrogate-message" else set(),
+                    {"producer"}
+                    if name in {"surrogate-message", "mismatched-status"}
+                    else set(),
                 )
                 self.assertEqual(retained["diagnostics"], {})
                 self.assertTrue(all(retained["cleanup"].values()))
@@ -2402,8 +2753,14 @@ class InteractiveApplianceContract(unittest.TestCase):
             self.assertIn("HIGHLY EXPERIMENTAL", text)
             self.assertIn("no NIC", text)
         self.assertIn("Hosted runtime evidence is\nstill required", card)
-        self.assertIn("failed evidence validation, and failed\nouter-unit collection produce no", readme)
-        self.assertIn("sanitization or validation retain no", card)
+        self.assertIn(
+            "Failures before the unit starts or reaches a captured terminal state",
+            readme,
+        )
+        self.assertIn("content-free outer receipt", readme)
+        self.assertIn("`inner_evidence_available=false`", readme)
+        self.assertIn("content-free outer receipt", card)
+        self.assertIn("unit start or captured termination", " ".join(card.split()))
         self.assertIn("Immediately before the successful download upload", readme)
         self.assertIn("already uploaded diagnostic evidence can remain", readme_flat)
         self.assertIn("already\n  uploaded diagnostic evidence may remain", card)
