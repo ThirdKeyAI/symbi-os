@@ -111,5 +111,53 @@ class DesktopImageInput(unittest.TestCase):
             for variant in ('nvidia', '../generic', '', None):
                 with self.subTest(variant=variant), self.assertRaises(ValueError): require_desktop_image(args[1], args[2], variant)
 
+    def test_current_lock_retains_exact_later_controller_inputs(self):
+        root = Path(__file__).resolve().parents[2]
+        lock = json.loads((root/'image/desktop-images.lock.json').read_text())
+        selected = lock['images']['generic']
+        summary = json.loads((root/selected['evidence']).read_text())
+        retained = summary['retained_controller_inputs']
+        report = root/'docs/security/reports/P0-03-desktop'/str(selected['run_id'])
+        expected = {
+            'preparation': report/'preparation.json',
+            'installed_package_inventory': report/'install/installed-after-stdout.log',
+        }
+        for name, path in expected.items():
+            with self.subTest(name=name):
+                metadata = retained[name]
+                self.assertEqual(root/metadata['path'], path)
+                self.assertTrue(path.is_file())
+                self.assertFalse(path.is_symlink())
+                raw = path.read_bytes()
+                self.assertEqual(len(raw), metadata['bytes'])
+                self.assertEqual(sha(raw), metadata['sha256'])
+
+        preparation_raw = expected['preparation'].read_bytes()
+        self.assertEqual(sha(preparation_raw), selected['manifest']['preparation_sha256'])
+        preparation = json.loads(preparation_raw)
+        self.assertIs(preparation['passed'], True)
+        self.assertIs(preparation['os_qualified'], False)
+        self.assertEqual(preparation['source_commit'], selected['tested_commit'])
+        self.assertTrue(set(preparation['payload']).isdisjoint(preparation['overlay']))
+        self.assertEqual(len({**preparation['payload'], **preparation['overlay']}),
+                         summary['checks']['installed_files_checked'])
+
+        inventory_raw = expected['installed_package_inventory'].read_bytes()
+        self.assertTrue(inventory_raw.endswith(b'\n'))
+        inventory = inventory_raw.decode().splitlines()
+        inventory_metadata = retained['installed_package_inventory']
+        self.assertEqual(len(inventory), inventory_metadata['entries'])
+        self.assertEqual(len(set(inventory)), inventory_metadata['unique_entries'])
+        sorted_raw = ('\n'.join(sorted(inventory))+'\n').encode()
+        self.assertEqual(sha(sorted_raw), inventory_metadata['sorted_sha256'])
+
+        preflight = json.loads((root/'image/atomic/preflight.lock.json').read_text())
+        self.assertEqual(preflight['preflight_run'], summary['next_gate']['current_preflight_lock_run'])
+        self.assertEqual(preflight['manifest_digest'],
+                         summary['next_gate']['current_preflight_lock_manifest_digest'])
+        self.assertNotEqual(preflight['source_commit'], selected['tested_commit'])
+        self.assertIs(summary['next_gate']['current_preflight_lock_matches_this_image'], False)
+        self.assertIs(summary['next_gate']['landlock_ready'], False)
+
 
 if __name__ == '__main__': unittest.main()
