@@ -1,0 +1,147 @@
+{
+  "artifacts": {
+    "evidence": {
+      "bytes": 13349,
+      "expires_at": "2026-12-12T09:16:46Z",
+      "expanded_bytes": 44824,
+      "id": 15257312412,
+      "members": 23,
+      "name": "container-ubuntu-fixture-package-evidence",
+      "sha256": "c715d582795d97dcd209687e4ca6aeee121416f30527335ad03c27898318f456"
+    },
+    "metadata": {
+      "api_sha256": "08bbdfec4ac3e32cd3470641d747eaefac3497fc038d705ee0970235c3047782",
+      "bytes": 4637216,
+      "expires_at": "2026-12-12T09:16:47Z",
+      "expanded_bytes": 4636264,
+      "id": 15257187872,
+      "manifest_sha256": "c468e573459e1ec4f694a1a2cea3f73153367eea1de9c47421047ca1687c8a6e",
+      "members": 7,
+      "name": "container-ubuntu-fixture-metadata",
+      "zip_sha256": "08bbdfec4ac3e32cd3470641d747eaefac3497fc038d705ee0970235c3047782"
+    }
+  },
+  "audit": {
+    "credential_or_token_markers_found": false,
+    "evidence_archive_crc_passed": true,
+    "evidence_archive_exact_safe_members": true,
+    "metadata_archive_crc_passed": true,
+    "metadata_archive_exact_flat_private_regular_members": true,
+    "metadata_archive_names_types_bounds_and_eocd_passed": true,
+    "metadata_archive_payload_hashes_passed": true,
+    "normalized_phase_ledger_and_result_validators_passed": true,
+    "rootfs_checksum_signature": {
+      "passed": true,
+      "signing_fingerprint": "843938DF228D22F7B3742BC0D94AA3F0EFE21092"
+    },
+    "signed_release_freshness_and_index_membership_passed": true,
+    "three_inrelease_signatures": {
+      "passed": true,
+      "signing_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C"
+    },
+    "verified_at": "2026-11-28T09:26:12Z"
+  },
+  "claims": {
+    "authoritative": false,
+    "candidate_emitted": false,
+    "container_qualified": false,
+    "os_qualified": false,
+    "producer_passed": false,
+    "qualified": false,
+    "release_qualified": false,
+    "selected": false,
+    "signature_qualified": false
+  },
+  "local_validation": {
+    "address_space_cap_bytes": 134217728,
+    "max_rss_kib": 44092,
+    "package_image_container_or_vm_work": false,
+    "swaps": 0,
+    "tests_passed": 112
+  },
+  "metadata": [
+    {
+      "inrelease": {
+        "bytes": 255850,
+        "sha256": "cdb2f31d809f589719a53c6ad15f255b27569c4059542ada282aaa21b8e164b0"
+      },
+      "packages_xz": {
+        "bytes": 1401160,
+        "sha256": "2a6a199e1031a5c279cb346646d594993f35b1c03dd4a82aaa0323980dd92451"
+      },
+      "suite": "noble"
+    },
+    {
+      "inrelease": {
+        "bytes": 126125,
+        "sha256": "9cbda1d9f46930f08664421bf29ef4b9fa79fed0e6db6fe46c4ab4b067e6b322"
+      },
+      "packages_xz": {
+        "bytes": 1492208,
+        "sha256": "9e6336a8322f908dbeddcd2de57f19d22756fb11f161458f04204914ba85e6ff"
+      },
+      "suite": "noble-updates"
+    },
+    {
+      "inrelease": {
+        "bytes": 126127,
+        "sha256": "a83c54bdbd784a0914b6cc94236c0a0a991cbbf2f3463d204a6d0dd57934cedf"
+      },
+      "packages_xz": {
+        "bytes": 1230772,
+        "sha256": "5c947649225178b587da69bd15724dff4d22d17d911f60abf7213534ea494a90"
+      },
+      "suite": "noble-security"
+    }
+  ],
+  "outputs": {
+    "candidate_emitted": false,
+    "package_build_performed": false,
+    "package_install_performed": false,
+    "production_dispatched": false
+  },
+  "promotion": {
+    "contract_formatted_bytes": 4214,
+    "contract_formatted_sha256": "1d41b97dd75e61e08a3b52317a22f2c0426126b43208099ba08214f4f6f97ce2",
+    "contract_sha256": "2c22f3e33c7081c4011a78a247b5f8f845a3386ac4ce44db0d07a03b84a6d841",
+    "discovery_contract_sha256": "0ba6c45e948b0012bc23490018217355ec5525bc946e10afaf66083c35f08a01",
+    "lock_sha256": "94d6f84024639b880060ac93825b4d3f1408f9f3a73b6e8087faac1748268b6c",
+    "state": "ready"
+  },
+  "resources": {
+    "authoritative_cgroup": {
+      "cpu_usage_usec": 709216,
+      "memory_current_bytes": 61038592,
+      "memory_events": {
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "memory_peak_bytes": 61038592,
+      "memory_swap_current_bytes": 0,
+      "memory_swap_peak_bytes": 0,
+      "pids_peak": 16,
+      "zero_swap": true
+    },
+    "systemd_fallback": {
+      "authoritative": false,
+      "reason": "transient unit was collected before the post-unit probe"
+    }
+  },
+  "run": {
+    "attempt": 1,
+    "branch": "card/P0-05-package-producer",
+    "conclusion": "success",
+    "event": "workflow_dispatch",
+    "head_sha": "ff1e1465ad1fd64027b7a983e97056f5dff1cd36",
+    "head_tree": "2c4adabd3d0f7143ba86a3cb8a67a9439d27af3c",
+    "id": 46129698065,
+    "job_id": 140931937688,
+    "mode": "discover",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46129698065",
+    "workflow": ".github/workflows/ubuntu-fixture-packages.yml"
+  },
+  "schema": 1,
+  "scope": "Reviewed retained metadata selected for one unselected production attempt; no package candidate, image use, selection or qualification"
+}

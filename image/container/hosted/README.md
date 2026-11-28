@@ -201,8 +201,9 @@ its public validator rejects a populated candidate. No image build, OCI export,
 cold load, selection or qualification is enabled by this slice.
 
 The manual ubuntu-fixture-packages.yml workflow remains workflow_dispatch only.
-Its checked-in contract was promoted to ready with the six exact InRelease and
-Packages.xz byte/hash identities independently reviewed from run 46107541478.
+Before the schema-3 retained-metadata handoff, its contract was promoted to
+ready with the six exact InRelease and Packages.xz byte/hash identities
+independently reviewed from run 46107541478.
 The ready state rejects discovery and permits only production. Production run
 46109461949 authenticated those pins, completed the private offline APT update
 and emitted a 68-row URI plan, then rejected APT's canonical lowercase `%7e`
@@ -223,9 +224,10 @@ still ready. The contract was returned to `pending-discovery` with all six
 payload identities cleared. Exact-head discovery run 46113900468 then
 authenticated the current three InRelease and three signed Packages.xz rows.
 Independent refetches matched all six identities, all signatures reverified,
-and the committed freshness and Release-row validators passed. The contract is
-now `ready` with those reviewed pins. Discovery downloaded no packages and
-created no candidate; production, selection and qualification remain pending.
+and the committed freshness and Release-row validators passed. That earlier
+contract was again `ready` with those reviewed pins. Discovery downloaded no
+packages and created no candidate; production, selection and qualification
+remained pending.
 
 The wrapper creates a bounded
 transient unit for either mode; inside it, pending `produce` refuses before
@@ -276,14 +278,13 @@ committed review, and only that can unblock an offline
 
 ## Retained metadata handoff
 
-The producer contract is reopened as schema 3 `pending-discovery` so the next
-discovery retains the authenticated repository bytes, rather than only their
-identities. A successful discovery publishes a dedicated artifact containing
-exactly seven flat private files: one bounded manifest, three InRelease files
-and the three Packages.xz files named by their signed Release rows. The
-manifest binds the manual run, attempt, head commit and tree, branch, discovery
-contract and pending lock while keeping authority, selection and every
-qualification claim false.
+The schema-3 producer contract makes authenticated repository bytes, rather
+than only their identities, the reviewed production input. Discovery run
+`46129698065` published exactly seven flat private files: one bounded manifest,
+three InRelease files and the three Packages.xz files named by their signed
+Release rows. The manifest binds the manual run, attempt, head commit and tree,
+branch, discovery contract and pending lock while keeping authority, selection
+and every qualification claim false.
 
 A reviewer must bind the exact producer identity, artifact ID/name/size, the
 artifact API digest, an independently observed ZIP digest, the manifest hash,
@@ -307,7 +308,10 @@ package payload transfers remain separate authenticated operations. The exact
 private ZIP and scratch are left for disposal with the ephemeral runner; no
 post-transfer pathname deletion is attempted.
 
-The checked-in state is deliberately pending. A fresh exact-head discovery,
-independent artifact review, and a separate ready-state commit are required
-before production can run. No package candidate, image input, selection or
-qualification follows from this implementation alone.
+Independent review selected metadata artifact `15257187872` and its exact
+4,637,216 ZIP bytes, seven payload members and manifest. The checked-in state is
+now `ready`, with canonical contract SHA-256
+`2c22f3e33c7081c4011a78a247b5f8f845a3386ac4ce44db0d07a03b84a6d841`.
+It permits one manual unselected production attempt. Production remains unrun;
+no package candidate, image input, selection or qualification follows from the
+promotion.

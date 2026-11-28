@@ -46,8 +46,35 @@ class Response(io.BytesIO):
 
 class RetainedUbuntuMetadataTests(unittest.TestCase):
     def setUp(self):
-        self.pending, self.lock = hosted.load_contract(ROOT)
-        self.assertEqual(self.pending["state"], "pending-discovery")
+        self.committed, self.lock = hosted.load_contract(ROOT)
+        self.assertEqual(self.committed["state"], "ready")
+        self.pending = copy.deepcopy(self.committed)
+        self.pending["state"] = "pending-discovery"
+        self.pending["scope"] = hosted.PENDING_SCOPE
+        for pin in self.pending["metadata_pins"]:
+            pin["inrelease"] = {"bytes": None, "sha256": None}
+            pin["packages_xz"] = {"bytes": None, "sha256": None}
+        self.pending["metadata_source"] = {
+            "state": "pending",
+            "producer": {
+                "run_id": None,
+                "run_attempt": None,
+                "head_sha": None,
+                "head_tree": None,
+                "branch": None,
+            },
+            "artifact": {
+                "id": None,
+                "name": metadata.ARTIFACT_NAME,
+                "bytes": None,
+                "api_sha256": None,
+                "zip_sha256": None,
+            },
+            "manifest_sha256": None,
+            "discovery_contract_sha256": None,
+            "lock_sha256": None,
+        }
+        hosted.validate_contract(ROOT, self.pending, self.lock)
 
     @staticmethod
     def _write_zip(path, rows):

@@ -18,6 +18,40 @@ from image.container import ubuntu_fixture_packages as packages
 
 
 ROOT = Path(__file__).resolve().parents[2]
+READY_CONTRACT_SHA256 = (
+    "2c22f3e33c7081c4011a78a247b5f8f845a3386ac4ce44db0d07a03b84a6d841"
+)
+
+
+def synthetic_pending_contract(contract):
+    """Remove every reviewed authority field for discovery-only test cases."""
+    pending = copy.deepcopy(contract)
+    pending["state"] = "pending-discovery"
+    pending["scope"] = hosted.PENDING_SCOPE
+    for pin in pending["metadata_pins"]:
+        pin["inrelease"] = {"bytes": None, "sha256": None}
+        pin["packages_xz"] = {"bytes": None, "sha256": None}
+    pending["metadata_source"] = {
+        "state": "pending",
+        "producer": {
+            "run_id": None,
+            "run_attempt": None,
+            "head_sha": None,
+            "head_tree": None,
+            "branch": None,
+        },
+        "artifact": {
+            "id": None,
+            "name": hosted.metadata_artifact.ARTIFACT_NAME,
+            "bytes": None,
+            "api_sha256": None,
+            "zip_sha256": None,
+        },
+        "manifest_sha256": None,
+        "discovery_contract_sha256": None,
+        "lock_sha256": None,
+    }
+    return pending
 
 
 class FakeResponse:
@@ -49,12 +83,7 @@ class FakeResponse:
 class UbuntuHostedProducerTests(unittest.TestCase):
     def setUp(self):
         self.committed_contract, self.lock = hosted.load_contract(ROOT)
-        self.contract = copy.deepcopy(self.committed_contract)
-        self.contract["state"] = "pending-discovery"
-        self.contract["scope"] = hosted.PENDING_SCOPE
-        for pin in self.contract["metadata_pins"]:
-            pin["inrelease"] = {"bytes": None, "sha256": None}
-            pin["packages_xz"] = {"bytes": None, "sha256": None}
+        self.contract = synthetic_pending_contract(self.committed_contract)
         hosted.validate_contract(ROOT, self.contract, self.lock)
 
     def hosted_environment(self):
@@ -226,41 +255,66 @@ class UbuntuHostedProducerTests(unittest.TestCase):
             runner.run.assert_not_called()
             self.assertFalse((apt_root / "etc/apt/sources.list").exists())
 
-    def test_committed_contract_reopens_durable_metadata_discovery(self):
+    def test_committed_contract_selects_only_reviewed_retained_metadata(self):
         self.assertEqual(self.committed_contract["schema"], 3)
-        self.assertEqual(
-            self.committed_contract["state"], "pending-discovery")
+        self.assertEqual(self.committed_contract["state"], "ready")
         self.assertEqual(
             [row["mode"]
              for row in self.committed_contract["freshness_policy"]],
             ["immutable-release", "rolling-date", "rolling-date"],
         )
-        self.assertTrue(all(
-            pin[kind] == {"bytes": None, "sha256": None}
-            for pin in self.committed_contract["metadata_pins"]
-            for kind in ("inrelease", "packages_xz")))
         self.assertEqual(
-            self.committed_contract["metadata_source"]["state"], "pending")
-        self.assertTrue(all(
-            value is None
-            for name, group in (
-                ("producer", self.committed_contract["metadata_source"][
-                    "producer"]),
-                ("artifact", self.committed_contract["metadata_source"][
-                    "artifact"]),
-            )
-            for key, value in group.items()
-            if not (name == "artifact" and key == "name")))
+            [(pin["suite"], pin["inrelease"]["bytes"],
+              pin["inrelease"]["sha256"], pin["packages_xz"]["bytes"],
+              pin["packages_xz"]["sha256"])
+             for pin in self.committed_contract["metadata_pins"]],
+            [
+                ("noble", 255850,
+                 "cdb2f31d809f589719a53c6ad15f255b27569c4059542ada282aaa21b8e164b0",
+                 1401160,
+                 "2a6a199e1031a5c279cb346646d594993f35b1c03dd4a82aaa0323980dd92451"),
+                ("noble-updates", 126125,
+                 "9cbda1d9f46930f08664421bf29ef4b9fa79fed0e6db6fe46c4ab4b067e6b322",
+                 1492208,
+                 "9e6336a8322f908dbeddcd2de57f19d22756fb11f161458f04204914ba85e6ff"),
+                ("noble-security", 126127,
+                 "a83c54bdbd784a0914b6cc94236c0a0a991cbbf2f3463d204a6d0dd57934cedf",
+                 1230772,
+                 "5c947649225178b587da69bd15724dff4d22d17d911f60abf7213534ea494a90"),
+            ])
+        self.assertEqual(self.committed_contract["metadata_source"], {
+            "state": "ready",
+            "producer": {
+                "run_id": 46129698065,
+                "run_attempt": 1,
+                "head_sha": "ff1e1465ad1fd64027b7a983e97056f5dff1cd36",
+                "head_tree": "2c4adabd3d0f7143ba86a3cb8a67a9439d27af3c",
+                "branch": "card/P0-05-package-producer",
+            },
+            "artifact": {
+                "id": 15257187872,
+                "name": "container-ubuntu-fixture-metadata",
+                "bytes": 4637216,
+                "api_sha256": "08bbdfec4ac3e32cd3470641d747eaefac3497fc038d705ee0970235c3047782",
+                "zip_sha256": "08bbdfec4ac3e32cd3470641d747eaefac3497fc038d705ee0970235c3047782",
+            },
+            "manifest_sha256": "c468e573459e1ec4f694a1a2cea3f73153367eea1de9c47421047ca1687c8a6e",
+            "discovery_contract_sha256": "0ba6c45e948b0012bc23490018217355ec5525bc946e10afaf66083c35f08a01",
+            "lock_sha256": "94d6f84024639b880060ac93825b4d3f1408f9f3a73b6e8087faac1748268b6c",
+        })
         self.assertEqual(
-            self.committed_contract["scope"], hosted.PENDING_SCOPE)
+            self.committed_contract["scope"], hosted.READY_SCOPE)
+        self.assertEqual(
+            hosted.canonical_json_sha256(self.committed_contract),
+            READY_CONTRACT_SHA256)
         self.assertTrue(all(
             value is False
             for key, value in self.committed_contract["candidate"].items()
             if key != "state"
         ))
-        hosted.validate_mode(self.committed_contract, "discover")
+        hosted.validate_mode(self.committed_contract, "produce")
         with self.assertRaisesRegex(ValueError, "metadata pin state"):
-            hosted.validate_mode(self.committed_contract, "produce")
+            hosted.validate_mode(self.committed_contract, "discover")
 
     def test_contract_rejects_extra_fields_bool_ints_and_partial_pins(self):
         cases = []

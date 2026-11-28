@@ -279,9 +279,10 @@ contract still refuses it. All staged paths are private and descriptor-relative:
 every component is opened without following links and each file is hashed,
 parsed or copied through the same stable single-link descriptor.
 
-The separate ubuntu-fixture-packages.yml workflow is manual only. Its committed
-producer contract is now ready with all six exact InRelease and Packages.xz
-byte/hash pins independently reviewed from hosted discovery run 46070755519.
+The separate ubuntu-fixture-packages.yml workflow is manual only. Before the
+retained-metadata handoff, its producer contract reached ready with all six
+exact InRelease and Packages.xz byte/hash pins independently reviewed from
+hosted discovery run 46070755519.
 The former pending state remains fail closed: it permits discovery and refuses
 production before retained-input validation, cgroup inspection, authenticated
 commands or a network opener. The committed ready state instead refuses
@@ -354,12 +355,13 @@ References: [pinned Docker boundary and real-backend tests](https://github.com/T
 
 ## Durable Ubuntu metadata review boundary
 
-The Ubuntu closure contract is now schema 3 and returns to
-`pending-discovery`. Its next manual discovery must publish a separate
-seven-member artifact containing the manifest plus the exact three InRelease
-and three signed Packages.xz files. A ready-state review binds the producer
-run/attempt/head/tree/branch, artifact identity and size, API and downloaded ZIP
-digests, manifest, discovery contract, pending lock and all six payload hashes.
+The Ubuntu closure contract is schema 3. Discovery run `46129698065` published
+the separate seven-member artifact containing the manifest plus the exact
+three InRelease and three signed Packages.xz files. Independent review bound
+the producer run/attempt/head/tree/branch, artifact identity and size, matching
+API and downloaded ZIP digests, manifest, discovery contract, pending lock and
+all six payload hashes. The checked-in contract is now `ready` with canonical
+SHA-256 `2c22f3e33c7081c4011a78a247b5f8f845a3386ac4ce44db0d07a03b84a6d841`.
 
 The shared workflow job grants read-only `actions` and `contents` permissions
 in both modes, so pinned workflow actions including checkout can use its job
@@ -370,6 +372,6 @@ it never enters the service's clean environment. The service consumes the
 reviewed private files without refetching live repository metadata, then
 rechecks signatures, production-time freshness and each signed index row.
 Candidate provenance retains the complete source selection and every authority,
-selection and qualification field remains false. A fresh discovery and
-reviewed promotion are still required; this code does not make a package or
-image candidate available.
+selection and qualification field remains false. The ready state permits one
+manual unselected production attempt; production has not run, and no package or
+image candidate is available.

@@ -1,6 +1,6 @@
 {
   "schema": 3,
-  "state": "pending-discovery",
+  "state": "ready",
   "repository": {
     "id": 1472078858,
     "full_name": "ThirdKeyAI/symbi-os"
@@ -56,57 +56,57 @@
   "metadata_pins": [
     {
       "inrelease": {
-        "bytes": null,
-        "sha256": null
+        "bytes": 255850,
+        "sha256": "cdb2f31d809f589719a53c6ad15f255b27569c4059542ada282aaa21b8e164b0"
       },
       "packages_xz": {
-        "bytes": null,
-        "sha256": null
+        "bytes": 1401160,
+        "sha256": "2a6a199e1031a5c279cb346646d594993f35b1c03dd4a82aaa0323980dd92451"
       },
       "suite": "noble"
     },
     {
       "inrelease": {
-        "bytes": null,
-        "sha256": null
+        "bytes": 126125,
+        "sha256": "9cbda1d9f46930f08664421bf29ef4b9fa79fed0e6db6fe46c4ab4b067e6b322"
       },
       "packages_xz": {
-        "bytes": null,
-        "sha256": null
+        "bytes": 1492208,
+        "sha256": "9e6336a8322f908dbeddcd2de57f19d22756fb11f161458f04204914ba85e6ff"
       },
       "suite": "noble-updates"
     },
     {
       "inrelease": {
-        "bytes": null,
-        "sha256": null
+        "bytes": 126127,
+        "sha256": "a83c54bdbd784a0914b6cc94236c0a0a991cbbf2f3463d204a6d0dd57934cedf"
       },
       "packages_xz": {
-        "bytes": null,
-        "sha256": null
+        "bytes": 1230772,
+        "sha256": "5c947649225178b587da69bd15724dff4d22d17d911f60abf7213534ea494a90"
       },
       "suite": "noble-security"
     }
   ],
   "metadata_source": {
-    "state": "pending",
+    "state": "ready",
     "producer": {
-      "run_id": null,
-      "run_attempt": null,
-      "head_sha": null,
-      "head_tree": null,
-      "branch": null
+      "run_id": 46129698065,
+      "run_attempt": 1,
+      "head_sha": "ff1e1465ad1fd64027b7a983e97056f5dff1cd36",
+      "head_tree": "2c4adabd3d0f7143ba86a3cb8a67a9439d27af3c",
+      "branch": "card/P0-05-package-producer"
     },
     "artifact": {
-      "id": null,
+      "id": 15257187872,
       "name": "container-ubuntu-fixture-metadata",
-      "bytes": null,
-      "api_sha256": null,
-      "zip_sha256": null
+      "bytes": 4637216,
+      "api_sha256": "08bbdfec4ac3e32cd3470641d747eaefac3497fc038d705ee0970235c3047782",
+      "zip_sha256": "08bbdfec4ac3e32cd3470641d747eaefac3497fc038d705ee0970235c3047782"
     },
-    "manifest_sha256": null,
-    "discovery_contract_sha256": null,
-    "lock_sha256": null
+    "manifest_sha256": "c468e573459e1ec4f694a1a2cea3f73153367eea1de9c47421047ca1687c8a6e",
+    "discovery_contract_sha256": "0ba6c45e948b0012bc23490018217355ec5525bc946e10afaf66083c35f08a01",
+    "lock_sha256": "94d6f84024639b880060ac93825b4d3f1408f9f3a73b6e8087faac1748268b6c"
   },
   "artifacts": {
     "evidence": "container-ubuntu-fixture-package-evidence",
@@ -123,5 +123,5 @@
     "os_qualified": false,
     "release_qualified": false
   },
-  "scope": "Manual hosted discovery pending a reviewed retained metadata artifact and byte pins; no image consumer, selection or qualification"
+  "scope": "Manual hosted producer consuming selected retained metadata for an unselected Ubuntu package candidate; no image consumer or qualification"
 }
