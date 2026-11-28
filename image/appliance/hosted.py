@@ -53,6 +53,7 @@ SENSITIVE_PATTERNS = (
 URL_PATTERN = re.compile(r"(?i)\b(?:https?|ssh)://[^\s\"'<>]+")
 ABSOLUTE_PATH_PATTERN = re.compile(r"(?<![A-Za-z0-9._-])/(?:[^\s\"'<>]+)")
 OUTER_MEMORY_MAX_BYTES = 5 * 1024**3
+SYSTEMD_UINT64_MAX = (1 << 64) - 1
 CREDENTIAL_TOKENS = (b"PRIVATE KEY-----", b"ssh-rsa ", b"ssh-ed25519 ")
 PRODUCER_RESULT_KEYS = frozenset({
     "schema", "passed", "guest_booted", "graphical_desktop_observed",
@@ -606,7 +607,12 @@ def _systemd_result(path, controller):
 
     if systemd_decimal("MemoryMax") != OUTER_MEMORY_MAX_BYTES:
         raise ValueError("Appliance systemd memory limit changed")
-    systemd_decimal("MemoryPeak", OUTER_MEMORY_MAX_BYTES)
+    memory_peak = systemd_decimal("MemoryPeak", SYSTEMD_UINT64_MAX)
+    if (controller.get("passed") is True
+            and memory_peak > OUTER_MEMORY_MAX_BYTES):
+        raise ValueError(
+            "Out-of-range appliance evidence: passed systemd.MemoryPeak "
+            "exceeded its memory limit")
     if (systemd_decimal("MemorySwapMax") != 0
             or systemd_decimal("MemorySwapPeak") != 0):
         raise ValueError("Appliance systemd unit used swap")

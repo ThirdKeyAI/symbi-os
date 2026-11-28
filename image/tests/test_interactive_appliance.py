@@ -728,6 +728,45 @@ class InteractiveApplianceContract(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "non-controller evidence"):
                 validate_failure_fixture(root)
 
+    def test_retained_failure_preserves_observed_outer_peak_above_limit(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence = root / ".cache/interactive-appliance-evidence"
+            evidence.mkdir(parents=True)
+            cleanup = {
+                "stage_directory_removed": True, "user_artifact_absent": True,
+                "screenshot_artifact_absent": True,
+                "non_controller_evidence_removed": True,
+            }
+            result = controller_failure_record(
+                source_binding(), "initialization", "ValueError", cleanup, {},
+            )
+            rewrite_json(evidence / "result.json", result)
+            write_outer_systemd_result(
+                evidence / "systemd-result.txt", Result="exit-code",
+                ActiveState="failed", SubState="failed", ExecMainStatus="1",
+                MemoryPeak=str(5 * 1024**3 + 4096),
+            )
+            self.assertGreater(validate_failure_fixture(root), 0)
+            write_outer_systemd_result(
+                evidence / "systemd-result.txt", Result="exit-code",
+                ActiveState="failed", SubState="failed", ExecMainStatus="1",
+                MemoryPeak=str(1 << 64),
+            )
+            with self.assertRaisesRegex(ValueError, "Out-of-range"):
+                validate_failure_fixture(root)
+
+    def test_retained_success_rejects_outer_peak_above_limit(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence, expected = retained_success_evidence(root)
+            write_outer_systemd_result(
+                evidence / "systemd-result.txt",
+                MemoryPeak=str(5 * 1024**3 + 4096),
+            )
+            with self.assertRaisesRegex(ValueError, "memory limit"):
+                validate_fixture(root, expected)
+
     def test_retained_failure_cannot_claim_unrelated_systemd_success(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
