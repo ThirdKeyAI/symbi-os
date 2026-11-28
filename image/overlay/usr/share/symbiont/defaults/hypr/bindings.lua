@@ -3,11 +3,11 @@
 -- The pinned Hyprland parser and a booted-session inventory remain acceptance gates.
 
 hl.bind("SUPER + SPACE", hl.dsp.exec_cmd("/usr/bin/walker"), { description = "Application launcher" })
-hl.bind("SUPER + ALT + SPACE", hl.dsp.no_op(), { description = "Main desktop menu (reserved)" })
-hl.bind("SUPER + Return", hl.dsp.exec_cmd("/usr/bin/foot"), { description = "Terminal (Foot until Kitty qualifies)" })
+hl.bind("SUPER + ALT + SPACE", hl.dsp.exec_cmd("/usr/bin/python3 /usr/libexec/symbi-desktop-commands.py menu"), { description = "Main desktop menu" })
+hl.bind("SUPER + Return", hl.dsp.exec_cmd("/usr/bin/python3 /usr/libexec/symbi-desktop-commands.py terminal"), { description = "Terminal (Kitty, Foot fallback)" })
 hl.bind("SUPER + ALT + Return", hl.dsp.no_op(), { description = "Tmux terminal (reserved)" })
-hl.bind("SUPER + Escape", hl.dsp.no_op(), { description = "System menu (reserved)" })
-hl.bind("SUPER + K", hl.dsp.no_op(), { description = "Keybinding help (reserved)" })
+hl.bind("SUPER + Escape", hl.dsp.exec_cmd("/usr/bin/python3 /usr/libexec/symbi-desktop-commands.py system"), { description = "System menu" })
+hl.bind("SUPER + K", hl.dsp.exec_cmd("/usr/bin/python3 /usr/libexec/symbi-desktop-commands.py keybindings"), { description = "Keybinding help" })
 hl.bind("SUPER + SHIFT + K", hl.dsp.no_op(), { description = "Beginner keybinding help (reserved)" })
 hl.bind("SUPER + CTRL + V", hl.dsp.no_op(), { description = "Clipboard menu (reserved)" })
 hl.bind("Print", hl.dsp.no_op(), { description = "Screenshot menu (reserved)" })

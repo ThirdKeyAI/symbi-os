@@ -8,9 +8,9 @@
   },
   "overlay": {
     "path": "image/overlay/usr/share/symbiont/defaults/hypr/bindings.lua",
-    "sha256": "4a8e882f8a274db665610ca9dd06a472b0f5c50bed219a71d6d001aced522616",
+    "sha256": "1f6b7a74249b1ce7a483abec8f6a5eeb2b7774671361b9b32f4c665c374211b9",
     "binding_count": 70,
-    "bindings_sha256": "fd5f253fbfefdca518ac32a43b49a6038c2c0c10793b013d96a39a08c5ef568c"
+    "bindings_sha256": "ef0ab44623e77731a7ea0bdb5070934dabb283b7d5f84e83ed886126e2d2fc86"
   },
   "status_meanings": {
     "implemented": "A non-no-op handler is present in the shipped source overlay; runtime behavior is untested",
@@ -18,8 +18,8 @@
     "blocked": "No binding for the recorded chord is present in the shipped source overlay"
   },
   "status_counts": {
-    "implemented": 56,
-    "reserved": 14,
+    "implemented": 59,
+    "reserved": 11,
     "blocked": 120
   },
   "reference_multi_bindings": [
@@ -173,11 +173,11 @@
     {"reference_index":119,"reference_sha256":"e2cf7b5508760ab300579a3b32430166b58adbac170c9f54a5684a309f03ce01","reference_chord":"SUPER + CTRL + C","reference_intent":"Capture menu","status":"blocked","shipped":null},
     {"reference_index":120,"reference_sha256":"38e0b950f545d362a995c506e36a4fb4f2a5d6fe8daa04814068649fc02adb42","reference_chord":"SUPER + CTRL + O","reference_intent":"Toggle menu","status":"blocked","shipped":null},
     {"reference_index":121,"reference_sha256":"b62259f21480c9ebd6a7ff7f36fbb966b6cb9678328b5a9a4286567c3caee79c","reference_chord":"SUPER + CTRL + H","reference_intent":"Hardware menu","status":"blocked","shipped":null},
-    {"reference_index":122,"reference_sha256":"d2d3acd3d8d6c57021a9509242e91a60ab314b09d23a8260b5e495c356bf4aff","reference_chord":"SUPER + ALT + SPACE","reference_intent":"Omarchy menu","status":"reserved","shipped":{"chord":"SUPER + ALT + SPACE","handler":"hl.dsp.no_op()","description":"Main desktop menu (reserved)","options":{}}},
+    {"reference_index":122,"reference_sha256":"d2d3acd3d8d6c57021a9509242e91a60ab314b09d23a8260b5e495c356bf4aff","reference_chord":"SUPER + ALT + SPACE","reference_intent":"Omarchy menu","status":"implemented","shipped":{"chord":"SUPER + ALT + SPACE","handler":"hl.dsp.exec_cmd(\"/usr/bin/python3 /usr/libexec/symbi-desktop-commands.py menu\")","description":"Main desktop menu","options":{}}},
     {"reference_index":123,"reference_sha256":"a417d4cec891a3a261a4e3aecba9cddbfd339b091ebde3a7fce09b28a92fdd2e","reference_chord":"SUPER + SHIFT + code:201","reference_intent":"Omarchy menu","status":"blocked","shipped":null},
-    {"reference_index":124,"reference_sha256":"091e35e84f6f91d90f59231d13aef7c304f83b534d826ccc92614896f911e8f1","reference_chord":"SUPER + ESCAPE","reference_intent":"System menu","status":"reserved","shipped":{"chord":"SUPER + Escape","handler":"hl.dsp.no_op()","description":"System menu (reserved)","options":{}}},
+    {"reference_index":124,"reference_sha256":"091e35e84f6f91d90f59231d13aef7c304f83b534d826ccc92614896f911e8f1","reference_chord":"SUPER + ESCAPE","reference_intent":"System menu","status":"implemented","shipped":{"chord":"SUPER + Escape","handler":"hl.dsp.exec_cmd(\"/usr/bin/python3 /usr/libexec/symbi-desktop-commands.py system\")","description":"System menu","options":{}}},
     {"reference_index":125,"reference_sha256":"d5cb687e1d92ac4289a6f2e6be1b484f31e1c19a5988d588c816f9b2b1e3c285","reference_chord":"XF86PowerOff","reference_intent":"Power menu","status":"blocked","shipped":null},
-    {"reference_index":126,"reference_sha256":"8460a0ebdad7af33c5452fababc57eea0754c18b72d200de3b63003c15ebe754","reference_chord":"SUPER + K","reference_intent":"Show key bindings","status":"reserved","shipped":{"chord":"SUPER + K","handler":"hl.dsp.no_op()","description":"Keybinding help (reserved)","options":{}}},
+    {"reference_index":126,"reference_sha256":"8460a0ebdad7af33c5452fababc57eea0754c18b72d200de3b63003c15ebe754","reference_chord":"SUPER + K","reference_intent":"Show key bindings","status":"implemented","shipped":{"chord":"SUPER + K","handler":"hl.dsp.exec_cmd(\"/usr/bin/python3 /usr/libexec/symbi-desktop-commands.py keybindings\")","description":"Keybinding help","options":{}}},
     {"reference_index":127,"reference_sha256":"39a469111412e9685d3e1e1404f23ba0b0f9f2d11d99ddcec61f8fdd5fb2e080","reference_chord":"XF86Calculator","reference_intent":"Calculator","status":"blocked","shipped":null},
     {"reference_index":128,"reference_sha256":"64a35e89b7d3bde2e791ca15b96208623d6ca0d2b5ba9d9216f14805da69b424","reference_chord":"SUPER + SHIFT + SPACE","reference_intent":"Toggle top bar","status":"blocked","shipped":null},
     {"reference_index":129,"reference_sha256":"a20e5bad836718a35d559ba4ac0995c2734fbcfae9beb3de9da51a859ad34c31","reference_chord":"SUPER + CTRL + SPACE","reference_intent":"Theme background menu","status":"blocked","shipped":null},
@@ -218,7 +218,7 @@
     {"reference_index":164,"reference_sha256":"8b503bbc91e3f97a57c70d8d02d1c73595850fab22ae619ec07237926864fdf7","reference_chord":"SUPER + CTRL + Z","reference_intent":"Zoom in","status":"blocked","shipped":null},
     {"reference_index":165,"reference_sha256":"a2e2142e4cdfedc8ad4e8517499f543baeb1a42ba639c672dcaaf41c26f89ddb","reference_chord":"SUPER + CTRL + ALT + Z","reference_intent":"Reset zoom","status":"blocked","shipped":null},
     {"reference_index":166,"reference_sha256":"40a079e963129c4deed576ddb1862e91c816b6d0aa50d01e9ef2236cc349ae06","reference_chord":"SUPER + CTRL + L","reference_intent":"Lock system","status":"reserved","shipped":{"chord":"SUPER + CTRL + L","handler":"hl.dsp.no_op()","description":"Lock screen (reserved)","options":{}}},
-    {"reference_index":167,"reference_sha256":"1d083a1eee670d4493be42ef4066be4641094640791a5ea74a9118e38a1b3b82","reference_chord":"SUPER + RETURN","reference_intent":"Terminal","status":"implemented","shipped":{"chord":"SUPER + Return","handler":"hl.dsp.exec_cmd(\"/usr/bin/foot\")","description":"Terminal (Foot until Kitty qualifies)","options":{}}},
+    {"reference_index":167,"reference_sha256":"1d083a1eee670d4493be42ef4066be4641094640791a5ea74a9118e38a1b3b82","reference_chord":"SUPER + RETURN","reference_intent":"Terminal","status":"implemented","shipped":{"chord":"SUPER + Return","handler":"hl.dsp.exec_cmd(\"/usr/bin/python3 /usr/libexec/symbi-desktop-commands.py terminal\")","description":"Terminal (Kitty, Foot fallback)","options":{}}},
     {"reference_index":168,"reference_sha256":"48a0f9717581bace4376c19c8d8aba580b4db9ae2e768a594f1d99ca47b6f81e","reference_chord":"SUPER + ALT + RETURN","reference_intent":"Tmux","status":"reserved","shipped":{"chord":"SUPER + ALT + Return","handler":"hl.dsp.no_op()","description":"Tmux terminal (reserved)","options":{}}},
     {"reference_index":169,"reference_sha256":"9ff3520a252b2655473c39c049cff05448a309f795bc435fa529e5050219d398","reference_chord":"SUPER + SHIFT + RETURN","reference_intent":"Browser","status":"reserved","shipped":{"chord":"SUPER + SHIFT + Return","handler":"hl.dsp.no_op()","description":"Browser (reserved)","options":{}}},
     {"reference_index":170,"reference_sha256":"314be04475c002bb7e09be525d5f14520712fdd47711384954fa5a770adfe404","reference_chord":"SUPER + SHIFT + F","reference_intent":"File manager","status":"reserved","shipped":{"chord":"SUPER + SHIFT + F","handler":"hl.dsp.no_op()","description":"File manager (reserved)","options":{}}},

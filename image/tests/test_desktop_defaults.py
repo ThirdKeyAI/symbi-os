@@ -148,8 +148,10 @@ class ShortcutCompatibility(unittest.TestCase):
     def test_working_core_and_reserved_menu_chords_keep_their_meanings(self):
         expected = {
             "SUPER + SPACE": '/usr/bin/walker',
-            "SUPER + ALT + SPACE": "hl.dsp.no_op()",
-            "SUPER + Return": "/usr/bin/foot",
+            "SUPER + ALT + SPACE": "symbi-desktop-commands.py menu",
+            "SUPER + Return": "symbi-desktop-commands.py terminal",
+            "SUPER + Escape": "symbi-desktop-commands.py system",
+            "SUPER + K": "symbi-desktop-commands.py keybindings",
             "SUPER + W": "hl.dsp.window.close()",
             "SUPER + T": "hl.dsp.window.float",
             "SUPER + F": "hl.dsp.window.fullscreen",
@@ -170,8 +172,8 @@ class ShortcutCompatibility(unittest.TestCase):
             with self.subTest(chord=chord):
                 self.assertIn(chord, self.by_chord)
                 self.assertIn(handler, self.by_chord[chord])
-        for chord in ("SUPER + ALT + Return", "SUPER + Escape", "SUPER + K",
-                      "SUPER + SHIFT + K", "SUPER + CTRL + V", "Print", "ALT + Print"):
+        for chord in ("SUPER + ALT + Return", "SUPER + SHIFT + K",
+                      "SUPER + CTRL + V", "Print", "ALT + Print"):
             with self.subTest(reserved=chord):
                 self.assertIn("hl.dsp.no_op()", self.by_chord[chord])
 

@@ -1,0 +1,3 @@
+# Preferred terminal first; xdg-terminal-exec skips unavailable entries.
+kitty.desktop
+foot.desktop
