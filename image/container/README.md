@@ -373,5 +373,20 @@ reviewed private files without refetching live repository metadata, then
 rechecks signatures, production-time freshness and each signed index row.
 Candidate provenance retains the complete source selection and every authority,
 selection and qualification field remains false. The ready state permits one
-manual unselected production attempt; production has not run, and no package or
-image candidate is available.
+manual unselected production attempt. Production run
+`46138934586` reached the exact networkless 68-archive `dpkg --no-act` argv
+and then failed closed because dry-run package state does not accumulate across
+archives. No package or image candidate is available.
+
+The ordered networkless APT simulation proves the exact signed closure and
+install order. Native `dpkg` parses and prepares every exact staged archive
+while exactly two reviewed Python pre-dependency warnings are accepted and
+bound to the `python3-minimal` and `python3` archives in C-locale stderr. Each
+reason must equal its authenticated Packages.xz `Pre-Depends` field; the two
+reviewed dependent/target/operator relationships are fixed in code and their
+targets must appear earlier in the signed order. Any other waived dependency
+event is rejected. This does not prove an installed system, configuration,
+triggers, maintainer scripts, container behavior, selection or qualification.
+The precise failed-run record, native-proof split and upstream dpkg references
+are retained in
+[the P0-05 card](../../docs/cards/P0-05.md).

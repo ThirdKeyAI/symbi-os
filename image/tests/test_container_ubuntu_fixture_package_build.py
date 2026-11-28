@@ -29,11 +29,15 @@ def md5sum(payload):
     return hashlib.md5(payload, usedforsecurity=False).hexdigest()
 
 
-def package_stanza(name, version, architecture, filename, payload):
+def package_stanza(name, version, architecture, filename, payload,
+                   *, pre_depends=None):
+    dependency = ("" if pre_depends is None
+                  else f"Pre-Depends: {pre_depends}\n")
     return (
         f"Package: {name}\n"
         f"Version: {version}\n"
         f"Architecture: {architecture}\n"
+        f"{dependency}"
         f"Filename: {filename}\n"
         f"Size: {len(payload)}\n"
         f"MD5sum: {md5sum(payload)}\n"
@@ -124,6 +128,9 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                 name, versions[name],
                 "all" if name == "ca-certificates" else "amd64",
                 self.paths[name], self.payloads[name],
+                pre_depends=(
+                    "python3-minimal (= 3.12.3-0ubuntu2)"
+                    if name == "python3" else None),
             )
             for name in ("ca-certificates", "git", "python3")
         )
@@ -915,7 +922,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             plan = build.parse_apt_uri_plan(
                 ("\n".join(lines) + "\n").encode(), repository,
                 packages.EXPECTED_SOURCES)
-            plan, rows = build.bind_uri_plan_to_indexes(
+            plan, rows, pre_depends = build.bind_uri_plan_to_indexes(
                 plan,
                 {"noble": {"path": index_path, "binding": self.binding["index"]}},
                 packages.EXPECTED_SOURCES,
@@ -924,6 +931,10 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             self.assertEqual(
                 plan[0]["sha256"],
                 hashlib.sha256(self.payloads[order[0]]).hexdigest(),
+            )
+            self.assertEqual(
+                pre_depends,
+                [None, "python3-minimal (= 3.12.3-0ubuntu2)", None],
             )
             downloads = base / "downloads"
             mkdir_private(downloads)
@@ -1226,6 +1237,18 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         self.assertEqual(result["configure_count"], 1)
 
     def test_commands_are_file_only_no_recommends_no_download_and_no_act(self):
+        package_rows = [
+            {
+                "package": "python3-minimal",
+                "filename": "pool/main/p/python3-defaults/"
+                "python3-minimal_1_amd64.deb",
+            },
+            {
+                "package": "python3",
+                "filename": "pool/main/p/python3-defaults/"
+                "python3_1_amd64.deb",
+            },
+        ]
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)
             verify = build.inrelease_verification_command(
@@ -1233,7 +1256,11 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             commands = build.offline_plan_commands(
                 base / "apt", base / "repo", base / "archive.gpg",
                 packages.EXPECTED_REQUEST["roots"],
-                [base / "packages/a.deb", base / "packages/b.deb"],
+                package_rows,
+                [
+                    base / "packages/0000-python3-minimal_1_amd64.deb",
+                    base / "packages/0001-python3_1_amd64.deb",
+                ],
             )
             apt_commands = build.offline_apt_commands(
                 base / "apt", base / "repo", base / "archive.gpg",
@@ -1241,7 +1268,11 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             )
             dpkg_command = build.offline_dpkg_command(
                 base / "apt",
-                [base / "packages/a.deb", base / "packages/b.deb"],
+                package_rows,
+                [
+                    base / "packages/0000-python3-minimal_1_amd64.deb",
+                    base / "packages/0001-python3_1_amd64.deb",
+                ],
             )
         self.assertEqual(verify, [
             "/usr/bin/gpgv", "--status-fd=1", "--keyring",
@@ -1267,7 +1298,262 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         self.assertNotIn(simulation_note, commands["uris"])
         self.assertIn("--no-act", commands["dpkg"])
         self.assertIn("--unpack", commands["dpkg"])
+        self.assertIn(
+            "--ignore-depends=python3-minimal,python3", commands["dpkg"])
         self.assertNotIn("--force-depends", commands["dpkg"])
+
+    def test_dpkg_no_act_waiver_is_exact_and_cannot_be_caller_selected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            paths = [
+                base / "0000-python3-minimal_1_amd64.deb",
+                base / "0001-python3_1_amd64.deb",
+            ]
+            accepted = [
+                {
+                    "package": "python3-minimal",
+                    "filename": "pool/main/p/python3-defaults/"
+                    "python3-minimal_1_amd64.deb",
+                },
+                {
+                    "package": "python3",
+                    "filename": "pool/main/p/python3-defaults/"
+                    "python3_1_amd64.deb",
+                },
+            ]
+            argv = build.offline_dpkg_command(base / "apt", accepted, paths)
+
+            rejected = (
+                [accepted[0], {**accepted[1], "package": "git"}],
+                [{**accepted[0], "package": "python3"}, accepted[1]],
+            )
+            for rows in rejected:
+                with self.subTest(rows=rows):
+                    with self.assertRaisesRegex(
+                            ValueError, "reviewed pre-dependency waiver"):
+                        build.offline_dpkg_command(base / "apt", rows, paths)
+
+        self.assertEqual(
+            argv[3:7],
+            [
+                "--ignore-depends=python3-minimal,python3",
+                "--no-act",
+                "--unpack",
+                str(paths[0].resolve()),
+            ],
+        )
+
+    def test_dpkg_no_act_stderr_accepts_only_the_two_reviewed_waivers(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            names = [f"fixture-{sequence}" for sequence in range(35)]
+            names[18] = "python3.12-minimal"
+            names[19] = "python3-minimal"
+            names[34] = "python3"
+            rows = [{
+                "package": name,
+                "version": "1",
+                "filename": f"pool/main/f/{name}/{name}_1_amd64.deb",
+            } for name in names]
+            pre_depends = [None] * len(rows)
+            pre_depends[19] = "python3.12-minimal (>= 3.12.3-0~)"
+            pre_depends[34] = "python3-minimal (= 1)"
+            paths = [
+                base / f"{sequence:04d}-{name}_1_amd64.deb"
+                for sequence, name in enumerate(names)
+            ]
+            stderr = (
+                "dpkg: could not open log '/var/log/dpkg.log': Permission denied\n"
+                "mkdir: cannot create directory ‘/run/needrestart’: "
+                "Permission denied\n"
+                "dpkg: regarding .../0019-python3-minimal_1_amd64.deb "
+                "containing python3-minimal, pre-dependency problem:\n"
+                " python3-minimal pre-depends on python3.12-minimal "
+                "(>= 3.12.3-0~)\n"
+                "  python3.12-minimal is not installed.\n\n"
+                "dpkg: warning: ignoring pre-dependency problem!\n"
+                "dpkg: regarding .../0034-python3_1_amd64.deb containing "
+                "python3, pre-dependency problem:\n"
+                " python3 pre-depends on python3-minimal (= 1)\n"
+                "  python3-minimal is not installed.\n\n"
+                "dpkg: warning: ignoring pre-dependency problem!\n"
+                "dpkg: warning: files list file for package 'base-files' "
+                "missing; assuming package has no files currently installed\n"
+            ).encode()
+
+            result = build.validate_dpkg_noact_stderr(
+                stderr, rows, paths, pre_depends)
+
+            self.assertEqual(result["waived_pre_dependencies"], [
+                {
+                    "package": "python3-minimal",
+                    "archive": paths[19].name,
+                    "pre_depends": "python3.12-minimal (>= 3.12.3-0~)",
+                },
+                {
+                    "package": "python3",
+                    "archive": paths[34].name,
+                    "pre_depends": "python3-minimal (= 1)",
+                },
+            ])
+            self.assertEqual(result["stderr_sha256"], build.sha256_bytes(stderr))
+
+    def test_dpkg_no_act_stderr_rejects_broader_or_changed_waivers(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            paths = [
+                base / "0000-python3.12-minimal_1_amd64.deb",
+                base / "0001-python3-minimal_1_amd64.deb",
+                base / "0002-python3_1_amd64.deb",
+            ]
+            rows = [
+                {
+                    "package": "python3.12-minimal",
+                    "version": "1",
+                    "filename": "pool/main/p/python3.12/"
+                    "python3.12-minimal_1_amd64.deb",
+                },
+                {
+                    "package": "python3-minimal",
+                    "version": "1",
+                    "filename": "pool/main/p/python3-defaults/"
+                    "python3-minimal_1_amd64.deb",
+                },
+                {
+                    "package": "python3",
+                    "version": "1",
+                    "filename": "pool/main/p/python3-defaults/"
+                    "python3_1_amd64.deb",
+                },
+            ]
+            pre_depends = [
+                None,
+                "python3.12-minimal (>= 1)",
+                "python3-minimal (= 1)",
+            ]
+            first = (
+                "dpkg: regarding .../0001-python3-minimal_1_amd64.deb "
+                "containing python3-minimal, pre-dependency problem:\n"
+                " python3-minimal pre-depends on python3.12-minimal (>= 1)\n"
+                "dpkg: warning: ignoring pre-dependency problem!\n"
+            )
+            second = (
+                "dpkg: regarding .../0002-python3_1_amd64.deb containing "
+                "python3, pre-dependency problem:\n"
+                " python3 pre-depends on python3-minimal (= 1)\n"
+                "dpkg: warning: ignoring pre-dependency problem!\n"
+            )
+            valid = (first + second).encode()
+            build.validate_dpkg_noact_stderr(
+                valid, rows, paths, pre_depends)
+            extra = (
+                "dpkg: regarding .../0040-tool_1_amd64.deb containing tool, "
+                "pre-dependency problem:\n"
+                " tool pre-depends on python3\n"
+                "dpkg: warning: ignoring pre-dependency problem!\n"
+            )
+
+            mutations = (
+                valid.replace(b"containing python3,", b"containing tool,", 1),
+                valid.replace(
+                    b"0002-python3_1_amd64.deb",
+                    b"0003-python3_1_amd64.deb", 1),
+                valid.replace(
+                    b"dpkg: warning: ignoring pre-dependency problem!\n",
+                    b"", 1),
+                valid.replace(
+                    b"python3 pre-depends on python3-minimal (= 1)",
+                    b"python3 pre-depends on python3.12-minimal (= 1)", 1),
+                valid.replace(
+                    b"python3-minimal (= 1)",
+                    b"python3-minimal (= 2)", 1),
+                (first + extra + second).encode(),
+                valid + b"dpkg: warning: ignoring dependency problem!\n",
+                valid + b"dpkg: warning: ignoring breakage, may proceed anyway!\n",
+                valid + (
+                    b"dpkg: regarding archive containing INVALID!, "
+                    b"pre-dependency problem:\n"),
+                valid.replace(b"\n", b"\r\n", 1),
+                valid + b"\x00",
+                b"\xff",
+            )
+            for changed in mutations:
+                with self.subTest(changed=changed), self.assertRaises(ValueError):
+                    build.validate_dpkg_noact_stderr(
+                        changed, rows, paths, pre_depends)
+
+            dependency_mutations = (
+                [None, "python3.12-minimal (>= 1)",
+                 "python3.12-minimal (= 1)"],
+                [None, "python3 (>= 1)", "python3-minimal (= 1)"],
+                [None, "python3.12-minimal (>= 1) | python3",
+                 "python3-minimal (= 1)"],
+                [None, "python3.12-minimal (>= 1)",
+                 "python3-minimal (= 2)"],
+                [None, None, "python3-minimal (= 1)"],
+            )
+            for changed in dependency_mutations:
+                with self.subTest(pre_depends=changed), self.assertRaises(
+                        ValueError):
+                    build.validate_dpkg_noact_stderr(
+                        valid, rows, paths, changed)
+
+    def test_dpkg_no_act_command_binds_rows_to_exact_staged_archives(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            paths = [
+                base / "0000-python3-minimal_1_amd64.deb",
+                base / "0001-python3_1_amd64.deb",
+            ]
+            rows = [
+                {
+                    "package": "python3-minimal",
+                    "filename": "pool/main/p/python3-defaults/"
+                    "python3-minimal_1_amd64.deb",
+                },
+                {
+                    "package": "python3",
+                    "filename": "pool/main/p/python3-defaults/"
+                    "python3_1_amd64.deb",
+                },
+            ]
+            build.offline_dpkg_command(base / "apt", rows, paths)
+
+            mutations = (
+                [*reversed(paths)],
+                [paths[0].with_name("0019-other.deb"), paths[1]],
+                [paths[0], paths[1].with_name("0002-" + paths[1].name[5:])],
+            )
+            for changed in mutations:
+                with self.subTest(paths=changed), self.assertRaisesRegex(
+                        ValueError, "staged archive"):
+                    build.offline_dpkg_command(base / "apt", rows, changed)
+
+    def test_package_producer_docs_preserve_the_two_phase_native_claim(self):
+        for relative in (
+                "docs/cards/P0-05.md",
+                "docs/security/reports/P0-05.md",
+                "image/container/README.md"):
+            with self.subTest(relative=relative):
+                document = " ".join(
+                    (ROOT / relative).read_text(encoding="utf-8").split())
+                self.assertIn("ordered networkless APT simulation", document)
+                self.assertIn("exactly two reviewed", document)
+                self.assertIn("does not prove an installed system", document)
+
+    def test_apt_simulation_rejects_install_order_drift(self):
+        rows = [
+            {"package": "python3-minimal", "version": "1", "architecture": "amd64"},
+            {"package": "python3", "version": "1", "architecture": "amd64"},
+        ]
+        output = (
+            "Inst python3 (1 Ubuntu:24.04/noble [amd64])\n"
+            "Inst python3-minimal (1 Ubuntu:24.04/noble [amd64])\n"
+            "Conf python3-minimal (1 Ubuntu:24.04/noble [amd64])\n"
+            "Conf python3 (1 Ubuntu:24.04/noble [amd64])\n"
+        ).encode()
+        with self.assertRaisesRegex(ValueError, "ordered signed package plan"):
+            build.validate_apt_simulation(output, rows)
 
     def test_offline_apt_paths_resolve_only_inside_the_private_root(self):
         with tempfile.TemporaryDirectory() as directory:

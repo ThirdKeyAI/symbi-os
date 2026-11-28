@@ -275,11 +275,26 @@ class UbuntuHostedProducerTests(unittest.TestCase):
             home.mkdir(mode=0o700)
             runner = hosted.CommandRunner(evidence, home)
             apt_root = base / "apt-root"
-            package_paths = [base / "packages" / "test.deb"]
+            package_paths = [
+                base / "packages" / "0000-python3-minimal_1_amd64.deb"]
+            package_rows = [
+                {
+                    "package": "python3-minimal",
+                    "filename": "pool/main/p/python3-defaults/"
+                    "python3-minimal_1_amd64.deb",
+                },
+                {
+                    "package": "python3",
+                    "filename": "pool/main/p/python3-defaults/"
+                    "python3_1_amd64.deb",
+                },
+            ]
+            package_paths.append(
+                base / "packages" / "0001-python3_1_amd64.deb")
             expected_plan = runner.expect_offline_dpkg(
-                apt_root, package_paths)
+                apt_root, package_rows, package_paths)
             dpkg_argv = hosted.build.offline_dpkg_command(
-                apt_root, package_paths)
+                apt_root, package_rows, package_paths)
             with mock.patch.object(hosted.subprocess, "Popen", side_effect=popen):
                 runner.run(
                     "version-dpkg", ["/usr/bin/dpkg", "--version"], 5)
@@ -299,23 +314,38 @@ class UbuntuHostedProducerTests(unittest.TestCase):
             base = Path(directory)
             apt_root = base / "apt-root"
             packages = [
-                base / "packages" / "one.deb",
-                base / "packages" / "two.deb",
+                base / "packages" / "0000-python3-minimal_1_amd64.deb",
+                base / "packages" / "0001-python3_1_amd64.deb",
             ]
-            expected = hosted.build.offline_dpkg_command(apt_root, packages)
+            package_rows = [
+                {
+                    "package": "python3-minimal",
+                    "filename": "pool/main/p/python3-defaults/"
+                    "python3-minimal_1_amd64.deb",
+                },
+                {
+                    "package": "python3",
+                    "filename": "pool/main/p/python3-defaults/"
+                    "python3_1_amd64.deb",
+                },
+            ]
+            expected = hosted.build.offline_dpkg_command(
+                apt_root, package_rows, packages)
 
             other_root = base / "other-root"
             changed_root = list(expected)
             changed_root[1] = "--root=" + str(other_root)
             changed_root[2] = "--admindir=" + str(
                 other_root / "var/lib/dpkg")
+            changed_waiver = list(expected)
+            changed_waiver[3] = "--ignore-depends=python3-minimal"
             changed_flag = list(expected)
-            changed_flag[3] = "--force-depends"
+            changed_flag[4] = "--force-depends"
             changed_unpack = list(expected)
-            changed_unpack[4] = "--configure"
+            changed_unpack[5] = "--configure"
             changed_package = list(expected)
-            changed_package[5] = str(base / "packages" / "other.deb")
-            reversed_packages = [*expected[:5], *reversed(expected[5:])]
+            changed_package[6] = str(base / "packages" / "other.deb")
+            reversed_packages = [*expected[:6], *reversed(expected[6:])]
             omitted_package = expected[:-1]
             extra_package = [
                 *expected, str(base / "packages" / "extra.deb")]
@@ -327,6 +357,7 @@ class UbuntuHostedProducerTests(unittest.TestCase):
                 ("networkless-false", "dpkg-no-act", expected, False),
                 ("name", "version-dpkg", expected, True),
                 ("root", "dpkg-no-act", changed_root, True),
+                ("waiver", "dpkg-no-act", changed_waiver, True),
                 ("flag", "dpkg-no-act", changed_flag, True),
                 ("unpack-mode", "dpkg-no-act", changed_unpack, True),
                 ("package", "dpkg-no-act", changed_package, True),
@@ -343,7 +374,7 @@ class UbuntuHostedProducerTests(unittest.TestCase):
                     home.mkdir(mode=0o700)
                     runner = hosted.CommandRunner(evidence, home)
                     expected_plan = runner.expect_offline_dpkg(
-                        apt_root, packages)
+                        apt_root, package_rows, packages)
                     options = {"system_helper_plan": expected_plan}
                     if networkless is not absent:
                         options["networkless"] = networkless

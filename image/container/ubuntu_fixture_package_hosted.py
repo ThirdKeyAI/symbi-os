@@ -529,9 +529,10 @@ class CommandRunner:
         self.raw.mkdir(mode=0o700)
         self.results = []
 
-    def expect_offline_dpkg(self, apt_root, package_paths):
+    def expect_offline_dpkg(self, apt_root, package_rows, package_paths):
         """Bind one helper-path use to the caller's root and package plan."""
-        expected = build.offline_dpkg_command(apt_root, package_paths)
+        expected = build.offline_dpkg_command(
+            apt_root, package_rows, package_paths)
         return _SystemHelperPlan(
             _SYSTEM_HELPER_PLAN_SEAL, self, "dpkg-no-act", expected)
 
@@ -2151,8 +2152,10 @@ def _produce(root, lock, contract, work, evidence, output, runner,
         if name == "uris":
             plan = build.parse_apt_uri_plan(
                 stdout, repository, lock["sources"])
-    plan, package_rows = build.bind_uri_plan_to_indexes(
-        plan, index_inputs, lock["sources"])
+    plan, package_rows, package_pre_dependencies = (
+        build.bind_uri_plan_to_indexes(
+            plan, index_inputs, lock["sources"])
+    )
     row, simulation, _ = runner.run(
         "apt-simulate", commands["simulate"],
         contract["timeouts"]["offline_command_seconds"], networkless=True)
@@ -2169,13 +2172,17 @@ def _produce(root, lock, contract, work, evidence, output, runner,
         build.MAX_DOWNLOAD_SECONDS = previous_download_seconds
     package_paths = [item["path"] for item in downloaded]
     before_status = sha256_bytes(status_path.read_bytes())
-    expected_dpkg_plan = runner.expect_offline_dpkg(apt_root, package_paths)
-    dpkg_argv = build.offline_dpkg_command(apt_root, package_paths)
-    row, _, _ = runner.run(
+    expected_dpkg_plan = runner.expect_offline_dpkg(
+        apt_root, package_rows, package_paths)
+    dpkg_argv = build.offline_dpkg_command(
+        apt_root, package_rows, package_paths)
+    row, _, dpkg_stderr = runner.run(
         "dpkg-no-act", dpkg_argv,
         contract["timeouts"]["offline_command_seconds"], networkless=True,
         system_helper_plan=expected_dpkg_plan)
     _require_success(row, "offline dpkg no-act")
+    build.validate_dpkg_noact_stderr(
+        dpkg_stderr, package_rows, package_paths, package_pre_dependencies)
     require(sha256_bytes(status_path.read_bytes()) == before_status,
             "dpkg no-act changed the authenticated base status")
     command_rows["dpkg"] = row

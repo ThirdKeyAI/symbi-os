@@ -865,6 +865,7 @@ def _package_row(raw, source, index_sha256):
     size_text = fields.get("size")
     md5 = fields.get("md5sum")
     digest = fields.get("sha256")
+    pre_depends = fields.get("pre-depends")
     require(isinstance(name, str)
             and re.fullmatch(r"[a-z0-9][a-z0-9+.-]*", name) is not None
             and isinstance(version, str) and version
@@ -893,11 +894,11 @@ def _package_row(raw, source, index_sha256):
             "index_architecture": "amd64",
             "index_sha256": index_sha256,
         },
-    }, md5)
+    }, md5, pre_depends)
 
 
-def find_requested_packages(path, source, index_binding, requested):
-    """Find every apt-selected Filename exactly once in its signed Packages.xz."""
+def _find_requested_packages(path, source, index_binding, requested):
+    """Return selected signed rows and their exact Pre-Depends fields."""
     require(type(index_binding) is dict
             and set(index_binding) == packages.RELEASE_INDEX_FIELDS
             and type(index_binding.get("bytes")) is int
@@ -924,6 +925,7 @@ def find_requested_packages(path, source, index_binding, requested):
         require(_fd_sha256(descriptor) == index_binding["sha256"],
                 "Ubuntu Packages.xz hash differs from signed Release membership")
         found = {}
+        pre_dependencies = {}
         for raw in _iter_control_stanzas(descriptor):
             fields = _control_fields(
                 raw, "Ubuntu Packages stanza", MAX_STANZA_BYTES)
@@ -932,12 +934,14 @@ def find_requested_packages(path, source, index_binding, requested):
                 continue
             require(filename not in found,
                     "Ubuntu Packages index repeats an apt-selected filename")
-            row, md5 = _package_row(raw, source, index_binding["sha256"])
+            row, md5, pre_depends = _package_row(
+                raw, source, index_binding["sha256"])
             expected = requested[filename]
             require(row["bytes"] == expected["bytes"]
                     and md5 == expected["md5"],
                     "apt plan bytes or MD5 differ from signed Packages membership")
             found[filename] = row
+            pre_dependencies[filename] = pre_depends
         _close_private_path(
             path, anchor, descriptor, before, "Ubuntu Packages.xz")
     finally:
@@ -945,7 +949,17 @@ def find_requested_packages(path, source, index_binding, requested):
         anchor.close()
     require(set(found) == set(requested),
             "apt plan contains a package absent from signed Packages metadata")
-    return {filename: found[filename] for filename in requested}
+    return (
+        {filename: found[filename] for filename in requested},
+        {filename: pre_dependencies[filename] for filename in requested},
+    )
+
+
+def find_requested_packages(path, source, index_binding, requested):
+    """Find every apt-selected Filename exactly once in its signed Packages.xz."""
+    rows, _ = _find_requested_packages(
+        path, source, index_binding, requested)
+    return rows
 
 
 def parse_apt_uri_plan(raw, repository_root, sources):
@@ -1045,7 +1059,7 @@ def parse_apt_uri_plan(raw, repository_root, sources):
 
 
 def bind_uri_plan_to_indexes(plan, index_inputs, sources):
-    """Replace APT MD5 plan rows with exact signed SHA-256 plan rows."""
+    """Bind APT rows and Pre-Depends to exact signed Packages metadata."""
     packages.validate_sources(sources)
     require(isinstance(plan, list) and plan
             and len(plan) <= packages.MAX_PACKAGE_COUNT
@@ -1066,15 +1080,22 @@ def bind_uri_plan_to_indexes(plan, index_inputs, sources):
         }
     source_by_suite = {source["suite"]: source for source in sources}
     selected = {}
+    selected_pre_dependencies = {}
     for suite, requested in by_suite.items():
         item = index_inputs.get(suite)
         require(isinstance(item, dict) and set(item) == {"path", "binding"},
                 "offline apt plan lacks one signed index input")
-        rows = find_requested_packages(
+        rows, pre_dependencies = _find_requested_packages(
             item["path"], source_by_suite[suite], item["binding"], requested)
         for filename, row in rows.items():
             selected[(suite, filename)] = row
+            selected_pre_dependencies[(suite, filename)] = (
+                pre_dependencies[filename])
     ordered = [selected[(row["suite"], row["filename"])] for row in plan]
+    ordered_pre_dependencies = [
+        selected_pre_dependencies[(row["suite"], row["filename"])]
+        for row in plan
+    ]
     identities = [packages.package_identity(row) for row in ordered]
     names = [row["package"] for row in ordered]
     require(len(identities) == len(set(identities))
@@ -1089,7 +1110,7 @@ def bind_uri_plan_to_indexes(plan, index_inputs, sources):
         "bytes": package["bytes"],
         "sha256": package["sha256"],
     } for row, package in zip(plan, ordered, strict=True)]
-    return signed_plan, ordered
+    return signed_plan, ordered, ordered_pre_dependencies
 
 
 _APT_PLAN_ROW = re.compile(
@@ -1100,7 +1121,7 @@ _APT_PLAN_ROW = re.compile(
 
 
 def validate_apt_simulation(raw, package_rows):
-    """Require apt's offline install/configure plan to equal the bound payload set."""
+    """Require apt's ordered install plan and closure to equal bound payloads."""
     require(isinstance(raw, bytes) and 0 < len(raw) <= MAX_PLAN_BYTES
             and b"\x00" not in raw and b"\r" not in raw,
             "offline apt simulation is empty or oversized")
@@ -1108,11 +1129,12 @@ def validate_apt_simulation(raw, package_rows):
         text = raw.decode("utf-8")
     except UnicodeDecodeError as error:
         raise ValueError("offline apt simulation is not UTF-8") from error
-    expected = {
+    expected = [
         (row.get("package"), row.get("version"), row.get("architecture"))
         for row in package_rows if isinstance(row, dict)
-    }
-    require(len(expected) == len(package_rows) and expected,
+    ]
+    require(len(expected) == len(package_rows) and expected
+            and len(expected) == len(set(expected)),
             "offline apt expected package identities are invalid")
     observed = {"Inst": [], "Conf": []}
     for line in text.splitlines():
@@ -1126,9 +1148,10 @@ def validate_apt_simulation(raw, package_rows):
         require(identity not in observed[action],
                 "offline apt simulation repeats a package action")
         observed[action].append(identity)
-    require(set(observed["Inst"]) == expected
-            and set(observed["Conf"]) == expected,
-            "offline apt simulation differs from the signed package plan")
+    require(observed["Inst"] == expected
+            and set(observed["Conf"]) == set(expected),
+            "offline apt simulation differs from the ordered signed package "
+            "plan")
     return {
         "install_count": len(observed["Inst"]),
         "configure_count": len(observed["Conf"]),
@@ -1208,30 +1231,179 @@ def offline_apt_commands(apt_root, repository_root, keyring, roots):
         packages.EXPECTED_SOURCES)
 
 
-def offline_dpkg_command(apt_root, package_paths):
-    """Return the exact no-act dpkg command for downloaded package bytes."""
-    apt_root = _canonical_absolute_path(apt_root, "offline apt root")
-    require(package_paths and len(package_paths) <= packages.MAX_PACKAGE_COUNT,
+DPKG_NOACT_REVIEWED_PRE_DEPENDENCIES = (
+    ("python3-minimal", "python3.12-minimal", ">="),
+    ("python3", "python3-minimal", "="),
+)
+DPKG_NOACT_IGNORED_DEPENDENCIES = tuple(
+    relationship[0]
+    for relationship in DPKG_NOACT_REVIEWED_PRE_DEPENDENCIES
+)
+_DPKG_PRE_DEPENDENCY_HEADER = re.compile(
+    r"dpkg: regarding (?P<archive>\S+) containing "
+    r"(?P<package>[a-z0-9][a-z0-9+.-]*), pre-dependency problem:"
+)
+_DPKG_IGNORED_PRE_DEPENDENCY = (
+    "dpkg: warning: ignoring pre-dependency problem!"
+)
+_SIGNED_PRE_DEPENDENCY = re.compile(
+    r"(?P<target>[a-z0-9][a-z0-9+.-]*) "
+    r"\((?P<operator>>=|=) (?P<version>[A-Za-z0-9.+:~\-]+)\)"
+)
+
+
+def _dpkg_staged_archives(package_rows, package_paths):
+    """Bind every signed package row to its exact ordered staging name."""
+    require(isinstance(package_rows, list) and package_rows
+            and len(package_rows) <= packages.MAX_PACKAGE_COUNT
+            and all(isinstance(row, dict)
+                    and re.fullmatch(
+                        r"[a-z0-9][a-z0-9+.-]*", row.get("package", ""))
+                    is not None
+                    and packages._safe_filename(row.get("filename"), ".deb")
+                    for row in package_rows),
+            "offline dpkg package rows changed")
+    require(package_paths and len(package_paths) == len(package_rows),
             "offline dpkg package paths changed")
     normalized = [
         _canonical_absolute_path(path, "offline dpkg package")
         for path in package_paths
     ]
     require(len(normalized) == len(set(normalized))
-            and all(path.name.endswith(".deb") for path in normalized),
-            "offline dpkg package paths are invalid or duplicated")
+            and all(
+                path.name == f"{sequence:04d}-" + PurePosixPath(
+                    row["filename"]).name
+                for sequence, (row, path) in enumerate(
+                    zip(package_rows, normalized, strict=True))),
+            "offline dpkg staged archive names or order changed")
+    return normalized
+
+
+def offline_dpkg_command(apt_root, package_rows, package_paths):
+    """Return one exact no-act dpkg plan with a reviewed narrow waiver."""
+    apt_root = _canonical_absolute_path(apt_root, "offline apt root")
+    normalized = _dpkg_staged_archives(package_rows, package_paths)
+    names = [row["package"] for row in package_rows]
+    require(all(names.count(name) == 1
+                for name in DPKG_NOACT_IGNORED_DEPENDENCIES),
+            "offline dpkg reviewed pre-dependency waiver is not exact")
     return [
         "/usr/bin/dpkg", "--root=" + str(apt_root),
         "--admindir=" + str(apt_root / "var/lib/dpkg"),
+        "--ignore-depends=" + ",".join(
+            DPKG_NOACT_IGNORED_DEPENDENCIES),
         "--no-act", "--unpack", *[str(path) for path in normalized],
     ]
 
 
+def validate_dpkg_noact_stderr(raw, package_rows, package_paths,
+                               signed_pre_dependencies):
+    """Require exactly the two reviewed no-act pre-dependency waivers."""
+    normalized = _dpkg_staged_archives(package_rows, package_paths)
+    require(type(signed_pre_dependencies) is list
+            and len(signed_pre_dependencies) == len(package_rows)
+            and all(item is None or isinstance(item, str)
+                    for item in signed_pre_dependencies),
+            "offline dpkg signed Pre-Depends fields changed")
+    require(isinstance(raw, bytes) and 0 < len(raw) <= MAX_PLAN_BYTES
+            and b"\x00" not in raw and b"\r" not in raw,
+            "offline dpkg stderr is empty, oversized or malformed")
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError("offline dpkg stderr is not UTF-8") from error
+
+    expected = []
+    for package, target, operator in DPKG_NOACT_REVIEWED_PRE_DEPENDENCIES:
+        matches = [
+            (index, row, path, pre_depends)
+            for index, (row, path, pre_depends) in enumerate(zip(
+                package_rows, normalized, signed_pre_dependencies,
+                strict=True))
+            if row["package"] == package
+        ]
+        require(len(matches) == 1,
+                "offline dpkg reviewed pre-dependency waiver is not exact")
+        index, row, path, pre_depends = matches[0]
+        relation = (_SIGNED_PRE_DEPENDENCY.fullmatch(pre_depends)
+                    if isinstance(pre_depends, str) else None)
+        targets = [
+            (target_index, target_row)
+            for target_index, target_row in enumerate(package_rows)
+            if target_row["package"] == target
+        ]
+        require(relation is not None
+                and relation.group("target") == target
+                and relation.group("operator") == operator
+                and len(targets) == 1 and targets[0][0] < index,
+                "offline dpkg signed Pre-Depends relationship changed")
+        if operator == "=":
+            require(relation.group("version") == targets[0][1].get("version"),
+                    "offline dpkg signed equality Pre-Depends version changed")
+        expected.append((package, path, pre_depends))
+
+    lines = text.splitlines()
+    headers = []
+    ignored = []
+    reasons = []
+    for index, line in enumerate(lines):
+        match = _DPKG_PRE_DEPENDENCY_HEADER.fullmatch(line)
+        if ", pre-dependency problem:" in line:
+            require(match is not None,
+                    "offline dpkg pre-dependency header is malformed")
+        if match is not None:
+            headers.append((index, match.group("archive"),
+                            match.group("package")))
+        if line == _DPKG_IGNORED_PRE_DEPENDENCY:
+            ignored.append(index)
+        if " pre-depends on " in line:
+            reasons.append((index, line))
+        lower = line.lower()
+        if "ignor" in lower and any(
+                word in lower for word in ("depend", "break", "conflict")):
+            require(line == _DPKG_IGNORED_PRE_DEPENDENCY,
+                    "offline dpkg waived an unreviewed dependency problem")
+        require(not line.startswith("dpkg: error")
+                and line != "Errors were encountered while processing:",
+                "offline dpkg reported an archive processing error")
+
+    require(len(headers) == len(ignored) == len(reasons) == len(expected),
+            "offline dpkg did not emit exactly two reviewed pre-dependency "
+            "waivers")
+    waived = []
+    for offset, ((header_index, archive, package), ignore_index,
+                 (reason_index, reason),
+                 (expected_package, expected_path,
+                  expected_pre_depends)) in enumerate(
+                     zip(headers, ignored, reasons, expected, strict=True)):
+        next_header = (headers[offset + 1][0]
+                       if offset + 1 < len(headers) else len(lines))
+        require(reason_index == header_index + 1
+                and reason == (" " + expected_package
+                               + " pre-depends on " + expected_pre_depends)
+                and header_index < ignore_index < next_header
+                and package == expected_package
+                and archive in {
+                    str(expected_path), ".../" + expected_path.name,
+                },
+                "offline dpkg pre-dependency waiver archive or package changed")
+        waived.append({
+            "package": expected_package,
+            "archive": expected_path.name,
+            "pre_depends": expected_pre_depends,
+        })
+    return {
+        "waived_pre_dependencies": waived,
+        "stderr_sha256": sha256_bytes(raw),
+    }
+
+
 def offline_plan_commands(apt_root, repository_root, keyring, roots,
-                          package_paths):
+                          package_rows, package_paths):
     """Return exact local-repository apt and no-act dpkg commands."""
     result = offline_apt_commands(apt_root, repository_root, keyring, roots)
-    result["dpkg"] = offline_dpkg_command(apt_root, package_paths)
+    result["dpkg"] = offline_dpkg_command(
+        apt_root, package_rows, package_paths)
     return result
 
 
