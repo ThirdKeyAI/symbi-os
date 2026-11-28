@@ -21,8 +21,14 @@ zero swap. The 4.03/5.03 GB archives stay hosted; only bounded public logs and
 reports are retained. Existing live preflights are never cancelled by another run.
 Six acceptance tests refuse policy/package/kernel drift, missing observations,
 unsafe isolation, false qualification claims, wrong loaded images and local use.
-All 213 image tests pass locally under 128 MiB/10%-CPU/zero-swap limits; full hosted
-workspace/formal and real preflight results are still pending for this change.
+The current strict selector retains successful preflight run `46125049529` for
+the selected generic image manifest
+`sha256:5391751ede2c156e970e6708d603f0c2fb59e1ddba3cab0b075d53c725a5b624`.
+It binds the exact evidence artifact and bytes, source commit, complete desktop
+image lock, kernel observation and current verifier inputs. Any selected image
+or verifier-input change requires another retained preflight and lock review.
+This result still performs no installation or boot and makes no OS or release
+qualification claim.
 
 The retained package identities select bootc 1.17.1 and the exact secureblue kernel
 7.3.4-300.secureblue.1.fc45.x86_64. Configuration observation does not establish
