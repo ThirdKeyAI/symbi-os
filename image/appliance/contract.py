@@ -13,6 +13,7 @@ VIRTUAL_DISK_BYTES = 24 * 1024**3
 RETENTION_DAYS = 2
 FIRST_BOOT_TIMEOUT_SECONDS = 20 * 60
 APPLIANCE_CONTAINER_MEMORY_BYTES = 4 * 1024**3
+APPLIANCE_FAILURE_MEMORY_PEAK_TOLERANCE_BYTES = 4096
 APPLIANCE_CONTROLLER_MEMORY_BYTES = 5 * 1024**3
 APPLIANCE_CONTROLLER_MARGIN_BYTES = (
     APPLIANCE_CONTROLLER_MEMORY_BYTES - APPLIANCE_CONTAINER_MEMORY_BYTES
@@ -56,6 +57,15 @@ PRODUCER_SUBPROCESS_TIMEOUTS = {
 FAILURE_ERROR_CLASSES = frozenset({
     "CalledProcessError", "JSONDecodeError", "MemoryError", "OSError",
     "RuntimeError", "TimeoutError", "TimeoutExpired", "ValueError",
+})
+CHILD_RESULT_STATES = frozenset({
+    "accepted", "missing", "unreadable", "invalid-schema",
+    "resource-receipt-rejected", "resource-receipt-one-page-peak",
+})
+PRODUCER_CONTAINER_NAME = "symbi-interactive-appliance-producer"
+PRODUCER_ATTEMPT_STAGES = frozenset({
+    "producer", "artifact-validation", "reboot-preparation", "reboot",
+    "retention", "cleanup",
 })
 PROVISION_STATUS_PHASES = (
     "selinux-enforcement", "create-fixture-account", "lock-fixture-account",
@@ -222,7 +232,7 @@ def failure_record(source_binding, reason):
     }
 
 
-def validate_resource_receipt(value):
+def _validate_resource_receipt(value, peak_maximum):
     limit_keys = set(APPLIANCE_CONTAINER_LIMITS)
     final_keys = limit_keys | {"memory.peak", "memory.events", "cpu.stat"}
     if (not isinstance(value, dict) or set(value) != {"limits", "cgroup_final"}
@@ -236,7 +246,7 @@ def validate_resource_receipt(value):
     if (any(not isinstance(final.get(name), str) for name in final_keys)
             or not 0 < len(final["memory.peak"]) <= 20
             or re.fullmatch(r"[0-9]+", final["memory.peak"]) is None
-            or int(final["memory.peak"]) > APPLIANCE_CONTAINER_MEMORY_BYTES
+            or int(final["memory.peak"]) > peak_maximum
             or not 0 < len(final["memory.events"]) <= 4096
             or not 0 < len(final["cpu.stat"]) <= 4096):
         return False
@@ -251,6 +261,63 @@ def validate_resource_receipt(value):
             return False
     events = dict(line.split() for line in final["memory.events"].splitlines())
     if not {"max", "oom", "oom_kill", "oom_group_kill"}.issubset(events):
+        return False
+    return True
+
+
+def validate_resource_receipt(value):
+    """Validate a success-capable child receipt against the exact 4 GiB limit."""
+    return _validate_resource_receipt(value, APPLIANCE_CONTAINER_MEMORY_BYTES)
+
+
+def classify_failure_resource_receipt(value):
+    """Classify bounded failure evidence without relaxing any success receipt."""
+    if validate_resource_receipt(value):
+        return "accepted"
+    tolerated = APPLIANCE_CONTAINER_MEMORY_BYTES + \
+        APPLIANCE_FAILURE_MEMORY_PEAK_TOLERANCE_BYTES
+    if (_validate_resource_receipt(value, tolerated)
+            and int(value["cgroup_final"]["memory.peak"]) == tolerated):
+        return "resource-receipt-one-page-peak"
+    return "resource-receipt-rejected"
+
+
+def validate_failure_resource_receipt(value):
+    return classify_failure_resource_receipt(value) in {
+        "accepted", "resource-receipt-one-page-peak",
+    }
+
+
+def _validate_child_results(value, resources):
+    if (not isinstance(value, dict)
+            or any(phase not in FAILURE_LOG_BOUNDS for phase in value)
+            or not set(resources).issubset(value)):
+        return False
+    for phase, state in value.items():
+        if not isinstance(state, str) or state not in CHILD_RESULT_STATES:
+            return False
+        receipt = resources.get(phase)
+        expected = (classify_failure_resource_receipt(receipt)
+                    if receipt is not None else None)
+        if state in {"accepted", "resource-receipt-one-page-peak"}:
+            if expected != state:
+                return False
+        elif receipt is not None:
+            return False
+    return True
+
+
+def _validate_producer_container(value):
+    if value is None:
+        return True
+    if (not isinstance(value, dict)
+            or set(value) != {"name", "State"}
+            or value.get("name") != PRODUCER_CONTAINER_NAME
+            or not isinstance(value.get("State"), dict)
+            or set(value["State"]) != {"ExitCode", "OOMKilled"}
+            or type(value["State"].get("ExitCode")) is not int
+            or not 0 <= value["State"]["ExitCode"] <= 255
+            or type(value["State"].get("OOMKilled")) is not bool):
         return False
     return True
 
@@ -394,7 +461,8 @@ def producer_failure_type_matches(status, failure_type):
 
 
 def controller_failure_record(source_binding, stage, error_type, cleanup, resources,
-                              diagnostics=None):
+                              diagnostics=None, child_results=None,
+                              producer_container=None):
     """Return a bounded, path-free failure receipt for the hosted controller."""
     source = validate_source_binding(source_binding)
     if stage not in CONTROLLER_STAGES:
@@ -411,12 +479,32 @@ def controller_failure_record(source_binding, stage, error_type, cleanup, resour
         raise ValueError("Invalid appliance cleanup receipt")
     if (not isinstance(resources, dict)
             or any(name not in {"producer", "reboot"} for name in resources)
-            or any(not validate_resource_receipt(value) for value in resources.values())):
+            or any(not validate_failure_resource_receipt(value)
+                   for value in resources.values())):
         raise ValueError("Invalid appliance resource receipt")
     diagnostics = {} if diagnostics is None else diagnostics
     if (not _validate_failure_diagnostics(diagnostics)
             or not set(diagnostics).issubset(resources)):
         raise ValueError("Invalid appliance failure diagnostics")
+    child_results = {} if child_results is None else child_results
+    if not _validate_child_results(child_results, resources):
+        raise ValueError("Invalid appliance child-result state")
+    if not _validate_producer_container(producer_container):
+        raise ValueError("Invalid appliance producer container state")
+    external_invalidation = (
+        stage == "cleanup" and error_type == "AtomicControllerFailure")
+    if external_invalidation:
+        if (resources or diagnostics or child_results
+                or producer_container is not None):
+            raise ValueError("External appliance invalidation retained child state")
+    elif stage in PRODUCER_ATTEMPT_STAGES:
+        if set(child_results) != set(FAILURE_LOG_BOUNDS):
+            raise ValueError("Incomplete appliance child-result state")
+        if producer_container is None:
+            raise ValueError("Missing appliance producer container state")
+    elif (child_results not in ({}, {"producer": "missing", "reboot": "missing"})
+          or producer_container is not None):
+        raise ValueError("Unexpected pre-producer appliance child state")
     result = failure_record(source, error_type)
     result.update({
         "stage": stage,
@@ -424,6 +512,8 @@ def controller_failure_record(source_binding, stage, error_type, cleanup, resour
         "cleanup": cleanup,
         "resources": resources,
         "diagnostics": diagnostics,
+        "child_results": child_results,
+        "producer_container": producer_container,
     })
     return result
 

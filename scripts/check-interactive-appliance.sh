@@ -30,6 +30,14 @@ fi
 source_commit=$(git rev-parse HEAD)
 source_tree=$(git rev-parse 'HEAD^{tree}')
 [[ $source_commit == "$GITHUB_SHA" && $source_tree =~ ^[0-9a-f]{40}$ ]] || exit 2
+
+consume_cleanup_receipt() {
+  sudo /usr/bin/env -i PATH=/usr/sbin:/usr/bin:/sbin:/bin PYTHONPATH="$root" \
+    GITHUB_ACTIONS=true RUNNER_ENVIRONMENT=github-hosted \
+    "GITHUB_SHA=$source_commit" "SYMBI_APPLIANCE_SOURCE_TREE=$source_tree" \
+    PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -m image.appliance.hosted \
+    --consume-cleanup-receipt
+}
 for path in "${paths[@]}"; do
   if [[ -e $path || -L $path ]]; then
     echo "Appliance output path must be new: $path" >&2
@@ -196,24 +204,7 @@ if (( unit_started == 1 && unit_terminal == 0 )); then
 fi
 ownership_status=0
 inner_evidence_absent=0
-if [[ ! -e $cache/interactive-appliance-evidence && \
-      ! -L $cache/interactive-appliance-evidence ]]; then
-  inner_evidence_absent=1
-fi
-for path in "$cache/atomic-disk-evidence" "$cache/interactive-appliance-evidence" \
-            "$cache/interactive-appliance-artifact"; do
-  if [[ -e $path || -L $path ]]; then
-    if [[ -L $path || ! -d $path ]] || \
-       [[ -n "$(sudo find -P "$path" -xdev ! -type d ! \( -type f -links 1 \) -print -quit)" ]]; then
-      echo "Refusing unsafe appliance output: $path" >&2
-      ownership_status=3
-    elif ! sudo find -P "$path" -xdev \( -type d -o \( -type f -links 1 \) \) \
-      -exec chown --no-dereference "$(id -u):$(id -g)" -- {} +; then
-      ownership_status=4
-    fi
-  fi
-done
-
+inner_cleanup_receipt=0
 sanitize_evidence() {
   sudo /usr/bin/env -i PATH=/usr/sbin:/usr/bin:/sbin:/bin PYTHONPATH="$root" \
     GITHUB_ACTIONS=true RUNNER_ENVIRONMENT=github-hosted \
@@ -231,6 +222,9 @@ create_outer_evidence() {
 
 adopt_evidence() {
   local directory="$cache/interactive-appliance-evidence"
+  if (( inner_evidence_absent == 0 && inner_cleanup_receipt != 1 )); then
+    return 1
+  fi
   [[ -d $directory && ! -L $directory ]] || return 1
   [[ -z "$(sudo find -P "$directory" -xdev ! -type d ! \( -type f -links 1 \) -print -quit)" ]] || return 1
   sudo find -P "$directory" -xdev \( -type d -o \( -type f -links 1 \) \) \
@@ -239,6 +233,38 @@ adopt_evidence() {
 
 systemd_result=
 systemd_captured=0
+outer_cgroup_events_before_base64=
+outer_cgroup_events_after_base64=
+outer_memory_events_base64=
+outer_memory_events_local_base64=
+
+capture_outer_memory_events() {
+  local cgroup_after cgroup_before cgroup_path events events_local resource
+  [[ $unit_control_group == "$expected_control_group" ]] || return 1
+  cgroup_path="/sys/fs/cgroup${expected_control_group}"
+  timeout 5 sudo /usr/bin/test -d "$cgroup_path" || return 1
+  timeout 5 sudo /usr/bin/test ! -L "$cgroup_path" || return 1
+  for resource in cgroup.events memory.events memory.events.local; do
+    timeout 5 sudo /usr/bin/test -f "$cgroup_path/$resource" || return 1
+    timeout 5 sudo /usr/bin/test ! -L "$cgroup_path/$resource" || return 1
+  done
+  cgroup_before=$(timeout 5 sudo /usr/bin/base64 --wrap=0 -- \
+    "$cgroup_path/cgroup.events") || return 1
+  events=$(timeout 5 sudo /usr/bin/base64 --wrap=0 -- \
+    "$cgroup_path/memory.events") || return 1
+  events_local=$(timeout 5 sudo /usr/bin/base64 --wrap=0 -- \
+    "$cgroup_path/memory.events.local") || return 1
+  cgroup_after=$(timeout 5 sudo /usr/bin/base64 --wrap=0 -- \
+    "$cgroup_path/cgroup.events") || return 1
+  [[ -n $cgroup_before && ${#cgroup_before} -le 2048 \
+      && -n $cgroup_after && ${#cgroup_after} -le 2048 \
+      && -n $events && ${#events} -le 2048 \
+      && -n $events_local && ${#events_local} -le 2048 ]] || return 1
+  outer_cgroup_events_before_base64=$cgroup_before
+  outer_cgroup_events_after_base64=$cgroup_after
+  outer_memory_events_base64=$events
+  outer_memory_events_local_base64=$events_local
+}
 
 capture_systemd_result() {
   local canonical='' control_seen=0 key snapshot valid=1 value
@@ -279,6 +305,15 @@ capture_systemd_result() {
   if (( valid == 0 || control_seen == 0 )) || [[ -z $canonical ]]; then
     return 1
   fi
+  capture_outer_memory_events || return 1
+  if ! printf -v canonical \
+      '%sCgroupEventsBeforeBase64=%s\nCgroupMemoryEventsBase64=%s\nCgroupMemoryEventsLocalBase64=%s\nCgroupEventsAfterBase64=%s\n' \
+      "$canonical" "$outer_cgroup_events_before_base64" \
+      "$outer_memory_events_base64" "$outer_memory_events_local_base64" \
+      "$outer_cgroup_events_after_base64"; then
+    return 1
+  fi
+  (( ${#canonical} <= 4096 )) || return 1
   systemd_result=$canonical
   systemd_captured=1
 }
@@ -332,6 +367,35 @@ evidence_status=0
 evidence_valid=0
 fallback_requested=0
 capture_systemd_result || true
+if (( systemd_captured == 1 )); then
+  if [[ ! -e $cache/interactive-appliance-evidence && \
+        ! -L $cache/interactive-appliance-evidence ]]; then
+    inner_evidence_absent=1
+  fi
+  if (( inner_evidence_absent == 0 )) && consume_cleanup_receipt; then
+    inner_cleanup_receipt=1
+  elif (( inner_evidence_absent == 1 )) \
+      && [[ -e $evidence_ready || -L $evidence_ready ]]; then
+    rm -f -- "$evidence_ready" || ownership_status=5
+    [[ ! -e $evidence_ready && ! -L $evidence_ready ]] || ownership_status=5
+  fi
+fi
+if (( systemd_captured == 1 \
+      && (inner_evidence_absent == 1 || inner_cleanup_receipt == 1) )); then
+  for path in "$cache/atomic-disk-evidence" "$cache/interactive-appliance-evidence" \
+              "$cache/interactive-appliance-artifact"; do
+    if [[ -e $path || -L $path ]]; then
+      if [[ -L $path || ! -d $path ]] || \
+         [[ -n "$(sudo find -P "$path" -xdev ! -type d ! \( -type f -links 1 \) -print -quit)" ]]; then
+        echo "Refusing unsafe appliance output: $path" >&2
+        ownership_status=3
+      elif ! sudo find -P "$path" -xdev \( -type d -o \( -type f -links 1 \) \) \
+        -exec chown --no-dereference "$(id -u):$(id -g)" -- {} +; then
+        ownership_status=4
+      fi
+    fi
+  done
+fi
 if (( status != 0 && ownership_status == 0 && inner_evidence_absent == 1 \
       && unit_started == 1 && unit_terminal == 1 && systemd_captured == 1 )) \
     && [[ $unit_outcome == failure ]]; then

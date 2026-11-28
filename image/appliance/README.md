@@ -22,6 +22,20 @@ graphical target and retained only bounded failure artifact `15272582324`
 It published no qcow2. Its all-false receipt records zero swap and zero OOM kills
 and confirms that cleanup removed every incomplete public output.
 
+Hosted run `46171450135` at source commit
+`c75f6ff00acd48d4c7fa1e622b9922d64320eedd` failed closed in the producer after
+29 minutes 45 seconds and retained bounded failure artifact `15275305675`
+(`sha256:058812eb90c73dbf0b7c7de362d55e3208b031c042f4b35613191112c290f11c`).
+It published no qcow2 and every qualification claim remained false. The outer
+unit used zero swap and systemd classified it as an ordinary process exit, not an
+outer OOM kill. Its reported peak was exactly one 4 KiB page above the 5 GiB
+limit. That accounting value alone is not an OOM determination: two earlier runs
+reported the same one-page difference, and run `46167625881` retained zero inner
+OOM, OOM-kill, and OOM-group-kill counters. Run `46171450135` retained no child
+resource receipt, and the old path did not distinguish a missing, unreadable, or
+invalid child result from a receipt rejected by its strict 4 GiB peak check.
+Inner or descendant OOM behavior in this run therefore remains indeterminate.
+
 The producer consumes the exact retained generic OCI selected by
 `image/desktop-images.lock.json`; the OCI bytes remain read-only and unchanged. The
 controller requires at least 60 GiB free after preparation, then installs a separate
@@ -106,8 +120,8 @@ captured while the unit is still loaded and synced to the evidence filesystem. T
 wrapper then stops and resets the unit, requires both `LoadState=not-found` and the
 captured control-group path to be gone, and validates the final evidence inventory
 and contents only after no unit descendant can still write them. A collection,
-cleanup, swap, OOM, or final-validation failure removes the evidence and public
-output and emits no upload marker.
+cleanup, swap, local outer-unit OOM, or final-validation failure removes the
+evidence and public output and emits no upload marker.
 A failed run can retain exactly one all-false receipt plus the fixed-field systemd
 record. When the appliance controller produced a receipt, the wrapper removes every
 other output and validates that source-bound inner receipt. When the outer unit
@@ -125,6 +139,28 @@ bounded evidence may already have uploaded and remains a record of the earlier
 controller result; it is not proof that the rejected public bytes were delivered.
 After the two-day artifact expires, the longer-lived evidence can still establish
 what the independent reboot observed, but it cannot rehash the absent qcow2 bytes.
+
+The diagnostic retry keeps the 5 GiB outer limit, 4 GiB child limits, and zero-swap
+policy unchanged. Failure evidence assigns each child result one fixed state:
+missing, unreadable, invalid schema, rejected resource receipt, accepted receipt,
+or the exact one-page peak case. That last state is diagnostic only; successful
+receipts still reject every peak above 4 GiB. Before resetting the outer unit, the
+wrapper captures the exact bounded `cgroup.events` bytes before and after the
+`memory.events` and `memory.events.local` reads. Both cgroup snapshots must be
+identical, empty, and unfrozen. Hierarchical memory events may diagnose a child OOM,
+but any local outer-unit OOM counter remains non-uploadable.
+Before its existing explicit container removal and absence check, the controller
+requires the named producer container to be exited and retains only its numeric
+`State.ExitCode` and boolean `State.OOMKilled`. The diagnostic receipt is written
+only after the first successful producer remove-and-absence check; the outer
+controller repeats that cleanup before the unit can finish. Any capture, validation,
+cleanup, or absence-check failure removes the evidence and cannot authorize an
+upload. Only after every outer cleanup completes does the controller mint a
+source-bound, one-use cleanup receipt; the wrapper consumes it before adopting inner
+evidence. A missing or malformed receipt blocks adoption of a pre-existing inner
+receipt. The content-free outer fallback remains limited to a terminal failed unit
+that created no inner evidence path and whose wrapper-level capture and cleanup both
+succeed. Raw inspect output, logs, and arbitrary paths are not retained.
 
 ## Download and inspect a successful run
 
