@@ -24,6 +24,7 @@ PRODUCER_WORKFLOW = ".github/workflows/container-fixtures.yml"
 ARTIFACT_NAME = "container-native-fixture-image"
 ARCHIVE_NAME = "symbi-native-fixture.oci.tar.gz"
 IMAGE_REPOSITORY = "localhost/symbi-ci/native-fixture"
+SOURCE_TARGET_ANNOTATION = "org.symbi-os.fixture.source-target.digest"
 SELECTION_SCOPE = (
     "Offline native fixture selection; unavailable producer output cannot enter "
     "container qualification"
@@ -44,8 +45,14 @@ PRODUCER_FIELDS = {
 ARTIFACT_FIELDS = {"id", "name", "bytes", "sha256"}
 ARCHIVE_FIELDS = {"name", "bytes", "sha256"}
 MANIFEST_BINDING_FIELDS = {"sha256", "archive"}
-IMAGE_FIELDS = {"repository", "image_id", "manifest_digest", "repo_digest"}
-TESTED_IMAGE_FIELDS = {"descriptor", "config_digest"}
+IMAGE_FIELDS = {
+    "repository", "generated_target_digest", "generated_target_media_type",
+    "repo_digest",
+}
+TESTED_IMAGE_FIELDS = {
+    "initial_target_digest", "initial_target_media_type", "config_digest",
+    "config_media_type",
+}
 GENERATED_MANIFEST_FIELDS = {
     "schema", "built", "qualified", "container_qualified", "os_qualified",
     "release_qualified", "signature_qualified", "source_commit",
@@ -85,6 +92,21 @@ TRANSFER_SCOPE = (
 def require(condition, message):
     if not condition:
         raise ValueError(message)
+
+
+def exact_record(actual, expected):
+    """Compare selected API records without bool/int equality aliases."""
+    if type(actual) is not type(expected):
+        return False
+    if isinstance(expected, dict):
+        return (set(actual) == set(expected)
+                and all(exact_record(actual[key], value)
+                        for key, value in expected.items()))
+    if isinstance(expected, list):
+        return (len(actual) == len(expected)
+                and all(exact_record(left, right)
+                        for left, right in zip(actual, expected, strict=True)))
+    return actual == expected
 
 
 def exact_hash(value, length=64):
@@ -153,8 +175,8 @@ def validate_selection(selection, fixture_source):
             and selection.get("os_qualified") is False
             and selection.get("release_qualified") is False
             and selection.get("signature_qualified") is False
-            and selection.get("repository") == REPOSITORY
-            and selection.get("fixture_source") == fixture_source
+            and exact_record(selection.get("repository"), REPOSITORY)
+            and exact_record(selection.get("fixture_source"), fixture_source)
             and selection.get("scope") == SELECTION_SCOPE,
             "native fixture selection fields or claims changed")
     workflow = selection.get("workflow")
@@ -222,18 +244,20 @@ def validate_producer_metadata(run, selection):
     repository = run.get("repository") if isinstance(run, dict) else None
     head_repository = run.get("head_repository") if isinstance(run, dict) else None
     require(isinstance(repository, dict) and isinstance(head_repository, dict)
-            and run.get("id") == producer["run_id"]
-            and run.get("run_attempt") == producer["run_attempt"]
+            and exact_record(run.get("id"), producer["run_id"])
+            and exact_record(
+                run.get("run_attempt"), producer["run_attempt"])
             and run.get("event") == producer["event"]
             and run.get("path") == selection["workflow"]["path"]
-            and run.get("workflow_id") == selection["workflow"]["id"]
+            and exact_record(
+                run.get("workflow_id"), selection["workflow"]["id"])
             and run.get("head_sha") == producer["head_sha"]
             and run.get("head_branch") == producer["head_branch"]
             and run.get("status") == producer["status"]
             and run.get("conclusion") == producer["conclusion"]
-            and repository.get("id") == REPOSITORY["id"]
+            and exact_record(repository.get("id"), REPOSITORY["id"])
             and repository.get("full_name") == REPOSITORY["full_name"]
-            and head_repository.get("id") == REPOSITORY["id"]
+            and exact_record(head_repository.get("id"), REPOSITORY["id"])
             and head_repository.get("full_name") == REPOSITORY["full_name"],
             "native fixture producer metadata differs from the selected run")
 
@@ -243,15 +267,18 @@ def validate_artifact_metadata(metadata, selection):
     producer = selection["producer"]
     workflow = metadata.get("workflow_run") if isinstance(metadata, dict) else None
     require(isinstance(workflow, dict)
-            and metadata.get("id") == artifact["id"]
+            and exact_record(metadata.get("id"), artifact["id"])
             and metadata.get("name") == artifact["name"]
-            and metadata.get("size_in_bytes") == artifact["bytes"]
+            and exact_record(
+                metadata.get("size_in_bytes"), artifact["bytes"])
             and metadata.get("digest") == "sha256:" + artifact["sha256"]
             and metadata.get("expired") is False
-            and workflow.get("id") == producer["run_id"]
+            and exact_record(workflow.get("id"), producer["run_id"])
             and workflow.get("head_sha") == producer["head_sha"]
-            and workflow.get("repository_id") == REPOSITORY["id"]
-            and workflow.get("head_repository_id") == REPOSITORY["id"],
+            and exact_record(
+                workflow.get("repository_id"), REPOSITORY["id"])
+            and exact_record(
+                workflow.get("head_repository_id"), REPOSITORY["id"]),
             "native fixture artifact metadata differs from the selected bytes")
 
 
@@ -349,28 +376,52 @@ def validate_generated_manifest(manifest, manifest_raw, selection):
             and isinstance(image, dict) and set(image) == IMAGE_FIELDS
             and isinstance(tested_image, dict)
             and set(tested_image) == TESTED_IMAGE_FIELDS
-            and isinstance(tested_image.get("descriptor"), str)
-            and tested_image["descriptor"].startswith("sha256:")
-            and exact_hash(
-                tested_image["descriptor"].removeprefix("sha256:"))
-            and tested_image.get("config_digest") == image.get("image_id")
+            and isinstance(tested_image.get("initial_target_digest"), str)
+            and tested_image["initial_target_digest"].startswith("sha256:")
+            and exact_hash(tested_image["initial_target_digest"].removeprefix(
+                "sha256:"))
+            and tested_image.get("initial_target_media_type")
+            == "application/vnd.oci.image.manifest.v1+json"
+            and isinstance(tested_image.get("config_digest"), str)
+            and tested_image["config_digest"].startswith("sha256:")
+            and exact_hash(tested_image["config_digest"].removeprefix("sha256:"))
+            and tested_image.get("config_media_type")
+            == "application/vnd.oci.image.config.v1+json"
             and image.get("repository") == IMAGE_REPOSITORY
-            and isinstance(image.get("image_id"), str)
-            and image["image_id"].startswith("sha256:")
-            and exact_hash(image["image_id"].removeprefix("sha256:"))
-            and isinstance(image.get("manifest_digest"), str)
-            and image["manifest_digest"].startswith("sha256:")
-            and exact_hash(image["manifest_digest"].removeprefix("sha256:"))
+            and isinstance(image.get("generated_target_digest"), str)
+            and image["generated_target_digest"].startswith("sha256:")
+            and exact_hash(image["generated_target_digest"].removeprefix(
+                "sha256:"))
+            and image.get("generated_target_media_type")
+            == "application/vnd.oci.image.manifest.v1+json"
             and image.get("repo_digest")
-            == IMAGE_REPOSITORY + "@" + image["manifest_digest"]
+            == IMAGE_REPOSITORY + "@" + image["generated_target_digest"]
             and len({
-                tested_image["descriptor"],
-                image["image_id"],
-                image["manifest_digest"],
+                tested_image["initial_target_digest"],
+                tested_image["config_digest"],
+                image["generated_target_digest"],
             }) == 3
             and manifest.get("scope") == MANIFEST_SCOPE,
             "native fixture manifest differs from the selected producer output")
     return image
+
+
+def validate_generated_source_binding(directory, image, tested_image):
+    """Bind the retained generated target to the exact initially tested target."""
+    manifest_path = (Path(directory) / "blobs/sha256"
+                     / image["generated_target_digest"].removeprefix("sha256:"))
+    manifest = unique_json_bytes(manifest_path.read_bytes())
+    config = manifest.get("config") if isinstance(manifest, dict) else None
+    annotations = manifest.get("annotations") if isinstance(manifest, dict) else None
+    require(manifest.get("schemaVersion") == 2
+            and manifest.get("mediaType") == image["generated_target_media_type"]
+            and isinstance(config, dict)
+            and config.get("digest") == tested_image["config_digest"]
+            and config.get("mediaType") == tested_image["config_media_type"]
+            and isinstance(annotations, dict)
+            and annotations.get(SOURCE_TARGET_ANNOTATION)
+            == tested_image["initial_target_digest"],
+            "generated OCI target does not bind the tested source target and config")
 
 
 def _workflow_identity(environment):
@@ -830,8 +881,11 @@ def consume_fixture_bundle(bundle_path, selection, run, metadata, destination,
             (destination / "manifest.json").chmod(0o644)
         verify = destination / "verified-oci"
         oci = unpack_oci(
-            archive_path, verify, image["manifest_digest"], image["image_id"],
+            archive_path, verify, image["generated_target_digest"],
+            manifest["tested_image"]["config_digest"],
             max_bytes=MAX_OCI_BYTES)
+        validate_generated_source_binding(
+            verify, image, manifest["tested_image"])
         shutil.rmtree(verify)
         final = bundle_path.stat()
         require((initial.st_dev, initial.st_ino, initial.st_mode, initial.st_nlink,
@@ -1013,8 +1067,8 @@ def validate_consumed_fixture(root, source_commit, fixture_source=None,
                 "manifest_digest", "config_digest", "blobs", "layers", "bytes",
                 "root_filesystem_extracted",
             }
-            and oci.get("manifest_digest") == image["manifest_digest"]
-            and oci.get("config_digest") == image["image_id"]
+            and oci.get("manifest_digest") == image["generated_target_digest"]
+            and oci.get("config_digest") == manifest["tested_image"]["config_digest"]
             and type(oci.get("blobs")) is int and 3 <= oci["blobs"] <= 4096
             and type(oci.get("layers")) is int and 1 <= oci["layers"] <= 4096
             and type(oci.get("bytes")) is int and 0 < oci["bytes"] <= MAX_OCI_BYTES

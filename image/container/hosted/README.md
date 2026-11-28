@@ -27,30 +27,42 @@ origins. These are development-test inputs, not chosen Fedora release packages.
 On a fresh hosted VM with no existing containers, a dedicated Docker daemon
 replaces the idle runner daemon temporarily, using private state and a bounded
 parent cgroup. Both runc and runsc host-process membership are checked before
-fixture execution. The complete job has 4 GiB, two CPUs, no swap and a 110-minute
-deadline. Each fixture-image build has an additional 512 MiB/one-CPU ceiling;
-actual workers keep the upstream profile's limits and network restrictions.
+fixture execution. The hosted job has a 120-minute deadline. Five authenticated
+package transfers total at most 990 seconds, offline consumption has 300
+seconds, current-run and runtime-artifact intake have 30 and 600 seconds, and
+the 4 GiB/two-CPU/zero-swap fixture unit has 75 minutes. These explicit bounds
+total 107 minutes and reserve 13 minutes for the remaining workflow steps. Each
+fixture-image build has an additional 512 MiB/one-CPU ceiling; actual workers
+keep the upstream profile's limits and network restrictions.
 
-Only installation of signed Ubuntu packages into the development fixture image
-uses host networking. Its package versions and signed repository metadata are
-retained, and the resulting image ID is immutable before tests start. The image
-is not reproducible release output; Ubuntu package dependencies still require
-their own pinned release process if this fixture ever becomes a shipped input.
-No release environment, provider credentials or registry-write permission is
-available to the workflow.
+Host networking is limited to authenticated input and artifact transfers.
+Installation uses the exact selected Ubuntu package archives during
+`docker build --network=none`; package versions and signed repository metadata
+are retained. The resulting tested target is immutable before fixture execution.
+The image is not reproducible release output, and no release environment,
+provider credentials or registry-write permission is available to the workflow.
 
-The unprivileged trusted test account runs all three drivers sequentially for
-both backends. The full container filesystem driver has nine cases: upstream
+One run-bound disposable account, distinct from the checkout owner, runs all
+three drivers sequentially for both backends. Direct filesystem ownership and
+write permission are granted only for its private work and evidence-output
+directories; Docker-group membership grants authority through the dedicated
+daemon. Root kills and proves the absence of all
+processes for that UID immediately after execution. It then rechecks the exact
+six-run result/report/log inventory and every recorded digest before copying
+public evidence. The full container filesystem driver has nine cases: upstream
 reserves its two additional root-ceiling cases for Landlock/Firecracker. Source
 broker has nine cases and Git source fourteen. No `--case` shortcut is used.
 Reports must match the complete supported case list, binary/image/driver hashes,
 actual backend and runtime observations, and empty worker/lease state.
 
 Temporary fixture directories contain synthetic private signing keys and remain
-outside the artifact. The collector accepts only regular public reports/logs,
-refuses links and PEM private-key material, and caps the collection size. The
-daemon is stopped on completion or failure. No workstation Docker configuration
-or VM is changed.
+outside the artifact. The final root collector binds the exact selected package
+manifest, three InRelease files, three Packages.xz files and package inventory;
+it accepts only regular public reports/logs, refuses links, unexpected package
+paths and PEM private-key material, and caps the collection size. The artifact
+root must be newly created at mode `0700` and have only `public` when produced
+plus `systemd-result.txt`. The daemon is stopped on completion or failure. No
+workstation Docker configuration or VM is changed.
 
 The source checkout fetches the baseline and fixture revisions explicitly and
 verifies their cumulative full-index patch, merge tree and three driver hashes
@@ -118,27 +130,49 @@ This clears the live Ubuntu tool-worker fixture gap for PR 24. P0-05 remains
 open: the selected signed Fedora deployment, managed-CLI broker and escape-suite
 acceptance, plus required reviews, are not established by these six drivers.
 
-## Native fixture OCI export remains disabled
+## Native fixture OCI export remains blocked
 
-The prepared exporter is not an extension of the passing evidence above. The
-current Dockerfile resolves Python, Git and CA packages live. The hosted source
-contract now selects merge `cd4b34282ade880c8ac3d5136d31ff80cde92794`, and
-run 45995824985 exercised that selection, but it produced evidence only: no OCI
-was exported or cold-loaded. The `native-fixture-build.lock.json` prerequisite
-slot remains pending and unchanged; the producer and upload stay disabled.
-Activation requires a reviewed full package closure authenticated by signed
-Ubuntu Release/InRelease and Packages metadata, exact package identities,
-sizes and hashes, sequential verified downloads, and an offline
-`docker build --network=none`. The same producer run must exercise all six
-profiles from the required merge, then cold-load the generated OCI and resolve
+The prepared exporter is not an extension of the passing evidence above.
+Package production run 46142528811 emitted an exact unselected package
+candidate, but no reviewer has selected it for consumption. The public package
+lock and `native-fixture-build.lock.json` prerequisite slot remain pending; the
+native fixture export remains blocked and artifact upload is absent. Native
+preflight runs before artifact transfer and reports
+`offline-ubuntu-package-selection` while that remains true.
+
+After a reviewed selection binds the exact run, artifact API records, archive
+digests, manifest, producer result and every retained member, the consumer can
+stage the packages in the retained order. The Docker build has no network and
+runs real `dpkg --unpack` operations. It configures the earlier package set
+before each of the two reviewed `python3-minimal` and `python3` Pre-Depends
+boundaries, then runs a final `dpkg --configure -a`. That is the first gate that
+can execute pre-install, post-install and trigger behavior. It has not run.
+After all evidence writes, the image normalizes only
+`/usr/share/symbi-fixture-evidence`: directories are mode `0755` and files are
+mode `0644`, so the unprivileged collector can traverse the complete nested
+evidence. The collector admits the existing report and signed InRelease types
+plus exactly `noble_main_binary-amd64_Packages.xz`,
+`noble-updates_main_binary-amd64_Packages.xz` and
+`noble-security_main_binary-amd64_Packages.xz`; every other `.xz` is rejected.
+
+The same producer run must next exercise all six profiles from merge
+`cd4b34282ade880c8ac3d5136d31ff80cde92794`, export the tested image, remove it,
+cold-load the generated OCI and resolve
 `localhost/symbi-ci/native-fixture@<manifest digest>`.
 
-The dormant exporter itself uses only Python's standard library. It streams one
-Docker-save image into OCI after checking the config digest and every layer
-against ordered `diff_id` values, fixes gzip and tar metadata, caps compressed
-output at 512 MiB and expanded verification at 1 GiB, and deletes partial
-output on failure. The consumer-format verification runs before any output
-could be retained. No artifact upload step is enabled.
+The wired exporter remains unreachable while those gates are pending. It uses
+only Python's standard library, fixes gzip and tar metadata, caps compressed
+output at 512 MiB and expanded verification at 1 GiB, deletes partial output on
+failure and completes consumer-format verification before retaining output.
+It binds three pairwise-distinct digests. `D0`, recorded as
+`initial_target_digest`, comes from `--iidfile` and must equal the initial
+Docker inspect `Id` and `Descriptor.digest`. `C`, recorded as `config_digest`,
+is the selected source manifest's config digest. `G`, recorded as
+`generated_target_digest`, is the deterministic generated manifest digest and
+carries a source-target annotation for `D0`. A cold load must resolve both
+Docker inspect `Id` and `Descriptor.digest` to `G`, with the exact repository
+digest `localhost/symbi-ci/native-fixture@G`. No artifact upload step is
+enabled.
 
 ## Unselected Ubuntu package candidate preparation
 
@@ -194,11 +228,12 @@ under the resolved checkout, and retains the private scratch for disposal with
 the ephemeral runner. It performs no recursive pathname cleanup or ownership
 change.
 
-This preparation is not wired to `container-fixtures.yml` or
-`native_fixture_build.py`. The current Dockerfile still performs its historical
-live apt installation, the committed Ubuntu lock remains pending and empty, and
-its public validator rejects a populated candidate. No image build, OCI export,
-cold load, selection or qualification is enabled by this slice.
+The fail-closed consumer is wired to the manual `container-fixtures.yml`
+workflow, but its public lock remains pending and empty. Native preflight runs
+before any artifact API or archive request and rejects both the package
+selection and the separate source-alignment, cold-load and upload-approval
+prerequisites. No image build, package or maintainer-script execution, OCI
+export, cold load, selection or qualification is enabled by this source slice.
 
 The manual ubuntu-fixture-packages.yml workflow remains workflow_dispatch only.
 Before the schema-3 retained-metadata handoff, its contract was promoted to
@@ -274,8 +309,8 @@ the complete exact row set before writing the private source list or running
 APT. Each exact discovery artifact must be inspected before pins are copied
 into the contract. A later `produce` dispatch remains
 unselected; selecting its real run, artifact and byte identities is a separate
-committed review, and only that can unblock an offline
-`docker build --network=none` change.
+committed review, and only that can unblock the already-wired offline image
+consumer.
 
 ## Retained metadata handoff
 

@@ -1,11 +1,6 @@
 name: Hosted Docker and gVisor fixtures
 
 on:
-  pull_request:
-    paths:
-      - image/container/hosted/**
-      - scripts/check-container-fixtures.sh
-      - .github/workflows/container-fixtures.yml
   workflow_dispatch:
 
 permissions:
@@ -25,17 +20,44 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
+      - name: Require reviewed native export and cold-load prerequisites
+        run: python3 -m image.container.native_fixture_build --root . preflight
+      - name: Authenticate and materialize the selected offline fixture packages
+        env:
+          SYMBI_GITHUB_TOKEN: ${{ github.token }}
+        run: bash scripts/check-container-ubuntu-package-input.sh
+      - name: Retain the current producer run identity for the native exporter
+        env:
+          SYMBI_GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          github_token=${SYMBI_GITHUB_TOKEN:?}
+          unset SYMBI_GITHUB_TOKEN GH_TOKEN GITHUB_TOKEN
+          timeout --signal=TERM --kill-after=5s 30s \
+            env GH_TOKEN="$github_token" gh api \
+            "repos/ThirdKeyAI/symbi-os/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT}" |
+            PYTHONDONTWRITEBYTECODE=1 python3 \
+            -m image.container.ubuntu_fixture_inputs --root "$PWD" receive \
+            --output "$PWD/.cache/container-fixture-producer-run.json" \
+            --maximum 4194304
       - name: Retrieve the exact checked development-binary artifact
         env:
-          GH_TOKEN: ${{ github.token }}
+          SYMBI_GITHUB_TOKEN: ${{ github.token }}
         run: |
-          mkdir -p .cache
-          gh api repos/ThirdKeyAI/symbi-os/actions/artifacts/15066141540/zip > .cache/checked-runtime.zip
-          echo 'bed79f624444c6dc0c3a5105facdcd9ad637a26f4fcd6cacb6e10544c36a0724  .cache/checked-runtime.zip' | sha256sum --check --strict
+          github_token=${SYMBI_GITHUB_TOKEN:?}
+          unset SYMBI_GITHUB_TOKEN GH_TOKEN GITHUB_TOKEN
+          timeout --signal=TERM --kill-after=5s 600s \
+            env GH_TOKEN="$github_token" gh api \
+            repos/ThirdKeyAI/symbi-os/actions/artifacts/15066141540/zip |
+            PYTHONDONTWRITEBYTECODE=1 python3 \
+            -m image.container.ubuntu_fixture_inputs --root "$PWD" receive \
+            --output "$PWD/.cache/checked-runtime.zip" --maximum 529348296 \
+            --expected-bytes 529348296 \
+            --expected-sha256 bed79f624444c6dc0c3a5105facdcd9ad637a26f4fcd6cacb6e10544c36a0724
       - name: Authenticate inputs and run both complete fixture profiles
+        id: fixture_run
         run: bash scripts/check-container-fixtures.sh
       - name: Retain only public qualification evidence
-        if: always()
+        if: ${{ always() && steps.fixture_run.outputs.evidence_ready == 'true' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: container-fixture-evidence

@@ -44,6 +44,7 @@ class NativeFixtureInput(unittest.TestCase):
         output.addfile(row, io.BytesIO(raw))
 
     def oci_archive(self, path):
+        initial_target = "sha256:" + "a" * 64
         config_raw = json.dumps(
             {"architecture": "amd64", "os": "linux", "rootfs": {"type": "layers", "diff_ids": []}},
             sort_keys=True, separators=(",", ":"),
@@ -64,6 +65,9 @@ class NativeFixtureInput(unittest.TestCase):
                 "digest": "sha256:" + layer,
                 "size": len(layer_raw),
             }],
+            "annotations": {
+                inputs.SOURCE_TARGET_ANNOTATION: initial_target,
+            },
         }, sort_keys=True, separators=(",", ":")).encode()
         manifest = digest(manifest_raw)
         index_raw = json.dumps({
@@ -89,7 +93,8 @@ class NativeFixtureInput(unittest.TestCase):
                 ("blobs/sha256/" + layer, layer_raw),
             ):
                 self._tar_member(output, name, raw)
-        return "sha256:" + config, "sha256:" + manifest
+        self.assertNotIn(initial_target, {"sha256:" + config, "sha256:" + manifest})
+        return initial_target, "sha256:" + config, "sha256:" + manifest
 
     @staticmethod
     def write_bundle(path, manifest_raw, archive, extra=None):
@@ -116,7 +121,8 @@ class NativeFixtureInput(unittest.TestCase):
     def ready_fixture(self, directory):
         directory = Path(directory)
         archive = directory / inputs.ARCHIVE_NAME
-        image_id, manifest_digest = self.oci_archive(archive)
+        initial_target_digest, config_digest, generated_target_digest = (
+            self.oci_archive(archive))
         selection = copy.deepcopy(self.pending)
         selection.update(state="selected", selected=True)
         selection["workflow"]["id"] = 123
@@ -147,14 +153,20 @@ class NativeFixtureInput(unittest.TestCase):
             "fixture_source": self.source,
             "archive": archive_binding,
             "tested_image": {
-                "descriptor": "sha256:" + "7" * 64,
-                "config_digest": image_id,
+                "initial_target_digest": initial_target_digest,
+                "initial_target_media_type":
+                "application/vnd.oci.image.manifest.v1+json",
+                "config_digest": config_digest,
+                "config_media_type":
+                "application/vnd.oci.image.config.v1+json",
             },
             "image": {
                 "repository": inputs.IMAGE_REPOSITORY,
-                "image_id": image_id,
-                "manifest_digest": manifest_digest,
-                "repo_digest": inputs.IMAGE_REPOSITORY + "@" + manifest_digest,
+                "generated_target_digest": generated_target_digest,
+                "generated_target_media_type":
+                "application/vnd.oci.image.manifest.v1+json",
+                "repo_digest": inputs.IMAGE_REPOSITORY + "@"
+                + generated_target_digest,
             },
             "scope": inputs.MANIFEST_SCOPE,
         }
@@ -238,6 +250,19 @@ class NativeFixtureInput(unittest.TestCase):
             self.assertNotEqual(selection["producer"]["head_sha"],
                                 consumer["source_commit"])
 
+    def test_producer_and_artifact_api_integer_fields_reject_bool_aliases(self):
+        with tempfile.TemporaryDirectory() as directory:
+            selection, run, metadata, _, _, _ = self.ready_fixture(directory)
+            changed_run = copy.deepcopy(run)
+            changed_run["run_attempt"] = True
+            with self.assertRaises(ValueError):
+                inputs.validate_producer_metadata(changed_run, selection)
+            changed_metadata = copy.deepcopy(metadata)
+            selection["artifact"]["id"] = 1
+            changed_metadata["id"] = True
+            with self.assertRaises(ValueError):
+                inputs.validate_artifact_metadata(changed_metadata, selection)
+
     def test_exact_outer_members_inner_archive_and_oci_identity_are_verified(self):
         with tempfile.TemporaryDirectory() as directory:
             selection, run, metadata, bundle, _, manifest = self.ready_fixture(directory)
@@ -252,7 +277,7 @@ class NativeFixtureInput(unittest.TestCase):
             self.assertEqual(observed["producer_metadata"]["repository_full_name"],
                              inputs.REPOSITORY["full_name"])
             self.assertEqual(observed["oci"]["manifest_digest"],
-                             manifest["image"]["manifest_digest"])
+                             manifest["image"]["generated_target_digest"])
             self.assertEqual({path.name for path in destination.iterdir()},
                              {"manifest.json", inputs.ARCHIVE_NAME})
 
@@ -260,7 +285,7 @@ class NativeFixtureInput(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             selection, run, metadata, bundle, archive, manifest = self.ready_fixture(directory)
             changed = copy.deepcopy(manifest)
-            changed["image"]["image_id"] = "sha256:" + "9" * 64
+            changed["image"]["generated_target_digest"] = "sha256:" + "9" * 64
             raw = (json.dumps(changed, indent=2) + "\n").encode()
             selection["manifest"]["sha256"] = digest(raw)
             self.write_bundle(bundle, raw, archive)
@@ -272,7 +297,8 @@ class NativeFixtureInput(unittest.TestCase):
 
             selection, run, metadata, bundle, archive, manifest = self.ready_fixture(directory)
             changed = copy.deepcopy(manifest)
-            changed["tested_image"]["descriptor"] = changed["image"]["image_id"]
+            changed["tested_image"]["initial_target_digest"] = (
+                "sha256:" + "7" * 64)
             raw = (json.dumps(changed, indent=2) + "\n").encode()
             selection["manifest"]["sha256"] = digest(raw)
             self.write_bundle(bundle, raw, archive)
@@ -280,7 +306,7 @@ class NativeFixtureInput(unittest.TestCase):
             with self.assertRaises(ValueError):
                 inputs.consume_fixture_bundle(
                     bundle, selection, run, metadata,
-                    Path(directory) / "same-descriptor", self.source)
+                    Path(directory) / "wrong-descriptor", self.source)
 
             selection, run, metadata, bundle, archive, manifest = self.ready_fixture(directory)
             changed = copy.deepcopy(manifest)

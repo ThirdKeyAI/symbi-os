@@ -38,6 +38,7 @@ def runtimes(value):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--work', type=Path, required=True)
+    parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     if os.getuid() == 0 or os.environ.get('GITHUB_ACTIONS') != 'true' or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted':
         raise SystemExit('Run as the disposable hosted test account')
@@ -56,8 +57,9 @@ def main():
               'fixture_source_lock_sha256': setup['fixture_source_lock_sha256'],
               'binary_sha256': binary_hash, 'image_id': image_id,
               'scope': 'Hosted Ubuntu container tool-worker fixtures; no Fedora, managed-CLI or escape-suite qualification'}
-    evidence = work / 'public/fixtures'
-    evidence.mkdir()
+    evidence = args.output.resolve(strict=True)
+    assert evidence.is_dir() and not evidence.is_symlink()
+    assert evidence.parent == work and evidence.name == 'fixture-output'
     env = {'PATH': '/usr/bin:/bin', 'HOME': str(work / 'private/home'), 'LANG': 'C.UTF-8',
            'DOCKER_HOST': 'unix:///var/run/docker.sock', 'DOCKER_CONFIG': str(work / 'private/docker-client'),
            'PYTHONDONTWRITEBYTECODE': '1', 'TMPDIR': setup['fixture_tmp']}

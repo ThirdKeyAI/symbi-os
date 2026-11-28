@@ -224,25 +224,33 @@ and repository digest against the OCI layout. The consumer run has its own exact
 identity and need not equal the earlier producer commit. The existing producer
 workflow has not emitted this OCI, so the gate remains closed.
 
-A standard-library streaming exporter is prepared behind
-`native-fixture-build.lock.json`. It converts one Docker-save image only after
-checking the exact config digest, ordered uncompressed layer `diff_id` values,
-Linux/amd64 configuration, current manual-run identity and output cleanup. It
-writes byte-stable gzip/tar output for identical Docker-save input bytes,
-independently passes the result through
-the same bounded OCI unpacker as the consumer, and permits at most a 64 KiB
-manifest, 512 MiB compressed OCI and 1 GiB expanded OCI. It remains disabled.
-The current hosted image performs live `apt-get` resolution and the retained
-six-run evidence used upstream fixture commit
-`c1fac8aab6c5d399abb39036ba35b9636212e17f`. The hosted source lock now selects
-the native contract's merge
-`cd4b34282ade880c8ac3d5136d31ff80cde92794`, exact tree and driver hashes, but
-that selection has not run. Before activation, a separately
-reviewed signed Ubuntu package closure must be downloaded sequentially and the
-image built offline, the six profiles must run from the required merge, and a
-cold Docker load must resolve the image by its exact manifest digest. Artifact
-upload is also withheld. The committed prerequisite slot records all four
-blockers and keeps every qualification claim false.
+A standard-library streaming exporter is wired behind the pending public
+package selector and `native-fixture-build.lock.json` prerequisite gate. It
+converts one Docker-save image only after checking the ordered uncompressed
+layer `diff_id` values, Linux/amd64 configuration, current manual-run identity
+and output cleanup. It writes byte-stable gzip/tar output for identical
+Docker-save input bytes, independently passes the result through the same
+bounded OCI unpacker as the consumer, and permits at most a 64 KiB manifest,
+512 MiB compressed OCI and 1 GiB expanded OCI.
+
+The exporter binds three pairwise-distinct digests. `D0`, recorded as
+`initial_target_digest`, comes from `--iidfile` and must equal the initial
+Docker inspect `Id` and `Descriptor.digest`. `C`, recorded as `config_digest`,
+is the selected source manifest's config digest. `G`, recorded as
+`generated_target_digest`, is the deterministic generated manifest digest and
+carries a source-target annotation for `D0`. A cold load must resolve both
+Docker inspect `Id` and `Descriptor.digest` to `G`, with the exact repository
+digest `localhost/symbi-ci/native-fixture@G`.
+
+The fixture Dockerfile consumes only the exact selected package archives and
+builds with `--network=none`. The hosted source lock selects the native
+contract's merge `cd4b34282ade880c8ac3d5136d31ff80cde92794`, exact tree and
+driver hashes, and current-source execution has passing evidence; the separate
+source-alignment prerequisite remains a blocker. After package selection, the
+same run must build the image offline, pass all six profiles from the required
+merge, export and remove the tested image, and cold-load the generated OCI by
+`G`. Artifact upload remains withheld. The committed prerequisite slot records
+all four blockers and keeps every qualification claim false.
 
 The manual `containers` choice in the shared Fedora runtime workflow is a
 preflight skeleton. It verifies the retained signed gVisor Debian repository
@@ -412,3 +420,36 @@ pending lock is unchanged because it requires a separate reviewed selection;
 the unselected candidate cannot authorize its own consumption. Exact run,
 artifact, resource and proof-limit details are retained in
 [the compact record](../../docs/security/reports/P0-05-ubuntu-packages/46142528811/record.json).
+
+## Prepared offline package consumer gate
+
+The manual hosted fixture workflow now fails before artifact transfer unless a
+reviewed schema-2 selection binds the exact successful producer run, both
+artifact API records and archive digests, the candidate manifest, producer
+result, signed metadata, every package row and every retained member. The
+committed selector remains `pending`; its package inventory is empty and all
+selection, verification and qualification claims remain false.
+
+After that separate review, the consumer can materialize only those exact
+bytes. It stages the packages with sequence prefixes derived from the retained
+download order and refuses missing, repeated, renamed, linked or changed
+archives. The image build uses `--network=none`, unpacks each package in that
+order, configures the already unpacked set before the two exact Python
+Pre-Depends boundaries, and finishes with `dpkg --configure -a`. A successful
+run would provide native install, configuration, maintainer-script and trigger
+evidence for this development fixture only.
+
+After all evidence writes, the image normalizes only
+`/usr/share/symbi-fixture-evidence`: directories are mode `0755` and files are
+mode `0644`, so the unprivileged collector can traverse the complete nested
+evidence. The collector admits the existing report and signed InRelease types
+plus exactly `noble_main_binary-amd64_Packages.xz`,
+`noble-updates_main_binary-amd64_Packages.xz` and
+`noble-security_main_binary-amd64_Packages.xz`; every other `.xz` is rejected.
+
+The same run must still pass all six runc/runsc fixture profiles against the
+required source merge, export the tested image, remove it and cold-load the OCI
+by its manifest digest. Source alignment, cold-load evidence and explicit
+artifact-upload approval remain separate pending prerequisites. The workflow
+has no native OCI upload step, and none of these source changes selects or
+qualifies the retained candidate.

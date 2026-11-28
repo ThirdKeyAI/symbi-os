@@ -63,7 +63,7 @@
     "gvisor/Packages": "7f0fcea176b7c5f0294f9acf4b09cfe5892a31b9c2c7c31918e1f2afb6ae0c85",
     "gvisor/verified-metadata.json": "ad1a69d18555741eb87cc9a4b4c1d82a6d2c87e047e950b32cb540c2868cda58",
     "gvisor/Release": "c0a763c56538eaeb83f92bbb2225d54389d570efa2393a6427c545832bdb749a",
-    "fixture/Dockerfile": "bba59089ebfec6fbfb2b686a54391fac9c367739cca73a9b37f226e80755552c",
-    "fixture/.dockerignore": "d6ea7e57b51a8ce6c6614f631c68468f0cfdf5abce11be497fcf16f224791559"
+    "fixture/Dockerfile": "5956c43730e1831cc5582f648755b0289944a0dd363e79d148f2f192d73ab793",
+    "fixture/.dockerignore": "c727bcab14061f8eef55460e6c0208b7d1b6be8ed2eccfb4c0cfc6eea517a0f8"
   }
 }
