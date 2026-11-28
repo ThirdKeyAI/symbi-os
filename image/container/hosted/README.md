@@ -219,10 +219,13 @@ fresh exact-head run is required; every claim remains false.
 Production runs 46112459016 and 46112713726 subsequently stopped before any
 candidate when rolling noble-updates metadata no longer matched the reviewed
 pin. Discovery run 46112845334 was correctly blocked because the contract was
-still ready. The contract is now `pending-discovery` with every InRelease and
-Packages.xz byte/hash binding cleared. A fresh authenticated discovery and
-independent review are required before production can run again; locally
-observed current metadata is not used as a pin.
+still ready. The contract was returned to `pending-discovery` with all six
+payload identities cleared. Exact-head discovery run 46113900468 then
+authenticated the current three InRelease and three signed Packages.xz rows.
+Independent refetches matched all six identities, all signatures reverified,
+and the committed freshness and Release-row validators passed. The contract is
+now `ready` with those reviewed pins. Discovery downloaded no packages and
+created no candidate; production, selection and qualification remain pending.
 
 The wrapper creates a bounded
 transient unit for either mode; inside it, pending `produce` refuses before

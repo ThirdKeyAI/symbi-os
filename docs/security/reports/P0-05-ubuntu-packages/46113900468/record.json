@@ -1,0 +1,208 @@
+{
+  "artifact": {
+    "bytes": 13339,
+    "compressed_member_bytes": 10121,
+    "crc_passed": true,
+    "digest": "sha256:ea93d699316fc91cbcd1f29df090852899ea520b9ba78e3deee39dbc15396474",
+    "entries": 23,
+    "id": 15250242801,
+    "name": "container-ubuntu-fixture-package-evidence",
+    "safe_zip": {
+      "all_entries_regular_mode_0600": true,
+      "exact_member_set": true,
+      "no_absolute_or_parent_paths": true,
+      "no_casefold_or_normalization_collisions": true,
+      "no_duplicate_paths": true,
+      "no_encrypted_entries": true,
+      "no_links_or_special_nodes": true
+    },
+    "uncompressed_bytes": 44821
+  },
+  "audit": {
+    "archive_members_checked": 23,
+    "assertions_checked": 1078,
+    "assertions_completed_without_mismatch": 1078,
+    "artifact_content_executed": false,
+    "archive_members_match_already_extracted_tree": true,
+    "artifact_extracted_after_safety_checks": false,
+    "command_records_checked": 7,
+    "contract_and_lock_cross_bound": true,
+    "discovery_pin_rows_checked": 3,
+    "json_documents_checked": 6,
+    "json_strict_duplicate_free_finite": true,
+    "ledger_phases_checked": 15,
+    "raw_command_streams_checked": 14,
+    "raw_command_streams_match_descriptors": true,
+    "run_head_tree_cross_bound": true,
+    "runner_tools_live_reopened_after_run": false
+  },
+  "authenticated_inputs": {
+    "metadata": [
+      {
+        "inrelease": {
+          "bytes": 255850,
+          "sha256": "cdb2f31d809f589719a53c6ad15f255b27569c4059542ada282aaa21b8e164b0"
+        },
+        "packages_xz": {
+          "bytes": 1401160,
+          "sha256": "2a6a199e1031a5c279cb346646d594993f35b1c03dd4a82aaa0323980dd92451"
+        },
+        "release": {
+          "bytes": 254968,
+          "date": "2024-04-25T15:10:33Z",
+          "sha256": "26758a13cecfaff9ff274d31ea9a4633674a999bd130c09f6ecd66a4b8071184"
+        },
+        "signing_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C",
+        "suite": "noble"
+      },
+      {
+        "inrelease": {
+          "bytes": 126125,
+          "sha256": "9cbda1d9f46930f08664421bf29ef4b9fa79fed0e6db6fe46c4ab4b067e6b322"
+        },
+        "packages_xz": {
+          "bytes": 1492208,
+          "sha256": "9e6336a8322f908dbeddcd2de57f19d22756fb11f161458f04204914ba85e6ff"
+        },
+        "release": {
+          "bytes": 125243,
+          "date": "2026-11-28T04:17:55Z",
+          "sha256": "5cfe17dbfa68de7bc6235e5eb31a3b00feea745c4328cabd7310b9aafeeb766f"
+        },
+        "signing_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C",
+        "suite": "noble-updates"
+      },
+      {
+        "inrelease": {
+          "bytes": 126127,
+          "sha256": "a83c54bdbd784a0914b6cc94236c0a0a991cbbf2f3463d204a6d0dd57934cedf"
+        },
+        "packages_xz": {
+          "bytes": 1230772,
+          "sha256": "5c947649225178b587da69bd15724dff4d22d17d911f60abf7213534ea494a90"
+        },
+        "release": {
+          "bytes": 125245,
+          "date": "2026-11-28T02:50:56Z",
+          "sha256": "ec13cd2fef06bec15b3dc640e4babf9bd93d5d19658cb185225c2ea31cba03ae"
+        },
+        "signing_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C",
+        "suite": "noble-security"
+      }
+    ],
+    "rootfs": {
+      "bytes": 30028293,
+      "sha256": "e77b6f10c2590cef872b33ee9f635a0e3fd1f57fb074c0e52b5c7f56147a0c86"
+    },
+    "rootfs_checksum": {
+      "bytes": 1884,
+      "sha256": "30f23cec3a46679bcf21dbe0c0a0ab51440e9b2f5ac69b3ae1d4a7a71c0ffc69"
+    },
+    "rootfs_checksum_signature": {
+      "bytes": 833,
+      "sha256": "5164e25bab9ff0467fc83415c8f759bb79cbd4e0264b9a11f49ff1e6a10a4c1f",
+      "signing_fingerprint": "843938DF228D22F7B3742BC0D94AA3F0EFE21092"
+    }
+  },
+  "claims": {
+    "authoritative": false,
+    "candidate_emitted": false,
+    "container_qualified": false,
+    "os_qualified": false,
+    "producer_passed": false,
+    "qualified": false,
+    "release_qualified": false,
+    "selected": false,
+    "signature_qualified": false
+  },
+  "ledger": {
+    "bytes": 21106,
+    "last_kind": "packages-download",
+    "last_suite": "noble-security",
+    "phase_count": 15,
+    "schema": 2,
+    "sha256": "d47cadbbc84010365fc76f0508ffcefa45215984758e7b4a8bd22d46a88706b5",
+    "strict_sequence_end": 15,
+    "strict_sequence_start": 1
+  },
+  "outputs": {
+    "candidate_emitted": false,
+    "discovery_emitted": true,
+    "package_download_bytes": 0,
+    "package_download_count": 0,
+    "producer_result_emitted": true
+  },
+  "promotion": {
+    "contract_formatted_bytes": 3317,
+    "contract_formatted_sha256": "951add4ebb782e0194598c436af2b8b1d5879002007fc8764ddf28db1810eef0",
+    "contract_sha256": "8ec2f11530fde1d139a9e5e48722be51d5285c69277e00751246f8317516b2e0",
+    "independent_refetch_matched_all_six": true,
+    "inrelease_signatures_reverified": true,
+    "pins_promoted": true,
+    "release_freshness_and_index_rows_revalidated": true,
+    "state": "ready"
+  },
+  "provenance": {
+    "cgroup_final": {
+      "bytes": 815,
+      "sha256": "89f2b2df95d5264027b80ef492e525b01095a565766c2d2a264b0260608329bc"
+    },
+    "cleanup": {
+      "bytes": 262,
+      "sha256": "9412b54f4b12f0304051d3bdcba5e2e1ae69d5ee71b89cd4df58ea8f986f0dae"
+    },
+    "contract_sha256": "d6c32ad626c47c49fddc7536fb10ba8e9d37a70cb572bafd706fa258bb15a0ca",
+    "discovery": {
+      "bytes": 1331,
+      "sha256": "e7f2ee05d923e668d0b253241a3b256e0db9f5cf2405ee375d814dbc26226e55"
+    },
+    "lock_sha256": "94d6f84024639b880060ac93825b4d3f1408f9f3a73b6e8087faac1748268b6c",
+    "producer_result": {
+      "bytes": 17184,
+      "sha256": "42f27266ea49e4a13cdcdf5217508a895e3408f0a86fe367eb12c708540a1d76"
+    },
+    "verified_at": "2026-11-28T05:50:37Z"
+  },
+  "resources": {
+    "primary": {
+      "memory_current_bytes": 56565760,
+      "memory_events": {
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0
+      },
+      "memory_max_bytes": 2147483648,
+      "memory_peak_bytes": 56823808,
+      "memory_swap_current_bytes": 0,
+      "memory_swap_max_bytes": 0,
+      "memory_swap_peak_bytes": 0,
+      "pids_current": 1,
+      "pids_max": 128,
+      "pids_peak": 16,
+      "zero_swap": true
+    }
+  },
+  "retention": {
+    "candidate_present": false,
+    "post_unit_candidate_validated": false,
+    "private_work_retained": true,
+    "producer_exit_status": 0,
+    "recursive_path_cleanup_performed": false
+  },
+  "run": {
+    "attempt": 1,
+    "branch": "card/P0-05-package-producer",
+    "candidate_upload_step": "skipped",
+    "conclusion": "success",
+    "event": "workflow_dispatch",
+    "head_sha": "0eb94940fc81e4d0d39dc350f2796421b98de03f",
+    "head_tree": "7c0df44db1c6b31baa5f6f31ca2db97bb6a6aea4",
+    "id": 46113900468,
+    "job_id": 140883282636,
+    "mode": "discover",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46113900468",
+    "workflow": ".github/workflows/ubuntu-fixture-packages.yml"
+  },
+  "schema": 1,
+  "scope": "Authenticated discovery and independent refetch promoted to producer pins; no candidate, selection or qualification"
+}
