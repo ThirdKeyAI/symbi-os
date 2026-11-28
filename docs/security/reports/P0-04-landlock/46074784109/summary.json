@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "passed": false,
+  "qualified": false,
+  "run": {
+    "id": 46074784109,
+    "attempt": 1,
+    "head_branch": "card/P0-04-hosted-fix",
+    "head_sha": "06299fe23ca5e5f274f7252010763299e22f99d7",
+    "head_tree": "b047264ced26e4129c45d98beb8114de743fa68c",
+    "job_id": 140759951717,
+    "job_name": "qualify",
+    "conclusion": "failure",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46074784109"
+  },
+  "artifact": {
+    "id": 15239356081,
+    "name": "fedora-landlock-qualification",
+    "bytes": 96631,
+    "digest": "sha256:9fe0f87cf5678df5db16f063705aa4b5bedb9b25792f96fd90c307d96160604e",
+    "downloaded_zip_digest_matched": true,
+    "regular_members": 106,
+    "uncompressed_bytes": 419110,
+    "strict_json_or_jsonl_documents": 201,
+    "unsafe_duplicate_encrypted_special_or_crc_failed_members": 0
+  },
+  "bindings": {
+    "image_manifest_digest": "sha256:1dcf72c2e3eda7e5480269b1559e3b5527c77fdb70d28983d4e29baa03b8de6e",
+    "image_source_commit": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+    "runtime_source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+    "source_disk_sha256": "010a2dd0cfef4630e656be0b4526ac836313b16f0fac1e143a2e5bad2a771883"
+  },
+  "block_topology": {
+    "inventory_predicates_passed": 7,
+    "root_predicates_passed": 10,
+    "source_predicates_passed": 10,
+    "failed_predicates": 0,
+    "blocked_predicates": 0,
+    "raw_observed_values_retained": false,
+    "accepted": true
+  },
+  "observation": {
+    "real_root_udev_coldplug_completed": true,
+    "fixed_source_link": "/dev/disk/by-id/virtio-SYMBIQUAL",
+    "fixed_source_link_observed": false,
+    "device_wait_seconds": 30,
+    "source_filesystem_mounted": false,
+    "source_verification_service_started": false,
+    "guest_report_received": false,
+    "failure": "TimeoutError: Landlock guest did not report and power off within 95 minutes",
+    "first_exact_boundary": "The fixed source by-id link remained absent after completed udev coldplug and its 30-second device wait."
+  },
+  "resources": {
+    "second_guest_controller": {
+      "memory_max_bytes": 3221225472,
+      "memory_peak_bytes": 3221225472,
+      "memory_max_events": 1299,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0,
+      "swap_max_bytes": 0,
+      "cpu_quota": "200000 100000",
+      "pids_max": 64
+    }
+  },
+  "cleanup": {
+    "qmp_quit_sent": true,
+    "exact_qemu_exit_proven": true,
+    "qmp_socket_removed": true,
+    "overlay_removed": true,
+    "all_four_containers_removed_and_absent": true,
+    "loop_devices_absent": true,
+    "loaded_image_removed": true,
+    "private_storage_removed": true,
+    "private_runroot_removed": true
+  },
+  "correction": {
+    "image_owned_exact_serial_udev_rule_required": true,
+    "device_order_or_fixed_kernel_name_accepted": false,
+    "source_and_root_sysfs_serials_required": true,
+    "source_and_root_major_minor_must_differ": true,
+    "source_read_only_required": true,
+    "mount_and_manifest_binding_preserved": true,
+    "qmp_topology_contract_changed": false,
+    "new_image_build_and_native_rerun_required": true
+  },
+  "claims": {
+    "accepted_second_guest_boot": false,
+    "landlock_qualified": false,
+    "containment_qualified": false,
+    "os_qualified": false,
+    "release_qualified": false
+  }
+}

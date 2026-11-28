@@ -27,6 +27,40 @@ MAX_ARTIFACT_BYTES = 2 * 1024 * 1024
 MAX_TOTAL_ARTIFACT_BYTES = 12 * 1024 * 1024
 SOURCE_ROOT = Path("/run/symbi-qualification/source")
 SOURCE_RECORD = Path("/run/symbi-qualification/source-device.json")
+SOURCE_DEVICE_LINK = "/dev/disk/by-id/virtio-SYMBIQUAL"
+SOURCE_SERIAL = "SYMBIQUAL"
+ROOT_SERIAL = "SYMBIROOT"
+
+
+def _validate_recorded_block_identity(observed):
+    required = {
+        "link", "link_target", "path", "sysfs_name", "serial", "major_minor",
+        "read_only", "transport_subsystem", "transport_driver", "root_path",
+        "root_sysfs_name", "root_serial", "root_major_minor", "root_read_only",
+        "root_transport_subsystem", "root_transport_driver", "TYPE", "LABEL", "UUID",
+    }
+    name = observed.get("sysfs_name", "") if isinstance(observed, dict) else ""
+    root_name = observed.get("root_sysfs_name", "") if isinstance(observed, dict) else ""
+    if (not isinstance(observed, dict) or set(observed) != required
+            or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.!-]{0,127}", name) is None
+            or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.!-]{0,127}", root_name) is None
+            or observed.get("link") != SOURCE_DEVICE_LINK
+            or observed.get("link_target") != "../../" + name
+            or observed.get("path") != "/dev/" + name
+            or observed.get("root_path") != "/dev/" + root_name
+            or observed.get("path") == observed.get("root_path")
+            or observed.get("serial") != SOURCE_SERIAL
+            or observed.get("root_serial") != ROOT_SERIAL
+            or observed.get("read_only") is not True
+            or observed.get("root_read_only") is not False
+            or observed.get("transport_subsystem") != "virtio"
+            or observed.get("transport_driver") != "virtio_blk"
+            or observed.get("root_transport_subsystem") != "virtio"
+            or observed.get("root_transport_driver") != "virtio_blk"
+            or not canonical_major_minor(observed.get("major_minor"))
+            or not canonical_major_minor(observed.get("root_major_minor"))
+            or observed.get("major_minor") == observed.get("root_major_minor")):
+        raise ValueError("qualification source-device record differs")
 
 
 def sha256(path):
@@ -57,11 +91,8 @@ def validate_source_device(expected):
         raise ValueError("unsafe qualification source-device record")
     observed = unique_json(SOURCE_RECORD.read_bytes())
     source = expected.get("source_disk")
-    required = {"path", "major_minor", "TYPE", "LABEL", "UUID"}
-    if (not isinstance(source, dict) or not isinstance(observed, dict)
-            or set(observed) != required
-            or re.fullmatch(r"/dev/vd[a-z]{1,3}", observed.get("path", "")) is None
-            or not canonical_major_minor(observed.get("major_minor"))
+    _validate_recorded_block_identity(observed)
+    if (not isinstance(source, dict)
             or observed.get("TYPE") != source.get("filesystem")
             or observed.get("LABEL") != source.get("label")
             or observed.get("UUID") != source.get("uuid")):

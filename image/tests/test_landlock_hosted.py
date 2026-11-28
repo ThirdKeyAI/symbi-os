@@ -55,7 +55,12 @@ from image.qualification.symbi_mountinfo import (observe_mountinfo,
                                                  read_mountinfo,
                                                  read_visible_mount_id,
                                                  validate_mount_observation)
-from image.qualification.source_mount import validate_source_identity
+from image.qualification.source_mount import (EXPECTED_UDEV_RULE,
+                                              observe_block_inventory,
+                                              validate_block_identity,
+                                              validate_installed_udev_rule,
+                                              validate_source_identity,
+                                              validate_udev_rule)
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -129,7 +134,18 @@ class HostedLandlock(unittest.TestCase):
             "binary_sha256": expected["binary_sha256"],
             "image_ref": expected["image_ref"],
             "landlock_abi": 6,
-            "source_device": {"path": "/dev/vdb", "major_minor": "252:16",
+            "source_device": {"link": "/dev/disk/by-id/virtio-SYMBIQUAL",
+                              "link_target": "../../vdb",
+                              "path": "/dev/vdb", "sysfs_name": "vdb",
+                              "serial": "SYMBIQUAL", "major_minor": "252:16",
+                              "read_only": True,
+                              "transport_subsystem": "virtio",
+                              "transport_driver": "virtio_blk",
+                              "root_path": "/dev/vda", "root_sysfs_name": "vda",
+                              "root_serial": "SYMBIROOT",
+                              "root_major_minor": "252:0", "root_read_only": False,
+                              "root_transport_subsystem": "virtio",
+                              "root_transport_driver": "virtio_blk",
                               "TYPE": "ext4",
                               "LABEL": "SYMBIQUAL",
                               "UUID": expected["source_disk"]["uuid"]},
@@ -149,6 +165,27 @@ class HostedLandlock(unittest.TestCase):
                                   "zlib_bytes": len(compressed),
                                   "zlib_base64": base64.b64encode(compressed).decode()}},
         }
+
+    def block_identity_fixture(self):
+        row = lambda name, serial, major_minor, read_only: {
+            "name": name,
+            "path": "/dev/" + name,
+            "serial": serial,
+            "major_minor": major_minor,
+            "node_major_minor": major_minor,
+            "read_only": read_only,
+            "whole_disk": True,
+            "subsystem": "virtio",
+            "driver": "virtio_blk",
+            "node_block": True,
+            "node_uid": 0,
+            "node_nlink": 1,
+        }
+        inventory = [row("vda", "SYMBIROOT", "252:0", False),
+                     row("vdb", "SYMBIQUAL", "252:16", True)]
+        link = {"is_symlink": True, "uid": 0, "gid": 0, "nlink": 1,
+                "target": "../../vdb", "resolved": "/dev/vdb"}
+        return inventory, link
 
     def test_firmware_transport_contains_only_fixed_units_and_inputs(self):
         args = firmware_arguments(Path("/inputs"))
@@ -457,6 +494,117 @@ class HostedLandlock(unittest.TestCase):
             with self.subTest(changes=changes), self.assertRaisesRegex(
                     ValueError, message):
                 inspect_host(**changes)
+
+    def test_image_owned_source_rule_is_exact_and_required(self):
+        rule_path = (ROOT / "image/overlay/usr/lib/udev/rules.d/"
+                     "61-symbi-qualification-source.rules")
+        raw = rule_path.read_text()
+        self.assertEqual(validate_udev_rule(raw), EXPECTED_UDEV_RULE)
+        hardener = (ROOT / "image/harden-image.sh").read_text()
+        digest = hashlib.sha256(rule_path.read_bytes()).hexdigest()
+        self.assertIn("61-symbi-qualification-source.rules", hardener)
+        self.assertIn("qualification_rule_sha256=" + digest, hardener)
+        self.assertIn('sha256sum < "$qualification_rule"', hardener)
+        mutations = {
+            "broad serial": raw.replace('ATTR{serial}=="SYMBIQUAL"',
+                                        'ATTR{serial}=="?*"'),
+            "parent serial": raw.replace('ATTR{serial}=="SYMBIQUAL"',
+                                         'ATTRS{serial}=="SYMBIQUAL"'),
+            "dynamic link": raw.replace("virtio-SYMBIQUAL", "virtio-$attr{serial}", 1),
+            "all transports": raw.replace(', DRIVERS=="virtio_blk"', ""),
+            "partitions": raw.replace('ENV{DEVTYPE}=="disk"', 'ENV{DEVTYPE}=="partition"'),
+            "extra rule": raw + raw,
+            "suffix without final newline": raw + "BROKEN",
+        }
+        for name, changed in mutations.items():
+            with self.subTest(name=name):
+                self.assertNotEqual(hashlib.sha256(changed.encode()).hexdigest(), digest)
+                with self.assertRaisesRegex(ValueError, "udev rule"):
+                    validate_udev_rule(changed)
+        with self.assertRaisesRegex(ValueError, "rule is absent"):
+            validate_installed_udev_rule(
+                Path("/usr/lib/udev/rules.d/61-symbi-missing-fixture.rules"))
+
+    def test_source_block_identity_uses_exact_serial_not_device_order(self):
+        inventory, link = self.block_identity_fixture()
+        self.assertEqual(validate_block_identity(inventory, link), {
+            "link": "/dev/disk/by-id/virtio-SYMBIQUAL",
+            "link_target": "../../vdb",
+            "path": "/dev/vdb",
+            "sysfs_name": "vdb",
+            "serial": "SYMBIQUAL",
+            "major_minor": "252:16",
+            "read_only": True,
+            "transport_subsystem": "virtio",
+            "transport_driver": "virtio_blk",
+            "root_path": "/dev/vda",
+            "root_sysfs_name": "vda",
+            "root_serial": "SYMBIROOT",
+            "root_major_minor": "252:0",
+            "root_read_only": False,
+            "root_transport_subsystem": "virtio",
+            "root_transport_driver": "virtio_blk",
+        })
+        reversed_inventory = list(reversed(inventory))
+        self.assertEqual(validate_block_identity(reversed_inventory, link)["path"],
+                         "/dev/vdb")
+
+    def test_source_inventory_reads_the_block_event_serial(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            sys_block = root / "sys/class/block"
+            dev_root = root / "dev"
+            entry = sys_block / "vda"
+            (entry / "device").mkdir(parents=True)
+            dev_root.mkdir()
+            (entry / "serial").write_text("SYMBIROOT")
+            (entry / "device/serial").write_text("WRONG-PARENT")
+            (entry / "dev").write_text("252:0\n")
+            (entry / "ro").write_text("0\n")
+            (dev_root / "vda").touch()
+            rows = observe_block_inventory(sys_block, dev_root)
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0]["serial"], "SYMBIROOT")
+            (entry / "serial").unlink()
+            self.assertEqual(observe_block_inventory(sys_block, dev_root), [])
+
+    def test_source_block_identity_rejects_adversarial_aliases(self):
+        inventory, link = self.block_identity_fixture()
+        cases = {}
+        cases["absent source"] = (inventory[:1], link)
+        duplicate = copy.deepcopy(inventory)
+        duplicate.append({**duplicate[1], "name": "vdc", "path": "/dev/vdc",
+                          "major_minor": "252:32", "node_major_minor": "252:32"})
+        cases["duplicate source serial"] = (duplicate, link)
+        wrong_serial = copy.deepcopy(inventory)
+        wrong_serial[1]["serial"] = "WRONG"
+        cases["wrong source serial"] = (wrong_serial, link)
+        root_alias = copy.deepcopy(inventory)
+        root_alias[1]["major_minor"] = root_alias[0]["major_minor"]
+        root_alias[1]["node_major_minor"] = root_alias[0]["major_minor"]
+        cases["root major alias"] = (root_alias, link)
+        cases["link points at root"] = (
+            inventory, {**link, "target": "../../vda", "resolved": "/dev/vda"})
+        cases["absolute preexisting link"] = (
+            inventory, {**link, "target": "/dev/vdb"})
+        cases["non-symlink source path"] = (
+            inventory, {**link, "is_symlink": False})
+        non_block = copy.deepcopy(inventory)
+        non_block[1]["node_block"] = False
+        non_block[1]["node_major_minor"] = None
+        cases["non-block target"] = (non_block, link)
+        wrong_major = copy.deepcopy(inventory)
+        wrong_major[1]["node_major_minor"] = "252:17"
+        cases["mismatched major minor"] = (wrong_major, link)
+        writable = copy.deepcopy(inventory)
+        writable[1]["read_only"] = False
+        cases["writable source"] = (writable, link)
+        partition = copy.deepcopy(inventory)
+        partition[1]["whole_disk"] = False
+        cases["source partition"] = (partition, link)
+        for name, (changed_inventory, changed_link) in cases.items():
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                validate_block_identity(changed_inventory, changed_link)
 
     def test_source_identity_and_controller_cleanup_fail_closed(self):
         expected = self.expected()["source_disk"]
@@ -1497,11 +1645,23 @@ class HostedLandlock(unittest.TestCase):
                                   "1" * 64, "2" * 64, "3" * 64)
 
     def test_guest_source_device_binding_is_required(self):
-        report = self.report()
-        report["source_device"]["UUID"] = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
-        with self.assertRaisesRegex(ValueError, "source-device"):
-            validate_guest_report(report, self.expected(), "f" * 64, "1" * 64,
-                                  "2" * 64, "3" * 64)
+        mutations = {
+            "filesystem UUID": ("UUID", "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+            "source serial": ("serial", "OTHER"),
+            "root serial": ("root_serial", "OTHER"),
+            "source read only": ("read_only", False),
+            "root alias": ("root_major_minor", "252:16"),
+            "link target": ("link_target", "../../vda"),
+            "transport": ("transport_driver", "other"),
+            "root transport": ("root_transport_driver", "other"),
+        }
+        for name, (field, value) in mutations.items():
+            with self.subTest(name=name):
+                report = self.report()
+                report["source_device"][field] = value
+                with self.assertRaisesRegex(ValueError, "source-device"):
+                    validate_guest_report(report, self.expected(), "f" * 64,
+                                          "1" * 64, "2" * 64, "3" * 64)
 
     def test_landlock_controller_uses_only_its_fixed_extended_runner(self):
         command = self.landlock_controller_command()

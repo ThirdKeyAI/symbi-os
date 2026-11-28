@@ -43,3 +43,14 @@ for unit in abrtd.service abrt-journal-core.service abrt-oops.service abrt-xorg.
 done
 chmod 0755 /usr/libexec/symbi-seed-config /usr/libexec/symbi-desktop-session
 chmod 0644 /etc/profile.d/symbi-privacy.sh
+qualification_rule=/usr/lib/udev/rules.d/61-symbi-qualification-source.rules
+qualification_rule_sha256=e3017893118981d02bf4e37ba079abe6362c06d856b63a0175fed7ea125fe01e
+[[ -f "$qualification_rule" && ! -L "$qualification_rule" ]] || {
+  printf 'Fixed qualification source-device rule is absent.\n' >&2
+  exit 1
+}
+[[ $(sha256sum < "$qualification_rule") == "$qualification_rule_sha256  -" ]] || {
+  printf 'Fixed qualification source-device rule differs.\n' >&2
+  exit 1
+}
+chmod 0644 "$qualification_rule"
