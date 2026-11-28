@@ -1,0 +1,31 @@
+name: Atomic image preflight
+
+on:
+  workflow_dispatch:
+    inputs:
+      variant:
+        description: Exact retained development image to inspect without installing or booting
+        required: true
+        default: generic
+        type: choice
+        options: [generic, nvidia]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: atomic-image-preflight-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  registration-only:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Refuse image inspection from the registration stub
+        shell: bash
+        run: |
+          echo 'The default-branch workflow only registers this manual entry point.' >&2
+          echo 'Select an independently reviewed preflight branch; this stub never downloads or inspects images.' >&2
+          exit 1
