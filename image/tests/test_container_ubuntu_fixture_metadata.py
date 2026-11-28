@@ -19,6 +19,7 @@ import zipfile
 from image.container import ubuntu_fixture_metadata as metadata
 from image.container import ubuntu_fixture_package_hosted as hosted
 from image.container import ubuntu_fixture_packages as packages
+from image.container import ubuntu_fixture_inputs as inputs
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -46,7 +47,47 @@ class Response(io.BytesIO):
 
 class RetainedUbuntuMetadataTests(unittest.TestCase):
     def setUp(self):
-        self.committed, self.lock = hosted.load_contract(ROOT)
+        self.committed = packages.unique_json(
+            ROOT, "image/container/ubuntu-fixture-package-producer.json")
+        selection = packages.unique_json(
+            ROOT, "image/container/ubuntu-fixture-packages.lock.json",
+            inputs.MAX_SELECTION_BYTES)
+        inputs.validate_selected_lock(ROOT, selection)
+        self.lock = copy.deepcopy(selection)
+        self.lock.update(
+            state="pending", selected=False, scope=inputs.PENDING_SCOPE)
+        self.lock["workflow"]["id"] = None
+        self.lock["run"] = {
+            "id": None, "attempt": None, "head_sha": None,
+            "head_branch": None, "status": "pending", "conclusion": None,
+            "repository": copy.deepcopy(selection["repository"]),
+            "head_repository": copy.deepcopy(selection["repository"]),
+        }
+        for kind, name in (
+                ("candidate", packages.ARTIFACT_NAME),
+                ("evidence", inputs.EVIDENCE_ARTIFACT_NAME)):
+            self.lock["artifacts"][kind] = {
+                "api": {
+                    "id": None, "name": name, "size_in_bytes": None,
+                    "digest": None, "expired": None, "workflow_run": None,
+                },
+                "zip": {"bytes": None, "sha256": None},
+            }
+        self.lock["candidate"] = {
+            "manifest": {
+                "path": "manifest.json", "bytes": None, "sha256": None,
+            },
+            "producer_contract_sha256": None,
+            "release_metadata": [], "package_indexes": [],
+            "package_count": 0, "package_bytes": 0, "packages": [],
+        }
+        self.lock["evidence"] = {
+            "producer_result": {
+                "path": "producer-result.json", "bytes": None, "sha256": None,
+            },
+            "members": [],
+        }
+        inputs.validate_pending_lock(ROOT, self.lock)
         self.assertEqual(self.committed["state"], "ready")
         self.pending = copy.deepcopy(self.committed)
         self.pending["state"] = "pending-discovery"

@@ -15,6 +15,7 @@ import yaml
 
 from image.container import ubuntu_fixture_package_hosted as hosted
 from image.container import ubuntu_fixture_packages as packages
+from image.container import ubuntu_fixture_inputs as inputs
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -54,6 +55,43 @@ def synthetic_pending_contract(contract):
     return pending
 
 
+def synthetic_pending_selection(selection):
+    """Build the empty selection boundary used by producer-only tests."""
+    pending = copy.deepcopy(selection)
+    pending.update(state="pending", selected=False, scope=inputs.PENDING_SCOPE)
+    pending["workflow"]["id"] = None
+    pending["run"] = {
+        "id": None, "attempt": None, "head_sha": None,
+        "head_branch": None, "status": "pending", "conclusion": None,
+        "repository": copy.deepcopy(selection["repository"]),
+        "head_repository": copy.deepcopy(selection["repository"]),
+    }
+    for kind, name in (
+            ("candidate", packages.ARTIFACT_NAME),
+            ("evidence", inputs.EVIDENCE_ARTIFACT_NAME)):
+        pending["artifacts"][kind] = {
+            "api": {
+                "id": None, "name": name, "size_in_bytes": None,
+                "digest": None, "expired": None, "workflow_run": None,
+            },
+            "zip": {"bytes": None, "sha256": None},
+        }
+    pending["candidate"] = {
+        "manifest": {"path": "manifest.json", "bytes": None, "sha256": None},
+        "producer_contract_sha256": None,
+        "release_metadata": [], "package_indexes": [],
+        "package_count": 0, "package_bytes": 0, "packages": [],
+    }
+    pending["evidence"] = {
+        "producer_result": {
+            "path": "producer-result.json", "bytes": None, "sha256": None,
+        },
+        "members": [],
+    }
+    inputs.validate_pending_lock(ROOT, pending)
+    return pending
+
+
 class FakeResponse:
     status = 200
 
@@ -82,9 +120,19 @@ class FakeResponse:
 
 class UbuntuHostedProducerTests(unittest.TestCase):
     def setUp(self):
-        self.committed_contract, self.lock = hosted.load_contract(ROOT)
+        self.committed_contract = packages.unique_json(
+            ROOT, "image/container/ubuntu-fixture-package-producer.json")
+        self.selection = packages.unique_json(
+            ROOT, "image/container/ubuntu-fixture-packages.lock.json",
+            inputs.MAX_SELECTION_BYTES)
+        inputs.validate_selected_lock(ROOT, self.selection)
+        self.lock = synthetic_pending_selection(self.selection)
         self.contract = synthetic_pending_contract(self.committed_contract)
         hosted.validate_contract(ROOT, self.contract, self.lock)
+
+    def test_selected_public_lock_freezes_the_producer_entrypoint(self):
+        with self.assertRaises(ValueError):
+            hosted.load_contract(ROOT)
 
     def hosted_environment(self):
         return {

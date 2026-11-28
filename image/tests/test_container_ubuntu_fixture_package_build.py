@@ -142,9 +142,15 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             self.release, self.source, NOW,
             build.expected_freshness_policy(self.source))
 
-    def candidate_fixture(self):
-        lock = packages.unique_json(
+    @staticmethod
+    def producer_lock():
+        selection = packages.unique_json(
             ROOT, "image/container/ubuntu-fixture-packages.lock.json")
+        inputs.validate_selected_lock(ROOT, selection)
+        return inputs.producer_contract(selection)
+
+    def candidate_fixture(self):
+        lock = self.producer_lock()
         versions = {
             "python3": "3.12.3-0ubuntu2",
             "git": "1:2.43.0-1ubuntu7.1",
@@ -272,8 +278,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         return plan, package_rows
 
     def synthetic_rootfs_lock(self, archive):
-        lock = packages.unique_json(
-            ROOT, "image/container/ubuntu-fixture-packages.lock.json")
+        lock = self.producer_lock()
         rootfs = copy.deepcopy(packages.EXPECTED_ROOTFS)
         rootfs["bytes"] = archive.stat().st_size
         rootfs["sha256"] = hashlib.sha256(archive.read_bytes()).hexdigest()
@@ -1922,8 +1927,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         })
 
     def test_rootfs_status_rejects_caller_binding_and_bad_lock_before_open(self):
-        lock = packages.unique_json(
-            ROOT, "image/container/ubuntu-fixture-packages.lock.json")
+        lock = self.producer_lock()
         path = Path("/tmp") / packages.ROOTFS_ARCHIVE
         invalid = []
         extra = copy.deepcopy(lock)

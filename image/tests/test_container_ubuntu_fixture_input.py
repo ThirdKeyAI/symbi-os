@@ -31,6 +31,78 @@ FALSE_CLAIMS = (
 )
 
 
+def pending_selection_fixture(selection):
+    """Project immutable request fields into an empty review slot for tests."""
+    return {
+        "schema": 2,
+        "state": "pending",
+        "selected": False,
+        **{field: False for field in inputs.FALSE_CLAIM_FIELDS},
+        "repository": copy.deepcopy(selection["repository"]),
+        "workflow": {
+            "id": None,
+            "path": inputs.WORKFLOW_PATH,
+            "event": inputs.WORKFLOW_EVENT,
+        },
+        "run": {
+            "id": None,
+            "attempt": None,
+            "head_sha": None,
+            "head_branch": None,
+            "status": "pending",
+            "conclusion": None,
+            "repository": copy.deepcopy(selection["repository"]),
+            "head_repository": copy.deepcopy(selection["repository"]),
+        },
+        "artifacts": {
+            "candidate": {
+                "api": {
+                    "id": None,
+                    "name": packages.ARTIFACT_NAME,
+                    "size_in_bytes": None,
+                    "digest": None,
+                    "expired": None,
+                    "workflow_run": None,
+                },
+                "zip": {"bytes": None, "sha256": None},
+            },
+            "evidence": {
+                "api": {
+                    "id": None,
+                    "name": inputs.EVIDENCE_ARTIFACT_NAME,
+                    "size_in_bytes": None,
+                    "digest": None,
+                    "expired": None,
+                    "workflow_run": None,
+                },
+                "zip": {"bytes": None, "sha256": None},
+            },
+        },
+        "rootfs": copy.deepcopy(selection["rootfs"]),
+        "package_request": copy.deepcopy(selection["package_request"]),
+        "sources": copy.deepcopy(selection["sources"]),
+        "fixture_source": copy.deepcopy(selection["fixture_source"]),
+        "candidate": {
+            "manifest": {
+                "path": "manifest.json", "bytes": None, "sha256": None,
+            },
+            "producer_contract_sha256": None,
+            "release_metadata": [],
+            "package_indexes": [],
+            "package_count": 0,
+            "package_bytes": 0,
+            "packages": [],
+        },
+        "evidence": {
+            "producer_result": {
+                "path": "producer-result.json", "bytes": None, "sha256": None,
+            },
+            "members": [],
+        },
+        "scope": inputs.PENDING_SCOPE,
+    }
+
+
 def digest(raw):
     return hashlib.sha256(raw).hexdigest()
 
@@ -67,9 +139,12 @@ def write_zip(path, members):
 
 class UbuntuFixtureInputContract(unittest.TestCase):
     def setUp(self):
-        self.pending = packages.unique_json(
+        self.selected = packages.unique_json(
             ROOT, "image/container/ubuntu-fixture-packages.lock.json",
             inputs.MAX_SELECTION_BYTES)
+        inputs.validate_selected_lock(ROOT, self.selected)
+        self.pending = pending_selection_fixture(self.selected)
+        inputs.validate_pending_lock(ROOT, self.pending)
 
     @staticmethod
     def _root(directory):
@@ -309,24 +384,20 @@ class UbuntuFixtureInputContract(unittest.TestCase):
             fixture["evidence_zip"] if evidence_zip is None else evidence_zip,
             destination, available_bytes=16 * 1024**3)
 
-    def test_committed_schema_two_slot_is_exactly_pending_and_all_false(self):
-        self.assertEqual(inputs.validate_pending_lock(
-            ROOT, copy.deepcopy(self.pending)), {
-                "ready": False, "status": "pending",
-                "blocker": "offline-ubuntu-package-selection",
+    def test_committed_schema_two_selection_is_exact_and_all_claims_false(self):
+        self.assertEqual(inputs.validate_selected_lock(
+            ROOT, copy.deepcopy(self.selected)), {
+                "ready": True, "status": "selected", "blocker": None,
             })
-        self.assertEqual(self.pending["schema"], 2)
-        self.assertIs(self.pending["selected"], False)
+        self.assertEqual(self.selected["schema"], 2)
+        self.assertIs(self.selected["selected"], True)
         for field in FALSE_CLAIMS:
-            self.assertIs(self.pending[field], False)
-        self.assertIsNone(self.pending["run"]["id"])
-        for artifact in self.pending["artifacts"].values():
-            self.assertIsNone(artifact["api"]["id"])
-            self.assertIsNone(artifact["zip"]["sha256"])
-        self.assertEqual(self.pending["candidate"]["packages"], [])
-        self.assertEqual(self.pending["evidence"]["members"], [])
+            self.assertIs(self.selected[field], False)
+        self.assertEqual(self.selected["run"]["id"], 46142528811)
+        self.assertEqual(self.selected["candidate"]["package_count"], 68)
+        self.assertGreater(len(self.selected["evidence"]["members"]), 0)
 
-    def test_pending_mutations_cannot_invent_run_artifacts_rows_or_claims(self):
+    def test_synthetic_pending_mutations_cannot_invent_run_artifacts_rows_or_claims(self):
         mutations = []
         for field in ("selected", *FALSE_CLAIMS):
             changed = copy.deepcopy(self.pending)
@@ -978,7 +1049,7 @@ class UbuntuFixtureInputContract(unittest.TestCase):
                         len(raw) + inputs.TRANSFER_FREE_RESERVE - 1))
             self.assertFalse(no_space.exists())
 
-    def test_public_check_and_transfer_order_fail_closed_while_pending(self):
+    def test_public_check_reports_selection_and_transfer_order_stays_fail_closed(self):
         script = ROOT / "scripts/check-container-ubuntu-packages.sh"
         checked = subprocess.run(
             ["bash", str(script), "check"], cwd=ROOT,
@@ -986,7 +1057,8 @@ class UbuntuFixtureInputContract(unittest.TestCase):
             text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
             check=False)
         self.assertEqual(checked.returncode, 0, checked.stderr)
-        self.assertIn('"ready": false', checked.stdout)
+        self.assertIn('"ready": true', checked.stdout)
+        self.assertIn('"status": "selected"', checked.stdout)
         blocked = subprocess.run(
             ["bash", str(script), "consume"], cwd=ROOT,
             env={"PATH": "/usr/bin:/bin", "PYTHONDONTWRITEBYTECODE": "1"},
