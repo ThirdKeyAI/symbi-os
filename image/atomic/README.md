@@ -9,22 +9,28 @@ The ordinary Atomic workflow now extends that harness through an exact retained
 predecessor, signed switch and booted rollback. Passing it does not establish
 desktop, sandbox, release or NVIDIA qualification.
 
-The current prerequisite passed in [preflight 45910498271](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45910498271)
-at `4f435550c1ab63de6adadb2c028f832d53d88255` against the exact generic image
-built at `d436c6ee8a7ed159afa59db9bd82377ae8ea2389`: complete saved-archive
-identity, 212 installed files, 2,184 packages, protected kernel/initramfs hashes,
-bootc options, exact secureblue/Fedora identity and enforcing trust
-configuration. The hosted artifact retains all 41 original small files. The repository
-retains the two decision reports and a reconciliation binding the complete
-artifact identity and hashes. The earlier accepted prerequisite `45804599421` describes the
-predecessor image and remains part of the rollback input. Older failed runs
-remain failed: protected-initramfs access in `45799924739`, then incorrect
-OS/default-filesystem assumptions in `45802753036`. The latter showed that
-bootc has no configured filesystem default; this disposable test explicitly
-chooses Btrfs. That choice does not silently define the product installer.
+The current generic image target is retained run
+[`46091256475`](https://github.com/ThirdKeyAI/symbi-os/actions/runs/46091256475)
+at `22c751096e47d2f5ff74d8e5963a7079fa24576f`, with 213 installed files and
+2,184 packages in its reviewed evidence. The combined desktop-image lock preserves
+the newer NVIDIA entry and has SHA-256
+`f11b8051e38a66b13b89beb7e5e77bcb0c8ac3a2c155d0258e41025f11a0962b`.
 
-`preflight.lock.json` binds the successful prerequisite to its original report
-bytes. The current workflow repeats the exact artifact intake. `contract.py`
+No Atomic preflight is selected for that combined lock. Reviewed preflight
+[`46094435550`](https://github.com/ThirdKeyAI/symbi-os/actions/runs/46094435550)
+at `a04cea9737eba9650695f7461fe9e96503695d01` covered the target generic image,
+but its complete desktop-image lock had SHA-256
+`4c4c49db576f9df9fa4a58cbaa6cd5f7b2bec07014a7740829edb0bc3229c0d6`
+and its verifier predates the integrated head. Its reports are retained as
+historical evidence and are explicitly unselected. `preflight.lock.json` leaves all
+installation, boot, Landlock, OS, signature, and release claims false until a fresh
+generic preflight is run and reviewed at the integrated head. The strict validator
+therefore refuses installation with the pending marker.
+
+Historical prerequisite `45910498271` remains an archived regression fixture for
+the earlier `d436c6ee8a7ed159afa59db9bd82377ae8ea2389` generic image; it is not a
+current selection. The workflow repeats exact artifact intake after a valid current
+selection exists. `contract.py`
 streams only OCI metadata and content-addressed blobs from the authenticated
 saved archive; it never extracts filesystem paths from a layer. Every blob,
 descriptor, manifest and configuration identity is checked, including rejection

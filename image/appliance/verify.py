@@ -178,6 +178,81 @@ def interactive_device_observation():
     }
 
 
+def user_systemctl(*arguments, check=True, timeout=60):
+    return run([
+        "/usr/sbin/runuser", "-u", USERNAME, "--", "/usr/bin/env",
+        "XDG_RUNTIME_DIR=/run/user/1000",
+        "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus",
+        "/usr/bin/systemctl", "--user", *arguments,
+    ], check=check, timeout=timeout)
+
+
+def observe_bounded_walker(uid):
+    """Launch Walker through a bounded transient unit and prove it then stopped."""
+    unit = "symbi-appliance-walker.service"
+    executable = "/usr/bin/walker"
+    timeout_seconds = 30
+    limits = {
+        "memory_max": "512M", "memory_swap_max": "0", "cpu_quota": "100%",
+        "tasks_max": "64", "runtime_max_seconds": "60",
+        "no_new_privileges": "yes",
+    }
+    if executable in user_executables(uid):
+        raise ValueError("Walker was already running before the bounded launch")
+    user_systemctl("reset-failed", unit, check=False)
+    launch_error = None
+    observed = False
+    stop_succeeded = False
+    stopped = False
+    try:
+        run([
+            "/usr/sbin/runuser", "-u", USERNAME, "--", "/usr/bin/env",
+            "XDG_RUNTIME_DIR=/run/user/1000",
+            "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus",
+            "/usr/bin/systemd-run", "--user", "--collect", "--service-type=exec",
+            "--unit=" + unit,
+            "--property=MemoryMax=" + limits["memory_max"],
+            "--property=MemorySwapMax=" + limits["memory_swap_max"],
+            "--property=CPUQuota=" + limits["cpu_quota"],
+            "--property=TasksMax=" + limits["tasks_max"],
+            "--property=RuntimeMaxSec=" + limits["runtime_max_seconds"],
+            "--property=NoNewPrivileges=" + limits["no_new_privileges"],
+            executable,
+        ], timeout=timeout_seconds)
+        deadline = time.monotonic() + timeout_seconds
+        while time.monotonic() < deadline:
+            if executable in user_executables(uid):
+                observed = True
+                break
+            time.sleep(1)
+        if not observed:
+            raise ValueError("Walker was not observed after its bounded launch")
+    except Exception as error:
+        launch_error = error
+    finally:
+        stop_result = user_systemctl("stop", unit, check=False, timeout=timeout_seconds)
+        stop_succeeded = (type(stop_result.returncode) is int
+                          and stop_result.returncode == 0)
+        deadline = time.monotonic() + timeout_seconds
+        while time.monotonic() < deadline:
+            if executable not in user_executables(uid):
+                stopped = True
+                break
+            time.sleep(1)
+        user_systemctl("reset-failed", unit, check=False)
+    if not stop_succeeded:
+        raise ValueError("Walker transient unit did not stop successfully") from launch_error
+    if launch_error is not None:
+        raise ValueError("Bounded Walker launch failed") from launch_error
+    if not stopped:
+        raise ValueError("Walker remained after the bounded launch was stopped")
+    return {
+        "unit": unit, "executable": executable, "observed": observed,
+        "stop_succeeded": stop_succeeded, "stopped": stopped,
+        "timeout_seconds": timeout_seconds, "limits": limits,
+    }
+
+
 def main():
     product = Path("/sys/class/dmi/id/product_name").read_text().strip()
     if (os.geteuid() != 0 or product != "Symbi-Interactive-Appliance"
@@ -277,6 +352,10 @@ def main():
         raise ValueError("The graphical VM is missing a virtio display, keyboard or pointer")
     if not verify_seed(expected, account):
         raise ValueError("First-login defaults were not seeded exactly")
+    walker_launch = observe_bounded_walker(account.pw_uid)
+    executables = user_executables(account.pw_uid)
+    if not (session_executables | {portal_executable}).issubset(executables):
+        raise ValueError("Desktop session changed during the bounded Walker observation")
     kargs = run(["/usr/bin/rpm-ostree", "kargs"]).stdout
     if "systemd.wants=p.service" in kargs or "systemd.wants=v.service" in kargs:
         raise ValueError("Fixture boot wants remain in the appliance deployment")
@@ -329,10 +408,11 @@ def main():
         "desktop_components": {
             "Hyprland": "/usr/lib/symbi/hyprland/bin/Hyprland" in executables,
             "Waybar": "/usr/bin/waybar" in executables,
-            "Walker": True,
+            "Walker": walker_launch["observed"] and walker_launch["stopped"],
             "portal": portal_executable in executables,
             "first_login_seeded": True,
         },
+        "walker_launch": walker_launch,
         "autologin_sha256": digest(autologin),
         "scope": SCOPE,
     }

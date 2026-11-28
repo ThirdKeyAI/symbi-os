@@ -1,15 +1,31 @@
 {
   "schema": 1,
   "variant": "generic",
-  "preflight_run": 45910498271,
-  "repository_id": 1472078858,
-  "evidence_artifact_id": 15160430947,
-  "evidence_artifact_bytes": 62578,
-  "evidence_artifact_sha256": "3e2258ea3a49e8fd689137c3865b8370fbccc523de1ca7a2b58de057213593ed",
-  "source_commit": "4f435550c1ab63de6adadb2c028f832d53d88255",
-  "inspect_sha256": "27c31bf795033a708072f364091b443d8b164d62d40392b4553a0b1fe2f9849f",
-  "prepare_sha256": "1cb4c4e93548304853146822cb579d04c4816f7f2cab9db195f869a7f95ac1c3",
-  "independent_check_sha256": "3b70718698b71d58bb0cbd08c7ff96fdf7315919b8055420e52a16925814be5b",
-  "kernel_observation_sha256": "2ab9db85f1492ddb0628b0fd8b7552a94f63d228d30a8a94660776506d94cf96",
-  "manifest_digest": "sha256:1dcf72c2e3eda7e5480269b1559e3b5527c77fdb70d28983d4e29baa03b8de6e"
+  "status": "pending-reviewed-integrated-head-preflight",
+  "selected": false,
+  "desktop_images_lock_sha256": "f11b8051e38a66b13b89beb7e5e77bcb0c8ac3a2c155d0258e41025f11a0962b",
+  "image_source_commit": "22c751096e47d2f5ff74d8e5963a7079fa24576f",
+  "image_run_id": 46091256475,
+  "image_artifact_id": 15241381990,
+  "image_artifact_sha256": "2a04d8fe73c9af4431d1513889842ee5c14834555c4c81c0e447f9559a374329",
+  "historical_reviewed_preflight": {
+    "preflight_run": 46094435550,
+    "source_commit": "a04cea9737eba9650695f7461fe9e96503695d01",
+    "desktop_images_lock_sha256": "4c4c49db576f9df9fa4a58cbaa6cd5f7b2bec07014a7740829edb0bc3229c0d6",
+    "manifest_digest": "sha256:1a08b504580f8f2f6dda9d913a2cbb4aa7039f4e18ebfb2eed01ce0a8381f9a3",
+    "verify_probe_sha256": "4b2242d577d885b54c54c627fac85bad029cbe888f17617954ca309c4cdc150f",
+    "evidence": "docs/security/reports/P0-03-atomic-preflight/46094435550-reconciled.json",
+    "complete_lock_matches": false,
+    "integrated_probe_matches": false,
+    "selected": false
+  },
+  "required_next_gate": "run-and-review-generic-atomic-preflight-at-integrated-head",
+  "claims": {
+    "installation_attempted": false,
+    "guest_booted": false,
+    "landlock_qualified": false,
+    "os_qualified": false,
+    "signature_qualified": false,
+    "release_qualified": false
+  }
 }

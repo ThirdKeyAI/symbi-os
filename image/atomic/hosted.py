@@ -26,6 +26,7 @@ CONTAINER_PARENT_LIMITS = {'memory.high':'max','memory.max':'4294967296',
                            'memory.swap.max':'0','cpu.max':'200000 100000','pids.max':'256'}
 DEFAULT_PARENT_LIMITS = {'memory.high':'max','memory.max':'5368709120',
                          'memory.swap.max':'0','cpu.max':'200000 100000','pids.max':'256'}
+MINIMUM_DISK_FREE_BYTES = 60 * 1024**3
 
 
 def run_hosted_command(qualification,name,command,stdout_path,stderr_path,timeout,
@@ -319,6 +320,32 @@ def _validate_retained_boot_inputs(item, expected):
         raise ValueError('Retained boot-input installer help is incomplete')
 
 
+def _retained_image_file_count(root, selected, manifest):
+    """Bind the installed-file count to the selected image preparation bytes."""
+    evidence = root / 'docs/security/reports/P0-03-desktop' / str(selected['run_id'])
+    preparation = evidence / 'preparation.json'
+    if evidence.resolve() != evidence:
+        raise ValueError('Linked retained desktop evidence path')
+    try:
+        preparation_info = preparation.lstat()
+    except OSError as error:
+        raise ValueError('Missing retained desktop evidence') from error
+    if (preparation.is_symlink() or not stat.S_ISREG(preparation_info.st_mode)
+            or preparation_info.st_nlink != 1 or preparation_info.st_size > 4*1024**2):
+        raise ValueError('Unsafe retained desktop evidence')
+    raw = preparation.read_bytes()
+    prepared = unique_json(raw)
+    payload = prepared.get('payload') if isinstance(prepared, dict) else None
+    overlay = prepared.get('overlay') if isinstance(prepared, dict) else None
+    if (hashlib.sha256(raw).hexdigest() != manifest['preparation_sha256']
+            or prepared.get('passed') is not True
+            or prepared.get('source_commit') != selected['tested_commit']
+            or not isinstance(payload, dict) or not isinstance(overlay, dict)
+            or set(payload).intersection(overlay)):
+        raise ValueError('Retained desktop preparation changed')
+    return len(payload) + len(overlay)
+
+
 def validate_retained_preflight(root, readiness, selected, manifest, expected):
     """Authenticate the retained generic preflight against the current image lock."""
     readiness_keys = {'schema', 'variant', 'preflight_run', 'source_commit',
@@ -416,6 +443,7 @@ def validate_retained_preflight(root, readiness, selected, manifest, expected):
                       'installed_package_count',
                       'all_package_identities_preserved_after_build', 'fonts',
                       'uid', 'limits', 'scope'}
+    installed_file_count = _retained_image_file_count(root, selected, manifest)
     fonts = installed.get('fonts') if isinstance(installed, dict) else None
     font_keys = {'checked', 'scanned_fonts', 'families', 'monospace_family',
                  'monospace_file'}
@@ -426,7 +454,7 @@ def validate_retained_preflight(root, readiness, selected, manifest, expected):
             or not isinstance(installed, dict) or set(installed) != installed_keys
             or installed.get('passed') is not True
             or installed.get('os_qualified') is not False
-            or installed.get('installed_files_checked') != 212
+            or installed.get('installed_files_checked') != installed_file_count
             or installed.get('installed_package_count') != 2184
             or installed.get('all_package_identities_preserved_after_build') is not True
             or installed.get('uid') != 10001
@@ -637,7 +665,8 @@ def main():
         storage_identity=(info.st_dev,info.st_ino,stat.S_IFMT(info.st_mode),
                           stat.S_IMODE(info.st_mode),info.st_uid,info.st_gid)
         record['disk_free_before_load']=shutil.disk_usage(storage).free
-        if record['disk_free_before_load']<60*1024**3: raise ValueError('Need 60 GiB free for isolated install and boot')
+        if record['disk_free_before_load']<MINIMUM_DISK_FREE_BYTES:
+            raise ValueError('Need 60 GiB free for isolated install and boot')
         runroot=Path('/run')/group.name.removesuffix('.service');runroot.mkdir(mode=0o700)
         if len(os.fsencode(runroot))>50: raise ValueError('Runtime path is too long')
         podman=['podman','--cgroup-manager=cgroupfs','--root',str(storage/'root'),'--runroot',str(runroot)]

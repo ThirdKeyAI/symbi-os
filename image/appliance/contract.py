@@ -98,7 +98,8 @@ def interactive_devices():
 def provision_qemu_arguments():
     return [
         "/usr/bin/qemu-system-x86_64", "-machine", "q35,dump-guest-core=off",
-        "-accel", "tcg,thread=single", "-cpu", "max", "-m", "2048M", "-smp", "2",
+        "-accel", "tcg,thread=multi", "-cpu", "max", "-m", "2048M", "-smp",
+        "cpus=2,sockets=1,cores=2,threads=1",
         "-nodefaults", "-no-user-config", "-no-reboot", "-net", "none",
         "-smbios", "type=1,manufacturer=Symbi-Test,product=Symbi-Interactive-Appliance",
         "-drive", "file=/output/work/provisioned.qcow2,format=qcow2,if=none,id=symbi-disk",
@@ -116,7 +117,8 @@ def provision_qemu_arguments():
 def reboot_qemu_arguments():
     return [
         "/usr/bin/qemu-system-x86_64", "-machine", "q35,dump-guest-core=off",
-        "-accel", "tcg,thread=single", "-cpu", "max", "-m", "2048M", "-smp", "2",
+        "-accel", "tcg,thread=multi", "-cpu", "max", "-m", "2048M", "-smp",
+        "cpus=2,sockets=1,cores=2,threads=1",
         "-nodefaults", "-no-user-config", "-no-reboot", "-net", "none",
         "-smbios", "type=1,manufacturer=Symbi-Test,product=Symbi-Interactive-Appliance-Reboot",
         "-drive", "file=/output/reboot-overlay.qcow2,format=qcow2,if=none,id=symbi-disk",
@@ -212,6 +214,19 @@ def validate_source_binding(value):
 
 def validate_guest_report(report, expected, probe_hash, expected_hash):
     source = validate_source_binding(expected.get("source_binding"))
+    walker_launch = {
+        "unit": "symbi-appliance-walker.service",
+        "executable": "/usr/bin/walker",
+        "observed": True,
+        "stop_succeeded": True,
+        "stopped": True,
+        "timeout_seconds": 30,
+        "limits": {
+            "memory_max": "512M", "memory_swap_max": "0",
+            "cpu_quota": "100%", "tasks_max": "64",
+            "runtime_max_seconds": "60", "no_new_privileges": "yes",
+        },
+    }
     try:
         valid = (
             isinstance(report, dict) and report.get("schema") == 1
@@ -243,6 +258,7 @@ def validate_guest_report(report, expected, probe_hash, expected_hash):
                 "Hyprland": True, "Waybar": True, "Walker": True,
                 "portal": True, "first_login_seeded": True,
             }
+            and report.get("walker_launch") == walker_launch
             and report.get("scope") == SCOPE
             and "failure" not in report
         )
