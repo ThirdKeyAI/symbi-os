@@ -13,6 +13,15 @@ RPM_TOKEN = re.compile(r"[A-Za-z0-9+_.~^-]+")
 MEDIA_ARTIFACT_NAME = "media-rpms-fedora-45-x86_64"
 MEDIA_ARTIFACT_REPOSITORY = "ThirdKeyAI/symbi-os"
 MEDIA_ARTIFACT_WORKFLOW = ".github/workflows/media-closure.yml"
+MAX_MEDIA_ARTIFACT_BYTES = 2 * 1024**3
+# upload-artifact stores the files in a ZIP. Keep a fixed margin for ZIP records,
+# uncompressed-deflate framing and filenames so its retained archive remains
+# below the artifact contract even at the expanded-payload ceiling.
+MAX_MEDIA_ARCHIVE_OVERHEAD_BYTES = 8 * 1024**2
+MAX_MEDIA_EXPANDED_BYTES = MAX_MEDIA_ARTIFACT_BYTES - MAX_MEDIA_ARCHIVE_OVERHEAD_BYTES
+MAX_MEDIA_MANIFEST_BYTES = 1024**2
+MAX_MEDIA_RPM_PAYLOAD_BYTES = MAX_MEDIA_EXPANDED_BYTES - MAX_MEDIA_MANIFEST_BYTES
+MAX_MEDIA_RPM_BYTES = 1024**3
 
 
 def _digest(path):
@@ -84,7 +93,7 @@ def _require_source_row(row):
             or row.get("arch") != "src"
             or row.get("nevra") != f'{row.get("name")}-{row.get("version")}-{row.get("release")}.src'
             or row.get("filename") != row.get("nevra") + ".rpm"
-            or type(row.get("bytes")) is not int or not 0 < row["bytes"] <= 1024 * 1024 * 1024
+            or type(row.get("bytes")) is not int or not 0 < row["bytes"] <= MAX_MEDIA_RPM_BYTES
             or not HASH.fullmatch(row.get("sha256", "")) or row.get("signature_verified") is not True
             or row.get("key_fingerprint") not in (FEDORA, FUSION)):
         raise ValueError("Malformed or unauthenticated source RPM row")
@@ -119,7 +128,8 @@ def _require_artifact(value, resolution_base):
             or type(value["id"]) is not int or value["id"] <= 0
             or value["name"] != MEDIA_ARTIFACT_NAME
             or value["resolution_base"] != resolution_base
-            or type(value["bytes"]) is not int or not 0 < value["bytes"] <= 2 * 1024 * 1024 * 1024
+            or type(value["bytes"]) is not int
+            or not 0 < value["bytes"] <= MAX_MEDIA_ARTIFACT_BYTES
             or not HASH.fullmatch(value["sha256"]) or not HASH.fullmatch(value["manifest_sha256"])):
         raise ValueError("Invalid media-only hosted artifact binding")
     producer = value["producer"]
@@ -299,6 +309,8 @@ def require_media_lock(lock, root, pins, trust, require_ready=False):
                     raise ValueError("Authenticated source slot changed identity")
                 sources.append(source)
             require_source_release_match(roots, sources)
+            if sum(row["bytes"] for row in rows + sources) > MAX_MEDIA_RPM_PAYLOAD_BYTES:
+                raise ValueError("Media package payload exceeds its retained artifact contract")
             image_source_commit = lock.get("image_source_commit")
             if (lock.get("status") != "ready-for-offline-image-install" or lock.get("install_ready") is not True
                     or (image_source_commit is not None

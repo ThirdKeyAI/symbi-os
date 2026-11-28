@@ -6,7 +6,12 @@ import shutil
 import stat
 import zipfile
 
-from image.desktop_packages.media_contract import require_media_lock
+from image.desktop_packages.media_contract import (
+    MAX_MEDIA_EXPANDED_BYTES,
+    MAX_MEDIA_MANIFEST_BYTES,
+    MAX_MEDIA_RPM_BYTES,
+    require_media_lock,
+)
 
 
 def _digest(path):
@@ -59,16 +64,18 @@ def unpack_media_bundle(archive, lock, root, pins, trust, destination):
                     continue
                 if (row.flag_bits & 1 or stat.S_IFMT(mode) not in (0, stat.S_IFREG)
                         or row.file_size <= 0
-                        or row.file_size > (1024 * 1024 if row.filename == "manifest.json"
-                                            else 1024 * 1024 * 1024)):
+                        or row.file_size > (MAX_MEDIA_MANIFEST_BYTES
+                                            if row.filename == "manifest.json"
+                                            else MAX_MEDIA_RPM_BYTES)):
                     raise ValueError("Unsafe or oversized media bundle member")
                 regular.append(row)
             if {row.filename for row in regular} != expected:
                 raise ValueError("Unexpected or missing media bundle member")
-            if sum(row.file_size for row in regular) > 2 * 1024 * 1024 * 1024:
+            if sum(row.file_size for row in regular) > MAX_MEDIA_EXPANDED_BYTES:
                 raise ValueError("Media bundle expanded size exceeds its bound")
             raw = bundle.read("manifest.json")
-            if len(raw) > 1024 * 1024 or hashlib.sha256(raw).hexdigest() != artifact["manifest_sha256"]:
+            if (len(raw) > MAX_MEDIA_MANIFEST_BYTES
+                    or hashlib.sha256(raw).hexdigest() != artifact["manifest_sha256"]):
                 raise ValueError("Media bundle manifest bytes changed")
             manifest = json.loads(raw)
             controls = {fingerprint: {"missing_key_rejected": True, "wrong_key_rejected": True,

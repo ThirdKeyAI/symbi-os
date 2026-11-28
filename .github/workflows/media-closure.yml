@@ -1,0 +1,79 @@
+name: Media signed closure and source RPMs
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: media-closure-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  produce:
+    runs-on: ubuntu-26.04
+    # 3 + 98 + 12 + 2 + 5 = 120 minutes of step caps. The job keeps a
+    # further ten minutes for action startup and runner scheduling overhead.
+    timeout-minutes: 130
+    steps:
+      - name: Check out proposed OS revision
+        timeout-minutes: 3
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Produce the authenticated media-only closure without installation
+        # The systemd unit is capped at 95 minutes; three minutes remain for
+        # ownership repair so the always-run evidence upload can read failures.
+        timeout-minutes: 98
+        run: bash scripts/check-media-closure.sh
+      - name: Retain the authenticated binary closure and exact source RPMs
+        timeout-minutes: 12
+        id: closure
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: media-rpms-fedora-45-x86_64
+          path: |
+            .cache/media-closure-output/manifest.json
+            .cache/media-closure-output/rpms/
+            .cache/media-closure-output/srpms/
+          retention-days: 14
+          compression-level: 0
+          if-no-files-found: error
+      - name: Bind the retained artifact identity into the small evidence set
+        timeout-minutes: 2
+        env:
+          ARTIFACT_ID: ${{ steps.closure.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.closure.outputs.artifact-digest }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import re
+
+          identity = {
+              "schema": 1,
+              "repository": os.environ["GITHUB_REPOSITORY"],
+              "workflow": ".github/workflows/media-closure.yml",
+              "run_id": int(os.environ["GITHUB_RUN_ID"]),
+              "head_sha": os.environ["GITHUB_SHA"],
+              "artifact_id": int(os.environ["ARTIFACT_ID"]),
+              "artifact_digest": os.environ["ARTIFACT_DIGEST"],
+          }
+          if (identity["repository"] != "ThirdKeyAI/symbi-os"
+                  or not re.fullmatch(r"[0-9a-f]{40}", identity["head_sha"])
+                  or not re.fullmatch(r"sha256:[0-9a-f]{64}", identity["artifact_digest"])):
+              raise SystemExit("Unexpected retained media artifact identity")
+          target = Path(".cache/media-closure-evidence/artifact.json")
+          target.write_text(json.dumps(identity, indent=2) + "\n")
+          PY
+      - name: Retain public producer evidence including failures
+        if: always()
+        timeout-minutes: 5
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: media-closure-evidence
+          path: .cache/media-closure-evidence/
+          retention-days: 14
+          if-no-files-found: error
