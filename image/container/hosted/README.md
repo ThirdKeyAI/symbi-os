@@ -158,7 +158,10 @@ more than 14 days after `Date`. Every pocket rejects a `Date` more than 15
 minutes in the future. The signed
 SHA-256 row must name exactly `main/binary-amd64/Packages.xz`; selected apt URIs
 are then matched to exact package name, version, architecture, Filename, Size
-and SHA256 fields in that compressed index.
+and SHA256 fields in that compressed index. APT documents an MD5 field in
+`--print-uris` output. The producer treats it only as a redundant membership
+value: the Filename, Size and MD5 must all match one row in the authenticated
+index, and that row's SHA256 replaces the MD5 before any package download.
 
 The prepared plan uses only staged `file:` repositories. It binds apt's
 `--print-uris` and `--simulate --no-download` results to the exact pending-lock
@@ -204,22 +207,19 @@ qualification is enabled while either lock is pending.
 
 The manual ubuntu-fixture-packages.yml workflow remains workflow_dispatch only.
 Its checked-in contract is now ready with the six exact InRelease and
-Packages.xz byte/hash identities independently reviewed from run 46070755519.
-The ready state rejects discovery and permits only production. The first
-production attempt authenticated all pins and then failed before package
-planning because its source-list value repeated etc/apt below the private APT
-root. The corrected command binds an explicit private Dir::Etc, one private
-source list and an empty private source-parts directory. No candidate,
-selection, producer pass, image consumer or qualification claim followed. The
-next exact-head attempt proved the private source path and used only the three
-fixed `file:` repositories, then failed at APT update because the runner's
-global command-not-found target requested absent
-`main/cnf/Commands-amd64` indexes. The narrow correction adds the fixed offline
-option `Acquire::IndexTargets::deb::CNF::DefaultEnabled=false`. Its strict
-policy validator requires the complete ordered argv for each offline APT phase,
-including that exact single index-target override; alternate option spellings,
-late duplicate overrides and source expansion fail closed. A fresh exact-head
-run is required; every claim remains false.
+Packages.xz byte/hash identities independently reviewed from run 46107541478.
+The ready state rejects discovery and permits only production. Production run
+46109461949 authenticated those pins, completed the private offline APT update
+and emitted a 68-row URI plan, then rejected APT's canonical lowercase `%7e`
+escape as an unsafe path. APT also emitted lowercase `%2b` and `%3a` escapes
+and `MD5Sum` plan fields. The corrected parser normalizes only percent-hex
+letter case before enforcing its stricter decoded-path canonical form. It uses
+the plan MD5 only to bind the exact filename and size to one row in the
+authenticated Packages.xz index, then discards MD5 and constructs the download
+plan with that signed row's SHA-256. Encoded separators, traversal,
+unnecessary escapes and literal aliases still fail closed. No candidate,
+selection, producer pass, image consumer or qualification claim followed. A
+fresh exact-head run is required; every claim remains false.
 
 The wrapper creates a bounded
 transient unit for either mode; inside it, pending `produce` refuses before

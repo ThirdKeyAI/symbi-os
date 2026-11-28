@@ -26,7 +26,7 @@ import stat
 import tarfile
 import threading
 import time
-from urllib.parse import quote, unquote, urlsplit
+from urllib.parse import unquote, urlsplit
 from urllib.request import build_opener, HTTPRedirectHandler, Request
 
 from image.container import ubuntu_fixture_packages as packages
@@ -173,6 +173,24 @@ def require(condition, message):
 
 def sha256_bytes(raw):
     return hashlib.sha256(raw).hexdigest()
+
+
+def _canonical_apt_uri_path(value):
+    """Render APT's path quoting with uppercase hex for comparison."""
+    require(isinstance(value, str), "offline apt URI path is not text")
+    safe = frozenset(
+        b"/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._"
+    )
+    return "".join(
+        chr(byte) if byte in safe else f"%{byte:02X}"
+        for byte in value.encode("utf-8")
+    )
+
+
+def _uppercase_percent_escapes(value):
+    """Normalize only the case-insensitive hex digits in URI escapes."""
+    return re.sub(
+        r"%[0-9A-Fa-f]{2}", lambda match: match.group(0).upper(), value)
 
 
 def _file_identity(info):
@@ -836,6 +854,7 @@ def _package_row(raw, source, index_sha256):
     architecture = fields.get("architecture")
     filename = fields.get("filename")
     size_text = fields.get("size")
+    md5 = fields.get("md5sum")
     digest = fields.get("sha256")
     require(isinstance(name, str)
             and re.fullmatch(r"[a-z0-9][a-z0-9+.-]*", name) is not None
@@ -847,9 +866,11 @@ def _package_row(raw, source, index_sha256):
             and isinstance(size_text, str)
             and re.fullmatch(r"[1-9][0-9]*", size_text) is not None
             and 0 < int(size_text) <= packages.MAX_PACKAGE_BYTES
+            and isinstance(md5, str)
+            and re.fullmatch(r"[0-9a-f]{32}", md5) is not None
             and packages.exact_hash(digest),
             "Ubuntu Packages membership row is malformed")
-    return {
+    return ({
         "package": name,
         "version": version,
         "architecture": architecture,
@@ -863,7 +884,7 @@ def _package_row(raw, source, index_sha256):
             "index_architecture": "amd64",
             "index_sha256": index_sha256,
         },
-    }
+    }, md5)
 
 
 def find_requested_packages(path, source, index_binding, requested):
@@ -882,10 +903,11 @@ def find_requested_packages(path, source, index_binding, requested):
         require(packages._safe_filename(filename, ".deb")
                 and filename.startswith("pool/main/")
                 and type(expected) is dict
-                and set(expected) == {"bytes", "sha256"}
+                and set(expected) == {"bytes", "md5"}
                 and type(expected["bytes"]) is int
                 and 0 < expected["bytes"] <= packages.MAX_PACKAGE_BYTES
-                and packages.exact_hash(expected["sha256"]),
+                and isinstance(expected["md5"], str)
+                and re.fullmatch(r"[0-9a-f]{32}", expected["md5"]) is not None,
                 "Ubuntu requested package membership row is invalid")
     path, anchor, descriptor, before = _open_private_path(
         path, index_binding["bytes"], "Ubuntu Packages.xz")
@@ -901,11 +923,11 @@ def find_requested_packages(path, source, index_binding, requested):
                 continue
             require(filename not in found,
                     "Ubuntu Packages index repeats an apt-selected filename")
-            row = _package_row(raw, source, index_binding["sha256"])
+            row, md5 = _package_row(raw, source, index_binding["sha256"])
             expected = requested[filename]
             require(row["bytes"] == expected["bytes"]
-                    and row["sha256"] == expected["sha256"],
-                    "apt plan bytes differ from signed Packages membership")
+                    and md5 == expected["md5"],
+                    "apt plan bytes or MD5 differ from signed Packages membership")
             found[filename] = row
         _close_private_path(
             path, anchor, descriptor, before, "Ubuntu Packages.xz")
@@ -953,7 +975,11 @@ def parse_apt_uri_plan(raw, repository_root, sources):
                     and not parsed.query and not parsed.fragment,
                     "offline apt URI plan contains a network or aliased URI")
             decoded_path = unquote(parsed.path, errors="strict")
-            require(quote(decoded_path, safe="/") == parsed.path
+            # APT percent-escapes '+', '~', and ':' with lowercase hex.  Hex
+            # case is semantically irrelevant; every other spelling must equal
+            # APT's canonical path so encoded separators and aliases fail.
+            require(_canonical_apt_uri_path(decoded_path)
+                    == _uppercase_percent_escapes(parsed.path)
                     and "\x00" not in decoded_path and "\\" not in decoded_path,
                     "offline apt URI plan path is unsafe")
             local_path = _canonical_absolute_path(
@@ -972,9 +998,11 @@ def parse_apt_uri_plan(raw, repository_root, sources):
                     and PurePosixPath(destination).name == destination
                     and re.fullmatch(r"[1-9][0-9]*", size_text) is not None
                     and 0 < int(size_text) <= packages.MAX_PACKAGE_BYTES
-                    and digest_text.startswith("SHA256:")
-                    and packages.exact_hash(digest_text.removeprefix("SHA256:")),
-                    "offline apt URI plan row is malformed or weakly hashed")
+                    and digest_text.startswith("MD5Sum:")
+                    and re.fullmatch(
+                        r"[0-9a-f]{32}",
+                        digest_text.removeprefix("MD5Sum:")) is not None,
+                    "offline apt URI plan row is malformed")
             require(filename not in filenames and destination not in destinations,
                     "offline apt URI plan repeats a package or destination")
             filenames.add(filename)
@@ -985,7 +1013,10 @@ def parse_apt_uri_plan(raw, repository_root, sources):
                 "filename": filename,
                 "destination": destination,
                 "bytes": int(size_text),
-                "sha256": digest_text.removeprefix("SHA256:"),
+                # APT documents MD5 in --print-uris output.  It is bound to the
+                # same signed Packages row below, then removed before download;
+                # only that row's authenticated SHA-256 authorizes payloads.
+                "md5": digest_text.removeprefix("MD5Sum:"),
             })
         require(0 < len(result) <= packages.MAX_PACKAGE_COUNT,
                 "offline apt URI plan package count is invalid")
@@ -1005,7 +1036,7 @@ def parse_apt_uri_plan(raw, repository_root, sources):
 
 
 def bind_uri_plan_to_indexes(plan, index_inputs, sources):
-    """Bind every ordered apt URI to one exact row in a signed suite index."""
+    """Replace APT MD5 plan rows with exact signed SHA-256 plan rows."""
     packages.validate_sources(sources)
     require(isinstance(plan, list) and plan
             and len(plan) <= packages.MAX_PACKAGE_COUNT
@@ -1016,13 +1047,13 @@ def bind_uri_plan_to_indexes(plan, index_inputs, sources):
         require(isinstance(row, dict)
                 and set(row) == {
                     "sequence", "suite", "filename", "destination", "bytes",
-                    "sha256",
+                    "md5",
                 }
                 and row["sequence"] == sequence
                 and row["suite"] in {source["suite"] for source in sources},
                 "offline apt URI plan sequence or suite changed")
         by_suite.setdefault(row["suite"], {})[row["filename"]] = {
-            "bytes": row["bytes"], "sha256": row["sha256"],
+            "bytes": row["bytes"], "md5": row["md5"],
         }
     source_by_suite = {source["suite"]: source for source in sources}
     selected = {}
@@ -1041,7 +1072,15 @@ def bind_uri_plan_to_indexes(plan, index_inputs, sources):
             and len(names) == len(set(names))
             and set(packages.EXPECTED_REQUEST["roots"]).issubset(names),
             "offline apt plan has duplicate identities or omits a requested root")
-    return ordered
+    signed_plan = [{
+        "sequence": row["sequence"],
+        "suite": row["suite"],
+        "filename": row["filename"],
+        "destination": row["destination"],
+        "bytes": package["bytes"],
+        "sha256": package["sha256"],
+    } for row, package in zip(plan, ordered, strict=True)]
+    return signed_plan, ordered
 
 
 _APT_PLAN_ROW = re.compile(

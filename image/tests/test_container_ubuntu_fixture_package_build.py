@@ -25,6 +25,10 @@ NOW = datetime(2026, 11, 27, 12, 0, tzinfo=timezone.utc)
 DEFAULT_TIME = object()
 
 
+def md5sum(payload):
+    return hashlib.md5(payload, usedforsecurity=False).hexdigest()
+
+
 def package_stanza(name, version, architecture, filename, payload):
     return (
         f"Package: {name}\n"
@@ -32,6 +36,7 @@ def package_stanza(name, version, architecture, filename, payload):
         f"Architecture: {architecture}\n"
         f"Filename: {filename}\n"
         f"Size: {len(payload)}\n"
+        f"MD5sum: {md5sum(payload)}\n"
         f"SHA256: {hashlib.sha256(payload).hexdigest()}\n\n"
     ).encode()
 
@@ -578,7 +583,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         requested = {
             self.paths[name]: {
                 "bytes": len(payload),
-                "sha256": hashlib.sha256(payload).hexdigest(),
+                "md5": md5sum(payload),
             }
             for name, payload in self.payloads.items()
         }
@@ -596,7 +601,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         requested = {
             self.paths["git"]: {
                 "bytes": len(self.payloads["git"]),
-                "sha256": hashlib.sha256(self.payloads["git"]).hexdigest(),
+                "md5": md5sum(self.payloads["git"]),
             }
         }
         with tempfile.TemporaryDirectory() as directory:
@@ -606,9 +611,14 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             bad_binding["sha256"] = "0" * 64
             with self.assertRaises(ValueError):
                 build.find_requested_packages(path, self.source, bad_binding, requested)
+            bad_md5 = copy.deepcopy(requested)
+            bad_md5[self.paths["git"]]["md5"] = "0" * 32
+            with self.assertRaises(ValueError):
+                build.find_requested_packages(
+                    path, self.source, self.binding["index"], bad_md5)
             missing = copy.deepcopy(requested)
             missing["pool/main/m/missing/missing_1_amd64.deb"] = {
-                "bytes": 1, "sha256": "1" * 64,
+                "bytes": 1, "md5": "1" * 32,
             }
             with self.assertRaises(ValueError):
                 build.find_requested_packages(
@@ -633,8 +643,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         requested = {
             self.paths["git"]: {
                 "bytes": len(self.payloads["git"]),
-                "sha256": hashlib.sha256(
-                    self.payloads["git"]).hexdigest(),
+                "md5": md5sum(self.payloads["git"]),
             }
         }
         invalid = []
@@ -677,7 +686,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         requested = {
             self.paths["git"]: {
                 "bytes": len(self.payloads["git"]),
-                "sha256": hashlib.sha256(self.payloads["git"]).hexdigest(),
+                "md5": md5sum(self.payloads["git"]),
             }
         }
         with tempfile.TemporaryDirectory() as directory:
@@ -727,7 +736,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         requested = {
             self.paths["git"]: {
                 "bytes": len(self.payloads["git"]),
-                "sha256": hashlib.sha256(self.payloads["git"]).hexdigest(),
+                "md5": md5sum(self.payloads["git"]),
             }
         }
         real_iter = build._iter_control_stanzas
@@ -770,7 +779,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         requested = {
             self.paths["git"]: {
                 "bytes": len(self.payloads["git"]),
-                "sha256": hashlib.sha256(self.payloads["git"]).hexdigest(),
+                "md5": md5sum(self.payloads["git"]),
             }
         }
         with tempfile.TemporaryDirectory() as directory:
@@ -790,17 +799,17 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         self.assertTrue(all(flags & os.O_NOFOLLOW for flags in observed))
         self.assertTrue(all(flags & os.O_CLOEXEC for flags in observed))
 
-    def test_file_uri_plan_binds_signed_sha256_size_suite_and_order(self):
+    def test_file_uri_plan_parses_md5_size_suite_and_order(self):
         with tempfile.TemporaryDirectory() as directory:
             repository, suite = staged_repository(Path(directory))
             lines = []
             for name in ("git", "python3", "ca-certificates"):
                 payload = self.payloads[name]
-                digest = hashlib.sha256(payload).hexdigest()
+                digest = md5sum(payload)
                 uri = (suite / self.paths[name]).as_uri()
                 lines.append(
                     f"'{uri}' '{Path(self.paths[name]).name}' "
-                    f"{len(payload)} 'SHA256:{digest}'"
+                    f"{len(payload)} 'MD5Sum:{digest}'"
                 )
             plan = build.parse_apt_uri_plan(
                 ("\n".join(lines) + "\n").encode(), repository,
@@ -808,20 +817,21 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         self.assertEqual([row["sequence"] for row in plan], [0, 1, 2])
         self.assertEqual([row["suite"] for row in plan], ["noble"] * 3)
         self.assertEqual(plan[0]["filename"], self.paths["git"])
-        self.assertEqual(
-            plan[0]["sha256"], hashlib.sha256(self.payloads["git"]).hexdigest())
+        self.assertEqual(plan[0]["md5"], md5sum(self.payloads["git"]))
 
-    def test_uri_plan_rejects_network_rows_duplicates_and_weak_hashes(self):
+    def test_uri_plan_rejects_network_rows_duplicates_and_bad_md5(self):
         with tempfile.TemporaryDirectory() as directory:
             repository, suite = staged_repository(Path(directory))
             payload = self.payloads["git"]
-            digest = hashlib.sha256(payload).hexdigest()
+            digest = md5sum(payload)
             uri = (suite / self.paths["git"]).as_uri()
-            good = f"'{uri}' 'git.deb' {len(payload)} 'SHA256:{digest}'\n"
+            good = f"'{uri}' 'git.deb' {len(payload)} 'MD5Sum:{digest}'\n"
             cases = [
                 good + good,
                 good.replace("file://", "https://"),
-                good.replace("SHA256:", "MD5Sum:"),
+                good.replace("MD5Sum:", "SHA256:"),
+                good.replace(digest, "A" * 32),
+                good.replace(digest, digest[:-1]),
                 good.replace(str(len(payload)), "0", 1),
                 good + "unexpected output\n",
             ]
@@ -829,6 +839,47 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                 with self.subTest(changed=changed), self.assertRaises(ValueError):
                     build.parse_apt_uri_plan(
                         changed.encode(), repository, packages.EXPECTED_SOURCES)
+
+    def test_uri_plan_normalizes_only_apt_percent_hex_case(self):
+        with tempfile.TemporaryDirectory() as directory:
+            repository, suite = staged_repository(Path(directory))
+            filename = (
+                "pool/main/g/gcc-14/"
+                "libstdc++6_1:14.2.0-4ubuntu2~24.04.1+really_amd64.deb"
+            )
+            payload = b"signed package payload"
+            digest = md5sum(payload)
+            encoded_path = (str(suite / filename).replace("+", "%2b")
+                            .replace("~", "%7e").replace(":", "%3a"))
+            uri = "file:" + encoded_path
+            self.assertIn("%2b", uri)
+            self.assertIn("%3a", uri)
+            self.assertIn("%7e", uri)
+            line = f"'{uri}' 'libstdc++6.deb' {len(payload)} 'MD5Sum:{digest}'\n"
+            plan = build.parse_apt_uri_plan(
+                line.encode(), repository, packages.EXPECTED_SOURCES)
+            self.assertEqual(plan[0]["filename"], filename)
+
+            uppercase = (line.replace("%2b", "%2B").replace("%3a", "%3A")
+                         .replace("%7e", "%7E"))
+            self.assertEqual(
+                build.parse_apt_uri_plan(
+                    uppercase.encode(), repository, packages.EXPECTED_SOURCES),
+                plan,
+            )
+            aliases = [
+                line.replace("%2b", "+"),
+                line.replace("%3a", ":"),
+                line.replace("%7e", "~"),
+                line.replace("/pool/", "/%70ool/"),
+                line.replace("/pool/", "%2fpool/"),
+                line.replace("/pool/", "/%2e%2e/"),
+                line.replace("%2b", "%2g"),
+            ]
+            for alias in aliases:
+                with self.subTest(alias=alias), self.assertRaises(ValueError):
+                    build.parse_apt_uri_plan(
+                        alias.encode(), repository, packages.EXPECTED_SOURCES)
 
     def test_uri_plan_binds_index_rows_and_downloads_payloads_sequentially(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -843,15 +894,20 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                 lines.append(
                     f"'{(suite / self.paths[name]).as_uri()}' "
                     f"'{name}.deb' {len(payload)} "
-                    f"'SHA256:{hashlib.sha256(payload).hexdigest()}'"
+                    f"'MD5Sum:{md5sum(payload)}'"
                 )
             plan = build.parse_apt_uri_plan(
                 ("\n".join(lines) + "\n").encode(), repository,
                 packages.EXPECTED_SOURCES)
-            rows = build.bind_uri_plan_to_indexes(
+            plan, rows = build.bind_uri_plan_to_indexes(
                 plan,
                 {"noble": {"path": index_path, "binding": self.binding["index"]}},
                 packages.EXPECTED_SOURCES,
+            )
+            self.assertNotIn("md5", plan[0])
+            self.assertEqual(
+                plan[0]["sha256"],
+                hashlib.sha256(self.payloads[order[0]]).hexdigest(),
             )
             downloads = base / "downloads"
             mkdir_private(downloads)
