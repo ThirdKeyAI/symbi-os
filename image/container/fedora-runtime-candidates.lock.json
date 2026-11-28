@@ -17,8 +17,8 @@
   "package_bytes": 116875288,
   "source_package_plan": {
     "inventory": {
-      "run_id": 45870354828,
-      "path": "docs/security/reports/P0-03-desktop/45870354828/install/installed-after-stdout.log",
+      "run_id": 46107995231,
+      "path": "docs/security/reports/P0-03-desktop/46107995231/install/installed-after-stdout.log",
       "bytes": 88016,
       "sha256": "4142fa70cff7227a164225f6ebff5bbbaf7816c5d5d864a4a47c454969445387",
       "canonical_sha256": "7af38020fc34399648c491a007e089982395582ad2f79448fb853a57c93effc4",
@@ -57,11 +57,11 @@
       "id": 431169773,
       "path": ".github/workflows/desktop-image.yml"
     },
-    "run_id": 45870354828,
+    "run_id": 46107995231,
     "run_attempt": 1,
-    "event": "push",
-    "head_sha": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
-    "head_branch": "card/P0-03-image-foundation",
+    "event": "workflow_dispatch",
+    "head_sha": "c6bf3ed9eba34562d886b6b315dd9cb46340c525",
+    "head_branch": "card/P0-04-hosted-fix",
     "status": "completed",
     "conclusion": "success"
   },
