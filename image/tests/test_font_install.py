@@ -150,7 +150,10 @@ class FontDefaults(unittest.TestCase):
                 sources.add(selected["tested_commit"])
                 with self.assertRaises(ValueError):
                     verify_font_payload({"source_commit": selected["tested_commit"]})
-        self.assertEqual(sources, {"d436c6ee8a7ed159afa59db9bd82377ae8ea2389"})
+        self.assertEqual(sources, {
+            "c6bf3ed9eba34562d886b6b315dd9cb46340c525",
+            "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
+        })
         with self.assertRaises(ValueError):
             verify_font_payload({"source_commit": "0" * 40})
         hosted = (ROOT / "image/boot/hosted.py").read_text()
