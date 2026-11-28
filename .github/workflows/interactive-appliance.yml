@@ -24,6 +24,14 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
+      - name: Bind appliance expiry to the hosted workflow clock
+        timeout-minutes: 1
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected_expiry=$(date --utc --date='now + 2 days' '+%Y-%m-%dT%H:%M:%SZ')
+          [[ $expected_expiry =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$ ]]
+          printf 'SYMBI_APPLIANCE_EXPECTED_EXPIRY=%s\n' "$expected_expiry" >> "$GITHUB_ENV"
       - name: Require reviewed preflight and runner capacity before download
         timeout-minutes: 2
         run: PYTHONDONTWRITEBYTECODE=1 python3 -m image.appliance.prerequisite
@@ -52,19 +60,22 @@ jobs:
         timeout-minutes: 20
         run: bash scripts/check-atomic-image.sh prepare
       - name: Install and independently reboot the offline graphical appliance
+        id: appliance
         timeout-minutes: 130
         run: bash scripts/check-interactive-appliance.sh
       - name: Retain bounded appliance evidence including failures
         timeout-minutes: 10
-        if: always()
+        if: ${{ always() && steps.appliance.outputs.evidence_ready == 'true' }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: interactive-appliance-evidence
-          path: |
-            .cache/interactive-appliance-evidence/
-            !.cache/interactive-appliance-evidence/display.ppm
+          path: .cache/interactive-appliance-evidence/
           if-no-files-found: error
           retention-days: 7
+      - name: Revalidate the exact public appliance artifact before upload
+        timeout-minutes: 10
+        if: success()
+        run: PYTHONDONTWRITEBYTECODE=1 python3 -m image.appliance.hosted --validate-public-artifact
       - name: Retain the compressed HIGHLY EXPERIMENTAL qcow2 for two days
         timeout-minutes: 30
         if: success()

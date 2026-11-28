@@ -1,4 +1,5 @@
 """Prepare two isolated containers for appliance production and cold reboot."""
+from datetime import datetime, timedelta, timezone
 import hashlib
 import json
 import os
@@ -12,11 +13,14 @@ import sys
 
 from image.appliance.contract import (APPLIANCE_CONTAINER_LIMITS, ARTIFACT_NAME,
                                       FAILURE_EXCERPT_BYTES, FAILURE_LOG_BOUNDS,
-                                      SDDM_CONFIGURATION, SCOPE,
+                                      RETENTION_DAYS, SDDM_CONFIGURATION, SCOPE,
                                       build_manifest,
                                       controller_failure_record, failure_record, sha256,
-                                      unique_json, validate_reboot_report,
-                                      validate_resource_receipt, validate_source_binding)
+                                      provision_qemu_arguments, unique_json,
+                                      validate_guest_report, validate_reboot_report,
+                                      validate_resource_receipt,
+                                      validate_source_binding)
+from image.appliance.reboot import ppm_observation
 
 
 COMPONENT_PATHS = (
@@ -48,6 +52,58 @@ SENSITIVE_PATTERNS = (
 )
 URL_PATTERN = re.compile(r"(?i)\b(?:https?|ssh)://[^\s\"'<>]+")
 ABSOLUTE_PATH_PATTERN = re.compile(r"(?<![A-Za-z0-9._-])/(?:[^\s\"'<>]+)")
+OUTER_MEMORY_MAX_BYTES = 5 * 1024**3
+CREDENTIAL_TOKENS = (b"PRIVATE KEY-----", b"ssh-rsa ", b"ssh-ed25519 ")
+PRODUCER_RESULT_KEYS = frozenset({
+    "schema", "passed", "guest_booted", "graphical_desktop_observed",
+    "artifact_retained", "independent_reboot_passed", "os_qualified",
+    "release_qualified", "signature_qualified", "source_binding", "artifact",
+    "guest_report_sha256", "limits", "command", "qemu_version", "tools",
+    "scope", "cgroup_final",
+})
+GUEST_REPORT_KEYS = frozenset({
+    "schema", "nonce", "source_binding", "probe_sha256", "expected_sha256",
+    "passed", "guest_booted", "graphical_desktop_observed", "os_qualified",
+    "release_qualified", "signature_qualified", "network_interfaces",
+    "default_target", "display_manager", "session", "fixture_user",
+    "interactive_devices", "fixture_cleanup", "desktop_components", "walker_launch",
+    "autologin_sha256", "scope",
+})
+REBOOT_RESULT_KEYS = frozenset({
+    "schema", "passed", "guest_booted", "graphical_desktop_observed",
+    "artifact_retained", "independent_reboot_passed", "os_qualified",
+    "release_qualified", "signature_qualified", "source_binding", "artifact_before",
+    "artifact_after", "screenshot", "command", "limits", "scope", "cgroup_final",
+})
+MAX_RETAINED_EVIDENCE_BYTES = 32 * 1024**2
+EVIDENCE_FILE_LIMITS = {
+    "compress-qcow2.log": 4 * 1024**2,
+    "convert-raw.log": 4 * 1024**2,
+    "display.ppm": 4 * 1024**2,
+    "guest-report.json": 128 * 1024,
+    "manifest.json": 4 * 1024**2,
+    "producer-result.json": 4 * 1024**2,
+    "provision-qemu.log": 2 * 1024**2,
+    "provision-serial.log": 4 * 1024**2,
+    "reboot-qemu.log": 2 * 1024**2,
+    "reboot-result.json": 4 * 1024**2,
+    "reboot-serial.log": 4 * 1024**2,
+    "result.json": 256 * 1024,
+    "systemd-result.txt": 4096,
+}
+SUCCESS_EVIDENCE_FILES = frozenset(EVIDENCE_FILE_LIMITS)
+FAILURE_EVIDENCE_FILES = frozenset({"result.json", "systemd-result.txt"})
+SYSTEMD_RESULT_KEYS = frozenset({
+    "LoadState", "Type", "RemainAfterExit", "ActiveState", "SubState",
+    "Result", "OOMPolicy", "MemoryMax", "MemoryPeak", "MemorySwapMax",
+    "MemorySwapPeak", "CPUUsageNSec", "ExecMainCode", "ExecMainStatus",
+})
+PUBLIC_ARTIFACT_FILES = frozenset({ARTIFACT_NAME, "manifest.json", "display.ppm"})
+PUBLIC_ARTIFACT_LIMITS = {
+    ARTIFACT_NAME: 24 * 1024**3,
+    "manifest.json": EVIDENCE_FILE_LIMITS["manifest.json"],
+    "display.ppm": EVIDENCE_FILE_LIMITS["display.ppm"],
+}
 
 
 def source_tree(root, commit):
@@ -63,6 +119,39 @@ def source_tree(root, commit):
     if result.stderr or re.fullmatch(r"[0-9a-f]{40}", value) is None:
         raise ValueError("Exact appliance source tree unavailable")
     return value
+
+
+def _checkout_binding(root):
+    """Bind upload evidence to the exact checkout root, commit, and committed tree."""
+    root = Path(root).resolve()
+    result = subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "--show-toplevel", "HEAD"],
+        stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=10, check=True,
+    )
+    lines = result.stdout.splitlines()
+    if (result.stderr or len(lines) != 2 or Path(lines[0]).resolve() != root
+            or re.fullmatch(r"[0-9a-f]{40}", lines[1]) is None):
+        raise ValueError("Exact appliance checkout binding unavailable")
+    return {"source_commit": lines[1], "source_tree": source_tree(root, lines[1])}
+
+
+def _manifest_expiry(value=None):
+    """Parse the explicit hosted-workflow expiry without deriving it from evidence."""
+    candidate = value if value is not None else os.environ.get(
+        "SYMBI_APPLIANCE_EXPECTED_EXPIRY")
+    if (not isinstance(candidate, str)
+            or re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z",
+                            candidate) is None):
+        raise ValueError("Explicit appliance manifest expiry required")
+    try:
+        return datetime.strptime(candidate, "%Y-%m-%dT%H:%M:%SZ").replace(
+            tzinfo=timezone.utc)
+    except ValueError as error:
+        raise ValueError("Invalid explicit appliance manifest expiry") from error
+
+
+def _schema_one(record):
+    return isinstance(record, dict) and type(record.get("schema")) is int and record["schema"] == 1
 
 
 def _bounded_regular(path, maximum):
@@ -261,6 +350,382 @@ def _prune_failure_evidence(evidence):
     return all(removed) and not any(evidence.iterdir())
 
 
+def _direct_path_absent(path):
+    """Check one cache path without treating an unreadable path as absent."""
+    try:
+        path.lstat()
+    except FileNotFoundError:
+        return True
+    except OSError:
+        return False
+    return False
+
+
+def _discard_failed_appliance_outputs(root):
+    """Revoke every local output and upload marker after failed cleanup."""
+    cache = root / ".cache"
+    paths = (
+        cache / "interactive-appliance-stage",
+        cache / "interactive-appliance-artifact",
+        cache / "interactive-appliance-evidence",
+        cache / "interactive-appliance-evidence.ready",
+    )
+    # A second bounded pass handles a path that became removable while the first
+    # pass was revoking the remaining outputs. Every path is checked independently.
+    for _ in range(2):
+        for path in paths:
+            if not _direct_path_absent(path):
+                _remove_local_output(path)
+        if all(_direct_path_absent(path) for path in paths):
+            return True
+    return False
+
+
+def _failure_cleanup_complete(root, result):
+    """Require claimed cleanup to match all upload-relevant cache postconditions."""
+    cleanup = result.get("cleanup") if isinstance(result, dict) else None
+    cache = root / ".cache"
+    return (
+        isinstance(cleanup, dict)
+        and cleanup
+        and all(value is True for value in cleanup.values())
+        and _direct_path_absent(cache / "interactive-appliance-stage")
+        and _direct_path_absent(cache / "interactive-appliance-artifact")
+        and _direct_path_absent(cache / "interactive-appliance-evidence.ready")
+    )
+
+
+def _decimal(value, label, maximum=None):
+    if not isinstance(value, str) or re.fullmatch(r"[0-9]+", value) is None:
+        raise ValueError("Invalid numeric appliance evidence: " + label)
+    number = int(value)
+    if maximum is not None and number > maximum:
+        raise ValueError("Out-of-range appliance evidence: " + label)
+    return number
+
+
+def _resource_lines(value, label):
+    if not isinstance(value, str) or not 0 < len(value) <= 4096:
+        raise ValueError("Invalid appliance resource evidence: " + label)
+    parsed = {}
+    for line in value.splitlines():
+        fields = line.split()
+        if (len(fields) != 2 or fields[0] in parsed
+                or re.fullmatch(r"[a-z_.]+", fields[0]) is None):
+            raise ValueError("Invalid appliance resource evidence: " + label)
+        parsed[fields[0]] = _decimal(fields[1], label + "." + fields[0])
+    if not parsed:
+        raise ValueError("Empty appliance resource evidence: " + label)
+    return parsed
+
+
+def _validate_resource_evidence(record):
+    limits = record.get("limits") if isinstance(record, dict) else None
+    final = record.get("cgroup_final") if isinstance(record, dict) else None
+    if not validate_resource_receipt({"limits": limits, "cgroup_final": final}):
+        raise ValueError("Appliance child resource receipt changed")
+    if limits != APPLIANCE_CONTAINER_LIMITS:
+        raise ValueError("Appliance child resource limits changed")
+    if any(final.get(name) != value for name, value in limits.items()):
+        raise ValueError("Appliance child final limits changed")
+    peak = _decimal(final["memory.peak"], "memory.peak")
+    if peak > int(limits["memory.max"]):
+        raise ValueError("Appliance child exceeded its memory limit")
+    events = _resource_lines(final["memory.events"], "memory.events")
+    if any(events.get(name) != 0 for name in ("oom", "oom_kill", "oom_group_kill")):
+        raise ValueError("Appliance child recorded an OOM event")
+    cpu = _resource_lines(final["cpu.stat"], "cpu.stat")
+    if "usage_usec" not in cpu:
+        raise ValueError("Appliance child CPU evidence is incomplete")
+
+
+def _systemd_result(path, controller):
+    """Parse and bind the fixed-field outer-unit record to the controller outcome."""
+    try:
+        lines = path.read_text().splitlines()
+    except (OSError, UnicodeDecodeError) as error:
+        raise ValueError("Invalid appliance systemd result") from error
+    values = {}
+    for line in lines:
+        key, separator, value = line.partition("=")
+        if separator != "=" or key in values or key not in SYSTEMD_RESULT_KEYS or len(value) > 256:
+            raise ValueError("Invalid appliance systemd result")
+        values[key] = value
+    if set(values) != SYSTEMD_RESULT_KEYS:
+        raise ValueError("Incomplete appliance systemd result")
+    if (values["LoadState"] != "loaded" or values["Type"] != "oneshot"
+            or values["RemainAfterExit"] != "yes"):
+        raise ValueError("Appliance systemd unit contract changed")
+
+    def systemd_decimal(name, maximum=None):
+        number = _decimal(values[name], "systemd." + name, maximum)
+        if values[name] != str(number):
+            raise ValueError("Non-canonical numeric appliance evidence: systemd." + name)
+        return number
+
+    if systemd_decimal("MemoryMax") != OUTER_MEMORY_MAX_BYTES:
+        raise ValueError("Appliance systemd memory limit changed")
+    systemd_decimal("MemoryPeak", OUTER_MEMORY_MAX_BYTES)
+    if (systemd_decimal("MemorySwapMax") != 0
+            or systemd_decimal("MemorySwapPeak") != 0):
+        raise ValueError("Appliance systemd unit used swap")
+    systemd_decimal("CPUUsageNSec")
+    code = systemd_decimal("ExecMainCode", 3)
+    status = systemd_decimal("ExecMainStatus", 255)
+    if code not in {1, 2, 3}:
+        raise ValueError("Invalid appliance systemd child code")
+    outcome = values["Result"]
+    if values["OOMPolicy"] != "stop":
+        raise ValueError("Appliance systemd OOM policy changed")
+    if outcome == "oom-kill":
+        if (values["ActiveState"] != "failed" or values["SubState"] != "failed"
+                or code != 2 or status != 9):
+            raise ValueError("Invalid appliance systemd OOM outcome")
+        raise ValueError("Appliance systemd OOM evidence is not uploadable")
+
+    success = (outcome == "success" and code == 1 and status == 0
+               and values["ActiveState"] == "active"
+               and values["SubState"] == "exited")
+    if controller.get("passed") is True:
+        if not success:
+            raise ValueError("Passed appliance lacks exact systemd success")
+    elif success:
+        if (controller.get("stage") != "cleanup"
+                or controller.get("failure") != "AtomicControllerFailure"):
+            raise ValueError("Failed appliance contradicts systemd success")
+    else:
+        failure = (
+            values["ActiveState"] == "failed"
+            and values["SubState"] == "failed"
+            and (
+                (outcome == "exit-code" and code == 1 and 1 <= status <= 255)
+                or (outcome == "signal" and code == 2 and 1 <= status <= 64)
+                or (outcome == "core-dump" and code == 3 and 1 <= status <= 64)
+                or (outcome == "timeout" and code == 2 and 1 <= status <= 64)
+            )
+        )
+        if not failure:
+            raise ValueError("Invalid appliance systemd failure")
+    return values
+
+
+def _validate_producer_result(producer, source, artifact, guest_hash):
+    if (set(producer) != PRODUCER_RESULT_KEYS or not _schema_one(producer)
+            or any(producer.get(name) is not True for name in (
+                "passed", "guest_booted", "graphical_desktop_observed", "artifact_retained"))
+            or producer.get("independent_reboot_passed") is not False
+            or any(producer.get(name) is not False for name in (
+                "os_qualified", "release_qualified", "signature_qualified"))
+            or producer.get("source_binding") != source
+            or producer.get("artifact") != artifact
+            or producer.get("guest_report_sha256") != guest_hash
+            or producer.get("command") != provision_qemu_arguments()
+            or producer.get("scope") != SCOPE):
+        raise ValueError("Appliance producer success receipt changed")
+    version = producer.get("qemu_version")
+    tools = producer.get("tools")
+    if (not isinstance(version, str) or not 0 < len(version) <= 1024
+            or not version.startswith("QEMU emulator version ")
+            or not isinstance(tools, dict)
+            or set(tools) != {"qemu-system-x86_64", "qemu-img"}
+            or any(not isinstance(value, str)
+                   or re.fullmatch(r"[0-9a-f]{64}", value) is None
+                   for value in tools.values())):
+        raise ValueError("Appliance producer tool identity changed")
+    _validate_resource_evidence(producer)
+
+
+def _validate_guest_result(root, guest, source):
+    if set(guest) != GUEST_REPORT_KEYS or not _schema_one(guest):
+        raise ValueError("Appliance guest report schema changed")
+    expected = _expected_guest_contract(root, source, guest.get("nonce"))
+    expected_hash = hashlib.sha256(
+        (json.dumps(expected, sort_keys=True) + "\n").encode()).hexdigest()
+    probe_hash = sha256(root / "image/appliance/verify.py")
+    validate_guest_report(guest, expected, probe_hash, expected_hash)
+    if guest.get("autologin_sha256") != expected["sddm_config_sha256"]:
+        raise ValueError("Appliance guest autologin binding changed")
+
+
+def _validate_reboot_result(reboot, source, artifact):
+    if set(reboot) != REBOOT_RESULT_KEYS or not _schema_one(reboot):
+        raise ValueError("Appliance reboot success receipt changed")
+    validate_reboot_report(reboot, source, artifact)
+    _validate_resource_evidence(reboot)
+
+
+def validate_retained_evidence(root, expected_expiry=None):
+    """Validate the exact small evidence inventory immediately before upload."""
+    root = Path(root).resolve()
+    evidence = root / ".cache/interactive-appliance-evidence"
+    try:
+        info = evidence.lstat()
+    except OSError as error:
+        raise ValueError("Missing appliance evidence directory") from error
+    if evidence.is_symlink() or not stat.S_ISDIR(info.st_mode):
+        raise ValueError("Unsafe appliance evidence directory")
+    entries = {path.name: path for path in evidence.iterdir()}
+    result_path = entries.get("result.json")
+    if result_path is None:
+        raise ValueError("Missing appliance controller result")
+    for name, path in entries.items():
+        try:
+            item = path.lstat()
+        except OSError as error:
+            raise ValueError("Unreadable appliance evidence file") from error
+        maximum = EVIDENCE_FILE_LIMITS.get(name)
+        if (maximum is None or path.is_symlink() or not stat.S_ISREG(item.st_mode)
+                or item.st_nlink != 1 or item.st_size > maximum):
+            raise ValueError("Unsafe appliance evidence file: " + name)
+    total = sum(path.stat().st_size for path in entries.values())
+    if total > MAX_RETAINED_EVIDENCE_BYTES:
+        raise ValueError("Appliance evidence exceeds its aggregate byte ceiling")
+    for path in entries.values():
+        data = path.read_bytes()
+        if any(token in data for token in CREDENTIAL_TOKENS):
+            raise ValueError("Credential-like material refused from appliance evidence")
+
+    result = unique_json(result_path.read_bytes())
+    if not _schema_one(result):
+        raise ValueError("Appliance controller schema changed")
+    failure = result.get("passed") is False
+    if failure:
+        if set(entries) != FAILURE_EVIDENCE_FILES:
+            _discard_failed_appliance_outputs(root)
+            raise ValueError("Failed appliance retained non-controller evidence")
+        if not _failure_cleanup_complete(root, result):
+            _discard_failed_appliance_outputs(root)
+            raise ValueError("Appliance failure cleanup is incomplete")
+    source = validate_source_binding(result.get("source_binding"))
+    checkout = _checkout_binding(root)
+    if any(source[name] != value for name, value in checkout.items()):
+        raise ValueError("Appliance evidence differs from the checkout commit or tree")
+    if failure:
+        exact = controller_failure_record(
+            result.get("source_binding"), result.get("stage"), result.get("failure"),
+            result.get("cleanup"), result.get("resources"), result.get("diagnostics"),
+        )
+        if result != exact:
+            raise ValueError("Appliance failure receipt changed")
+        for resource in result["resources"].values():
+            _validate_resource_evidence(resource)
+        _systemd_result(entries["systemd-result.txt"], result)
+        return total
+
+    if set(entries) != SUCCESS_EVIDENCE_FILES:
+        raise ValueError("Successful appliance evidence inventory changed")
+    success_keys = {
+        "schema", "passed", "guest_booted", "graphical_desktop_observed",
+        "artifact_retained", "independent_reboot_passed", "os_qualified",
+        "release_qualified", "signature_qualified", "source_binding", "artifact",
+        "producer_result_sha256", "guest_report_sha256", "reboot_result_sha256",
+        "manifest_sha256", "screenshot_sha256", "scope",
+    }
+    if (set(result) != success_keys
+            or any(result.get(name) is not True for name in (
+                "passed", "guest_booted", "graphical_desktop_observed",
+                "artifact_retained", "independent_reboot_passed"))
+            or any(result.get(name) is not False for name in (
+                "os_qualified", "release_qualified", "signature_qualified"))
+            or result.get("scope") != SCOPE):
+        raise ValueError("Appliance controller success receipt changed")
+    artifact = result.get("artifact")
+    producer = unique_json(entries["producer-result.json"].read_bytes())
+    guest = unique_json(entries["guest-report.json"].read_bytes())
+    reboot = unique_json(entries["reboot-result.json"].read_bytes())
+    hashes = {
+        "producer_result_sha256": sha256(entries["producer-result.json"]),
+        "guest_report_sha256": sha256(entries["guest-report.json"]),
+        "reboot_result_sha256": sha256(entries["reboot-result.json"]),
+        "manifest_sha256": sha256(entries["manifest.json"]),
+        "screenshot_sha256": sha256(entries["display.ppm"]),
+    }
+    if any(result.get(name) != value for name, value in hashes.items()):
+        raise ValueError("Appliance controller evidence hash changed")
+    _validate_guest_result(root, guest, source)
+    _validate_producer_result(producer, source, artifact, hashes["guest_report_sha256"])
+    _validate_reboot_result(reboot, source, artifact)
+    manifest = unique_json(entries["manifest.json"].read_bytes())
+    if not _schema_one(manifest):
+        raise ValueError("Appliance manifest schema changed")
+    expires = _manifest_expiry(expected_expiry)
+    if manifest.get("expires_at") != expires.strftime("%Y-%m-%dT%H:%M:%SZ"):
+        raise ValueError("Appliance manifest expiry differs from the workflow binding")
+    expected_manifest = build_manifest(
+        source, artifact, producer, reboot, expires - timedelta(days=RETENTION_DAYS),
+    )
+    if manifest != expected_manifest:
+        raise ValueError("Retained appliance manifest changed")
+    screenshot = ppm_observation(entries["display.ppm"])
+    if screenshot != {key: reboot["screenshot"][key] for key in screenshot}:
+        raise ValueError("Retained appliance screenshot changed")
+    _systemd_result(entries["systemd-result.txt"], result)
+    return total
+
+
+def _hash_public_file(path):
+    """Hash one public file while refusing credential markers across chunk boundaries."""
+    digest = hashlib.sha256()
+    tail = b""
+    tail_size = max(map(len, CREDENTIAL_TOKENS)) - 1
+    with path.open("rb") as stream:
+        while True:
+            chunk = stream.read(1024 * 1024)
+            if not chunk:
+                break
+            combined = tail + chunk
+            if any(token in combined for token in CREDENTIAL_TOKENS):
+                raise ValueError("Credential-like material refused from public appliance artifact")
+            digest.update(chunk)
+            tail = combined[-tail_size:]
+    return digest.hexdigest()
+
+
+def validate_public_artifact(root, expected_expiry=None):
+    """Revalidate the exact public download inventory immediately before upload."""
+    root = Path(root).resolve()
+    validate_retained_evidence(root, expected_expiry)
+    evidence = root / ".cache/interactive-appliance-evidence"
+    public = root / ".cache/interactive-appliance-artifact"
+    try:
+        info = public.lstat()
+    except OSError as error:
+        raise ValueError("Missing public appliance artifact directory") from error
+    if public.is_symlink() or not stat.S_ISDIR(info.st_mode):
+        raise ValueError("Unsafe public appliance artifact directory")
+    entries = {path.name: path for path in public.iterdir()}
+    if set(entries) != PUBLIC_ARTIFACT_FILES:
+        raise ValueError("Public appliance artifact inventory changed")
+    hashes = {}
+    for name, path in entries.items():
+        item = path.lstat()
+        if (path.is_symlink() or not stat.S_ISREG(item.st_mode) or item.st_nlink != 1
+                or not 0 < item.st_size <= PUBLIC_ARTIFACT_LIMITS[name]):
+            raise ValueError("Unsafe public appliance artifact file: " + name)
+        hashes[name] = _hash_public_file(path)
+
+    controller = unique_json((evidence / "result.json").read_bytes())
+    artifact = controller["artifact"]
+    qcow = entries[ARTIFACT_NAME]
+    actual = dict(artifact)
+    actual.update({"bytes": qcow.stat().st_size, "sha256": hashes[ARTIFACT_NAME]})
+    if actual != artifact:
+        raise ValueError("Public qcow2 differs from retained evidence")
+    public_manifest = unique_json(entries["manifest.json"].read_bytes())
+    retained_manifest = unique_json((evidence / "manifest.json").read_bytes())
+    if (public_manifest != retained_manifest or public_manifest.get("disk") != artifact
+            or hashes["manifest.json"] != controller["manifest_sha256"]):
+        raise ValueError("Public manifest differs from retained evidence")
+    public_screen = ppm_observation(entries["display.ppm"])
+    retained_screen = ppm_observation(evidence / "display.ppm")
+    if (public_screen != retained_screen
+            or hashes["display.ppm"] != controller["screenshot_sha256"]
+            or public_manifest.get("reboot", {}).get("screenshot", {}).get("sha256")
+            != hashes["display.ppm"]):
+        raise ValueError("Public screenshot differs from retained evidence")
+    return sum(path.stat().st_size for path in entries.values())
+
+
 def _new_directory(path, mode=0o700, owner=None):
     if path.exists() or path.is_symlink():
         raise ValueError("Appliance path must be new: " + str(path))
@@ -397,6 +862,23 @@ def _installed_desktop_bindings(root, source):
     }
 
 
+def _expected_guest_contract(root, source, nonce):
+    if not isinstance(nonce, str) or re.fullmatch(r"[0-9a-f]{32}", nonce) is None:
+        raise ValueError("Invalid appliance guest nonce")
+    installed = _installed_desktop_bindings(root, source)
+    return {
+        "schema": 1, "nonce": nonce, "username": "symbi-test",
+        "source_binding": source,
+        "sddm_config_sha256": hashlib.sha256(SDDM_CONFIGURATION.encode()).hexdigest(),
+        "production_files": installed["production_files"],
+        "seed_files": installed["seed_files"],
+        "desktop_components": {
+            "preparation_sha256": installed["preparation_sha256"],
+            "files": installed["files"], "packages": installed["packages"],
+        },
+    }
+
+
 def _produce_appliance(root, group, podman, image_id, disk, source, containers, run,
                        evidence, stage, artifact_output, progress):
     """Run the appliance producer while the public wrapper owns fail-closed cleanup."""
@@ -407,18 +889,7 @@ def _produce_appliance(root, group, podman, image_id, disk, source, containers, 
     output = stage / "output"
     _new_directory(program, owner=10001)
     _new_directory(output, owner=10001)
-    installed = _installed_desktop_bindings(root, source)
-    expected = {
-        "schema": 1, "nonce": secrets.token_hex(16), "username": "symbi-test",
-        "source_binding": source,
-        "sddm_config_sha256": hashlib.sha256(SDDM_CONFIGURATION.encode()).hexdigest(),
-        "production_files": installed["production_files"],
-        "seed_files": installed["seed_files"],
-        "desktop_components": {
-            "preparation_sha256": installed["preparation_sha256"],
-            "files": installed["files"], "packages": installed["packages"],
-        },
-    }
+    expected = _expected_guest_contract(root, source, secrets.token_hex(16))
     for name in ("contract.py", "producer.py", "reboot.py", "p.service", "v.service",
                  "provision.py", "verify.py"):
         _copy_regular(root / "image/appliance" / name, program / name)
@@ -487,12 +958,20 @@ def _produce_appliance(root, group, podman, image_id, disk, source, containers, 
                 or sha256(display) != reboot["screenshot"]["sha256"]):
             raise ValueError("Retained display evidence differs from its source-bound report")
         progress["stage"] = "retention"
-        manifest = build_manifest(source, artifact, producer, reboot)
+        expires = _manifest_expiry()
+        manifest = build_manifest(
+            source, artifact, producer, reboot,
+            expires - timedelta(days=RETENTION_DAYS),
+        )
         (output / "public/manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
         _copy_public_evidence(output / "evidence", evidence)
         _copy_public_evidence(reboot_output, evidence)
+        os.replace(evidence / "result.json", evidence / "reboot-result.json")
         if sha256(evidence / "display.ppm") != reboot["screenshot"]["sha256"]:
             raise ValueError("Copied display evidence differs from its source-bound report")
+        shutil.copyfile(output / "public/manifest.json", evidence / "manifest.json")
+        if sha256(evidence / "manifest.json") != sha256(output / "public/manifest.json"):
+            raise ValueError("Copied appliance manifest differs from the user artifact")
         shutil.copyfile(evidence / "display.ppm", output / "public/display.ppm")
         if sha256(output / "public/display.ppm") != reboot["screenshot"]["sha256"]:
             raise ValueError("Retained display artifact differs from its source-bound report")
@@ -506,7 +985,12 @@ def _produce_appliance(root, group, podman, image_id, disk, source, containers, 
             "independent_reboot_passed": True, "os_qualified": False,
             "release_qualified": False, "signature_qualified": False,
             "source_binding": source, "artifact": artifact,
-            "manifest_sha256": sha256(artifact_output / "manifest.json"), "scope": SCOPE,
+            "producer_result_sha256": sha256(evidence / "producer-result.json"),
+            "guest_report_sha256": sha256(evidence / "guest-report.json"),
+            "reboot_result_sha256": sha256(evidence / "reboot-result.json"),
+            "manifest_sha256": sha256(artifact_output / "manifest.json"),
+            "screenshot_sha256": sha256(evidence / "display.ppm"),
+            "scope": SCOPE,
         }
         _write_controller_record(evidence, final)
         return final
@@ -584,9 +1068,13 @@ def invalidate_appliance_output(root, source_binding):
 
 def finalize_failed_appliance_evidence(root):
     """Leave only one exact failure receipt after any outer-controller failure."""
+    root = Path(root).resolve()
     evidence = root / ".cache/interactive-appliance-evidence"
-    artifact_output = root / ".cache/interactive-appliance-artifact"
+    ready = root / ".cache/interactive-appliance-evidence.ready"
     result_path = evidence / "result.json"
+    if not _remove_local_output(ready):
+        _discard_failed_appliance_outputs(root)
+        return False
     try:
         evidence_info = evidence.lstat()
         if evidence.is_symlink() or not stat.S_ISDIR(evidence_info.st_mode):
@@ -598,8 +1086,7 @@ def finalize_failed_appliance_evidence(root):
         result = unique_json(result_path.read_bytes())
         source = validate_source_binding(result.get("source_binding"))
     except (OSError, ValueError, json.JSONDecodeError):
-        _remove_local_output(evidence)
-        _remove_local_output(artifact_output)
+        _discard_failed_appliance_outputs(root)
         return False
     try:
         exact = controller_failure_record(
@@ -608,18 +1095,40 @@ def finalize_failed_appliance_evidence(root):
         )
     except (TypeError, UnicodeError, ValueError):
         exact = None
-    children = tuple(path.name for path in evidence.iterdir())
-    if (result == exact and children == ("result.json",)
-            and not artifact_output.exists() and not artifact_output.is_symlink()):
+    try:
+        children = {path.name for path in evidence.iterdir()}
+    except OSError:
+        children = set()
+    if result == exact:
+        if children == {"result.json"} and _failure_cleanup_complete(root, result):
+            return True
+        _discard_failed_appliance_outputs(root)
+        return False
+    try:
+        sanitized = invalidate_appliance_output(root, source)
+        final = unique_json(result_path.read_bytes())
+        children = {path.name for path in evidence.iterdir()}
+    except (OSError, TypeError, UnicodeError, ValueError, json.JSONDecodeError):
+        _discard_failed_appliance_outputs(root)
+        return False
+    if (final == sanitized and children == {"result.json"}
+            and _failure_cleanup_complete(root, final)):
         return True
-    invalidate_appliance_output(root, source)
-    return True
+    _discard_failed_appliance_outputs(root)
+    return False
 
 
 def main():
-    if (sys.argv[1:] != ["--sanitize-failure"] or os.geteuid() != 0
-            or os.environ.get("GITHUB_ACTIONS") != "true"
+    if (os.environ.get("GITHUB_ACTIONS") != "true"
             or os.environ.get("RUNNER_ENVIRONMENT") != "github-hosted"):
+        raise SystemExit("Use only the hosted appliance evidence controller")
+    if sys.argv[1:] == ["--validate-evidence"]:
+        validate_retained_evidence(Path.cwd().resolve())
+        return
+    if sys.argv[1:] == ["--validate-public-artifact"]:
+        validate_public_artifact(Path.cwd().resolve())
+        return
+    if sys.argv[1:] != ["--sanitize-failure"] or os.geteuid() != 0:
         raise SystemExit("Use only the hosted failed-appliance sanitizer")
     if not finalize_failed_appliance_evidence(Path.cwd().resolve()):
         raise SystemExit("No source-bound appliance failure receipt was available")

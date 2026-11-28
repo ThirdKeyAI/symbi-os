@@ -27,13 +27,13 @@ disk.
 Before any download, the workflow invokes the same retained-preflight validator as
 the controller and requires selected run `46125049529`. It also requires the
 60 GiB controller floor plus the exact 4,177,421,526-byte retained ZIP and a 1 GiB
-preparation margin. The seven workflow steps have hard limits of 5, 2, 20, 20, 130,
-10, and 30 minutes: 217 minutes total inside a 240-minute job, leaving 23 minutes of
-outer margin. The download's 30-second metadata and 900-second archive caps leave
+preparation margin. The nine workflow steps have hard limits of 5, 1, 2, 20, 20,
+130, 10, 10, and 30 minutes: 228 minutes total inside a 240-minute job, leaving 12
+minutes of outer margin. The download's 30-second metadata and 900-second archive caps leave
 4.5 minutes in its 20-minute step for hashing and wrapper work. The 20-minute
 prepare step contains a 15-minute unit, and the
 130-minute controller step contains a 115-minute unit, leaving bounded cleanup and
-evidence time before the two bounded uploads.
+evidence time before the evidence upload, final public validation, and download upload.
 
 The fixture creates `symbi-test` only on the appliance disk. The account is locked,
 has no password, SSH key, or `wheel` membership, and enters `symbi.desktop` through a
@@ -57,8 +57,32 @@ This generic virtio/TCG gate does not exercise physical NVIDIA hardware.
 Only then does `manifest.json` bind the source commit and Git tree, retained OCI
 artifact, installed disk, qcow2 hash, retained screenshot, two-day expiry, and
 offline launch command. The qcow2, manifest, and screenshot share the success-only
-two-day download artifact; the always-retained failure evidence excludes the
-screenshot.
+two-day download artifact. A separate seven-day evidence artifact keeps the exact
+source-bound `reboot-result.json`, `manifest.json`, and `display.ppm` alongside the
+bounded producer, reboot, controller, and outer-systemd records. The controller
+accepts only that fixed success inventory, preserves the screenshot's 4 MiB limit,
+and enforces a 32 MiB aggregate ceiling before enabling upload. The outer producer
+runs in a named retained oneshot. Its numeric terminal status and resource facts are
+captured while the unit is still loaded and synced to the evidence filesystem. The
+wrapper then stops and resets the unit, requires both `LoadState=not-found` and the
+captured control-group path to be gone, and validates the final evidence inventory
+and contents only after no unit descendant can still write them. A collection,
+cleanup, swap, OOM, or final-validation failure removes the evidence and public
+output and emits no upload marker.
+A failed run instead can retain exactly the all-false controller receipt and
+fixed-field systemd record only when the source-bound appliance controller created
+evidence and the wrapper then sanitized and validated that exact pair. Earlier
+preparation failures, failed sanitization, failed evidence validation, and failed
+outer-unit collection produce no `interactive-appliance-evidence` artifact; their
+workflow logs remain available. Immediately before the successful download upload,
+a separate validator accepts only the qcow2, manifest, and screenshot, rehashes all
+three, scans them for credential markers, and cross-checks them against the
+seven-day evidence. The manifest expiry comes from the hosted workflow clock rather
+than its own contents. A mismatch at this later check blocks the download. The
+bounded evidence may already have uploaded and remains a record of the earlier
+controller result; it is not proof that the rejected public bytes were delivered.
+After the two-day artifact expires, the longer-lived evidence can still establish
+what the independent reboot observed, but it cannot rehash the absent qcow2 bytes.
 
 ## Download and inspect a successful run
 
@@ -216,17 +240,23 @@ clipboard, Tmux, and Tolaria shortcuts are reserved no-ops in this slice. The VM
 no virtual NIC, audio device, shared folder, or host-GPU passthrough. It does not
 exercise physical NVIDIA hardware.
 
-Run the `HIGHLY EXPERIMENTAL interactive appliance` workflow manually only while the
-reviewed lock-bound preflight remains selected. Ordinary pushes and pull requests
-never schedule it. A failed or mismatched run retains only bounded evidence with all
-success and qualification claims false. Its controller receipt records a fixed
-stage, source commit/tree, local cleanup, exact cgroup receipts, and a source-bound
-child-result digest. At most the approved QEMU and serial log tails are retained;
-host paths, URLs, credentials, control characters, and key material are redacted,
-while links, special files, and oversized inputs are rejected. The qcow2 upload is
-the final, success-gated workflow step, so an earlier failure cannot publish it.
-Artifact service behavior after a failure inside that final upload remains controlled
-by the hosting platform.
+Run the `HIGHLY EXPERIMENTAL interactive appliance` workflow manually only at a
+reviewed commit whose strict lock selects preflight run `46125049529`. Ordinary
+pushes and pull requests never schedule it. A controller failure before the evidence
+upload can retain only the bounded controller and systemd files with all success and
+qualification claims false after the wrapper validates both records. The controller
+record contains a fixed stage, source commit/tree, local cleanup, exact cgroup
+receipts, and any source-bound child-result diagnostic. At most the approved QEMU and
+serial log tails are embedded; host paths, URLs, credentials, control characters,
+and key material are redacted, while links, special files, and oversized inputs are
+rejected. An earlier preparation failure,
+an outer-unit collection or OOM failure, or any failure to sanitize or validate the
+pair retains no appliance evidence artifact. A later public revalidation failure
+blocks the qcow2 while the already uploaded diagnostic evidence can remain. The
+qcow2 upload is the final,
+success-gated workflow step, so an earlier failure cannot publish it. Artifact
+service behavior after a failure inside that final upload remains controlled by the
+hosting platform.
 
 No graphical appliance run has passed yet, so there is no current downloadable or
 bootable result from this card.

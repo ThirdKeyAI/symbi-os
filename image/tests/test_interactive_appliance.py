@@ -22,9 +22,15 @@ from image.appliance.contract import (APPLIANCE_CONTAINER_LIMITS,
     firmware_arguments, installer_arguments, provision_qemu_arguments,
     reboot_qemu_arguments, user_launch_arguments, validate_guest_report,
     validate_reboot_report, validate_source_binding)
-from image.appliance.hosted import (_failure_diagnostic, _installed_desktop_bindings,
+from image.appliance.hosted import (EVIDENCE_FILE_LIMITS,
+                                    MAX_RETAINED_EVIDENCE_BYTES,
+                                    PUBLIC_ARTIFACT_FILES,
+                                    SUCCESS_EVIDENCE_FILES,
+                                    _failure_diagnostic, _installed_desktop_bindings,
                                     _sanitize_diagnostic,
-                                    invalidate_appliance_output, produce_appliance)
+                                    invalidate_appliance_output, produce_appliance,
+                                    validate_public_artifact,
+                                    validate_retained_evidence)
 from image.appliance.prerequisite import (DOWNLOAD_WORKING_MARGIN_BYTES,
     require_download_capacity, required_free_before_download,
     validate_appliance_prerequisites)
@@ -36,6 +42,34 @@ from image.atomic.hosted import MINIMUM_DISK_FREE_BYTES, enforce_appliance_final
 
 
 ROOT = Path(__file__).resolve().parents[2]
+EXPECTED_EXPIRY = "2026-11-29T00:00:00Z"
+CHILD_LIMITS = dict(APPLIANCE_CONTAINER_LIMITS)
+
+
+def cgroup_final():
+    return CHILD_LIMITS | {
+        "memory.peak": "1048576",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\n",
+        "cpu.stat": "usage_usec 1000\nuser_usec 600\nsystem_usec 400\n",
+    }
+
+
+def outer_systemd_result(result="success", code=1, status=0,
+                         active="active", sub="exited"):
+    """Match fixed fields emitted by systemctl show for the retained oneshot."""
+    return {
+        "LoadState": "loaded", "Type": "oneshot", "RemainAfterExit": "yes",
+        "ActiveState": active, "SubState": sub, "Result": result,
+        "OOMPolicy": "stop", "MemoryMax": str(5 * 1024**3), "MemoryPeak": "1",
+        "MemorySwapMax": "0", "MemorySwapPeak": "0", "CPUUsageNSec": "1",
+        "ExecMainCode": str(code), "ExecMainStatus": str(status),
+    }
+
+
+def write_outer_systemd_result(path, **changes):
+    record = outer_systemd_result()
+    record.update(changes)
+    path.write_text("".join(f"{name}={value}\n" for name, value in record.items()))
 
 
 def source_binding():
@@ -101,6 +135,7 @@ def guest(expected):
                        "cpu_quota": "100%", "tasks_max": "64",
                        "runtime_max_seconds": "60", "no_new_privileges": "yes"},
         },
+        "autologin_sha256": expected.get("sddm_config_sha256"),
         "scope": SCOPE,
     }
 
@@ -119,11 +154,482 @@ def reboot(source=None, bound_artifact=None):
                        "height": 600, "sampled_colors": 8,
                        "boot_elapsed_seconds": 90},
         "command": reboot_qemu_arguments(),
+        "limits": dict(CHILD_LIMITS), "cgroup_final": cgroup_final(),
         "scope": SCOPE,
     }
 
 
+def retained_success_evidence(root):
+    """Write one compact, internally bound success inventory for offline tests."""
+    evidence = root / ".cache/interactive-appliance-evidence"
+    evidence.mkdir(parents=True)
+    source = source_binding()
+    qcow_bytes = b"QFI\xfb compact public appliance fixture\n"
+    disk = {
+        "name": ARTIFACT_NAME, "bytes": len(qcow_bytes),
+        "sha256": hashlib.sha256(qcow_bytes).hexdigest(), "format": "qcow2",
+        "compression": "qcow2-zlib-clusters", "virtual_bytes": VIRTUAL_DISK_BYTES,
+    }
+    verifier = root / "image/appliance/verify.py"
+    verifier.parent.mkdir(parents=True)
+    verifier.write_text("# retained verifier fixture\n")
+    expected = {
+        "schema": 1, "nonce": "0" * 32, "username": "symbi-test",
+        "source_binding": source,
+        "sddm_config_sha256": hashlib.sha256(SDDM_CONFIGURATION.encode()).hexdigest(),
+        "production_files": {}, "seed_files": {},
+        "desktop_components": {"preparation_sha256": "4" * 64,
+                               "files": {}, "packages": {}},
+    }
+    screenshot_path = evidence / "display.ppm"
+    pixels = bytearray(b"\0\0\0" * (320 * 200))
+    pixels[:3] = b"\xff\xff\xff"
+    screenshot_path.write_bytes(b"P6\n320 200\n255\n" + pixels)
+    screenshot = ppm_observation(screenshot_path)
+    screenshot["boot_elapsed_seconds"] = 90
+    reboot_result = reboot(source, disk)
+    reboot_result["screenshot"] = screenshot
+    guest_result = guest(expected)
+    guest_result["probe_sha256"] = hashlib.sha256(verifier.read_bytes()).hexdigest()
+    guest_result["expected_sha256"] = hashlib.sha256(
+        (json.dumps(expected, sort_keys=True) + "\n").encode()).hexdigest()
+    (evidence / "guest-report.json").write_text(json.dumps(guest_result, indent=2) + "\n")
+    producer = {
+        "schema": 1,
+        "passed": True, "guest_booted": True, "graphical_desktop_observed": True,
+        "artifact_retained": True, "independent_reboot_passed": False,
+        "os_qualified": False, "release_qualified": False,
+        "signature_qualified": False, "source_binding": source, "artifact": disk,
+        "guest_report_sha256": hashlib.sha256(
+            (evidence / "guest-report.json").read_bytes()).hexdigest(),
+        "limits": dict(CHILD_LIMITS), "command": provision_qemu_arguments(),
+        "qemu_version": "QEMU emulator version 9.2.0\n",
+        "tools": {"qemu-system-x86_64": "5" * 64, "qemu-img": "6" * 64},
+        "scope": SCOPE, "cgroup_final": cgroup_final(),
+    }
+    manifest = build_manifest(
+        source, disk, producer, reboot_result,
+        datetime(2026, 11, 27, tzinfo=timezone.utc),
+    )
+    documents = {
+        "producer-result.json": producer,
+        "reboot-result.json": reboot_result,
+        "manifest.json": manifest,
+    }
+    for name, document in documents.items():
+        (evidence / name).write_text(json.dumps(document, indent=2) + "\n")
+    controller = {
+        "schema": 1, "passed": True, "guest_booted": True,
+        "graphical_desktop_observed": True, "artifact_retained": True,
+        "independent_reboot_passed": True, "os_qualified": False,
+        "release_qualified": False, "signature_qualified": False,
+        "source_binding": source, "artifact": disk,
+        "producer_result_sha256": hashlib.sha256(
+            (evidence / "producer-result.json").read_bytes()).hexdigest(),
+        "guest_report_sha256": hashlib.sha256(
+            (evidence / "guest-report.json").read_bytes()).hexdigest(),
+        "reboot_result_sha256": hashlib.sha256(
+            (evidence / "reboot-result.json").read_bytes()).hexdigest(),
+        "manifest_sha256": hashlib.sha256(
+            (evidence / "manifest.json").read_bytes()).hexdigest(),
+        "screenshot_sha256": hashlib.sha256(screenshot_path.read_bytes()).hexdigest(),
+        "scope": SCOPE,
+    }
+    (evidence / "result.json").write_text(json.dumps(controller, indent=2) + "\n")
+    write_outer_systemd_result(evidence / "systemd-result.txt")
+    for name in SUCCESS_EVIDENCE_FILES:
+        if not (evidence / name).exists():
+            (evidence / name).write_bytes(b"")
+    public = root / ".cache/interactive-appliance-artifact"
+    public.mkdir()
+    (public / ARTIFACT_NAME).write_bytes(qcow_bytes)
+    (public / "manifest.json").write_bytes((evidence / "manifest.json").read_bytes())
+    (public / "display.ppm").write_bytes(screenshot_path.read_bytes())
+    return evidence, expected
+
+
+def validate_fixture(root, expected, checkout=None, expiry=EXPECTED_EXPIRY):
+    source = expected["source_binding"]
+    checkout = checkout or {
+        "source_commit": source["source_commit"], "source_tree": source["source_tree"],
+    }
+    with mock.patch("image.appliance.hosted._expected_guest_contract", return_value=expected), \
+            mock.patch("image.appliance.hosted._checkout_binding", return_value=checkout):
+        return validate_retained_evidence(root, expiry)
+
+
+def validate_public_fixture(root, expected, checkout=None, expiry=EXPECTED_EXPIRY):
+    source = expected["source_binding"]
+    checkout = checkout or {
+        "source_commit": source["source_commit"], "source_tree": source["source_tree"],
+    }
+    with mock.patch("image.appliance.hosted._expected_guest_contract", return_value=expected), \
+            mock.patch("image.appliance.hosted._checkout_binding", return_value=checkout):
+        return validate_public_artifact(root, expiry)
+
+
+def validate_failure_fixture(root, source=None):
+    source = source or source_binding()
+    checkout = {
+        "source_commit": source["source_commit"], "source_tree": source["source_tree"],
+    }
+    with mock.patch("image.appliance.hosted._checkout_binding", return_value=checkout):
+        return validate_retained_evidence(root)
+
+
+def rewrite_json(path, value):
+    path.write_text(json.dumps(value, indent=2) + "\n")
+
+
+def rebind_controller_hash(evidence, filename, field):
+    controller = json.loads((evidence / "result.json").read_text())
+    controller[field] = hashlib.sha256((evidence / filename).read_bytes()).hexdigest()
+    rewrite_json(evidence / "result.json", controller)
+
+
 class InteractiveApplianceContract(unittest.TestCase):
+    def test_retained_success_evidence_is_exact_and_independently_verifiable(self):
+        self.assertEqual(MAX_RETAINED_EVIDENCE_BYTES, 32 * 1024**2)
+        self.assertEqual(SUCCESS_EVIDENCE_FILES, {
+            "compress-qcow2.log", "convert-raw.log", "display.ppm",
+            "guest-report.json", "manifest.json", "producer-result.json",
+            "provision-qemu.log", "provision-serial.log", "reboot-qemu.log",
+            "reboot-result.json", "reboot-serial.log", "result.json",
+            "systemd-result.txt",
+        })
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence, expected = retained_success_evidence(root)
+            total = validate_fixture(root, expected)
+            self.assertEqual(total, sum(path.stat().st_size for path in evidence.iterdir()))
+            self.assertLess(total, MAX_RETAINED_EVIDENCE_BYTES)
+
+            (evidence / "unexpected.log").write_text("extra")
+            with self.assertRaisesRegex(ValueError, "Unsafe appliance evidence file"):
+                validate_fixture(root, expected)
+
+    def test_public_artifact_is_exact_secret_free_and_cross_bound(self):
+        self.assertEqual(PUBLIC_ARTIFACT_FILES, {
+            ARTIFACT_NAME, "manifest.json", "display.ppm",
+        })
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            _, expected = retained_success_evidence(root)
+            public = root / ".cache/interactive-appliance-artifact"
+            total = validate_public_fixture(root, expected)
+            self.assertEqual(total, sum(path.stat().st_size for path in public.iterdir()))
+
+        for mutation, message in (
+            ("extra", "inventory changed"),
+            ("link", "Unsafe public appliance artifact file"),
+            ("credential", "Credential-like material"),
+            ("qcow", "Public qcow2 differs"),
+            ("manifest", "Public manifest differs"),
+            ("screenshot", "Public screenshot differs"),
+        ):
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                evidence, expected = retained_success_evidence(root)
+                public = root / ".cache/interactive-appliance-artifact"
+                if mutation == "extra":
+                    (public / "workflow-token.txt").write_text("unexpected")
+                elif mutation == "link":
+                    (public / "manifest.json").unlink()
+                    (public / "manifest.json").symlink_to(evidence / "manifest.json")
+                elif mutation == "credential":
+                    (public / ARTIFACT_NAME).write_bytes(b"PRIVATE KEY-----")
+                elif mutation == "qcow":
+                    with (public / ARTIFACT_NAME).open("ab") as stream:
+                        stream.write(b"changed")
+                elif mutation == "manifest":
+                    with (public / "manifest.json").open("ab") as stream:
+                        stream.write(b"\n")
+                else:
+                    data = bytearray((public / "display.ppm").read_bytes())
+                    data[-1] ^= 1
+                    (public / "display.ppm").write_bytes(data)
+                with self.assertRaisesRegex(ValueError, message):
+                    validate_public_fixture(root, expected)
+
+    def test_manifest_expiry_is_bound_to_the_workflow_input(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence, expected = retained_success_evidence(root)
+            manifest = json.loads((evidence / "manifest.json").read_text())
+            manifest["expires_at"] = "2099-01-01T00:00:00Z"
+            rewrite_json(evidence / "manifest.json", manifest)
+            rebind_controller_hash(evidence, "manifest.json", "manifest_sha256")
+            with self.assertRaisesRegex(ValueError, "workflow binding"):
+                validate_fixture(root, expected)
+
+    def test_source_commit_and_tree_are_bound_to_the_checkout(self):
+        for field in ("source_commit", "source_tree"):
+            with self.subTest(field=field), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                _, expected = retained_success_evidence(root)
+                source = expected["source_binding"]
+                checkout = {
+                    "source_commit": source["source_commit"],
+                    "source_tree": source["source_tree"],
+                }
+                checkout[field] = "8" * 40
+                with self.assertRaisesRegex(ValueError, "checkout commit or tree"):
+                    validate_fixture(root, expected, checkout=checkout)
+
+    def test_retained_evidence_aggregate_ceiling_precedes_content_parsing(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence = root / ".cache/interactive-appliance-evidence"
+            evidence.mkdir(parents=True)
+            for name, maximum in EVIDENCE_FILE_LIMITS.items():
+                with (evidence / name).open("wb") as stream:
+                    stream.truncate(maximum)
+            self.assertGreater(
+                sum(path.stat().st_size for path in evidence.iterdir()),
+                MAX_RETAINED_EVIDENCE_BYTES,
+            )
+            with self.assertRaisesRegex(ValueError, "aggregate byte ceiling"):
+                validate_retained_evidence(root)
+
+    def test_retained_evidence_rejects_cross_binding_changes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence, expected = retained_success_evidence(root)
+            result = json.loads((evidence / "reboot-result.json").read_text())
+            result["source_binding"]["source_commit"] = "8" * 40
+            rewrite_json(evidence / "reboot-result.json", result)
+            rebind_controller_hash(
+                evidence, "reboot-result.json", "reboot_result_sha256")
+            with self.assertRaisesRegex(ValueError, "reboot did not pass"):
+                validate_fixture(root, expected)
+
+    def test_retained_evidence_rejects_extra_positive_claims_in_every_child_schema(self):
+        for filename, message in (
+            ("producer-result.json", "producer success receipt"),
+            ("guest-report.json", "guest report schema"),
+            ("reboot-result.json", "reboot success receipt"),
+        ):
+            with self.subTest(filename=filename), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                evidence, expected = retained_success_evidence(root)
+                document = json.loads((evidence / filename).read_text())
+                document["security_qualified"] = True
+                rewrite_json(evidence / filename, document)
+                if filename == "producer-result.json":
+                    rebind_controller_hash(
+                        evidence, filename, "producer_result_sha256")
+                elif filename == "guest-report.json":
+                    producer = json.loads((evidence / "producer-result.json").read_text())
+                    producer["guest_report_sha256"] = hashlib.sha256(
+                        (evidence / filename).read_bytes()).hexdigest()
+                    rewrite_json(evidence / "producer-result.json", producer)
+                    rebind_controller_hash(evidence, filename, "guest_report_sha256")
+                    rebind_controller_hash(
+                        evidence, "producer-result.json", "producer_result_sha256")
+                else:
+                    rebind_controller_hash(
+                        evidence, filename, "reboot_result_sha256")
+                with self.assertRaisesRegex(ValueError, message):
+                    validate_fixture(root, expected)
+
+    def test_boolean_schema_values_never_count_as_integer_one(self):
+        targets = (
+            ("result.json", None),
+            ("producer-result.json", "producer_result_sha256"),
+            ("guest-report.json", "guest_report_sha256"),
+            ("reboot-result.json", "reboot_result_sha256"),
+            ("manifest.json", "manifest_sha256"),
+        )
+        for filename, controller_field in targets:
+            with self.subTest(filename=filename), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                evidence, expected = retained_success_evidence(root)
+                document = json.loads((evidence / filename).read_text())
+                document["schema"] = True
+                rewrite_json(evidence / filename, document)
+                if filename == "guest-report.json":
+                    producer = json.loads((evidence / "producer-result.json").read_text())
+                    producer["guest_report_sha256"] = hashlib.sha256(
+                        (evidence / filename).read_bytes()).hexdigest()
+                    rewrite_json(evidence / "producer-result.json", producer)
+                    rebind_controller_hash(
+                        evidence, "producer-result.json", "producer_result_sha256")
+                if controller_field is not None:
+                    rebind_controller_hash(evidence, filename, controller_field)
+                with self.assertRaises(ValueError):
+                    validate_fixture(root, expected)
+
+    def test_retained_evidence_rejects_unbound_guest_and_producer_artifact(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence, expected = retained_success_evidence(root)
+            guest_result = json.loads((evidence / "guest-report.json").read_text())
+            guest_result["expected_sha256"] = "7" * 64
+            rewrite_json(evidence / "guest-report.json", guest_result)
+            producer = json.loads((evidence / "producer-result.json").read_text())
+            producer["guest_report_sha256"] = hashlib.sha256(
+                (evidence / "guest-report.json").read_bytes()).hexdigest()
+            rewrite_json(evidence / "producer-result.json", producer)
+            rebind_controller_hash(evidence, "guest-report.json", "guest_report_sha256")
+            rebind_controller_hash(
+                evidence, "producer-result.json", "producer_result_sha256")
+            with self.assertRaisesRegex(ValueError, "(?i)guest.*unbound"):
+                validate_fixture(root, expected)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence, expected = retained_success_evidence(root)
+            producer = json.loads((evidence / "producer-result.json").read_text())
+            producer["artifact"]["sha256"] = "7" * 64
+            rewrite_json(evidence / "producer-result.json", producer)
+            rebind_controller_hash(
+                evidence, "producer-result.json", "producer_result_sha256")
+            with self.assertRaisesRegex(ValueError, "producer success receipt"):
+                validate_fixture(root, expected)
+
+    def test_retained_evidence_rejects_invalid_systemd_and_oom_facts(self):
+        replacements = (
+            ("MemoryPeak=1", "MemoryPeak=unknown", "numeric"),
+            ("MemoryPeak=1", f"MemoryPeak={999 * 1024**3}", "Out-of-range"),
+            ("MemorySwapPeak=0", "MemorySwapPeak=1", "used swap"),
+            ("ExecMainStatus=0", "ExecMainStatus=True", "numeric"),
+            ("ExecMainStatus=0", "ExecMainStatus=00", "Non-canonical"),
+            ("ExecMainCode=1", "ExecMainCode=exited", "numeric"),
+            ("ExecMainCode=1", "ExecMainCode=0", "child code"),
+            ("Type=oneshot", "Type=simple", "unit contract"),
+            ("RemainAfterExit=yes", "RemainAfterExit=no", "unit contract"),
+            ("Result=success", "Result=exit-code", "exact systemd success"),
+            ("OOMPolicy=stop", "OOMPolicy=continue", "OOM policy"),
+        )
+        for old, new, message in replacements:
+            with self.subTest(replacement=new), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                evidence, expected = retained_success_evidence(root)
+                systemd_path = evidence / "systemd-result.txt"
+                systemd_path.write_text(systemd_path.read_text().replace(old, new))
+                with self.assertRaisesRegex(ValueError, message):
+                    validate_fixture(root, expected)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence, expected = retained_success_evidence(root)
+            systemd_path = evidence / "systemd-result.txt"
+            systemd = systemd_path.read_text()
+            systemd = systemd.replace("Result=success", "Result=signal")
+            systemd = systemd.replace("ActiveState=active", "ActiveState=failed")
+            systemd = systemd.replace("SubState=exited", "SubState=failed")
+            systemd = systemd.replace("ExecMainCode=1", "ExecMainCode=2")
+            systemd = systemd.replace("ExecMainStatus=0", "ExecMainStatus=9")
+            systemd_path.write_text(systemd)
+            with self.assertRaisesRegex(ValueError, "exact systemd success"):
+                validate_fixture(root, expected)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence, expected = retained_success_evidence(root)
+            write_outer_systemd_result(
+                evidence / "systemd-result.txt", Result="oom-kill",
+                ActiveState="failed", SubState="failed", ExecMainCode="2",
+                ExecMainStatus="9",
+            )
+            with self.assertRaisesRegex(ValueError, "OOM evidence is not uploadable"):
+                validate_fixture(root, expected)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence, expected = retained_success_evidence(root)
+            producer = json.loads((evidence / "producer-result.json").read_text())
+            producer["cgroup_final"]["memory.events"] = (
+                "low 0\nhigh 0\nmax 0\noom 1\noom_kill 0\noom_group_kill 0\n")
+            rewrite_json(evidence / "producer-result.json", producer)
+            rebind_controller_hash(
+                evidence, "producer-result.json", "producer_result_sha256")
+            with self.assertRaisesRegex(ValueError, "OOM event"):
+                validate_fixture(root, expected)
+
+    def test_retained_failure_evidence_has_only_controller_and_systemd_records(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence = root / ".cache/interactive-appliance-evidence"
+            evidence.mkdir(parents=True)
+            cleanup = {
+                "stage_directory_removed": True, "user_artifact_absent": True,
+                "screenshot_artifact_absent": True,
+                "non_controller_evidence_removed": True,
+            }
+            result = controller_failure_record(
+                source_binding(), "cleanup", "AtomicControllerFailure", cleanup, {},
+            )
+            (evidence / "result.json").write_text(json.dumps(result))
+            write_outer_systemd_result(
+                evidence / "systemd-result.txt", Result="exit-code",
+                ActiveState="failed", SubState="failed", ExecMainStatus="1",
+            )
+            self.assertGreater(validate_failure_fixture(root), 0)
+            (evidence / "display.ppm").write_bytes(b"stale")
+            with self.assertRaisesRegex(ValueError, "non-controller evidence"):
+                validate_failure_fixture(root)
+
+    def test_retained_failure_cannot_claim_unrelated_systemd_success(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence = root / ".cache/interactive-appliance-evidence"
+            evidence.mkdir(parents=True)
+            cleanup = {
+                "stage_directory_removed": True, "user_artifact_absent": True,
+                "screenshot_artifact_absent": True,
+                "non_controller_evidence_removed": True,
+            }
+            result = controller_failure_record(
+                source_binding(), "initialization", "ValueError", cleanup, {},
+            )
+            rewrite_json(evidence / "result.json", result)
+            write_outer_systemd_result(evidence / "systemd-result.txt")
+            with self.assertRaisesRegex(ValueError, "contradicts systemd success"):
+                validate_failure_fixture(root)
+
+    def test_real_systemd_interface_outcomes_use_numeric_wait_statuses(self):
+        cases = (
+            ("nonzero-exit", {"Result": "exit-code", "ExecMainCode": "1",
+                              "ExecMainStatus": "7"}, None),
+            ("signal", {"Result": "signal", "ExecMainCode": "2",
+                        "ExecMainStatus": "15"}, None),
+            ("core-dump", {"Result": "core-dump", "ExecMainCode": "3",
+                           "ExecMainStatus": "6"}, None),
+            ("timeout", {"Result": "timeout", "ExecMainCode": "2",
+                         "ExecMainStatus": "15"}, None),
+            ("oom", {"Result": "oom-kill",
+                     "ExecMainCode": "2", "ExecMainStatus": "9"},
+             "OOM evidence is not uploadable"),
+            ("exit-code-killed", {"Result": "exit-code", "ExecMainCode": "2",
+                                  "ExecMainStatus": "7"}, "systemd failure"),
+            ("timeout-exited", {"Result": "timeout", "ExecMainCode": "1",
+                                "ExecMainStatus": "124"}, "systemd failure"),
+            ("oom-wrong-status", {"Result": "oom-kill", "ExecMainCode": "2",
+                                  "ExecMainStatus": "15"}, "OOM outcome"),
+        )
+        for name, changes, error in cases:
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                evidence = root / ".cache/interactive-appliance-evidence"
+                evidence.mkdir(parents=True)
+                cleanup = {
+                    "stage_directory_removed": True, "user_artifact_absent": True,
+                    "screenshot_artifact_absent": True,
+                    "non_controller_evidence_removed": True,
+                }
+                result = controller_failure_record(
+                    source_binding(), "initialization", "ValueError", cleanup, {},
+                )
+                rewrite_json(evidence / "result.json", result)
+                terminal = changes | {"ActiveState": "failed", "SubState": "failed"}
+                write_outer_systemd_result(evidence / "systemd-result.txt", **terminal)
+                if error is None:
+                    self.assertGreater(validate_failure_fixture(root), 0)
+                else:
+                    with self.assertRaisesRegex(ValueError, error):
+                        validate_failure_fixture(root)
+
     def test_installer_selects_graphical_target_and_ephemeral_units(self):
         command = installer_arguments("sha256:" + "a"*64)
         self.assertIn("--karg=systemd.unit=graphical.target", command)
@@ -289,11 +795,9 @@ class InteractiveApplianceContract(unittest.TestCase):
         })
         hosted = (ROOT / "image/appliance/hosted.py").read_text()
         self.assertIn('"--memory=4g", "--memory-swap=4g"', hosted)
-        self.assertNotIn('"--memory=3g", "--memory-swap=3g"', hosted)
         for name in ("producer.py", "reboot.py"):
             source = (ROOT / "image/appliance" / name).read_text()
             self.assertIn("limits != APPLIANCE_CONTAINER_LIMITS", source)
-            self.assertNotIn("3221225472", source)
         wrapper = (ROOT / "scripts/check-interactive-appliance.sh").read_text()
         self.assertIn("--property=MemoryMax=5G", wrapper)
         self.assertIn("--property=MemorySwapMax=0", wrapper)
@@ -547,8 +1051,8 @@ class InteractiveApplianceContract(unittest.TestCase):
             "limits": dict(result["limits"]),
             "cgroup_final": dict(result["cgroup_final"]),
         }}
-        resources["producer"]["limits"]["memory.max"] = "3221225472"
-        resources["producer"]["cgroup_final"]["memory.max"] = "3221225472"
+        resources["producer"]["limits"]["memory.max"] = "1"
+        resources["producer"]["cgroup_final"]["memory.max"] = "1"
         with self.assertRaisesRegex(ValueError, "resource receipt"):
             controller_failure_record(
                 source_binding(), "producer", "CalledProcessError", cleanup, resources,
@@ -599,6 +1103,12 @@ class InteractiveApplianceContract(unittest.TestCase):
                 ),
                 retained,
             )
+            write_outer_systemd_result(
+                root / ".cache/interactive-appliance-evidence/systemd-result.txt",
+                Result="exit-code", ActiveState="failed", SubState="failed",
+                ExecMainStatus="1",
+            )
+            self.assertGreater(validate_failure_fixture(root), 0)
 
     def test_malformed_child_diagnostic_cannot_interrupt_cleanup(self):
         def scalar(result):
@@ -767,6 +1277,107 @@ class InteractiveApplianceContract(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 enforce_appliance_final_status("appliance", result)
 
+    def test_failure_sanitizer_discards_every_output_after_any_false_cleanup(self):
+        from image.appliance import hosted as appliance_hosted
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            cache = root / ".cache"
+            evidence = cache / "interactive-appliance-evidence"
+            stage = cache / "interactive-appliance-stage"
+            artifact_output = cache / "interactive-appliance-artifact"
+            ready = cache / "interactive-appliance-evidence.ready"
+            evidence.mkdir(parents=True)
+            stage.mkdir()
+            artifact_output.mkdir()
+            ready.write_text("stale upload authorization\n")
+            cleanup = {
+                "stage_directory_removed": False,
+                "user_artifact_absent": False,
+                "screenshot_artifact_absent": True,
+                "non_controller_evidence_removed": True,
+            }
+            failure = controller_failure_record(
+                source_binding(), "cleanup", "AtomicControllerFailure", cleanup, {},
+            )
+            (evidence / "result.json").write_text(json.dumps(failure) + "\n")
+            (artifact_output / ARTIFACT_NAME).write_bytes(b"surviving public output")
+            original_remove = appliance_hosted._remove_local_output
+            artifact_attempts = 0
+
+            def fail_first_artifact_removal(path):
+                nonlocal artifact_attempts
+                if path == artifact_output:
+                    artifact_attempts += 1
+                    if artifact_attempts == 1:
+                        return False
+                return original_remove(path)
+
+            with mock.patch.object(
+                appliance_hosted, "_remove_local_output",
+                side_effect=fail_first_artifact_removal,
+            ):
+                self.assertFalse(appliance_hosted.finalize_failed_appliance_evidence(root))
+            self.assertGreaterEqual(artifact_attempts, 2)
+            for path in (evidence, stage, artifact_output, ready):
+                self.assertFalse(path.exists() or path.is_symlink(), path)
+
+    def test_failure_sanitizer_rejects_public_output_despite_true_cleanup_claims(self):
+        from image.appliance.hosted import finalize_failed_appliance_evidence
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence = root / ".cache/interactive-appliance-evidence"
+            artifact_output = root / ".cache/interactive-appliance-artifact"
+            evidence.mkdir(parents=True)
+            artifact_output.mkdir()
+            cleanup = {
+                "stage_directory_removed": True,
+                "user_artifact_absent": True,
+                "screenshot_artifact_absent": True,
+                "non_controller_evidence_removed": True,
+            }
+            failure = controller_failure_record(
+                source_binding(), "cleanup", "AtomicControllerFailure", cleanup, {},
+            )
+            (evidence / "result.json").write_text(json.dumps(failure) + "\n")
+            (artifact_output / ARTIFACT_NAME).write_bytes(b"surviving public output")
+            self.assertFalse(finalize_failed_appliance_evidence(root))
+            self.assertFalse(evidence.exists() or evidence.is_symlink())
+            self.assertFalse(artifact_output.exists() or artifact_output.is_symlink())
+
+    def test_failure_validation_rejects_false_cleanup_or_surviving_public_output(self):
+        for case in ("false-cleanup", "public-output"):
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                evidence = root / ".cache/interactive-appliance-evidence"
+                evidence.mkdir(parents=True)
+                ready = root / ".cache/interactive-appliance-evidence.ready"
+                cleanup = {
+                    "stage_directory_removed": True,
+                    "user_artifact_absent": True,
+                    "screenshot_artifact_absent": True,
+                    "non_controller_evidence_removed": True,
+                }
+                if case == "false-cleanup":
+                    cleanup["user_artifact_absent"] = False
+                    ready.write_text("stale upload authorization\n")
+                else:
+                    artifact_output = root / ".cache/interactive-appliance-artifact"
+                    artifact_output.mkdir()
+                    (artifact_output / ARTIFACT_NAME).write_bytes(b"surviving public output")
+                failure = controller_failure_record(
+                    source_binding(), "cleanup", "AtomicControllerFailure", cleanup, {},
+                )
+                (evidence / "result.json").write_text(json.dumps(failure) + "\n")
+                write_outer_systemd_result(evidence / "systemd-result.txt")
+                with self.assertRaisesRegex(ValueError, "cleanup is incomplete"):
+                    validate_failure_fixture(root)
+                self.assertFalse(evidence.exists() or evidence.is_symlink())
+                self.assertFalse(ready.exists() or ready.is_symlink())
+                self.assertFalse(
+                    (root / ".cache/interactive-appliance-artifact").exists()
+                    or (root / ".cache/interactive-appliance-artifact").is_symlink()
+                )
+
     def test_source_bound_nonblank_reboot_is_required(self):
         source, disk = source_binding(), artifact()
         report = reboot(source, disk)
@@ -902,7 +1513,12 @@ class InteractiveApplianceContract(unittest.TestCase):
         self.assertIn("retention-days: 2", workflow)
         self.assertIn("if: success()", workflow)
         self.assertIn("SYMBI_QUALIFICATION: appliance", workflow)
-        self.assertIn("!.cache/interactive-appliance-evidence/display.ppm", workflow)
+        self.assertNotIn("!.cache/interactive-appliance-evidence/display.ppm", workflow)
+        self.assertNotIn("hashFiles('.cache/interactive-appliance-evidence.ready')", workflow)
+        self.assertIn("steps.appliance.outputs.evidence_ready == 'true'", workflow)
+        self.assertIn("SYMBI_APPLIANCE_EXPECTED_EXPIRY", workflow)
+        self.assertIn("date --utc --date='now + 2 days'", workflow)
+        self.assertIn("--validate-public-artifact", workflow)
         self.assertNotIn(".cache/interactive-appliance-hosted.log", workflow)
         self.assertNotIn(".cache/atomic-disk-evidence/", workflow)
         self.assertNotIn(".cache/atomic-image-evidence/", workflow)
@@ -912,30 +1528,71 @@ class InteractiveApplianceContract(unittest.TestCase):
         self.assertEqual(document["jobs"]["produce"]["timeout-minutes"], 240)
         expected_timeouts = {
             "Check out the explicitly selected producer revision": 5,
+            "Bind appliance expiry to the hosted workflow clock": 1,
             "Require reviewed preflight and runner capacity before download": 2,
             "Download the exact retained generic development OCI": 20,
             "Verify metadata and stream the exact retained OCI": 20,
             "Install and independently reboot the offline graphical appliance": 130,
             "Retain bounded appliance evidence including failures": 10,
+            "Revalidate the exact public appliance artifact before upload": 10,
             "Retain the compressed HIGHLY EXPERIMENTAL qcow2 for two days": 30,
         }
         self.assertEqual({step["name"]: step["timeout-minutes"] for step in steps},
                          expected_timeouts)
-        self.assertEqual(sum(expected_timeouts.values()), 217)
-        self.assertEqual(240 - sum(expected_timeouts.values()), 23)
+        self.assertEqual(sum(expected_timeouts.values()), 228)
+        self.assertEqual(240 - sum(expected_timeouts.values()), 12)
         gate = workflow.index("python3 -m image.appliance.prerequisite")
         download = workflow.index("Download the exact retained generic development OCI")
         self.assertLess(gate, download)
         self.assertIn("timeout 30 gh api", workflow)
         self.assertIn("timeout 900 gh api", workflow)
         evidence_step = workflow.index("Retain bounded appliance evidence including failures")
+        public_validation = workflow.index(
+            "Revalidate the exact public appliance artifact before upload")
         qcow2_step = workflow.index("Retain the compressed HIGHLY EXPERIMENTAL qcow2")
-        self.assertLess(evidence_step, qcow2_step)
+        self.assertLess(evidence_step, public_validation)
+        self.assertLess(public_validation, qcow2_step)
+        install_step = next(
+            step for step in steps
+            if step["name"] == "Install and independently reboot the offline graphical appliance")
+        self.assertEqual(install_step["id"], "appliance")
         script = (ROOT / "scripts/check-interactive-appliance.sh").read_text()
         self.assertNotIn("| tee", script)
         self.assertIn("--sanitize-failure", script)
+        self.assertIn("--validate-evidence", script)
+        self.assertNotIn("validated-small-evidence", script)
+        self.assertIn("rm -f -- \"$evidence_ready\"", script)
+        self.assertIn("printf 'evidence_ready=true\\n' >> \"$GITHUB_OUTPUT\"", script)
+        self.assertLess(
+            script.index("rm -f -- \"$evidence_ready\""),
+            script.index('[[ "${GITHUB_ACTIONS:-}" == true'),
+        )
         self.assertIn("> 4096", script)
         self.assertIn("RuntimeMaxSec=115min", script)
+        self.assertIn('--unit="$unit" --no-block', script)
+        self.assertIn("--property=Type=oneshot --property=RemainAfterExit=yes", script)
+        self.assertNotIn("--wait --pipe", script)
+        self.assertIn("deadline=$((SECONDS + 7020))", script)
+        self.assertIn("--property=TimeoutStartSec=115min", script)
+        self.assertIn("--property=TimeoutStopSec=30s", script)
+        self.assertIn("--property=ActiveState --property=SubState", script)
+        self.assertIn("--property=Result --property=OOMPolicy", script)
+        self.assertIn("--property=ControlGroup", script)
+        self.assertIn("--property=OOMPolicy=stop", script)
+        self.assertIn('/usr/bin/sync -f "$resource"', script)
+        self.assertIn('cgroup_path="/sys/fs/cgroup${unit_control_group}"', script)
+        self.assertIn("if ! discard_appliance_output", script)
+        self.assertIn("--property=MemoryMax", script)
+        self.assertIn("--property=MemorySwapMax", script)
+        self.assertIn("SYMBI_APPLIANCE_EXPECTED_EXPIRY", script)
+        collect = script.index("elif ! write_systemd_result")
+        cleanup = script.index("if ! stop_and_reset_unit", collect)
+        validate = script.index("elif ! validate_evidence", cleanup)
+        output = script.index("printf 'evidence_ready=true", validate)
+        self.assertLess(cleanup, output)
+        self.assertLess(collect, cleanup)
+        self.assertLess(cleanup, validate)
+        self.assertLess(validate, output)
         prepare = (ROOT / "scripts/check-atomic-image.sh").read_text()
         self.assertIn("RuntimeMaxSec=15min", prepare)
 
@@ -983,10 +1640,18 @@ class InteractiveApplianceContract(unittest.TestCase):
     def test_documentation_never_overstates_runtime_evidence(self):
         readme = (ROOT / "image/appliance/README.md").read_text()
         card = (ROOT / "docs/cards/P0-06.md").read_text()
+        readme_flat = " ".join(readme.split())
         for text in (readme, card):
             self.assertIn("HIGHLY EXPERIMENTAL", text)
             self.assertIn("no NIC", text)
         self.assertIn("Hosted runtime evidence is\nstill required", card)
+        self.assertIn("failed evidence validation, and failed\nouter-unit collection produce no", readme)
+        self.assertIn("sanitization or validation retain no", card)
+        self.assertIn("Immediately before the successful download upload", readme)
+        self.assertIn("already uploaded diagnostic evidence can remain", readme_flat)
+        self.assertIn("already\n  uploaded diagnostic evidence may remain", card)
+        self.assertIn("preflight run `46125049529`", readme)
+        self.assertNotIn("pending integrated-head preflight", readme)
 
     def test_documented_verifier_rejects_tampering_when_optimized(self):
         readme = (ROOT / "image/appliance/README.md").read_text()
