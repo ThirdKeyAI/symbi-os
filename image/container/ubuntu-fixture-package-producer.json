@@ -1,6 +1,6 @@
 {
   "schema": 2,
-  "state": "pending-discovery",
+  "state": "ready",
   "repository": {
     "id": 1472078858,
     "full_name": "ThirdKeyAI/symbi-os"
@@ -57,34 +57,34 @@
     {
       "suite": "noble",
       "inrelease": {
-        "bytes": null,
-        "sha256": null
+        "bytes": 255850,
+        "sha256": "cdb2f31d809f589719a53c6ad15f255b27569c4059542ada282aaa21b8e164b0"
       },
       "packages_xz": {
-        "bytes": null,
-        "sha256": null
+        "bytes": 1401160,
+        "sha256": "2a6a199e1031a5c279cb346646d594993f35b1c03dd4a82aaa0323980dd92451"
       }
     },
     {
       "suite": "noble-updates",
       "inrelease": {
-        "bytes": null,
-        "sha256": null
+        "bytes": 126125,
+        "sha256": "10dc47ad967e0513d877e0d55621c7393568894c4dbba1049232251630cb43c7"
       },
       "packages_xz": {
-        "bytes": null,
-        "sha256": null
+        "bytes": 1492208,
+        "sha256": "9e6336a8322f908dbeddcd2de57f19d22756fb11f161458f04204914ba85e6ff"
       }
     },
     {
       "suite": "noble-security",
       "inrelease": {
-        "bytes": null,
-        "sha256": null
+        "bytes": 126127,
+        "sha256": "a3849ffa5d069c5a6cc929dc55e1fd946aff6e3da4f97d88f20059b6b7d6d203"
       },
       "packages_xz": {
-        "bytes": null,
-        "sha256": null
+        "bytes": 1230772,
+        "sha256": "5c947649225178b587da69bd15724dff4d22d17d911f60abf7213534ea494a90"
       }
     }
   ],
@@ -103,5 +103,5 @@
     "os_qualified": false,
     "release_qualified": false
   },
-  "scope": "Manual hosted discovery pending reviewed InRelease and Packages.xz byte pins; no image consumer, selection or qualification"
+  "scope": "Manual hosted producer for a pinned unselected Ubuntu package candidate; no image consumer, selection or qualification"
 }

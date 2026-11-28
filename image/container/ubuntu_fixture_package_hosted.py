@@ -1,10 +1,10 @@
 """Hosted-only producer for an unselected Ubuntu fixture package closure.
 
-The committed contract is intentionally pending discovery.  In that state this
-module may authenticate and retain current Ubuntu metadata, but it refuses the
-production path before opening a URL or executing a command.  A later review
-must replace every null metadata pin with exact byte and SHA-256 identities and
-change the state to ``ready`` before a candidate can be produced.
+The contract has two fail-closed states.  pending-discovery may authenticate
+and retain current Ubuntu metadata but refuses production before opening a URL
+or executing a command.  ready requires a complete, ordered set of reviewed
+InRelease and Packages.xz byte identities before an unselected candidate can be
+produced.  Neither state selects or qualifies an artifact.
 """
 from contextlib import contextmanager
 from datetime import datetime, timezone

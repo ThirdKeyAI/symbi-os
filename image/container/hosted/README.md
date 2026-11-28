@@ -197,9 +197,14 @@ live apt installation, the committed Ubuntu lock remains pending and empty, and
 its public validator rejects a populated candidate. No image build, OCI export,
 cold load, selection or qualification is enabled by this slice.
 
-The new `ubuntu-fixture-packages.yml` workflow is `workflow_dispatch` only. Its
-checked-in contract is `pending-discovery`, with all three InRelease and all
-three Packages.xz byte/hash identities null. The wrapper creates a bounded
+The manual ubuntu-fixture-packages.yml workflow remains workflow_dispatch only.
+Its checked-in contract is now ready with the six exact InRelease and
+Packages.xz byte/hash identities independently reviewed from run 46070755519.
+The ready state rejects discovery and permits only the still-unrun production
+path. No candidate, selection, producer pass, image consumer or qualification
+claim follows from the pin review.
+
+The wrapper creates a bounded
 transient unit for either mode; inside it, pending `produce` refuses before
 retained-input validation, in-cgroup inspection, authenticated producer
 commands or network opening. `discover` runs in a
