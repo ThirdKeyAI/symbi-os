@@ -1944,6 +1944,10 @@ def index_record(source, binding):
 
 
 def _contract_sha256(lock):
+    from image.container import ubuntu_fixture_inputs as inputs
+
+    if isinstance(lock, dict) and lock.get("schema") == 2:
+        lock = inputs.producer_contract(lock)
     raw = json.dumps(lock, sort_keys=True, separators=(",", ":")).encode()
     return sha256_bytes(raw)
 
@@ -1951,10 +1955,73 @@ def _contract_sha256(lock):
 def _validate_pending_contract(lock):
     from image.container import ubuntu_fixture_inputs as inputs
 
-    require(type(lock) is dict and set(lock) == inputs.LOCK_FIELDS
+    if isinstance(lock, dict) and lock.get("schema") == 2:
+        require(set(lock) == inputs.LOCK_FIELDS
+                and lock.get("state") == "pending"
+                and lock.get("selected") is False
+                and all(lock.get(field) is False
+                        for field in inputs.FALSE_CLAIM_FIELDS)
+                and lock.get("repository") == packages.REPOSITORY
+                and lock.get("workflow") == {
+                    "id": None, "path": inputs.WORKFLOW_PATH,
+                    "event": inputs.WORKFLOW_EVENT,
+                }
+                and lock.get("run") == {
+                    "id": None, "attempt": None, "head_sha": None,
+                    "head_branch": None, "status": "pending",
+                    "conclusion": None, "repository": packages.REPOSITORY,
+                    "head_repository": packages.REPOSITORY,
+                }
+                and lock.get("artifacts") == {
+                    "candidate": {
+                        "api": {
+                            "id": None, "name": packages.ARTIFACT_NAME,
+                            "size_in_bytes": None, "digest": None,
+                            "expired": None, "workflow_run": None,
+                        },
+                        "zip": {"bytes": None, "sha256": None},
+                    },
+                    "evidence": {
+                        "api": {
+                            "id": None, "name": inputs.EVIDENCE_ARTIFACT_NAME,
+                            "size_in_bytes": None, "digest": None,
+                            "expired": None, "workflow_run": None,
+                        },
+                        "zip": {"bytes": None, "sha256": None},
+                    },
+                }
+                and lock.get("candidate") == {
+                    "manifest": {
+                        "path": "manifest.json", "bytes": None,
+                        "sha256": None,
+                    },
+                    "producer_contract_sha256": None,
+                    "release_metadata": [], "package_indexes": [],
+                    "package_count": 0, "package_bytes": 0, "packages": [],
+                }
+                and lock.get("evidence") == {
+                    "producer_result": {
+                        "path": "producer-result.json", "bytes": None,
+                        "sha256": None,
+                    },
+                    "members": [],
+                }
+                and lock.get("scope") == inputs.PENDING_SCOPE,
+                "Ubuntu producer contract is not the fail-closed pending slot")
+        lock = inputs.producer_contract(lock)
+    fields = {
+        "schema", "status", "selected", "qualified", "container_qualified",
+        "signature_qualified", "os_qualified", "release_qualified", "rootfs",
+        "package_request", "sources", "fixture_source", "producer", "artifact",
+        "release_metadata", "package_indexes", "package_count", "package_bytes",
+        "packages", "scope",
+    }
+    require(type(lock) is dict and set(lock) == fields
             and type(lock.get("schema")) is int and lock["schema"] == 1
             and lock.get("status") == "pending"
-            and all(lock.get(field) is False for field in inputs.CLAIM_FIELDS),
+            and all(lock.get(field) is False for field in (
+                "selected", "qualified", "container_qualified",
+                "signature_qualified", "os_qualified", "release_qualified")),
             "Ubuntu producer contract is not the fail-closed pending slot")
     packages.validate_rootfs(lock.get("rootfs"))
     packages.validate_request(lock.get("package_request"))
@@ -1975,7 +2042,10 @@ def _validate_pending_contract(lock):
             and lock["package_count"] == 0
             and type(lock.get("package_bytes")) is int
             and lock["package_bytes"] == 0
-            and lock.get("scope") == inputs.LOCK_SCOPE,
+            and lock.get("scope") == (
+                "Pending signed Ubuntu fixture package closure; no metadata "
+                "payload, artifact, build, container, OS or release qualification"
+            ),
             "Ubuntu producer contract contains a selection or payload")
     return lock
 

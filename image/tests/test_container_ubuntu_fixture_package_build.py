@@ -1923,7 +1923,7 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         validated = build.validate_candidate_manifest(lock, manifest)
         self.assertIs(validated["producer_passed"], False)
         self.assertIs(validated["selected"], False)
-        for field in inputs.CLAIM_FIELDS:
+        for field in build.CANDIDATE_CLAIMS:
             self.assertIs(validated[field], False)
             changed = copy.deepcopy(manifest)
             changed[field] = True
@@ -2029,15 +2029,16 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             with self.assertRaises(ValueError):
                 build.validate_candidate_output(alias, lock)
 
-    def test_candidate_producer_is_not_wired_to_build_upload_or_consumption(self):
+    def test_candidate_consumer_is_manual_offline_and_upload_remains_blocked(self):
         workflow = (ROOT / ".github/workflows/container-fixtures.yml").read_text()
         native_build = (ROOT / "image/container/native_fixture_build.py").read_text()
         dockerfile = (ROOT / "image/container/hosted/fixture/Dockerfile").read_text()
         self.assertNotIn("ubuntu_fixture_package_build", workflow)
         self.assertNotIn("ubuntu_fixture_package_build", native_build)
-        self.assertNotIn("container-ubuntu-fixture-packages", workflow)
-        self.assertIn("apt-get -o Acquire::Retries=2 update", dockerfile)
-        self.assertNotIn("--network=none", workflow)
+        self.assertIn("check-container-ubuntu-package-input.sh", workflow)
+        self.assertNotIn("apt-get", dockerfile)
+        self.assertIn("dpkg --unpack", dockerfile)
+        self.assertIn("native_fixture_build --root . preflight", workflow)
         self.assertNotIn("container-native-fixture-output", workflow)
 
 

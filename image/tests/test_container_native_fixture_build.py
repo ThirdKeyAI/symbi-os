@@ -5,6 +5,7 @@ import io
 import json
 from pathlib import Path
 import shutil
+import shlex
 import tarfile
 import tempfile
 import unittest
@@ -114,6 +115,9 @@ class NativeFixtureBuild(unittest.TestCase):
         shutil.copyfile(
             ROOT / "image/container/native-fixture-build.lock.json",
             root / "image/container/native-fixture-build.lock.json")
+        shutil.copyfile(
+            ROOT / "image/container/ubuntu-fixture-packages.lock.json",
+            root / "image/container/ubuntu-fixture-packages.lock.json")
         shutil.copyfile(
             ROOT / "upstream/symbiont.toml",
             root / "upstream/symbiont.toml")
@@ -305,13 +309,56 @@ class NativeFixtureBuild(unittest.TestCase):
             self.assertFalse(
                 (root / ".cache/container-native-fixture-output").exists())
 
-    def test_hosted_producer_and_upload_remain_unwired(self):
+    def test_hosted_producer_preflight_and_cold_load_are_wired_without_upload(self):
         check = (ROOT / "image/container/hosted/check.py").read_text()
         wrapper = (ROOT / "scripts/check-container-fixtures.sh").read_text()
         workflow = (ROOT / ".github/workflows/container-fixtures.yml").read_text()
-        self.assertNotIn("native_fixture_build", check)
+        self.assertIn("native_fixture_build.build_fixture_output", check)
+        self.assertIn("cold-load-fixture-image", check)
         self.assertNotIn("PRODUCE_NATIVE_FIXTURE=", wrapper)
+        self.assertIn("native_fixture_build --root . preflight", workflow)
         self.assertNotIn(inputs.ARTIFACT_NAME, workflow)
+
+    def test_clean_wrapper_forwards_exact_exporter_identity_and_rejects_omissions(self):
+        wrapper = (ROOT / "scripts/check-container-fixtures.sh").read_text()
+        start = wrapper.index("/usr/bin/env -i")
+        end = wrapper.index("PYTHONDONTWRITEBYTECODE=1", start)
+        tokens = shlex.split(wrapper[start:end].replace("\\\n", " "))
+        self.assertEqual(tokens[:2], ["/usr/bin/env", "-i"])
+        pairs = [token.split("=", 1) for token in tokens[2:]]
+        assignments = dict(pairs)
+        self.assertEqual(len(assignments), len(pairs))
+        forwarded = {
+            key: value for key, value in assignments.items()
+            if key.startswith("GITHUB_") or key == "RUNNER_ENVIRONMENT"
+        }
+        expected = {
+            "GITHUB_ACTIONS": "true",
+            "RUNNER_ENVIRONMENT": "github-hosted",
+            "GITHUB_EVENT_NAME": "$GITHUB_EVENT_NAME",
+            "GITHUB_REPOSITORY": "$GITHUB_REPOSITORY",
+            "GITHUB_SHA": "$GITHUB_SHA",
+            "GITHUB_RUN_ID": "$GITHUB_RUN_ID",
+            "GITHUB_RUN_ATTEMPT": "$GITHUB_RUN_ATTEMPT",
+            "GITHUB_REF_NAME": "$GITHUB_REF_NAME",
+        }
+        self.assertEqual(forwarded, expected)
+        clean_environment = {
+            key: (self.environment[value[1:]] if value.startswith("$") else value)
+            for key, value in forwarded.items()
+        }
+        self.assertEqual(
+            build.validate_producer_identity(clean_environment, self.metadata),
+            {
+                "source_commit": self.environment["GITHUB_SHA"],
+                "run_id": 812, "run_attempt": 2, "workflow_id": 77,
+            })
+        for field in sorted(expected):
+            missing = dict(clean_environment)
+            missing.pop(field)
+            with self.subTest(field=field), self.assertRaisesRegex(
+                    ValueError, "exact manual hosted identity"):
+                build.validate_producer_identity(missing, self.metadata)
 
 
 if __name__ == "__main__":

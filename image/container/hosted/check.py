@@ -8,11 +8,16 @@ import re
 import shutil
 import stat
 import subprocess
+import sys
 import tempfile
 import time
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+
 from inputs import (digest, require_signature, unpack_runtime,
                     validate_fixture_source_lock)
+from image.container import native_fixture_build
+from image.container import ubuntu_fixture_inputs
 
 
 def main():
@@ -26,6 +31,9 @@ def main():
     native_source_path = root / 'image/container/native-fixture.lock.json'
     native_source = json.loads(native_source_path.read_text())
     fixture_source = validate_fixture_source_lock(lock, native_source)
+    package_input = root / '.cache/container-ubuntu-fixture-inputs/candidate'
+    package_selection = ubuntu_fixture_inputs.validate_materialized_candidate(
+        root, package_input)
     work = root / '.cache/container-fixture-work'
     work.mkdir()
     public = work / 'public'
@@ -132,6 +140,9 @@ def main():
         assert rootfs['sha256'] + ' *' + rootfs['archive'] in (ubuntu / 'SHA256SUMS').read_text().splitlines()
         context = work / 'fixture-image'
         shutil.copytree(configuration / 'fixture', context)
+        shutil.copytree(package_input / 'packages', context / 'packages')
+        shutil.copytree(package_input / 'metadata', context / 'metadata')
+        shutil.copyfile(package_input / 'manifest.json', context / 'manifest.json')
         download('download-rootfs', rootfs['url'], rootfs['bytes'], rootfs['sha256'], context / rootfs['archive'])
         docker_env = {'PATH': '/usr/bin:/bin', 'HOME': '/root', 'LANG': 'C.UTF-8',
                       'DOCKER_HOST': 'unix:///var/run/docker.sock', 'DOCKER_CONFIG': str(work / 'docker-client'),
@@ -166,14 +177,13 @@ def main():
         run('docker-version', ['docker', 'version', '--format', '{{json .}}'], env=docker_env)
         run('docker-info', ['docker', 'info', '--format', '{{json .}}'], env=docker_env)
         image_file = work / 'fixture-image-id'
-        # Only the authenticated development-image package installation uses
-        # host networking. Every actual tool worker uses the upstream none policy.
         run('fixture-image-build', ['docker', 'build', '--pull=false', '--rm', '--force-rm',
                                    '--memory=512m', '--memory-swap=512m', '--cpu-period=100000', '--cpu-quota=100000',
-                                   '--network=host', '--iidfile', str(image_file), str(context)], 1800, env=docker_env)
+                                   '--network=none', '--iidfile', str(image_file), str(context)], 1800, env=docker_env)
         image_id = image_file.read_text().strip()
         assert re.fullmatch(r'sha256:[a-f0-9]{64}', image_id)
-        run('fixture-image-inspect', ['docker', 'image', 'inspect', image_id], env=docker_env)
+        inspected = run('fixture-image-inspect', ['docker', 'image', 'inspect', image_id], env=docker_env)
+        (work / 'fixture-image-inspect.json').write_text(inspected.stdout)
         stopped = run('create-evidence-container', ['docker', 'create', '--network=none', image_id], env=docker_env).stdout.strip()
         assert re.fullmatch(r'[a-f0-9]{64}', stopped)
         try:
@@ -221,6 +231,30 @@ def main():
                                   '--work', str(work)], 5400)
         assert not subprocess.check_output(['docker', 'ps', '-aq'], env=docker_env, text=True).strip()
         assert not subprocess.check_output(git + ['status', '--porcelain'], text=True).strip()
+        docker_archive = work / native_fixture_build.DOCKER_ARCHIVE_NAME
+        run('fixture-image-save', ['docker', 'image', 'save', '--output',
+                                   str(docker_archive), image_id], 900, env=docker_env)
+        exported = native_fixture_build.build_fixture_output(root, image_id)
+        run('cold-remove-fixture-image', ['docker', 'image', 'rm', image_id], env=docker_env)
+        archive = root / '.cache/container-native-fixture-output' / exported['archive']['name']
+        run('cold-load-fixture-image', ['docker', 'image', 'load', '--input', str(archive)],
+            900, env=docker_env)
+        cold = json.loads(run(
+            'cold-inspect-fixture-image',
+            ['docker', 'image', 'inspect', exported['image']['repo_digest']],
+            env=docker_env).stdout)
+        assert len(cold) == 1
+        assert cold[0]['Id'] == exported['image']['image_id']
+        assert cold[0]['Descriptor']['digest'] == exported['image']['manifest_digest']
+        assert exported['image']['repo_digest'] in cold[0]['RepoDigests']
+        record['native_fixture'] = {
+            'built': True, 'selected': False, 'verified': False,
+            'qualified': False, 'container_qualified': False,
+            'signature_qualified': False, 'os_qualified': False,
+            'release_qualified': False, 'image': exported['image'],
+            'package_manifest_sha256': digest(package_input / 'manifest.json'),
+            'package_count': package_selection['manifest']['package_count'],
+        }
         record['passed'] = True
     finally:
         if daemon is not None and daemon.poll() is None:
