@@ -1,0 +1,95 @@
+{
+  "artifact": {
+    "api_digest": "sha256:44eeedf2f9654d9dc6f2663257acae530e64eeee80ea0e5e6e47c53d095b2577",
+    "bytes": 7046,
+    "extracted_bytes": 15889,
+    "extracted_files": 17,
+    "id": 15247029533,
+    "name": "container-ubuntu-fixture-package-evidence"
+  },
+  "claims": {
+    "authoritative": false,
+    "candidate_emitted": false,
+    "container_qualified": false,
+    "os_qualified": false,
+    "producer_passed": false,
+    "qualified": false,
+    "release_qualified": false,
+    "selected": false,
+    "signature_qualified": false
+  },
+  "correction": {
+    "exact_head_discovery_required": true,
+    "metadata_pins_cleared": true,
+    "state": "pending-discovery",
+    "status": "implemented-unrun"
+  },
+  "failure": {
+    "classification": "reviewed-rolling-metadata-pin-drift",
+    "first_failed_attempt": "noble-updates InRelease download",
+    "immutable_noble_index_still_matched": true,
+    "mismatched_payload_identity_retained": false,
+    "reason": "Ubuntu producer payload differs from its reviewed pin",
+    "timed_out": false
+  },
+  "ledger": {
+    "bytes": 12006,
+    "last_kind": "packages-download",
+    "last_suite": "noble",
+    "phase_count": 7,
+    "schema": 2,
+    "sha256": "01f6f77e7aec5bafe62c8f4149bcf4b3bc738c45760e45646c765ff3b7a5f64a",
+    "state": "partial-evidence"
+  },
+  "outputs": {
+    "candidate_emitted": false,
+    "candidate_upload_step": "skipped",
+    "post_unit_candidate_validated": false,
+    "producer_result_emitted": false
+  },
+  "provenance": {
+    "cgroup_final_sha256": "9fb89b5f9be418fcac0f9c68bc0768cb7c21e11d6bda73f2870a4d04c18fee20",
+    "cleanup_sha256": "e392aaa76691649ecb99169717f48f56a2d94fbc6f5613273e29abe2252817d7",
+    "contract_sha256": "2a7e36739933aea9d4e2d16e9c9d7dcd45f719f69fe33066f38ad1bc133224d8",
+    "hosted_stderr_sha256": "580d202dd76b5865ed65f1e64af8f9e443d86837ab0f854a78ef841660510bb4",
+    "lock_sha256": "94d6f84024639b880060ac93825b4d3f1408f9f3a73b6e8087faac1748268b6c"
+  },
+  "resources": {
+    "memory_events": {
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memory_max_bytes": 2147483648,
+    "memory_peak_bytes": 52916224,
+    "memory_swap_current_bytes": 0,
+    "memory_swap_max_bytes": 0,
+    "memory_swap_peak_bytes": 0,
+    "pids_max": 128,
+    "pids_peak": 12,
+    "zero_swap": true
+  },
+  "retention": {
+    "candidate_present": false,
+    "post_unit_candidate_validated": false,
+    "private_work_retained": true,
+    "producer_exit_status": 1,
+    "recursive_path_cleanup_performed": false
+  },
+  "run": {
+    "attempt": 1,
+    "branch": "card/P0-05-package-producer",
+    "conclusion": "failure",
+    "event": "workflow_dispatch",
+    "head_sha": "a13d818ad501c3b93114ac04f2b07ad04e73c7ed",
+    "head_tree": "20498015719afd528884abb8726bc1a0e6fdece2",
+    "id": 46106302747,
+    "job_id": 140859714968,
+    "mode": "produce",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46106302747",
+    "workflow": ".github/workflows/ubuntu-fixture-packages.yml"
+  },
+  "schema": 1,
+  "scope": "Failed unselected production attempt; rolling metadata changed after review, with no package candidate, selection or qualification"
+}
