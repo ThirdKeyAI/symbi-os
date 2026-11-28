@@ -1,0 +1,495 @@
+{
+  "schema": 1,
+  "passed": true,
+  "os_qualified": false,
+  "guest_booted": false,
+  "installation_attempted": false,
+  "source_commit": "df832ec75bc8c3372be68743a38f46f7a1d2eb96",
+  "image_source_commit": "c6bf3ed9eba34562d886b6b315dd9cb46340c525",
+  "variant": "generic",
+  "phase": "inspect",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "limits": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256"
+  },
+  "commands": [
+    {
+      "name": "load-image",
+      "exit_code": 0
+    },
+    {
+      "name": "inspect-image",
+      "exit_code": 0
+    },
+    {
+      "name": "create-kernel-copy",
+      "exit_code": 0
+    },
+    {
+      "name": "kernel-copy-before",
+      "exit_code": 0
+    },
+    {
+      "name": "copy-vmlinuz",
+      "exit_code": 0
+    },
+    {
+      "name": "copy-initramfs.img",
+      "exit_code": 0
+    },
+    {
+      "name": "kernel-copy-after",
+      "exit_code": 0
+    },
+    {
+      "name": "installed-files",
+      "exit_code": 0
+    },
+    {
+      "name": "boot-inputs",
+      "exit_code": 0
+    },
+    {
+      "name": "cleanup-symbi-atomic-kernel-copy",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-symbi-atomic-kernel-copy",
+      "exit_code": 1
+    },
+    {
+      "name": "cleanup-symbi-atomic-installed-files",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-symbi-atomic-installed-files",
+      "exit_code": 1
+    },
+    {
+      "name": "cleanup-symbi-atomic-boot-inputs",
+      "exit_code": 0
+    },
+    {
+      "name": "absent-symbi-atomic-boot-inputs",
+      "exit_code": 1
+    },
+    {
+      "name": "remove-image",
+      "exit_code": 0
+    },
+    {
+      "name": "image-absent",
+      "exit_code": 1
+    }
+  ],
+  "lock_sha256": "b28f74990815d5c509b60ac62a98066514041a7a0d3690f5b6e44d81eaa122a9",
+  "scope": "Read-only saved development image preflight; no disk, installation, boot or release qualification",
+  "expected_inputs": {
+    "os": {
+      "ID": "secureblue",
+      "ID_LIKE": "fedora",
+      "VERSION_ID": "45",
+      "VARIANT_ID": "sericea-main-hardened",
+      "IMAGE_ID": "sericea-main-hardened"
+    },
+    "kernel": "7.3.4-300.secureblue.1.fc45.x86_64",
+    "bootc_version": "1.17.1",
+    "packages": [
+      "bootc\t0\t1.17.1\t1.fc45\tx86_64",
+      "kernel-core\t0\t7.3.4\t300.secureblue.1.fc45\tx86_64"
+    ],
+    "trust": {
+      "etc/containers/policy.json": "974d657b12acca4cd4db7ca6f4788f65b0f366d2193bdb6f0502d6c239c1a7a5",
+      "etc/containers/registries.d/symbiont.yaml": "336ad92f00b0f2fb6954fbcab7fc6541d4333a884f6038900eb94f7300104bfa"
+    }
+  },
+  "disk_free_before_load": 86694060032,
+  "loaded_image": {
+    "Id": "500360578de668b01b5c4db1bdd583800ce98f1063ba24445b1f84e97af93358",
+    "Digest": "sha256:5391751ede2c156e970e6708d603f0c2fb59e1ddba3cab0b075d53c725a5b624",
+    "Architecture": "amd64",
+    "Os": "linux"
+  },
+  "kernel_copy": {
+    "source_container": "symbi-atomic-kernel-copy",
+    "never_started": true,
+    "kernel": {
+      "version": "7.3.4-300.secureblue.1.fc45.x86_64",
+      "vmlinuz": {
+        "bytes": 18959192,
+        "sha256": "e288ec04ebf69635d7eaadee86461f4d60576ea5aef7dcc77d1dc32fe6d301be",
+        "uid": 0,
+        "mode": 493
+      },
+      "initramfs.img": {
+        "bytes": 247246321,
+        "sha256": "da8ed415bf1aa7edca54ce2793a31dd7bf0c7064cbaf05c46f22cea0358ba0e0",
+        "uid": 0,
+        "mode": 384
+      }
+    },
+    "private_payload_removed": true,
+    "observation_sha256": "2ab9db85f1492ddb0628b0fd8b7552a94f63d228d30a8a94660776506d94cf96"
+  },
+  "probe_hashes": {
+    "probe.py": "8e55f4a9f355662699888fec3081f9965879bbfcb205e8ff2ccc4dfd3c863633",
+    "verify.py": "4b2242d577d885b54c54c627fac85bad029cbe888f17617954ca309c4cdc150f",
+    "font_verify.py": "34a187baba603c214da07134322efc3c3db92722612dc39254a269d411de5ac7",
+    "expected.json": "812d10e9f86197b5f17a19083b47d42ad5d109db3454b67a5283e9030552cd31"
+  },
+  "installed_files": {
+    "passed": true,
+    "os_qualified": false,
+    "installed_files_checked": 213,
+    "installed_package_count": 2184,
+    "all_package_identities_preserved_after_build": true,
+    "fonts": {
+      "checked": true,
+      "scanned_fonts": 98,
+      "families": [
+        "JetBrainsMono NF",
+        "JetBrainsMono NF ExtraBold",
+        "JetBrainsMono NF ExtraLight",
+        "JetBrainsMono NF Light",
+        "JetBrainsMono NF Medium",
+        "JetBrainsMono NF SemiBold",
+        "JetBrainsMono NF Thin",
+        "JetBrainsMono NFM",
+        "JetBrainsMono NFM ExtraBold",
+        "JetBrainsMono NFM ExtraLight",
+        "JetBrainsMono NFM Light",
+        "JetBrainsMono NFM Medium",
+        "JetBrainsMono NFM SemiBold",
+        "JetBrainsMono NFM Thin",
+        "JetBrainsMono NFP",
+        "JetBrainsMono NFP ExtraBold",
+        "JetBrainsMono NFP ExtraLight",
+        "JetBrainsMono NFP Light",
+        "JetBrainsMono NFP Medium",
+        "JetBrainsMono NFP SemiBold",
+        "JetBrainsMono NFP Thin",
+        "JetBrainsMono Nerd Font",
+        "JetBrainsMono Nerd Font Mono",
+        "JetBrainsMono Nerd Font Propo",
+        "JetBrainsMonoNL NF",
+        "JetBrainsMonoNL NF ExtraBold",
+        "JetBrainsMonoNL NF ExtraLight",
+        "JetBrainsMonoNL NF Light",
+        "JetBrainsMonoNL NF Medium",
+        "JetBrainsMonoNL NF SemiBold",
+        "JetBrainsMonoNL NF Thin",
+        "JetBrainsMonoNL NFM",
+        "JetBrainsMonoNL NFM ExtraBold",
+        "JetBrainsMonoNL NFM ExtraLight",
+        "JetBrainsMonoNL NFM Light",
+        "JetBrainsMonoNL NFM Medium",
+        "JetBrainsMonoNL NFM SemiBold",
+        "JetBrainsMonoNL NFM Thin",
+        "JetBrainsMonoNL NFP",
+        "JetBrainsMonoNL NFP ExtraBold",
+        "JetBrainsMonoNL NFP ExtraLight",
+        "JetBrainsMonoNL NFP Light",
+        "JetBrainsMonoNL NFP Medium",
+        "JetBrainsMonoNL NFP SemiBold",
+        "JetBrainsMonoNL NFP Thin",
+        "JetBrainsMonoNL Nerd Font",
+        "JetBrainsMonoNL Nerd Font Mono",
+        "JetBrainsMonoNL Nerd Font Propo",
+        "Symbols Nerd Font",
+        "Symbols Nerd Font Mono"
+      ],
+      "monospace_family": "JetBrainsMono Nerd Font",
+      "monospace_file": "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Regular.ttf"
+    },
+    "uid": 10001,
+    "limits": {
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "64"
+    },
+    "scope": "Installed bytes and native font parsing only; no boot or containment qualification"
+  },
+  "install_requirements": {
+    "filesystem_default": null,
+    "filesystem_argument_required": true
+  },
+  "boot_inputs": {
+    "backend_files": {
+      "/usr/lib/ostree/prepare-root.conf": {
+        "bytes": 52,
+        "mode": 420,
+        "sha256": "06e212012ede5dfecf598f8cdb57bdb17450bb2a3e957598d2e0d23effff10d7",
+        "text": "[composefs]\nenabled = yes\n[sysroot]\nreadonly = true\n",
+        "uid": 0
+      }
+    },
+    "bootc_version": "bootc 1.17.1",
+    "cap_eff": "0000000000000000",
+    "cgroup_final": {
+      "cpu.stat": "usage_usec 132868\nuser_usec 53147\nsystem_usec 79720\nnice_usec 52000\ncore_sched.force_idle_usec 0\nnr_periods 2\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.peak": "34185216"
+    },
+    "commands": [
+      {
+        "command": [
+          "/usr/bin/rpm",
+          "-q",
+          "bootc",
+          "kernel-core",
+          "--qf",
+          "%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "bootc\t0\t1.17.1\t1.fc45\tx86_64\nkernel-core\t0\t7.3.4\t300.secureblue.1.fc45\tx86_64\n"
+      },
+      {
+        "command": [
+          "/usr/bin/bootc",
+          "--version"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "bootc 1.17.1\n"
+      },
+      {
+        "command": [
+          "/usr/bin/bootc",
+          "install",
+          "print-configuration"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "{\"block\":null,\"boot-mount-spec\":null,\"bootloader\":null,\"bootupd\":null,\"discoverable-partitions\":null,\"enforce-container-sigpolicy\":null,\"filesystem\":null,\"match-architectures\":null,\"ostree\":null,\"root-fs-type\":null,\"root-mount-spec\":null,\"stateroot\":null}"
+      },
+      {
+        "command": [
+          "/usr/bin/bootc",
+          "install",
+          "print-configuration",
+          "--all"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "{\"block\":null,\"boot-mount-spec\":null,\"bootloader\":null,\"bootupd\":null,\"discoverable-partitions\":null,\"enforce-container-sigpolicy\":null,\"filesystem\":null,\"match-architectures\":null,\"ostree\":null,\"root-fs-type\":null,\"root-mount-spec\":null,\"stateroot\":null}"
+      },
+      {
+        "command": [
+          "/usr/bin/bootc",
+          "install",
+          "to-disk",
+          "--help"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": "Install to the target block device.\n\nThis command must be invoked inside of the container, which will be installed. The container must be\nrun in `--privileged` mode, and hence will be able to see all block devices on the system.\n\nThe default storage layout uses the root filesystem type configured in the container image,\nalongside any required system partitions such as the EFI system partition. Use `install\nto-filesystem` for anything more complex such as RAID, LVM, LUKS etc.\n\nUsage: bootc install to-disk [OPTIONS] <DEVICE>\n\nArguments:\n  <DEVICE>\n          Target block device for installation.  The entire device will be wiped\n\nOptions:\n      --wipe\n          Automatically wipe all existing data on device\n\n      --block-setup <BLOCK_SETUP>\n          Target root block device setup.\n          \n          direct: Filesystem written directly to block device tpm2-luks: Bind unlock of filesystem\n          to presence of the default tpm2 device.\n          \n          [possible values: direct, tpm2-luks]\n\n      --filesystem <FILESYSTEM>\n          Target root filesystem type\n          \n          [possible values: xfs, ext4, btrfs]\n\n      --root-size <ROOT_SIZE>\n          Size of the root partition (default specifier: M).  Allowed specifiers: M (mebibytes), G\n          (gibibytes), T (tebibytes).\n          \n          By default, all remaining space on the disk will be used.\n\n      --source-imgref <SOURCE_IMGREF>\n          Install the system from an explicitly given source.\n          \n          By default, bootc install and install-to-filesystem assumes that it runs in a podman\n          container, and it takes the container image to install from the podman's container\n          registry. If --source-imgref is given, bootc uses it as the installation source, instead\n          of the behaviour explained in the previous paragraph. See skopeo(1) for accepted formats.\n\n      --target-transport <TARGET_TRANSPORT>\n          The transport; e.g. oci, oci-archive, containers-storage.  Defaults to `registry`\n          \n          [default: registry]\n\n      --target-imgref <TARGET_IMGREF>\n          Specify the image to fetch for subsequent updates\n\n      --enforce-container-sigpolicy\n          This is the inverse of the previous `--target-no-signature-verification` (which is now a\n          no-op).  Enabling this option enforces that `containers-policy.json` (see `man\n          containers-policy.json` for the full search path) includes a default policy which requires\n          signatures\n\n      --run-fetch-check\n          Verify the image can be fetched from the bootc image. Updates may fail when the\n          installation host is authenticated with the registry but the pull secret is not in the\n          bootc image\n\n      --skip-fetch-check\n          Verify the image can be fetched from the bootc image. Updates may fail when the\n          installation host is authenticated with the registry but the pull secret is not in the\n          bootc image\n\n      --disable-selinux\n          Disable SELinux in the target (installed) system.\n          \n          This is currently necessary to install *from* a system with SELinux disabled but where the\n          target does have SELinux enabled.\n\n      --karg <KARG>\n          Add a kernel argument.  This option can be provided multiple times.\n          \n          Example: --karg=nosmt --karg=console=ttyS0,115200n8\n\n      --karg-delete <KARG_DELETE>\n          Remove a kernel argument.  This option can be provided multiple times.\n          \n          Example: --karg-delete=nosmt --karg=console=ttyS0,115200n8\n\n      --root-ssh-authorized-keys <ROOT_SSH_AUTHORIZED_KEYS>\n          The path to an `authorized_keys` that will be injected into the `root` account.\n          \n          The implementation of this uses systemd `tmpfiles.d`, writing to a file named\n          `/etc/tmpfiles.d/bootc-root-ssh.conf`.  This will have the effect that by default, the SSH\n          credentials will be set if not present.  The intention behind this is to allow mounting\n          the whole `/root` home directory as a `tmpfs`, while still getting the SSH key replaced on\n          boot.\n\n      --generic-image\n          Perform configuration changes suitable for a \"generic\" disk image. At the moment:\n          \n          - All bootloader types will be installed - Changes to the system firmware will be skipped\n\n      --bound-images <BOUND_IMAGES>\n          How should logically bound images be retrieved\n\n          Possible values:\n          - stored: Bound images must exist in the source's root container storage (default)\n          - pull:   Bound images will be pulled and stored directly in the target's bootc container\n            storage\n          \n          [default: stored]\n\n      --stateroot <STATEROOT>\n          The stateroot name to use. Defaults to `default`\n\n      --bootupd-skip-boot-uuid\n          Don't pass --write-uuid to bootupd during bootloader installation\n\n      --bootloader <BOOTLOADER>\n          The bootloader to use\n\n          Possible values:\n          - grub:    Use Grub as the bootloader\n          - grub-cc: Use Grub for confidential clusters as the bootloader (experimental)\n          - systemd: Use SystemdBoot as the bootloader\n          - none:    Don't use a bootloader managed by bootc\n\n      --via-loopback\n          Instead of targeting a block device, write to a file via loopback\n\n      --composefs-backend\n          Use the composefs backend instead of ostree. This is the default for images with a UKI,\n          and for images with /usr/lib/composefs/setup-root-conf.toml and no ostree\n          prepare-root.conf\n\n      --allow-missing-verity\n          Make fs-verity validation optional in case the filesystem doesn't support it (composefs\n          backend only)\n\n      --uki-addon <UKI_ADDON>\n          Name of the UKI addons to install without the \".efi.addon\" suffix. This option can be\n          provided multiple times if multiple addons are to be installed (composefs backend only)\n\n      --run-repart\n          Whether to use systemd-repart for partitioning. This requires the image to have repart.d\n          definitions\n\n  -h, --help\n          Print help (see a summary with '-h')\n"
+      }
+    ],
+    "guest_booted": false,
+    "install_configuration": {
+      "block": null,
+      "boot-mount-spec": null,
+      "bootloader": null,
+      "bootupd": null,
+      "discoverable-partitions": null,
+      "enforce-container-sigpolicy": null,
+      "filesystem": null,
+      "match-architectures": null,
+      "ostree": null,
+      "root-fs-type": null,
+      "root-mount-spec": null,
+      "stateroot": null
+    },
+    "install_options": [
+      "--allow-missing-verity",
+      "--block-setup",
+      "--bootloader",
+      "--bootupd-skip-boot-uuid",
+      "--bound-images",
+      "--composefs-backend",
+      "--disable-selinux",
+      "--enforce-container-sigpolicy",
+      "--filesystem",
+      "--generic-image",
+      "--help",
+      "--karg",
+      "--karg-delete",
+      "--privileged",
+      "--root-size",
+      "--root-ssh-authorized-keys",
+      "--run-fetch-check",
+      "--run-repart",
+      "--skip-fetch-check",
+      "--source-imgref",
+      "--stateroot",
+      "--target-imgref",
+      "--target-no-signature-verification",
+      "--target-transport",
+      "--uki-addon",
+      "--via-loopback",
+      "--wipe",
+      "--write-uuid"
+    ],
+    "interfaces": [
+      "lo"
+    ],
+    "kernel": {
+      "initramfs.img": {
+        "bytes": 247246321,
+        "mode": 384,
+        "sha256": "da8ed415bf1aa7edca54ce2793a31dd7bf0c7064cbaf05c46f22cea0358ba0e0",
+        "uid": 0
+      },
+      "version": "7.3.4-300.secureblue.1.fc45.x86_64",
+      "vmlinuz": {
+        "bytes": 18959192,
+        "mode": 493,
+        "sha256": "e288ec04ebf69635d7eaadee86461f4d60576ea5aef7dcc77d1dc32fe6d301be",
+        "uid": 0
+      }
+    },
+    "kernel_source_sha256": "2ab9db85f1492ddb0628b0fd8b7552a94f63d228d30a8a94660776506d94cf96",
+    "limits": {
+      "cpu.max": "100000 100000",
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "pids.max": "64"
+    },
+    "no_new_privileges": "1",
+    "os": {
+      "ANSI_COLOR": "0;38;2;60;110;180",
+      "BUG_REPORT_URL": "https://github.com/secureblue/secureblue/issues",
+      "CPE_NAME": "cpe:/o:secureblue:secureblue:45",
+      "DEFAULT_HOSTNAME": "secureblue",
+      "DOCUMENTATION_URL": "https://github.com/secureblue/secureblue/tree/live/docs",
+      "HOME_URL": "https://github.com/secureblue/secureblue",
+      "ID": "secureblue",
+      "ID_LIKE": "fedora",
+      "IMAGE_ID": "sericea-main-hardened",
+      "LOGO": "fedora-logo-icon",
+      "NAME": "secureblue",
+      "OSTREE_VERSION": "45.20261124.0",
+      "PRETTY_NAME": "secureblue (powered by Fedora Atomic)",
+      "RELEASE_TYPE": "stable",
+      "SUPPORT_END": "2027-12-08",
+      "SUPPORT_URL": "https://github.com/secureblue/secureblue/issues",
+      "VARIANT": "Sway Atomic",
+      "VARIANT_ID": "sericea-main-hardened",
+      "VERSION": "45.20261124.0 (Sway Atomic)",
+      "VERSION_CODENAME": "",
+      "VERSION_ID": "45"
+    },
+    "os_qualified": false,
+    "packages": [
+      "bootc\t0\t1.17.1\t1.fc45\tx86_64",
+      "kernel-core\t0\t7.3.4\t300.secureblue.1.fc45\tx86_64"
+    ],
+    "root_fs": {
+      "block": null,
+      "boot-mount-spec": null,
+      "bootloader": null,
+      "bootupd": null,
+      "discoverable-partitions": null,
+      "enforce-container-sigpolicy": null,
+      "filesystem": null,
+      "match-architectures": null,
+      "ostree": null,
+      "root-fs-type": null,
+      "root-mount-spec": null,
+      "stateroot": null
+    },
+    "root_readonly": true,
+    "schema": 1,
+    "scope": "Read-only installed boot inputs; SELinux enforcement, actual installation and boot remain untested",
+    "selinux": {
+      "SELINUX": "enforcing",
+      "SELINUXTYPE": "targeted"
+    },
+    "tools": {
+      "bootc": {
+        "path": "/usr/bin/bootc",
+        "present": true
+      },
+      "bootupctl": {
+        "path": "/usr/bin/bootupctl",
+        "present": true
+      },
+      "grub2-install": {
+        "path": "/usr/bin/grub2-install",
+        "present": true
+      },
+      "grub2-mkconfig": {
+        "path": "/usr/bin/grub2-mkconfig",
+        "present": true
+      },
+      "mkfs.btrfs": {
+        "path": "/usr/bin/mkfs.btrfs",
+        "present": true
+      },
+      "mkfs.ext4": {
+        "path": "/usr/bin/mkfs.ext4",
+        "present": true
+      },
+      "mkfs.xfs": {
+        "path": "/usr/bin/mkfs.xfs",
+        "present": true
+      },
+      "qemu-img": {
+        "path": "/usr/bin/qemu-img",
+        "present": true
+      },
+      "qemu-system-x86_64": {
+        "path": "/usr/bin/qemu-system-x86_64",
+        "present": true
+      },
+      "xorriso": {
+        "path": "/usr/bin/xorriso",
+        "present": true
+      }
+    },
+    "trust": {
+      "etc/containers/policy.json": {
+        "bytes": 2376,
+        "mode": 420,
+        "sha256": "974d657b12acca4cd4db7ca6f4788f65b0f366d2193bdb6f0502d6c239c1a7a5",
+        "uid": 0
+      },
+      "etc/containers/registries.d/symbiont.yaml": {
+        "bytes": 538,
+        "mode": 420,
+        "sha256": "336ad92f00b0f2fb6954fbcab7fc6541d4333a884f6038900eb94f7300104bfa",
+        "uid": 0
+      }
+    },
+    "uid": 10001
+  },
+  "cleanup": {
+    "symbi-atomic-kernel-copy": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-atomic-installed-files": {
+      "removed": true,
+      "absent": true
+    },
+    "symbi-atomic-boot-inputs": {
+      "removed": true,
+      "absent": true
+    }
+  },
+  "image_removed": true,
+  "cgroup_final": {
+    "memory.max": "4294967296",
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "256",
+    "memory.peak": "4294971392",
+    "memory.events": "low 0\nhigh 0\nmax 32451\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 139779702\nuser_usec 105438874\nsystem_usec 34340828\nnice_usec 102062000\ncore_sched.force_idle_usec 0\nnr_periods 1780\nnr_throttled 53\nthrottled_usec 984056\nnr_bursts 0\nburst_usec 0"
+  }
+}

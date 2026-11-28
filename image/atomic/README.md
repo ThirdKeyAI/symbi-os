@@ -9,23 +9,22 @@ The ordinary Atomic workflow now extends that harness through an exact retained
 predecessor, signed switch and booted rollback. Passing it does not establish
 desktop, sandbox, release or NVIDIA qualification.
 
-The prior-image prerequisite passed in [preflight 46094435550](https://github.com/ThirdKeyAI/symbi-os/actions/runs/46094435550)
-at `a04cea9737eba9650695f7461fe9e96503695d01` against the exact generic image
-built at `22c751096e47d2f5ff74d8e5963a7079fa24576f`: complete saved-archive
+The current-image prerequisite passed in [preflight 46111954126](https://github.com/ThirdKeyAI/symbi-os/actions/runs/46111954126)
+at `df832ec75bc8c3372be68743a38f46f7a1d2eb96` against the exact generic image
+built at `c6bf3ed9eba34562d886b6b315dd9cb46340c525`: complete saved-archive
 identity, 213 installed files, 2,184 packages, protected kernel/initramfs hashes,
 bootc options, exact secureblue/Fedora identity and enforcing trust
 configuration. The hosted artifact retains all 41 original small files. The repository
 retains the two decision reports and a reconciliation binding the complete
-artifact identity and hashes. The desktop lock now selects the newer image built
-at `c6bf3ed9eba34562d886b6b315dd9cb46340c525`; a fresh exact preflight must
-stream and inspect it before native qualification. The earlier accepted prerequisite `45901694620`
-describes the predecessor image and remains retained as historical evidence. Older failed runs
+artifact identity and hashes. The accepted preflight `46094435550` describes
+the predecessor image and remains retained as historical evidence. The earlier
+accepted prerequisite `45901694620` is historical as well. Older failed runs
 remain failed: protected-initramfs access in `45799924739`, then incorrect
 OS/default-filesystem assumptions in `45802753036`. The latter showed that
 bootc has no configured filesystem default; this disposable test explicitly
 chooses Btrfs. That choice does not silently define the product installer.
 
-`preflight.lock.json` binds the prior-image prerequisite to its original report
+`preflight.lock.json` binds the current-image prerequisite to its exact report
 bytes. The current workflow repeats the exact artifact intake. `contract.py`
 streams only OCI metadata and content-addressed blobs from the authenticated
 saved archive; it never extracts filesystem paths from a layer. Every blob,

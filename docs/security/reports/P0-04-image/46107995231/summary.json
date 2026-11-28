@@ -130,13 +130,13 @@
   },
   "next_gate": {
     "atomic_preflight_required_before_landlock": true,
-    "atomic_preflight_requirement_satisfied": false,
-    "current_preflight_lock_run": 46094435550,
-    "current_preflight_lock_source_commit": "a04cea9737eba9650695f7461fe9e96503695d01",
-    "current_preflight_lock_manifest_digest": "sha256:1a08b504580f8f2f6dda9d913a2cbb4aa7039f4e18ebfb2eed01ce0a8381f9a3",
-    "current_preflight_lock_matches_this_image": false,
-    "preflight_evidence": "docs/security/reports/P0-03-atomic-preflight/46094435550-reconciled.json",
-    "landlock_ready": false
+    "atomic_preflight_requirement_satisfied": true,
+    "current_preflight_lock_run": 46111954126,
+    "current_preflight_lock_source_commit": "df832ec75bc8c3372be68743a38f46f7a1d2eb96",
+    "current_preflight_lock_manifest_digest": "sha256:5391751ede2c156e970e6708d603f0c2fb59e1ddba3cab0b075d53c725a5b624",
+    "current_preflight_lock_matches_this_image": true,
+    "preflight_evidence": "docs/security/reports/P0-03-atomic-preflight/46111954126-reconciled.json",
+    "landlock_ready": true
   },
-  "limitations": "The evidence ZIP was fully downloaded and safely audited. The 4.18 GB image artifact was not downloaded or range-read locally. Its server metadata and evidence-supplied manifest are locked, but atomic preflight must fully stream and recompute the outer ZIP and inner OCI archive digests before any native qualification run. This build did not install or boot a disk image and makes no qualification claim."
+  "limitations": "The evidence ZIP was fully downloaded and safely audited. Atomic preflight run 46111954126 then fully streamed and rechecked the outer image artifact and inner OCI archive, inspected the exact package, kernel, installer and trust inputs, and remained unqualified. Its reviewed reports are retained and lock-bound. No image installation, VM boot or qualification claim follows; native Landlock qualification remains a separate hosted gate."
 }
