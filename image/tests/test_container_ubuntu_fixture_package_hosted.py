@@ -255,6 +255,117 @@ class UbuntuHostedProducerTests(unittest.TestCase):
             runner.run.assert_not_called()
             self.assertFalse((apt_root / "etc/apt/sources.list").exists())
 
+    def test_command_runner_grants_system_helper_path_to_bound_offline_dpkg(self):
+        observed = []
+
+        class Completed:
+            def wait(self, timeout):
+                self.timeout = timeout
+                return 0
+
+        def popen(argv, **options):
+            observed.append((list(argv), dict(options["env"])))
+            return Completed()
+
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            evidence = base / "evidence"
+            home = base / "home"
+            evidence.mkdir(mode=0o700)
+            home.mkdir(mode=0o700)
+            runner = hosted.CommandRunner(evidence, home)
+            apt_root = base / "apt-root"
+            package_paths = [base / "packages" / "test.deb"]
+            expected_plan = runner.expect_offline_dpkg(
+                apt_root, package_paths)
+            dpkg_argv = hosted.build.offline_dpkg_command(
+                apt_root, package_paths)
+            with mock.patch.object(hosted.subprocess, "Popen", side_effect=popen):
+                runner.run(
+                    "version-dpkg", ["/usr/bin/dpkg", "--version"], 5)
+                runner.run(
+                    "dpkg-no-act", dpkg_argv, 5,
+                    networkless=True, system_helper_plan=expected_plan)
+
+        self.assertEqual(
+            [environment["PATH"] for _, environment in observed],
+            ["/usr/bin:/bin", "/usr/sbin:/usr/bin:/sbin:/bin"],
+        )
+
+    def test_system_helper_plan_rejects_mutations_before_command_effects(self):
+        absent = object()
+
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            apt_root = base / "apt-root"
+            packages = [
+                base / "packages" / "one.deb",
+                base / "packages" / "two.deb",
+            ]
+            expected = hosted.build.offline_dpkg_command(apt_root, packages)
+
+            other_root = base / "other-root"
+            changed_root = list(expected)
+            changed_root[1] = "--root=" + str(other_root)
+            changed_root[2] = "--admindir=" + str(
+                other_root / "var/lib/dpkg")
+            changed_flag = list(expected)
+            changed_flag[3] = "--force-depends"
+            changed_unpack = list(expected)
+            changed_unpack[4] = "--configure"
+            changed_package = list(expected)
+            changed_package[5] = str(base / "packages" / "other.deb")
+            reversed_packages = [*expected[:5], *reversed(expected[5:])]
+            omitted_package = expected[:-1]
+            extra_package = [
+                *expected, str(base / "packages" / "extra.deb")]
+            changed_executable = list(expected)
+            changed_executable[0] = "/usr/bin/apt-get"
+
+            cases = (
+                ("networkless-default", "dpkg-no-act", expected, absent),
+                ("networkless-false", "dpkg-no-act", expected, False),
+                ("name", "version-dpkg", expected, True),
+                ("root", "dpkg-no-act", changed_root, True),
+                ("flag", "dpkg-no-act", changed_flag, True),
+                ("unpack-mode", "dpkg-no-act", changed_unpack, True),
+                ("package", "dpkg-no-act", changed_package, True),
+                ("package-order", "dpkg-no-act", reversed_packages, True),
+                ("package-omitted", "dpkg-no-act", omitted_package, True),
+                ("package-extra", "dpkg-no-act", extra_package, True),
+                ("executable", "dpkg-no-act", changed_executable, True),
+            )
+            for sequence, (label, name, argv, networkless) in enumerate(cases):
+                with self.subTest(label=label):
+                    evidence = base / ("evidence-" + str(sequence))
+                    home = base / ("home-" + str(sequence))
+                    evidence.mkdir(mode=0o700)
+                    home.mkdir(mode=0o700)
+                    runner = hosted.CommandRunner(evidence, home)
+                    expected_plan = runner.expect_offline_dpkg(
+                        apt_root, packages)
+                    options = {"system_helper_plan": expected_plan}
+                    if networkless is not absent:
+                        options["networkless"] = networkless
+                    with (
+                            mock.patch.object(hosted.os, "open") as open_file,
+                            mock.patch.object(hosted, "_tool_record") as tool,
+                            mock.patch.object(hosted.subprocess, "Popen") as popen):
+                        with self.assertRaisesRegex(
+                                ValueError, "system helper plan"):
+                            runner.run(name, list(argv), 5, **options)
+                        with self.assertRaisesRegex(
+                                ValueError, "system helper plan"):
+                            runner.run(
+                                "dpkg-no-act", list(expected), 5,
+                                networkless=True,
+                                system_helper_plan=expected_plan)
+                    open_file.assert_not_called()
+                    tool.assert_not_called()
+                    popen.assert_not_called()
+                    self.assertEqual(runner.results, [])
+                    self.assertEqual(list(runner.raw.iterdir()), [])
+
     def test_committed_contract_selects_only_reviewed_retained_metadata(self):
         self.assertEqual(self.committed_contract["schema"], 3)
         self.assertEqual(self.committed_contract["state"], "ready")

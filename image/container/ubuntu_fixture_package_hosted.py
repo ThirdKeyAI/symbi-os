@@ -182,6 +182,8 @@ MAX_COMMAND_OUTPUT = 16 * 1024**2
 MAX_TOOL_BYTES = 64 * 1024**2
 MAX_PHASE_LEDGER_BYTES = 2 * 1024**2
 FETCH_CHUNK = 64 * 1024
+DEFAULT_COMMAND_PATH = "/usr/bin:/bin"
+DPKG_SYSTEM_HELPER_PATH = "/usr/sbin:/usr/bin:/sbin:/bin"
 _RENAME_NOREPLACE = 1
 _RENAME_EXCHANGE = 2
 
@@ -193,6 +195,30 @@ def require(condition, message):
 
 def sha256_bytes(raw):
     return hashlib.sha256(raw).hexdigest()
+
+
+_SYSTEM_HELPER_PLAN_SEAL = object()
+
+
+class _SystemHelperPlan:
+    """Hold one exact, independently constructed command expectation."""
+
+    __slots__ = ("_owner", "_name", "_argv", "_used")
+
+    def __init__(self, seal, owner, name, argv):
+        require(seal is _SYSTEM_HELPER_PLAN_SEAL,
+                "Ubuntu producer system helper plan is internal")
+        self._owner = owner
+        self._name = name
+        self._argv = tuple(argv)
+        self._used = False
+
+    def consume(self, owner, name, argv, networkless):
+        if self._used:
+            return False
+        self._used = True
+        return (owner is self._owner and networkless is True
+                and name == self._name and tuple(argv) == self._argv)
 
 
 def canonical_json_sha256(value):
@@ -503,13 +529,28 @@ class CommandRunner:
         self.raw.mkdir(mode=0o700)
         self.results = []
 
-    def run(self, name, argv, timeout, *, networkless=False, inputs_=()):
+    def expect_offline_dpkg(self, apt_root, package_paths):
+        """Bind one helper-path use to the caller's root and package plan."""
+        expected = build.offline_dpkg_command(apt_root, package_paths)
+        return _SystemHelperPlan(
+            _SYSTEM_HELPER_PLAN_SEAL, self, "dpkg-no-act", expected)
+
+    def run(self, name, argv, timeout, *, networkless=False, inputs_=(),
+            system_helper_plan=None):
         require(_safe_evidence_name(name) and type(argv) is list and argv
                 and all(type(item) is str and item and "\x00" not in item
                         for item in argv)
                 and Path(argv[0]).is_absolute()
-                and _strict_positive_int(timeout, 1800),
+                and _strict_positive_int(timeout, 1800)
+                and type(networkless) is bool,
                 "Ubuntu producer command request is malformed")
+        system_helpers = system_helper_plan is not None
+        require(not system_helpers
+                or (type(system_helper_plan) is _SystemHelperPlan
+                    and system_helper_plan.consume(
+                        self, name, argv, networkless)),
+                "Ubuntu producer system helper plan does not match the exact "
+                "networkless offline dpkg command")
         tool_fd = os.open(
             argv[0], os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
         launcher_fd = None
@@ -556,7 +597,8 @@ class CommandRunner:
                 stderr=stderr_fd,
                 cwd=self.home,
                 env={
-                    "PATH": "/usr/bin:/bin",
+                    "PATH": (DPKG_SYSTEM_HELPER_PATH if system_helpers
+                             else DEFAULT_COMMAND_PATH),
                     "HOME": str(self.home),
                     "LANG": "C.UTF-8",
                     "LC_ALL": "C.UTF-8",
@@ -2127,10 +2169,12 @@ def _produce(root, lock, contract, work, evidence, output, runner,
         build.MAX_DOWNLOAD_SECONDS = previous_download_seconds
     package_paths = [item["path"] for item in downloaded]
     before_status = sha256_bytes(status_path.read_bytes())
+    expected_dpkg_plan = runner.expect_offline_dpkg(apt_root, package_paths)
     dpkg_argv = build.offline_dpkg_command(apt_root, package_paths)
     row, _, _ = runner.run(
         "dpkg-no-act", dpkg_argv,
-        contract["timeouts"]["offline_command_seconds"], networkless=True)
+        contract["timeouts"]["offline_command_seconds"], networkless=True,
+        system_helper_plan=expected_dpkg_plan)
     _require_success(row, "offline dpkg no-act")
     require(sha256_bytes(status_path.read_bytes()) == before_status,
             "dpkg no-act changed the authenticated base status")
