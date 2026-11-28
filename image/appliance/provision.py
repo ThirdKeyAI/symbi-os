@@ -19,6 +19,35 @@ User=symbi-test
 Session=symbi.desktop
 Relogin=true
 """
+PROVISION_COMMAND_TIMEOUTS = {
+    "selinux-enforcement": 5,
+    "create-fixture-account": 20,
+    "lock-fixture-account": 10,
+    "select-graphical-target": 10,
+    "enable-display-manager": 15,
+    "remove-fixture-boot-wants": 240,
+}
+PROVISION_LOCAL_WORK_BUDGET_SECONDS = 30
+PROVISION_SERVICE_TIMEOUT_SECONDS = 360
+VERIFIER_SERVICE_TIMEOUT_SECONDS = 420
+FIRST_BOOT_ORCHESTRATION_BUDGET_SECONDS = 180
+FIRST_BOOT_CONTROLLER_MARGIN_SECONDS = 240
+FIRST_BOOT_TIMEOUT_SECONDS = 1200
+PROVISION_SUBPROCESS_BUDGET_SECONDS = sum(PROVISION_COMMAND_TIMEOUTS.values())
+PROVISION_PHASE_BUDGET_SECONDS = (
+    PROVISION_SUBPROCESS_BUDGET_SECONDS + PROVISION_LOCAL_WORK_BUDGET_SECONDS
+)
+PROVISION_SERVICE_MARGIN_SECONDS = (
+    PROVISION_SERVICE_TIMEOUT_SECONDS - PROVISION_PHASE_BUDGET_SECONDS
+)
+
+if (PROVISION_PHASE_BUDGET_SECONDS > PROVISION_SERVICE_TIMEOUT_SECONDS
+        or PROVISION_SERVICE_MARGIN_SECONDS <= 0):
+    raise RuntimeError("Provisioning command budgets exceed the service deadline")
+if (PROVISION_SERVICE_TIMEOUT_SECONDS + VERIFIER_SERVICE_TIMEOUT_SECONDS
+        + FIRST_BOOT_ORCHESTRATION_BUDGET_SECONDS
+        + FIRST_BOOT_CONTROLLER_MARGIN_SECONDS != FIRST_BOOT_TIMEOUT_SECONDS):
+    raise RuntimeError("First-boot phase budgets do not close at the controller deadline")
 
 
 def digest(path):
@@ -57,7 +86,7 @@ def bound_regular(path, expected):
             and digest(path) == expected["sha256"])
 
 
-def run(command, timeout=120):
+def run(command, *, timeout):
     result = subprocess.run(command, stdin=subprocess.DEVNULL, capture_output=True, text=True,
                             timeout=timeout, env={"PATH": "/usr/sbin:/usr/bin:/sbin:/bin",
                                                   "LANG": "C.UTF-8"})
@@ -65,6 +94,20 @@ def run(command, timeout=120):
         raise ValueError("Provisioning command output exceeded its bound")
     result.check_returncode()
     return result.stdout
+
+
+def run_phase(name, command):
+    """Run one named phase with its reviewed hard deadline."""
+    return run(command, timeout=PROVISION_COMMAND_TIMEOUTS[name])
+
+
+def remove_fixture_boot_wants():
+    """Stage one bounded deployment without the two first-boot fixture wants."""
+    run_phase("remove-fixture-boot-wants", [
+        "/usr/bin/rpm-ostree", "kargs",
+        "--delete-if-present=systemd.wants=p.service",
+        "--delete-if-present=systemd.wants=v.service",
+    ])
 
 
 def main():
@@ -83,7 +126,8 @@ def main():
         raise ValueError("Invalid appliance invocation binding")
     if sorted(path.name for path in Path("/sys/class/net").iterdir()) != ["lo"]:
         raise ValueError("Appliance fixture guest gained a network device")
-    if run(["/usr/sbin/getenforce"]).strip() != "Enforcing":
+    enforcement = run_phase("selinux-enforcement", ["/usr/sbin/getenforce"])
+    if enforcement.strip() != "Enforcing":
         raise ValueError("SELinux is not enforcing")
     required = expected.get("production_files")
     if (not isinstance(required, dict) or set(required) != {
@@ -108,18 +152,24 @@ def main():
     if any(entry.pw_uid == 1000 for entry in pwd.getpwall()):
         raise ValueError("UID 1000 is already allocated")
 
-    run(["/usr/sbin/useradd", "--uid", "1000", "--user-group", "--create-home",
-         "--shell", "/bin/bash", "--comment", "HIGHLY EXPERIMENTAL disposable appliance", USERNAME])
-    run(["/usr/sbin/usermod", "--lock", USERNAME])
+    run_phase("create-fixture-account", [
+        "/usr/sbin/useradd", "--uid", "1000", "--user-group", "--create-home",
+        "--shell", "/bin/bash", "--comment",
+        "HIGHLY EXPERIMENTAL disposable appliance", USERNAME,
+    ])
+    run_phase("lock-fixture-account", ["/usr/sbin/usermod", "--lock", USERNAME])
     autologin = Path("/etc/sddm.conf.d/90-symbi-development-appliance.conf")
     autologin.parent.mkdir(mode=0o755, parents=True, exist_ok=True)
     with autologin.open("x") as stream:
         stream.write(SDDM_CONFIGURATION)
     autologin.chmod(0o644)
-    run(["/usr/bin/systemctl", "set-default", "graphical.target"])
-    run(["/usr/bin/systemctl", "enable", "--force", "sddm.service"])
-    for wanted in ("p.service", "v.service"):
-        run(["/usr/bin/rpm-ostree", "kargs", "--delete-if-present=systemd.wants=" + wanted])
+    run_phase("select-graphical-target", [
+        "/usr/bin/systemctl", "set-default", "graphical.target",
+    ])
+    run_phase("enable-display-manager", [
+        "/usr/bin/systemctl", "enable", "--force", "sddm.service",
+    ])
+    remove_fixture_boot_wants()
     state = {
         "schema": 1, "nonce": expected["nonce"], "source_binding": expected["source_binding"],
         "expected_sha256": digest(expected_path), "provision_sha256": digest(Path(__file__)),

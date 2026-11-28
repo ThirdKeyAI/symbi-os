@@ -7,12 +7,14 @@ import subprocess
 import time
 
 try:
-    from .contract import (APPLIANCE_CONTAINER_LIMITS, ARTIFACT_NAME, SCOPE,
+    from .contract import (APPLIANCE_CONTAINER_LIMITS, ARTIFACT_NAME,
+                           FIRST_BOOT_TIMEOUT_SECONDS, SCOPE,
                            VIRTUAL_DISK_BYTES, failure_record,
                            provision_qemu_arguments, sha256, unique_json,
                            validate_guest_report, validate_source_binding)
 except ImportError:  # Copied as a standalone hosted-container program.
-    from contract import (APPLIANCE_CONTAINER_LIMITS, ARTIFACT_NAME, SCOPE,
+    from contract import (APPLIANCE_CONTAINER_LIMITS, ARTIFACT_NAME,
+                          FIRST_BOOT_TIMEOUT_SECONDS, SCOPE,
                           VIRTUAL_DISK_BYTES, failure_record,
                           provision_qemu_arguments, sha256, unique_json,
                           validate_guest_report, validate_source_binding)
@@ -21,6 +23,32 @@ except ImportError:  # Copied as a standalone hosted-container program.
 def bounded(path, maximum):
     if path.exists() and (path.is_symlink() or not path.is_file() or path.stat().st_size > maximum):
         raise ValueError("Appliance output exceeded its bound: " + path.name)
+
+
+def load_guest_report(path):
+    """Read the final bounded report without turning its absence into a JSON error."""
+    if (not path.exists() or path.is_symlink() or not path.is_file()
+            or not 0 < path.stat().st_size <= 128*1024):
+        raise RuntimeError("Graphical fixture guest emitted no bounded guest report")
+    return unique_json(path.read_bytes())
+
+
+def await_first_boot_report(child, start, evidence):
+    """Accept a report only after one timely, clean, success-triggered QEMU exit."""
+    while child.poll() is None:
+        for name, maximum in (("provision-qemu.log", 2*1024**2),
+                              ("provision-serial.log", 4*1024**2),
+                              ("guest-report.json", 128*1024)):
+            bounded(evidence / name, maximum)
+        if time.monotonic() - start >= FIRST_BOOT_TIMEOUT_SECONDS:
+            raise TimeoutError("Graphical fixture boot did not finish in 20 minutes")
+        time.sleep(0.5)
+    elapsed = time.monotonic() - start
+    if elapsed >= FIRST_BOOT_TIMEOUT_SECONDS:
+        raise TimeoutError("Graphical fixture boot did not finish in 20 minutes")
+    if child.returncode != 0:
+        raise RuntimeError("Graphical fixture QEMU failed")
+    return elapsed, load_guest_report(evidence / "guest-report.json")
 
 
 def main():
@@ -74,21 +102,10 @@ def main():
                                      stderr=subprocess.STDOUT,
                                      env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8",
                                           "HOME": "/output"})
-            while child.poll() is None:
-                for name, maximum in (("provision-qemu.log", 2*1024**2),
-                                      ("provision-serial.log", 4*1024**2),
-                                      ("guest-report.json", 128*1024)):
-                    bounded(evidence / name, maximum)
-                if time.monotonic() - start >= 1200:
-                    raise TimeoutError("Graphical fixture boot did not finish in 20 minutes")
-                time.sleep(0.5)
+            elapsed, report = await_first_boot_report(child, start, evidence)
         result["provision_exit_code"] = child.returncode
-        result["provision_elapsed_seconds"] = time.monotonic() - start
-        if child.returncode != 0:
-            raise RuntimeError("Graphical fixture QEMU failed")
+        result["provision_elapsed_seconds"] = elapsed
         report_path = evidence / "guest-report.json"
-        bounded(report_path, 128*1024)
-        report = unique_json(report_path.read_bytes())
         validate_guest_report(report, expected, sha256(inputs / "verify.py"),
                               sha256(inputs / "expected.json"))
         if report.get("autologin_sha256") != expected.get("sddm_config_sha256"):
