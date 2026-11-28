@@ -1,4 +1,5 @@
 """Validate the first graphical login and emit one source-bound guest report."""
+import errno
 import grp
 import hashlib
 import json
@@ -6,6 +7,7 @@ import os
 from pathlib import Path
 import pwd
 import re
+import select
 import stat
 import subprocess
 import sys
@@ -17,6 +19,41 @@ CHANNEL = Path("/dev/virtio-ports/org.symbi.appliance")
 SCOPE = (
     "HIGHLY EXPERIMENTAL offline development appliance; no release, signature, "
     "security, containment or production-account qualification"
+)
+VERIFIER_SERVICE_TIMEOUT_SECONDS = 420
+VERIFIER_APPLICATION_BUDGET_SECONDS = 390
+VERIFIER_SERVICE_MARGIN_SECONDS = 30
+VERIFIER_PHASE_BUDGETS = {
+    "graphical-session-and-portal": 260,
+    "fixed-commands": 45,
+    "walker-lifecycle": 70,
+    "local-validation-and-report": 15,
+}
+FIXED_COMMAND_TIMEOUTS = {
+    "get-default": 5,
+    "package-query": 2,
+    "package-verify": 8,
+    "kargs": 10,
+}
+WALKER_STEP_TIMEOUTS = {
+    "reset-before": 5,
+    "launch": 10,
+    "observe": 20,
+    "stop": 10,
+    "observe-stopped": 20,
+    "reset-after": 5,
+}
+GRAPHICAL_COMMAND_TIMEOUT_SECONDS = 5
+PORTAL_START_TIMEOUT_SECONDS = 10
+GRAPHICAL_SESSION_POLL_INTERVAL_SECONDS = 2
+PORTAL_POLL_INTERVAL_SECONDS = 1
+GRAPHICAL_SESSION_POLL_ATTEMPTS = (
+    VERIFIER_PHASE_BUDGETS["graphical-session-and-portal"]
+    // GRAPHICAL_SESSION_POLL_INTERVAL_SECONDS
+)
+PORTAL_POLL_ATTEMPTS = (
+    VERIFIER_PHASE_BUDGETS["graphical-session-and-portal"]
+    // PORTAL_POLL_INTERVAL_SECONDS
 )
 
 
@@ -40,7 +77,41 @@ def digest(path):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
-def run(command, check=True, timeout=60):
+def remaining_timeout(deadline, maximum):
+    """Clamp one operation to both its reviewed maximum and an outer deadline."""
+    if (type(deadline) not in (int, float) or type(maximum) not in (int, float)
+            or maximum <= 0):
+        raise ValueError("Invalid verifier deadline")
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise TimeoutError("Verifier application deadline expired")
+    return min(float(maximum), remaining)
+
+
+def bounded_poll(predicate, *, deadline, interval, attempts):
+    """Poll no more than the reviewed count or monotonic phase deadline."""
+    if (not callable(predicate) or type(attempts) is not int or attempts <= 0
+            or type(interval) not in (int, float) or interval <= 0):
+        raise ValueError("Invalid bounded poll")
+    for _ in range(attempts):
+        if time.monotonic() >= deadline:
+            return False
+        ready = predicate()
+        if time.monotonic() >= deadline:
+            return False
+        if ready:
+            return True
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            return False
+        time.sleep(min(float(interval), remaining))
+    return False
+
+
+def run(command, *, check=True, timeout):
+    if (type(check) is not bool or type(timeout) not in (int, float)
+            or timeout <= 0):
+        raise ValueError("Invalid verification command deadline")
     result = subprocess.run(command, stdin=subprocess.DEVNULL, capture_output=True, text=True,
                             timeout=timeout, env={"PATH": "/usr/sbin:/usr/bin:/sbin:/bin",
                                                   "LANG": "C.UTF-8"})
@@ -49,6 +120,70 @@ def run(command, check=True, timeout=60):
     if check:
         result.check_returncode()
     return result
+
+
+def write_guest_report(path, raw, deadline):
+    """Write every report byte through one nonblocking deadline-bound channel."""
+    if type(raw) is not bytes or not 0 < len(raw) <= 128*1024:
+        raise ValueError("Guest report is empty or oversized")
+    maximum = VERIFIER_PHASE_BUDGETS["local-validation-and-report"]
+    remaining_timeout(deadline, maximum)
+    channel = os.fspath(path)
+    channel_info = os.lstat(channel)
+    if stat.S_ISLNK(channel_info.st_mode):
+        link = os.readlink(channel)
+        match = re.fullmatch(r"\.\./(vport[0-9]+p[0-9]+)", link)
+        if Path(channel).parent != Path("/dev/virtio-ports") or match is None:
+            raise ValueError("Guest report channel link is outside the reviewed device path")
+        channel = os.fspath(Path("/dev") / match.group(1))
+    elif not stat.S_ISCHR(channel_info.st_mode):
+        raise ValueError("Guest report channel path is not a character device")
+    remaining_timeout(deadline, maximum)
+    flags = os.O_WRONLY | os.O_NONBLOCK | os.O_CLOEXEC | os.O_NOFOLLOW
+    descriptor = os.open(channel, flags)
+    try:
+        remaining_timeout(deadline, maximum)
+        if not stat.S_ISCHR(os.fstat(descriptor).st_mode):
+            raise ValueError("Guest report channel is not a character device")
+        poller = select.poll()
+        requested = select.POLLOUT | select.POLLERR | select.POLLHUP | select.POLLNVAL
+        rejected = select.POLLERR | select.POLLHUP | select.POLLNVAL
+        poller.register(descriptor, requested)
+        view = memoryview(raw)
+        written = 0
+        while written < len(view):
+            remaining = remaining_timeout(deadline, maximum)
+            timeout_milliseconds = max(0, int(remaining * 1000))
+            try:
+                events = poller.poll(timeout_milliseconds)
+            except InterruptedError:
+                continue
+            if time.monotonic() >= deadline:
+                raise TimeoutError("Guest report channel deadline expired")
+            event_mask = 0
+            for event_descriptor, event in events:
+                if event_descriptor == descriptor:
+                    event_mask |= event
+            if event_mask & rejected:
+                raise ValueError("Guest report channel closed or failed")
+            if not event_mask & select.POLLOUT:
+                raise TimeoutError("Guest report channel was not writable before its deadline")
+            try:
+                count = os.write(descriptor, view[written:])
+            except BlockingIOError as error:
+                if error.errno not in {errno.EAGAIN, errno.EWOULDBLOCK}:
+                    raise
+                continue
+            except InterruptedError:
+                continue
+            if time.monotonic() >= deadline:
+                raise TimeoutError("Guest report channel deadline expired")
+            if type(count) is not int or not 0 < count <= len(view) - written:
+                raise ValueError("Guest report channel made no bounded progress")
+            written += count
+        return written
+    finally:
+        os.close(descriptor)
 
 
 def direct_regular(path, uid=None):
@@ -94,24 +229,34 @@ def path_absent(path):
     return not path.exists() and not path.is_symlink()
 
 
-def user_executables(uid):
+def user_executables(uid, deadline):
     executables = set()
     if os.geteuid() != 0:
         raise ValueError("Process observation must start as root")
+    remaining_timeout(deadline, VERIFIER_APPLICATION_BUDGET_SECONDS)
     os.seteuid(uid)
     try:
         for entry in Path("/proc").iterdir():
+            if time.monotonic() >= deadline:
+                raise TimeoutError("Process observation deadline expired")
             if not entry.name.isdigit():
                 continue
             try:
-                if entry.stat().st_uid == uid:
+                owner = entry.stat().st_uid
+                if time.monotonic() >= deadline:
+                    raise TimeoutError("Process observation deadline expired")
+                if owner == uid:
                     executable = os.readlink(entry / "exe")
+                    if time.monotonic() >= deadline:
+                        raise TimeoutError("Process observation deadline expired")
                     if executable:
                         executables.add(executable)
             except (FileNotFoundError, PermissionError, ProcessLookupError):
                 continue
     finally:
         os.seteuid(0)
+    if time.monotonic() >= deadline:
+        raise TimeoutError("Process observation deadline expired")
     return executables
 
 
@@ -139,15 +284,25 @@ def verify_seed(expected, account):
     return True
 
 
-def verify_packages(bindings):
+def verify_packages(bindings, application_deadline):
     if not isinstance(bindings, dict) or set(bindings) != {"sddm", "sddm-wayland-sway", "waybar"}:
         return False
     query = "%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n"
     for name, identity in bindings.items():
         if not isinstance(identity, str) or identity.split("\t", 1)[0] != name:
             return False
-        observed = run(["/usr/bin/rpm", "-q", name, "--qf", query], check=False)
-        verified = run(["/usr/bin/rpm", "-V", name], check=False)
+        observed = run(
+            ["/usr/bin/rpm", "-q", name, "--qf", query],
+            check=False,
+            timeout=remaining_timeout(
+                application_deadline, FIXED_COMMAND_TIMEOUTS["package-query"]),
+        )
+        verified = run(
+            ["/usr/bin/rpm", "-V", name],
+            check=False,
+            timeout=remaining_timeout(
+                application_deadline, FIXED_COMMAND_TIMEOUTS["package-verify"]),
+        )
         if (observed.returncode != 0 or observed.stdout != identity + "\n"
                 or observed.stderr or verified.returncode != 0
                 or verified.stdout or verified.stderr):
@@ -178,7 +333,7 @@ def interactive_device_observation():
     }
 
 
-def user_systemctl(*arguments, check=True, timeout=60):
+def user_systemctl(*arguments, check=True, timeout):
     return run([
         "/usr/sbin/runuser", "-u", USERNAME, "--", "/usr/bin/env",
         "XDG_RUNTIME_DIR=/run/user/1000",
@@ -187,7 +342,7 @@ def user_systemctl(*arguments, check=True, timeout=60):
     ], check=check, timeout=timeout)
 
 
-def observe_bounded_walker(uid):
+def observe_bounded_walker(uid, application_deadline):
     """Launch Walker through a bounded transient unit and prove it then stopped."""
     unit = "symbi-appliance-walker.service"
     executable = "/usr/bin/walker"
@@ -197,10 +352,26 @@ def observe_bounded_walker(uid):
         "tasks_max": "64", "runtime_max_seconds": "60",
         "no_new_privileges": "yes",
     }
-    if executable in user_executables(uid):
+    if executable in user_executables(uid, application_deadline):
         raise ValueError("Walker was already running before the bounded launch")
-    user_systemctl("reset-failed", unit, check=False)
+    lifecycle_deadline = min(
+        application_deadline,
+        time.monotonic() + VERIFIER_PHASE_BUDGETS["walker-lifecycle"],
+    )
+    launch_deadline = min(
+        lifecycle_deadline,
+        time.monotonic()
+        + WALKER_STEP_TIMEOUTS["reset-before"]
+        + WALKER_STEP_TIMEOUTS["launch"]
+        + WALKER_STEP_TIMEOUTS["observe"],
+    )
+    user_systemctl(
+        "reset-failed", unit, check=False,
+        timeout=remaining_timeout(
+            launch_deadline, WALKER_STEP_TIMEOUTS["reset-before"]),
+    )
     launch_error = None
+    cleanup_error = None
     observed = False
     stop_succeeded = False
     stopped = False
@@ -218,28 +389,54 @@ def observe_bounded_walker(uid):
             "--property=RuntimeMaxSec=" + limits["runtime_max_seconds"],
             "--property=NoNewPrivileges=" + limits["no_new_privileges"],
             executable,
-        ], timeout=timeout_seconds)
-        deadline = time.monotonic() + timeout_seconds
-        while time.monotonic() < deadline:
-            if executable in user_executables(uid):
-                observed = True
-                break
-            time.sleep(1)
+        ], timeout=remaining_timeout(
+            launch_deadline, WALKER_STEP_TIMEOUTS["launch"]))
+        observed = bounded_poll(
+            lambda: executable in user_executables(uid, launch_deadline),
+            deadline=launch_deadline,
+            interval=1,
+            attempts=WALKER_STEP_TIMEOUTS["observe"],
+        )
         if not observed:
             raise ValueError("Walker was not observed after its bounded launch")
     except Exception as error:
         launch_error = error
     finally:
-        stop_result = user_systemctl("stop", unit, check=False, timeout=timeout_seconds)
-        stop_succeeded = (type(stop_result.returncode) is int
-                          and stop_result.returncode == 0)
-        deadline = time.monotonic() + timeout_seconds
-        while time.monotonic() < deadline:
-            if executable not in user_executables(uid):
-                stopped = True
-                break
-            time.sleep(1)
-        user_systemctl("reset-failed", unit, check=False)
+        cleanup_deadline = min(
+            lifecycle_deadline,
+            time.monotonic()
+            + WALKER_STEP_TIMEOUTS["stop"]
+            + WALKER_STEP_TIMEOUTS["observe-stopped"]
+            + WALKER_STEP_TIMEOUTS["reset-after"],
+        )
+        try:
+            stop_result = user_systemctl(
+                "stop", unit, check=False,
+                timeout=remaining_timeout(
+                    cleanup_deadline, WALKER_STEP_TIMEOUTS["stop"]),
+            )
+            stop_succeeded = (type(stop_result.returncode) is int
+                              and stop_result.returncode == 0)
+            stopped = bounded_poll(
+                lambda: executable not in user_executables(uid, cleanup_deadline),
+                deadline=cleanup_deadline,
+                interval=1,
+                attempts=WALKER_STEP_TIMEOUTS["observe-stopped"],
+            )
+        except Exception as error:
+            cleanup_error = error
+        finally:
+            try:
+                user_systemctl(
+                    "reset-failed", unit, check=False,
+                    timeout=remaining_timeout(
+                        cleanup_deadline, WALKER_STEP_TIMEOUTS["reset-after"]),
+                )
+            except Exception as error:
+                if cleanup_error is None:
+                    cleanup_error = error
+    if cleanup_error is not None:
+        raise ValueError("Walker cleanup failed") from cleanup_error
     if not stop_succeeded:
         raise ValueError("Walker transient unit did not stop successfully") from launch_error
     if launch_error is not None:
@@ -253,11 +450,65 @@ def observe_bounded_walker(uid):
     }
 
 
+def observe_graphical_session(uid, application_deadline):
+    """Observe SDDM, the session, and the portal inside one shared phase."""
+    phase_deadline = min(
+        application_deadline,
+        time.monotonic()
+        + VERIFIER_PHASE_BUDGETS["graphical-session-and-portal"],
+    )
+    session_executables = {
+        "/usr/lib/symbi/hyprland/bin/Hyprland",
+        "/usr/bin/waybar",
+    }
+    executables = set()
+
+    def session_ready():
+        nonlocal executables
+        active = run(
+            ["/usr/bin/systemctl", "is-active", "sddm.service"],
+            check=False,
+            timeout=remaining_timeout(
+                phase_deadline, GRAPHICAL_COMMAND_TIMEOUT_SECONDS),
+        )
+        executables = user_executables(uid, phase_deadline)
+        return (active.returncode == 0
+                and session_executables.issubset(executables)
+                and Path("/run/user/1000/bus").is_socket())
+
+    if not bounded_poll(
+            session_ready, deadline=phase_deadline,
+            interval=GRAPHICAL_SESSION_POLL_INTERVAL_SECONDS,
+            attempts=GRAPHICAL_SESSION_POLL_ATTEMPTS):
+        raise ValueError("SDDM, Hyprland and Waybar did not reach the graphical session")
+
+    run([
+        "/usr/sbin/runuser", "-u", USERNAME, "--", "/usr/bin/env",
+        "XDG_RUNTIME_DIR=/run/user/1000",
+        "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus",
+        "/usr/bin/systemctl", "--user", "start", "xdg-desktop-portal-hyprland.service",
+    ], timeout=remaining_timeout(phase_deadline, PORTAL_START_TIMEOUT_SECONDS))
+    portal_executable = "/usr/lib/symbi/portal/libexec/xdg-desktop-portal-hyprland"
+
+    def portal_ready():
+        nonlocal executables
+        executables = user_executables(uid, phase_deadline)
+        return portal_executable in executables
+
+    if not bounded_poll(
+            portal_ready, deadline=phase_deadline,
+            interval=PORTAL_POLL_INTERVAL_SECONDS,
+            attempts=PORTAL_POLL_ATTEMPTS):
+        raise ValueError("The installed Hyprland portal did not start in the graphical session")
+    return session_executables, portal_executable, executables
+
+
 def main():
     product = Path("/sys/class/dmi/id/product_name").read_text().strip()
     if (os.geteuid() != 0 or product != "Symbi-Interactive-Appliance"
             or Path("/run/.containerenv").exists() or len(sys.argv) != 2):
         raise SystemExit("Use only the disposable hosted appliance guest")
+    application_deadline = time.monotonic() + VERIFIER_APPLICATION_BUDGET_SECONDS
     expected_path = Path(sys.argv[1])
     if not direct_regular(expected_path, 0) or expected_path.stat().st_size > 128*1024:
         raise ValueError("Missing bounded appliance invocation binding")
@@ -280,36 +531,13 @@ def main():
         raise ValueError("Ephemeral provisioning receipt is incomplete")
     account = pwd.getpwnam(USERNAME)
     wheel = grp.getgrnam("wheel")
-    deadline = time.monotonic() + 300
-    executables = set()
-    session_executables = {
-        "/usr/lib/symbi/hyprland/bin/Hyprland",
-        "/usr/bin/waybar",
-    }
-    while time.monotonic() < deadline:
-        active = run(["/usr/bin/systemctl", "is-active", "sddm.service"], check=False)
-        executables = user_executables(account.pw_uid)
-        if (active.returncode == 0 and session_executables.issubset(executables)
-                and Path("/run/user/1000/bus").is_socket()):
-            break
-        time.sleep(2)
-    else:
-        raise ValueError("SDDM, Hyprland and Waybar did not reach the graphical session")
-    run([
-        "/usr/sbin/runuser", "-u", USERNAME, "--", "/usr/bin/env",
-        "XDG_RUNTIME_DIR=/run/user/1000",
-        "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus",
-        "/usr/bin/systemctl", "--user", "start", "xdg-desktop-portal-hyprland.service",
-    ])
-    portal_executable = "/usr/lib/symbi/portal/libexec/xdg-desktop-portal-hyprland"
-    while time.monotonic() < deadline:
-        executables = user_executables(account.pw_uid)
-        if portal_executable in executables:
-            break
-        time.sleep(1)
-    else:
-        raise ValueError("The installed Hyprland portal did not start in the graphical session")
-    default_target = run(["/usr/bin/systemctl", "get-default"]).stdout.strip()
+    session_executables, portal_executable, executables = observe_graphical_session(
+        account.pw_uid, application_deadline)
+    default_target = run(
+        ["/usr/bin/systemctl", "get-default"],
+        timeout=remaining_timeout(
+            application_deadline, FIXED_COMMAND_TIMEOUTS["get-default"]),
+    ).stdout.strip()
     display_link = Path("/etc/systemd/system/display-manager.service")
     if not display_link.is_symlink() or display_link.resolve().name != "sddm.service":
         raise ValueError("SDDM is not the enabled display manager")
@@ -345,20 +573,30 @@ def main():
         path = Path(name)
         if not bound_regular(path, binding) or (binding["mode"] & 0o111 and not os.access(path, os.X_OK)):
             raise ValueError("Desktop component bytes changed: " + name)
-    if not verify_packages(packages):
+    if not verify_packages(packages, application_deadline):
         raise ValueError("SDDM, Waybar or its installed package bytes changed")
     interactive = interactive_device_observation()
     if interactive != {"virtio_gpu": True, "virtio_keyboard": True, "virtio_pointer": True}:
         raise ValueError("The graphical VM is missing a virtio display, keyboard or pointer")
     if not verify_seed(expected, account):
         raise ValueError("First-login defaults were not seeded exactly")
-    walker_launch = observe_bounded_walker(account.pw_uid)
-    executables = user_executables(account.pw_uid)
+    walker_launch = observe_bounded_walker(account.pw_uid, application_deadline)
+    executables = user_executables(account.pw_uid, application_deadline)
     if not (session_executables | {portal_executable}).issubset(executables):
         raise ValueError("Desktop session changed during the bounded Walker observation")
-    kargs = run(["/usr/bin/rpm-ostree", "kargs"]).stdout
+    kargs = run(
+        ["/usr/bin/rpm-ostree", "kargs"],
+        timeout=remaining_timeout(
+            application_deadline, FIXED_COMMAND_TIMEOUTS["kargs"]),
+    ).stdout
     if "systemd.wants=p.service" in kargs or "systemd.wants=v.service" in kargs:
         raise ValueError("Fixture boot wants remain in the appliance deployment")
+    local_deadline = min(
+        application_deadline,
+        time.monotonic() + VERIFIER_PHASE_BUDGETS["local-validation-and-report"],
+    )
+    remaining_timeout(
+        local_deadline, VERIFIER_PHASE_BUDGETS["local-validation-and-report"])
     persistent_scripts = (
         Path("/usr/local/libexec/symbi-provision.py"), Path("/usr/local/libexec/symbi-verify.py"),
         Path("/var/lib/symbi-appliance"),
@@ -373,6 +611,8 @@ def main():
     )
     if any(not path_absent(path) for path in persistent_credentials):
         raise ValueError("Fixture credential payload leaked onto the appliance disk")
+    remaining_timeout(
+        local_deadline, VERIFIER_PHASE_BUDGETS["local-validation-and-report"])
     autologin = Path("/etc/sddm.conf.d/90-symbi-development-appliance.conf")
     if (not direct_regular(autologin, 0) or stat.S_IMODE(autologin.stat().st_mode) != 0o644
             or digest(autologin) != expected.get("sddm_config_sha256")):
@@ -392,6 +632,8 @@ def main():
                 "authorized_keys_absent": True,
             }):
         raise ValueError("Disposable account gained a password, key or administrative group")
+    remaining_timeout(
+        local_deadline, VERIFIER_PHASE_BUDGETS["local-validation-and-report"])
     report = {
         "schema": 1, "nonce": expected["nonce"], "source_binding": expected["source_binding"],
         "probe_sha256": digest(Path(__file__)), "expected_sha256": digest(expected_path),
@@ -417,10 +659,11 @@ def main():
         "scope": SCOPE,
     }
     raw = (json.dumps(report, sort_keys=True) + "\n").encode()
-    if len(raw) > 128*1024 or not CHANNEL.is_char_device():
-        raise ValueError("Guest report channel is unavailable or oversized")
-    with CHANNEL.open("wb", buffering=0) as output:
-        output.write(raw)
+    remaining_timeout(
+        local_deadline,
+        VERIFIER_PHASE_BUDGETS["local-validation-and-report"],
+    )
+    write_guest_report(CHANNEL, raw, local_deadline)
 
 
 if __name__ == "__main__":

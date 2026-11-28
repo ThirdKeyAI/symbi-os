@@ -44,7 +44,23 @@ observed as `/usr/bin/walker`, receive an exact successful `systemctl stop`, and
 absent after that stop within fixed deadlines. Before the base image's background
 updater can open an rpm-ostree transaction, the provisioning unit removes both
 temporary boot wants in one bounded transaction. The guest then proves that neither
-want nor any provisioning script or unit was persisted.
+want nor any provisioning script or unit was persisted. The six provisioning
+command deadlines total 300 seconds. Local work has a 30-second reserve and the
+360-second unit deadline retains another 30-second margin. Provisioning, the
+420-second verifier, 180 seconds of boot and success-only shutdown work, and a
+240-second controller margin close exactly inside the first boot's 1,200-second deadline.
+The verifier's monotonic application budget is 390 seconds: 260 for the graphical
+session and portal, 45 for the exact fixed-command inventory, 70 for Walker's
+launch and cleanup lifecycle, and 15 for local validation and report emission.
+Every verifier subprocess has an explicit deadline clamped to that outer budget,
+both graphical polls have finite attempt counts, and the unit retains 30 seconds
+of service margin. Only the verifier unit's successful completion requests poweroff.
+A verifier failure or timeout leaves QEMU running until the host rejects it at the
+1,200-second controller deadline, including when the report channel received every
+byte before a final deadline failure. The provisioner retains its prompt failure
+poweroff; the verifier requires the provisioner to have succeeded, so that path
+cannot produce a valid report. The verifier's separate 15-second stop bound and
+successful shutdown are counted once in the 180-second orchestration allocation.
 
 The producer compresses the provisioned disk with qcow2 compressed clusters. A
 second isolated container mounts those exact bytes read-only, creates a fresh

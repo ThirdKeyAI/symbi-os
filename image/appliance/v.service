@@ -2,15 +2,15 @@
 Description=HIGHLY EXPERIMENTAL graphical appliance verifier
 ConditionPathExists=!/etc/initrd-release
 Wants=sddm.service
+Requires=p.service
 After=p.service sddm.service graphical.target
-OnFailure=poweroff.target
+SuccessAction=poweroff
 
 [Service]
 Type=oneshot
 ImportCredential=symbi-verify.py
 ImportCredential=symbi-expected.json
 ExecStart=/usr/bin/python3 %d/symbi-verify.py %d/symbi-expected.json
-ExecStopPost=/usr/bin/systemctl --no-block poweroff
 Environment=PYTHONDONTWRITEBYTECODE=1
 Environment=LANG=C.UTF-8
 UMask=0077

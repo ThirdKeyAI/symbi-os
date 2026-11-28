@@ -2,10 +2,14 @@
 import ast
 import copy
 from datetime import datetime, timezone
+import errno
 import hashlib
 import json
 import os
 from pathlib import Path
+import re
+import select
+import stat
 import subprocess
 import sys
 import tempfile
@@ -190,9 +194,15 @@ class InteractiveApplianceContract(unittest.TestCase):
         self.assertNotIn("CAP_SYS_ADMIN", verifier_unit)
         self.assertIn("persistent_scripts_absent", verify)
         self.assertIn("persistent_units_absent", verify)
-        self.assertIn("observe_bounded_walker(account.pw_uid)", verify)
+        self.assertIn(
+            "observe_bounded_walker(account.pw_uid, application_deadline)",
+            verify,
+        )
         self.assertIn('"/usr/bin/systemd-run", "--user", "--collect"', verify)
-        self.assertIn("executable in user_executables(uid)", verify)
+        self.assertIn(
+            "executable in user_executables(uid, application_deadline)",
+            verify,
+        )
         self.assertNotIn('"Walker": True', verify)
         self.assertIn("HIGHLY EXPERIMENTAL disposable development appliance only", SDDM_CONFIGURATION)
         self.assertIn("no password or key", SDDM_CONFIGURATION)
@@ -208,7 +218,485 @@ class InteractiveApplianceContract(unittest.TestCase):
             "/usr/bin/rpm-ostree", "kargs",
             "--delete-if-present=systemd.wants=p.service",
             "--delete-if-present=systemd.wants=v.service",
-        ], timeout=240)
+        ], timeout=provision.PROVISION_COMMAND_TIMEOUTS[
+            "remove-fixture-boot-wants"])
+
+    def test_provision_and_first_boot_time_budgets_are_statically_closed(self):
+        from image.appliance import contract, provision, verify
+
+        self.assertEqual(provision.PROVISION_COMMAND_TIMEOUTS, {
+            "selinux-enforcement": 5,
+            "create-fixture-account": 20,
+            "lock-fixture-account": 10,
+            "select-graphical-target": 10,
+            "enable-display-manager": 15,
+            "remove-fixture-boot-wants": 240,
+        })
+        self.assertEqual(provision.PROVISION_SUBPROCESS_BUDGET_SECONDS, 300)
+        self.assertEqual(provision.PROVISION_LOCAL_WORK_BUDGET_SECONDS, 30)
+        self.assertEqual(provision.PROVISION_PHASE_BUDGET_SECONDS, 330)
+        self.assertEqual(provision.PROVISION_SERVICE_TIMEOUT_SECONDS, 360)
+        self.assertEqual(provision.PROVISION_SERVICE_MARGIN_SECONDS, 30)
+        self.assertEqual(provision.VERIFIER_SERVICE_TIMEOUT_SECONDS, 420)
+        self.assertEqual(verify.VERIFIER_SERVICE_TIMEOUT_SECONDS, 420)
+        self.assertEqual(verify.VERIFIER_APPLICATION_BUDGET_SECONDS, 390)
+        self.assertEqual(verify.VERIFIER_SERVICE_MARGIN_SECONDS, 30)
+        self.assertEqual(verify.VERIFIER_PHASE_BUDGETS, {
+            "graphical-session-and-portal": 260,
+            "fixed-commands": 45,
+            "walker-lifecycle": 70,
+            "local-validation-and-report": 15,
+        })
+        self.assertEqual(verify.FIXED_COMMAND_TIMEOUTS, {
+            "get-default": 5,
+            "package-query": 2,
+            "package-verify": 8,
+            "kargs": 10,
+        })
+        self.assertEqual(
+            verify.FIXED_COMMAND_TIMEOUTS["get-default"]
+            + 3 * (verify.FIXED_COMMAND_TIMEOUTS["package-query"]
+                   + verify.FIXED_COMMAND_TIMEOUTS["package-verify"])
+            + verify.FIXED_COMMAND_TIMEOUTS["kargs"],
+            verify.VERIFIER_PHASE_BUDGETS["fixed-commands"],
+        )
+        self.assertEqual(verify.WALKER_STEP_TIMEOUTS, {
+            "reset-before": 5,
+            "launch": 10,
+            "observe": 20,
+            "stop": 10,
+            "observe-stopped": 20,
+            "reset-after": 5,
+        })
+        self.assertEqual(sum(verify.WALKER_STEP_TIMEOUTS.values()),
+                         verify.VERIFIER_PHASE_BUDGETS["walker-lifecycle"])
+        self.assertEqual(sum(verify.VERIFIER_PHASE_BUDGETS.values()),
+                         verify.VERIFIER_APPLICATION_BUDGET_SECONDS)
+        self.assertEqual(verify.VERIFIER_APPLICATION_BUDGET_SECONDS
+                         + verify.VERIFIER_SERVICE_MARGIN_SECONDS,
+                         verify.VERIFIER_SERVICE_TIMEOUT_SECONDS)
+        self.assertEqual(provision.FIRST_BOOT_ORCHESTRATION_BUDGET_SECONDS, 180)
+        self.assertEqual(provision.FIRST_BOOT_CONTROLLER_MARGIN_SECONDS, 240)
+        self.assertEqual(provision.FIRST_BOOT_TIMEOUT_SECONDS, 1200)
+        self.assertEqual(
+            provision.FIRST_BOOT_TIMEOUT_SECONDS,
+            contract.FIRST_BOOT_TIMEOUT_SECONDS,
+        )
+
+        def unit_timeout(name, field="TimeoutStartSec"):
+            unit = (ROOT / "image/appliance" / name).read_text()
+            match = re.search(r"(?m)^" + re.escape(field) + r"=([0-9]+)$", unit)
+            self.assertIsNotNone(match)
+            return int(match.group(1))
+
+        self.assertEqual(unit_timeout("p.service"),
+                         provision.PROVISION_SERVICE_TIMEOUT_SECONDS)
+        self.assertEqual(unit_timeout("v.service"),
+                         provision.VERIFIER_SERVICE_TIMEOUT_SECONDS)
+        self.assertEqual(unit_timeout("v.service", "TimeoutStopSec"), 15)
+        self.assertLessEqual(unit_timeout("v.service", "TimeoutStopSec"),
+                             provision.FIRST_BOOT_ORCHESTRATION_BUDGET_SECONDS)
+        self.assertLessEqual(
+            provision.PROVISION_PHASE_BUDGET_SECONDS,
+            provision.PROVISION_SERVICE_TIMEOUT_SECONDS,
+        )
+        self.assertEqual(
+            provision.PROVISION_SERVICE_TIMEOUT_SECONDS
+            + provision.VERIFIER_SERVICE_TIMEOUT_SECONDS
+            + provision.FIRST_BOOT_ORCHESTRATION_BUDGET_SECONDS
+            + provision.FIRST_BOOT_CONTROLLER_MARGIN_SECONDS,
+            provision.FIRST_BOOT_TIMEOUT_SECONDS,
+        )
+
+        provision_tree = ast.parse(
+            (ROOT / "image/appliance/provision.py").read_text())
+        named_phases = [
+            node.args[0].value
+            for node in ast.walk(provision_tree)
+            if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                and node.func.id == "run_phase" and node.args
+                and isinstance(node.args[0], ast.Constant))
+        ]
+        self.assertCountEqual(named_phases, provision.PROVISION_COMMAND_TIMEOUTS)
+        producer = (ROOT / "image/appliance/producer.py").read_text()
+        self.assertIn(
+            "time.monotonic() - start >= FIRST_BOOT_TIMEOUT_SECONDS",
+            producer,
+        )
+
+    def test_late_qemu_exit_is_rejected_before_guest_report_read(self):
+        from image.appliance import producer
+
+        child = mock.Mock(returncode=0)
+        child.poll.return_value = 0
+        with tempfile.TemporaryDirectory() as temporary:
+            evidence = Path(temporary)
+            (evidence / "guest-report.json").write_text('{"complete": true}\n')
+            with (mock.patch.object(
+                    producer.time, "monotonic",
+                    return_value=float(producer.FIRST_BOOT_TIMEOUT_SECONDS)),
+                  mock.patch.object(producer, "load_guest_report") as load_report):
+                with self.assertRaisesRegex(TimeoutError, "20 minutes"):
+                    producer.await_first_boot_report(child, 0.0, evidence)
+            load_report.assert_not_called()
+
+    def test_complete_report_from_failed_verifier_cannot_power_off_or_be_accepted(self):
+        from image.appliance import producer, verify
+
+        verifier_unit = (ROOT / "image/appliance/v.service").read_text()
+        provisioner_unit = (ROOT / "image/appliance/p.service").read_text()
+        self.assertIn("Requires=p.service", verifier_unit)
+        self.assertIn("After=p.service", verifier_unit)
+        self.assertIn("SuccessAction=poweroff", verifier_unit)
+        self.assertNotIn("OnFailure=poweroff.target", verifier_unit)
+        self.assertNotIn("ExecStopPost=", verifier_unit)
+        self.assertEqual(verifier_unit.count("poweroff"), 1)
+        self.assertIn("OnFailure=poweroff.target", provisioner_unit)
+        self.assertNotIn("SuccessAction=poweroff", provisioner_unit)
+        poweroff_paths = {
+            path.name: [line for line in path.read_text().splitlines()
+                        if "poweroff" in line]
+            for path in (ROOT / "image/appliance").glob("*.service")
+        }
+        self.assertEqual(poweroff_paths, {
+            "p.service": ["OnFailure=poweroff.target"],
+            "v.service": ["SuccessAction=poweroff"],
+        })
+
+        raw = b'{"complete":true}\n'
+        clock = [0.0]
+        written = bytearray()
+        poller = mock.Mock()
+        poller.poll.return_value = [(7, select.POLLOUT)]
+
+        def late_complete_write(_descriptor, value):
+            written.extend(value)
+            clock[0] = 16.0
+            return len(value)
+
+        with (mock.patch.object(verify.time, "monotonic",
+                                side_effect=lambda: clock[0]),
+              mock.patch.object(verify.os, "lstat",
+                                return_value=mock.Mock(st_mode=stat.S_IFCHR)),
+              mock.patch.object(verify.os, "open", return_value=7),
+              mock.patch.object(verify.os, "fstat",
+                                return_value=mock.Mock(st_mode=stat.S_IFCHR)),
+              mock.patch.object(verify.select, "poll", return_value=poller),
+              mock.patch.object(verify.os, "write", side_effect=late_complete_write),
+              mock.patch.object(verify.os, "close")):
+            with self.assertRaises(TimeoutError):
+                verify.write_guest_report("/dev/fake", raw, 15.0)
+        self.assertEqual(bytes(written), raw)
+
+        clock[0] = 0.0
+        child = mock.Mock(returncode=None)
+        child.poll.return_value = None
+
+        def reach_controller_deadline(_seconds):
+            clock[0] = float(producer.FIRST_BOOT_TIMEOUT_SECONDS)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            evidence = Path(temporary)
+            (evidence / "guest-report.json").write_bytes(raw)
+            with (mock.patch.object(producer.time, "monotonic",
+                                    side_effect=lambda: clock[0]),
+                  mock.patch.object(producer.time, "sleep",
+                                    side_effect=reach_controller_deadline),
+                  mock.patch.object(producer, "load_guest_report") as load_report):
+                with self.assertRaisesRegex(TimeoutError, "20 minutes"):
+                    producer.await_first_boot_report(child, 0.0, evidence)
+            load_report.assert_not_called()
+
+    def test_provisioner_failure_poweroff_cannot_be_accepted_without_report(self):
+        from image.appliance import producer
+
+        child = mock.Mock(returncode=0)
+        child.poll.return_value = 0
+        with tempfile.TemporaryDirectory() as temporary:
+            with (mock.patch.object(producer.time, "monotonic", return_value=1.0),
+                  self.assertRaisesRegex(
+                      RuntimeError, "emitted no bounded guest report")):
+                producer.await_first_boot_report(child, 0.0, Path(temporary))
+
+    def test_verifier_has_no_implicit_or_unbounded_subprocess_deadline(self):
+        from image.appliance import verify
+
+        source = (ROOT / "image/appliance/verify.py").read_text()
+        tree = ast.parse(source)
+        functions = {
+            node.name: node
+            for node in tree.body
+            if isinstance(node, ast.FunctionDef)
+        }
+        for name in ("run", "user_systemctl"):
+            function = functions[name]
+            self.assertEqual([item.arg for item in function.args.kwonlyargs],
+                             ["check", "timeout"])
+            self.assertIsNone(function.args.kw_defaults[1])
+
+        calls = [
+            node
+            for node in ast.walk(tree)
+            if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                and node.func.id in {"run", "user_systemctl"})
+        ]
+        self.assertEqual(len(calls), 11)
+        for call in calls:
+            with self.subTest(line=call.lineno, function=call.func.id):
+                keywords = {item.arg for item in call.keywords}
+                self.assertIn("timeout", keywords)
+                self.assertNotIn(None, keywords)
+
+        timeout_expressions = [
+            ast.unparse(next(item.value for item in call.keywords
+                             if item.arg == "timeout"))
+            for call in calls
+        ]
+        self.assertCountEqual(timeout_expressions, [
+            "remaining_timeout(application_deadline, FIXED_COMMAND_TIMEOUTS['package-query'])",
+            "remaining_timeout(application_deadline, FIXED_COMMAND_TIMEOUTS['package-verify'])",
+            "timeout",
+            "remaining_timeout(launch_deadline, WALKER_STEP_TIMEOUTS['reset-before'])",
+            "remaining_timeout(launch_deadline, WALKER_STEP_TIMEOUTS['launch'])",
+            "remaining_timeout(cleanup_deadline, WALKER_STEP_TIMEOUTS['stop'])",
+            "remaining_timeout(cleanup_deadline, WALKER_STEP_TIMEOUTS['reset-after'])",
+            "remaining_timeout(phase_deadline, GRAPHICAL_COMMAND_TIMEOUT_SECONDS)",
+            "remaining_timeout(phase_deadline, PORTAL_START_TIMEOUT_SECONDS)",
+            "remaining_timeout(application_deadline, FIXED_COMMAND_TIMEOUTS['get-default'])",
+            "remaining_timeout(application_deadline, FIXED_COMMAND_TIMEOUTS['kargs'])",
+        ])
+        self.assertEqual(source.count("subprocess.run("), 1)
+
+        process_scans = [
+            node
+            for node in ast.walk(tree)
+            if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                and node.func.id == "user_executables")
+        ]
+        self.assertGreater(len(process_scans), 0)
+        self.assertTrue(all(len(call.args) == 2 for call in process_scans))
+        self.assertIn("local_deadline = min(", source)
+        self.assertIn(
+            "write_guest_report(CHANNEL, raw, local_deadline)", source)
+
+        self.assertNotIn("while time.monotonic()", source)
+        self.assertIn(
+            "attempts=GRAPHICAL_SESSION_POLL_ATTEMPTS",
+            source,
+        )
+        self.assertIn("attempts=PORTAL_POLL_ATTEMPTS", source)
+        self.assertIn('attempts=WALKER_STEP_TIMEOUTS["observe"]', source)
+        self.assertIn('attempts=WALKER_STEP_TIMEOUTS["observe-stopped"]', source)
+        self.assertEqual(verify.GRAPHICAL_SESSION_POLL_ATTEMPTS, 130)
+        self.assertEqual(verify.PORTAL_POLL_ATTEMPTS, 260)
+
+    def test_verifier_poll_and_command_deadlines_fail_closed_with_fake_clock(self):
+        from image.appliance import verify
+
+        clock = [0.0]
+        probes = []
+
+        def monotonic():
+            return clock[0]
+
+        def sleep(seconds):
+            self.assertGreater(seconds, 0)
+            clock[0] += seconds
+
+        def never_ready():
+            probes.append(clock[0])
+            return False
+
+        with (mock.patch.object(verify.time, "monotonic", side_effect=monotonic),
+              mock.patch.object(verify.time, "sleep", side_effect=sleep)):
+            self.assertFalse(verify.bounded_poll(
+                never_ready, deadline=260.0, interval=2,
+                attempts=verify.GRAPHICAL_SESSION_POLL_ATTEMPTS,
+            ))
+            self.assertEqual(len(probes), 130)
+            self.assertEqual(clock[0], 260.0)
+            clock[0] = 255.0
+            self.assertEqual(verify.remaining_timeout(260.0, 10), 5.0)
+            clock[0] = 260.0
+            with self.assertRaises(TimeoutError):
+                verify.remaining_timeout(260.0, 10)
+
+        clock[0] = 0.0
+        probes.clear()
+
+        def third_probe_ready():
+            probes.append(clock[0])
+            return len(probes) == 3
+
+        with (mock.patch.object(verify.time, "monotonic", side_effect=monotonic),
+              mock.patch.object(verify.time, "sleep", side_effect=sleep)):
+            self.assertTrue(verify.bounded_poll(
+                third_probe_ready, deadline=260.0, interval=2,
+                attempts=verify.GRAPHICAL_SESSION_POLL_ATTEMPTS,
+            ))
+        self.assertEqual(probes, [0.0, 2.0, 4.0])
+
+        clock[0] = 0.0
+        probes.clear()
+
+        def late_ready():
+            probes.append(clock[0])
+            clock[0] = 261.0
+            return True
+
+        with mock.patch.object(verify.time, "monotonic", side_effect=monotonic):
+            self.assertFalse(verify.bounded_poll(
+                late_ready, deadline=260.0, interval=2, attempts=1,
+            ))
+        self.assertEqual(probes, [0.0])
+
+    def test_user_process_scan_fails_when_deadline_expires_during_entry(self):
+        from image.appliance import verify
+
+        clock = [0.0]
+        entry = mock.Mock()
+        entry.name = "123"
+
+        def entry_stat():
+            clock[0] = 2.0
+            return mock.Mock(st_uid=1000)
+
+        entry.stat.side_effect = entry_stat
+        with (mock.patch.object(verify.time, "monotonic",
+                                side_effect=lambda: clock[0]),
+              mock.patch.object(verify.os, "geteuid", return_value=0),
+              mock.patch.object(verify.os, "seteuid") as seteuid,
+              mock.patch.object(verify.Path, "iterdir", return_value=[entry]),
+              mock.patch.object(verify.os, "readlink") as readlink):
+            with self.assertRaises(TimeoutError):
+                verify.user_executables(1000, 1.0)
+        seteuid.assert_has_calls([mock.call(1000), mock.call(0)])
+        readlink.assert_not_called()
+
+    def test_guest_report_writer_retries_nonblocking_partial_writes(self):
+        from image.appliance import verify
+
+        poller = mock.Mock()
+        poller.poll.return_value = [(7, select.POLLOUT)]
+        writes = []
+
+        def write(_fd, raw):
+            writes.append(bytes(raw))
+            if len(writes) == 1:
+                raise BlockingIOError(errno.EAGAIN, "full")
+            return 2 if len(writes) == 2 else len(raw)
+
+        with (mock.patch.object(verify.time, "monotonic", return_value=0.0),
+              mock.patch.object(verify.os, "lstat",
+                                return_value=mock.Mock(st_mode=stat.S_IFCHR)),
+              mock.patch.object(verify.os, "open", return_value=7) as opened,
+              mock.patch.object(verify.os, "fstat",
+                                return_value=mock.Mock(st_mode=stat.S_IFCHR)),
+              mock.patch.object(verify.select, "poll", return_value=poller),
+              mock.patch.object(verify.os, "write", side_effect=write),
+              mock.patch.object(verify.os, "close") as closed):
+            self.assertEqual(
+                verify.write_guest_report("/dev/fake", b"hello", 15.0), 5)
+        opened.assert_called_once_with(
+            "/dev/fake",
+            os.O_WRONLY | os.O_NONBLOCK | os.O_CLOEXEC | os.O_NOFOLLOW,
+        )
+        poller.register.assert_called_once_with(
+            7, select.POLLOUT | select.POLLERR | select.POLLHUP | select.POLLNVAL)
+        self.assertEqual(writes, [b"hello", b"hello", b"llo"])
+        closed.assert_called_once_with(7)
+
+    def test_guest_report_writer_fails_closed_on_no_reader_and_zero_write(self):
+        from image.appliance import verify
+
+        for events, write_result, exception in (
+                ([], 1, TimeoutError),
+                ([(7, select.POLLOUT)], 0, ValueError)):
+            poller = mock.Mock()
+            poller.poll.return_value = events
+            with (self.subTest(events=events),
+                  mock.patch.object(verify.time, "monotonic", return_value=0.0),
+                  mock.patch.object(verify.os, "lstat",
+                                    return_value=mock.Mock(st_mode=stat.S_IFCHR)),
+                  mock.patch.object(verify.os, "open", return_value=7),
+                  mock.patch.object(verify.os, "fstat",
+                                    return_value=mock.Mock(st_mode=stat.S_IFCHR)),
+                  mock.patch.object(verify.select, "poll", return_value=poller),
+                  mock.patch.object(verify.os, "write", return_value=write_result),
+                  mock.patch.object(verify.os, "close") as closed):
+                with self.assertRaises(exception):
+                    verify.write_guest_report("/dev/fake", b"report", 15.0)
+                closed.assert_called_once_with(7)
+
+    def test_guest_report_writer_rejects_non_character_and_late_write(self):
+        from image.appliance import verify
+
+        with (mock.patch.object(verify.time, "monotonic", return_value=0.0),
+              mock.patch.object(verify.os, "lstat",
+                                return_value=mock.Mock(st_mode=stat.S_IFCHR)),
+              mock.patch.object(verify.os, "open", return_value=7),
+              mock.patch.object(verify.os, "fstat",
+                                return_value=mock.Mock(st_mode=stat.S_IFREG)),
+              mock.patch.object(verify.select, "poll") as poll_factory,
+              mock.patch.object(verify.os, "close") as closed):
+            with self.assertRaisesRegex(ValueError, "character device"):
+                verify.write_guest_report("/dev/fake", b"report", 15.0)
+        poll_factory.assert_not_called()
+        closed.assert_called_once_with(7)
+
+        clock = [0.0]
+        poller = mock.Mock()
+        poller.poll.return_value = [(7, select.POLLOUT)]
+
+        def late_write(_fd, raw):
+            clock[0] = 16.0
+            return len(raw)
+
+        with (mock.patch.object(verify.time, "monotonic",
+                                side_effect=lambda: clock[0]),
+              mock.patch.object(verify.os, "lstat",
+                                return_value=mock.Mock(st_mode=stat.S_IFCHR)),
+              mock.patch.object(verify.os, "open", return_value=7),
+              mock.patch.object(verify.os, "fstat",
+                                return_value=mock.Mock(st_mode=stat.S_IFCHR)),
+              mock.patch.object(verify.select, "poll", return_value=poller),
+              mock.patch.object(verify.os, "write", side_effect=late_write),
+              mock.patch.object(verify.os, "close") as closed):
+            with self.assertRaises(TimeoutError):
+                verify.write_guest_report("/dev/fake", b"report", 15.0)
+        closed.assert_called_once_with(7)
+
+    def test_guest_report_writer_opens_only_reviewed_udev_link_target(self):
+        from image.appliance import verify
+
+        poller = mock.Mock()
+        poller.poll.return_value = [(7, select.POLLOUT)]
+        flags = os.O_WRONLY | os.O_NONBLOCK | os.O_CLOEXEC | os.O_NOFOLLOW
+        with (mock.patch.object(verify.time, "monotonic", return_value=0.0),
+              mock.patch.object(verify.os, "lstat",
+                                return_value=mock.Mock(st_mode=stat.S_IFLNK)),
+              mock.patch.object(verify.os, "readlink",
+                                return_value="../vport7p2"),
+              mock.patch.object(verify.os, "open", return_value=7) as opened,
+              mock.patch.object(verify.os, "fstat",
+                                return_value=mock.Mock(st_mode=stat.S_IFCHR)),
+              mock.patch.object(verify.select, "poll", return_value=poller),
+              mock.patch.object(verify.os, "write", return_value=6),
+              mock.patch.object(verify.os, "close")):
+            self.assertEqual(verify.write_guest_report(
+                "/dev/virtio-ports/org.symbi.appliance", b"report", 15.0), 6)
+        opened.assert_called_once_with("/dev/vport7p2", flags)
+
+        with (mock.patch.object(verify.time, "monotonic", return_value=0.0),
+              mock.patch.object(verify.os, "lstat",
+                                return_value=mock.Mock(st_mode=stat.S_IFLNK)),
+              mock.patch.object(verify.os, "readlink",
+                                return_value="../../etc/passwd"),
+              mock.patch.object(verify.os, "open") as opened):
+            with self.assertRaisesRegex(ValueError, "reviewed device path"):
+                verify.write_guest_report(
+                    "/dev/virtio-ports/org.symbi.appliance", b"report", 15.0)
+        opened.assert_not_called()
 
     def test_absent_guest_report_preserves_a_specific_failure(self):
         from image.appliance.producer import load_guest_report
@@ -231,7 +719,7 @@ class InteractiveApplianceContract(unittest.TestCase):
                 mock.patch("image.appliance.verify.run") as launch, \
                 mock.patch("image.appliance.verify.user_systemctl",
                            return_value=mock.Mock(returncode=0)) as systemctl:
-            evidence = observe_bounded_walker(1000)
+            evidence = observe_bounded_walker(1000, float("inf"))
         command = launch.call_args.args[0]
         for argument in ("--collect", "--service-type=exec", "--property=MemoryMax=512M",
                          "--property=MemorySwapMax=0", "--property=CPUQuota=100%",
@@ -248,7 +736,7 @@ class InteractiveApplianceContract(unittest.TestCase):
                         return_value={"/usr/bin/walker"}), \
                 mock.patch("image.appliance.verify.run") as no_launch:
             with self.assertRaisesRegex(ValueError, "already running"):
-                observe_bounded_walker(1000)
+                observe_bounded_walker(1000, float("inf"))
         no_launch.assert_not_called()
 
     def test_walker_rejects_nonzero_stop_even_after_process_absence(self):
@@ -261,10 +749,37 @@ class InteractiveApplianceContract(unittest.TestCase):
                 mock.patch("image.appliance.verify.user_systemctl",
                            side_effect=results) as systemctl:
             with self.assertRaisesRegex(ValueError, "did not stop successfully"):
-                observe_bounded_walker(1000)
+                observe_bounded_walker(1000, float("inf"))
         self.assertEqual(executables.call_count, 3)
         self.assertEqual(systemctl.call_args_list[1].args,
                          ("stop", "symbi-appliance-walker.service"))
+
+    def test_walker_stop_exception_still_resets_inside_shared_deadline(self):
+        from image.appliance import verify
+
+        clock = [0.0]
+        calls = []
+
+        def systemctl(*arguments, check=True, timeout):
+            calls.append((arguments[0], timeout, clock[0]))
+            clock[0] += timeout
+            if arguments[0] == "stop":
+                raise subprocess.TimeoutExpired(arguments, timeout)
+            return mock.Mock(returncode=0)
+
+        with (mock.patch.object(verify.time, "monotonic",
+                                side_effect=lambda: clock[0]),
+              mock.patch("image.appliance.verify.user_executables",
+                         side_effect=[set(), {"/usr/bin/walker"}]),
+              mock.patch("image.appliance.verify.run"),
+              mock.patch("image.appliance.verify.user_systemctl",
+                         side_effect=systemctl)):
+            with self.assertRaisesRegex(ValueError, "Walker cleanup failed"):
+                observe_bounded_walker(1000, 70.0)
+        self.assertEqual([name for name, _, _ in calls],
+                         ["reset-failed", "stop", "reset-failed"])
+        self.assertLessEqual(clock[0], 70.0)
+        self.assertLessEqual(calls[-1][1], 5.0)
 
     def test_source_binding_rejects_every_identity_change(self):
         original = source_binding()
