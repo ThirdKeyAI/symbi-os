@@ -1,10 +1,13 @@
 """Offline contract tests for the HIGHLY EXPERIMENTAL graphical appliance."""
+import ast
 import copy
 from datetime import datetime, timezone
 import hashlib
 import json
 import os
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
 import unittest
 from unittest import mock
@@ -576,6 +579,69 @@ class InteractiveApplianceContract(unittest.TestCase):
             self.assertIn("HIGHLY EXPERIMENTAL", text)
             self.assertIn("no NIC", text)
         self.assertIn("Hosted runtime evidence is\nstill required", card)
+
+    def test_documented_verifier_rejects_tampering_when_optimized(self):
+        readme = (ROOT / "image/appliance/README.md").read_text()
+        marker = "python3 - <<'PY'\n"
+        start = readme.index(marker) + len(marker)
+        verifier = readme[start:readme.index("\nPY\n```", start)]
+        self.assertFalse(any(isinstance(node, ast.Assert) for node in ast.walk(ast.parse(verifier))))
+
+        source = source_binding()
+        disk_bytes = b"qcow2-fixture"
+        screenshot_bytes = b"P6\n1 1\n255\n\x00\x01\x02"
+        disk = {
+            "name": ARTIFACT_NAME, "bytes": len(disk_bytes),
+            "sha256": hashlib.sha256(disk_bytes).hexdigest(), "format": "qcow2",
+            "compression": "qcow2-zlib-clusters", "virtual_bytes": VIRTUAL_DISK_BYTES,
+        }
+        producer = {
+            "passed": True, "guest_booted": True, "graphical_desktop_observed": True,
+            "artifact_retained": True, "independent_reboot_passed": False,
+            "os_qualified": False, "release_qualified": False,
+            "signature_qualified": False, "source_binding": source,
+        }
+        reboot_report = reboot(source, disk)
+        reboot_report["screenshot"].update({
+            "bytes": len(screenshot_bytes),
+            "sha256": hashlib.sha256(screenshot_bytes).hexdigest(),
+        })
+        manifest = build_manifest(source, disk, producer, reboot_report)
+
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            script = directory / "verify-download.py"
+            script.write_text(verifier)
+            (directory / "manifest.json").write_text(json.dumps(manifest))
+            disk_path = directory / ARTIFACT_NAME
+            screenshot_path = directory / "display.ppm"
+            disk_path.write_bytes(disk_bytes)
+            screenshot_path.write_bytes(screenshot_bytes)
+            environment = dict(os.environ, PYTHONOPTIMIZE="1", PYTHONDONTWRITEBYTECODE="1")
+
+            def execute():
+                return subprocess.run(
+                    [sys.executable, str(script)], cwd=directory, env=environment,
+                    stdin=subprocess.DEVNULL, capture_output=True, text=True,
+                    timeout=10, check=False,
+                )
+
+            valid = execute()
+            self.assertEqual(valid.returncode, 0, valid.stderr)
+            self.assertIn("validated", valid.stdout)
+
+            disk_path.write_bytes(b"X" + disk_bytes[1:])
+            tampered_disk = execute()
+            self.assertNotEqual(tampered_disk.returncode, 0)
+            self.assertNotIn("validated", tampered_disk.stdout)
+            self.assertIn("qcow2 SHA-256 changed", tampered_disk.stderr)
+
+            disk_path.write_bytes(disk_bytes)
+            screenshot_path.write_bytes(b"X" + screenshot_bytes[1:])
+            tampered_screenshot = execute()
+            self.assertNotEqual(tampered_screenshot.returncode, 0)
+            self.assertNotIn("validated", tampered_screenshot.stdout)
+            self.assertIn("screenshot SHA-256 changed", tampered_screenshot.stderr)
 
 
 if __name__ == "__main__":
