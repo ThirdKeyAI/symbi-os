@@ -117,6 +117,94 @@ class UbuntuHostedProducerTests(unittest.TestCase):
             }
         return contract
 
+    def test_offline_tree_has_an_empty_private_sourceparts_directory(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            work = base / "work"
+            inputs = base / "inputs"
+            work.mkdir(mode=0o700)
+            inputs.mkdir(mode=0o700)
+            releases = []
+            metadata = {}
+            for source in self.lock["sources"]:
+                suite = source["suite"]
+                inrelease_name = suite + "_InRelease"
+                index_name = suite + "_main_binary-amd64_Packages.xz"
+                inrelease = inputs / inrelease_name
+                index = inputs / index_name
+                inrelease.write_bytes((suite + " release").encode())
+                index.write_bytes((suite + " index").encode())
+                inrelease.chmod(0o600)
+                index.chmod(0o600)
+                metadata[inrelease_name] = inrelease
+                metadata[index_name] = index
+                releases.append({
+                    "suite": suite,
+                    "inrelease": {"filename": inrelease_name},
+                })
+
+            _, apt_root, status = hosted._prepare_offline_tree(
+                work, self.lock, releases, metadata, b"Status: ok\n")
+
+            sourceparts = apt_root / "etc/apt/sources.list.d"
+            self.assertTrue(sourceparts.is_dir())
+            self.assertEqual(list(sourceparts.iterdir()), [])
+            self.assertEqual(sourceparts.stat().st_mode & 0o777, 0o700)
+            self.assertEqual(status, apt_root / "var/lib/dpkg/status")
+            self.assertFalse((apt_root / "etc/apt/etc/apt").exists())
+
+    def test_invalid_source_freshness_stops_before_any_apt_command(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            work = base / "work"
+            evidence = base / "evidence"
+            output = base / "output"
+            apt_root = work / "apt-root"
+            repository = work / "repositories"
+            for path in (work, evidence, output, apt_root / "etc/apt",
+                         apt_root / "var/lib/dpkg", repository):
+                path.mkdir(parents=True, mode=0o700)
+            status = apt_root / "var/lib/dpkg/status"
+            status.write_bytes(b"Status: ok\n")
+            status.chmod(0o600)
+            keyring = (
+                base
+                / self.committed_contract["retained_inputs"]["archive_keyring"]
+            )
+            keyring.parent.mkdir(parents=True, mode=0o700)
+            keyring.write_bytes(b"keyring")
+            keyring.chmod(0o600)
+            commands = hosted.build.offline_apt_commands(
+                apt_root, repository, keyring,
+                self.lock["package_request"]["roots"])
+            runner = mock.Mock()
+            runner.run.side_effect = AssertionError(
+                "APT command ran before source freshness validation")
+
+            with (
+                    mock.patch.object(
+                        hosted.build, "extract_base_dpkg_status",
+                        return_value=(b"Status: ok\n", {})),
+                    mock.patch.object(
+                        hosted, "_prepare_offline_tree",
+                        return_value=(repository, apt_root, status)),
+                    mock.patch.object(
+                        hosted.build, "offline_apt_commands",
+                        return_value=commands),
+                    mock.patch.object(
+                        hosted.build, "validate_offline_sources_list",
+                        create=True,
+                        side_effect=ValueError(
+                            "offline APT source freshness contract changed"))):
+                with self.assertRaisesRegex(ValueError, "freshness contract"):
+                    hosted._produce(
+                        base, self.lock, self.committed_contract, work,
+                        evidence, output, runner, "2026-11-28T00:00:00Z",
+                        base / "rootfs.tar.gz", [], [], {}, {})
+
+            runner.run.assert_not_called()
+            self.assertFalse((apt_root / "etc/apt/sources.list").exists())
+
     def test_committed_contract_is_exact_reviewed_ready_pin_set(self):
         self.assertEqual(self.committed_contract["schema"], 2)
         self.assertEqual(self.committed_contract["state"], "ready")

@@ -1,0 +1,150 @@
+{
+  "artifact": {
+    "bytes": 10268,
+    "compressed_member_bytes": 6774,
+    "crc_passed": true,
+    "digest": "sha256:9e743d8860d808336586066e4545f9f9c274779da14a11fa71f0bf4c75e4330b",
+    "entries": 25,
+    "id": 15241362680,
+    "name": "container-ubuntu-fixture-package-evidence",
+    "safe_zip": {
+      "all_entries_regular_mode_0600": true,
+      "no_absolute_or_parent_paths": true,
+      "no_duplicate_paths": true,
+      "no_encrypted_entries": true,
+      "no_links_or_special_nodes": true
+    },
+    "uncompressed_bytes": 27249
+  },
+  "audit": {
+    "artifact_content_executed": false,
+    "artifact_extracted": false,
+    "command_stream_receipts_checked": 14,
+    "contract_and_lock_cross_bound": true,
+    "json_strict_duplicate_free": true,
+    "ledger_phases_checked": 15,
+    "metadata_pins_match_reviewed_contract": true,
+    "raw_command_outputs_match_descriptors": true,
+    "run_head_tree_job_cross_bound": true
+  },
+  "claims": {
+    "authoritative": false,
+    "candidate_emitted": false,
+    "container_qualified": false,
+    "os_qualified": false,
+    "producer_passed": false,
+    "qualified": false,
+    "release_qualified": false,
+    "selected": false,
+    "signature_qualified": false
+  },
+  "failure": {
+    "apt_update": {
+      "exit_status": 0,
+      "stderr": {
+        "bytes": 357,
+        "sha256": "5933465656976ad5cf69a0661e57a7c7821a5168476ddbbacf9cf27cdae643ab"
+      },
+      "stdout": {
+        "bytes": 25,
+        "sha256": "80f57336ba6c8764b6653801e2f7bc732df6287cda3285876775d600826630dd"
+      }
+    },
+    "apt_uris": {
+      "stderr": {
+        "bytes": 651,
+        "sha256": "57579ee1702364449ecd5229df374417238144d3eeaffe669a277175147554c8"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "classification": "apt-private-root-source-path-resolution",
+    "first_failed_gate": "offline-apt-uris",
+    "host_sources_used": false,
+    "privilege_failure": false,
+    "reason": "offline apt uris command failed",
+    "timed_out": false
+  },
+  "ledger": {
+    "bytes": 21105,
+    "last_kind": "packages-download",
+    "last_suite": "noble-security",
+    "phase_count": 15,
+    "schema": 2,
+    "sha256": "125f8b8a6bc6c173eac0c773ad2f95f7927a4ae77a5c2246d8c920d7e8a9ab9f",
+    "state": "partial-evidence",
+    "strict_sequence_end": 15,
+    "strict_sequence_start": 1
+  },
+  "outputs": {
+    "candidate_emitted": false,
+    "candidate_upload_step": "skipped",
+    "package_download_bytes": 0,
+    "package_download_count": 0,
+    "phase_ledger_emitted": true,
+    "producer_result_emitted": false
+  },
+  "provenance": {
+    "cgroup_final": {
+      "bytes": 861,
+      "sha256": "03c75c4f8f66120f87325993ce9bf7472f6fa353f7f0c0eb8fceaa6da1a23ec2"
+    },
+    "cleanup": {
+      "bytes": 261,
+      "sha256": "e392aaa76691649ecb99169717f48f56a2d94fbc6f5613273e29abe2252817d7"
+    },
+    "contract_sha256": "2a7e36739933aea9d4e2d16e9c9d7dcd45f719f69fe33066f38ad1bc133224d8",
+    "lock_sha256": "94d6f84024639b880060ac93825b4d3f1408f9f3a73b6e8087faac1748268b6c",
+    "systemd_fallback": {
+      "bytes": 750,
+      "sha256": "c789d894a98b3f831fa8401f5ec7e3e5a7e91a91a1c81468df34ede45af2b872"
+    },
+    "systemd_result": {
+      "bytes": 353,
+      "sha256": "d093497234c659e190f4f490e3f1d40286933f4d96600d2b08a011d3d3a36ea1"
+    }
+  },
+  "resources": {
+    "cpu_max": "100000 100000",
+    "memory_events": {
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memory_max_bytes": 2147483648,
+    "memory_peak_bytes": 71528448,
+    "memory_swap_current_bytes": 0,
+    "memory_swap_max_bytes": 0,
+    "memory_swap_peak_bytes": 0,
+    "pids_max": 128,
+    "pids_peak": 14,
+    "runtime_seconds": 3000,
+    "zero_swap": true
+  },
+  "retention": {
+    "candidate_present": false,
+    "post_unit_candidate_validated": false,
+    "private_work_retained": true,
+    "producer_exit_status": 1,
+    "recursive_path_cleanup_performed": false
+  },
+  "run": {
+    "attempt": 1,
+    "branch": "card/P0-05-package-producer",
+    "conclusion": "failure",
+    "event": "workflow_dispatch",
+    "evidence_upload_step": "success",
+    "head_sha": "3df38e7e7e44a9c57f9a3628f0a3cf628cf1e624",
+    "head_tree": "c37c9999aba4672a95dd9733578c17ef2a362273",
+    "id": 46092289366,
+    "job_id": 140815730439,
+    "mode": "produce",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46092289366",
+    "workflow": ".github/workflows/ubuntu-fixture-packages.yml"
+  },
+  "schema": 1,
+  "scope": "Failed unselected production attempt; authenticated metadata only, with no package candidate, selection or qualification"
+}

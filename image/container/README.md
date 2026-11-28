@@ -291,10 +291,15 @@ commands or a network opener. The committed ready state instead refuses
 discovery and permits the production path to reauthenticate those exact pins,
 run file-only apt and no-act dpkg phases in a new network namespace, stream
 bound packages one at a time, validate an unselected candidate twice and reach
-the conditional candidate upload. Production has not been dispatched. The
-Dockerfile, native producer, image consumer and public pending lock remain
+the conditional candidate upload. The first production attempt authenticated
+all pinned metadata, then failed before package planning because its relative
+source-list value duplicated the private APT root's etc/apt segment. The
+commands now bind an explicit private Dir::Etc, one private source list and an
+empty private source-parts directory. Each fixed source row also binds the
+reviewed per-source valid-until-max ceiling and enables Check-Valid-Until.
+The Dockerfile, native producer, image consumer and public pending lock remain
 unchanged, and every candidate, selection, pass and qualification claim remains
-false.
+false pending an exact rerun.
 
 Freshness is bound to each exact source URL, suite, codename and signer. The
 immutable noble pocket has a unique signed `Date`, no `Valid-Until`, a 15-minute
@@ -302,12 +307,11 @@ future-skew ceiling and a reviewed 1,830-day maximum age. The rolling
 noble-updates and noble-security pockets have the same future-skew check and a
 14-day maximum signed-`Date` age. They may omit `Valid-Until`; when present, the
 single field must be unexpired, strictly after `Date`, and no more than 14 days
-after `Date`, so it can only shorten the rolling bound. The Python validation is
-the authoritative discovery check. Before `produce` can be enabled, its offline
-APT source rows must independently impose matching per-source
-`valid-until-max` bounds of 1,830 days for noble and 14 days for the two rolling
-pockets. That APT configuration is a mandatory pre-production gate and is not
-implemented by this discovery slice.
+after `Date`, so it can only shorten the rolling bound. The Python validation
+authenticates each Release before production. Its offline APT source rows also
+impose matching per-source `valid-until-max` bounds of 1,830 days for noble and
+14 days for the two rolling pockets, enable `Check-Valid-Until`, and are
+revalidated as an exact set before any APT command runs.
 
 Candidate output is moved from an isolated held staging directory with atomic
 no-replace semantics and accepted only after the complete nested identity and

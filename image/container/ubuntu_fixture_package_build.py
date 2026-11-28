@@ -1096,8 +1096,9 @@ def offline_apt_commands(apt_root, repository_root, keyring, roots):
     common = [
         "/usr/bin/apt-get",
         "-o", "Dir=" + str(apt_root),
-        "-o", "Dir::Etc::sourcelist=etc/apt/sources.list",
-        "-o", "Dir::Etc::sourceparts=-",
+        "-o", "Dir::Etc=etc/apt",
+        "-o", "Dir::Etc::sourcelist=sources.list",
+        "-o", "Dir::Etc::sourceparts=sources.list.d",
         "-o", "Dir::State::status=var/lib/dpkg/status",
         "-o", "Dir::State::lists=var/lib/apt/lists",
         "-o", "Dir::Cache::archives=var/cache/apt/archives",
@@ -1163,10 +1164,23 @@ def offline_sources_list(repository_root, keyring, sources):
     for source in sources:
         suite = source["suite"]
         uri = (repository_root / suite).as_uri()
+        freshness = expected_freshness_policy(source)
+        maximum_seconds = freshness["maximum_age_days"] * 24 * 60 * 60
         rows.append(
-            f"deb [arch=amd64 signed-by={keyring}] {uri} {suite} main"
+            f"deb [arch=amd64 signed-by={keyring} "
+            f"check-valid-until=yes valid-until-max={maximum_seconds}] "
+            f"{uri} {suite} main"
         )
     return "\n".join(rows) + "\n"
+
+
+def validate_offline_sources_list(raw, repository_root, keyring, sources):
+    """Require the exact file-only rows and per-source freshness ceilings."""
+    expected = offline_sources_list(
+        repository_root, keyring, sources)
+    require(type(raw) is str and raw == expected,
+            "offline APT source freshness contract changed")
+    return raw
 
 
 def _reviewed_package_url(url, filename=None, expected_source=None):
