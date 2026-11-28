@@ -15,10 +15,11 @@ CHANNEL = Path("/dev/virtio-ports/org.symbi.update")
 COLLECTOR_CHANNEL = Path("/dev/virtio-ports/org.symbi.update.diagnostic")
 LAUNCHER_UNIT = "b.service"
 SOURCE_CAPTURE_COMMAND = ["/usr/bin/cat", "/proc/self/attr/current"]
-BOOTC_CONTEXT = "system_u:system_r:install_t:s0"
-BOOTC_PROBE_COMMAND = [
-    "/usr/bin/runcon", BOOTC_CONTEXT, "/usr/bin/bootc", "--version",
+CONTROLLER_CONTEXT = "system_u:system_r:symbi_atomic_update_t:s0"
+CONTROLLER_PROBE_COMMAND = [
+    "/usr/libexec/symbi-atomic-update", "--probe",
 ]
+PROBE_ENTRYPOINT = "/usr/libexec/symbi-atomic-update"
 STATUS_PROPERTIES = (
     "Result,ExecMainCode,ExecMainStatus,ActiveState,SubState,InvocationID,"
     "ExecMainPID,ExecMainStartTimestampMonotonic,ExecMainExitTimestampMonotonic"
@@ -42,7 +43,7 @@ AVC_JOURNAL_COMMAND = [
     "--output-fields=MESSAGE,__CURSOR,__MONOTONIC_TIMESTAMP,_TRANSPORT,"
     "_AUDIT_ID",
     "--lines=33",
-    "--grep=avc:[[:space:]]+denied.*comm=\"runcon\".*(?:path|name)=\"/usr/bin/bootc\"",
+    "--grep=avc:[[:space:]]+denied.*(?:path|name)=\"/usr/libexec/symbi-atomic-update\"",
     "_TRANSPORT=audit", "+", "_TRANSPORT=kernel",
 ]
 STRUCTURED_JOURNAL_MAX_BYTES = 64 * 1024
@@ -289,8 +290,8 @@ def parse_source_capture(raw, invocation_id):
             "command": SOURCE_CAPTURE_COMMAND,
             "journal_command": SOURCE_JOURNAL_COMMAND,
             "source_context": context,
-            "requested_context": BOOTC_CONTEXT,
-            "probe_command": BOOTC_PROBE_COMMAND,
+            "requested_context": CONTROLLER_CONTEXT,
+            "probe_command": CONTROLLER_PROBE_COMMAND,
             "invocation_id": invocation_id,
             "pid": int(pid_text),
             "transport": "stdout",
@@ -429,7 +430,7 @@ def parse_avc_evidence(raw, source, service=None):
                       if isinstance(source, dict) else None)
     if (not isinstance(source_context, str)
             or _SELINUX_CONTEXT.fullmatch(source_context) is None
-            or source.get("requested_context") != BOOTC_CONTEXT):
+            or source.get("requested_context") != CONTROLLER_CONTEXT):
         raise ValueError("invalid transition source observation")
     items = _structured_journal_lines(raw, AVC_MAX_RECORDS)
     records = []
@@ -494,8 +495,9 @@ def parse_avc_evidence(raw, source, service=None):
         timestamp = int(monotonic)
         pid = int(pid_text) if re.fullmatch(r"[0-9]{1,10}", pid_text) else 0
         audit_serial = int(serial_text)
-        if (len(path_matches) != 1 or path_matches[0][1] != "/usr/bin/bootc"
-                or _avc_field(message, "comm", quoted=True) != "runcon"
+        command = _avc_field(message, "comm", quoted=True)
+        if (len(path_matches) != 1 or path_matches[0][1] != PROBE_ENTRYPOINT
+                or re.fullmatch(r"[A-Za-z0-9_.()\-]{1,64}", command) is None
                 or _SELINUX_CONTEXT.fullmatch(source_context) is None
                 or _SELINUX_CONTEXT.fullmatch(target_context) is None
                 or re.fullmatch(r"[a-z0-9_]{1,64}", target_class) is None
@@ -517,9 +519,9 @@ def parse_avc_evidence(raw, source, service=None):
             "transport": transport,
             "receipt_monotonic_usec": timestamp,
             "pid": pid,
-            "comm": "runcon",
+            "comm": command,
             "path_field": path_matches[0][0],
-            "path": "/usr/bin/bootc",
+            "path": PROBE_ENTRYPOINT,
             "source_context": source_context,
             "target_context": target_context,
             "class": target_class,
@@ -834,7 +836,7 @@ def _raise_avc(reason, observation, failure_kind="invalid-evidence",
 
 
 def bounded_avc_evidence(source, service, run=None):
-    """Query only runcon/bootc AVC denials from the current boot."""
+    """Query only controller-entrypoint AVC denials from the current boot."""
     run = bounded_command_result if run is None else run
     try:
         result = run(

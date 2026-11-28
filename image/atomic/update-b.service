@@ -1,5 +1,5 @@
 [Unit]
-Description=Probe the fixed explicit SELinux bootc transition for the disposable hosted VM
+Description=Probe the dedicated SELinux bootc transition for the disposable hosted VM
 ConditionPathExists=!/etc/initrd-release
 After=local-fs.target
 Before=o.service
@@ -12,7 +12,7 @@ User=root
 Group=root
 ExecStartPre=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=b-enter
 ExecStartPre=/usr/bin/cat /proc/self/attr/current
-ExecStart=/usr/bin/runcon system_u:system_r:install_t:s0 /usr/bin/bootc --version
+ExecStart=/usr/libexec/symbi-atomic-update --probe
 ExecStartPost=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=b-success
 UMask=0077
 CapabilityBoundingSet=

@@ -229,12 +229,15 @@ def main():
                          'image/portal/patches/0001-no-restore-tests.patch',
                          'image/portal/patches/0002-require-fresh-screen-sharing-consent.patch'):
             copy_regular(root/relative, sources_doc/'patches'/Path(relative).name)
-        for path in ('image/overlay', 'image/desktop/session'):
+        for path in ('image/overlay', 'image/desktop/session',
+                     'image/atomic/selinux'):
             if any(p.is_symlink() or not (p.is_file() or p.is_dir()) for p in (root/path).rglob('*')):
                 raise ValueError('Desktop overlay contains linked or special inputs')
             shutil.copytree(root/path, context/path, symlinks=False)
         (context/'image/desktop/session/usr/libexec/symbi-launch-desktop-services').chmod(0o755)
-        for relative in ('LICENSE', 'image/harden-image.sh', 'image/vendor/ombuntu/LICENSE',
+        for relative in ('LICENSE', 'image/harden-image.sh',
+                         'image/atomic/update_guest.py',
+                         'image/vendor/ombuntu/LICENSE',
                          'image/vendor/omarchy/LICENSE', pins['variants'][variant]['public_key']):
             copy_regular(root/relative, context/relative)
         for path in context.rglob('*'):

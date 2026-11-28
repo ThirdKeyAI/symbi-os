@@ -16,9 +16,20 @@ UPDATE_SOURCE = "/run/symbi-update/source"
 NEGATIVE_UPDATE_SOURCE = "/run/symbi-update-negative/source"
 NEGATIVE_CASES = ("unsigned", "wrong-key", "wrong-reference", "altered-signature")
 POSITIVE_OVERLAY_CASE = "valid-signature"
-BOOTC_COMMAND = [
-    "/usr/bin/runcon", "system_u:system_r:install_t:s0", "/usr/bin/bootc",
-]
+BOOTC_COMMAND = ["/usr/bin/bootc"]
+CONTROLLER_IDENTITY = {
+    "policy": "symbi_atomic_update",
+    "entrypoint": "/usr/libexec/symbi-atomic-update",
+    "entrypoint_selinux_label":
+        "system_u:object_r:symbi_atomic_update_exec_t:s0",
+    "bridge": "/usr/libexec/symbi-bootc-transition",
+    "bridge_selinux_label":
+        "system_u:object_r:symbi_bootc_transition_exec_t:s0",
+    "controller": "/usr/libexec/symbi-atomic-update-controller.py",
+    "manifest": "/usr/share/symbi-os/selinux/symbi-atomic-update.json",
+    "controller_context": "system_u:system_r:symbi_atomic_update_t:s0",
+    "install_context": "system_u:system_r:install_t:s0",
+}
 NEGATIVE_CONTROLS = {
     case: True for case in NEGATIVE_CASES
 }
@@ -27,6 +38,74 @@ NEGATIVE_CONTROLS = {
 def require(condition, message):
     if not condition:
         raise ValueError(message)
+
+
+def validate_controller_identity(value):
+    """Validate the exact image-owned controller identity from a booted predecessor."""
+    try:
+        require(isinstance(value, dict) and set(value) == {
+            "schema", "policy", "entrypoint", "entrypoint_sha256",
+            "entrypoint_selinux_label", "bridge", "bridge_sha256",
+            "bridge_selinux_label", "controller", "controller_sha256",
+            "manifest", "manifest_sha256", "controller_context",
+            "install_context", "policy_sources", "expanded_policy",
+        }, "unexpected Atomic update controller identity schema")
+        require(type(value.get("schema")) is int and value["schema"] == 1,
+                "unexpected Atomic update controller identity version")
+        for key, expected in CONTROLLER_IDENTITY.items():
+            require(value.get(key) == expected,
+                    "Atomic update controller identity differs: " + key)
+        for key in ("entrypoint_sha256", "bridge_sha256",
+                    "controller_sha256", "manifest_sha256"):
+            require(exact_hash(value.get(key)),
+                    "Atomic update controller digest is invalid")
+        sources = value.get("policy_sources")
+        require(isinstance(sources, dict)
+                and set(sources) == {
+                    "te_sha256", "fc_sha256", "launcher_sha256",
+                    "bridge_sha256"}
+                and all(exact_hash(item) for item in sources.values()),
+                "Atomic update policy source identity is invalid")
+        expansion = value.get("expanded_policy")
+        inventory = (expansion.get("install_transition_inventory")
+                     if isinstance(expansion, dict) else None)
+        require(isinstance(expansion, dict)
+                and type(expansion.get("schema")) is int
+                and isinstance(inventory, dict)
+                and type(inventory.get("schema")) is int,
+                "expanded Atomic update policy schema is invalid")
+        require(expansion == {
+            "schema": 2,
+            "policy": "symbi_atomic_update",
+            "install_transition_inventory": {
+                "schema": 1,
+                "source": "symbi_atomic_update_t",
+                "class": "process",
+                "destination": "install_t",
+                "rules": [
+                    "type_transition symbi_atomic_update_t "
+                    "symbi_bootc_transition_exec_t:process install_t;",
+                ],
+            },
+            "required": {
+                "init_entrypoint": True,
+                "init_transition": True,
+                "bridge_entrypoint": True,
+                "bridge_transition": True,
+                "bridge_type_transition": True,
+                "install_sigchld": True,
+            },
+            "forbidden": {
+                "shared_install_type_transition": False,
+                "generic_install_transition": False,
+                "controller_forbidden_process_permissions": False,
+                "controller_policy_load": False,
+                "controller_enforcing_change": False,
+            },
+        }, "expanded Atomic update policy identity differs")
+        return copy.deepcopy(value)
+    except (KeyError, TypeError, AttributeError) as error:
+        raise ValueError("malformed Atomic update controller identity") from error
 
 
 def update_policy(original, public_key, manifest_digest):
@@ -97,7 +176,8 @@ def negative_signature_payloads(directory, authentication):
 def require_update_base(config, pins, current):
     """Validate the retained predecessor without making it a release fallback."""
     try:
-        require(config.get("schema") == 1 and set(config) == {
+        require(type(config.get("schema")) is int and config["schema"] == 1
+                and set(config) == {
             "schema", "manifest_digest", "preflight", "image", "scope"
         }, "unexpected update-base lock schema")
         digest_value(config["manifest_digest"])
@@ -108,11 +188,17 @@ def require_update_base(config, pins, current):
         selected = config["image"]
         active = current["images"]["generic"]
         preflight = config["preflight"]
-        require(type(preflight.get("run_id")) is int and preflight["run_id"] > 0
+        require(set(preflight) == {
+                    "run_id", "source_commit", "inspect_sha256",
+                    "prepare_sha256", "controller"
+                }
+                and type(preflight.get("run_id")) is int
+                and preflight["run_id"] > 0
                 and exact_hash(preflight.get("source_commit"), 40)
                 and exact_hash(preflight.get("inspect_sha256"))
                 and exact_hash(preflight.get("prepare_sha256")),
                 "invalid retained predecessor preflight identity")
+        validate_controller_identity(preflight["controller"])
         require(selected["tested_commit"] != active["tested_commit"]
                 and selected["run_id"] < active["run_id"]
                 and selected["artifact"]["id"] != active["artifact"]["id"],

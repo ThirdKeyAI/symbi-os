@@ -10,11 +10,10 @@ RuntimeDirectory=symbi-update
 RuntimeDirectoryMode=0700
 StateDirectory=symbi-update-test
 StateDirectoryMode=0700
-ImportCredential=symbi-update.py
 ImportCredential=symbi-update-expected.json
 ImportCredential=symbi-update-policy.json
 ExecStartPre=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=o-enter
-ExecStart=/usr/bin/python3 %d/symbi-update.py %d/symbi-update-expected.json %d/symbi-update-policy.json
+ExecStart=/usr/libexec/symbi-atomic-update --advance %d/symbi-update-expected.json %d/symbi-update-policy.json
 ExecStartPost=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=o-success
 ExecStopPost=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=o-stop
 ExecStopPost=/usr/bin/systemctl --no-block poweroff

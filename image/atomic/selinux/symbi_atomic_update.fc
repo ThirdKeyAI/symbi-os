@@ -1,0 +1,2 @@
+/usr/libexec/symbi-atomic-update -- gen_context(system_u:object_r:symbi_atomic_update_exec_t,s0)
+/usr/libexec/symbi-bootc-transition -- gen_context(system_u:object_r:symbi_bootc_transition_exec_t,s0)

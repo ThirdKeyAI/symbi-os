@@ -22,11 +22,14 @@ from image.atomic.update_contract import (NEGATIVE_UPDATE_SOURCE, POSITIVE_OVERL
                                           update_command, rollback_command,
                                           negative_signature_payloads,
                                           validate_report, require_update_base,
-                                          validate_artifact_metadata)
+                                          validate_artifact_metadata,
+                                          validate_controller_identity)
 from image.atomic.update_boot import (DISPOSABLE_PHASE_TIMEOUT_SECONDS,
                                       TRANSITION_COLLECTOR_STAGES,
                                       TRANSITION_COLLECTOR_STAGE_OPERATION_SHA256,
                                       _SENSITIVE_ASSIGNMENT as VALIDATOR_SENSITIVE,
+                                      _validate_controller_identity as
+                                      validate_boot_controller_identity,
                                       qemu_command, negative_qemu_command,
                                       positive_qemu_command,
                                       firmware_arguments,
@@ -76,9 +79,16 @@ from image.atomic.update_boot_failure import (JOURNAL_MAX_BYTES,
 from image.atomic import update_boot_failure as failure_collector
 from image.atomic.update_process import TIMEOUT_SECONDS, validate_update_controller_command
 from image.atomic.update_guest import (UPDATE_COMMAND_TIMEOUT_SECONDS,
-                                       BOOTC_CONTEXT, BOOTC_LABEL_REFERENCE,
-                                       BOOTC_RUNCON, BOOTC_SOURCE,
+                                       BOOTC_LABEL_REFERENCE, BOOTC_SOURCE,
+                                       BOOTC_TRANSITION_BRIDGE,
+                                       BOOTC_TRANSITION_BRIDGE_CONTEXT,
+                                       CONTROLLER_CONTEXT,
+                                       CONTROLLER_ENTRYPOINT,
+                                       CONTROLLER_ENTRYPOINT_CONTEXT,
+                                       CONTROLLER_MANIFEST,
+                                       CONTROLLER_PATH,
                                        FDINFO_MAX_BYTES,
+                                       INSTALL_CONTEXT,
                                        MOUNTINFO_MAX_BYTES,
                                        SOURCE, STATE, SOURCE_SERIAL,
                                        SOURCE_DEVICE_TIMEOUT_SECONDS,
@@ -95,6 +105,9 @@ from image.atomic.update_guest import (UPDATE_COMMAND_TIMEOUT_SECONDS,
                                        validate_source_mount,
                                        validate_mounted_device,
                                        _bootc_file_observation,
+                                       _bootc_subprocess,
+                                       _transition_receipt,
+                                       controller_observation,
                                        fixed_bootc_transition,
                                        fixed_bootc_operation,
                                        fixed_bootc_status,
@@ -172,12 +185,13 @@ class AtomicUpdateTests(unittest.TestCase):
 
     @staticmethod
     def avc_journal_raw(**changes):
-        source_context = "system_u:system_r:unconfined_service_t:s0"
+        source_context = "system_u:system_r:init_t:s0"
         message = (
             "audit: type=1400 audit(100.200:42): avc: denied { transition } for "
-            "pid=654 comm=\"runcon\" path=\"/usr/bin/bootc\" "
+            "pid=654 comm=\"(sd-exec)\" "
+            "path=\"/usr/libexec/symbi-atomic-update\" "
             "scontext=" + source_context + " "
-            "tcontext=system_u:system_r:install_t:s0 "
+            "tcontext=system_u:system_r:symbi_atomic_update_t:s0 "
             "tclass=process permissive=0"
         )
         record = {
@@ -577,8 +591,8 @@ class AtomicUpdateTests(unittest.TestCase):
 
     def test_malformed_avc_retains_only_exact_parser_predicates(self):
         source = {
-            "source_context": "system_u:system_r:unconfined_service_t:s0",
-            "requested_context": BOOTC_CONTEXT,
+            "source_context": "system_u:system_r:init_t:s0",
+            "requested_context": CONTROLLER_CONTEXT,
         }
         record = json.loads(self.avc_journal_raw())
         message = record["MESSAGE"]
@@ -763,8 +777,8 @@ class AtomicUpdateTests(unittest.TestCase):
 
     def test_avc_command_status_predicates_reject_every_ambiguous_result(self):
         source = {
-            "source_context": "system_u:system_r:unconfined_service_t:s0",
-            "requested_context": BOOTC_CONTEXT,
+            "source_context": "system_u:system_r:init_t:s0",
+            "requested_context": CONTROLLER_CONTEXT,
         }
         cases = (
             ("records-output-empty", self.avc_command_result(
@@ -812,8 +826,8 @@ class AtomicUpdateTests(unittest.TestCase):
 
     def test_returned_null_exit_status_becomes_bound_invalid_evidence(self):
         source = {
-            "source_context": "system_u:system_r:unconfined_service_t:s0",
-            "requested_context": BOOTC_CONTEXT,
+            "source_context": "system_u:system_r:init_t:s0",
+            "requested_context": CONTROLLER_CONTEXT,
         }
         for exit_code, timed_out in (
                 (None, False), (None, True), (True, False), (1.0, False),
@@ -958,8 +972,8 @@ class AtomicUpdateTests(unittest.TestCase):
 
     def test_avc_journal_malformed_types_nesting_and_surrogates_are_normalized(self):
         source = {
-            "source_context": "system_u:system_r:unconfined_service_t:s0",
-            "requested_context": BOOTC_CONTEXT,
+            "source_context": "system_u:system_r:init_t:s0",
+            "requested_context": CONTROLLER_CONTEXT,
         }
         cases = []
         invalid_json_values = ([], {}, True, None)
@@ -1749,7 +1763,7 @@ class AtomicUpdateTests(unittest.TestCase):
                 self.assertIsNone(observed["terminal"])
                 self.assertEqual(observed["suffix"]["state"], "invalid")
 
-    def test_collector_parser_stays_within_a_128_mib_address_space(self):
+    def test_collector_parser_stays_within_a_48_mib_address_space(self):
         receipt = self.collector_stream().splitlines(keepends=True)[0]
         script = (
             "from image.atomic.update_boot import validate_collector_diagnostic;"
@@ -1759,7 +1773,7 @@ class AtomicUpdateTests(unittest.TestCase):
         )
 
         def limit_address_space():
-            resource.setrlimit(resource.RLIMIT_AS, (128 * 1024**2, 128 * 1024**2))
+            resource.setrlimit(resource.RLIMIT_AS, (48 * 1024**2, 48 * 1024**2))
 
         completed = subprocess.run(
             [sys.executable, "-c", script], input=receipt,
@@ -1833,7 +1847,7 @@ class AtomicUpdateTests(unittest.TestCase):
         command_hash = hashlib.sha256(json.dumps(
             command, separators=(",", ":")).encode()).hexdigest()
         names = {
-            "update_boot.py", "update_guest.py", "update_boot_failure.py",
+            "update_boot.py", "update_boot_failure.py",
             "expected.json", "update-policy.json", "update-o.service", "s.service",
             "update-b.service", "update-f.service", "expected-positive.json",
             *("expected-" + case + ".json" for case in (
@@ -2005,7 +2019,7 @@ class AtomicUpdateTests(unittest.TestCase):
                 elif case == "serial-extra":
                     controller["phase_failure"]["serial"]["extra"] = False
                 elif case == "input":
-                    controller["inputs"]["update_guest.py"] = "not-a-hash"
+                    controller["inputs"]["update_boot.py"] = "not-a-hash"
                 elif case == "cleanup":
                     controller["child_cleanup"]["attempted"] = True
                 elif case == "cleanup-int":
@@ -2222,7 +2236,7 @@ class AtomicUpdateTests(unittest.TestCase):
                 (evidence / "same-path-positive.json").read_bytes())
             self.assertEqual(
                 retained_report["probe"]["source_context"],
-                "system_u:system_r:unconfined_service_t:s0")
+                "system_u:system_r:init_t:s0")
             self.assertEqual(retained_report["monitor"]["invocation_id"],
                              retained_report["service"]["InvocationID"])
             self.assertEqual(retained_report["avc"]["query_result"], "no-match")
@@ -2457,6 +2471,29 @@ class AtomicUpdateTests(unittest.TestCase):
                            / str(readiness["preflight_run"]))
         for name in ("inspect.json", "prepare.json", "independent-check.json"):
             shutil.copyfile(source_evidence / name, evidence / name)
+
+        # The checked-in retained preflight predates the dedicated controller
+        # and must remain invalid.  Unit tests use a private synthetic copy so
+        # mutation coverage can exercise every later predicate without
+        # fabricating a repository-trusted predecessor identity.
+        inspect_path = evidence / "inspect.json"
+        inspect = json.loads(inspect_path.read_text())
+        inspect["installed_files"]["atomic_update_controller"] = \
+            self.controller_identity()
+        inspect["probe_hashes"]["verify.py"] = hashlib.sha256(
+            (root / "image/desktop/verify.py").read_bytes()).hexdigest()
+        inspect_raw = (json.dumps(inspect, indent=2) + "\n").encode()
+        inspect_path.write_bytes(inspect_raw)
+        readiness = copy.deepcopy(readiness)
+        readiness["inspect_sha256"] = hashlib.sha256(inspect_raw).hexdigest()
+
+        check_path = evidence / "independent-check.json"
+        check = json.loads(check_path.read_text())
+        check["retained_reports"]["inspect.json"] = readiness["inspect_sha256"]
+        check_raw = (json.dumps(check, indent=2) + "\n").encode()
+        check_path.write_bytes(check_raw)
+        readiness["independent_check_sha256"] = hashlib.sha256(
+            check_raw).hexdigest()
         validate_retained_preflight(root, readiness, selected, manifest, expected)
         return root, selected, manifest, expected, copy.deepcopy(readiness), evidence
 
@@ -2477,35 +2514,36 @@ class AtomicUpdateTests(unittest.TestCase):
 
     def test_retained_preflight_matches_the_complete_current_image_lock(self):
         root, selected, manifest, expected, readiness = self.retained_preflight_context()
-        reports = validate_retained_preflight(
-            root, readiness, selected, manifest, expected)
-        current_lock_sha256 = hashlib.sha256(
-            (root / "image/desktop-images.lock.json").read_bytes()).hexdigest()
-        self.assertEqual(reports["prepare"]["lock_sha256"], current_lock_sha256)
-
-        stale_run = 45901694620
-        stale_path = root / "docs/security/reports/P0-03-atomic-preflight" / str(stale_run)
-        stale = {
-            **readiness,
-            "preflight_run": stale_run,
-            "source_commit": "370ac0af566cd94d7452fd415c59d3def9619b85",
-            "inspect_sha256": hashlib.sha256(
-                (stale_path / "inspect.json").read_bytes()).hexdigest(),
-            "prepare_sha256": hashlib.sha256(
-                (stale_path / "prepare.json").read_bytes()).hexdigest(),
-        }
-        with self.assertRaisesRegex(ValueError, "Exact saved-image preflight"):
-            validate_retained_preflight(root, stale, selected, manifest, expected)
-
-        mismatched_report = {**readiness, "inspect_sha256": "0" * 64}
-        with self.assertRaisesRegex(ValueError, "evidence bytes changed"):
+        with self.assertRaisesRegex(ValueError, "preflight is incomplete"):
             validate_retained_preflight(
-                root, mismatched_report, selected, manifest, expected)
+                root, readiness, selected, manifest, expected)
 
         with tempfile.TemporaryDirectory() as temporary:
             fixture = self.retained_preflight_fixture(temporary)
             fixture_root, fixture_selected, fixture_manifest, fixture_expected, \
                 fixture_readiness, evidence = fixture
+            reports = validate_retained_preflight(
+                fixture_root, fixture_readiness, fixture_selected,
+                fixture_manifest, fixture_expected)
+            current_lock_sha256 = hashlib.sha256(
+                (fixture_root / "image/desktop-images.lock.json").read_bytes()
+            ).hexdigest()
+            self.assertEqual(reports["prepare"]["lock_sha256"],
+                             current_lock_sha256)
+
+            stale = {**fixture_readiness, "source_commit": "0" * 40}
+            with self.assertRaisesRegex(ValueError, "Exact saved-image preflight"):
+                validate_retained_preflight(
+                    fixture_root, stale, fixture_selected, fixture_manifest,
+                    fixture_expected)
+
+            mismatched_report = {
+                **fixture_readiness, "inspect_sha256": "0" * 64}
+            with self.assertRaisesRegex(ValueError, "evidence bytes changed"):
+                validate_retained_preflight(
+                    fixture_root, mismatched_report, fixture_selected,
+                    fixture_manifest, fixture_expected)
+
             item = json.loads((evidence / "inspect.json").read_text())
             item["cgroup_final"]["cpu.stat"] += "\n"
             (evidence / "inspect.json").write_text(json.dumps(item) + "\n")
@@ -2770,6 +2808,11 @@ class AtomicUpdateTests(unittest.TestCase):
         config = json.loads((root / "image/atomic/update-base.lock.json").read_text())
         pins = json.loads((root / "image/base-images.json").read_text())
         current = json.loads((root / "image/desktop-images.lock.json").read_text())
+        with self.assertRaisesRegex(
+                ValueError, "invalid retained predecessor preflight identity"):
+            require_update_base(config, pins, current)
+        config = copy.deepcopy(config)
+        config["preflight"]["controller"] = self.controller_identity()
         selected = require_update_base(config, pins, current)
         self.assertEqual(selected["run_id"], 45792057599)
         self.assertEqual(config["manifest_digest"],
@@ -2787,6 +2830,15 @@ class AtomicUpdateTests(unittest.TestCase):
         changed["image"]["tested_commit"] = current["images"]["generic"]["tested_commit"]
         with self.assertRaises(ValueError):
             require_update_base(changed, pins, current)
+
+        for field, value in (
+                ("entrypoint_sha256", True),
+                ("controller_context", "system_u:system_r:install_t:s0"),
+                ("expanded_policy", {})):
+            changed = copy.deepcopy(config)
+            changed["preflight"]["controller"][field] = value
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                require_update_base(changed, pins, current)
 
     def test_hosted_artifact_metadata_must_match_predecessor_lock(self):
         root = Path(__file__).resolve().parents[2]
@@ -2854,9 +2906,8 @@ class AtomicUpdateTests(unittest.TestCase):
 
     def test_update_and_rollback_commands_keep_signature_enforcement(self):
         switch = update_command()
-        prefix = ["/usr/bin/runcon", "system_u:system_r:install_t:s0",
-                  "/usr/bin/bootc"]
-        self.assertEqual(switch[:5], [*prefix, "switch", "--transport"])
+        prefix = ["/usr/bin/bootc"]
+        self.assertEqual(switch[:3], [*prefix, "switch", "--transport"])
         self.assertIn("--enforce-container-sigpolicy", switch)
         self.assertEqual(switch[-1], "/run/symbi-update/source")
         self.assertEqual(rollback_command(), [*prefix, "rollback"])
@@ -2898,10 +2949,11 @@ class AtomicUpdateTests(unittest.TestCase):
 
     def transition_failure_report(self):
         excerpt = bounded_journal_excerpt(
-            "b.service: /usr/bin/runcon: permission denied while executing /usr/bin/bootc: "
+            "b.service: /usr/libexec/symbi-atomic-update: "
+            "permission denied while starting the fixed probe: "
             "Permission denied\n")
-        source = "system_u:system_r:unconfined_service_t:s0"
-        requested = "system_u:system_r:install_t:s0"
+        source = "system_u:system_r:init_t:s0"
+        requested = CONTROLLER_CONTEXT
         invocation = "b" * 32
         return {
             "schema": 1,
@@ -2930,8 +2982,7 @@ class AtomicUpdateTests(unittest.TestCase):
                 "journal_command": SOURCE_JOURNAL_COMMAND,
                 "source_context": source,
                 "requested_context": requested,
-                "probe_command": ["/usr/bin/runcon", requested,
-                                  "/usr/bin/bootc", "--version"],
+                "probe_command": [str(CONTROLLER_ENTRYPOINT), "--probe"],
                 "invocation_id": invocation,
                 "pid": 653,
                 "transport": "stdout",
@@ -2962,9 +3013,9 @@ class AtomicUpdateTests(unittest.TestCase):
                     "transport": "kernel",
                     "receipt_monotonic_usec": 1002,
                     "pid": 654,
-                    "comm": "runcon",
+                    "comm": "(sd-exec)",
                     "path_field": "path",
-                    "path": "/usr/bin/bootc",
+                    "path": str(CONTROLLER_ENTRYPOINT),
                     "source_context": source,
                     "target_context": requested,
                     "class": "process",
@@ -3243,7 +3294,7 @@ class AtomicUpdateTests(unittest.TestCase):
     def test_transition_source_and_avc_are_correlated_and_field_allowlisted(self):
         invocation = "b" * 32
         cursor = "s=" + "1" * 64
-        source_context = "system_u:system_r:unconfined_service_t:s0"
+        source_context = "system_u:system_r:init_t:s0"
         source_raw = json.dumps({
             "MESSAGE": source_context,
             "__CURSOR": cursor,
@@ -3278,9 +3329,10 @@ class AtomicUpdateTests(unittest.TestCase):
             stderr_max=0)
         message = (
             "audit: type=1400 audit(100.200:42): avc: denied { transition } for "
-            "pid=654 comm=\"runcon\" path=\"/usr/bin/bootc\" dev=\"vda3\" "
+            "pid=654 comm=\"(sd-exec)\" "
+            "path=\"/usr/libexec/symbi-atomic-update\" dev=\"vda3\" "
             "scontext=" + source_context + " "
-            "tcontext=system_u:system_r:install_t:s0 tclass=process permissive=0"
+            "tcontext=" + CONTROLLER_CONTEXT + " tclass=process permissive=0"
         )
         raw = json.dumps({
             "MESSAGE": message,
@@ -3293,7 +3345,7 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertEqual(observed["records"][0]["permissions"], ["transition"])
         self.assertEqual(observed["records"][0]["source_context"], source_context)
         self.assertEqual(observed["records"][0]["target_context"],
-                         "system_u:system_r:install_t:s0")
+                         CONTROLLER_CONTEXT)
         retained = json.dumps(observed, sort_keys=True)
         self.assertNotIn("vda3", retained)
         self.assertNotIn("audit: type=1400", retained)
@@ -3317,9 +3369,10 @@ class AtomicUpdateTests(unittest.TestCase):
 
         entrypoint = raw.replace(
             "scontext=" + source_context,
-            "scontext=system_u:system_r:install_t:s0").replace(
-                "tcontext=system_u:system_r:install_t:s0 tclass=process",
-                "tcontext=system_u:object_r:install_exec_t:s0 tclass=file")
+            "scontext=" + CONTROLLER_CONTEXT).replace(
+                "tcontext=" + CONTROLLER_CONTEXT + " tclass=process",
+                "tcontext=system_u:object_r:symbi_atomic_update_exec_t:s0 "
+                "tclass=file")
         self.assertEqual(
             parse_avc_evidence(entrypoint, source, service)["records"][0]["class"],
             "file",
@@ -3367,10 +3420,10 @@ class AtomicUpdateTests(unittest.TestCase):
             parse_source_capture(ambiguous, invocation)
 
     def test_audit_transport_binds_trusted_structured_serial_to_exact_record(self):
-        source_context = "system_u:system_r:unconfined_service_t:s0"
+        source_context = "system_u:system_r:init_t:s0"
         source = {
             "source_context": source_context,
-            "requested_context": BOOTC_CONTEXT,
+            "requested_context": CONTROLLER_CONTEXT,
         }
         service = self.transition_failure_report()["service"]
         kernel_record = json.loads(self.avc_journal_raw())
@@ -3651,25 +3704,117 @@ class AtomicUpdateTests(unittest.TestCase):
             staged_deployment_snapshot(invalid, self.old, self.new)
 
     @staticmethod
-    def transition_report():
+    def controller_identity():
+        return {
+            "schema": 1,
+            "policy": "symbi_atomic_update",
+            "entrypoint": "/usr/libexec/symbi-atomic-update",
+            "entrypoint_sha256": "1" * 64,
+            "entrypoint_selinux_label":
+                "system_u:object_r:symbi_atomic_update_exec_t:s0",
+            "bridge": "/usr/libexec/symbi-bootc-transition",
+            "bridge_sha256": "7" * 64,
+            "bridge_selinux_label":
+                "system_u:object_r:symbi_bootc_transition_exec_t:s0",
+            "controller": "/usr/libexec/symbi-atomic-update-controller.py",
+            "controller_sha256": "6" * 64,
+            "manifest":
+                "/usr/share/symbi-os/selinux/symbi-atomic-update.json",
+            "manifest_sha256": "2" * 64,
+            "controller_context":
+                "system_u:system_r:symbi_atomic_update_t:s0",
+            "install_context": "system_u:system_r:install_t:s0",
+            "policy_sources": {
+                "te_sha256": "3" * 64,
+                "fc_sha256": "4" * 64,
+                "launcher_sha256": "5" * 64,
+                "bridge_sha256": "8" * 64,
+            },
+            "expanded_policy": {
+                "schema": 2, "policy": "symbi_atomic_update",
+                "install_transition_inventory": {
+                    "schema": 1,
+                    "source": "symbi_atomic_update_t",
+                    "class": "process",
+                    "destination": "install_t",
+                    "rules": [
+                        "type_transition symbi_atomic_update_t "
+                        "symbi_bootc_transition_exec_t:process install_t;",
+                    ],
+                },
+                "required": {
+                    "init_entrypoint": True, "init_transition": True,
+                    "bridge_entrypoint": True,
+                    "bridge_transition": True,
+                    "bridge_type_transition": True,
+                    "install_sigchld": True,
+                },
+                "forbidden": {
+                    "shared_install_type_transition": False,
+                    "generic_install_transition": False,
+                    "controller_forbidden_process_permissions": False,
+                    "controller_policy_load": False,
+                    "controller_enforcing_change": False,
+                },
+            },
+        }
+
+    def test_controller_identity_schema_matches_both_host_validators(self):
+        identity = self.controller_identity()
+        self.assertEqual(validate_controller_identity(identity), identity)
+        self.assertEqual(validate_boot_controller_identity(identity), identity)
+        for name, mutate in (
+                ("bridge", lambda item: item.pop("bridge")),
+                ("bridge-hash", lambda item: item.__setitem__(
+                    "bridge_sha256", "0" * 63)),
+                ("bridge-label", lambda item: item.__setitem__(
+                    "bridge_selinux_label", "system_u:object_r:bin_t:s0")),
+                ("bridge-source", lambda item: item["policy_sources"].pop(
+                    "bridge_sha256")),
+                ("transition-missing", lambda item: item["expanded_policy"].pop(
+                    "install_transition_inventory")),
+                ("transition-schema-bool", lambda item: item["expanded_policy"]
+                    ["install_transition_inventory"].__setitem__("schema", True)),
+                ("transition-extra-field", lambda item: item["expanded_policy"]
+                    ["install_transition_inventory"].__setitem__("extra", False)),
+                ("transition-other-exec", lambda item: item["expanded_policy"]
+                    ["install_transition_inventory"]["rules"].append(
+                        "type_transition symbi_atomic_update_t "
+                        "other_exec_t:process install_t;")),
+                ("transition-shared-exec", lambda item: item["expanded_policy"]
+                    ["install_transition_inventory"]["rules"].append(
+                        "type_transition symbi_atomic_update_t "
+                        "install_exec_t:process install_t;"))):
+            changed = copy.deepcopy(identity)
+            mutate(changed)
+            with self.subTest(name=name):
+                with self.assertRaises(ValueError):
+                    validate_controller_identity(changed)
+                with self.assertRaises(ValueError):
+                    validate_boot_controller_identity(changed)
+
+    @classmethod
+    def transition_report(cls):
         return {
             "unit": "b.service",
             "service": {"Result": "success", "ExecMainCode": "1",
                         "ExecMainStatus": "0", "ActiveState": "active",
                         "SubState": "exited"},
-            "context": "system_u:system_r:install_t:s0",
-            "probe_command": [
-                "/usr/bin/runcon", "system_u:system_r:install_t:s0",
-                "/usr/bin/bootc", "--version",
-            ],
-            "scope": "Explicit transition availability only; no update qualification",
-            "runcon": "/usr/bin/runcon", "runcon_sha256": "7" * 64,
-            "runcon_selinux_label": "system_u:object_r:bin_t:s0",
-            "source": "/usr/bin/bootc",
-            "label_reference": "/usr/bin/ostree",
-            "source_sha256": "8" * 64, "label_reference_sha256": "9" * 64,
-            "selinux_label": "system_u:object_r:install_exec_t:s0",
-            "mode": "0755",
+            "controller": cls.controller_identity(),
+            "controller_probe_command": [
+                "/usr/libexec/symbi-atomic-update", "--probe"],
+            "bootc_probe_command": ["/usr/bin/bootc", "--version"],
+            "install_context": "system_u:system_r:install_t:s0",
+            "scope": ("Dedicated-domain transition availability only; "
+                      "no update qualification"),
+            "bootc": {
+                "source": "/usr/bin/bootc",
+                "label_reference": "/usr/bin/ostree",
+                "source_sha256": "8" * 64,
+                "label_reference_sha256": "9" * 64,
+                "selinux_label": "system_u:object_r:install_exec_t:s0",
+                "mode": "0755",
+            },
         }
 
     @staticmethod
@@ -3697,8 +3842,7 @@ class AtomicUpdateTests(unittest.TestCase):
             ])
         return observations, commands
 
-    @staticmethod
-    def operation_report(name, exit_code=0, stderr=""):
+    def operation_report(self, name, exit_code=0, stderr=""):
         arguments = {
             "negative": ["switch", "--transport", "dir",
                          "--enforce-container-sigpolicy", NEGATIVE_UPDATE_SOURCE],
@@ -3706,12 +3850,22 @@ class AtomicUpdateTests(unittest.TestCase):
                          "--enforce-container-sigpolicy", "/run/symbi-update/source"],
             "rollback": ["rollback"],
         }[name]
-        command = [
-            "/usr/bin/runcon", "system_u:system_r:install_t:s0",
-            "/usr/bin/bootc", *arguments,
-        ]
+        command = ["/usr/bin/bootc", *arguments]
+        digest = self.old if name == "rollback" else self.new
         return {
             "name": name, "command": command, "exit_code": exit_code,
+            "child_context": {
+                "pid": 1234, "pidfd_opened": True,
+                "selinux_context": "system_u:system_r:install_t:s0",
+            },
+            "transition_receipt": {
+                "schema": 1,
+                "bridge": "/usr/libexec/symbi-bootc-transition",
+                "operation": name,
+                "digest": digest,
+                "selinux_context": "system_u:system_r:install_t:s0",
+                "close_on_exec": True,
+            },
             "stderr": stderr,
             "stderr_sha256": hashlib.sha256(stderr.encode()).hexdigest(),
         }
@@ -3720,6 +3874,8 @@ class AtomicUpdateTests(unittest.TestCase):
         observations, commands = self.status_evidence(2)
         operation = self.operation_report("negative")
         commands.insert(3, {"command": operation["command"], "exit_code": 0,
+                            "child_context": operation["child_context"],
+                            "transition_receipt": operation["transition_receipt"],
                             "stderr": operation["stderr"]})
         return {
             "schema": 1, "passed": True, "guest_booted": True,
@@ -3745,6 +3901,7 @@ class AtomicUpdateTests(unittest.TestCase):
 
     def test_same_path_positive_report_binds_success_and_controlled_state(self):
         expected = {"nonce": "4" * 32, "new_digest": self.new,
+                    "controller": self.controller_identity(),
                     "source_disk": {"filesystem": "ext4", "label": "SYMBIUPDATE",
                                     "serial": "SYMBIUPDATE",
                                     "uuid": self.source_uuid}}
@@ -3776,19 +3933,22 @@ class AtomicUpdateTests(unittest.TestCase):
 
     def test_controller_rejects_transition_input_and_command_substitution(self):
         expected = {"nonce": "4" * 32, "new_digest": self.new,
+                    "controller": self.controller_identity(),
                     "source_disk": {"filesystem": "ext4", "label": "SYMBIUPDATE",
                                     "serial": "SYMBIUPDATE",
                                     "uuid": self.source_uuid}}
         report = self.positive_report()
         mutations = []
         for field, value in (
-                ("context", "system_u:system_r:unconfined_service_t:s0"),
-                ("probe_command", ["/usr/bin/bootc", "--version"]),
-                ("scope", "Update qualified"),
-                ("runcon", "/tmp/runcon"),
-                ("runcon_sha256", "0" * 63),
-                ("runcon_selinux_label", "system_u:object_r:install_exec_t:s0"),
-                ("runcon_selinux_label", "not-a-selinux-label"),
+                ("install_context",
+                 "system_u:system_r:unconfined_service_t:s0"),
+                ("controller_probe_command", ["/usr/bin/bootc", "--version"]),
+                ("bootc_probe_command", ["/usr/bin/bootc", "status"]),
+                ("scope", "Update qualified")):
+            changed = copy.deepcopy(report)
+            changed["bootc_transition"][field] = value
+            mutations.append(changed)
+        for field, value in (
                 ("source", "/tmp/bootc"),
                 ("source_sha256", "0" * 63),
                 ("label_reference", "/tmp/ostree"),
@@ -3796,14 +3956,28 @@ class AtomicUpdateTests(unittest.TestCase):
                 ("selinux_label", "system_u:object_r:bin_t:s0"),
                 ("mode", "0700")):
             changed = copy.deepcopy(report)
-            changed["bootc_transition"][field] = value
+            changed["bootc_transition"]["bootc"][field] = value
             mutations.append(changed)
         changed = copy.deepcopy(report)
-        del changed["bootc_transition"]["runcon_selinux_label"]
+        del changed["bootc_transition"]["bootc"]["selinux_label"]
         mutations.append(changed)
         changed = copy.deepcopy(report)
-        changed["bootc_operation"]["command"][0] = "/tmp/runcon"
-        changed["commands"][3]["command"][0] = "/tmp/runcon"
+        changed["bootc_transition"]["controller"]["entrypoint_sha256"] = "0" * 64
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["bootc_operation"]["child_context"]["selinux_context"] = (
+            "system_u:system_r:unconfined_service_t:s0")
+        changed["commands"][3]["child_context"] = copy.deepcopy(
+            changed["bootc_operation"]["child_context"])
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["bootc_operation"]["transition_receipt"]["digest"] = self.old
+        changed["commands"][3]["transition_receipt"] = copy.deepcopy(
+            changed["bootc_operation"]["transition_receipt"])
+        mutations.append(changed)
+        changed = copy.deepcopy(report)
+        changed["bootc_operation"]["command"][0] = "/tmp/bootc"
+        changed["commands"][3]["command"][0] = "/tmp/bootc"
         mutations.append(changed)
         changed = copy.deepcopy(report)
         changed["commands"].append({
@@ -3820,6 +3994,8 @@ class AtomicUpdateTests(unittest.TestCase):
         operation = self.operation_report(
             "negative", exit_code=1, stderr="signature verification failed\n")
         commands.insert(3, {"command": operation["command"], "exit_code": 1,
+                            "child_context": operation["child_context"],
+                            "transition_receipt": operation["transition_receipt"],
                             "stderr": operation["stderr"]})
         return {
             "schema": 1, "passed": True, "guest_booted": True,
@@ -3843,7 +4019,8 @@ class AtomicUpdateTests(unittest.TestCase):
 
     def test_negative_report_requires_failed_real_switch_and_unchanged_state(self):
         report = self.negative_report()
-        expected = {"nonce": "4" * 32,
+        expected = {"nonce": "4" * 32, "new_digest": self.new,
+                    "controller": self.controller_identity(),
                     "source_disk": {"filesystem": "ext4", "label": "SYMBIUPDATE",
                                     "serial": "SYMBIUPDATE",
                                     "uuid": self.source_uuid}}
@@ -3869,7 +4046,9 @@ class AtomicUpdateTests(unittest.TestCase):
                                          "6" * 64, "unsigned")
 
     def test_phase_report_binds_the_exact_source_device(self):
-        expected = {"nonce": "4" * 32,
+        expected = {"nonce": "4" * 32, "old_digest": self.old,
+                    "new_digest": self.new,
+                    "controller": self.controller_identity(),
                     "source_disk": {"filesystem": "ext4", "label": "SYMBIUPDATE",
                                     "serial": "SYMBIUPDATE",
                                     "uuid": self.source_uuid}}
@@ -3878,6 +4057,8 @@ class AtomicUpdateTests(unittest.TestCase):
         observations, commands = self.status_evidence(2)
         operation = self.operation_report("positive")
         commands.insert(3, {"command": operation["command"], "exit_code": 0,
+                            "child_context": operation["child_context"],
+                            "transition_receipt": operation["transition_receipt"],
                             "stderr": operation["stderr"]})
         report = {
             "schema": 1, "passed": True, "guest_booted": True,
@@ -3953,7 +4134,7 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertEqual(transition["ProtectControlGroups"], "yes")
         self.assertEqual(
             transition["ExecStart"],
-            "/usr/bin/runcon system_u:system_r:install_t:s0 /usr/bin/bootc --version")
+            "/usr/libexec/symbi-atomic-update --probe")
         self.assertEqual(transition["ExecStartPre"],
                          "/usr/bin/cat /proc/self/attr/current")
         text = (root / "image/atomic/update-b.service").read_text()
@@ -4010,7 +4191,8 @@ class AtomicUpdateTests(unittest.TestCase):
         skipped = ("Result=success\nExecMainCode=0\nExecMainStatus=0\n"
                    "ActiveState=inactive\nSubState=dead\n")
         with self.assertRaisesRegex(ValueError, "transition probe did not complete"):
-            fixed_bootc_transition(Mock(return_value=skipped))
+            fixed_bootc_transition(
+                Mock(return_value=skipped), self.controller_identity())
 
     def test_update_service_lifecycle_markers_are_best_effort_and_ordered(self):
         root = Path(__file__).resolve().parents[2]
@@ -4048,8 +4230,7 @@ class AtomicUpdateTests(unittest.TestCase):
             transition_lines.index("ExecStartPre=/usr/bin/cat /proc/self/attr/current"))
         self.assertLess(
             transition_lines.index(
-                "ExecStart=/usr/bin/runcon system_u:system_r:install_t:s0 "
-                "/usr/bin/bootc --version"),
+                "ExecStart=/usr/libexec/symbi-atomic-update --probe"),
             transition_lines.index(
                 "ExecStartPost=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=b-success"))
         failure_lines = (root / "image/atomic/update-f.service").read_text().splitlines()
@@ -4069,11 +4250,11 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertLess(
             success_lines.index("ExecStartPre=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=o-enter"),
             success_lines.index(
-                "ExecStart=/usr/bin/python3 %d/symbi-update.py "
+                "ExecStart=/usr/libexec/symbi-atomic-update --advance "
                 "%d/symbi-update-expected.json %d/symbi-update-policy.json"))
         self.assertLess(
             success_lines.index(
-                "ExecStart=/usr/bin/python3 %d/symbi-update.py "
+                "ExecStart=/usr/libexec/symbi-atomic-update --advance "
                 "%d/symbi-update-expected.json %d/symbi-update-policy.json"),
             success_lines.index(
                 "ExecStartPost=-/usr/bin/echo SYMBI_UPDATE_LIFECYCLE=o-success"))
@@ -4148,88 +4329,62 @@ class AtomicUpdateTests(unittest.TestCase):
         return reader
 
     def bootc_fixture(self, root):
-        source, reference, runcon = root / "bootc", root / "ostree", root / "runcon"
+        source, reference = root / "bootc", root / "ostree"
         source.write_bytes(b"fixed bootc bytes")
         reference.write_bytes(b"label reference")
-        runcon.write_bytes(b"fixed runcon bytes")
         source.chmod(0o755)
         reference.chmod(0o755)
-        runcon.chmod(0o755)
-        return source, reference, runcon
+        return source, reference
 
-    def test_fixed_transition_binds_runcon_bootc_owner_mode_bytes_and_label(self):
+    def test_fixed_transition_binds_bootc_owner_mode_bytes_and_label(self):
         real_fstat = os.fstat
         label = b"system_u:object_r:install_exec_t:s0\0"
-        runcon_label = b"system_u:object_r:bin_t:s0\0"
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            source, reference, runcon = self.bootc_fixture(root)
+            source, reference = self.bootc_fixture(root)
             root_stat = self.root_file_stat(real_fstat)
-
-            def labels(descriptor, _name):
-                target = Path(os.readlink(f"/proc/self/fd/{descriptor}"))
-                return runcon_label if target == runcon else label
-
             with patch("image.atomic.update_guest.os.fstat", side_effect=root_stat), \
-                    patch("image.atomic.update_guest.os.getxattr", side_effect=labels):
-                observation = _bootc_file_observation(source, reference, runcon)
+                    patch("image.atomic.update_guest.os.getxattr",
+                          return_value=label):
+                observation = _bootc_file_observation(source, reference)
             self.assertEqual(observation["source_sha256"],
                              hashlib.sha256(source.read_bytes()).hexdigest())
             self.assertEqual(observation["label_reference_sha256"],
                              hashlib.sha256(reference.read_bytes()).hexdigest())
-            self.assertEqual(observation["runcon_sha256"],
-                             hashlib.sha256(runcon.read_bytes()).hexdigest())
             self.assertEqual(observation["mode"], "0755")
             self.assertEqual(observation["selinux_label"], label[:-1].decode())
-            self.assertEqual(observation["runcon_selinux_label"],
-                             runcon_label[:-1].decode())
+            self.assertNotEqual(
+                observation["selinux_label"], BOOTC_TRANSITION_BRIDGE_CONTEXT)
 
             mutations = (
-                "source-gid", "reference-gid", "runcon-gid",
-                "source-mode", "reference-mode", "runcon-mode", "label",
-                "runcon-label-transition", "runcon-label-malformed",
-                "source-symlink", "reference-symlink", "runcon-symlink",
+                "source-gid", "reference-gid", "source-mode",
+                "reference-mode", "label", "malformed-label",
+                "source-symlink", "reference-symlink",
             )
             for mutation in mutations:
                 with self.subTest(mutation=mutation):
-                    source, reference, runcon = self.bootc_fixture(root)
+                    source, reference = self.bootc_fixture(root)
                     changed_gid = {
                         "source-gid": source,
                         "reference-gid": reference,
-                        "runcon-gid": runcon,
                     }.get(mutation)
-                    def fixed_labels(descriptor, _name):
-                        target = Path(os.readlink(f"/proc/self/fd/{descriptor}"))
-                        return runcon_label if target == runcon else label
-
-                    getxattr = Mock(side_effect=fixed_labels)
+                    getxattr = Mock(return_value=label)
                     original = None
                     if mutation == "source-mode":
                         source.chmod(0o775)
                     elif mutation == "reference-mode":
                         reference.chmod(0o775)
-                    elif mutation == "runcon-mode":
-                        runcon.chmod(0o744)
                     elif mutation == "label":
                         def labels(descriptor, _name):
                             target = Path(os.readlink(f"/proc/self/fd/{descriptor}"))
-                            if target == runcon:
-                                return runcon_label
                             return (b"system_u:object_r:bin_t:s0\0"
                                     if target == source else label)
                         getxattr.side_effect = labels
-                    elif mutation == "runcon-label-transition":
-                        getxattr.side_effect = lambda _descriptor, _name: label
-                    elif mutation == "runcon-label-malformed":
-                        def malformed_label(descriptor, _name):
-                            target = Path(os.readlink(f"/proc/self/fd/{descriptor}"))
-                            return (b"system_u:object_r:bin_t:s0\0junk"
-                                    if target == runcon else label)
-                        getxattr.side_effect = malformed_label
+                    elif mutation == "malformed-label":
+                        getxattr.return_value = label + b"junk"
                     elif mutation.endswith("-symlink"):
                         target = {"source-symlink": source,
-                                  "reference-symlink": reference,
-                                  "runcon-symlink": runcon}[mutation]
+                                  "reference-symlink": reference}[mutation]
                         original = target.with_name(target.name + ".real")
                         target.rename(original)
                         target.symlink_to(original)
@@ -4238,11 +4393,10 @@ class AtomicUpdateTests(unittest.TestCase):
                                side_effect=stat_reader), \
                             patch("image.atomic.update_guest.os.getxattr", getxattr):
                         with self.assertRaises((OSError, ValueError)):
-                            _bootc_file_observation(source, reference, runcon)
+                            _bootc_file_observation(source, reference)
                     if original is not None:
                         target = {"source-symlink": source,
-                                  "reference-symlink": reference,
-                                  "runcon-symlink": runcon}[mutation]
+                                  "reference-symlink": reference}[mutation]
                         target.unlink()
                         original.rename(target)
 
@@ -4290,31 +4444,38 @@ class AtomicUpdateTests(unittest.TestCase):
     def test_fixed_bootc_operation_revalidates_before_and_after_execution(self):
         transition = self.transition_report()
         record = {"bootc_transition": transition}
-        current = {key: transition[key] for key in {
-            "runcon", "runcon_sha256", "source", "source_sha256",
-            "runcon_selinux_label", "label_reference", "label_reference_sha256",
-            "selinux_label", "mode",
-        }}
-        result = SimpleNamespace(returncode=0, stderr="")
+        current = transition["bootc"]
+        child_context = {
+            "pid": 1234, "pidfd_opened": True,
+            "selinux_context": INSTALL_CONTEXT,
+        }
+        transition_receipt = self.operation_report(
+            "positive")["transition_receipt"]
+        result = SimpleNamespace(returncode=0, stderr="",
+                                 child_context=child_context,
+                                 transition_receipt=transition_receipt)
         runner = Mock(return_value=result)
         with patch("image.atomic.update_guest._bootc_file_observation",
                    side_effect=[current, current]):
             observed = fixed_bootc_operation(
-                runner, record, "positive", expected_success=True, timeout=120)
+                runner, record, "positive", self.new,
+                expected_success=True, timeout=120)
         self.assertEqual(observed["command"], [
-            "/usr/bin/runcon", "system_u:system_r:install_t:s0",
             "/usr/bin/bootc", "switch", "--transport", "dir",
             "--enforce-container-sigpolicy", "/run/symbi-update/source",
         ])
         runner.assert_called_once_with(observed["command"], timeout=120,
-                                       check=False, return_result=True)
+                                       check=False, return_result=True,
+                                       observe_bootc=True,
+                                       bootc_operation="positive",
+                                       bootc_digest=self.new)
 
         changed = dict(current, source_sha256="0" * 64)
         before_runner = Mock(return_value=result)
         with patch("image.atomic.update_guest._bootc_file_observation",
                    return_value=changed), self.assertRaisesRegex(
                        ValueError, "changed before use"):
-            fixed_bootc_operation(before_runner, record, "positive",
+            fixed_bootc_operation(before_runner, record, "positive", self.new,
                                   expected_success=True, timeout=120)
         before_runner.assert_not_called()
 
@@ -4322,15 +4483,89 @@ class AtomicUpdateTests(unittest.TestCase):
         with patch("image.atomic.update_guest._bootc_file_observation",
                    side_effect=[current, changed]), self.assertRaisesRegex(
                        ValueError, "changed during use"):
-            fixed_bootc_operation(after_runner, record, "positive",
+            fixed_bootc_operation(after_runner, record, "positive", self.new,
                                   expected_success=True, timeout=120)
         after_runner.assert_called_once()
+
+    def test_bootc_bridge_receipt_binds_dispatch_and_pipe_eof(self):
+        command = [
+            "/usr/bin/bootc", "switch", "--transport", "dir",
+            "--enforce-container-sigpolicy", "/run/symbi-update/source",
+        ]
+        calls = []
+
+        class Child:
+            pid = 4321
+            returncode = None
+
+            def poll(self):
+                return self.returncode
+
+            def communicate(self, timeout=None):
+                if timeout is None or timeout <= 0:
+                    raise AssertionError("missing bounded communicate timeout")
+                self.returncode = 0
+                return "bootc output", ""
+
+            def kill(self):
+                self.returncode = -9
+
+            def wait(self):
+                return self.returncode
+
+        def popen(arguments, **options):
+            calls.append((arguments, options))
+            receipt_fd, = options["pass_fds"]
+            os.write(receipt_fd, (
+                "SYMBI_BOOTC_RECEIPT_V1|positive|" + self.new + "|"
+                + INSTALL_CONTEXT + "\n").encode())
+            return Child()
+
+        result = _bootc_subprocess(
+            command, 30, operation="positive", digest=self.new, popen=popen,
+            pidfd_open=lambda _pid, _flags: os.open("/dev/null", os.O_RDONLY))
+        self.assertEqual(result.args, command)
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.child_context, {
+            "pid": 4321, "pidfd_opened": True,
+            "selinux_context": INSTALL_CONTEXT,
+        })
+        self.assertEqual(result.transition_receipt, {
+            "schema": 1, "bridge": str(BOOTC_TRANSITION_BRIDGE),
+            "operation": "positive", "digest": self.new,
+            "selinux_context": INSTALL_CONTEXT, "close_on_exec": True,
+        })
+        bridge_command, options = calls[0]
+        self.assertEqual(bridge_command[0:2], [
+            str(BOOTC_TRANSITION_BRIDGE), "--receipt-fd"])
+        self.assertEqual(bridge_command[3:], ["positive", self.new])
+        self.assertEqual(options["pass_fds"], (int(bridge_command[2]),))
+
+    def test_bootc_bridge_receipt_rejects_operation_digest_and_framing_changes(self):
+        valid = ("SYMBI_BOOTC_RECEIPT_V1|rollback|" + self.old + "|"
+                 + INSTALL_CONTEXT + "\n").encode()
+        self.assertEqual(
+            _transition_receipt(valid, "rollback", self.old)["digest"],
+            self.old)
+        for raw, operation, digest in (
+                (valid, "positive", self.old),
+                (valid, "rollback", self.new),
+                (valid[:-1], "rollback", self.old),
+                (valid + b"extra", "rollback", self.old),
+                (b"SYMBI_BOOTC_RECEIPT_V1|probe|-|wrong\n", "probe", "-")):
+            with self.subTest(raw=raw, operation=operation, digest=digest), \
+                    self.assertRaises(ValueError):
+                _transition_receipt(raw, operation, digest)
 
     def test_transition_command_and_inputs_are_fixed(self):
         self.assertEqual(BOOTC_SOURCE, Path("/usr/bin/bootc"))
         self.assertEqual(BOOTC_LABEL_REFERENCE, Path("/usr/bin/ostree"))
-        self.assertEqual(BOOTC_RUNCON, Path("/usr/bin/runcon"))
-        self.assertEqual(BOOTC_CONTEXT, "system_u:system_r:install_t:s0")
+        self.assertEqual(CONTROLLER_ENTRYPOINT,
+                         Path("/usr/libexec/symbi-atomic-update"))
+        self.assertEqual(CONTROLLER_PATH,
+                         Path("/usr/libexec/symbi-atomic-update-controller.py"))
+        self.assertEqual(INSTALL_CONTEXT,
+                         "system_u:system_r:install_t:s0")
 
     def test_update_device_readiness_wait_is_fixed_and_bounded(self):
         self.assertEqual(SOURCE_SERIAL, "SYMBIUPDATE")

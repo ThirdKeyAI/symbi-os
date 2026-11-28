@@ -21,6 +21,18 @@ DISPOSABLE_PHASE_TIMEOUT_SECONDS = 1800
 NEGATIVE_CASES = ("unsigned", "wrong-key", "wrong-reference", "altered-signature")
 NEGATIVE_UPDATE_SOURCE = "/run/symbi-update-negative/source"
 POSITIVE_OVERLAY_CASE = "valid-signature"
+CONTROLLER_ENTRYPOINT = "/usr/libexec/symbi-atomic-update"
+CONTROLLER_BRIDGE = "/usr/libexec/symbi-bootc-transition"
+CONTROLLER_PATH = "/usr/libexec/symbi-atomic-update-controller.py"
+CONTROLLER_MANIFEST = (
+    "/usr/share/symbi-os/selinux/symbi-atomic-update.json")
+CONTROLLER_CONTEXT = "system_u:system_r:symbi_atomic_update_t:s0"
+CONTROLLER_ENTRYPOINT_CONTEXT = (
+    "system_u:object_r:symbi_atomic_update_exec_t:s0")
+CONTROLLER_BRIDGE_CONTEXT = (
+    "system_u:object_r:symbi_bootc_transition_exec_t:s0")
+INSTALL_CONTEXT = "system_u:system_r:install_t:s0"
+BOOTC_RECEIPT_PREFIX = "SYMBI_BOOTC_RECEIPT_V1"
 TRANSITION_FAILURE_SCOPE = "Bounded explicit-transition diagnostics; no update action ran"
 TRANSITION_COLLECTOR_SCOPE = "Bounded collector progress; no transition or update claim"
 TRANSITION_COLLECTOR_STAGES = (
@@ -48,8 +60,7 @@ TRANSITION_FAILURE_JOURNAL_MAX_LINES = 24
 TRANSITION_FAILURE_JOURNAL_MAX_LINE_BYTES = 512
 TRANSITION_SOURCE_CAPTURE_COMMAND = ["/usr/bin/cat", "/proc/self/attr/current"]
 TRANSITION_PROBE_COMMAND = [
-    "/usr/bin/runcon", "system_u:system_r:install_t:s0",
-    "/usr/bin/bootc", "--version",
+    CONTROLLER_ENTRYPOINT, "--probe",
 ]
 TRANSITION_SOURCE_JOURNAL_COMMAND = [
     "/usr/bin/journalctl", "--unit=b.service", "--boot=0", "--no-pager",
@@ -63,7 +74,7 @@ TRANSITION_AVC_JOURNAL_COMMAND = [
     "--output-fields=MESSAGE,__CURSOR,__MONOTONIC_TIMESTAMP,_TRANSPORT,"
     "_AUDIT_ID",
     "--lines=33",
-    "--grep=avc:[[:space:]]+denied.*comm=\"runcon\".*(?:path|name)=\"/usr/bin/bootc\"",
+    "--grep=avc:[[:space:]]+denied.*(?:path|name)=\"/usr/libexec/symbi-atomic-update\"",
     "_TRANSPORT=audit", "+", "_TRANSPORT=kernel",
 ]
 TRANSITION_AVC_MAX_BYTES = 64 * 1024
@@ -885,7 +896,7 @@ def validate_transition_failure_report(report, runner_hash):
             or probe.get("journal_command") != TRANSITION_SOURCE_JOURNAL_COMMAND
             or not isinstance(probe.get("source_context"), str)
             or _SELINUX_CONTEXT.fullmatch(probe["source_context"]) is None
-            or probe.get("requested_context") != "system_u:system_r:install_t:s0"
+            or probe.get("requested_context") != CONTROLLER_CONTEXT
             or probe.get("probe_command") != TRANSITION_PROBE_COMMAND
             or probe.get("invocation_id") != service["InvocationID"]
             or type(probe.get("pid")) is not int
@@ -961,10 +972,11 @@ def validate_transition_failure_report(report, runner_hash):
                 <= int(main_exited) + TRANSITION_JOURNAL_CORRELATION_MARGIN_USEC
                 or type(record.get("pid")) is not int
                 or record["pid"] != int(main_pid)
-                or record.get("comm") != "runcon"
+                or not isinstance(record.get("comm"), str)
+                or re.fullmatch(r"[A-Za-z0-9_.()\-]{1,64}", record["comm"]) is None
                 or not isinstance(record.get("path_field"), str)
                 or record["path_field"] not in {"path", "name"}
-                or record.get("path") != "/usr/bin/bootc"
+                or record.get("path") != CONTROLLER_ENTRYPOINT
                 or not isinstance(record.get("source_context"), str)
                 or _SELINUX_CONTEXT.fullmatch(record["source_context"]) is None
                 or not isinstance(record.get("target_context"), str)
@@ -1067,7 +1079,6 @@ def firmware_arguments(directory=Path("/inputs"), expected_filename="expected.js
         ("systemd.extra-unit.s.service", "s.service"),
         ("systemd.extra-unit.b.service", "update-b.service"),
         ("systemd.extra-unit.f.service", "update-f.service"),
-        ("symbi-update.py", "update_guest.py"),
         ("symbi-update-failure.py", "update_boot_failure.py"),
         ("symbi-update-expected.json", expected_filename),
         ("symbi-update-policy.json", "update-policy.json"),
@@ -1195,13 +1206,104 @@ def validate_status_observations(report, expected_count):
     ]]
     if (len(starts) != expected_count or len(shows) != expected_count
             or any(item.get("exit_code") != 0 for item in starts + shows)
-            or any(item.get("command", [None])[0:1] == ["/usr/bin/bootc"]
-                   for item in commands)):
+            or any(item.get("command", [None, None])[0:2]
+                   == ["/usr/bin/bootc", "status"] for item in commands)):
         raise ValueError("status bypassed the fixed direct bootc unit")
 
 
-def validate_transition(report):
-    """Require the fixed transition probe and stable labeled executables."""
+def _validate_controller_identity(value):
+    required = {
+        "schema", "policy", "entrypoint", "entrypoint_sha256",
+        "entrypoint_selinux_label", "bridge", "bridge_sha256",
+        "bridge_selinux_label", "controller", "controller_sha256",
+        "manifest", "manifest_sha256", "controller_context",
+        "install_context", "policy_sources", "expanded_policy",
+    }
+    expansion = {
+        "schema": 2, "policy": "symbi_atomic_update",
+        "install_transition_inventory": {
+            "schema": 1,
+            "source": "symbi_atomic_update_t",
+            "class": "process",
+            "destination": "install_t",
+            "rules": [
+                "type_transition symbi_atomic_update_t "
+                "symbi_bootc_transition_exec_t:process install_t;",
+            ],
+        },
+        "required": {
+            "init_entrypoint": True, "init_transition": True,
+            "bridge_entrypoint": True, "bridge_transition": True,
+            "bridge_type_transition": True,
+            "install_sigchld": True,
+        },
+        "forbidden": {
+            "shared_install_type_transition": False,
+            "generic_install_transition": False,
+            "controller_forbidden_process_permissions": False,
+            "controller_policy_load": False,
+            "controller_enforcing_change": False,
+        },
+    }
+    if (not isinstance(value, dict) or set(value) != required
+            or type(value.get("schema")) is not int or value["schema"] != 1
+            or value.get("policy") != "symbi_atomic_update"
+            or value.get("entrypoint") != CONTROLLER_ENTRYPOINT
+            or value.get("entrypoint_selinux_label")
+               != CONTROLLER_ENTRYPOINT_CONTEXT
+            or value.get("bridge") != CONTROLLER_BRIDGE
+            or value.get("bridge_selinux_label") != CONTROLLER_BRIDGE_CONTEXT
+            or value.get("controller") != CONTROLLER_PATH
+            or value.get("manifest") != CONTROLLER_MANIFEST
+            or value.get("controller_context") != CONTROLLER_CONTEXT
+            or value.get("install_context") != INSTALL_CONTEXT
+            or any(re.fullmatch(r"[a-f0-9]{64}", value.get(key, "")) is None
+                   for key in ("entrypoint_sha256", "bridge_sha256",
+                               "controller_sha256", "manifest_sha256"))
+            or not isinstance(value.get("policy_sources"), dict)
+            or set(value["policy_sources"]) != {
+                "te_sha256", "fc_sha256", "launcher_sha256",
+                "bridge_sha256"}
+            or any(re.fullmatch(r"[a-f0-9]{64}", item) is None
+                   for item in value["policy_sources"].values())
+            or not isinstance(value.get("expanded_policy"), dict)
+            or type(value["expanded_policy"].get("schema")) is not int
+            or not isinstance(value["expanded_policy"].get(
+                "install_transition_inventory"), dict)
+            or type(value["expanded_policy"]["install_transition_inventory"].get(
+                "schema")) is not int
+            or value["expanded_policy"] != expansion):
+        raise ValueError("fixed Atomic update controller identity is unbound")
+    return value
+
+
+def _validate_child_context(value):
+    if (not isinstance(value, dict)
+            or set(value) != {"pid", "pidfd_opened", "selinux_context"}
+            or type(value.get("pid")) is not int
+            or not 0 < value["pid"] <= 2**31 - 1
+            or value.get("pidfd_opened") is not True
+            or value.get("selinux_context") != INSTALL_CONTEXT):
+        raise ValueError("bootc child install_t observation is unbound")
+    return value
+
+
+def _validate_transition_receipt(value, operation, digest):
+    if (not isinstance(value, dict)
+            or set(value) != {"schema", "bridge", "operation", "digest",
+                              "selinux_context", "close_on_exec"}
+            or type(value.get("schema")) is not int or value["schema"] != 1
+            or value.get("bridge") != CONTROLLER_BRIDGE
+            or value.get("operation") != operation
+            or value.get("digest") != digest
+            or value.get("selinux_context") != INSTALL_CONTEXT
+            or value.get("close_on_exec") is not True):
+        raise ValueError("bootc transition receipt is unbound")
+    return value
+
+
+def validate_transition(report, expected):
+    """Require the dedicated-domain probe and stable labeled executables."""
     transition = report.get("bootc_transition")
     service = {
         "Result": "success", "ExecMainCode": "1", "ExecMainStatus": "0",
@@ -1212,35 +1314,36 @@ def validate_transition(report):
         "/usr/bin/systemctl", "show", "b.service",
         "--property=Result,ExecMainCode,ExecMainStatus,ActiveState,SubState",
     ]
-    probe_command = [
-        "/usr/bin/runcon", "system_u:system_r:install_t:s0",
-        "/usr/bin/bootc", "--version",
-    ]
+    expected_controller = _validate_controller_identity(
+        expected.get("controller") if isinstance(expected, dict) else None)
+    bootc = transition.get("bootc") if isinstance(transition, dict) else None
     if (not isinstance(transition, dict)
             or set(transition) != {
-                "unit", "service", "context", "probe_command", "scope",
-                "runcon", "runcon_sha256", "runcon_selinux_label",
-                "source", "source_sha256",
-                "label_reference", "label_reference_sha256", "selinux_label", "mode",
+                "unit", "service", "controller", "controller_probe_command",
+                "bootc_probe_command", "install_context", "scope", "bootc",
             }
             or transition.get("unit") != "b.service"
             or transition.get("service") != service
-            or transition.get("context") != "system_u:system_r:install_t:s0"
-            or transition.get("probe_command") != probe_command
+            or transition.get("controller") != expected_controller
+            or transition.get("controller_probe_command")
+               != [CONTROLLER_ENTRYPOINT, "--probe"]
+            or transition.get("bootc_probe_command")
+               != ["/usr/bin/bootc", "--version"]
+            or transition.get("install_context") != INSTALL_CONTEXT
             or transition.get("scope")
-               != "Explicit transition availability only; no update qualification"
-            or transition.get("runcon") != "/usr/bin/runcon"
-            or transition.get("runcon_selinux_label")
-               != "system_u:object_r:bin_t:s0"
-            or transition.get("source") != "/usr/bin/bootc"
-            or transition.get("label_reference") != "/usr/bin/ostree"
-            or any(re.fullmatch(r"[a-f0-9]{64}", transition.get(key, "")) is None
-                   for key in ("runcon_sha256", "source_sha256",
-                               "label_reference_sha256"))
-            or not isinstance(transition.get("selinux_label"), str)
+               != "Dedicated-domain transition availability only; no update qualification"
+            or not isinstance(bootc, dict)
+            or set(bootc) != {
+                "source", "source_sha256", "label_reference",
+                "label_reference_sha256", "selinux_label", "mode"}
+            or bootc.get("source") != "/usr/bin/bootc"
+            or bootc.get("label_reference") != "/usr/bin/ostree"
+            or any(re.fullmatch(r"[a-f0-9]{64}", bootc.get(key, "")) is None
+                   for key in ("source_sha256", "label_reference_sha256"))
+            or not isinstance(bootc.get("selinux_label"), str)
             or re.fullmatch(r"[^:\x00]+:object_r:install_exec_t:[^\x00]+",
-                            transition["selinux_label"]) is None
-            or transition.get("mode") != "0755"
+                            bootc["selinux_label"]) is None
+            or bootc.get("mode") != "0755"
             or not isinstance(commands, list)
             or len([item for item in commands
                     if item.get("command") == show_command
@@ -1249,8 +1352,8 @@ def validate_transition(report):
     return transition
 
 
-def validate_operation_observation(report, operation, expected_success):
-    """Bind one exact mutation to runcon and the validated labeled bootc."""
+def validate_operation_observation(report, expected, operation, expected_success):
+    """Bind one exact mutation to the validated dedicated-domain bootc child."""
     paths = {
         "negative": ["switch", "--transport", "dir",
                      "--enforce-container-sigpolicy", NEGATIVE_UPDATE_SOURCE],
@@ -1260,18 +1363,24 @@ def validate_operation_observation(report, operation, expected_success):
     }
     observation = report.get("bootc_operation")
     commands = report.get("commands")
-    expected_command = [
-        "/usr/bin/runcon", "system_u:system_r:install_t:s0", "/usr/bin/bootc",
-        *paths.get(operation, []),
-    ]
-    validate_transition(report)
+    expected_command = ["/usr/bin/bootc", *paths.get(operation, [])]
+    expected_digest = (expected.get("old_digest") if operation == "rollback"
+                       else expected.get("new_digest"))
+    validate_transition(report, expected)
     if (operation not in paths or type(expected_success) is not bool
+            or re.fullmatch(r"sha256:[a-f0-9]{64}", expected_digest or "") is None
             or not isinstance(observation, dict)
             or set(observation) != {
-                "name", "command", "exit_code", "stderr", "stderr_sha256"
+                "name", "command", "exit_code", "child_context",
+                "transition_receipt", "stderr", "stderr_sha256"
             }
             or observation.get("name") != operation
             or observation.get("command") != expected_command
+            or _validate_child_context(observation.get("child_context"))
+               != observation["child_context"]
+            or _validate_transition_receipt(
+                observation.get("transition_receipt"), operation,
+                expected_digest) != observation["transition_receipt"]
             or type(observation.get("exit_code")) is not int
             or not isinstance(observation.get("stderr"), str)
             or len(observation["stderr"].encode()) > 128 * 1024
@@ -1287,14 +1396,16 @@ def validate_operation_observation(report, operation, expected_success):
         raise ValueError("native bootc signature rejection reason is incomplete")
     matches = [item for item in commands if item.get("command") == expected_command]
     other_bootc = [item for item in commands
-                   if item.get("command", [None])[0:1]
-                   in (["/usr/bin/bootc"], ["/usr/bin/runcon"])
+                   if item.get("command", [None])[0:1] == ["/usr/bin/bootc"]
                    and item.get("command") != expected_command]
     if (len(matches) != 1
             or matches[0].get("exit_code") != observation["exit_code"]
+            or matches[0].get("child_context") != observation["child_context"]
+            or matches[0].get("transition_receipt")
+               != observation["transition_receipt"]
             or matches[0].get("stderr") != observation["stderr"]
             or other_bootc):
-        raise ValueError("mutation bypassed the fixed runcon bootc command")
+        raise ValueError("mutation bypassed the fixed dedicated-domain bootc command")
 
 
 def validate_phase_report(report, expected, expected_hash, runner_hash, phase):
@@ -1309,13 +1420,13 @@ def validate_phase_report(report, expected, expected_hash, runner_hash, phase):
     name = phase.get("name")
     validate_status_observations(report, 1 if name == "rolled-back" else 2)
     if name == "installed":
-        validate_operation_observation(report, "positive", True)
+        validate_operation_observation(report, expected, "positive", True)
     elif name == "updated":
-        validate_operation_observation(report, "rollback", True)
+        validate_operation_observation(report, expected, "rollback", True)
     elif name == "rolled-back":
         if "bootc_operation" in report:
             raise ValueError("rollback verification unexpectedly mutated the deployment")
-        validate_transition(report)
+        validate_transition(report, expected)
     else:
         raise ValueError("unknown update phase report")
     commands = report.get("commands")
@@ -1333,7 +1444,7 @@ def validate_positive_report(report, expected, expected_hash, runner_hash):
         raise ValueError("unbound or incomplete same-path positive update report")
     validate_source_device(report, expected)
     validate_status_observations(report, 2)
-    validate_operation_observation(report, "negative", True)
+    validate_operation_observation(report, expected, "negative", True)
     control = report.get("same_path_positive_control")
     if (not isinstance(control, dict) or control.get("case") != POSITIVE_OVERLAY_CASE
             or control.get("switch_accepted") is not True
@@ -1367,7 +1478,7 @@ def validate_negative_report(report, expected, expected_hash, runner_hash, case)
         raise ValueError("unbound or incomplete negative update guest report")
     validate_source_device(report, expected)
     validate_status_observations(report, 2)
-    validate_operation_observation(report, "negative", False)
+    validate_operation_observation(report, expected, "negative", False)
     control = report.get("negative_control")
     if (not isinstance(control, dict) or control.get("case") != case
             or control.get("switch_rejected") is not True
@@ -1429,7 +1540,9 @@ def main():
             or (inputs / "update.raw").stat().st_size != source.get("bytes")
             or sha256(inputs / "update.raw") != source.get("sha256")):
         raise ValueError("authenticated update source disk changed")
-    names = ["update_boot.py", "update_guest.py", "update_boot_failure.py", "expected.json",
+    controller = _validate_controller_identity(expected.get("controller"))
+    runner_hash = controller["controller_sha256"]
+    names = ["update_boot.py", "update_boot_failure.py", "expected.json",
              "update-policy.json", "update-o.service", "s.service",
              "update-b.service", "update-f.service"]
     positive_name = "expected-positive.json"
@@ -1555,7 +1668,7 @@ def main():
                 positive_report, hashes["update_boot_failure.py"])
             raise RuntimeError("bootc transition probe failed; inspect bounded report")
         validate_positive_report(positive_report, positive_expected,
-                                 hashes[positive_name], hashes["update_guest.py"])
+                                 hashes[positive_name], runner_hash)
         baseline_hash = positive_report["same_path_positive_control"]["state_before_sha256"]
         staged_hash = positive_report["same_path_positive_control"]["state_after_sha256"]
         if ((positive_overlay.stat().st_dev, positive_overlay.stat().st_ino)
@@ -1583,7 +1696,7 @@ def main():
             report = unique_json(path.read_bytes())
             validate_negative_report(report, negative_expected[case],
                                      hashes["expected-" + case + ".json"],
-                                     hashes["update_guest.py"], case)
+                                     runner_hash, case)
             if validate_shared_baseline(positive_report, report) != baseline_hash:
                 raise ValueError("positive baseline identity changed between controls")
             if ((overlay.stat().st_dev, overlay.stat().st_ino) != identity
@@ -1607,7 +1720,7 @@ def main():
                                      f"serial-{index}.log", 1800)
             report = unique_json(path.read_bytes())
             validate_phase_report(report, expected, hashes["expected.json"],
-                                  hashes["update_guest.py"], phase)
+                                  runner_hash, phase)
             record["phase_reports"].append({"index": index, "elapsed_seconds": elapsed,
                                             "phase": report["phase"], "report_sha256": sha256(path)})
             if ((overlay.stat().st_dev, overlay.stat().st_ino) != overlay_identity

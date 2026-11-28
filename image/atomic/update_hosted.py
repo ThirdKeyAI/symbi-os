@@ -15,7 +15,9 @@ from image.atomic.update_contract import (NEGATIVE_CASES, NEGATIVE_UPDATE_SOURCE
                                           POSITIVE_OVERLAY_CASE,
                                           negative_signature_payloads,
                                           require_update_base, update_policy,
-                                          validate_artifact_metadata, validate_report)
+                                          validate_artifact_metadata,
+                                          validate_controller_identity,
+                                          validate_report)
 from image.atomic.update_boot import (MAX_COLLECTOR_DIAGNOSTIC, MAX_QEMU_LOG,
                                       MAX_SERIAL_LOG,
                                       TRANSITION_COLLECTOR_STAGES,
@@ -168,7 +170,7 @@ def _missing_report_diagnostic(controller, payloads):
         return None
     inputs = controller.get("inputs")
     expected_inputs = {
-        "update_boot.py", "update_guest.py", "update_boot_failure.py",
+        "update_boot.py", "update_boot_failure.py",
         "expected.json", "update-policy.json", "update-o.service", "s.service",
         "update-b.service", "update-f.service", "expected-positive.json",
         *("expected-" + case + ".json" for case in NEGATIVE_CASES),
@@ -310,7 +312,7 @@ def _fixed_missing_report_controller(inputs, collector_prefix_validated,
         "failure": "same-path-positive exited without a report; compact diagnostic validated",
         "negative_reports": [], "phase_reports": [],
         "inputs": {name: inputs[name] for name in (
-            "update_boot.py", "update_guest.py", "update_boot_failure.py")},
+            "update_boot.py", "update_boot_failure.py")},
         "phase_diagnostic_validated": True,
         "collector_prefix_validated": collector_prefix_validated,
         "collector_stream_validated": collector_stream_validated,
@@ -597,9 +599,60 @@ def _prepare_source_disk(source, storage, run):
         shutil.rmtree(staging)
 
 
+def _retained_predecessor_controller(config, selected, reports):
+    """Bind the promoted controller to the exact predecessor preflight."""
+    try:
+        manifest = selected["manifest"]
+        preflight = config["preflight"]
+        inspect = reports["inspect"]
+        prepare = reports["prepare"]
+        common = {
+            "source_commit": preflight["source_commit"],
+            "image_source_commit": selected["tested_commit"],
+            "variant": "generic",
+            "base": manifest["base"],
+        }
+        for phase, report in reports.items():
+            if (not isinstance(report, dict)
+                    or type(report.get("schema")) is not int
+                    or report["schema"] != 1
+                    or report.get("phase") != phase
+                    or report.get("passed") is not True
+                    or report.get("guest_booted") is not False
+                    or report.get("os_qualified") is not False
+                    or report.get("installation_attempted") is not False
+                    or any(report.get(key) != value
+                           for key, value in common.items())):
+                raise ValueError(
+                    "retained predecessor preflight envelope differs")
+        loaded = inspect.get("loaded_image")
+        if (not isinstance(loaded, dict)
+                or set(loaded) != {"Id", "Digest", "Architecture", "Os"}
+                or not isinstance(loaded.get("Id"), str)
+                or re.fullmatch(r"(?:sha256:)?[a-f0-9]{64}", loaded["Id"])
+                   is None
+                or "sha256:" + loaded["Id"].removeprefix("sha256:")
+                   != manifest["archive"]["image_id"]
+                or loaded.get("Digest") != config["manifest_digest"]
+                or loaded.get("Architecture") != "amd64"
+                or loaded.get("Os") != "linux"
+                or prepare.get("verified_archive") != manifest["archive"]):
+            raise ValueError("retained predecessor image identity differs")
+        installed = inspect.get("installed_files")
+        controller = validate_controller_identity(
+            installed.get("atomic_update_controller")
+            if isinstance(installed, dict) else None)
+        if controller != validate_controller_identity(preflight["controller"]):
+            raise ValueError("retained predecessor controller identity differs")
+        return controller
+    except (KeyError, TypeError, AttributeError) as error:
+        raise ValueError("malformed retained predecessor preflight") from error
+
+
 def run_update(root, group, podman, image_id, storage, containers, run, pins,
                current_lock, current_digest, current_source, current_signing,
-               current_authentication, release_policy, release_policy_bytes):
+               current_authentication, release_policy, release_policy_bytes,
+               current_controller):
     """Install the retained predecessor, switch to current, then boot rollback."""
     root, storage = Path(root), Path(storage)
     evidence = root / ".cache/atomic-update-evidence"
@@ -609,11 +662,36 @@ def run_update(root, group, podman, image_id, storage, containers, run, pins,
               "scope": "Disposable exact predecessor, fixture-signed update and booted rollback"}
     output = None
     try:
-        record["disk_free_before_update"] = shutil.disk_usage(storage).free
-        if record["disk_free_before_update"] < 30 * 1024**3:
-            raise ValueError("Need 30 GiB free for predecessor install and persistent update boots")
         config = unique_json((root / "image/atomic/update-base.lock.json").read_bytes())
         selected = require_update_base(config, pins, current_lock)
+        preflight = (root / "docs/security/reports/P0-03-atomic-preflight"
+                     / str(config["preflight"]["run_id"]))
+        old_original_policy_sha256 = None
+        retained_reports = {}
+        for phase in ("inspect", "prepare"):
+            report_raw = _read_bounded_regular(
+                preflight / (phase + ".json"))
+            if (hashlib.sha256(report_raw).hexdigest()
+                    != config["preflight"][phase + "_sha256"]):
+                raise ValueError("retained predecessor preflight evidence changed")
+            retained_reports[phase] = unique_json(report_raw)
+            if phase == "inspect":
+                old_original_policy_sha256 = retained_reports[phase][
+                    "expected_inputs"]["trust"]["etc/containers/policy.json"]
+        controller = _retained_predecessor_controller(
+            config, selected, retained_reports)
+        if controller != validate_controller_identity(current_controller):
+            raise ValueError(
+                "predecessor and current Atomic update controllers differ")
+        if (not isinstance(old_original_policy_sha256, str)
+                or len(old_original_policy_sha256) != 64
+                or any(character not in "0123456789abcdef"
+                       for character in old_original_policy_sha256)):
+            raise ValueError("retained predecessor policy identity is invalid")
+        record["disk_free_before_update"] = shutil.disk_usage(storage).free
+        if record["disk_free_before_update"] < 30 * 1024**3:
+            raise ValueError(
+                "Need 30 GiB free for predecessor install and persistent update boots")
         metadata = unique_json((root / ".cache/atomic-update-artifact.json").read_bytes())
         validate_artifact_metadata(config, metadata)
         wrapper = {"schema": 1, "os_qualified": False, "signature_qualified": False,
@@ -629,19 +707,8 @@ def run_update(root, group, podman, image_id, storage, containers, run, pins,
                                  "run_id": selected["run_id"],
                                  "artifact_id": selected["artifact"]["id"],
                                  "manifest_digest": old_digest,
-                                 "image_id": old_image_id}
-        preflight = root / "docs/security/reports/P0-03-atomic-preflight" / str(config["preflight"]["run_id"])
-        old_original_policy_sha256 = None
-        for phase in ("inspect", "prepare"):
-            if sha256(preflight / (phase + ".json")) != config["preflight"][phase + "_sha256"]:
-                raise ValueError("retained predecessor preflight evidence changed")
-            if phase == "inspect":
-                old_preflight = unique_json((preflight / "inspect.json").read_bytes())
-                old_original_policy_sha256 = old_preflight["expected_inputs"]["trust"]["etc/containers/policy.json"]
-        if (not isinstance(old_original_policy_sha256, str)
-                or len(old_original_policy_sha256) != 64
-                or any(character not in "0123456789abcdef" for character in old_original_policy_sha256)):
-            raise ValueError("retained predecessor policy identity is invalid")
+                                 "image_id": old_image_id,
+                                 "controller": controller}
         record["old_oci"] = unpack_oci(old_archive, storage / "update-old-oci",
                                         old_digest, old_image_id)
         old_source = storage / "update-old-signed"
@@ -700,7 +767,7 @@ def run_update(root, group, podman, image_id, storage, containers, run, pins,
                                      current_digest)
         inputs = storage / "update-boot-input"
         inputs.mkdir(mode=0o755)
-        for name in ("update_boot.py", "update_guest.py", "update_boot_failure.py",
+        for name in ("update_boot.py", "update_boot_failure.py",
                      "update-o.service", "s.service", "update-b.service",
                      "update-f.service"):
             shutil.copyfile(root / "image/atomic" / name, inputs / name)
@@ -711,6 +778,7 @@ def run_update(root, group, podman, image_id, storage, containers, run, pins,
         expected = {"schema": 1, "nonce": uuid.uuid4().hex,
                     "old_digest": old_digest, "new_digest": current_digest,
                     "source_disk": source_disk,
+                    "controller": controller,
                     "signature_sha256": current_authentication["signature_sha256"],
                     "policy_sha256": sha256(inputs / "update-policy.json"),
                     "original_policy_sha256": old_original_policy_sha256}

@@ -681,3 +681,58 @@ the existing `service-exit` emergency frame. The frame preserves the last stage,
 fixed command hash and any validated content-free command result already saved in
 the private state file. Inconsistent success metadata becomes
 `service-protocol`; a completed or previously recovered state emits nothing.
+
+## Dedicated image-owned update domain prepared
+
+The retained `runcon` experiments above established the failure boundary but
+are no longer the proposed execution path. The current patch builds a minimal
+`symbi_atomic_update` SELinux module into the image. Systemd may enter only its
+dedicated controller domain through the root-owned compiled
+`/usr/libexec/symbi-atomic-update` entrypoint. That launcher accepts exactly the
+nonmutating `--probe` operation or `--advance` with the two fixed systemd
+credential paths. The Python controller is installed read-only in the image;
+it is no longer transported as a firmware credential.
+
+The controller can enter `install_t` only by executing the separately compiled,
+image-owned `/usr/libexec/symbi-bootc-transition`, labeled with the dedicated
+`symbi_bootc_transition_exec_t` type. Bootc and ostree retain their shared
+`install_exec_t` label, for which the module deliberately defines no controller
+transition.
+That bridge accepts only `probe`, `negative`, `positive` or `rollback`, maps
+each name to a fixed bootc argument vector, and rejects every other path or
+argument. Before executing bootc it verifies its own exact `install_t` context
+and writes an operation-and-manifest-digest receipt to a caller-created pipe.
+It then sets `FD_CLOEXEC`; the controller accepts the receipt only after the
+pipe reaches EOF at exec. Switches bind the selected new manifest digest and
+rollback binds the exact predecessor digest.
+
+If the fixed probe fails, the existing failure-only service now binds its
+source-context observation and AVC query to this compiled launcher entrypoint,
+then retains only the existing bounded, redacted diagnostic. It does not run an
+alternate transition or authorize a bootc operation.
+
+The installed-image inspection, retained preflight, guest expectation and host
+validator all require the same launcher, bridge, controller, manifest, source
+hashes, SELinux labels and expanded-policy result. The predecessor and current
+images must carry byte-identical controller identities before any update test
+can start. The checked-in predecessor predates this boundary and intentionally
+fails that gate; a newly built and independently retained preflight must replace
+it before production-mode update testing.
+
+The module adds no generic `unconfined_service_t` to `install_t` transition. A
+bounded complete query inventories every process `type_transition` from
+`symbi_atomic_update_t` and records every rule whose destination is `install_t`.
+The manifest and all installed-image, guest and host validators require that
+inventory to contain exactly the dedicated `symbi_bootc_transition_exec_t`
+bridge rule. A shared `install_exec_t` rule or any other executable-type route
+to `install_t` fails closed. It grants the controller neither policy-load nor
+enforcement-changing authority. Both desktop workflow event filters include the
+controller and policy sources. It does not enable a fallback, load policy at
+runtime, execute a local privileged test, or claim update, rollback, release or
+OS qualification. The 108 focused policy and update fixtures and the bounded C
+and Python static checks pass with zero process swap. Static checks and fixture
+tests cannot prove the native domain transition. After the boundary receives
+human approval, disposable hosted image build and preflight must establish the
+installed policy and controller identity; a later exact predecessor/current
+pair must complete probe, signed switch, signature refusal, reboot and rollback
+under enforcing SELinux.

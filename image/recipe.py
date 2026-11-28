@@ -47,6 +47,8 @@ def render(config, variant, root=ROOT):
         "spec": {"platforms": ["linux/amd64"], "tool-versions": {"bluebuild": "none"}},
         "modules": [{"type": "containerfile", "snippets": [
             "COPY image/overlay/ /",
+            "COPY image/atomic/update_guest.py /usr/libexec/symbi-atomic-update-controller.py",
+            "COPY image/atomic/selinux/ /tmp/symbi-atomic-update-policy/",
             "COPY image/vendor/ombuntu/LICENSE /usr/share/licenses/symbiont-os/Ombuntu-MIT",
             "COPY image/vendor/omarchy/LICENSE /usr/share/licenses/symbiont-os/Omarchy-MIT",
             "COPY LICENSE /usr/share/licenses/symbiont-os/Apache-2.0",

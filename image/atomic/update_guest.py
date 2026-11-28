@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 """Exercise one phase of an offline signed bootc switch and rollback."""
 import base64
 import binascii
@@ -6,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import re
+import select
 import stat
 import subprocess
 import sys
@@ -40,13 +42,28 @@ STATUS_SERVICE = {
     "Result": "success", "ExecMainCode": "1", "ExecMainStatus": "0",
     "ActiveState": "active", "SubState": "exited",
 }
-BOOTC_CONTEXT = "system_u:system_r:install_t:s0"
-BOOTC_RUNCON = Path("/usr/bin/runcon")
-BOOTC_RUNCON_LABEL = "system_u:object_r:bin_t:s0"
+CONTROLLER_PATH = Path("/usr/libexec/symbi-atomic-update-controller.py")
+CONTROLLER_ENTRYPOINT = Path("/usr/libexec/symbi-atomic-update")
+BOOTC_TRANSITION_BRIDGE = Path("/usr/libexec/symbi-bootc-transition")
+CONTROLLER_MANIFEST = Path(
+    "/usr/share/symbi-os/selinux/symbi-atomic-update.json")
+EXPECTED_CREDENTIAL = Path(
+    "/run/credentials/o.service/symbi-update-expected.json")
+POLICY_CREDENTIAL = Path(
+    "/run/credentials/o.service/symbi-update-policy.json")
+CONTROLLER_CONTEXT = "system_u:system_r:symbi_atomic_update_t:s0"
+CONTROLLER_ENTRYPOINT_CONTEXT = (
+    "system_u:object_r:symbi_atomic_update_exec_t:s0")
+BOOTC_TRANSITION_BRIDGE_CONTEXT = (
+    "system_u:object_r:symbi_bootc_transition_exec_t:s0")
+INSTALL_CONTEXT = "system_u:system_r:install_t:s0"
+POLICY_NAME = "symbi_atomic_update"
 BOOTC_SOURCE = Path("/usr/bin/bootc")
 BOOTC_LABEL_REFERENCE = Path("/usr/bin/ostree")
-BOOTC_PROBE_COMMAND = [str(BOOTC_RUNCON), BOOTC_CONTEXT,
-                       str(BOOTC_SOURCE), "--version"]
+BOOTC_PROBE_COMMAND = [str(BOOTC_SOURCE), "--version"]
+CONTROLLER_PROBE_COMMAND = [str(CONTROLLER_ENTRYPOINT), "--probe"]
+BOOTC_RECEIPT_PREFIX = "SYMBI_BOOTC_RECEIPT_V1"
+BOOTC_RECEIPT_MAX_BYTES = 256
 BOOTC_OPERATIONS = {
     "negative": ["switch", "--transport", "dir",
                  "--enforce-container-sigpolicy", str(NEGATIVE_SOURCE)],
@@ -184,15 +201,24 @@ def fixed_bootc_status(run, observations, status_path=STATUS_OUTPUT):
 
 
 def _fd_digest(fd):
-    with os.fdopen(os.dup(fd), "rb") as stream:
-        return hashlib.file_digest(stream, "sha256").hexdigest()
+    # pread keeps the caller's open-file-description offset unchanged.  A dup
+    # would share that offset and could make a later parse observe EOF.
+    digest = hashlib.sha256()
+    offset = 0
+    while True:
+        block = os.pread(fd, 1024 * 1024, offset)
+        if not block:
+            return digest.hexdigest()
+        digest.update(block)
+        offset += len(block)
 
 
-def _stable_regular(fd, *, uid=0, gid=0, mode=None):
+def _stable_regular(fd, *, uid=0, gid=0, mode=None,
+                    maximum=256 * 1024 * 1024):
     before = os.fstat(fd)
     if (not stat.S_ISREG(before.st_mode) or before.st_uid != uid
-            or before.st_gid != gid
-            or not 0 < before.st_size <= 256 * 1024 * 1024
+            or before.st_gid != gid or before.st_nlink != 1
+            or not 0 < before.st_size <= maximum
             or (mode is not None and stat.S_IMODE(before.st_mode) != mode)):
         raise ValueError("fixed bootc input controls changed")
     digest = _fd_digest(fd)
@@ -206,62 +232,323 @@ def _stable_regular(fd, *, uid=0, gid=0, mode=None):
     return before, digest
 
 
-def _bootc_file_observation(source_path=None, label_reference=None,
-                            runcon_path=None):
+def _normalized_label(descriptor):
+    value = os.getxattr(descriptor, "security.selinux")
+    if value.endswith(b"\0"):
+        value = value[:-1]
+    if not value or b"\0" in value:
+        raise ValueError("invalid SELinux file label")
+    return value.decode("ascii")
+
+
+def _bootc_file_observation(source_path=None, label_reference=None):
     source_path = BOOTC_SOURCE if source_path is None else Path(source_path)
     label_reference = (BOOTC_LABEL_REFERENCE if label_reference is None
                        else Path(label_reference))
-    runcon_path = BOOTC_RUNCON if runcon_path is None else Path(runcon_path)
-    if (not source_path.is_absolute() or not label_reference.is_absolute()
-            or not runcon_path.is_absolute()):
+    if not source_path.is_absolute() or not label_reference.is_absolute():
         raise ValueError("fixed bootc input paths must be absolute")
-    source = reference = runcon = None
+    source = reference = None
     try:
         source = os.open(source_path,
                          os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
         reference = os.open(label_reference,
                             os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
-        runcon = os.open(runcon_path,
-                         os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
         _, source_hash = _stable_regular(source, mode=0o755)
         _, reference_hash = _stable_regular(reference, mode=0o755)
-        _, runcon_hash = _stable_regular(runcon, mode=0o755)
-
-        def normalized_label(descriptor):
-            value = os.getxattr(descriptor, "security.selinux")
-            if value.endswith(b"\0"):
-                value = value[:-1]
-            if not value or b"\0" in value:
-                raise ValueError("invalid SELinux file label")
-            return value
-        runcon_label = normalized_label(runcon).decode("ascii")
-        if runcon_label != BOOTC_RUNCON_LABEL:
-            raise ValueError("runcon does not carry the fixed generic executable label")
-        label = normalized_label(source)
-        reference_label = normalized_label(reference)
+        label = _normalized_label(source)
+        reference_label = _normalized_label(reference)
         if label != reference_label:
             raise ValueError("bootc SELinux label differs from ostree")
-        label_text = label.decode("ascii")
-        if re.fullmatch(r"[^:\x00]+:object_r:install_exec_t:[^\x00]+", label_text) is None:
+        if re.fullmatch(r"[^:\x00]+:object_r:install_exec_t:[^\x00]+", label) is None:
             raise ValueError("bootc does not carry install_exec_t")
         return {
-            "runcon": str(runcon_path),
-            "runcon_sha256": runcon_hash,
-            "runcon_selinux_label": runcon_label,
             "source": str(source_path),
             "label_reference": str(label_reference),
             "source_sha256": source_hash,
             "label_reference_sha256": reference_hash,
-            "selinux_label": label_text,
+            "selinux_label": label,
             "mode": "0755",
         }
     finally:
-        for fd in (runcon, reference, source):
+        for fd in (reference, source):
             if fd is not None:
                 os.close(fd)
 
 
-def fixed_bootc_transition(run):
+def _strict_manifest(raw):
+    value = _unique_json(raw)
+    expected_expansion = {
+        "schema": 2, "policy": POLICY_NAME,
+        "install_transition_inventory": {
+            "schema": 1,
+            "source": "symbi_atomic_update_t",
+            "class": "process",
+            "destination": "install_t",
+            "rules": [
+                "type_transition symbi_atomic_update_t "
+                "symbi_bootc_transition_exec_t:process install_t;",
+            ],
+        },
+        "required": {
+            "init_entrypoint": True, "init_transition": True,
+            "bridge_entrypoint": True, "bridge_transition": True,
+            "bridge_type_transition": True,
+            "install_sigchld": True,
+        },
+        "forbidden": {
+            "shared_install_type_transition": False,
+            "generic_install_transition": False,
+            "controller_forbidden_process_permissions": False,
+            "controller_policy_load": False,
+            "controller_enforcing_change": False,
+        },
+    }
+    if (set(value) != {"schema", "policy", "entrypoint", "bridge", "controller",
+                       "controller_context", "install_context",
+                       "policy_sources", "expanded_policy"}
+            or type(value.get("schema")) is not int or value["schema"] != 1
+            or value.get("policy") != POLICY_NAME
+            or value.get("controller_context") != CONTROLLER_CONTEXT
+            or value.get("install_context") != INSTALL_CONTEXT
+            or not isinstance(value.get("expanded_policy"), dict)
+            or type(value["expanded_policy"].get("schema")) is not int
+            or not isinstance(value["expanded_policy"].get(
+                "install_transition_inventory"), dict)
+            or type(value["expanded_policy"]["install_transition_inventory"].get(
+                "schema")) is not int
+            or value.get("expanded_policy") != expected_expansion
+            or not isinstance(value.get("policy_sources"), dict)
+            or set(value["policy_sources"]) != {
+                "te_sha256", "fc_sha256", "launcher_sha256", "bridge_sha256"}
+            or any(re.fullmatch(r"[a-f0-9]{64}", item) is None
+                   for item in value["policy_sources"].values())):
+        raise ValueError("Atomic update controller manifest differs")
+    return value
+
+
+def controller_observation(*, entrypoint_path=CONTROLLER_ENTRYPOINT,
+                           bridge_path=BOOTC_TRANSITION_BRIDGE,
+                           controller_path=CONTROLLER_PATH,
+                           manifest_path=CONTROLLER_MANIFEST,
+                           argv0=None, expected_uid=0, expected_gid=0,
+                           label_reader=None, context_reader=None):
+    """Bind the fixed image-owned launcher, controller and executing domain."""
+    entrypoint_path, bridge_path = Path(entrypoint_path), Path(bridge_path)
+    controller_path = Path(controller_path)
+    manifest_path = Path(manifest_path)
+    argv0 = sys.argv[0] if argv0 is None else argv0
+    label_reader = os.getxattr if label_reader is None else label_reader
+    if context_reader is None:
+        context_reader = lambda: Path("/proc/self/attr/current").read_bytes()
+    if (not entrypoint_path.is_absolute() or not bridge_path.is_absolute()
+            or not controller_path.is_absolute()
+            or not manifest_path.is_absolute() or argv0 != str(controller_path)
+            or type(expected_uid) is not int or type(expected_gid) is not int):
+        raise ValueError("fixed Atomic update controller paths required")
+    descriptors = []
+    try:
+        for path in (entrypoint_path, bridge_path,
+                     controller_path, manifest_path):
+            descriptors.append(os.open(
+                path, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC))
+        entrypoint_fd, bridge_fd, controller_fd, manifest_fd = descriptors
+        _, entrypoint_hash = _stable_regular(
+            entrypoint_fd, uid=expected_uid, gid=expected_gid, mode=0o755,
+            maximum=256 * 1024)
+        _, controller_hash = _stable_regular(
+            controller_fd, uid=expected_uid, gid=expected_gid, mode=0o444,
+            maximum=256 * 1024)
+        _, bridge_hash = _stable_regular(
+            bridge_fd, uid=expected_uid, gid=expected_gid, mode=0o755,
+            maximum=256 * 1024)
+        _, manifest_hash = _stable_regular(
+            manifest_fd, uid=expected_uid, gid=expected_gid, mode=0o444,
+            maximum=128 * 1024)
+        with os.fdopen(os.dup(manifest_fd), "rb") as stream:
+            manifest = _strict_manifest(stream.read(128 * 1024 + 1))
+        label = label_reader(entrypoint_fd, "security.selinux")
+        if label.endswith(b"\0"):
+            label = label[:-1]
+        label = label.decode("ascii", "strict")
+        bridge_label = label_reader(bridge_fd, "security.selinux")
+        if bridge_label.endswith(b"\0"):
+            bridge_label = bridge_label[:-1]
+        bridge_label = bridge_label.decode("ascii", "strict")
+        context = context_reader()
+        if context.endswith(b"\0") or context.endswith(b"\n"):
+            context = context[:-1]
+        context = context.decode("ascii", "strict")
+        expected_entrypoint = {
+            "path": str(entrypoint_path), "sha256": entrypoint_hash,
+            "uid": expected_uid, "gid": expected_gid, "mode": "0755",
+            "selinux_label": CONTROLLER_ENTRYPOINT_CONTEXT,
+        }
+        expected_controller = {
+            "path": str(controller_path), "sha256": controller_hash,
+            "uid": expected_uid, "gid": expected_gid, "mode": "0444",
+        }
+        expected_bridge = {
+            "path": str(bridge_path), "sha256": bridge_hash,
+            "uid": expected_uid, "gid": expected_gid, "mode": "0755",
+            "selinux_label": BOOTC_TRANSITION_BRIDGE_CONTEXT,
+        }
+        if (manifest["entrypoint"] != expected_entrypoint
+                or manifest["bridge"] != expected_bridge
+                or manifest["controller"] != expected_controller
+                or label != CONTROLLER_ENTRYPOINT_CONTEXT
+                or bridge_label != BOOTC_TRANSITION_BRIDGE_CONTEXT
+                or context != CONTROLLER_CONTEXT):
+            raise ValueError("Atomic update controller identity differs")
+        return {
+            "schema": 1,
+            "policy": POLICY_NAME,
+            "entrypoint": str(entrypoint_path),
+            "entrypoint_sha256": entrypoint_hash,
+            "entrypoint_selinux_label": label,
+            "bridge": str(bridge_path),
+            "bridge_sha256": bridge_hash,
+            "bridge_selinux_label": bridge_label,
+            "controller": str(controller_path),
+            "controller_sha256": controller_hash,
+            "manifest": str(manifest_path),
+            "manifest_sha256": manifest_hash,
+            "controller_context": context,
+            "install_context": INSTALL_CONTEXT,
+            "policy_sources": manifest["policy_sources"],
+            "expanded_policy": manifest["expanded_policy"],
+        }
+    finally:
+        for descriptor in reversed(descriptors):
+            os.close(descriptor)
+
+
+def _transition_receipt(raw, operation, digest):
+    """Validate the bridge's one-line receipt after its pipe reached EOF."""
+    if (not isinstance(raw, bytes) or operation not in {
+            "probe", *BOOTC_OPERATIONS}
+            or (operation == "probe" and digest != "-")
+            or (operation != "probe" and not exact_digest(digest))):
+        raise ValueError("invalid bootc transition receipt expectation")
+    expected = (f"{BOOTC_RECEIPT_PREFIX}|{operation}|{digest}|"
+                f"{INSTALL_CONTEXT}\n").encode("ascii")
+    if raw != expected or len(raw) > BOOTC_RECEIPT_MAX_BYTES:
+        raise ValueError("bootc transition receipt differs")
+    return {
+        "schema": 1,
+        "bridge": str(BOOTC_TRANSITION_BRIDGE),
+        "operation": operation,
+        "digest": digest,
+        "selinux_context": INSTALL_CONTEXT,
+        "close_on_exec": True,
+    }
+
+
+def _read_transition_receipt(descriptor, timeout, *, clock=None,
+                             select_reader=None):
+    """Read one bounded receipt and require pipe EOF before accepting it."""
+    if type(descriptor) is not int or descriptor < 0 or not 0 < timeout <= 5:
+        raise ValueError("invalid bootc transition receipt reader")
+    clock = time.monotonic if clock is None else clock
+    select_reader = select.select if select_reader is None else select_reader
+    deadline = clock() + timeout
+    chunks = []
+    size = 0
+    while True:
+        remaining = deadline - clock()
+        if remaining <= 0:
+            raise TimeoutError("bootc transition receipt pipe did not close")
+        ready, _, _ = select_reader([descriptor], [], [], remaining)
+        if ready != [descriptor]:
+            raise TimeoutError("bootc transition receipt pipe did not become readable")
+        block = os.read(descriptor, BOOTC_RECEIPT_MAX_BYTES + 1 - size)
+        if not block:
+            return b"".join(chunks)
+        chunks.append(block)
+        size += len(block)
+        if size > BOOTC_RECEIPT_MAX_BYTES:
+            raise ValueError("bootc transition receipt exceeded its bound")
+
+
+def _bootc_subprocess(command, timeout, *, operation, digest, popen=None,
+                      pidfd_open=None, pipe2=None, receipt_reader=None,
+                      clock=None):
+    """Execute one fixed bridge operation and bind its close-on-exec receipt."""
+    operations = {
+        "probe": BOOTC_PROBE_COMMAND,
+        **{name: [str(BOOTC_SOURCE), *arguments]
+           for name, arguments in BOOTC_OPERATIONS.items()},
+    }
+    if (operation not in operations or command != operations[operation]
+            or (operation == "probe" and digest != "-")
+            or (operation != "probe" and not exact_digest(digest))
+            or type(timeout) is not int
+            or not 1 <= timeout <= UPDATE_COMMAND_TIMEOUT_SECONDS):
+        raise ValueError("fixed bootc bridge operation required")
+    popen = subprocess.Popen if popen is None else popen
+    pidfd_open = os.pidfd_open if pidfd_open is None else pidfd_open
+    pipe2 = os.pipe2 if pipe2 is None else pipe2
+    receipt_reader = (_read_transition_receipt
+                      if receipt_reader is None else receipt_reader)
+    clock = time.monotonic if clock is None else clock
+    receipt_read = receipt_write = -1
+    child = None
+    pidfd = None
+    started = clock()
+    try:
+        receipt_read, receipt_write = pipe2(os.O_CLOEXEC)
+        bridge_command = [
+            str(BOOTC_TRANSITION_BRIDGE), "--receipt-fd", str(receipt_write),
+            operation, digest,
+        ]
+        child = popen(
+            bridge_command, stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+            pass_fds=(receipt_write,),
+            env={"PATH": "/usr/sbin:/usr/bin:/sbin:/bin", "LANG": "C.UTF-8"})
+        os.close(receipt_write)
+        receipt_write = -1
+        if type(child.pid) is not int or not 0 < child.pid <= 2**31 - 1:
+            raise ValueError("fixed bootc child PID is invalid")
+        pidfd = pidfd_open(child.pid, 0)
+        if type(pidfd) is not int or pidfd < 0:
+            raise ValueError("fixed bootc child pidfd is invalid")
+        raw_receipt = receipt_reader(
+            receipt_read, min(timeout, 5), clock=clock)
+        receipt = _transition_receipt(raw_receipt, operation, digest)
+        os.close(receipt_read)
+        receipt_read = -1
+        remaining = max(0.001, timeout - (clock() - started))
+        try:
+            stdout, stderr = child.communicate(timeout=min(timeout, remaining))
+        except subprocess.TimeoutExpired:
+            child.kill()
+            stdout, stderr = child.communicate()
+            raise TimeoutError("fixed bootc child exceeded its bound")
+        if (not isinstance(stdout, str) or not isinstance(stderr, str)
+                or len(stdout.encode()) > 256 * 1024
+                or len(stderr.encode()) > 128 * 1024
+                or type(child.returncode) is not int):
+            raise ValueError("fixed bootc child result is invalid")
+        result = subprocess.CompletedProcess(command, child.returncode,
+                                             stdout, stderr)
+        result.child_context = {
+            "pid": child.pid, "pidfd_opened": True,
+            "selinux_context": receipt["selinux_context"],
+        }
+        result.transition_receipt = receipt
+        return result
+    finally:
+        for descriptor in (receipt_write, receipt_read):
+            if descriptor >= 0:
+                os.close(descriptor)
+        if child is not None and child.poll() is None:
+            child.kill()
+            child.wait()
+        if pidfd is not None:
+            os.close(pidfd)
+
+
+def fixed_bootc_transition(run, controller):
     """Bind the successful nonmutating transition probe and executable inputs."""
     properties = service_properties(run([
         "/usr/bin/systemctl", "show", "b.service",
@@ -271,33 +558,39 @@ def fixed_bootc_transition(run):
         raise ValueError("fixed bootc transition probe did not complete")
     return {
         "unit": "b.service", "service": properties,
-        "context": BOOTC_CONTEXT,
-        "probe_command": BOOTC_PROBE_COMMAND,
-        "scope": "Explicit transition availability only; no update qualification",
-        **_bootc_file_observation(),
+        "controller": controller,
+        "controller_probe_command": CONTROLLER_PROBE_COMMAND,
+        "bootc_probe_command": BOOTC_PROBE_COMMAND,
+        "install_context": INSTALL_CONTEXT,
+        "scope": "Dedicated-domain transition availability only; no update qualification",
+        "bootc": _bootc_file_observation(),
     }
 
 
-def fixed_bootc_operation(run, record, operation, *, expected_success, timeout):
-    """Run one exact mutation through runcon after revalidating fixed inputs."""
-    if (operation not in BOOTC_OPERATIONS or type(expected_success) is not bool
+def fixed_bootc_operation(run, record, operation, digest, *, expected_success,
+                          timeout):
+    """Run one exact mutation through the dedicated domain and labeled bootc."""
+    if (operation not in BOOTC_OPERATIONS or not exact_digest(digest)
+            or type(expected_success) is not bool
             or type(timeout) is not int
             or not 1 <= timeout <= UPDATE_COMMAND_TIMEOUT_SECONDS
             or not isinstance(record.get("bootc_transition"), dict)):
         raise ValueError("invalid fixed bootc operation")
     current = _bootc_file_observation()
-    retained = {key: record["bootc_transition"].get(key) for key in current}
-    if current != retained:
+    if current != record["bootc_transition"].get("bootc"):
         raise ValueError("fixed bootc input changed before use")
-    command = [str(BOOTC_RUNCON), BOOTC_CONTEXT, str(BOOTC_SOURCE),
-               *BOOTC_OPERATIONS[operation]]
-    result = run(command, timeout=timeout, check=False, return_result=True)
+    command = [str(BOOTC_SOURCE), *BOOTC_OPERATIONS[operation]]
+    result = run(command, timeout=timeout, check=False, return_result=True,
+                 observe_bootc=True, bootc_operation=operation,
+                 bootc_digest=digest)
     if _bootc_file_observation() != current:
         raise ValueError("fixed bootc input changed during use")
     observation = {
         "name": operation,
         "command": command,
         "exit_code": result.returncode,
+        "child_context": result.child_context,
+        "transition_receipt": result.transition_receipt,
         "stderr": result.stderr,
         "stderr_sha256": hashlib.sha256(result.stderr.encode()).hexdigest(),
     }
@@ -837,11 +1130,31 @@ def write_state(value):
 
 
 def main():
+    controller = controller_observation()
     product = Path("/sys/class/dmi/id/product_name").read_text().strip()
     if (os.geteuid() != 0 or product != "Symbi-Hosted-Update-Probe"
-            or Path("/run/.containerenv").exists() or len(sys.argv) != 3):
+            or Path("/run/.containerenv").exists()):
         raise SystemExit("Use only the disposable hosted update guest")
-    expected_path, policy_path = map(Path, sys.argv[1:])
+    if sys.argv == [str(CONTROLLER_PATH), "--probe"]:
+        if sorted(path.name for path in Path("/sys/class/net").iterdir()) != ["lo"]:
+            raise ValueError("update guest gained a network interface")
+        enforcing = subprocess.run(
+            ["/usr/sbin/getenforce"], stdin=subprocess.DEVNULL,
+            capture_output=True, timeout=10, text=True,
+            env={"PATH": "/usr/sbin:/usr/bin:/sbin:/bin", "LANG": "C.UTF-8"},
+            check=True)
+        if enforcing.stdout.strip() != "Enforcing" or enforcing.stderr:
+            raise ValueError("SELinux is not enforcing")
+        _bootc_file_observation()
+        result = _bootc_subprocess(
+            BOOTC_PROBE_COMMAND, 30, operation="probe", digest="-")
+        if result.returncode != 0:
+            raise ValueError("dedicated-domain bootc probe failed")
+        return
+    if sys.argv != [str(CONTROLLER_PATH), "--advance",
+                    str(EXPECTED_CREDENTIAL), str(POLICY_CREDENTIAL)]:
+        raise SystemExit("Use only the fixed Atomic update credentials")
+    expected_path, policy_path = map(Path, sys.argv[2:])
     if expected_path.stat().st_size > 128 * 1024 or policy_path.stat().st_size > 128 * 1024:
         raise ValueError("oversized update credential")
     expected = json.loads(expected_path.read_bytes())
@@ -849,28 +1162,46 @@ def main():
     source_expected = expected.get("source_disk")
     if (not exact_digest(old) or not exact_digest(new) or old == new
             or not re.fullmatch(r"[a-f0-9]{32}", expected["nonce"])
+            or expected.get("controller") != controller
             or not isinstance(source_expected, dict)
             or source_expected.get("serial") != SOURCE_SERIAL):
         raise ValueError("invalid update expectation")
     record = {"schema": 1, "passed": False, "guest_booted": True,
               "release_qualified": False, "product": product,
               "nonce": expected["nonce"], "expected_sha256": sha256(expected_path),
-              "runner_sha256": sha256(Path(__file__)), "commands": [],
+              "runner_sha256": controller["controller_sha256"],
+              "controller": controller, "commands": [],
               "status_observations": [],
               "scope": "Offline ephemeral fixture-signed update and rollback only"}
 
-    def run(command, *, timeout=120, check=True, return_result=False):
+    def run(command, *, timeout=120, check=True, return_result=False,
+            observe_bootc=False, bootc_operation=None, bootc_digest=None):
         if (type(timeout) is not int or not 1 <= timeout <= UPDATE_COMMAND_TIMEOUT_SECONDS
-                or type(check) is not bool or type(return_result) is not bool):
+                or type(check) is not bool or type(return_result) is not bool
+                or type(observe_bootc) is not bool
+                or (observe_bootc and (bootc_operation not in BOOTC_OPERATIONS
+                                       or not exact_digest(bootc_digest)))
+                or (not observe_bootc
+                    and (bootc_operation is not None or bootc_digest is not None))):
             raise ValueError("invalid update command timeout")
-        result = subprocess.run(command, stdin=subprocess.DEVNULL, capture_output=True,
-                                timeout=timeout, text=True,
-                                env={"PATH": "/usr/sbin:/usr/bin:/sbin:/bin", "LANG": "C.UTF-8"})
+        if observe_bootc:
+            result = _bootc_subprocess(
+                command, timeout, operation=bootc_operation,
+                digest=bootc_digest)
+        else:
+            result = subprocess.run(
+                command, stdin=subprocess.DEVNULL, capture_output=True,
+                timeout=timeout, text=True,
+                env={"PATH": "/usr/sbin:/usr/bin:/sbin:/bin", "LANG": "C.UTF-8"})
         if len(result.stdout.encode()) > 256 * 1024 or len(result.stderr.encode()) > 128 * 1024:
             raise ValueError("update command output exceeded its bound")
-        record["commands"].append({"command": command, "exit_code": result.returncode,
-                                   "stdout_sha256": hashlib.sha256(result.stdout.encode()).hexdigest(),
-                                   "stderr": result.stderr})
+        observation = {"command": command, "exit_code": result.returncode,
+                       "stdout_sha256": hashlib.sha256(result.stdout.encode()).hexdigest(),
+                       "stderr": result.stderr}
+        if observe_bootc:
+            observation["child_context"] = result.child_context
+            observation["transition_receipt"] = result.transition_receipt
+        record["commands"].append(observation)
         if check:
             result.check_returncode()
         return result if return_result else result.stdout
@@ -880,7 +1211,7 @@ def main():
             raise ValueError("update guest gained a network interface")
         if run(["/usr/sbin/getenforce"]).strip() != "Enforcing":
             raise ValueError("SELinux is not enforcing")
-        record["bootc_transition"] = fixed_bootc_transition(run)
+        record["bootc_transition"] = fixed_bootc_transition(run, controller)
         observed_devices = []
 
         def scan_source():
@@ -1007,7 +1338,7 @@ def main():
             if sha256(Path("/etc/containers/policy.json")) != expected["policy_sha256"]:
                 raise ValueError("guest update policy bind changed")
             operation = fixed_bootc_operation(
-                run, record, "negative", expected_success=is_positive,
+                run, record, "negative", new, expected_success=is_positive,
                 timeout=UPDATE_COMMAND_TIMEOUT_SECONDS)
             switch_exit = operation["exit_code"]
             if is_positive:
@@ -1050,7 +1381,7 @@ def main():
             if sha256(Path("/etc/containers/policy.json")) != expected["policy_sha256"]:
                 raise ValueError("guest update policy bind changed")
             fixed_bootc_operation(
-                run, record, "positive", expected_success=True,
+                run, record, "positive", new, expected_success=True,
                 timeout=UPDATE_COMMAND_TIMEOUT_SECONDS)
             phase_status(raw_status(), old, staged=new)
             write_state("updated")
@@ -1059,7 +1390,8 @@ def main():
         elif state == "updated":
             phase_status(raw_status(), new, rollback=old)
             fixed_bootc_operation(
-                run, record, "rollback", expected_success=True, timeout=300)
+                run, record, "rollback", old, expected_success=True,
+                timeout=300)
             phase_status(raw_status(), new, rollback=old, rollback_queued=True)
             write_state("rolled-back")
             record["phase"] = {"name": "updated", "booted_digest": new,

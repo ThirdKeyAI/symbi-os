@@ -11,7 +11,8 @@ import stat
 from image.atomic.contract import (create_disk,require_disk,sha256,unique_json,
                                    unpack_oci,validate_report,installer_mounts,
                                    directory_source,installer_policy)
-from image.atomic.update_contract import negative_signature_payloads
+from image.atomic.update_contract import (negative_signature_payloads,
+                                          validate_controller_identity)
 from image.atomic.update_process import TIMEOUT_SECONDS,run_update_controller
 from image.boot.inputs import require_desktop_image
 from image.boot.preflight import expected_inputs,validate_loaded_image,validate_report as validate_preflight
@@ -390,7 +391,7 @@ def validate_retained_preflight(root, readiness, selected, manifest, expected):
     installed_keys = {'passed', 'os_qualified', 'installed_files_checked',
                       'installed_package_count',
                       'all_package_identities_preserved_after_build', 'fonts',
-                      'uid', 'limits', 'scope'}
+                      'atomic_update_controller', 'uid', 'limits', 'scope'}
     fonts = installed.get('fonts') if isinstance(installed, dict) else None
     font_keys = {'checked', 'scanned_fonts', 'families', 'monospace_family',
                  'monospace_file'}
@@ -429,6 +430,7 @@ def validate_retained_preflight(root, readiness, selected, manifest, expected):
             or inspect.get('install_requirements') != requirements):
         raise ValueError('Retained installed-payload preflight is incomplete')
     _validate_retained_boot_inputs(boot_inputs, expected)
+    validate_controller_identity(installed['atomic_update_controller'])
     expected_probe_hashes = {
         'probe.py': sha256(root / 'image/boot/probe.py'),
         'verify.py': sha256(root / 'image/desktop/verify.py'),
@@ -505,7 +507,11 @@ def main():
     podman=None;containers=[];storage=None;disk=None;identity=None;boot_output=None;runroot=None;disk_readonly=False;signing_output=None
     try:
         readiness=unique_json((root/'image/atomic/preflight.lock.json').read_bytes())
-        validate_retained_preflight(root, readiness, selected, manifest, expected)
+        preflight_reports = validate_retained_preflight(
+            root, readiness, selected, manifest, expected)
+        current_controller = validate_controller_identity(
+            preflight_reports['inspect']['installed_files'][
+                'atomic_update_controller'])
         record['preflight']=readiness
         # The existing bounded prepare phase verifies the current GitHub artifact
         # metadata and streams its complete ZIP/manifest/OCI hashes again.
@@ -572,7 +578,8 @@ def main():
             print('Atomic update: installing the exact predecessor for a signed switch and booted rollback',flush=True)
             record['update']=run_update(root,group,podman,image_id,storage,containers,run,pins,
                                         lock,readiness['manifest_digest'],storage/'signed',
-                                        signing_output,signed,policy,policy_bytes)
+                                        signing_output,signed,policy,policy_bytes,
+                                        current_controller)
             record['guest_booted']=record['update']['guest_booted'] is True
             record['update_qualified']=record['update']['passed'] is True
             record['passed']=record['guest_booted'] and record['update_qualified']

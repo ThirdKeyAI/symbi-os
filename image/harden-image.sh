@@ -15,6 +15,11 @@ source /etc/os-release
 for executable in Hyprland waybar walker foot bootc; do
   command -v "$executable" >/dev/null
 done
+for executable in gcc make semodule restorecon sesearch python3; do
+  command -v "$executable" >/dev/null
+done
+/usr/bin/python3 /tmp/symbi-atomic-update-policy/install.py
+rm -rf /tmp/symbi-atomic-update-policy
 # The selected base uses run0 and contains neither sudo nor visudo. Do not add
 # sudo merely to validate an absent service. When sudo exists, require its real
 # syntax checker; inspect any residual policy even when the executable is absent.

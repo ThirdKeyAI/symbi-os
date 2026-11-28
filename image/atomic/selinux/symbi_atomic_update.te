@@ -1,0 +1,15 @@
+policy_module(symbi_atomic_update, 1.0)
+
+type symbi_atomic_update_t;
+type symbi_atomic_update_exec_t;
+type symbi_bootc_transition_exec_t;
+files_type(symbi_bootc_transition_exec_t)
+
+init_daemon_domain(symbi_atomic_update_t, symbi_atomic_update_exec_t)
+
+gen_require(`
+    type install_t;
+')
+
+domain_entry_file(install_t, symbi_bootc_transition_exec_t)
+domtrans_pattern(symbi_atomic_update_t, symbi_bootc_transition_exec_t, install_t)
