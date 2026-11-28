@@ -8,11 +8,13 @@ import subprocess
 import time
 
 try:
-    from .contract import (SCOPE, failure_record, reboot_qemu_arguments, sha256,
-                           unique_json, validate_source_binding)
+    from .contract import (APPLIANCE_CONTAINER_LIMITS, SCOPE, failure_record,
+                           reboot_qemu_arguments, sha256, unique_json,
+                           validate_source_binding)
 except ImportError:  # Copied as a standalone hosted-container program.
-    from contract import (SCOPE, failure_record, reboot_qemu_arguments, sha256,
-                          unique_json, validate_source_binding)
+    from contract import (APPLIANCE_CONTAINER_LIMITS, SCOPE, failure_record,
+                          reboot_qemu_arguments, sha256, unique_json,
+                          validate_source_binding)
 
 
 MINIMUM_SCREENSHOT_SECONDS = 90
@@ -99,8 +101,7 @@ def main():
               for name in ("memory.max", "memory.swap.max", "cpu.max", "pids.max")}
     process = {key: value.strip() for key, value in
                (line.split(":", 1) for line in Path("/proc/self/status").read_text().splitlines() if ":" in line)}
-    if (limits != {"memory.max": "3221225472", "memory.swap.max": "0",
-                   "cpu.max": "200000 100000", "pids.max": "64"}
+    if (limits != APPLIANCE_CONTAINER_LIMITS
             or process["CapEff"] != "0000000000000000" or process["NoNewPrivs"] != "1"
             or not os.statvfs("/").f_flag & os.ST_RDONLY
             or not os.statvfs("/inputs/retained.qcow2").f_flag & os.ST_RDONLY

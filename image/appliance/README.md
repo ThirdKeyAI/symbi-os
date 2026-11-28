@@ -50,8 +50,10 @@ second isolated container mounts those exact bytes read-only, creates a fresh
 overlay, boots with a virtio display, keyboard, and pointer, and requires a nonblank
 QMP screenshot. Hashes before and after that boot must match. Both hosted boots use
 TCG multi-thread execution with an explicit two-CPU, one-socket, two-core topology
-and have no NIC. This generic virtio/TCG gate does not exercise physical NVIDIA
-hardware.
+and have no NIC. Each container has an exact 4 GiB memory limit, zero swap, two CPUs,
+and 64 tasks. The exact 5 GiB outer transient unit leaves 1 GiB for
+the controller and container monitor while preserving a hard zero-swap boundary.
+This generic virtio/TCG gate does not exercise physical NVIDIA hardware.
 Only then does `manifest.json` bind the source commit and Git tree, retained OCI
 artifact, installed disk, qcow2 hash, retained screenshot, two-day expiry, and
 offline launch command. The qcow2, manifest, and screenshot share the success-only
@@ -214,15 +216,17 @@ clipboard, Tmux, and Tolaria shortcuts are reserved no-ops in this slice. The VM
 no virtual NIC, audio device, shared folder, or host-GPU passthrough. It does not
 exercise physical NVIDIA hardware.
 
-Run the `HIGHLY EXPERIMENTAL interactive appliance` workflow manually only after the
-pending integrated-head preflight is replaced by reviewed lock-bound evidence.
-Ordinary pushes and pull requests never schedule it. A failed or mismatched run
-retains only bounded evidence with all success and qualification claims false. Its controller
-receipt records a fixed stage, source commit/tree, local cleanup, and any bounded
-cgroup receipts without copying a host path. The qcow2 upload is the final,
-success-gated workflow step, so an earlier failure cannot publish it. Artifact
-service behavior after a failure inside that final upload remains controlled by the
-hosting platform.
+Run the `HIGHLY EXPERIMENTAL interactive appliance` workflow manually only while the
+reviewed lock-bound preflight remains selected. Ordinary pushes and pull requests
+never schedule it. A failed or mismatched run retains only bounded evidence with all
+success and qualification claims false. Its controller receipt records a fixed
+stage, source commit/tree, local cleanup, exact cgroup receipts, and a source-bound
+child-result digest. At most the approved QEMU and serial log tails are retained;
+host paths, URLs, credentials, control characters, and key material are redacted,
+while links, special files, and oversized inputs are rejected. The qcow2 upload is
+the final, success-gated workflow step, so an earlier failure cannot publish it.
+Artifact service behavior after a failure inside that final upload remains controlled
+by the hosting platform.
 
 No graphical appliance run has passed yet, so there is no current downloadable or
 bootable result from this card.

@@ -10,6 +10,28 @@ USERNAME = "symbi-test"
 ARTIFACT_NAME = "symbi-os-highly-experimental-generic.qcow2"
 VIRTUAL_DISK_BYTES = 24 * 1024**3
 RETENTION_DAYS = 2
+APPLIANCE_CONTAINER_MEMORY_BYTES = 4 * 1024**3
+APPLIANCE_CONTROLLER_MEMORY_BYTES = 5 * 1024**3
+APPLIANCE_CONTROLLER_MARGIN_BYTES = (
+    APPLIANCE_CONTROLLER_MEMORY_BYTES - APPLIANCE_CONTAINER_MEMORY_BYTES
+)
+APPLIANCE_CONTAINER_LIMITS = {
+    "memory.max": str(APPLIANCE_CONTAINER_MEMORY_BYTES),
+    "memory.swap.max": "0",
+    "cpu.max": "200000 100000",
+    "pids.max": "64",
+}
+FAILURE_LOG_BOUNDS = {
+    "producer": {
+        "provision-qemu.log": 2 * 1024**2,
+        "provision-serial.log": 4 * 1024**2,
+    },
+    "reboot": {
+        "reboot-qemu.log": 2 * 1024**2,
+        "reboot-serial.log": 4 * 1024**2,
+    },
+}
+FAILURE_EXCERPT_BYTES = 16 * 1024
 SCOPE = (
     "HIGHLY EXPERIMENTAL offline development appliance; no release, signature, "
     "security, containment or production-account qualification"
@@ -151,7 +173,114 @@ def failure_record(source_binding, reason):
     }
 
 
-def controller_failure_record(source_binding, stage, error_type, cleanup, resources):
+def _safe_diagnostic_text(value, maximum):
+    """Accept only bounded printable text after the controller has redacted it."""
+    if not isinstance(value, str):
+        return False
+    try:
+        encoded = value.encode("utf-8")
+    except UnicodeError:
+        return False
+    if not 0 < len(encoded) <= maximum:
+        return False
+    if any(
+        (ord(character) < 32 and character not in "\n\t")
+        or 127 <= ord(character) <= 159
+        for character in value
+    ):
+        return False
+    lower = value.lower()
+    forbidden = (
+        "-----begin private key-----", "-----begin rsa private key-----",
+        "-----begin openssh private key-----", "authorization: bearer ",
+        "authorization: basic ",
+        "github_pat_", "ghp_", "glpat-", "ssh-rsa ", "ssh-ed25519 ",
+    )
+    if (any(token in lower for token in forbidden)
+            or re.search(r"-----begin [a-z ]*private key-----", lower)):
+        return False
+    if (re.search(
+            r"(?i)\b[A-Z0-9_]*(?:PASSWORD|PASSWD|TOKEN|SECRET|API_KEY|"
+            r"PRIVATE_KEY|ACCESS_KEY)[A-Z0-9_]*\s*[:=]", value)
+            or re.search(r"(?i)\b(?:https?|ssh)://", value)):
+        return False
+    if re.search(r"(?<![A-Za-z0-9._-])/(?:[^\s\"'<>]+)", value):
+        return False
+    return True
+
+
+def validate_resource_receipt(value):
+    limit_keys = set(APPLIANCE_CONTAINER_LIMITS)
+    final_keys = limit_keys | {"memory.peak", "memory.events", "cpu.stat"}
+    if (not isinstance(value, dict) or set(value) != {"limits", "cgroup_final"}
+            or value.get("limits") != APPLIANCE_CONTAINER_LIMITS
+            or not isinstance(value.get("cgroup_final"), dict)
+            or set(value["cgroup_final"]) != final_keys
+            or any(value["cgroup_final"].get(name) != expected
+                   for name, expected in APPLIANCE_CONTAINER_LIMITS.items())):
+        return False
+    final = value["cgroup_final"]
+    if (any(not isinstance(final.get(name), str) for name in final_keys)
+            or not 0 < len(final["memory.peak"]) <= 20
+            or re.fullmatch(r"[0-9]+", final["memory.peak"]) is None
+            or int(final["memory.peak"]) > APPLIANCE_CONTAINER_MEMORY_BYTES
+            or not 0 < len(final["memory.events"]) <= 4096
+            or not 0 < len(final["cpu.stat"]) <= 4096):
+        return False
+    for text in (final["memory.events"], final["cpu.stat"]):
+        lines = text.splitlines()
+        fields = [line.split() for line in lines]
+        if (not lines or any(len(items) != 2 for items in fields)
+                or len(fields) != len({items[0] for items in fields})
+                or any(re.fullmatch(r"[a-z_.]+", items[0]) is None
+                       or re.fullmatch(r"[0-9]+", items[1]) is None
+                       for items in fields)):
+            return False
+    events = dict(line.split() for line in final["memory.events"].splitlines())
+    if not {"max", "oom", "oom_kill", "oom_group_kill"}.issubset(events):
+        return False
+    return True
+
+
+def _validate_failure_diagnostics(value):
+    if (not isinstance(value, dict)
+            or any(phase not in FAILURE_LOG_BOUNDS for phase in value)):
+        return False
+    for phase, diagnostic in value.items():
+        if not isinstance(diagnostic, dict) or set(diagnostic) != {"result", "logs", "rejected"}:
+            return False
+        result = diagnostic["result"]
+        if (not isinstance(result, dict)
+                or set(result) != {"bytes", "sha256", "failure_type", "message", "redacted"}
+                or type(result["bytes"]) is not int or not 0 < result["bytes"] <= 256*1024
+                or not exact_hash(result["sha256"])
+                or not isinstance(result["failure_type"], str)
+                or re.fullmatch(r"[A-Za-z][A-Za-z0-9_.]{0,63}", result["failure_type"]) is None
+                or not _safe_diagnostic_text(result["message"], 4096)
+                or type(result["redacted"]) is not bool):
+            return False
+        allowed = FAILURE_LOG_BOUNDS[phase]
+        logs, rejected = diagnostic["logs"], diagnostic["rejected"]
+        if (not isinstance(logs, dict) or any(name not in allowed for name in logs)
+                or not isinstance(rejected, list) or rejected != sorted(set(rejected))
+                or any(name not in allowed for name in rejected)
+                or set(logs).intersection(rejected)):
+            return False
+        for name, item in logs.items():
+            if (not isinstance(item, dict)
+                    or set(item) != {"bytes", "sha256", "excerpt", "truncated", "redacted"}
+                    or type(item["bytes"]) is not int
+                    or not 0 < item["bytes"] <= allowed[name]
+                    or not exact_hash(item["sha256"])
+                    or not _safe_diagnostic_text(item["excerpt"], FAILURE_EXCERPT_BYTES)
+                    or type(item["truncated"]) is not bool
+                    or type(item["redacted"]) is not bool):
+                return False
+    return True
+
+
+def controller_failure_record(source_binding, stage, error_type, cleanup, resources,
+                              diagnostics=None):
     """Return a bounded, path-free failure receipt for the hosted controller."""
     source = validate_source_binding(source_binding)
     if stage not in CONTROLLER_STAGES:
@@ -166,26 +295,21 @@ def controller_failure_record(source_binding, stage, error_type, cleanup, resour
     if (not isinstance(cleanup, dict) or set(cleanup) != expected_cleanup
             or any(type(value) is not bool for value in cleanup.values())):
         raise ValueError("Invalid appliance cleanup receipt")
-    limit_keys = {"memory.max", "memory.swap.max", "cpu.max", "pids.max"}
-    final_keys = limit_keys | {"memory.peak", "memory.events", "cpu.stat"}
     if (not isinstance(resources, dict)
             or any(name not in {"producer", "reboot"} for name in resources)
-            or any(not isinstance(value, dict) or set(value) != {"limits", "cgroup_final"}
-                   or not isinstance(value["limits"], dict)
-                   or set(value["limits"]) != limit_keys
-                   or not isinstance(value["cgroup_final"], dict)
-                   or set(value["cgroup_final"]) != final_keys
-                   or any(not isinstance(item, str) or not 0 < len(item) <= 4096
-                          for item in (*value["limits"].values(),
-                                       *value["cgroup_final"].values()))
-                   for value in resources.values())):
+            or any(not validate_resource_receipt(value) for value in resources.values())):
         raise ValueError("Invalid appliance resource receipt")
+    diagnostics = {} if diagnostics is None else diagnostics
+    if (not _validate_failure_diagnostics(diagnostics)
+            or not set(diagnostics).issubset(resources)):
+        raise ValueError("Invalid appliance failure diagnostics")
     result = failure_record(source, error_type)
     result.update({
         "stage": stage,
         "source": {"commit": source["source_commit"], "tree": source["source_tree"]},
         "cleanup": cleanup,
         "resources": resources,
+        "diagnostics": diagnostics,
     })
     return result
 

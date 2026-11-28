@@ -10,10 +10,13 @@ import subprocess
 import re
 import sys
 
-from image.appliance.contract import (ARTIFACT_NAME, SDDM_CONFIGURATION, SCOPE,
-                                      build_manifest, controller_failure_record, sha256,
+from image.appliance.contract import (APPLIANCE_CONTAINER_LIMITS, ARTIFACT_NAME,
+                                      FAILURE_EXCERPT_BYTES, FAILURE_LOG_BOUNDS,
+                                      SDDM_CONFIGURATION, SCOPE,
+                                      build_manifest,
+                                      controller_failure_record, failure_record, sha256,
                                       unique_json, validate_reboot_report,
-                                      validate_source_binding)
+                                      validate_resource_receipt, validate_source_binding)
 
 
 COMPONENT_PATHS = (
@@ -26,6 +29,25 @@ COMPONENT_PATHS = (
 PACKAGE_NAMES = ("sddm", "sddm-wayland-sway", "waybar")
 RESOURCE_LIMIT_KEYS = {"memory.max", "memory.swap.max", "cpu.max", "pids.max"}
 RESOURCE_FINAL_KEYS = RESOURCE_LIMIT_KEYS | {"memory.peak", "memory.events", "cpu.stat"}
+FAILURE_CLAIMS = (
+    "passed", "guest_booted", "graphical_desktop_observed", "artifact_retained",
+    "independent_reboot_passed", "os_qualified", "release_qualified",
+    "signature_qualified",
+)
+INNER_FAILURE_KEYS = set(failure_record({}, "")).union({"limits", "cgroup_final"})
+SENSITIVE_PATTERNS = (
+    re.compile(r"(?is)-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----"),
+    re.compile(r"(?is)-----BEGIN [A-Z ]*PRIVATE KEY-----.*"),
+    re.compile(r"(?im)\bauthorization\s*:\s*(?:bearer|basic)\s+[^\r\n]*"),
+    re.compile(
+        r"(?im)\b[A-Z0-9_]*(?:PASSWORD|PASSWD|TOKEN|SECRET|API_KEY|"
+        r"PRIVATE_KEY|ACCESS_KEY)[A-Z0-9_]*\s*[:=][^\r\n]*"
+    ),
+    re.compile(r"(?i)\b(?:github_pat_|gh[pousr]_|glpat-)[A-Za-z0-9_-]+"),
+    re.compile(r"(?i)\bssh-(?:rsa|ed25519)\s+[A-Za-z0-9+/=]+(?:\s+[^\n]+)?"),
+)
+URL_PATTERN = re.compile(r"(?i)\b(?:https?|ssh)://[^\s\"'<>]+")
+ABSOLUTE_PATH_PATTERN = re.compile(r"(?<![A-Za-z0-9._-])/(?:[^\s\"'<>]+)")
 
 
 def source_tree(root, commit):
@@ -43,25 +65,167 @@ def source_tree(root, commit):
     return value
 
 
-def _resource_receipt(path):
-    """Retain only bounded cgroup facts; never copy arbitrary child output."""
-    if not path.exists() or path.is_symlink():
-        return None
-    info = path.lstat()
-    if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > 256*1024:
-        return None
+def _bounded_regular(path, maximum):
+    """Read one direct regular file without following links or blocking on specials."""
     try:
-        value = unique_json(path.read_bytes())
+        parent = path.parent.lstat()
+        info = path.lstat()
+    except OSError as error:
+        raise ValueError("Missing bounded appliance failure input") from error
+    if (path.parent.is_symlink() or not stat.S_ISDIR(parent.st_mode)
+            or path.is_symlink() or not stat.S_ISREG(info.st_mode)
+            or info.st_nlink != 1 or not 0 < info.st_size <= maximum):
+        raise ValueError("Unsafe bounded appliance failure input")
+    flags = os.O_RDONLY | os.O_CLOEXEC | os.O_NONBLOCK
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    directory_flags = os.O_RDONLY | os.O_CLOEXEC | os.O_DIRECTORY
+    if hasattr(os, "O_NOFOLLOW"):
+        directory_flags |= os.O_NOFOLLOW
+    directory = os.open(path.parent, directory_flags)
+    try:
+        opened_parent = os.fstat(directory)
+        if ((opened_parent.st_dev, opened_parent.st_ino)
+                != (parent.st_dev, parent.st_ino)):
+            raise ValueError("Appliance failure parent changed during validation")
+        descriptor = os.open(path.name, flags, dir_fd=directory)
+        try:
+            opened = os.fstat(descriptor)
+            if (not stat.S_ISREG(opened.st_mode) or opened.st_nlink != 1
+                    or (opened.st_dev, opened.st_ino, opened.st_size,
+                        opened.st_mtime_ns, opened.st_ctime_ns)
+                    != (info.st_dev, info.st_ino, info.st_size,
+                        info.st_mtime_ns, info.st_ctime_ns)):
+                raise ValueError("Appliance failure input changed during validation")
+            data = bytearray()
+            while len(data) <= maximum:
+                chunk = os.read(descriptor, min(65536, maximum + 1 - len(data)))
+                if not chunk:
+                    break
+                data.extend(chunk)
+            after = os.fstat(descriptor)
+            if (len(data) != info.st_size
+                    or (after.st_dev, after.st_ino, after.st_size,
+                        after.st_mtime_ns, after.st_ctime_ns)
+                    != (info.st_dev, info.st_ino, info.st_size,
+                        info.st_mtime_ns, info.st_ctime_ns)):
+                raise ValueError("Appliance failure input changed while reading")
+            return bytes(data)
+        finally:
+            os.close(descriptor)
+    finally:
+        os.close(directory)
+
+
+def _sanitize_diagnostic(raw, maximum):
+    """Return printable path-free text and whether any content was removed."""
+    if isinstance(raw, bytes):
+        text = raw.decode("utf-8", errors="replace")
+    elif isinstance(raw, str):
+        text = raw
+    else:
+        raise TypeError("Diagnostic input must be text or bytes")
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    redacted = "\ufffd" in text
+    text = text.replace("\ufffd", "?")
+    for pattern in SENSITIVE_PATTERNS:
+        changed, count = pattern.subn("<redacted>", text)
+        text, redacted = changed, redacted or count > 0
+    changed, count = URL_PATTERN.subn("<url>", text)
+    text, redacted = changed, redacted or count > 0
+    changed, count = ABSOLUTE_PATH_PATTERN.subn("<path>", text)
+    text, redacted = changed, redacted or count > 0
+    printable = "".join(
+        character
+        if character in "\n\t" or (ord(character) >= 32 and not 127 <= ord(character) <= 159)
+        else "?"
+        for character in text
+    )
+    redacted = redacted or printable != text
+    encoded = printable.encode("utf-8")
+    if len(encoded) > maximum:
+        printable = encoded[-maximum:].decode("utf-8", errors="ignore")
+        redacted = True
+    printable = printable.strip()
+    if len(printable.encode("utf-8")) > maximum:
+        raise ValueError("Sanitized appliance diagnostic exceeds its byte bound")
+    return printable, redacted
+
+
+def _failure_log(path, maximum):
+    try:
+        raw = _bounded_regular(path, maximum)
+    except (OSError, ValueError):
+        return None, True
+    # Redact the complete bounded input before selecting a tail. Otherwise a
+    # credential label just before the tail boundary could be discarded while
+    # its value was retained.
+    sanitized, redacted = _sanitize_diagnostic(raw, maximum)
+    excerpt, tail_redacted = _sanitize_diagnostic(sanitized, FAILURE_EXCERPT_BYTES)
+    redacted = redacted or tail_redacted
+    if not excerpt:
+        return None, False
+    return {
+        "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),
+        "excerpt": excerpt,
+        "truncated": len(raw) > FAILURE_EXCERPT_BYTES,
+        "redacted": redacted,
+    }, False
+
+
+def _failure_diagnostic(output, phase, source):
+    """Authenticate one result and sanitize its failure before private cleanup."""
+    if phase not in FAILURE_LOG_BOUNDS:
+        raise ValueError("Unknown appliance failure phase")
+    result_path = output / "result.json"
+    try:
+        raw = _bounded_regular(result_path, 256*1024)
+        value = unique_json(raw)
     except (OSError, ValueError, json.JSONDecodeError):
-        return None
-    limits, final = value.get("limits"), value.get("cgroup_final")
-    if (not isinstance(limits, dict) or set(limits) != RESOURCE_LIMIT_KEYS
-            or not isinstance(final, dict) or set(final) != RESOURCE_FINAL_KEYS):
-        return None
-    fields = list(limits.values()) + list(final.values())
-    if any(not isinstance(item, str) or not 0 < len(item) <= 4096 for item in fields):
-        return None
-    return {"limits": limits, "cgroup_final": final}
+        return None, None
+    receipt = {
+        "limits": value.get("limits"), "cgroup_final": value.get("cgroup_final"),
+    }
+    if not validate_resource_receipt(receipt):
+        return None, None
+    failure = value.get("failure")
+    try:
+        failure_bytes = failure.encode("utf-8") if isinstance(failure, str) else b""
+    except UnicodeError:
+        failure_bytes = b""
+    if (set(value) != INNER_FAILURE_KEYS
+            or value.get("schema") != 1 or value.get("source_binding") != source
+            or value.get("scope") != SCOPE
+            or any(value.get(name) is not False for name in FAILURE_CLAIMS)
+            or not isinstance(failure, str)
+            or not 0 < len(failure_bytes) <= 4096):
+        return None, receipt
+    failure_type, separator, message = failure.partition(":")
+    failure_type = failure_type.strip()
+    if (not separator or re.fullmatch(r"[A-Za-z][A-Za-z0-9_.]{0,63}", failure_type) is None):
+        return None, receipt
+    message, redacted = _sanitize_diagnostic(message, 4096)
+    if not message:
+        message = failure_type
+    logs, rejected = {}, []
+    log_root = output / "evidence" if phase == "producer" else output
+    for name, maximum in FAILURE_LOG_BOUNDS[phase].items():
+        path = log_root / name
+        if not path.exists() and not path.is_symlink():
+            continue
+        item, refused = _failure_log(path, maximum)
+        if refused:
+            rejected.append(name)
+        elif item is not None:
+            logs[name] = item
+    return {
+        "result": {
+            "bytes": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),
+            "failure_type": failure_type, "message": message, "redacted": redacted,
+        },
+        "logs": logs,
+        "rejected": sorted(rejected),
+    }, receipt
 
 
 def _remove_local_output(path):
@@ -266,7 +430,7 @@ def _produce_appliance(root, group, podman, image_id, disk, source, containers, 
     parent = "/" + str(group.relative_to("/sys/fs/cgroup"))
     common = ["--pull=never", "--network=none", "--pid=private", "--read-only",
               "--user=10001:10001", "--cap-drop=ALL", "--security-opt=no-new-privileges",
-              "--memory=3g", "--memory-swap=3g", "--cpus=2", "--pids-limit=64",
+              "--memory=4g", "--memory-swap=4g", "--cpus=2", "--pids-limit=64",
               "--cgroup-parent=" + parent, "--env=LANG=C.UTF-8", "--env=PYTHONDONTWRITEBYTECODE=1"]
     producer_name = "symbi-interactive-appliance-producer"
     containers.append(producer_name)
@@ -368,15 +532,23 @@ def produce_appliance(root, group, podman, image_id, disk, source_binding, conta
             raise RuntimeError("Appliance stage cleanup incomplete")
         return result
     except Exception as error:
-        resources = {}
+        resources, diagnostics = {}, {}
         if stage.exists() and not stage.is_symlink():
-            for name, path in (
-                ("producer", stage / "output/result.json"),
-                ("reboot", stage / "reboot-output/result.json"),
+            for name, output in (
+                ("producer", stage / "output"),
+                ("reboot", stage / "reboot-output"),
             ):
-                receipt = _resource_receipt(path)
+                try:
+                    diagnostic, receipt = _failure_diagnostic(output, name, source)
+                except (OSError, ValueError, TypeError, UnicodeError, json.JSONDecodeError):
+                    # Child output is untrusted failure evidence. It may remove
+                    # diagnostics, but it must never interrupt cleanup or the
+                    # controller's source-bound negative receipt.
+                    diagnostic, receipt = None, None
                 if receipt is not None:
                     resources[name] = receipt
+                if diagnostic is not None:
+                    diagnostics[name] = diagnostic
         cleanup = {
             "stage_directory_removed": _remove_local_output(stage),
             "user_artifact_absent": _remove_local_output(artifact_output),
@@ -385,6 +557,7 @@ def produce_appliance(root, group, podman, image_id, disk, source_binding, conta
         }
         failure = controller_failure_record(
             source, progress["stage"], type(error).__name__, cleanup, resources,
+            diagnostics,
         )
         _write_controller_record(evidence, failure)
         raise
@@ -431,9 +604,9 @@ def finalize_failed_appliance_evidence(root):
     try:
         exact = controller_failure_record(
             source, result.get("stage"), result.get("failure"),
-            result.get("cleanup"), result.get("resources"),
+            result.get("cleanup"), result.get("resources"), result.get("diagnostics"),
         )
-    except ValueError:
+    except (TypeError, UnicodeError, ValueError):
         exact = None
     children = tuple(path.name for path in evidence.iterdir())
     if (result == exact and children == ("result.json",)

@@ -14,12 +14,16 @@ from unittest import mock
 
 import yaml
 
-from image.appliance.contract import (ARTIFACT_NAME, SCOPE, SDDM_CONFIGURATION,
-    VIRTUAL_DISK_BYTES, build_manifest, failure_record, firmware_arguments,
-    installer_arguments, provision_qemu_arguments, reboot_qemu_arguments,
-    user_launch_arguments, validate_guest_report, validate_reboot_report,
-    validate_source_binding)
-from image.appliance.hosted import (_installed_desktop_bindings,
+from image.appliance.contract import (APPLIANCE_CONTAINER_LIMITS,
+    APPLIANCE_CONTAINER_MEMORY_BYTES, APPLIANCE_CONTROLLER_MARGIN_BYTES,
+    APPLIANCE_CONTROLLER_MEMORY_BYTES, ARTIFACT_NAME, FAILURE_EXCERPT_BYTES,
+    SCOPE, SDDM_CONFIGURATION,
+    VIRTUAL_DISK_BYTES, build_manifest, controller_failure_record, failure_record,
+    firmware_arguments, installer_arguments, provision_qemu_arguments,
+    reboot_qemu_arguments, user_launch_arguments, validate_guest_report,
+    validate_reboot_report, validate_source_binding)
+from image.appliance.hosted import (_failure_diagnostic, _installed_desktop_bindings,
+                                    _sanitize_diagnostic,
                                     invalidate_appliance_output, produce_appliance)
 from image.appliance.prerequisite import (DOWNLOAD_WORKING_MARGIN_BYTES,
     require_download_capacity, required_free_before_download,
@@ -49,6 +53,28 @@ def artifact():
     return {"name": ARTIFACT_NAME, "bytes": 4096, "sha256": "f"*64,
             "format": "qcow2", "compression": "qcow2-zlib-clusters",
             "virtual_bytes": VIRTUAL_DISK_BYTES}
+
+
+def child_failure(reason="RuntimeError: QEMU could not allocate guest memory"):
+    source = source_binding()
+    result = failure_record(source, reason)
+    result.update({
+        "limits": dict(APPLIANCE_CONTAINER_LIMITS),
+        "cgroup_final": {
+            **APPLIANCE_CONTAINER_LIMITS,
+            "memory.peak": str(3 * 1024**3),
+            "memory.events": (
+                "low 0\nhigh 0\nmax 17\noom 0\noom_kill 0\noom_group_kill 0\n"
+                "sock_throttled 0\n"
+            ),
+            "cpu.stat": (
+                "usage_usec 200\nuser_usec 100\nsystem_usec 100\nnr_periods 2\n"
+                "nice_usec 0\ncore_sched.force_idle_usec 0\nnr_throttled 0\n"
+                "throttled_usec 0\nnr_bursts 0\nburst_usec 0\n"
+            ),
+        },
+    })
+    return result
 
 
 def guest(expected):
@@ -253,6 +279,378 @@ class InteractiveApplianceContract(unittest.TestCase):
                     "release_qualified", "signature_qualified"):
             self.assertIs(record[key], False, key)
 
+    def test_appliance_containers_use_exact_four_gib_with_outer_margin(self):
+        self.assertEqual(APPLIANCE_CONTAINER_MEMORY_BYTES, 4 * 1024**3)
+        self.assertEqual(APPLIANCE_CONTROLLER_MEMORY_BYTES, 5 * 1024**3)
+        self.assertEqual(APPLIANCE_CONTROLLER_MARGIN_BYTES, 1024**3)
+        self.assertEqual(APPLIANCE_CONTAINER_LIMITS, {
+            "memory.max": "4294967296", "memory.swap.max": "0",
+            "cpu.max": "200000 100000", "pids.max": "64",
+        })
+        hosted = (ROOT / "image/appliance/hosted.py").read_text()
+        self.assertIn('"--memory=4g", "--memory-swap=4g"', hosted)
+        self.assertNotIn('"--memory=3g", "--memory-swap=3g"', hosted)
+        for name in ("producer.py", "reboot.py"):
+            source = (ROOT / "image/appliance" / name).read_text()
+            self.assertIn("limits != APPLIANCE_CONTAINER_LIMITS", source)
+            self.assertNotIn("3221225472", source)
+        wrapper = (ROOT / "scripts/check-interactive-appliance.sh").read_text()
+        self.assertIn("--property=MemoryMax=5G", wrapper)
+        self.assertIn("--property=MemorySwapMax=0", wrapper)
+        atomic = (ROOT / "image/atomic/hosted.py").read_text()
+        self.assertIn("'memory.max':'5368709120'", atomic)
+
+    def test_child_failure_retains_only_redacted_digest_bound_diagnostics(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "output"
+            evidence = output / "evidence"
+            evidence.mkdir(parents=True)
+            result = child_failure(
+                "RuntimeError: failed at /home/runner/private token=topsecret "
+                "https://example.invalid/private"
+            )
+            raw_result = (json.dumps(result, indent=2) + "\n").encode()
+            (output / "result.json").write_bytes(raw_result)
+            qemu = (
+                b"qemu-system-x86_64: cannot allocate RAM at /home/runner/private "
+                b"password=hunter2\n"
+            )
+            serial = b"kernel: memory allocation failed without OOM kill\n"
+            (evidence / "provision-qemu.log").write_bytes(qemu)
+            (evidence / "provision-serial.log").write_bytes(serial)
+            (evidence / "unapproved.log").write_text("must not be retained")
+
+            diagnostic, receipt = _failure_diagnostic(output, "producer", source_binding())
+            self.assertIsNotNone(diagnostic)
+            self.assertEqual(receipt, {
+                "limits": result["limits"], "cgroup_final": result["cgroup_final"],
+            })
+            retained = json.dumps(diagnostic)
+            for forbidden in ("/home/runner", "topsecret", "hunter2",
+                              "example.invalid", "unapproved"):
+                self.assertNotIn(forbidden, retained)
+            self.assertTrue(diagnostic["result"]["redacted"])
+            self.assertEqual(diagnostic["result"]["sha256"],
+                             hashlib.sha256(raw_result).hexdigest())
+            self.assertEqual(diagnostic["logs"]["provision-qemu.log"]["sha256"],
+                             hashlib.sha256(qemu).hexdigest())
+            self.assertTrue(diagnostic["logs"]["provision-qemu.log"]["redacted"])
+            self.assertEqual(diagnostic["rejected"], [])
+
+            cleanup = {
+                "stage_directory_removed": True, "user_artifact_absent": True,
+                "screenshot_artifact_absent": True,
+                "non_controller_evidence_removed": True,
+            }
+            resources = {"producer": {
+                "limits": result["limits"], "cgroup_final": result["cgroup_final"],
+            }}
+            controller = controller_failure_record(
+                source_binding(), "producer", "CalledProcessError", cleanup,
+                resources, {"producer": diagnostic},
+            )
+            self.assertEqual(controller["diagnostics"]["producer"], diagnostic)
+            self.assertTrue(all(controller[name] is False for name in (
+                "passed", "guest_booted", "graphical_desktop_observed",
+                "artifact_retained", "independent_reboot_passed", "os_qualified",
+                "release_qualified", "signature_qualified",
+            )))
+            unsafe = copy.deepcopy(diagnostic)
+            unsafe["result"]["message"] = "token=must-not-escape"
+            with self.assertRaisesRegex(ValueError, "failure diagnostics"):
+                controller_failure_record(
+                    source_binding(), "producer", "CalledProcessError", cleanup,
+                    resources, {"producer": unsafe},
+                )
+            with self.assertRaisesRegex(ValueError, "failure diagnostics"):
+                controller_failure_record(
+                    source_binding(), "producer", "CalledProcessError", cleanup,
+                    {}, {"producer": diagnostic},
+                )
+
+    def test_child_failure_redacts_before_tail_selection(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "output"
+            evidence = output / "evidence"
+            evidence.mkdir(parents=True)
+            (output / "result.json").write_text(json.dumps(child_failure()) + "\n")
+            secret = b"s" * (FAILURE_EXCERPT_BYTES + 1024)
+            raw = (
+                b"AWS_SECRET_ACCESS_KEY=\"" + secret + b"\"\n"
+                b"password='two word secret'\n"
+                b"Authorization: Bearer bearer-value\n"
+                b"safe final diagnostic\n"
+            )
+            (evidence / "provision-qemu.log").write_bytes(raw)
+
+            diagnostic, receipt = _failure_diagnostic(
+                output, "producer", source_binding()
+            )
+            self.assertIsNotNone(receipt)
+            item = diagnostic["logs"]["provision-qemu.log"]
+            self.assertTrue(item["truncated"])
+            self.assertTrue(item["redacted"])
+            self.assertIn("safe final diagnostic", item["excerpt"])
+            retained = json.dumps(item)
+            for forbidden in (
+                "AWS_SECRET_ACCESS_KEY", "two word secret", "bearer-value",
+                "s" * 256,
+            ):
+                self.assertNotIn(forbidden, retained)
+
+    def test_child_failure_excerpt_is_utf8_bounded_and_control_free(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "output"
+            evidence = output / "evidence"
+            evidence.mkdir(parents=True)
+            result = child_failure()
+            (output / "result.json").write_text(json.dumps(result) + "\n")
+            raw = (
+                b"prefix\n" + "😀".encode("utf-8") * 5000
+                + b"\x7f\xc2\x80safe-end\n"
+            )
+            (evidence / "provision-qemu.log").write_bytes(raw)
+
+            diagnostic, receipt = _failure_diagnostic(
+                output, "producer", source_binding()
+            )
+            self.assertIsNotNone(receipt)
+            item = diagnostic["logs"]["provision-qemu.log"]
+            excerpt = item["excerpt"]
+            self.assertLessEqual(len(excerpt.encode("utf-8")), FAILURE_EXCERPT_BYTES)
+            self.assertNotIn("\ufffd", excerpt)
+            self.assertNotIn("\x7f", excerpt)
+            self.assertNotIn("\x80", excerpt)
+            self.assertIn("??safe-end", excerpt)
+
+        for character, suffix in (("¢", "x"), ("€", "xy"), ("😀", "x")):
+            with self.subTest(character=character):
+                width = len(character.encode("utf-8"))
+                raw = (
+                    character.encode("utf-8")
+                    * (FAILURE_EXCERPT_BYTES // width + 16)
+                    + suffix.encode("ascii")
+                )
+                excerpt, redacted = _sanitize_diagnostic(
+                    raw, FAILURE_EXCERPT_BYTES
+                )
+                self.assertTrue(redacted)
+                self.assertLessEqual(
+                    len(excerpt.encode("utf-8")), FAILURE_EXCERPT_BYTES
+                )
+                self.assertNotIn("\ufffd", excerpt)
+                self.assertTrue(excerpt.endswith(suffix))
+
+        invalid, redacted = _sanitize_diagnostic(
+            b"invalid-utf8:\xff\xfe\xf0\x28\x8c\x28", FAILURE_EXCERPT_BYTES
+        )
+        self.assertTrue(redacted)
+        self.assertNotIn("\ufffd", invalid)
+        self.assertEqual(invalid, "invalid-utf8:???(?(")
+
+    def test_child_failure_rejects_untyped_resource_text(self):
+        cases = (
+            ("memory.peak", 17),
+            ("memory.events", 17),
+            ("cpu.stat", 17),
+            ("memory.peak", "9" * 5000),
+        )
+        for name, value in cases:
+            with self.subTest(name=name, kind=type(value).__name__), \
+                    tempfile.TemporaryDirectory() as temporary:
+                output = Path(temporary) / "output"
+                evidence = output / "evidence"
+                evidence.mkdir(parents=True)
+                result = child_failure()
+                result["cgroup_final"][name] = value
+                (output / "result.json").write_text(json.dumps(result) + "\n")
+                self.assertEqual(
+                    _failure_diagnostic(output, "producer", source_binding()),
+                    (None, None),
+                )
+
+    def test_child_failure_rejects_links_specials_and_oversized_logs(self):
+        cases = ("symlink", "hardlink", "linked-directory", "fifo", "oversized")
+        for case in cases:
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as temporary:
+                output = Path(temporary) / "output"
+                evidence = output / "evidence"
+                evidence.mkdir(parents=True)
+                (output / "result.json").write_text(json.dumps(child_failure()) + "\n")
+                log = evidence / "provision-qemu.log"
+                if case == "symlink":
+                    target = evidence / "target.log"
+                    target.write_text("private")
+                    log.symlink_to(target.name)
+                elif case == "hardlink":
+                    target = evidence / "target.log"
+                    target.write_text("private")
+                    os.link(target, log)
+                elif case == "linked-directory":
+                    evidence.rmdir()
+                    target = output / "linked-evidence"
+                    target.mkdir()
+                    (target / log.name).write_text("private")
+                    evidence.symlink_to(target.name)
+                elif case == "fifo":
+                    os.mkfifo(log)
+                else:
+                    log.write_bytes(b"x" * (2 * 1024**2 + 1))
+                diagnostic, receipt = _failure_diagnostic(
+                    output, "producer", source_binding()
+                )
+                self.assertIsNotNone(receipt)
+                self.assertEqual(diagnostic["logs"], {})
+                self.assertEqual(diagnostic["rejected"], ["provision-qemu.log"])
+                self.assertNotIn("private", json.dumps(diagnostic))
+
+    def test_child_failure_rejects_unsafe_result_file_itself(self):
+        for case in ("symlink", "fifo", "oversized"):
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as temporary:
+                output = Path(temporary) / "output"
+                output.mkdir()
+                result = output / "result.json"
+                if case == "symlink":
+                    target = output / "target.json"
+                    target.write_text(json.dumps(child_failure()))
+                    result.symlink_to(target.name)
+                elif case == "fifo":
+                    os.mkfifo(result)
+                else:
+                    result.write_bytes(b"x" * (256 * 1024 + 1))
+                self.assertEqual(
+                    _failure_diagnostic(output, "producer", source_binding()),
+                    (None, None),
+                )
+
+    def test_child_failure_requires_exact_source_result_and_resources(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "output"
+            evidence = output / "evidence"
+            evidence.mkdir(parents=True)
+            result = child_failure()
+            result["source_binding"]["source_commit"] = "0" * 40
+            (output / "result.json").write_text(json.dumps(result) + "\n")
+            (evidence / "provision-qemu.log").write_text("must not escape")
+            diagnostic, receipt = _failure_diagnostic(
+                output, "producer", source_binding()
+            )
+            self.assertIsNone(diagnostic)
+            self.assertIsNotNone(receipt)
+
+        cleanup = {
+            "stage_directory_removed": True, "user_artifact_absent": True,
+            "screenshot_artifact_absent": True, "non_controller_evidence_removed": True,
+        }
+        result = child_failure()
+        resources = {"producer": {
+            "limits": dict(result["limits"]),
+            "cgroup_final": dict(result["cgroup_final"]),
+        }}
+        resources["producer"]["limits"]["memory.max"] = "3221225472"
+        resources["producer"]["cgroup_final"]["memory.max"] = "3221225472"
+        with self.assertRaisesRegex(ValueError, "resource receipt"):
+            controller_failure_record(
+                source_binding(), "producer", "CalledProcessError", cleanup, resources,
+            )
+
+    def test_controller_captures_child_cause_before_removing_private_stage(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+
+            def failed_producer(*arguments):
+                stage, progress = arguments[9], arguments[11]
+                output = stage / "output"
+                evidence = output / "evidence"
+                evidence.mkdir(parents=True)
+                progress["stage"] = "producer"
+                (output / "result.json").write_text(json.dumps(child_failure()) + "\n")
+                (evidence / "provision-qemu.log").write_text(
+                    "qemu-system-x86_64: cannot allocate guest RAM\n"
+                )
+                raise subprocess.CalledProcessError(1, ["podman", "run"])
+
+            with mock.patch("image.appliance.hosted._produce_appliance",
+                            side_effect=failed_producer):
+                with self.assertRaises(subprocess.CalledProcessError):
+                    produce_appliance(
+                        root, Path("/sys/fs/cgroup/test"), ["podman"], "image",
+                        Path("disk"), source_binding(), [], mock.Mock(),
+                    )
+            retained = json.loads(
+                (root / ".cache/interactive-appliance-evidence/result.json").read_text()
+            )
+            self.assertEqual(retained["stage"], "producer")
+            self.assertIn("producer", retained["resources"])
+            self.assertEqual(
+                retained["diagnostics"]["producer"]["result"]["failure_type"],
+                "RuntimeError",
+            )
+            self.assertIn(
+                "cannot allocate guest RAM",
+                retained["diagnostics"]["producer"]["logs"]["provision-qemu.log"]["excerpt"],
+            )
+            self.assertFalse((root / ".cache/interactive-appliance-stage").exists())
+            from image.appliance.hosted import finalize_failed_appliance_evidence
+            self.assertTrue(finalize_failed_appliance_evidence(root))
+            self.assertEqual(
+                json.loads(
+                    (root / ".cache/interactive-appliance-evidence/result.json").read_text()
+                ),
+                retained,
+            )
+
+    def test_malformed_child_diagnostic_cannot_interrupt_cleanup(self):
+        def scalar(result):
+            result["cgroup_final"]["memory.events"] = 17
+
+        def container(result):
+            result["cgroup_final"] = []
+
+        def surrogate(result):
+            result["failure"] = "RuntimeError: invalid surrogate \ud800"
+
+        for name, corrupt in (
+            ("scalar-resource", scalar),
+            ("container-resource", container),
+            ("surrogate-message", surrogate),
+        ):
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+
+                def failed_producer(*arguments):
+                    stage, progress = arguments[9], arguments[11]
+                    output = stage / "output"
+                    (output / "evidence").mkdir(parents=True)
+                    progress["stage"] = "producer"
+                    result = child_failure()
+                    corrupt(result)
+                    (output / "result.json").write_text(
+                        json.dumps(result, ensure_ascii=True) + "\n"
+                    )
+                    raise subprocess.CalledProcessError(1, ["podman", "run"])
+
+                with mock.patch(
+                    "image.appliance.hosted._produce_appliance",
+                    side_effect=failed_producer,
+                ):
+                    with self.assertRaises(subprocess.CalledProcessError):
+                        produce_appliance(
+                            root, Path("/sys/fs/cgroup/test"), ["podman"], "image",
+                            Path("disk"), source_binding(), [], mock.Mock(),
+                        )
+                retained = json.loads(
+                    (root / ".cache/interactive-appliance-evidence/result.json").read_text()
+                )
+                self.assertEqual(retained["stage"], "producer")
+                self.assertEqual(
+                    set(retained["resources"]),
+                    {"producer"} if name == "surrogate-message" else set(),
+                )
+                self.assertEqual(retained["diagnostics"], {})
+                self.assertTrue(all(retained["cleanup"].values()))
+                self.assertFalse((root / ".cache/interactive-appliance-stage").exists())
+
     def test_early_controller_failure_is_source_bound_path_free_and_all_false(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -288,6 +686,7 @@ class InteractiveApplianceContract(unittest.TestCase):
                 "non_controller_evidence_removed": True,
             })
             self.assertEqual(result["resources"], {})
+            self.assertEqual(result["diagnostics"], {})
             self.assertFalse((root / ".cache/interactive-appliance-artifact").exists())
             self.assertFalse((root / ".cache/interactive-appliance-evidence/display.ppm").exists())
 

@@ -7,11 +7,13 @@ import subprocess
 import time
 
 try:
-    from .contract import (ARTIFACT_NAME, SCOPE, VIRTUAL_DISK_BYTES, failure_record,
+    from .contract import (APPLIANCE_CONTAINER_LIMITS, ARTIFACT_NAME, SCOPE,
+                           VIRTUAL_DISK_BYTES, failure_record,
                            provision_qemu_arguments, sha256, unique_json,
                            validate_guest_report, validate_source_binding)
 except ImportError:  # Copied as a standalone hosted-container program.
-    from contract import (ARTIFACT_NAME, SCOPE, VIRTUAL_DISK_BYTES, failure_record,
+    from contract import (APPLIANCE_CONTAINER_LIMITS, ARTIFACT_NAME, SCOPE,
+                          VIRTUAL_DISK_BYTES, failure_record,
                           provision_qemu_arguments, sha256, unique_json,
                           validate_guest_report, validate_source_binding)
 
@@ -30,8 +32,7 @@ def main():
               for name in ("memory.max", "memory.swap.max", "cpu.max", "pids.max")}
     process = {key: value.strip() for key, value in
                (line.split(":", 1) for line in Path("/proc/self/status").read_text().splitlines() if ":" in line)}
-    if (limits != {"memory.max": "3221225472", "memory.swap.max": "0",
-                   "cpu.max": "200000 100000", "pids.max": "64"}
+    if (limits != APPLIANCE_CONTAINER_LIMITS
             or process["CapEff"] != "0000000000000000" or process["NoNewPrivs"] != "1"
             or not os.statvfs("/").f_flag & os.ST_RDONLY
             or not os.statvfs("/inputs/atomic.raw").f_flag & os.ST_RDONLY
