@@ -12,7 +12,10 @@ on:
           - discover
           - produce
 
+# Both modes share this job. Pinned workflow actions can use its read-only job
+# token; only the production step passes GITHUB_TOKEN to repository code.
 permissions:
+  actions: read
   contents: read
 
 concurrency:
@@ -29,10 +32,15 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Authenticate Ubuntu inputs and prepare an unselected candidate
+      - name: Authenticate and retain current Ubuntu metadata
+        if: ${{ inputs.mode == 'discover' }}
+        run: bash scripts/check-container-ubuntu-package-producer.sh discover
+
+      - name: Consume reviewed metadata and prepare an unselected candidate
+        if: ${{ inputs.mode == 'produce' }}
         env:
-          SYMBI_UBUNTU_PACKAGE_MODE: ${{ inputs.mode }}
-        run: bash scripts/check-container-ubuntu-package-producer.sh "$SYMBI_UBUNTU_PACKAGE_MODE"
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bash scripts/check-container-ubuntu-package-producer.sh produce
 
       - name: Retain raw authenticated producer evidence including failures
         if: always()
@@ -49,6 +57,16 @@ jobs:
         with:
           name: container-ubuntu-fixture-packages
           path: .cache/ubuntu-fixture-package-producer/output/candidate/
+          retention-days: 14
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Retain authenticated metadata for independent review
+        if: ${{ success() && inputs.mode == 'discover' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: container-ubuntu-fixture-metadata
+          path: .cache/ubuntu-fixture-package-producer/output/metadata/
           retention-days: 14
           compression-level: 0
           if-no-files-found: error

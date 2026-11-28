@@ -273,3 +273,41 @@ into the contract. A later `produce` dispatch remains
 unselected; selecting its real run, artifact and byte identities is a separate
 committed review, and only that can unblock an offline
 `docker build --network=none` change.
+
+## Retained metadata handoff
+
+The producer contract is reopened as schema 3 `pending-discovery` so the next
+discovery retains the authenticated repository bytes, rather than only their
+identities. A successful discovery publishes a dedicated artifact containing
+exactly seven flat private files: one bounded manifest, three InRelease files
+and the three Packages.xz files named by their signed Release rows. The
+manifest binds the manual run, attempt, head commit and tree, branch, discovery
+contract and pending lock while keeping authority, selection and every
+qualification claim false.
+
+A reviewer must bind the exact producer identity, artifact ID/name/size, the
+artifact API digest, an independently observed ZIP digest, the manifest hash,
+the discovery-contract hash, the lock hash and all six payload identities in
+the ready contract. The shared workflow job grants read-only `actions` and
+`contents` permissions in both modes, so pinned actions including checkout can
+use its job token. Discovery passes no `GITHUB_TOKEN` to repository code.
+Production passes `GITHUB_TOKEN` only to the pre-service transfer process. It
+validates the run and artifact API records, follows one token-free signed
+download URL on an allowlisted host, streams the exact ZIP under fixed member
+and expansion bounds, and accepts only the seven reviewed flat members. The
+transfer removes the token before the transient service starts, and the token
+is absent from its clean environment.
+
+Production never fetches an InRelease or Packages.xz from the live repository.
+It copies the retained private files through stable single-link descriptors,
+reruns `gpgv`, applies freshness at the production time, and rechecks the exact
+signed Packages.xz row before offline APT planning. The unselected package
+candidate records the complete retained-metadata provenance. Rootfs and bound
+package payload transfers remain separate authenticated operations. The exact
+private ZIP and scratch are left for disposal with the ephemeral runner; no
+post-transfer pathname deletion is attempted.
+
+The checked-in state is deliberately pending. A fresh exact-head discovery,
+independent artifact review, and a separate ready-state commit are required
+before production can run. No package candidate, image input, selection or
+qualification follows from this implementation alone.

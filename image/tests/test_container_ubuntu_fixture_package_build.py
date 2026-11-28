@@ -216,6 +216,22 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
                 ("apt_simulation", "3"), ("dpkg_plan", "4"),
             )},
             download_order=[row["sha256"] for row in package_rows],
+            metadata_provenance={
+                "producer_run_id": 123,
+                "producer_run_attempt": 1,
+                "producer_head_sha": "e" * 40,
+                "producer_head_tree": "d" * 40,
+                "producer_branch": "card/P0-05-retained-metadata",
+                "artifact_id": 456,
+                "artifact_name": "container-ubuntu-fixture-metadata",
+                "artifact_bytes": 789,
+                "artifact_api_sha256": "f" * 64,
+                "artifact_zip_sha256": "f" * 64,
+                "manifest_sha256": "0" * 64,
+                "discovery_contract_sha256": "1" * 64,
+                "selection_contract_sha256": "3" * 64,
+                "metadata_lock_sha256": "2" * 64,
+            },
         )
         return lock, manifest, metadata_contents, package_rows
 
@@ -2072,6 +2088,25 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
         malformed["verified_at"] = True
         with self.assertRaises(ValueError):
             build.validate_candidate_manifest(lock, malformed)
+        for field, value in (
+                ("producer_run_id", True),
+                ("producer_run_attempt", 0),
+                ("producer_head_sha", "e" * 39),
+                ("producer_head_tree", "D" * 40),
+                ("producer_branch", "../main"),
+                ("artifact_id", True),
+                ("artifact_name", "different"),
+                ("artifact_bytes", 0),
+                ("artifact_api_sha256", "0" * 64),
+                ("artifact_zip_sha256", "2" * 64),
+                ("manifest_sha256", "x" * 64),
+                ("discovery_contract_sha256", None),
+                ("selection_contract_sha256", True),
+                ("metadata_lock_sha256", True)):
+            malformed = copy.deepcopy(manifest)
+            malformed["metadata_provenance"][field] = value
+            with self.subTest(provenance=field), self.assertRaises(ValueError):
+                build.validate_candidate_manifest(lock, malformed)
         extra = copy.deepcopy(manifest)
         extra["producer"] = {"run_id": 1, "head_sha": "0" * 40}
         with self.assertRaises(ValueError):

@@ -69,9 +69,10 @@ class UbuntuHostedProducerTests(unittest.TestCase):
             "GITHUB_SHA": "a" * 40,
             "GITHUB_RUN_ID": "123",
             "GITHUB_RUN_ATTEMPT": "2",
+            "GITHUB_REF_NAME": "card/P0-05-retained-metadata",
             "GITHUB_WORKFLOW_REF": (
                 packages.REPOSITORY["full_name"] + "/" + hosted.WORKFLOW
-                + "@refs/heads/card/P0-05-package-producer"
+                + "@refs/heads/card/P0-05-retained-metadata"
             ),
         }
 
@@ -115,6 +116,26 @@ class UbuntuHostedProducerTests(unittest.TestCase):
                 "bytes": sequence + 10,
                 "sha256": format(sequence + 10, "064x"),
             }
+        contract["metadata_source"] = {
+            "state": "ready",
+            "producer": {
+                "run_id": 321,
+                "run_attempt": 1,
+                "head_sha": "a" * 40,
+                "head_tree": "b" * 40,
+                "branch": "card/P0-05-retained-metadata",
+            },
+            "artifact": {
+                "id": 654,
+                "name": "container-ubuntu-fixture-metadata",
+                "bytes": 987,
+                "api_sha256": "c" * 64,
+                "zip_sha256": "c" * 64,
+            },
+            "manifest_sha256": "d" * 64,
+            "discovery_contract_sha256": "e" * 64,
+            "lock_sha256": "f" * 64,
+        }
         return contract
 
     def test_offline_tree_has_an_empty_private_sourceparts_directory(self):
@@ -205,80 +226,41 @@ class UbuntuHostedProducerTests(unittest.TestCase):
             runner.run.assert_not_called()
             self.assertFalse((apt_root / "etc/apt/sources.list").exists())
 
-    def test_committed_contract_is_exact_reviewed_ready_pin_set(self):
-        self.assertEqual(self.committed_contract["schema"], 2)
-        self.assertEqual(self.committed_contract["state"], "ready")
+    def test_committed_contract_reopens_durable_metadata_discovery(self):
+        self.assertEqual(self.committed_contract["schema"], 3)
+        self.assertEqual(
+            self.committed_contract["state"], "pending-discovery")
         self.assertEqual(
             [row["mode"]
              for row in self.committed_contract["freshness_policy"]],
             ["immutable-release", "rolling-date", "rolling-date"],
         )
+        self.assertTrue(all(
+            pin[kind] == {"bytes": None, "sha256": None}
+            for pin in self.committed_contract["metadata_pins"]
+            for kind in ("inrelease", "packages_xz")))
         self.assertEqual(
-            self.committed_contract["metadata_pins"],
-            [
-                {
-                    "suite": "noble",
-                    "inrelease": {
-                        "bytes": 255850,
-                        "sha256": (
-                            "cdb2f31d809f589719a53c6ad15f255b27569c405"
-                            "9542ada282aaa21b8e164b0"
-                        ),
-                    },
-                    "packages_xz": {
-                        "bytes": 1401160,
-                        "sha256": (
-                            "2a6a199e1031a5c279cb346646d594993f35b1c03"
-                            "dd4a82aaa0323980dd92451"
-                        ),
-                    },
-                },
-                {
-                    "suite": "noble-updates",
-                    "inrelease": {
-                        "bytes": 126125,
-                        "sha256": (
-                            "9cbda1d9f46930f08664421bf29ef4b9fa79fed0e"
-                            "6db6fe46c4ab4b067e6b322"
-                        ),
-                    },
-                    "packages_xz": {
-                        "bytes": 1492208,
-                        "sha256": (
-                            "9e6336a8322f908dbeddcd2de57f19d22756fb11f"
-                            "161458f04204914ba85e6ff"
-                        ),
-                    },
-                },
-                {
-                    "suite": "noble-security",
-                    "inrelease": {
-                        "bytes": 126127,
-                        "sha256": (
-                            "a83c54bdbd784a0914b6cc94236c0a0a991cbbf2"
-                            "f3463d204a6d0dd57934cedf"
-                        ),
-                    },
-                    "packages_xz": {
-                        "bytes": 1230772,
-                        "sha256": (
-                            "5c947649225178b587da69bd15724dff4d22d17d9"
-                            "11f60abf7213534ea494a90"
-                        ),
-                    },
-                },
-            ],
-        )
+            self.committed_contract["metadata_source"]["state"], "pending")
+        self.assertTrue(all(
+            value is None
+            for name, group in (
+                ("producer", self.committed_contract["metadata_source"][
+                    "producer"]),
+                ("artifact", self.committed_contract["metadata_source"][
+                    "artifact"]),
+            )
+            for key, value in group.items()
+            if not (name == "artifact" and key == "name")))
         self.assertEqual(
-            self.committed_contract["scope"], hosted.READY_SCOPE)
+            self.committed_contract["scope"], hosted.PENDING_SCOPE)
         self.assertTrue(all(
             value is False
             for key, value in self.committed_contract["candidate"].items()
             if key != "state"
         ))
-        hosted.validate_mode(self.committed_contract, "produce")
+        hosted.validate_mode(self.committed_contract, "discover")
         with self.assertRaisesRegex(ValueError, "metadata pin state"):
-            hosted.validate_mode(self.committed_contract, "discover")
+            hosted.validate_mode(self.committed_contract, "produce")
 
     def test_contract_rejects_extra_fields_bool_ints_and_partial_pins(self):
         cases = []
@@ -369,6 +351,9 @@ class UbuntuHostedProducerTests(unittest.TestCase):
                 ("GITHUB_EVENT_NAME", "pull_request"),
                 ("GITHUB_REPOSITORY_ID", str(packages.REPOSITORY["id"] + 1)),
                 ("GITHUB_RUN_ATTEMPT", "true"),
+                ("GITHUB_WORKFLOW_REF",
+                 packages.REPOSITORY["full_name"] + "/" + hosted.WORKFLOW
+                 + "@refs/heads/main"),
                 ("RUNNER_ENVIRONMENT", "self-hosted")):
             environment = self.hosted_environment()
             environment[name] = value
@@ -1109,6 +1094,112 @@ class UbuntuHostedProducerTests(unittest.TestCase):
         self.assertEqual(
             inventory_ledger.calls[-1][-1], "target-index-byte-bound")
 
+    def test_retained_production_rechecks_signature_freshness_and_signed_index(self):
+        source = copy.deepcopy(packages.EXPECTED_SOURCES[1])
+        index_raw = b"retained signed package index"
+        inrelease_raw = b"retained signed InRelease envelope"
+        index_sha256 = hashlib.sha256(index_raw).hexdigest()
+        inrelease_sha256 = hashlib.sha256(inrelease_raw).hexdigest()
+        contract = self.ready_contract()
+        contract["metadata_pins"] = [{
+            "suite": source["suite"],
+            "inrelease": {
+                "bytes": len(inrelease_raw),
+                "sha256": inrelease_sha256,
+            },
+            "packages_xz": {
+                "bytes": len(index_raw),
+                "sha256": index_sha256,
+            },
+        }]
+        contract["freshness_policy"] = [
+            hosted.build.expected_freshness_policy(source)]
+        lock = copy.deepcopy(self.lock)
+        lock["sources"] = [source]
+        valid_status = self.gpg_status(
+            source["metadata"]["signer_fingerprint"])
+
+        def release(date, index_hash=index_sha256):
+            return (
+                "Origin: Ubuntu\nLabel: Ubuntu\n"
+                "Suite: noble-updates\nCodename: noble\n"
+                f"Date: {date}\n"
+                "Valid-Until: Sat, 05 Dec 2026 06:00:00 GMT\n"
+                "Architectures: amd64\nComponents: main\nSHA256:\n"
+                f" {index_hash} {len(index_raw)} "
+                "main/binary-amd64/Packages.xz\n"
+            ).encode()
+
+        cases = (
+            ("valid", valid_status,
+             release("Sat, 28 Nov 2026 05:00:00 GMT"), None),
+            ("signature", b"[GNUPG:] NEWSIG\n",
+             release("Sat, 28 Nov 2026 05:00:00 GMT"), "signature"),
+            ("freshness", valid_status,
+             release("Sun, 01 Nov 2026 05:00:00 GMT"), "age bound"),
+            ("signed-index", valid_status,
+             release("Sat, 28 Nov 2026 05:00:00 GMT", "0" * 64),
+             "reviewed pins"),
+        )
+        for name, status, release_raw, rejection in cases:
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as directory:
+                base = Path(directory)
+                work = base / "work"
+                evidence = base / "evidence"
+                retained = base / "retained"
+                for path in (work, evidence, retained):
+                    path.mkdir(mode=0o700)
+                inrelease_path = retained / "noble-updates.InRelease"
+                index_path = retained / "noble-updates.Packages.xz"
+                inrelease_path.write_bytes(inrelease_raw)
+                index_path.write_bytes(index_raw)
+                inrelease_path.chmod(0o600)
+                index_path.chmod(0o600)
+                retained_metadata = ({}, {
+                    ("noble-updates", "inrelease"): inrelease_path,
+                    ("noble-updates", "packages_xz"): index_path,
+                })
+
+                class Runner:
+                    def run(self, *_args, **_kwargs):
+                        return {
+                            "timed_out": False, "exit_status": 0,
+                        }, status, b""
+
+                with mock.patch.object(
+                        hosted, "fetch_exact",
+                        side_effect=AssertionError(
+                            "production refetched live repository metadata")) as fetch, \
+                        mock.patch.object(
+                            hosted.packages, "read_bounded_control_file",
+                            return_value=release_raw):
+                    if rejection is None:
+                        releases, indexes, results, _, _ = hosted._run_metadata(
+                            lock, contract, work, evidence, Runner(),
+                            hosted.datetime(
+                                2026, 11, 28, 6, 0,
+                                tzinfo=hosted.timezone.utc),
+                            ROOT / contract["retained_inputs"]["archive_keyring"],
+                            {"name": "archive_keyring", "bytes": 1,
+                             "sha256": "1" * 64},
+                            retained_metadata=retained_metadata)
+                        self.assertEqual(len(releases), 1)
+                        self.assertEqual(len(indexes), 1)
+                        self.assertEqual(results[0]["suite"], "noble-updates")
+                    else:
+                        with self.assertRaisesRegex(ValueError, rejection):
+                            hosted._run_metadata(
+                                lock, contract, work, evidence, Runner(),
+                                hosted.datetime(
+                                    2026, 11, 28, 6, 0,
+                                    tzinfo=hosted.timezone.utc),
+                                ROOT / contract["retained_inputs"][
+                                    "archive_keyring"],
+                                {"name": "archive_keyring", "bytes": 1,
+                                 "sha256": "1" * 64},
+                                retained_metadata=retained_metadata)
+                fetch.assert_not_called()
+
     def test_phase_ledger_rejects_mutation_order_duplicates_and_cross_binding(self):
         with tempfile.TemporaryDirectory() as directory:
             ledger, evidence, run, _, _ = self.ledger_fixture(
@@ -1535,10 +1626,13 @@ class UbuntuHostedProducerTests(unittest.TestCase):
             "dpkg-no-act": phase(b"dpkg", b""),
         }
         order = ["1" * 64, "2" * 64]
+        contract = self.ready_contract()
         manifest = {
             "package_count": 2,
             "package_bytes": 123,
             "download_order": order,
+            "metadata_provenance": hosted.metadata_artifact.provenance(
+                contract),
             "command_hashes": {
                 "apt_update": hosted._phase_hash(commands["apt-update"]),
                 "apt_uri_plan": hosted._phase_hash(commands["apt-uris"]),
@@ -1552,7 +1646,8 @@ class UbuntuHostedProducerTests(unittest.TestCase):
             "order_sha256": hashlib.sha256(
                 ("\n".join(order) + "\n").encode()).hexdigest(),
         }
-        hosted._validate_production_bindings(manifest, commands, download)
+        hosted._validate_production_bindings(
+            manifest, commands, download, contract)
         cases = []
         changed = copy.deepcopy(manifest)
         changed["command_hashes"]["apt_update"] = "0" * 64
@@ -1566,11 +1661,21 @@ class UbuntuHostedProducerTests(unittest.TestCase):
         changed_commands = copy.deepcopy(commands)
         changed_commands["dpkg-no-act"]["stderr"]["sha256"] = "3" * 64
         cases.append((manifest, changed_commands, download))
+        for field, value in (
+                ("producer_run_id", 322),
+                ("artifact_id", 655),
+                ("manifest_sha256", "6" * 64),
+                ("discovery_contract_sha256", "7" * 64),
+                ("selection_contract_sha256", "4" * 64),
+                ("metadata_lock_sha256", "5" * 64)):
+            changed = copy.deepcopy(manifest)
+            changed["metadata_provenance"][field] = value
+            cases.append((changed, commands, download))
         for candidate, rows, observed in cases:
             with self.subTest(candidate=candidate, observed=observed), \
                     self.assertRaises(ValueError):
                 hosted._validate_production_bindings(
-                    candidate, rows, observed)
+                    candidate, rows, observed, contract)
 
     def test_systemd_fallback_always_records_swap_and_oom_state(self):
         oom = self.systemd_result(
@@ -1812,11 +1917,13 @@ class UbuntuHostedProducerTests(unittest.TestCase):
             self.assertEqual(list(paths["evidence"].iterdir()), [])
             self.assertTrue(paths["evidence"].is_dir())
 
-    def test_workflow_is_manual_and_candidate_upload_is_production_only(self):
+    def test_workflow_is_manual_and_artifacts_are_mode_scoped(self):
         path = ROOT / ".github/workflows/ubuntu-fixture-packages.yml"
         document = yaml.safe_load(path.read_text())
         self.assertEqual(set(document[True]), {"workflow_dispatch"})
-        self.assertEqual(document["permissions"], {"contents": "read"})
+        self.assertEqual(
+            document["permissions"],
+            {"actions": "read", "contents": "read"})
         self.assertEqual(document["jobs"]["packages"]["runs-on"], "ubuntu-24.04")
         steps = document["jobs"]["packages"]["steps"]
         candidate = next(
@@ -1830,6 +1937,34 @@ class UbuntuHostedProducerTests(unittest.TestCase):
             step for step in steps
             if step.get("name", "").startswith("Retain raw authenticated"))
         self.assertEqual(evidence["if"], "always()")
+        discovery = next(
+            step for step in steps
+            if step.get("name")
+            == "Authenticate and retain current Ubuntu metadata")
+        self.assertEqual(
+            discovery["if"], "${{ inputs.mode == 'discover' }}")
+        self.assertNotIn("env", discovery)
+        production = next(
+            step for step in steps
+            if step.get("name")
+            == "Consume reviewed metadata and prepare an unselected candidate")
+        self.assertEqual(
+            production["if"], "${{ inputs.mode == 'produce' }}")
+        self.assertEqual(set(production["env"]), {"GITHUB_TOKEN"})
+        metadata = next(
+            step for step in steps
+            if step.get("name")
+            == "Retain authenticated metadata for independent review")
+        self.assertEqual(
+            metadata["if"],
+            "${{ success() && inputs.mode == 'discover' }}")
+        self.assertEqual(
+            metadata["with"]["name"],
+            "container-ubuntu-fixture-metadata")
+        self.assertEqual(
+            metadata["with"]["path"],
+            ".cache/ubuntu-fixture-package-producer/output/metadata/")
+        self.assertEqual(metadata["with"]["compression-level"], 0)
 
     def test_wrapper_has_exact_limits_zero_swap_and_no_network_phases(self):
         path = ROOT / "scripts/check-container-ubuntu-package-producer.sh"
@@ -1863,6 +1998,18 @@ class UbuntuHostedProducerTests(unittest.TestCase):
         self.assertNotIn("chown -R", text)
         self.assertNotIn('if [[ ! -e "$evidence/cgroup-final.json"', text)
         self.assertIn('if [[ "$mode" == discover ]]', text)
+        self.assertIn(
+            "python3 -m image.container.ubuntu_fixture_metadata", text)
+        self.assertIn('"GITHUB_TOKEN=$GITHUB_TOKEN"', text)
+        self.assertIn("unset GITHUB_TOKEN", text)
+        self.assertIn('"--metadata-input"', text)
+        self.assertIn('"GITHUB_REF_NAME=$GITHUB_REF_NAME"', text)
+        self.assertLess(
+            text.index("unset GITHUB_TOKEN"),
+            text.index('sudo systemd-run "${systemd_args[@]}"'))
+        clean_environment = text[
+            text.index("clean_env=("):text.index("producer_argv=(")]
+        self.assertNotIn("GITHUB_TOKEN", clean_environment)
         self.assertIn("systemd-fallback.json", text)
         self.assertIn(
             'sudo systemd-run "${systemd_args[@]}" /usr/bin/env -i '

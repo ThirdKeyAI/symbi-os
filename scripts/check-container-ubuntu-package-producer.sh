@@ -70,6 +70,41 @@ work_identity=$(verify_direct_directory "$work" "$cache")
 evidence_identity=$(verify_direct_directory "$evidence" "$cache")
 output_identity=$(verify_direct_directory "$output" "$cache")
 
+metadata_input=
+metadata_input_identity=
+if [[ "$mode" == produce ]]; then
+  if [[ -z "${GITHUB_TOKEN:-}" ]]; then
+    echo 'Production repository code requires GITHUB_TOKEN only for reviewed metadata transfer.' >&2
+    exit 1
+  fi
+  metadata_input="$cache/metadata-input"
+  set +e
+  env -i \
+    "PATH=/usr/bin:/bin" \
+    "HOME=$work" \
+    "LANG=C.UTF-8" \
+    "LC_ALL=C.UTF-8" \
+    "PYTHONDONTWRITEBYTECODE=1" \
+    "GITHUB_TOKEN=$GITHUB_TOKEN" \
+    python3 -m image.container.ubuntu_fixture_metadata \
+      --root "$root" --destination "$metadata_input" \
+      >"$evidence/metadata-transfer.json" \
+      2>"$evidence/metadata-transfer.stderr"
+  transfer_status=$?
+  set -e
+  unset GITHUB_TOKEN
+  if [[ $transfer_status -ne 0 ]]; then
+    printf 'retained metadata transfer failed with status %d\n' \
+      "$transfer_status" >&2
+    exit "$transfer_status"
+  fi
+  metadata_input_identity=$(
+    verify_direct_directory "$metadata_input" "$cache")
+elif [[ -n "${GITHUB_TOKEN:-}" ]]; then
+  echo 'Discovery refuses a workflow token.' >&2
+  exit 1
+fi
+
 systemd_args=(
   "--unit=$unit"
   "--wait"
@@ -132,6 +167,7 @@ clean_env=(
   "GITHUB_SHA=$GITHUB_SHA"
   "GITHUB_RUN_ID=$GITHUB_RUN_ID"
   "GITHUB_RUN_ATTEMPT=$GITHUB_RUN_ATTEMPT"
+  "GITHUB_REF_NAME=$GITHUB_REF_NAME"
   "GITHUB_WORKFLOW_REF=$GITHUB_WORKFLOW_REF"
 )
 producer_argv=(
@@ -150,6 +186,12 @@ producer_argv=(
   "--output"
   "$output"
 )
+if [[ "$mode" == produce ]]; then
+  producer_argv+=(
+    "--metadata-input"
+    "$metadata_input"
+  )
+fi
 
 set +e
 # The hosted account owns evidence; only the transient unit creation is sudo.
@@ -188,6 +230,10 @@ verify_direct_directory "$cache" "$cache_parent" "$cache_identity" >/dev/null
 verify_direct_directory "$work" "$cache" "$work_identity" >/dev/null
 verify_direct_directory "$evidence" "$cache" "$evidence_identity" >/dev/null
 verify_direct_directory "$output" "$cache" "$output_identity" >/dev/null
+if [[ "$mode" == produce ]]; then
+  verify_direct_directory \
+    "$metadata_input" "$cache" "$metadata_input_identity" >/dev/null
+fi
 
 validation=false
 if [[ $status -eq 0 && "$mode" == produce ]]; then

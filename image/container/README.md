@@ -351,3 +351,25 @@ References: [pinned Docker boundary and real-backend tests](https://github.com/T
 [pinned gVisor wrapper](https://github.com/ThirdKeyAI/Symbiont/blob/deddb9e997244d2289c217ad76b8fde0e9b0339b/crates/runtime/src/sandbox/gvisor.rs),
 [Docker daemon configuration](https://docs.docker.com/reference/cli/dockerd/),
 [gVisor Docker integration](https://gvisor.dev/docs/user_guide/quick_start/docker/).
+
+## Durable Ubuntu metadata review boundary
+
+The Ubuntu closure contract is now schema 3 and returns to
+`pending-discovery`. Its next manual discovery must publish a separate
+seven-member artifact containing the manifest plus the exact three InRelease
+and three signed Packages.xz files. A ready-state review binds the producer
+run/attempt/head/tree/branch, artifact identity and size, API and downloaded ZIP
+digests, manifest, discovery contract, pending lock and all six payload hashes.
+
+The shared workflow job grants read-only `actions` and `contents` permissions
+in both modes, so pinned workflow actions including checkout can use its job
+token. Discovery passes no `GITHUB_TOKEN` to repository code and its wrapper
+refuses one if injected. Production passes `GITHUB_TOKEN` only to the bounded
+pre-transfer repository process, which removes it before the transient service;
+it never enters the service's clean environment. The service consumes the
+reviewed private files without refetching live repository metadata, then
+rechecks signatures, production-time freshness and each signed index row.
+Candidate provenance retains the complete source selection and every authority,
+selection and qualification field remains false. A fresh discovery and
+reviewed promotion are still required; this code does not make a package or
+image candidate available.

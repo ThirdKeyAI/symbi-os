@@ -27,6 +27,7 @@ from urllib.request import Request
 from image.container import ubuntu_fixture_inputs as inputs
 from image.container import ubuntu_fixture_package_build as build
 from image.container import ubuntu_fixture_packages as packages
+from image.container import ubuntu_fixture_metadata as metadata_artifact
 
 
 CONTRACT_NAME = "ubuntu-fixture-package-producer.json"
@@ -34,7 +35,7 @@ WORKFLOW = ".github/workflows/ubuntu-fixture-packages.yml"
 CONTRACT_FIELDS = {
     "schema", "state", "repository", "workflow", "event", "runner",
     "limits", "timeouts", "retained_inputs", "freshness_policy",
-    "metadata_pins", "artifacts", "candidate", "scope",
+    "metadata_pins", "metadata_source", "artifacts", "candidate", "scope",
 }
 LIMIT_FIELDS = {
     "memory_max", "memory_swap_max", "cpu_max", "pids_max",
@@ -147,12 +148,12 @@ LEDGER_REJECTION_REASONS = {
 }
 
 PENDING_SCOPE = (
-    "Manual hosted discovery pending reviewed InRelease and Packages.xz byte "
-    "pins; no image consumer, selection or qualification"
+    "Manual hosted discovery pending a reviewed retained metadata artifact "
+    "and byte pins; no image consumer, selection or qualification"
 )
 READY_SCOPE = (
-    "Manual hosted producer for a pinned unselected Ubuntu package candidate; "
-    "no image consumer, selection or qualification"
+    "Manual hosted producer consuming selected retained metadata for an "
+    "unselected Ubuntu package candidate; no image consumer or qualification"
 )
 RESULT_SCOPE = (
     "Hosted Ubuntu package evidence or unselected candidate only; no image "
@@ -220,7 +221,7 @@ def validate_contract(root, contract, lock):
     root = Path(root).resolve(strict=True)
     inputs.validate_pending_lock(root, lock)
     require(type(contract) is dict and set(contract) == CONTRACT_FIELDS
-            and type(contract.get("schema")) is int and contract["schema"] == 2
+            and type(contract.get("schema")) is int and contract["schema"] == 3
             and contract.get("state") in {"pending-discovery", "ready"}
             and contract.get("repository") == packages.REPOSITORY
             and contract.get("workflow") == WORKFLOW
@@ -267,6 +268,8 @@ def validate_contract(root, contract, lock):
                 require(_strict_positive_int(payload.get("bytes"), maximum)
                         and packages.exact_hash(payload.get("sha256")),
                         "ready Ubuntu metadata contract has an incomplete pin")
+    metadata_artifact.validate_source_selection(
+        contract.get("metadata_source"), pending=pending)
     artifacts = contract.get("artifacts")
     require(type(artifacts) is dict and set(artifacts) == ARTIFACT_FIELDS
             and artifacts == {
@@ -318,12 +321,15 @@ def validate_hosted_environment(contract, mode, environ):
     run_id = environ.get("GITHUB_RUN_ID")
     attempt = environ.get("GITHUB_RUN_ATTEMPT")
     workflow_ref = environ.get("GITHUB_WORKFLOW_REF", "")
+    branch = environ.get("GITHUB_REF_NAME")
+    expected_workflow_ref = (
+        contract["repository"]["full_name"] + "/" + WORKFLOW
+        + "@refs/heads/" + branch) if metadata_artifact._branch(branch) else None
     require(packages.exact_hash(sha, 40)
             and isinstance(run_id, str) and run_id.isdigit() and int(run_id) > 0
             and isinstance(attempt, str) and attempt.isdigit()
             and int(attempt) > 0
-            and workflow_ref.startswith(
-                contract["repository"]["full_name"] + "/" + WORKFLOW + "@"),
+            and workflow_ref == expected_workflow_ref,
             "Ubuntu package producer run identity is malformed")
     return {
         "id": int(run_id),
@@ -1745,18 +1751,39 @@ def write_retention_record(evidence, evidence_identity, output, output_identity,
 
 
 def _copy_private(source, destination):
-    raw = source.read_bytes()
+    source_descriptor = os.open(
+        source, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
     descriptor = os.open(
         destination, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_CLOEXEC
         | os.O_NOFOLLOW, 0o600)
+    digest = hashlib.sha256()
+    total = 0
     try:
-        view = memoryview(raw)
-        while view:
-            count = os.write(descriptor, view)
-            require(count > 0, "Ubuntu producer private copy stalled")
-            view = view[count:]
+        before = os.fstat(source_descriptor)
+        require(stat.S_ISREG(before.st_mode) and before.st_nlink == 1,
+                "Ubuntu producer private copy source is unsafe")
+        while True:
+            block = os.read(source_descriptor, FETCH_CHUNK)
+            if not block:
+                break
+            total += len(block)
+            digest.update(block)
+            view = memoryview(block)
+            while view:
+                count = os.write(descriptor, view)
+                require(count > 0, "Ubuntu producer private copy stalled")
+                view = view[count:]
         os.fsync(descriptor)
+        after = os.fstat(source_descriptor)
+        require(total == before.st_size == after.st_size
+                and (before.st_dev, before.st_ino, before.st_mode,
+                     before.st_nlink, before.st_mtime_ns, before.st_ctime_ns)
+                == (after.st_dev, after.st_ino, after.st_mode,
+                    after.st_nlink, after.st_mtime_ns, after.st_ctime_ns),
+                "Ubuntu producer private copy source changed")
+        return {"bytes": total, "sha256": digest.hexdigest()}
     finally:
+        os.close(source_descriptor)
         os.close(descriptor)
 
 
@@ -1839,7 +1866,8 @@ def _run_rootfs(root, lock, contract, work, evidence, runner, retained,
 
 
 def _run_metadata(lock, contract, work, evidence, runner, verified_at,
-                  keyring_path, keyring_identity, ledger=None):
+                  keyring_path, keyring_identity, ledger=None,
+                  retained_metadata=None):
     releases = []
     indexes = []
     metadata_result = []
@@ -1852,13 +1880,22 @@ def _run_metadata(lock, contract, work, evidence, runner, verified_at,
         directory = work / ("metadata-" + suite)
         directory.mkdir(mode=0o700)
         inrelease_path = directory / (suite + "_InRelease")
-        inrelease_expected = None if contract["state"] == "pending-discovery" \
-            else pin["inrelease"]
-        inrelease = fetch_exact(
-            source["metadata"]["inrelease_url"], inrelease_path,
-            packages.MAX_METADATA_BYTES,
-            contract["timeouts"]["metadata_seconds"],
-            expected=inrelease_expected)
+        if contract["state"] == "pending-discovery":
+            require(retained_metadata is None,
+                    "Ubuntu discovery received retained production metadata")
+            inrelease = fetch_exact(
+                source["metadata"]["inrelease_url"], inrelease_path,
+                packages.MAX_METADATA_BYTES,
+                contract["timeouts"]["metadata_seconds"], expected=None)
+        else:
+            require(type(retained_metadata) is tuple
+                    and len(retained_metadata) == 2,
+                    "Ubuntu production lacks retained metadata")
+            _, retained_paths = retained_metadata
+            retained_inrelease = retained_paths[(suite, "inrelease")]
+            inrelease = _copy_private(retained_inrelease, inrelease_path)
+            require(inrelease == pin["inrelease"],
+                    "retained Ubuntu InRelease differs from reviewed pins")
         if ledger is not None:
             ledger.append(
                 "inrelease-download", suite,
@@ -1920,13 +1957,20 @@ def _run_metadata(lock, contract, work, evidence, runner, verified_at,
                 })
         index_path = directory / (
             suite + "_main_binary-amd64_Packages.xz")
-        index = fetch_exact(
-            source["packages_url"], index_path, packages.MAX_INDEX_BYTES,
-            contract["timeouts"]["metadata_seconds"],
-            expected={
-                "bytes": signed["index"]["bytes"],
-                "sha256": signed["index"]["sha256"],
-            })
+        expected_index = {
+            "bytes": signed["index"]["bytes"],
+            "sha256": signed["index"]["sha256"],
+        }
+        if contract["state"] == "pending-discovery":
+            index = fetch_exact(
+                source["packages_url"], index_path, packages.MAX_INDEX_BYTES,
+                contract["timeouts"]["metadata_seconds"],
+                expected=expected_index)
+        else:
+            retained_index = retained_metadata[1][(suite, "packages_xz")]
+            index = _copy_private(retained_index, index_path)
+            require(index == expected_index == pin["packages_xz"],
+                    "retained Ubuntu Packages.xz differs from signed index")
         if ledger is not None:
             ledger.append(
                 "packages-download", suite,
@@ -1993,8 +2037,12 @@ def _phase_hash(row):
         (row["stdout"]["sha256"] + "\n" + row["stderr"]["sha256"]).encode())
 
 
-def _validate_production_bindings(manifest, command_by_name, download):
+def _validate_production_bindings(manifest, command_by_name, download, contract):
     """Cross-bind raw phase evidence and package totals to the candidate."""
+    require(manifest.get("metadata_provenance")
+            == metadata_artifact.provenance(contract),
+            "Ubuntu production candidate metadata provenance differs from "
+            "the reviewed contract")
     phases = {
         "apt_update": "apt-update",
         "apt_uri_plan": "apt-uris",
@@ -2101,6 +2149,7 @@ def _produce(root, lock, contract, work, evidence, output, runner,
         verified_at=verified_at, base_status=status_binding, tools=tools,
         command_hashes=command_hashes,
         download_order=[row["sha256"] for row in package_rows],
+        metadata_provenance=metadata_artifact.provenance(contract),
     )
     package_inputs = {
         package["filename"]: downloaded[sequence]["path"]
@@ -2359,7 +2408,8 @@ def validate_result(result, mode, contract, lock, evidence, source_root,
                 and manifest["producer_passed"] is False
                 and sha256_bytes(raw) == candidate["manifest_sha256"],
                 "Ubuntu production candidate is not the exact unselected output")
-        _validate_production_bindings(manifest, command_by_name, download)
+        _validate_production_bindings(
+            manifest, command_by_name, download, contract)
     else:
         require(download == {"count": 0, "bytes": 0, "order_sha256": None}
                 and candidate == {
@@ -2369,7 +2419,8 @@ def validate_result(result, mode, contract, lock, evidence, source_root,
     return result
 
 
-def run(root, mode, work, evidence, output, environ=None):
+def run(root, mode, work, evidence, output, environ=None,
+        metadata_input=None):
     root = Path(root).resolve(strict=True)
     work = Path(work).resolve(strict=True)
     evidence = Path(evidence).resolve(strict=True)
@@ -2396,6 +2447,15 @@ def run(root, mode, work, evidence, output, environ=None):
                 "clean": True,
             })
         retained = validate_retained_inputs(root, contract, lock)
+        if mode == "produce":
+            require(metadata_input is not None,
+                    "Ubuntu production lacks its selected metadata artifact")
+            retained_metadata = metadata_artifact.load_selected_directory(
+                metadata_input, contract, lock)
+        else:
+            require(metadata_input is None,
+                    "Ubuntu discovery received a metadata artifact")
+            retained_metadata = None
         verified_at = datetime.now(timezone.utc).replace(microsecond=0)
         rootfs_archive, rootfs_result = _run_rootfs(
             root, lock, contract, work, evidence, runner, retained, ledger)
@@ -2403,7 +2463,8 @@ def run(root, mode, work, evidence, output, environ=None):
             _run_metadata(
                 lock, contract, work, evidence, runner, verified_at,
                 root / contract["retained_inputs"]["archive_keyring"],
-                retained["archive_keyring"], ledger)
+                retained["archive_keyring"], ledger,
+                retained_metadata=retained_metadata)
         if mode == "produce":
             download, candidate = _produce(
                 root, lock, contract, work, evidence, output, runner,
@@ -2447,6 +2508,10 @@ def run(root, mode, work, evidence, output, environ=None):
                 "scope": "Authenticated current metadata for review; not a pin",
             }
             _write_json(evidence / "discovery.json", discovery)
+            metadata_artifact.write_discovery_artifact(
+                output / "metadata", contract, lock, run_identity,
+                environ["GITHUB_REF_NAME"], verified_at, metadata_result,
+                metadata_inputs)
         return result
     except Exception as caught:
         error = type(caught).__name__ + ": " + str(caught)
@@ -2480,6 +2545,7 @@ def main(argv=None):
     execute.add_argument("--work", type=Path, required=True)
     execute.add_argument("--evidence", type=Path, required=True)
     execute.add_argument("--output", type=Path, required=True)
+    execute.add_argument("--metadata-input", type=Path)
     validate = subparsers.add_parser("validate-output")
     validate.add_argument("--root", type=Path, required=True)
     validate.add_argument("--candidate", type=Path, required=True)
@@ -2501,7 +2567,8 @@ def main(argv=None):
     try:
         if args.command == "run":
             result = run(
-                args.root, args.mode, args.work, args.evidence, args.output)
+                args.root, args.mode, args.work, args.evidence, args.output,
+                metadata_input=args.metadata_input)
         elif args.command == "validate-output":
             result = validate_output(args.root, args.candidate, args.evidence)
         elif args.command == "resource-fallback":

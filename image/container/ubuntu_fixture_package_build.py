@@ -3,6 +3,8 @@
 The functions in this module are producer-side only.  They authenticate signed
 Release text, bind one Packages.xz per reviewed suite, bind apt's file-only URI
 and simulation plans to exact package rows, and stream exact package payloads.
+Each candidate also binds the reviewed retained-metadata producer, artifact,
+manifest, discovery/selection contracts and package-input lock.
 The resulting manifest is always an unselected candidate with every
 qualification claim false.  The manual hosted producer may invoke it after
 reviewed metadata pins are complete, but no image consumer imports it and it
@@ -98,7 +100,14 @@ CANDIDATE_FIELDS = {
     "contract_sha256", "rootfs", "package_request", "sources",
     "verified_at", "release_metadata", "package_indexes", "package_count",
     "package_bytes", "packages", "base_status", "tools", "command_hashes",
-    "download_order", "verification", "scope",
+    "download_order", "metadata_provenance", "verification", "scope",
+}
+METADATA_PROVENANCE_FIELDS = {
+    "producer_run_id", "producer_run_attempt", "producer_head_sha",
+    "producer_head_tree", "producer_branch", "artifact_id", "artifact_name",
+    "artifact_bytes", "artifact_api_sha256", "artifact_zip_sha256",
+    "manifest_sha256", "discovery_contract_sha256",
+    "selection_contract_sha256", "metadata_lock_sha256",
 }
 
 
@@ -2118,6 +2127,41 @@ def validate_candidate_manifest(lock, manifest):
     require(isinstance(order, list) and len(order) == len(package_hashes)
             and len(order) == len(set(order)) and set(order) == set(package_hashes),
             "Ubuntu sequential package download order is incomplete")
+    provenance = manifest.get("metadata_provenance")
+    require(isinstance(provenance, dict)
+            and set(provenance) == METADATA_PROVENANCE_FIELDS
+            and type(provenance.get("producer_run_id")) is int
+            and provenance["producer_run_id"] > 0
+            and type(provenance.get("producer_run_attempt")) is int
+            and provenance["producer_run_attempt"] > 0
+            and packages.exact_hash(provenance.get("producer_head_sha"), 40)
+            and packages.exact_hash(provenance.get("producer_head_tree"), 40)
+            and isinstance(provenance.get("producer_branch"), str)
+            and 0 < len(provenance["producer_branch"].encode()) <= 255
+            and not provenance["producer_branch"].startswith("/")
+            and not provenance["producer_branch"].endswith("/")
+            and ".." not in provenance["producer_branch"]
+            and "//" not in provenance["producer_branch"]
+            and re.fullmatch(
+                r"[A-Za-z0-9._/-]+", provenance["producer_branch"])
+            is not None
+            and type(provenance.get("artifact_id")) is int
+            and provenance["artifact_id"] > 0
+            and provenance.get("artifact_name")
+            == "container-ubuntu-fixture-metadata"
+            and type(provenance.get("artifact_bytes")) is int
+            and 0 < provenance["artifact_bytes"] <= packages.MAX_ARTIFACT_BYTES
+            and packages.exact_hash(provenance.get("artifact_api_sha256"))
+            and packages.exact_hash(provenance.get("artifact_zip_sha256"))
+            and provenance["artifact_api_sha256"]
+            == provenance["artifact_zip_sha256"]
+            and packages.exact_hash(provenance.get("manifest_sha256"))
+            and packages.exact_hash(
+                provenance.get("discovery_contract_sha256"))
+            and packages.exact_hash(
+                provenance.get("selection_contract_sha256"))
+            and packages.exact_hash(provenance.get("metadata_lock_sha256")),
+            "Ubuntu candidate retained metadata provenance is incomplete")
     verification = manifest.get("verification")
     require(isinstance(verification, dict)
             and set(verification) == VERIFICATION_FIELDS
@@ -2127,7 +2171,8 @@ def validate_candidate_manifest(lock, manifest):
 
 
 def candidate_manifest(lock, releases, indexes, package_rows, *, verified_at,
-                       base_status, tools, command_hashes, download_order):
+                       base_status, tools, command_hashes, download_order,
+                       metadata_provenance):
     require(isinstance(verified_at, datetime) and verified_at.tzinfo is not None,
             "Ubuntu candidate verification time is invalid")
     manifest = {
@@ -2150,6 +2195,7 @@ def candidate_manifest(lock, releases, indexes, package_rows, *, verified_at,
         "tools": tools,
         "command_hashes": command_hashes,
         "download_order": download_order,
+        "metadata_provenance": metadata_provenance,
         # Hash-only observations cannot prove that a hosted command ran.  The
         # dormant candidate therefore makes no verification claim; a later
         # producer must bind raw results, tool fds, argv and input identities.
