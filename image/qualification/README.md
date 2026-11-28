@@ -177,6 +177,20 @@ fails, bounded regular evidence is retained without either private leaf, and
 the root parent removes its identity-bound private storage only after verifying
 exact Podman-container absence.
 
+Before the fixed 30-second by-id device wait can fail, a credential-free,
+image-owned helper records one diagnostic-only JSON line on the retained serial
+console. It inventories at most eight whole disks from a bounded 64-entry sysfs
+view and records their read-only state, parent and event serials, transport
+subsystem and driver, exact uevent properties, and bounded `udevadm info`
+properties and hashes. It also records the installed rule hash and shape, the
+fixed link before and after a ten-second settle, and whether udev's database
+mentions that link. The record keeps `qualified` and `selector_applied` false;
+it neither creates a link nor chooses a kernel device, and the mount still
+requires only `/dev/disk/by-id/virtio-SYMBIQUAL`.
+The controller treats this record as optional failure context: malformed or
+missing diagnostics cannot replace the primary failure or prevent final cgroup
+and result retention. Process-control interrupts still propagate.
+
 When executable-link access remains denied, the kernel signals above cannot
 distinguish a same-task re-exec with identical argv. The authenticated QEMU
 binary from the read-only controller image is therefore trusted controller code;

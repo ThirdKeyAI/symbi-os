@@ -26,6 +26,7 @@ QUALIFICATION_FILES = {
     "source_mount.py": "image/qualification/source_mount.py",
     "symbi_mountinfo.py": "image/qualification/symbi_mountinfo.py",
     "fstab.extra": "image/qualification/fstab.extra",
+    "d.service": "image/qualification/d.service",
     "m.service": "image/qualification/m.service",
     "p.service": "image/qualification/p.service",
     "q.service": "image/qualification/q.service",

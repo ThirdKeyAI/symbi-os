@@ -54,6 +54,10 @@ QMP_SOURCE_QDEV = (
 SOURCE_DEVICE_LINK = "/dev/disk/by-id/virtio-SYMBIQUAL"
 SOURCE_SERIAL = "SYMBIQUAL"
 ROOT_SERIAL = "SYMBIROOT"
+SOURCE_DIAGNOSTIC_PREFIX = b"SYMBI_SOURCE_DIAGNOSTIC="
+MAX_SOURCE_DIAGNOSTIC_BYTES = 32 * 1024
+SOURCE_DIAGNOSTIC_RULE_SHA256 = (
+    "0158d5f15b022e0f7404a82283c0b878e04c79e117437ed3bf20f03e5cc79732")
 QMP_TOPOLOGY = {
     "schema": 1,
     "strict_boot": True,
@@ -111,6 +115,245 @@ def unique_json(raw):
     if not isinstance(result, dict):
         raise ValueError("qualification report must be a JSON object")
     return result
+
+
+def _diagnostic_text(value, maximum=4096, *, optional=False):
+    if optional and value is None:
+        return None
+    if (not isinstance(value, str) or not value
+            or len(value.encode("utf-8")) > maximum
+            or any(ord(character) < 0x20 and character != "\t"
+                   for character in value)):
+        raise ValueError("invalid source diagnostic text")
+    return value
+
+
+def _diagnostic_fullmatch(pattern, value):
+    """Match only text so malformed diagnostics fail as validation errors."""
+    return isinstance(value, str) and re.fullmatch(pattern, value) is not None
+
+
+def _diagnostic_properties(value):
+    if (not isinstance(value, dict) or len(value) > 128
+            or any(not _diagnostic_fullmatch(r"[A-Z0-9_]{1,128}", key)
+                   or _diagnostic_text(item, optional=True) is None
+                   for key, item in value.items())):
+        raise ValueError("invalid source diagnostic properties")
+    return value
+
+
+def _diagnostic_link(value):
+    keys = {"exists", "is_symlink", "uid", "gid", "nlink", "target", "resolved"}
+    if (not isinstance(value, dict) or set(value) != keys
+            or type(value["exists"]) is not bool
+            or type(value["is_symlink"]) is not bool
+            or any(type(value[name]) not in (int, type(None))
+                   for name in ("uid", "gid", "nlink"))
+            or any(item is not None and _diagnostic_text(item) is None
+                   for item in (value["target"], value["resolved"]))):
+        raise ValueError("invalid source diagnostic link")
+    if not value["exists"] and any(value[name] is not None
+                                    for name in ("uid", "gid", "nlink", "target", "resolved")):
+        raise ValueError("invalid absent source diagnostic link")
+    if not value["exists"] and value["is_symlink"]:
+        raise ValueError("invalid absent source diagnostic link")
+    if value["exists"]:
+        if (any(type(value[name]) is not int
+                for name in ("uid", "gid", "nlink"))
+                or not 0 <= value["uid"] <= 2**32 - 1
+                or not 0 <= value["gid"] <= 2**32 - 1
+                or not 1 <= value["nlink"] <= 2**31 - 1
+                or value["is_symlink"] is not (value["target"] is not None)
+                or (value["resolved"] is not None
+                    and (value["target"] is None
+                         or not value["resolved"].startswith("/")))):
+            raise ValueError("inconsistent source diagnostic link")
+    return value
+
+
+def _diagnostic_digest(value):
+    if not _diagnostic_fullmatch(r"[a-f0-9]{64}", value):
+        raise ValueError("invalid source diagnostic digest")
+    return value
+
+
+def validate_source_diagnostic(record):
+    """Validate one inert guest observation without using it as a selector."""
+    fixed = {"schema": 1, "purpose": "diagnostic-only", "qualified": False,
+             "selector_applied": False, "product": "Symbi-Hosted-Landlock-Probe"}
+    if (not isinstance(record, dict)
+            or type(record.get("schema")) is not int or record["schema"] != 1
+            or record.get("purpose") != fixed["purpose"]
+            or record.get("qualified") is not False
+            or record.get("selector_applied") is not False
+            or record.get("product") != fixed["product"]):
+        raise ValueError("invalid source diagnostic record")
+    if "diagnostic_error" in record:
+        if set(record) != {*fixed, "diagnostic_error"}:
+            raise ValueError("invalid source diagnostic error record")
+        _diagnostic_text(record["diagnostic_error"], 512)
+        return record
+    required = {*fixed, "source_link_path", "whole_disks", "rule",
+                "link_before_settle", "link_after_settle", "settle", "diagnosis"}
+    if set(record) != required or record["source_link_path"] != SOURCE_DEVICE_LINK:
+        raise ValueError("invalid source diagnostic record schema")
+
+    rule = record["rule"]
+    rule_keys = {"path", "exists", "regular", "root_owned", "mode", "bytes",
+                 "sha256", "expected_sha256", "exact_match"}
+    if (not isinstance(rule, dict) or set(rule) != rule_keys
+            or rule["path"] != "/usr/lib/udev/rules.d/61-symbi-qualification-source.rules"
+            or any(type(rule[name]) is not bool
+                   for name in ("exists", "regular", "root_owned", "exact_match"))
+            or rule["expected_sha256"] != SOURCE_DIAGNOSTIC_RULE_SHA256
+            or type(rule["bytes"]) not in (int, type(None))
+            or rule["mode"] is not None
+            and not _diagnostic_fullmatch(r"0[0-7]{3}", rule["mode"])
+            or rule["sha256"] is not None
+            and not _diagnostic_fullmatch(r"[a-f0-9]{64}", rule["sha256"])):
+        raise ValueError("invalid source diagnostic rule")
+    empty_digest = hashlib.sha256(b"").hexdigest()
+    if rule["exists"]:
+        if (rule["mode"] is None or type(rule["bytes"]) is not int
+                or not 0 <= rule["bytes"] <= 1024 or rule["sha256"] is None
+                or (not rule["regular"]
+                    and (rule["bytes"] != 0 or rule["sha256"] != empty_digest))):
+            raise ValueError("inconsistent source diagnostic rule")
+    elif (rule["regular"] or rule["root_owned"] or rule["mode"] is not None
+          or rule["bytes"] is not None or rule["sha256"] is not None
+          or rule["exact_match"]):
+        raise ValueError("inconsistent absent source diagnostic rule")
+    if rule["exact_match"] and (not rule["exists"] or not rule["regular"]
+                                or not rule["root_owned"] or rule["mode"] != "0644"
+                                or rule["bytes"] != 154
+                                or rule["sha256"] != SOURCE_DIAGNOSTIC_RULE_SHA256):
+        raise ValueError("inconsistent source diagnostic rule")
+
+    before = _diagnostic_link(record["link_before_settle"])
+    after = _diagnostic_link(record["link_after_settle"])
+    settle = record["settle"]
+    settle_keys = {"timeout_seconds", "returncode", "elapsed_ms", "stdout_bytes",
+                   "stdout_sha256", "stderr_bytes", "stderr_sha256"}
+    if (not isinstance(settle, dict) or set(settle) != settle_keys
+            or settle["timeout_seconds"] != 10
+            or type(settle["returncode"]) is not int
+            or not -255 <= settle["returncode"] <= 255
+            or type(settle["elapsed_ms"]) is not int
+            or not 0 <= settle["elapsed_ms"] <= 12_000
+            or any(type(settle[name]) is not int or not 0 <= settle[name] <= 4096
+                   for name in ("stdout_bytes", "stderr_bytes"))):
+        raise ValueError("invalid source diagnostic settle result")
+    _diagnostic_digest(settle["stdout_sha256"])
+    _diagnostic_digest(settle["stderr_sha256"])
+
+    disks = record["whole_disks"]
+    row_keys = {"name", "major_minor", "read_only", "sysfs_path", "event_serial",
+                "parent_serial", "transport_subsystem", "transport_driver",
+                "uevent", "udev"}
+    if not isinstance(disks, list) or not 1 <= len(disks) <= 8:
+        raise ValueError("invalid source diagnostic disk inventory")
+    for row in disks:
+        if (not isinstance(row, dict) or set(row) != row_keys
+                or not _diagnostic_fullmatch(
+                    r"[A-Za-z0-9][A-Za-z0-9_.!-]{0,127}",
+                    row.get("name", ""))
+                or not canonical_major_minor(row.get("major_minor"))
+                or type(row.get("read_only")) is not bool
+                or not _diagnostic_text(row.get("sysfs_path", "")).startswith("/")
+                or any(item is not None and _diagnostic_text(item, 128) is None
+                       for item in (row.get("event_serial"), row.get("parent_serial"),
+                                    row.get("transport_subsystem"),
+                                    row.get("transport_driver")))):
+            raise ValueError("invalid source diagnostic disk row")
+        uevent = row["uevent"]
+        udev = row["udev"]
+        if (not isinstance(uevent, dict)
+                or set(uevent) != {"bytes", "sha256", "properties"}
+                or type(uevent["bytes"]) is not int
+                or not 0 <= uevent["bytes"] <= 4096):
+            raise ValueError("invalid source diagnostic uevent")
+        _diagnostic_digest(uevent["sha256"])
+        _diagnostic_properties(uevent["properties"])
+        if (not isinstance(udev, dict)
+                or set(udev) != {"returncode", "stdout_bytes", "stdout_sha256",
+                                 "stderr_bytes", "stderr_sha256", "properties"}
+                or type(udev["returncode"]) is not int
+                or not -255 <= udev["returncode"] <= 255
+                or type(udev["stdout_bytes"]) is not int
+                or not 0 <= udev["stdout_bytes"] <= 16 * 1024
+                or type(udev["stderr_bytes"]) is not int
+                or not 0 <= udev["stderr_bytes"] <= 4096):
+            raise ValueError("invalid source diagnostic udev record")
+        _diagnostic_digest(udev["stdout_sha256"])
+        _diagnostic_digest(udev["stderr_sha256"])
+        _diagnostic_properties(udev["properties"])
+    if (len({row["name"] for row in disks}) != len(disks)
+            or len({row["major_minor"] for row in disks}) != len(disks)):
+        raise ValueError("ambiguous source diagnostic disk inventory")
+
+    read_only = [row for row in disks if row["read_only"]]
+    serial = [row for row in read_only if row["parent_serial"] == SOURCE_SERIAL]
+    pair = [row for row in serial if row["transport_subsystem"] == "virtio"
+            and row["transport_driver"] == "virtio_blk"]
+    database_link = any(SOURCE_DEVICE_LINK in
+                        row["udev"]["properties"].get("DEVLINKS", "").split()
+                        for row in read_only)
+    expected_diagnosis = {
+        "read_only_whole_disk_count": len(read_only),
+        "source_serial_on_read_only_disk": bool(serial),
+        "source_serial_driver_pair_count": len(pair),
+        "source_serial_driver_match": bool(pair),
+        "installed_rule_exact": rule["exact_match"] is True,
+        "udev_database_has_fixed_link": database_link,
+        "filesystem_link_before_settle": before["exists"] is True,
+        "filesystem_link_after_settle": after["exists"] is True,
+        "filesystem_link_appeared_during_settle": (
+            before["exists"] is False and after["exists"] is True),
+    }
+    diagnosis = record["diagnosis"]
+    count_keys = {"read_only_whole_disk_count",
+                  "source_serial_driver_pair_count"}
+    boolean_keys = set(expected_diagnosis) - count_keys
+    if (not isinstance(diagnosis, dict)
+            or set(diagnosis) != set(expected_diagnosis)
+            or any(type(diagnosis[name]) is not int
+                   or not 0 <= diagnosis[name] <= len(disks)
+                   for name in count_keys)
+            or any(type(diagnosis[name]) is not bool for name in boolean_keys)
+            or diagnosis != expected_diagnosis):
+        raise ValueError("inconsistent source diagnostic classification")
+    return record
+
+
+def extract_source_diagnostic(path):
+    """Extract the single marked record from the already bounded serial log."""
+    try:
+        raw = _bounded_bytes(path, 2 * 1024 * 1024)
+    except FileNotFoundError:
+        return None
+    matches = []
+    for line in raw.splitlines():
+        marker = line.find(SOURCE_DIAGNOSTIC_PREFIX)
+        if marker >= 0:
+            payload = line[marker + len(SOURCE_DIAGNOSTIC_PREFIX):]
+            if not payload or len(payload) > MAX_SOURCE_DIAGNOSTIC_BYTES:
+                raise ValueError("invalid bounded source diagnostic payload")
+            matches.append(unique_json(payload))
+    if not matches:
+        return None
+    if len(matches) != 1:
+        raise ValueError("ambiguous source diagnostic record")
+    return validate_source_diagnostic(matches[0])
+
+
+def retain_source_diagnostic(record, path, *, extractor=extract_source_diagnostic):
+    """Retain diagnostics without letting ordinary parse failures mask the result."""
+    try:
+        record["source_diagnostic"] = extractor(path)
+    except Exception as error:
+        # Process-control BaseExceptions still propagate out of the finalizer.
+        record["source_diagnostic_error"] = _cleanup_error(error)
+    return record
 
 
 def _qmp_message(stream):
@@ -948,6 +1191,7 @@ def firmware_arguments(directory):
         raise ValueError("fixed read-only firmware input mount required")
     files = [
         ("fstab.extra", "fstab.extra"),
+        ("systemd.extra-unit.d.service", "d.service"),
         ("systemd.extra-unit.m.service", "m.service"),
         ("systemd.extra-unit.p.service", "p.service"),
         ("systemd.extra-unit.q.service", "q.service"),
@@ -1280,6 +1524,7 @@ def main():
             except OSError as error:
                 record["pidfd_cleanup_error"] = _cleanup_error(error)
                 record["passed"] = False
+        retain_source_diagnostic(record, output / "serial.log")
         record["cgroup_final"] = {name: (group / name).read_text().strip()
                                     for name in (*limits, "memory.peak", "memory.events", "cpu.stat")}
         events = dict(line.split() for line in record["cgroup_final"]["memory.events"].splitlines())

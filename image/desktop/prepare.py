@@ -259,7 +259,8 @@ def main():
         record['payload'] = inventory(payload)
         record['overlay'] = {**inventory(context/'image/overlay'), **inventory(context/'image/desktop/session')}
         for name in ('usr/libexec/symbi-seed-config', 'usr/libexec/symbi-desktop-session',
-                     'usr/libexec/symbi-launch-desktop-services'):
+                     'usr/libexec/symbi-launch-desktop-services',
+                     'usr/libexec/symbi-qualification-source-diagnostic.py'):
             record['overlay'][name]['mode'] = 0o755
         record['context'] = inventory(context)
         record['required_packages'] = packages

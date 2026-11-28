@@ -5,6 +5,7 @@ from contextlib import redirect_stdout
 import errno
 import hashlib
 import io
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -26,16 +27,19 @@ from image.qualification.boot import (MAX_QMP_MESSAGE_BYTES,
                                       MAX_QMP_MESSAGES_PER_CALL,
                                       capture_process_identity,
                                       discard_control_socket, discard_overlay,
+                                      extract_source_diagnostic,
                                       firmware_arguments, overlay_command,
                                       observe_qmp_topology,
                                       path_identity, qemu_command, qmp_request,
                                       qmp_topology_observation,
                                       prepare_process_identity,
+                                      retain_source_diagnostic,
                                       retain_qmp_topology_failure,
                                       stop_child, validate_guest_report,
                                       validate_qmp_block_topology,
                                       validate_qmp_topology_observation,
                                       validate_qmp_topology_record,
+                                      validate_source_diagnostic,
                                       validate_peer_credentials,
                                       validate_process_state,
                                       validate_socket_info,
@@ -64,6 +68,12 @@ from image.qualification.source_mount import (EXPECTED_UDEV_RULE,
 
 
 ROOT = Path(__file__).resolve().parents[2]
+DIAGNOSTIC_PATH = (ROOT / "image/overlay/usr/libexec/"
+                   "symbi-qualification-source-diagnostic.py")
+DIAGNOSTIC_SPEC = importlib.util.spec_from_file_location(
+    "symbi_source_diagnostic", DIAGNOSTIC_PATH)
+source_diagnostic = importlib.util.module_from_spec(DIAGNOSTIC_SPEC)
+DIAGNOSTIC_SPEC.loader.exec_module(source_diagnostic)
 ROOT_BACKEND_QDEV = (
     "/machine/peripheral/symbi-atomic-root-device/virtio-backend")
 SOURCE_BACKEND_QDEV = (
@@ -193,6 +203,7 @@ class HostedLandlock(unittest.TestCase):
                  for index in range(1, len(args), 2)]
         self.assertEqual(set(names), {
             "opt/io.systemd.credentials/fstab.extra",
+            "opt/io.systemd.credentials/systemd.extra-unit.d.service",
             "opt/io.systemd.credentials/systemd.extra-unit.m.service",
             "opt/io.systemd.credentials/systemd.extra-unit.p.service",
             "opt/io.systemd.credentials/systemd.extra-unit.q.service",
@@ -230,6 +241,27 @@ class HostedLandlock(unittest.TestCase):
         self.assertEqual(prepare["ExecStart"],
                          ["/usr/bin/python3 %d/symbi-prepare.py %d/symbi-sysusers.conf"])
         mount = settings("m.service")
+        diagnostic = settings("d.service")
+        self.assertEqual(diagnostic["ExecStart"],
+                         ["/usr/libexec/symbi-qualification-source-diagnostic.py"])
+        self.assertNotIn("ImportCredential", diagnostic)
+        self.assertEqual(diagnostic["CapabilityBoundingSet"], [""])
+        self.assertEqual(diagnostic["AmbientCapabilities"], [""])
+        self.assertEqual(diagnostic["PrivateNetwork"], ["yes"])
+        self.assertEqual(diagnostic["ProtectKernelTunables"], ["yes"])
+        self.assertEqual(diagnostic["ProtectControlGroups"], ["yes"])
+        self.assertEqual(diagnostic["RestrictAddressFamilies"],
+                         ["AF_UNIX AF_NETLINK"])
+        self.assertEqual(diagnostic["MemoryMax"], ["64M"])
+        self.assertEqual(diagnostic["MemorySwapMax"], ["0"])
+        self.assertEqual(diagnostic["CPUQuota"], ["25%"])
+        self.assertEqual(diagnostic["TasksMax"], ["8"])
+        self.assertEqual(diagnostic["TimeoutStartSec"], ["20"])
+        self.assertEqual(diagnostic["StandardOutput"], ["journal+console"])
+        self.assertEqual(diagnostic["Before"], ["m.service"])
+        self.assertIn("d.service", mount["Wants"])
+        self.assertNotIn("d.service", mount.get("Requires", []))
+        self.assertIn("d.service", mount["After"])
         self.assertEqual(mount["CapabilityBoundingSet"], [""])
         self.assertEqual(mount["RequiresMountsFor"],
                          ["/run/symbi-qualification/source"])
@@ -524,6 +556,228 @@ class HostedLandlock(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "rule is absent"):
             validate_installed_udev_rule(
                 Path("/usr/lib/udev/rules.d/61-symbi-missing-fixture.rules"))
+
+        diagnostic = DIAGNOSTIC_PATH.read_bytes()
+        diagnostic_hash = hashlib.sha256(diagnostic).hexdigest()
+        self.assertTrue(DIAGNOSTIC_PATH.stat().st_mode & 0o111)
+        self.assertIn("qualification_diagnostic_sha256=" + diagnostic_hash, hardener)
+        self.assertIn('sha256sum < "$qualification_diagnostic"', hardener)
+
+    def diagnostic_disk(self, *, serial="SYMBIQUAL", driver="virtio_blk",
+                        devlinks=""):
+        empty = hashlib.sha256(b"").hexdigest()
+        properties = {"DEVNAME": "/dev/vdb", "DEVTYPE": "disk"}
+        if devlinks:
+            properties["DEVLINKS"] = devlinks
+        return {
+            "name": "vdb", "major_minor": "252:16", "read_only": True,
+            "sysfs_path": "/sys/devices/pci0000:00/virtio2/block/vdb",
+            "event_serial": None, "parent_serial": serial,
+            "transport_subsystem": "virtio", "transport_driver": driver,
+            "uevent": {"bytes": 0, "sha256": empty, "properties": {}},
+            "udev": {"returncode": 0, "stdout_bytes": 0,
+                     "stdout_sha256": empty, "stderr_bytes": 0,
+                     "stderr_sha256": empty, "properties": properties},
+        }
+
+    @staticmethod
+    def diagnostic_link(exists=False):
+        return {
+            "exists": exists, "is_symlink": exists, "uid": 0 if exists else None,
+            "gid": 0 if exists else None, "nlink": 1 if exists else None,
+            "target": "../../vdb" if exists else None,
+            "resolved": "/dev/vdb" if exists else None,
+        }
+
+    def diagnostic_record(self, disk=None, *, rule_exact=True, before=False,
+                          after=False):
+        disk = self.diagnostic_disk() if disk is None else disk
+        digest = hashlib.sha256(source_diagnostic.EXPECTED_RULE).hexdigest()
+        rule = {
+            "path": str(source_diagnostic.RULE), "exists": True,
+            "regular": True, "root_owned": True, "mode": "0644",
+            "bytes": len(source_diagnostic.EXPECTED_RULE), "sha256": digest,
+            "expected_sha256": digest, "exact_match": rule_exact,
+        }
+        empty = hashlib.sha256(b"").hexdigest()
+        settled = {"timeout_seconds": 10, "returncode": 0, "elapsed_ms": 25,
+                   "stdout_bytes": 0, "stdout_sha256": empty,
+                   "stderr_bytes": 0, "stderr_sha256": empty}
+        return source_diagnostic.build_record(
+            disks=[disk], rule=rule, before=self.diagnostic_link(before),
+            after=self.diagnostic_link(after), settled=settled)
+
+    def test_source_diagnostic_distinguishes_each_udev_boundary_without_selecting(self):
+        record = self.diagnostic_record()
+        observed = validate_source_diagnostic(record)
+        self.assertFalse(observed["selector_applied"])
+        self.assertFalse(observed["qualified"])
+        self.assertTrue(observed["diagnosis"]["source_serial_on_read_only_disk"])
+        self.assertTrue(observed["diagnosis"]["source_serial_driver_match"])
+        self.assertFalse(observed["diagnosis"]["udev_database_has_fixed_link"])
+        self.assertFalse(observed["diagnosis"]["filesystem_link_after_settle"])
+
+        missing_serial = self.diagnostic_record(
+            self.diagnostic_disk(serial=None))
+        self.assertFalse(missing_serial["diagnosis"]["source_serial_on_read_only_disk"])
+        wrong_driver = self.diagnostic_record(
+            self.diagnostic_disk(driver="virtio_scsi"))
+        self.assertTrue(wrong_driver["diagnosis"]["source_serial_on_read_only_disk"])
+        self.assertFalse(wrong_driver["diagnosis"]["source_serial_driver_match"])
+        wrong_rule = self.diagnostic_record(rule_exact=False)
+        self.assertFalse(wrong_rule["diagnosis"]["installed_rule_exact"])
+        database_only = self.diagnostic_record(self.diagnostic_disk(
+            devlinks="/dev/disk/by-id/virtio-SYMBIQUAL"))
+        self.assertTrue(database_only["diagnosis"]["udev_database_has_fixed_link"])
+        self.assertFalse(database_only["diagnosis"]["filesystem_link_after_settle"])
+        appeared = self.diagnostic_record(before=False, after=True)
+        self.assertTrue(appeared["diagnosis"]["filesystem_link_appeared_during_settle"])
+
+    def test_source_diagnostic_serial_record_is_bounded_and_non_authorizing(self):
+        record = self.diagnostic_record()
+        with tempfile.TemporaryDirectory() as directory:
+            serial = Path(directory) / "serial.log"
+            serial.write_bytes(
+                b"boot output\nSYMBI_SOURCE_DIAGNOSTIC="
+                + json.dumps(record, sort_keys=True, separators=(",", ":")).encode()
+                + b"\nmore boot output\n")
+            self.assertEqual(extract_source_diagnostic(serial), record)
+            serial.write_bytes(serial.read_bytes() + b"SYMBI_SOURCE_DIAGNOSTIC={}\n")
+            with self.assertRaisesRegex(ValueError, "ambiguous"):
+                extract_source_diagnostic(serial)
+        for field in ("qualified", "selector_applied"):
+            changed = copy.deepcopy(record)
+            changed[field] = True
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                validate_source_diagnostic(changed)
+        for path, wrong_value in (
+                (("schema",), True),
+                (("qualified",), 0),
+                (("selector_applied",), 0),
+                (("diagnosis", "read_only_whole_disk_count"), True),
+                (("diagnosis", "source_serial_on_read_only_disk"), 1),
+                (("diagnosis", "source_serial_driver_pair_count"), -1)):
+            changed = copy.deepcopy(record)
+            parent = changed
+            for component in path[:-1]:
+                parent = parent[component]
+            parent[path[-1]] = wrong_value
+            with self.subTest(path=path, wrong_value=wrong_value), \
+                    self.assertRaises(ValueError):
+                validate_source_diagnostic(changed)
+        malformed_links = (
+            {**record["link_before_settle"], "exists": True,
+             "is_symlink": True, "uid": 0, "gid": 0, "nlink": 1},
+            {**record["link_before_settle"], "exists": True,
+             "uid": -1, "gid": 0, "nlink": 1},
+            {**record["link_before_settle"], "exists": True,
+             "uid": 0, "gid": 0, "nlink": 0},
+        )
+        for link in malformed_links:
+            changed = copy.deepcopy(record)
+            changed["link_before_settle"] = link
+            with self.subTest(link=link), self.assertRaises(ValueError):
+                validate_source_diagnostic(changed)
+        malformed_rules = (
+            {**record["rule"], "bytes": -1, "exact_match": False},
+            {**record["rule"], "exists": False, "regular": False,
+             "root_owned": False, "exact_match": False},
+        )
+        for rule in malformed_rules:
+            changed = copy.deepcopy(record)
+            changed["rule"] = rule
+            with self.subTest(rule=rule), self.assertRaises(ValueError):
+                validate_source_diagnostic(changed)
+        changed = copy.deepcopy(record)
+        changed["diagnosis"]["filesystem_link_after_settle"] = True
+        with self.assertRaisesRegex(ValueError, "inconsistent"):
+            validate_source_diagnostic(changed)
+
+        string_paths = (
+            ("purpose",), ("product",), ("source_link_path",),
+            ("rule", "path"), ("rule", "mode"), ("rule", "sha256"),
+            ("rule", "expected_sha256"),
+            ("settle", "stdout_sha256"), ("settle", "stderr_sha256"),
+            ("whole_disks", 0, "name"),
+            ("whole_disks", 0, "major_minor"),
+            ("whole_disks", 0, "sysfs_path"),
+            ("whole_disks", 0, "event_serial"),
+            ("whole_disks", 0, "parent_serial"),
+            ("whole_disks", 0, "transport_subsystem"),
+            ("whole_disks", 0, "transport_driver"),
+            ("whole_disks", 0, "uevent", "sha256"),
+            ("whole_disks", 0, "udev", "stdout_sha256"),
+            ("whole_disks", 0, "udev", "stderr_sha256"),
+            ("whole_disks", 0, "udev", "properties", "DEVNAME"),
+        )
+        for path in string_paths:
+            for wrong_type in (1, True, {}, []):
+                changed = copy.deepcopy(record)
+                parent = changed
+                for component in path[:-1]:
+                    parent = parent[component]
+                parent[path[-1]] = wrong_type
+                with self.subTest(path=path, wrong_type=type(wrong_type).__name__), \
+                        self.assertRaises(ValueError):
+                    validate_source_diagnostic(changed)
+        changed = copy.deepcopy(record)
+        changed["whole_disks"][0]["udev"]["properties"] = {
+            1: "/dev/vdb"
+        }
+        with self.assertRaises(ValueError):
+            validate_source_diagnostic(changed)
+
+        primary = "TimeoutError: primary qualification failure"
+        for error in (TypeError("wrong diagnostic type"),
+                      KeyError("missing diagnostic key"),
+                      RuntimeError("diagnostic parser failure")):
+            retained = {"passed": False, "failure": primary}
+            retain_source_diagnostic(
+                retained, Path("unused"),
+                extractor=mock.Mock(side_effect=error))
+            self.assertEqual(retained["failure"], primary)
+            self.assertNotIn("source_diagnostic", retained)
+            self.assertTrue(retained["source_diagnostic_error"].startswith(
+                type(error).__name__ + ":"))
+        for error in (KeyboardInterrupt(), SystemExit(), GeneratorExit()):
+            retained = {"passed": False, "failure": primary}
+            with self.subTest(process_control=type(error).__name__), \
+                    self.assertRaises(type(error)):
+                retain_source_diagnostic(
+                    retained, Path("unused"),
+                    extractor=mock.Mock(side_effect=error))
+            self.assertEqual(retained["failure"], primary)
+
+    def test_source_diagnostic_observes_exact_sysfs_and_udev_properties(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            sys_block = root / "sys/class/block"
+            sys_block.mkdir(parents=True)
+            entry = sys_block / "vdb"
+            device = entry / "device"
+            device.mkdir(parents=True)
+            (entry / "dev").write_text("252:16\n")
+            (entry / "ro").write_text("1\n")
+            (entry / "uevent").write_text(
+                "MAJOR=252\nMINOR=16\nDEVNAME=vdb\nDEVTYPE=disk\n")
+            (device / "serial").write_text("SYMBIQUAL\n")
+            subsystem = root / "devices/virtio"
+            driver = root / "devices/virtio_blk"
+            subsystem.mkdir(parents=True)
+            driver.mkdir()
+            (device / "subsystem").symlink_to(subsystem)
+            (device / "driver").symlink_to(driver)
+            properties = (b"DEVNAME=/dev/vdb\nDEVTYPE=disk\n"
+                          b"DEVLINKS=/dev/disk/by-id/virtio-SYMBIQUAL\n")
+            completed = subprocess.CompletedProcess([], 0, properties, b"")
+            rows = source_diagnostic.observe_whole_disks(
+                sys_block, runner=mock.Mock(return_value=completed))
+        self.assertEqual(rows[0]["parent_serial"], "SYMBIQUAL")
+        self.assertIsNone(rows[0]["event_serial"])
+        self.assertEqual(rows[0]["transport_driver"], "virtio_blk")
+        self.assertEqual(rows[0]["uevent"]["properties"]["DEVTYPE"], "disk")
+        self.assertEqual(rows[0]["udev"]["properties"]["DEVLINKS"],
+                         "/dev/disk/by-id/virtio-SYMBIQUAL")
 
     def test_source_block_identity_uses_exact_serial_not_device_order(self):
         inventory, link = self.block_identity_fixture()
