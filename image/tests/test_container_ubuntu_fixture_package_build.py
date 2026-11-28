@@ -1193,6 +1193,130 @@ class UbuntuFixturePackageProducer(unittest.TestCase):
             self.assertNotIn("/etc/apt/sources.list", argv)
             self.assertNotIn("/etc/apt/sources.list.d", argv)
 
+    def test_all_offline_apt_commands_disable_only_the_cnf_index_target(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            repository = base / "repo"
+            keyring = base / "archive.gpg"
+            commands = build.offline_apt_commands(
+                base / "apt-root", repository, keyring,
+                packages.EXPECTED_REQUEST["roots"],
+            )
+
+        expected = (
+            "Acquire::IndexTargets::deb::CNF::DefaultEnabled=false")
+        for name in ("update", "uris", "simulate"):
+            argv = commands[name]
+            options = [
+                argv[index + 1]
+                for index, value in enumerate(argv[:-1])
+                if value == "-o"
+            ]
+            self.assertEqual(
+                [value for value in options
+                 if value.startswith("Acquire::IndexTargets::")],
+                [expected],
+            )
+            self.assertNotIn(
+                "Acquire::IndexTargets::deb::Packages::DefaultEnabled=false",
+                options,
+            )
+        self.assertEqual(
+            commands["sources_list"],
+            build.offline_sources_list(
+                repository, keyring, packages.EXPECTED_SOURCES),
+        )
+
+    def test_offline_apt_policy_rejects_cnf_or_source_expansion(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            repository = base / "repo"
+            keyring = base / "archive.gpg"
+            commands = build.offline_apt_commands(
+                base / "apt-root", repository, keyring,
+                packages.EXPECTED_REQUEST["roots"],
+            )
+            expected = (
+                "Acquire::IndexTargets::deb::CNF::DefaultEnabled=false")
+            cases = []
+
+            changed = copy.deepcopy(commands)
+            position = changed["update"].index(expected)
+            del changed["update"][position - 1:position + 1]
+            cases.append(changed)
+
+            changed = copy.deepcopy(commands)
+            position = changed["uris"].index(expected)
+            changed["uris"][position] = expected.removesuffix("false") + "true"
+            cases.append(changed)
+
+            changed = copy.deepcopy(commands)
+            changed["simulate"][1:1] = [
+                "-o",
+                "Acquire::IndexTargets::deb::Contents::DefaultEnabled=false",
+            ]
+            cases.append(changed)
+
+            changed = copy.deepcopy(commands)
+            changed["update"][1:1] = [
+                "-o",
+                "Acquire::IndexTargets::deb::Packages::DefaultEnabled=false",
+            ]
+            cases.append(changed)
+
+            changed = copy.deepcopy(commands)
+            changed["sources_list"] += "deb file:///etc/apt noble main\n"
+            cases.append(changed)
+
+            changed = copy.deepcopy(commands)
+            changed["update"] += [
+                "--option",
+                expected.removesuffix("false") + "true",
+            ]
+            cases.append(changed)
+
+            changed = copy.deepcopy(commands)
+            changed["uris"] += [
+                "--option=" + expected.removesuffix("false") + "true",
+            ]
+            cases.append(changed)
+
+            changed = copy.deepcopy(commands)
+            changed["simulate"] += [
+                "-o" + expected.removesuffix("false") + "true",
+            ]
+            cases.append(changed)
+
+            changed = copy.deepcopy(commands)
+            changed["update"] += ["-o=" + expected]
+            cases.append(changed)
+
+            changed = copy.deepcopy(commands)
+            changed["uris"] += ["-o", expected]
+            cases.append(changed)
+
+            changed = copy.deepcopy(commands)
+            changed["update"] += [
+                "-o", "Dir::Etc::sourcelist=/etc/apt/sources.list",
+                "-o", "Dir::Etc::sourceparts=/etc/apt/sources.list.d",
+            ]
+            cases.append(changed)
+
+            for changed in cases:
+                with self.subTest(changed=changed), self.assertRaises(ValueError):
+                    build.validate_offline_apt_command_policy(
+                        changed, base / "apt-root", repository, keyring,
+                        packages.EXPECTED_REQUEST["roots"],
+                        packages.EXPECTED_SOURCES)
+
+            self.assertIs(
+                build.validate_offline_apt_command_policy(
+                    commands, base / "apt-root", repository, keyring,
+                    packages.EXPECTED_REQUEST["roots"],
+                    packages.EXPECTED_SOURCES),
+                commands,
+            )
+
     def test_offline_source_rows_bind_each_reviewed_freshness_limit(self):
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)

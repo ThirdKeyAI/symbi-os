@@ -205,8 +205,16 @@ production attempt authenticated all pins and then failed before package
 planning because its source-list value repeated etc/apt below the private APT
 root. The corrected command binds an explicit private Dir::Etc, one private
 source list and an empty private source-parts directory. No candidate,
-selection, producer pass, image consumer or qualification claim follows before
-an exact rerun.
+selection, producer pass, image consumer or qualification claim followed. The
+next exact-head attempt proved the private source path and used only the three
+fixed `file:` repositories, then failed at APT update because the runner's
+global command-not-found target requested absent
+`main/cnf/Commands-amd64` indexes. The narrow correction adds the fixed offline
+option `Acquire::IndexTargets::deb::CNF::DefaultEnabled=false`. Its strict
+policy validator requires the complete ordered argv for each offline APT phase,
+including that exact single index-target override; alternate option spellings,
+late duplicate overrides and source expansion fail closed. A fresh exact-head
+run is required; every claim remains false.
 
 The wrapper creates a bounded
 transient unit for either mode; inside it, pending `produce` refuses before

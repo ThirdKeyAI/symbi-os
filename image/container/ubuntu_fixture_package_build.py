@@ -48,6 +48,8 @@ DOWNLOAD_TIMEOUT_SECONDS = 30
 MAX_DOWNLOAD_SECONDS = 600
 PRIVATE_DIRECTORY_MODE = 0o700
 PRIVATE_FILE_MODE = 0o600
+OFFLINE_CNF_DISABLE_OPTION = (
+    "Acquire::IndexTargets::deb::CNF::DefaultEnabled=false")
 _RENAME_NOREPLACE = 1
 EXPECTED_CODENAMES = {
     "noble": "noble",
@@ -1085,13 +1087,11 @@ def validate_apt_simulation(raw, package_rows):
     }
 
 
-def offline_apt_commands(apt_root, repository_root, keyring, roots):
-    """Return exact local-repository apt commands before package download."""
+def _offline_apt_command_argv(apt_root, keyring, roots):
+    """Return the complete ordered argv contract for every offline APT phase."""
     apt_root = _canonical_absolute_path(apt_root, "offline apt root")
-    repository_root = _canonical_absolute_path(
-        repository_root, "offline apt repository root")
     keyring = _canonical_absolute_path(keyring, "offline apt keyring")
-    require(list(roots) == packages.EXPECTED_REQUEST["roots"],
+    require(type(roots) is list and roots == packages.EXPECTED_REQUEST["roots"],
             "offline Ubuntu package roots changed")
     common = [
         "/usr/bin/apt-get",
@@ -1104,6 +1104,7 @@ def offline_apt_commands(apt_root, repository_root, keyring, roots):
         "-o", "Dir::Cache::archives=var/cache/apt/archives",
         "-o", "APT::Architecture=amd64",
         "-o", "Acquire::Languages=none",
+        "-o", OFFLINE_CNF_DISABLE_OPTION,
         "-o", "Acquire::Retries=0",
         "-o", "Acquire::AllowInsecureRepositories=false",
         "-o", "Acquire::Check-Valid-Until=true",
@@ -1113,14 +1114,46 @@ def offline_apt_commands(apt_root, repository_root, keyring, roots):
     ]
     install = ["--no-install-recommends", "install", "--", *roots]
     return {
-        "sources_list": offline_sources_list(
-            repository_root, keyring, packages.EXPECTED_SOURCES),
         "update": [*common, "--no-list-cleanup", "update"],
         "uris": [*common, "--quiet=2", "--print-uris", "--download-only",
                  *install],
         "simulate": [*common, "--quiet=2", "--simulate", "--no-download",
-                     *install],
+                      *install],
     }
+
+
+def validate_offline_apt_command_policy(commands, apt_root, repository_root,
+                                        keyring, roots, sources):
+    """Require exact ordered APT argv and exact authenticated source rows."""
+    require(type(commands) is dict
+            and set(commands) == {"sources_list", "update", "uris", "simulate"},
+            "offline APT command set changed")
+    validate_offline_sources_list(
+        commands.get("sources_list"), repository_root, keyring, sources)
+    expected = _offline_apt_command_argv(apt_root, keyring, roots)
+    for name in ("update", "uris", "simulate"):
+        argv = commands.get(name)
+        require(type(argv) is list and all(type(value) is str for value in argv)
+                and argv == expected[name],
+                "offline APT command policy changed")
+    return commands
+
+
+def offline_apt_commands(apt_root, repository_root, keyring, roots):
+    """Return exact local-repository apt commands before package download."""
+    apt_root = _canonical_absolute_path(apt_root, "offline apt root")
+    repository_root = _canonical_absolute_path(
+        repository_root, "offline apt repository root")
+    keyring = _canonical_absolute_path(keyring, "offline apt keyring")
+    argv = _offline_apt_command_argv(apt_root, keyring, roots)
+    commands = {
+        "sources_list": offline_sources_list(
+            repository_root, keyring, packages.EXPECTED_SOURCES),
+        **argv,
+    }
+    return validate_offline_apt_command_policy(
+        commands, apt_root, repository_root, keyring, roots,
+        packages.EXPECTED_SOURCES)
 
 
 def offline_dpkg_command(apt_root, package_paths):

@@ -297,6 +297,15 @@ source-list value duplicated the private APT root's etc/apt segment. The
 commands now bind an explicit private Dir::Etc, one private source list and an
 empty private source-parts directory. Each fixed source row also binds the
 reviewed per-source valid-until-max ceiling and enables Check-Valid-Until.
+The next exact-head attempt proved that private path and used only the three
+exact `file:` repositories, then failed at APT update when the runner's global
+command-not-found target requested absent `main/cnf/Commands-amd64` indexes.
+The narrow correction fixes the offline command set with
+`Acquire::IndexTargets::deb::CNF::DefaultEnabled=false`; its strict policy
+validator requires the complete ordered argv for each offline APT phase,
+including that exact single index-target override. Alternate option spellings,
+late duplicate overrides and source expansion fail closed. A fresh exact-head
+run is required to test it.
 The Dockerfile, native producer, image consumer and public pending lock remain
 unchanged, and every candidate, selection, pass and qualification claim remains
 false pending an exact rerun.
