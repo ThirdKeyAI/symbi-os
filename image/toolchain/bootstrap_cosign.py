@@ -9,6 +9,18 @@ import shutil
 import subprocess
 
 
+ASSET_DOWNLOAD_PROCESS_TIMEOUT_SECONDS = 310
+SIGNATURE_PROCESS_TIMEOUT_SECONDS = 30
+VERSION_PROCESS_TIMEOUT_SECONDS = 30
+# bootstrap() admits exactly two assets below, so this is its complete external
+# process budget for hosted-workflow timeout arithmetic.
+BOOTSTRAP_SUBPROCESS_TIMEOUT_SECONDS = (
+    2 * ASSET_DOWNLOAD_PROCESS_TIMEOUT_SECONDS
+    + SIGNATURE_PROCESS_TIMEOUT_SECONDS
+    + VERSION_PROCESS_TIMEOUT_SECONDS
+)
+
+
 def verify_hash(path, digest, size=None):
     if not path.is_file() or path.is_symlink():
         raise ValueError("Expected a regular downloaded asset")
@@ -38,7 +50,8 @@ def verify_signature(binary, bundle_path, public_key, key_digest, signature_path
     signature_path.write_bytes(base64.b64decode(signature["signature"], validate=True))
     result = subprocess.run(["openssl", "dgst", "-sha256", "-verify", str(public_key),
                              "-signature", str(signature_path), str(binary)],
-                            capture_output=True, text=True, check=False, timeout=30)
+                            capture_output=True, text=True, check=False,
+                            timeout=SIGNATURE_PROCESS_TIMEOUT_SECONDS)
     if result.returncode != 0 or result.stdout.strip() != "Verified OK":
         raise ValueError("Release signature verification failed")
     return result.stdout
@@ -73,7 +86,7 @@ def bootstrap(root, evidence):
                         "--proto", "=https", "--proto-redir", "=https", "--tlsv1.2",
                         "--connect-timeout", "20", "--max-time", "300", "--limit-rate", "5M",
                         "--max-filesize", str(asset["bytes"]), "--output", str(destination), asset["url"]],
-                       check=True, timeout=310)
+                       check=True, timeout=ASSET_DOWNLOAD_PROCESS_TIMEOUT_SECONDS)
         verify_hash(destination, asset["sha256"], asset["bytes"])
     binary = directory / "cosign-linux-amd64"
     bundle = directory / "cosign-linux-amd64-kms.sigstore.json"
@@ -84,7 +97,9 @@ def bootstrap(root, evidence):
     installed = directory / "cosign"
     binary.rename(installed)
     installed.chmod(0o755)
-    version = subprocess.check_output([str(installed), "version", "--json"], text=True, timeout=30)
+    version = subprocess.check_output(
+        [str(installed), "version", "--json"], text=True,
+        timeout=VERSION_PROCESS_TIMEOUT_SECONDS)
     build = json.loads(version)
     if build["gitVersion"] != pins["version"] or build["gitCommit"] != pins["source_revision"]:
         raise ValueError("Unexpected Cosign build identity")

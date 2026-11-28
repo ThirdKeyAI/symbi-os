@@ -1,9 +1,13 @@
 """Closed media-package selection, offline install and playback boundaries."""
+import configparser
 import copy
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
+import re
+import socket
 import stat
 import tempfile
 import unittest
@@ -14,6 +18,11 @@ import zipfile
 from image.desktop_packages.media_contract import (
     FEDORA,
     FUSION,
+    MAX_MEDIA_ARCHIVE_OVERHEAD_BYTES,
+    MAX_MEDIA_ARTIFACT_BYTES,
+    MAX_MEDIA_EXPANDED_BYTES,
+    MAX_MEDIA_MANIFEST_BYTES,
+    MAX_MEDIA_RPM_PAYLOAD_BYTES,
     media_selection_digest,
     offline_install_command,
     require_media_artifact_metadata,
@@ -21,8 +30,23 @@ from image.desktop_packages.media_contract import (
     require_media_lock,
     require_source_release_match,
 )
+from image.desktop_packages.media_closure import (
+    PinnedPublicHTTPSHandler,
+    PublicAddressResolver,
+    require_public_https,
+)
 from image.desktop_packages.media_inputs import unpack_media_bundle
 from image.desktop_packages.media_install import require_additive_inventory, trust_snapshot
+from image.desktop_packages.media_closure_contract import (
+    require_candidate_manifest,
+    require_candidate_request,
+    require_media_repositories,
+)
+from image.desktop_packages.media_closure_hosted import (
+    HOSTED_BOUNDED_SECONDS,
+    HOSTED_NON_COMMAND_RESERVE_SECONDS,
+    HOSTED_SERVICE_TIMEOUT_SECONDS,
+)
 from image.desktop_packages.media_playback import (
     PLAYBACK_FIXTURE_SHA256,
     PLAYBACK_LIMITS,
@@ -101,6 +125,49 @@ class MediaPackageLock(unittest.TestCase):
             "status": "completed",
             "conclusion": "success",
         })
+
+    def producer_request_fixture(self):
+        return {
+            "schema": 1,
+            "release": self.lock["release"],
+            "architecture": self.lock["architecture"],
+            "resolution_base": self.lock["resolution_base"],
+            "requirements": ["mplayer", "mpv"],
+            "root_packages": copy.deepcopy(self.lock["root_packages"]),
+            "trusted_keys": copy.deepcopy(self.lock["trusted_keys"]),
+            "source_lock_sha256": hashlib.sha256(
+                (ROOT / "image/desktop_packages/media-rpms.lock.json").read_bytes()).hexdigest(),
+        }
+
+    def producer_manifest_fixture(self, request):
+        ready = self.ready_fixture()
+        sources = [
+            {name: row[name] for name in (
+                "name", "epoch", "version", "release", "arch", "nevra", "filename",
+                "bytes", "sha256", "signature_verified", "key_fingerprint")}
+            for row in ready["source_inputs"]
+        ]
+        return {
+            "schema": 1,
+            "passed": True,
+            "dedicated_media_closure": True,
+            "package_transaction_attempted": False,
+            "installed_packages_unchanged": True,
+            "requirements": request["requirements"],
+            "packages": copy.deepcopy(request["root_packages"]),
+            "source_packages": sources,
+            "negative_controls": {
+                key: {"missing_key_rejected": True, "wrong_key_rejected": True,
+                      "tampered_package_rejected": True}
+                for key in (FEDORA, FUSION)
+            },
+            "packages_selected": False,
+            "security_qualified": False,
+            "os_qualified": False,
+            "scope": (
+                "Authenticated media-only candidates and source RPMs; no package transaction, "
+                "program execution, security clearance or OS selection"),
+        }
 
     def bind_archive(self, lock, archive, manifest_raw):
         artifact = lock["closure"]["artifact"]
@@ -273,6 +340,192 @@ class MediaPackageLock(unittest.TestCase):
             else: artifact["resolution_base"] = bad["target_bases"]["nvidia"]
             with self.subTest(change=change), self.assertRaises(ValueError):
                 require_media_lock(bad, ROOT, self.pins, self.trust, require_ready=True)
+
+    def test_media_only_producer_request_and_manifest_preserve_closed_claims(self):
+        request = self.producer_request_fixture()
+        manifest = self.producer_manifest_fixture(request)
+        self.assertTrue(require_candidate_request(request))
+        self.assertTrue(require_candidate_manifest(manifest, request))
+        for change in ("selection", "security", "transaction", "root", "source", "control"):
+            bad = copy.deepcopy(manifest)
+            if change == "selection": bad["packages_selected"] = True
+            elif change == "security": bad["security_qualified"] = True
+            elif change == "transaction": bad["package_transaction_attempted"] = True
+            elif change == "root": bad["packages"].remove(request["root_packages"][2])
+            elif change == "source": bad["source_packages"].pop()
+            else: bad["negative_controls"][FEDORA]["wrong_key_rejected"] = False
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                require_candidate_manifest(bad, request)
+
+    def test_media_payload_limits_are_one_safe_producer_to_consumer_contract(self):
+        self.assertEqual(MAX_MEDIA_ARTIFACT_BYTES, 2 * 1024**3)
+        self.assertEqual(MAX_MEDIA_EXPANDED_BYTES + MAX_MEDIA_ARCHIVE_OVERHEAD_BYTES,
+                         MAX_MEDIA_ARTIFACT_BYTES)
+        self.assertEqual(MAX_MEDIA_RPM_PAYLOAD_BYTES + MAX_MEDIA_MANIFEST_BYTES,
+                         MAX_MEDIA_EXPANDED_BYTES)
+        request = self.producer_request_fixture()
+        manifest = self.producer_manifest_fixture(request)
+        for row in manifest["source_packages"]:
+            row["bytes"] = 1024**3
+        with self.assertRaisesRegex(ValueError, "payload exceeds"):
+            require_candidate_manifest(manifest, request)
+
+        lock = self.ready_fixture()
+        for row in lock["source_inputs"]:
+            row["bytes"] = 1024**3
+        with self.assertRaisesRegex(ValueError, "payload exceeds"):
+            require_media_lock(lock, ROOT, self.pins, self.trust, require_ready=True)
+        lock = self.ready_fixture()
+        lock["closure"]["artifact"]["bytes"] = MAX_MEDIA_ARTIFACT_BYTES + 1
+        with self.assertRaisesRegex(ValueError, "artifact binding"):
+            require_media_lock(lock, ROOT, self.pins, self.trust, require_ready=True)
+        workflow = (ROOT / ".github/workflows/media-closure.yml").read_text()
+        self.assertIn("compression-level: 0", workflow)
+
+    def test_media_only_repositories_include_exact_binary_and_source_channels(self):
+        path = ROOT / "image/desktop_packages/media.repo"
+        declared = path.read_text()
+        self.assertTrue(require_media_repositories(declared) is None)
+        parser = configparser.ConfigParser(interpolation=None)
+        parser.read_string(declared)
+        for section in parser.sections():
+            for option in tuple(parser[section]):
+                changed = configparser.ConfigParser(interpolation=None)
+                changed.read_string(declared)
+                changed.set(section, option, "adversarial-change")
+                rendered = io.StringIO(); changed.write(rendered, space_around_delimiters=False)
+                with self.subTest(section=section, option=option), self.assertRaises(ValueError):
+                    require_media_repositories(rendered.getvalue())
+        for shape in ("missing-field", "extra-field", "default-field", "duplicate-field"):
+            changed = configparser.ConfigParser(interpolation=None)
+            changed.read_string(declared)
+            if shape == "missing-field":
+                changed.remove_option("fedora", "type")
+            elif shape == "extra-field":
+                changed.set("fedora", "proxy", "https://public.example")
+            rendered = io.StringIO(); changed.write(rendered, space_around_delimiters=False)
+            text = rendered.getvalue()
+            if shape == "default-field":
+                text = "[DEFAULT]\nsslverify=1\n" + text
+            elif shape == "duplicate-field":
+                text = text.replace("type=rpm\n", "type=rpm\ntype=rpm\n", 1)
+            with self.subTest(shape=shape), self.assertRaises(ValueError):
+                require_media_repositories(text)
+
+    def test_source_urls_resolve_once_to_only_global_addresses(self):
+        calls = []
+
+        def rebinding_resolver(hostname, port, family, kind, protocol):
+            calls.append((hostname, port, family, kind, protocol))
+            address = "8.8.8.8" if len(calls) == 1 else "127.0.0.1"
+            return [(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP, "",
+                     (address, port))]
+
+        connected = []
+
+        class FakeSocket:
+            def settimeout(self, timeout):
+                self.timeout = timeout
+
+            def bind(self, address):
+                self.source = address
+
+            def connect(self, address):
+                connected.append(address)
+
+            def close(self):
+                pass
+
+        resolver = PublicAddressResolver(
+            rebinding_resolver, lambda family, kind, protocol: FakeSocket())
+        require_public_https("https://packages.example/source.rpm", resolver)
+        handler = PinnedPublicHTTPSHandler(resolver)
+        with mock.patch.object(handler, "do_open", return_value=mock.sentinel.response) as opened:
+            self.assertIs(handler.https_open(mock.sentinel.request), mock.sentinel.response)
+        connection = opened.call_args.args[0]
+        client = connection("packages.example", timeout=5)
+        self.assertIs(client._create_connection.__self__, resolver)
+        stream = resolver.create_connection(("packages.example", 443), timeout=5)
+        self.assertIsInstance(stream, FakeSocket)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(connected, [("8.8.8.8", 443)])
+
+    def test_source_urls_reject_every_non_public_dns_class_and_mixed_answers(self):
+        rejected = (
+            "0.0.0.0", "10.0.0.1", "100.64.0.1", "127.0.0.1", "169.254.169.254",
+            "192.0.2.1", "224.0.0.1", "240.0.0.1", "::", "::1", "fc00::1",
+            "fe80::1", "ff02::1", "2001:db8::1",
+        )
+        for address in rejected:
+            family = socket.AF_INET6 if ":" in address else socket.AF_INET
+            sockaddr = (address, 443, 0, 0) if family == socket.AF_INET6 else (address, 443)
+
+            def resolve(_hostname, _port, _family, _kind, _protocol,
+                        row=(family, socket.SOCK_STREAM, socket.IPPROTO_TCP, "", sockaddr)):
+                return [row]
+
+            with self.subTest(address=address), self.assertRaises(ValueError):
+                require_public_https(
+                    "https://packages.example/source.rpm", PublicAddressResolver(resolve))
+
+        def mixed(_hostname, port, _family, _kind, _protocol):
+            return [
+                (socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP, "", ("8.8.8.8", port)),
+                (socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP, "", ("127.0.0.1", port)),
+            ]
+
+        with self.assertRaises(ValueError):
+            require_public_https(
+                "https://packages.example/source.rpm", PublicAddressResolver(mixed))
+        malformed = (
+            [],
+            [(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP, "",
+              ("8.8.8.8", 444))],
+            [(socket.AF_INET6, socket.SOCK_STREAM, socket.IPPROTO_TCP, "",
+              ("2606:4700:4700::1111", 443, 0, 2))],
+            [(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP, "",
+              ("8.8.8.8", 443))],
+            [(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP, "",
+              ("8.8.8.8", 443))] * 33,
+        )
+        for answers in malformed:
+            with self.subTest(answers=answers), self.assertRaises(ValueError):
+                require_public_https(
+                    "https://packages.example/source.rpm",
+                    PublicAddressResolver(
+                        lambda _host, _port, _family, _kind, _protocol, rows=answers: rows))
+        for url in ("https://127.0.0.1/source.rpm", "https://localhost/source.rpm",
+                    "https://224.0.0.1/source.rpm", "https://packages.local/source.rpm",
+                    "http://packages.example/source.rpm"):
+            with self.subTest(url=url), self.assertRaises(ValueError):
+                require_public_https(url)
+
+    def test_media_workflow_deadlines_reserve_cleanup_and_both_uploads(self):
+        self.assertLessEqual(HOSTED_BOUNDED_SECONDS + HOSTED_NON_COMMAND_RESERVE_SECONDS,
+                             HOSTED_SERVICE_TIMEOUT_SECONDS)
+        self.assertEqual(HOSTED_SERVICE_TIMEOUT_SECONDS, 95 * 60)
+        workflow = (ROOT / ".github/workflows/media-closure.yml").read_text()
+        deadlines = [int(value) for value in re.findall(r"timeout-minutes: (\d+)", workflow)]
+        self.assertEqual(deadlines, [130, 3, 98, 12, 2, 5])
+        self.assertEqual(sum(deadlines[1:]), 120)
+        self.assertEqual(deadlines[0] - sum(deadlines[1:]), 10)
+        script = (ROOT / "scripts/check-media-closure.sh").read_text()
+        self.assertIn("RuntimeMaxSec=95min", script)
+        self.assertEqual(deadlines[2] * 60 - HOSTED_SERVICE_TIMEOUT_SECONDS, 3 * 60)
+
+    def test_declared_media_producer_is_registered_manual_and_fail_closed(self):
+        workflow = (ROOT / ".github/workflows/media-closure.yml").read_text()
+        script = (ROOT / "scripts/check-media-closure.sh").read_text()
+        guest = (ROOT / "image/desktop_packages/media_closure.py").read_text()
+        hosted = (ROOT / "image/desktop_packages/media_closure_hosted.py").read_text()
+        self.assertIn("workflow_dispatch:", workflow)
+        self.assertNotIn("\n  push:", workflow)
+        self.assertIn("name: media-rpms-fedora-45-x86_64", workflow)
+        self.assertIn("MemoryMax=3G", script)
+        self.assertIn('"repoquery", "--arch=src"', guest)
+        self.assertIn("def download_source", guest)
+        self.assertIn('package_transaction_attempted": False', guest)
+        self.assertIn("require_media_lock(lock, root, pins, trust)", hosted)
 
     def test_exact_source_rpms_must_match_binary_headers_and_signers(self):
         roots = self.lock["root_packages"]

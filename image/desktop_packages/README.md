@@ -118,6 +118,17 @@ size/digest fields and `signature_verified=false`. Changing a slot, marking the
 closure complete or setting `install_ready` without the complete authenticated
 records is rejected before an artifact can be opened.
 
+The manual `media-closure.yml` producer is the bounded route for obtaining
+those inputs. It uses the signed generic base named by the pending lock, exact
+Fedora and RPM Fusion binary/source repositories, isolated two-key RPM
+keyrings, and `dnf5 install --downloadonly` for only MPlayer and mpv. It also
+downloads the two source RPMs named by the frozen binary headers. Every binary
+and source byte, header, signer and negative control is checked before the
+artifact can be retained. Installed package inventory must remain unchanged.
+The producer manifest keeps package selection, security qualification and OS
+qualification false. This route is implemented but has not run at this source
+revision; the current lock remains pending and no image consumes its output.
+
 The lock also binds the retained 26 November cve.bz MPlayer and mpv product-name
 search responses to these exact candidate versions and source-RPM names. Those
 responses are incomplete text searches with unrelated matches. The lock keeps
