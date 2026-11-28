@@ -540,11 +540,20 @@ class InteractiveApplianceContract(unittest.TestCase):
         prepare = (ROOT / "scripts/check-atomic-image.sh").read_text()
         self.assertIn("RuntimeMaxSec=15min", prepare)
 
-    def test_pre_download_gate_rejects_pending_selector_before_capacity(self):
-        with mock.patch("image.appliance.prerequisite.require_download_capacity") as capacity:
-            with self.assertRaisesRegex(ValueError, "Unknown preflight readiness"):
-                validate_appliance_prerequisites(ROOT, available_bytes=10**15)
-        capacity.assert_not_called()
+    def test_pre_download_gate_accepts_the_reviewed_selector_before_capacity(self):
+        available = 10**15
+        result = validate_appliance_prerequisites(
+            ROOT, available_bytes=available)
+        self.assertEqual(result["schema"], 1)
+        self.assertEqual(result["variant"], "generic")
+        self.assertEqual(result["preflight_run"], 46125049529)
+        self.assertEqual(result["desktop_images_lock_sha256"],
+                         "1a268651cccc61a5693ec9c3a519680b9cffc1844ffeda852f4d151b4b7d670c")
+        self.assertEqual(result["artifact_bytes"], 4177421526)
+        self.assertEqual(result["available_bytes"], available)
+        self.assertEqual(result["required_bytes"], 69675672790)
+        self.assertIs(result["os_qualified"], False)
+        self.assertIs(result["release_qualified"], False)
 
     def test_pre_download_capacity_has_controller_floor_and_working_margin(self):
         lock = json.loads((ROOT / "image/desktop-images.lock.json").read_text())

@@ -535,7 +535,7 @@ class AtomicUpdateTests(unittest.TestCase):
     def test_hosted_controller_imports(self):
         self.assertTrue(callable(run_update))
 
-    def test_current_preflight_is_stale_for_the_corrected_image_lock(self):
+    def test_current_preflight_selects_the_integrated_image_and_verifier(self):
         root = Path(__file__).resolve().parents[2]
         lock_path = root / "image/desktop-images.lock.json"
         lock = json.loads(lock_path.read_text())
@@ -553,33 +553,41 @@ class AtomicUpdateTests(unittest.TestCase):
                           nvidia["artifact"]["id"]),
                          ("d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
                           45908299514, 15158529973))
-        self.assertEqual(readiness["status"],
-                         "pending-reviewed-integrated-head-preflight")
-        self.assertIs(readiness["selected"], False)
-        self.assertEqual((readiness["image_source_commit"],
-                          readiness["image_run_id"],
-                          readiness["image_artifact_id"]),
-                         ("22c751096e47d2f5ff74d8e5963a7079fa24576f",
-                          46091256475, 15241381990))
-        self.assertNotEqual(readiness["desktop_images_lock_sha256"],
-                            current_lock_sha256)
-        self.assertEqual(readiness["required_next_gate"],
-                         "run-and-review-generic-atomic-preflight-at-integrated-head")
-        self.assertTrue(readiness["claims"])
-        self.assertTrue(all(value is False for value in readiness["claims"].values()))
-        historical = readiness["historical_reviewed_preflight"]
-        self.assertNotEqual(historical["desktop_images_lock_sha256"],
-                            current_lock_sha256)
-        self.assertNotEqual(historical["desktop_images_lock_sha256"],
-                            readiness["desktop_images_lock_sha256"])
-        for key in ("complete_lock_matches", "integrated_probe_matches", "selected"):
-            self.assertIs(historical[key], False)
-        self.assertTrue((root / historical["evidence"]).is_file())
+        self.assertEqual(set(readiness), {
+            "schema", "variant", "preflight_run", "repository_id",
+            "evidence_artifact_id", "evidence_artifact_bytes",
+            "evidence_artifact_sha256", "source_commit", "inspect_sha256",
+            "prepare_sha256", "independent_check_sha256",
+            "kernel_observation_sha256", "manifest_digest",
+        })
+        self.assertEqual(readiness["preflight_run"], 46125049529)
+        self.assertEqual(readiness["source_commit"],
+                         "65244ce3806a4ac4f0b1b3f9d576dc403e531da6")
+        self.assertEqual((readiness["evidence_artifact_id"],
+                          readiness["evidence_artifact_bytes"],
+                          readiness["evidence_artifact_sha256"]),
+                         (15254779126, 62593,
+                          "bed16595c33b40db9aa7650d091f1af532b374ae0df4efc5f0bb15476cb2eb68"))
+        self.assertEqual(readiness["manifest_digest"],
+                         "sha256:5391751ede2c156e970e6708d603f0c2fb59e1ddba3cab0b075d53c725a5b624")
 
         manifest = require_desktop_image(lock, pins, "generic")
         expected = expected_inputs(root, lock, pins, "generic")
-        with self.assertRaisesRegex(ValueError, "Unknown preflight readiness"):
-            validate_retained_preflight(root, readiness, selected, manifest, expected)
+        reports = validate_retained_preflight(
+            root, readiness, selected, manifest, expected)
+        self.assertEqual(reports["independent_check"]["desktop_images_lock_sha256"],
+                         current_lock_sha256)
+        self.assertEqual(reports["independent_check"]["source_commit"],
+                         readiness["source_commit"])
+        self.assertEqual(reports["independent_check"]["image_source_commit"],
+                         selected["tested_commit"])
+        for phase in ("prepare", "inspect"):
+            self.assertIs(reports[phase]["passed"], True)
+            self.assertIs(reports[phase]["guest_booted"], False)
+            self.assertIs(reports[phase]["installation_attempted"], False)
+            self.assertIs(reports[phase]["os_qualified"], False)
+        self.assertIs(reports["independent_check"]["os_qualified"], False)
+        self.assertIs(reports["independent_check"]["release_qualified"], False)
 
     def test_retained_preflight_matches_the_complete_current_image_lock(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -151,36 +151,88 @@ class DesktopImageInput(unittest.TestCase):
         sorted_raw = ('\n'.join(sorted(inventory))+'\n').encode()
         self.assertEqual(sha(sorted_raw), inventory_metadata['sorted_sha256'])
 
-        preflight = json.loads((root/'image/atomic/preflight.lock.json').read_text())
+        preflight_path = root/'image/atomic/preflight.lock.json'
+        preflight = json.loads(preflight_path.read_text())
         next_gate = summary['next_gate']
-        historical = preflight['historical_reviewed_preflight']
-        self.assertEqual(historical['preflight_run'], next_gate['current_preflight_lock_run'])
-        self.assertEqual(historical['source_commit'],
+        self.assertEqual(preflight['preflight_run'],
+                         next_gate['current_preflight_lock_run'])
+        self.assertEqual(preflight['source_commit'],
                          next_gate['current_preflight_lock_source_commit'])
-        self.assertEqual(historical['manifest_digest'],
+        self.assertEqual(preflight['manifest_digest'],
                          next_gate['current_preflight_lock_manifest_digest'])
-        self.assertEqual(preflight['status'], 'pending-reviewed-integrated-head-preflight')
-        self.assertIs(preflight['selected'], False)
-        self.assertGreater(selected['run_id'], preflight['image_run_id'])
-        self.assertNotEqual(preflight['image_source_commit'], selected['tested_commit'])
-        self.assertNotEqual(preflight['desktop_images_lock_sha256'],
-                            sha((root/'image/desktop-images.lock.json').read_bytes()))
+
+        preflight_dir = (root/'docs/security/reports/P0-03-atomic-preflight'
+                         /str(preflight['preflight_run']))
+        self.assertEqual(sorted(path.name for path in preflight_dir.iterdir()),
+                         ['independent-check.json', 'inspect.json', 'prepare.json'])
+        reports = {}
+        for phase in ('prepare', 'inspect'):
+            path = preflight_dir/(phase+'.json')
+            self.assertTrue(path.is_file())
+            self.assertFalse(path.is_symlink())
+            raw = path.read_bytes()
+            self.assertEqual(sha(raw), preflight[phase+'_sha256'])
+            report_item = json.loads(raw)
+            reports[phase] = report_item
+            self.assertIs(report_item['passed'], True)
+            self.assertIs(report_item['os_qualified'], False)
+            self.assertIs(report_item['guest_booted'], False)
+            self.assertIs(report_item['installation_attempted'], False)
+            self.assertEqual(report_item['source_commit'],
+                             preflight['source_commit'])
+            self.assertEqual(report_item['image_source_commit'],
+                             selected['tested_commit'])
+            self.assertEqual(report_item['lock_sha256'],
+                             sha((root/'image/desktop-images.lock.json').read_bytes()))
+            self.assertEqual(report_item['expected_inputs'],
+                             reports['prepare']['expected_inputs'])
+        self.assertEqual(reports['prepare']['verified_archive'],
+                         selected['manifest']['archive'])
+        self.assertEqual(reports['inspect']['loaded_image']['Digest'],
+                         preflight['manifest_digest'])
+
+        independent_path = preflight_dir/'independent-check.json'
+        independent_raw = independent_path.read_bytes()
+        self.assertEqual(sha(independent_raw),
+                         preflight['independent_check_sha256'])
+        independent = json.loads(independent_raw)
+        self.assertEqual(independent['workflow_run'], preflight['preflight_run'])
+        self.assertEqual(independent['source_commit'], preflight['source_commit'])
+        self.assertEqual(independent['image_source_commit'],
+                         selected['tested_commit'])
+        self.assertIs(independent['os_qualified'], False)
+        self.assertIs(independent['release_qualified'], False)
+
         reconciliation = json.loads((root/next_gate['preflight_evidence']).read_text())
-        self.assertEqual(reconciliation['source']['preflight_run'],
-                         historical['preflight_run'])
-        self.assertEqual(reconciliation['source']['source_commit'],
-                         historical['source_commit'])
-        self.assertEqual(reconciliation['source']['manifest_digest'],
-                         historical['manifest_digest'])
-        self.assertEqual(reconciliation['run']['head_sha'], historical['source_commit'])
-        self.assertNotEqual(reconciliation['image_binding']['image_source_commit'],
-                            selected['tested_commit'])
-        self.assertNotEqual(reconciliation['image_binding']['oci_archive'],
-                            selected['manifest']['archive'])
+        image_binding = reconciliation['image_binding']
+        self.assertEqual(reconciliation['source'], preflight)
+        self.assertEqual(reconciliation['run']['id'], preflight['preflight_run'])
+        self.assertEqual(reconciliation['run']['head_sha'],
+                         preflight['source_commit'])
+        self.assertEqual(image_binding['desktop_lock_sha256'],
+                         sha((root/'image/desktop-images.lock.json').read_bytes()))
+        self.assertEqual(image_binding['image_artifact_id'],
+                         selected['artifact']['id'])
+        self.assertEqual(image_binding['image_artifact_bytes'],
+                         selected['artifact']['bytes'])
+        self.assertEqual(image_binding['image_artifact_sha256'],
+                         selected['artifact']['sha256'])
+        self.assertEqual(image_binding['image_source_run'], selected['run_id'])
+        self.assertEqual(image_binding['image_source_commit'],
+                         selected['tested_commit'])
+        self.assertEqual(image_binding['manifest_sha256'],
+                         selected['manifest_sha256'])
+        self.assertEqual(image_binding['preparation_sha256'],
+                         selected['manifest']['preparation_sha256'])
+        self.assertEqual(image_binding['oci_archive'],
+                         selected['manifest']['archive'])
+        self.assertTrue(all(value is False
+                            for value in reconciliation['claims'].values()))
         self.assertIs(next_gate['atomic_preflight_required_before_landlock'], True)
-        self.assertIs(next_gate['atomic_preflight_requirement_satisfied'], False)
-        self.assertIs(next_gate['current_preflight_lock_matches_this_image'], False)
-        self.assertIs(next_gate['landlock_ready'], False)
+        self.assertIs(next_gate['atomic_preflight_requirement_satisfied'], True)
+        self.assertIs(next_gate['current_preflight_lock_matches_this_image'], True)
+        self.assertIs(next_gate['landlock_ready'], True)
+
 
 
 if __name__ == '__main__': unittest.main()
