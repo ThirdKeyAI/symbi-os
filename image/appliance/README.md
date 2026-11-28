@@ -4,8 +4,8 @@ This manual hosted producer prepares an **unsigned, HIGHLY EXPERIMENTAL, short-l
 qcow2 so a human can evaluate the current graphical development image. It is not a
 release image, a security-qualified OS, or a safe place for real data or accounts.
 
-The selected generic target is image run `46091256475` at
-`22c751096e47d2f5ff74d8e5963a7079fa24576f`. Its retained preparation, package
+The selected generic target is image run `46107995231` at
+`c6bf3ed9eba34562d886b6b315dd9cb46340c525`. Its retained preparation, package
 inventory, and reviewed image summary are in the repository. The combined image
 lock also preserves the newer NVIDIA entry. No Atomic preflight is selected for
 that combined lock: `image/atomic/preflight.lock.json` is an all-false pending
@@ -25,7 +25,7 @@ disk.
 
 Before any download, the workflow invokes the same retained-preflight validator as
 the controller and rejects the current all-false selector. It also requires the
-60 GiB controller floor plus the exact 4,177,424,549-byte retained ZIP and a 1 GiB
+60 GiB controller floor plus the exact 4,177,421,526-byte retained ZIP and a 1 GiB
 preparation margin. The seven workflow steps have hard limits of 5, 2, 20, 20, 130,
 10, and 30 minutes: 217 minutes total inside a 240-minute job, leaving 23 minutes of
 outer margin. The download's 30-second metadata and 900-second archive caps leave

@@ -153,15 +153,26 @@ class DesktopImageInput(unittest.TestCase):
 
         preflight = json.loads((root/'image/atomic/preflight.lock.json').read_text())
         next_gate = summary['next_gate']
-        self.assertEqual(preflight['preflight_run'], next_gate['current_preflight_lock_run'])
-        self.assertEqual(preflight['source_commit'], next_gate['current_preflight_lock_source_commit'])
-        self.assertEqual(preflight['manifest_digest'],
+        historical = preflight['historical_reviewed_preflight']
+        self.assertEqual(historical['preflight_run'], next_gate['current_preflight_lock_run'])
+        self.assertEqual(historical['source_commit'],
+                         next_gate['current_preflight_lock_source_commit'])
+        self.assertEqual(historical['manifest_digest'],
                          next_gate['current_preflight_lock_manifest_digest'])
-        self.assertGreater(selected['run_id'], preflight['preflight_run'])
-        self.assertNotEqual(preflight['source_commit'], selected['tested_commit'])
+        self.assertEqual(preflight['status'], 'pending-reviewed-integrated-head-preflight')
+        self.assertIs(preflight['selected'], False)
+        self.assertGreater(selected['run_id'], preflight['image_run_id'])
+        self.assertNotEqual(preflight['image_source_commit'], selected['tested_commit'])
+        self.assertNotEqual(preflight['desktop_images_lock_sha256'],
+                            sha((root/'image/desktop-images.lock.json').read_bytes()))
         reconciliation = json.loads((root/next_gate['preflight_evidence']).read_text())
-        self.assertEqual(reconciliation['source'], preflight)
-        self.assertEqual(reconciliation['run']['head_sha'], preflight['source_commit'])
+        self.assertEqual(reconciliation['source']['preflight_run'],
+                         historical['preflight_run'])
+        self.assertEqual(reconciliation['source']['source_commit'],
+                         historical['source_commit'])
+        self.assertEqual(reconciliation['source']['manifest_digest'],
+                         historical['manifest_digest'])
+        self.assertEqual(reconciliation['run']['head_sha'], historical['source_commit'])
         self.assertNotEqual(reconciliation['image_binding']['image_source_commit'],
                             selected['tested_commit'])
         self.assertNotEqual(reconciliation['image_binding']['oci_archive'],

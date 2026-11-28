@@ -546,10 +546,10 @@ class InteractiveApplianceContract(unittest.TestCase):
     def test_pre_download_capacity_has_controller_floor_and_working_margin(self):
         lock = json.loads((ROOT / "image/desktop-images.lock.json").read_text())
         selected = lock["images"]["generic"]
-        self.assertEqual(selected["artifact"]["bytes"], 4177424549)
+        self.assertEqual(selected["artifact"]["bytes"], 4177421526)
         expected = (MINIMUM_DISK_FREE_BYTES + selected["artifact"]["bytes"]
                     + DOWNLOAD_WORKING_MARGIN_BYTES)
-        self.assertEqual(expected, 69675675813)
+        self.assertEqual(expected, 69675672790)
         self.assertEqual(required_free_before_download(selected), expected)
         self.assertEqual(require_download_capacity(selected, expected), expected)
         with self.assertRaisesRegex(ValueError, "before downloading"):

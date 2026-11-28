@@ -535,7 +535,7 @@ class AtomicUpdateTests(unittest.TestCase):
     def test_hosted_controller_imports(self):
         self.assertTrue(callable(run_update))
 
-    def test_current_preflight_is_pending_for_the_integrated_image_lock(self):
+    def test_current_preflight_is_stale_for_the_corrected_image_lock(self):
         root = Path(__file__).resolve().parents[2]
         lock_path = root / "image/desktop-images.lock.json"
         lock = json.loads(lock_path.read_text())
@@ -546,8 +546,8 @@ class AtomicUpdateTests(unittest.TestCase):
 
         self.assertEqual((selected["tested_commit"], selected["run_id"],
                           selected["artifact"]["id"]),
-                         ("22c751096e47d2f5ff74d8e5963a7079fa24576f",
-                          46091256475, 15241381990))
+                         ("c6bf3ed9eba34562d886b6b315dd9cb46340c525",
+                          46107995231, 15247719935))
         nvidia = lock["images"]["nvidia"]
         self.assertEqual((nvidia["tested_commit"], nvidia["run_id"],
                           nvidia["artifact"]["id"]),
@@ -556,8 +556,13 @@ class AtomicUpdateTests(unittest.TestCase):
         self.assertEqual(readiness["status"],
                          "pending-reviewed-integrated-head-preflight")
         self.assertIs(readiness["selected"], False)
-        self.assertEqual(readiness["desktop_images_lock_sha256"],
-                         current_lock_sha256)
+        self.assertEqual((readiness["image_source_commit"],
+                          readiness["image_run_id"],
+                          readiness["image_artifact_id"]),
+                         ("22c751096e47d2f5ff74d8e5963a7079fa24576f",
+                          46091256475, 15241381990))
+        self.assertNotEqual(readiness["desktop_images_lock_sha256"],
+                            current_lock_sha256)
         self.assertEqual(readiness["required_next_gate"],
                          "run-and-review-generic-atomic-preflight-at-integrated-head")
         self.assertTrue(readiness["claims"])
@@ -565,6 +570,8 @@ class AtomicUpdateTests(unittest.TestCase):
         historical = readiness["historical_reviewed_preflight"]
         self.assertNotEqual(historical["desktop_images_lock_sha256"],
                             current_lock_sha256)
+        self.assertNotEqual(historical["desktop_images_lock_sha256"],
+                            readiness["desktop_images_lock_sha256"])
         for key in ("complete_lock_matches", "integrated_probe_matches", "selected"):
             self.assertIs(historical[key], False)
         self.assertTrue((root / historical["evidence"]).is_file())
