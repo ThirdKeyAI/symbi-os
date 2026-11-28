@@ -1,0 +1,129 @@
+{
+  "schema": 1,
+  "source": {
+    "schema": 1,
+    "variant": "generic",
+    "preflight_run": 46125049529,
+    "repository_id": 1472078858,
+    "evidence_artifact_id": 15254779126,
+    "evidence_artifact_bytes": 62593,
+    "evidence_artifact_sha256": "bed16595c33b40db9aa7650d091f1af532b374ae0df4efc5f0bb15476cb2eb68",
+    "source_commit": "65244ce3806a4ac4f0b1b3f9d576dc403e531da6",
+    "inspect_sha256": "771c9c7a69b2b00acf5048dc9aefba51d3bbe8260796e38b3fe5c8786e3aa17a",
+    "prepare_sha256": "634c7d12646e046bf0fce3b3a234d8e92cf470692d864487bbc469eecf97d83b",
+    "independent_check_sha256": "cd1e0eb629d79b41da4cc0f71c2ed7b10c1140a770faa0fc2fafae1a3ca557af",
+    "kernel_observation_sha256": "2ab9db85f1492ddb0628b0fd8b7552a94f63d228d30a8a94660776506d94cf96",
+    "manifest_digest": "sha256:5391751ede2c156e970e6708d603f0c2fb59e1ddba3cab0b075d53c725a5b624"
+  },
+  "run": {
+    "id": 46125049529,
+    "head_branch": "card/P0-integration-next",
+    "head_sha": "65244ce3806a4ac4f0b1b3f9d576dc403e531da6",
+    "head_tree": "a02bf58d80725fe6294115f0c0e65b7a074c6d75",
+    "event": "workflow_dispatch",
+    "workflow": "Atomic image preflight",
+    "job_id": 140917698390,
+    "job_name": "preflight",
+    "conclusion": "success",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46125049529"
+  },
+  "artifact": {
+    "id": 15254779126,
+    "name": "atomic-image-preflight-generic",
+    "bytes": 62593,
+    "digest": "sha256:bed16595c33b40db9aa7650d091f1af532b374ae0df4efc5f0bb15476cb2eb68",
+    "expires_at": "2026-12-12T08:26:22Z",
+    "downloaded_digest_matched": true
+  },
+  "archive_audit": {
+    "regular_members": 41,
+    "compressed_bytes": 56377,
+    "uncompressed_bytes": 201041,
+    "strict_json_documents": 3,
+    "unsafe_duplicate_encrypted_special_colliding_or_crc_failed_members": 0,
+    "secret_candidates": 0,
+    "extracted": false
+  },
+  "image_binding": {
+    "desktop_lock_sha256": "1a268651cccc61a5693ec9c3a519680b9cffc1844ffeda852f4d151b4b7d670c",
+    "image_artifact_id": 15247719935,
+    "image_artifact_bytes": 4177421526,
+    "image_artifact_sha256": "b3b26053d89b2c5766cb6afbc5066ecb4882a4beaca9c142159de6f27a1edde4",
+    "image_source_run": 46107995231,
+    "image_source_commit": "c6bf3ed9eba34562d886b6b315dd9cb46340c525",
+    "manifest_sha256": "cbfd9d81872dec9cc9198bb4adb89080f09670fa023344b4d7ab2a5acee607ee",
+    "oci_archive": {
+      "name": "symbiont-os-generic.oci.tar.gz",
+      "bytes": 4177420606,
+      "sha256": "02763122742014c3d4a47e50218935d33ddb15b621b692feb10d439aeb57351e",
+      "image_id": "sha256:500360578de668b01b5c4db1bdd583800ce98f1063ba24445b1f84e97af93358"
+    },
+    "full_outer_archive_digest_recomputed": true,
+    "full_oci_archive_digest_recomputed": true,
+    "preparation_sha256": "5cef8a28c27effff123868f965fca278e1d0877c78a882c3f46451a3dfc1b58e",
+    "installed_package_inventory": {
+      "entries": 2184,
+      "unique_entries": 2184,
+      "sha256": "4142fa70cff7227a164225f6ebff5bbbaf7816c5d5d864a4a47c454969445387",
+      "sorted_sha256": "7af38020fc34399648c491a007e089982395582ad2f79448fb853a57c93effc4"
+    }
+  },
+  "checks": {
+    "prepare_passed": true,
+    "inspect_passed": true,
+    "installed_files_checked": 213,
+    "installed_package_identities_preserved": true,
+    "kernel_version": "7.3.4-300.secureblue.1.fc45.x86_64",
+    "kernel_private_payload_removed": true,
+    "bootc_version": "1.17.1",
+    "filesystem_default": null,
+    "filesystem_argument_required": true,
+    "root_readonly": true,
+    "selinux_enforcing": true,
+    "trust_files_matched": true
+  },
+  "resources": {
+    "prepare": {
+      "memory_max_bytes": 1073741824,
+      "memory_peak_bytes": 27082752,
+      "memory_max_events": 0,
+      "swap_max_bytes": 0,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0
+    },
+    "inspect": {
+      "memory_max_bytes": 4294967296,
+      "memory_peak_bytes": 4294971392,
+      "memory_max_events": 32582,
+      "swap_max_bytes": 0,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0
+    },
+    "boot_input_probe": {
+      "memory_max_bytes": 536870912,
+      "memory_peak_bytes": 34488320,
+      "memory_max_events": 0,
+      "swap_max_bytes": 0,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0
+    }
+  },
+  "cleanup": {
+    "containers_removed_and_absent": 3,
+    "loaded_image_removed_and_absent": true,
+    "kernel_private_payload_removed": true
+  },
+  "claims": {
+    "installation_attempted": false,
+    "guest_booted": false,
+    "landlock_qualified": false,
+    "containment_qualified": false,
+    "os_qualified": false,
+    "signature_qualified": false,
+    "release_qualified": false
+  },
+  "limitations": "This read-only preflight authenticated and fully streamed the retained development image, then inspected its bounded inputs. It did not install or boot the image. Native Landlock qualification remains a separate hosted gate."
+}

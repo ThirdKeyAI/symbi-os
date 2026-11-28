@@ -16,18 +16,19 @@ at `c6bf3ed9eba34562d886b6b315dd9cb46340c525`, with 213 installed files and
 the newer NVIDIA entry and has SHA-256
 `1a268651cccc61a5693ec9c3a519680b9cffc1844ffeda852f4d151b4b7d670c`.
 
-No Atomic preflight is selected for that combined lock. Reviewed preflight
-[`46094435550`](https://github.com/ThirdKeyAI/symbi-os/actions/runs/46094435550)
-at `a04cea9737eba9650695f7461fe9e96503695d01` covered the prior generic image
-built at `22c751096e47d2f5ff74d8e5963a7079fa24576f`,
-but its complete desktop-image lock had SHA-256
-`4c4c49db576f9df9fa4a58cbaa6cd5f7b2bec07014a7740829edb0bc3229c0d6`
-and its verifier predates the integrated head. Its reports are retained as
-historical evidence and are explicitly unselected. `preflight.lock.json` leaves all
-installation, boot, Landlock, OS, signature, and release claims false until a fresh
-generic preflight is run and reviewed at the integrated head. The strict validator
-therefore refuses installation because the pending lock still binds the prior
-image and desktop-image lock.
+Atomic preflight
+[`46125049529`](https://github.com/ThirdKeyAI/symbi-os/actions/runs/46125049529)
+passed at the exact integrated head
+`65244ce3806a4ac4f0b1b3f9d576dc403e531da6`. It authenticated and fully
+streamed the selected generic image, reproduced the outer and inner archive
+digests, and inspected the 213 installed files, all 2,184 package identities,
+protected kernel inputs, bootc options, enforcing SELinux configuration and
+trust files. The repository retains the exact prepare and inspect reports plus
+an independent reconciliation. `preflight.lock.json` binds those report bytes,
+the complete desktop-image lock, the evidence artifact and the observed OCI
+manifest with an exact 13-key selector. The preflight did not install or boot an
+image; Landlock, containment, OS, signature and release qualification remain
+false.
 
 Historical prerequisite `45910498271` remains an archived regression fixture for
 the earlier `d436c6ee8a7ed159afa59db9bd82377ae8ea2389` generic image; it is not a

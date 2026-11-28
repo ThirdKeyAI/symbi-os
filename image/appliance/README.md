@@ -7,14 +7,15 @@ release image, a security-qualified OS, or a safe place for real data or account
 The selected generic target is image run `46107995231` at
 `c6bf3ed9eba34562d886b6b315dd9cb46340c525`. Its retained preparation, package
 inventory, and reviewed image summary are in the repository. The combined image
-lock also preserves the newer NVIDIA entry. No Atomic preflight is selected for
-that combined lock: `image/atomic/preflight.lock.json` is an all-false pending
-marker. The reviewed run `46094435550` is retained only as historical evidence
-because it covered a different complete image lock and an older verifier. A fresh
-generic preflight at the integrated head must be reviewed before this workflow is
-dispatched.
+lock also preserves the newer NVIDIA entry. Atomic preflight run
+`46125049529` passed at the exact integrated head
+`65244ce3806a4ac4f0b1b3f9d576dc403e531da6` and is selected by the strict
+13-key lock. The preflight authenticated the complete retained generic OCI and
+its current verifier without making an installation, boot, OS, signature or
+release claim. The appliance producer's reviewed pre-download prerequisite is
+therefore present.
 
-After that gate, the producer consumes the exact retained generic OCI selected by
+The producer consumes the exact retained generic OCI selected by
 `image/desktop-images.lock.json`; the OCI bytes remain read-only and unchanged. The
 controller requires at least 60 GiB free after preparation, then installs a separate
 24 GiB disk with
@@ -24,7 +25,7 @@ only. Nothing adds those units or scripts to the production image or to the reta
 disk.
 
 Before any download, the workflow invokes the same retained-preflight validator as
-the controller and rejects the current all-false selector. It also requires the
+the controller and requires selected run `46125049529`. It also requires the
 60 GiB controller floor plus the exact 4,177,421,526-byte retained ZIP and a 1 GiB
 preparation margin. The seven workflow steps have hard limits of 5, 2, 20, 20, 130,
 10, and 30 minutes: 217 minutes total inside a 240-minute job, leaving 23 minutes of
