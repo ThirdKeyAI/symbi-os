@@ -1,0 +1,77 @@
+name: HIGHLY EXPERIMENTAL interactive appliance
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: interactive-appliance-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  produce:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    env:
+      SYMBI_IMAGE_VARIANT: generic
+      SYMBI_QUALIFICATION: appliance
+    steps:
+      - name: Check out the explicitly selected producer revision
+        timeout-minutes: 5
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+      - name: Require reviewed preflight and runner capacity before download
+        timeout-minutes: 2
+        run: PYTHONDONTWRITEBYTECODE=1 python3 -m image.appliance.prerequisite
+      - name: Download the exact retained generic development OCI
+        timeout-minutes: 20
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p .cache
+          readarray -t input < <(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from image.boot.inputs import require_desktop_image
+          lock=json.loads(Path('image/desktop-images.lock.json').read_text())
+          pins=json.loads(Path('image/base-images.json').read_text())
+          require_desktop_image(lock,pins,'generic')
+          selected=lock['images']['generic']
+          print(selected['artifact']['id'])
+          print(selected['artifact']['sha256'])
+          PY
+          )
+          timeout 30 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/${input[0]}" > .cache/atomic-image-artifact.json
+          timeout 900 gh api "repos/ThirdKeyAI/symbi-os/actions/artifacts/${input[0]}/zip" > .cache/atomic-development-image.zip
+          echo "${input[1]}  .cache/atomic-development-image.zip" | sha256sum --check --strict
+      - name: Verify metadata and stream the exact retained OCI
+        timeout-minutes: 20
+        run: bash scripts/check-atomic-image.sh prepare
+      - name: Install and independently reboot the offline graphical appliance
+        timeout-minutes: 130
+        run: bash scripts/check-interactive-appliance.sh
+      - name: Retain bounded appliance evidence including failures
+        timeout-minutes: 10
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: interactive-appliance-evidence
+          path: |
+            .cache/interactive-appliance-evidence/
+            !.cache/interactive-appliance-evidence/display.ppm
+          if-no-files-found: error
+          retention-days: 7
+      - name: Retain the compressed HIGHLY EXPERIMENTAL qcow2 for two days
+        timeout-minutes: 30
+        if: success()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: highly-experimental-interactive-appliance-generic
+          path: .cache/interactive-appliance-artifact/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 2
