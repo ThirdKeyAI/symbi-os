@@ -2,7 +2,9 @@
 Description=Verify the fixed authenticated hosted qualification source mount
 ConditionPathExists=!/etc/initrd-release
 Wants=systemd-udevd.service
+Wants=d.service
 After=systemd-udevd.service
+After=d.service
 RequiresMountsFor=/run/symbi-qualification/source
 Before=p.service q.service l.service
 OnFailure=poweroff.target

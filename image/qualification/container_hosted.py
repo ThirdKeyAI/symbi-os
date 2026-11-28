@@ -31,6 +31,7 @@ FEDORA_INSTALLATION_FIELDS = {
 }
 REPOSITORY_FINGERPRINT = "6F1DF85E3A71C24918E727D56FC6D554E32BD943"
 SHARED_BOOT_STATUS_INPUTS = {
+    "d.service": "image/qualification/d.service",
     "fstab.extra": "image/qualification/fstab.extra",
     "m.service": "image/qualification/m.service",
     "symbi_mountinfo.py": "image/qualification/symbi_mountinfo.py",

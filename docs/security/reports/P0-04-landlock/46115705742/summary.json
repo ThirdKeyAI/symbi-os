@@ -1,0 +1,123 @@
+{
+  "schema": 1,
+  "passed": false,
+  "qualified": false,
+  "run": {
+    "id": 46115705742,
+    "attempt": 1,
+    "head_branch": "card/P0-04-hosted-fix",
+    "head_sha": "2f1d719c2aebd6cef1b5cf855171ffad3fe5b2c7",
+    "head_tree": "94347e6220a8919a74e657cde723dcfbe70b1d5c",
+    "job_id": 140888951185,
+    "job_name": "qualify",
+    "conclusion": "failure",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46115705742",
+    "qualification_step_started_at": "2026-11-28T06:20:33Z",
+    "qualification_step_completed_at": "2026-11-28T08:08:24Z",
+    "job_completed_at": "2026-11-28T08:08:29Z"
+  },
+  "artifact": {
+    "id": 15254946975,
+    "name": "fedora-landlock-qualification",
+    "bytes": 95957,
+    "digest": "sha256:606a210864057a70f22b8d95f30eefc9f8e738916926e499fb9fb2eb26a5b3ff",
+    "downloaded_zip_digest_matched": true,
+    "expires_at": "2026-12-12T08:08:24Z",
+    "regular_members": 106,
+    "uncompressed_bytes": 414617,
+    "unsafe_duplicate_encrypted_special_or_crc_failed_members": 0
+  },
+  "bindings": {
+    "image_manifest_digest": "sha256:5391751ede2c156e970e6708d603f0c2fb59e1ddba3cab0b075d53c725a5b624",
+    "image_source_commit": "c6bf3ed9eba34562d886b6b315dd9cb46340c525",
+    "preflight_run": 46111954126,
+    "runtime_source_revision": "deddb9e997244d2289c217ad76b8fde0e9b0339b",
+    "runtime_source_tree": "d22a931559cbfccdeb78b27eeb9e5008afb4d53b",
+    "binary_sha256": "1e90af1fe424ec37ad716bbc1e069c0bc7a78f59c49871b7e79506bda69f49c7",
+    "expected_input_sha256": "248906071148ddb9761087fc9c20466af68a679abefad7a3fd6befdb47efdb43",
+    "source_disk_sha256": "6cdb760558d6c9a029a2340e6ee16a1aaee403cf46d0e65cfa078055f616b898",
+    "source_manifest_sha256": "22f3a701197b138961798c57934ee8a3a6155c50a031cad23552b86b5fca48c5",
+    "expected_input_and_source_manifest_hashes_matched": true
+  },
+  "precursors": {
+    "exact_retained_image_intake_passed": true,
+    "ephemeral_fixture_key_authentication_and_negative_controls_passed": true,
+    "installation_passed": true,
+    "ordinary_first_offline_boot_passed": true,
+    "source_disk_creation_and_identity_passed": true,
+    "second_guest_qmp_topology_passed": true,
+    "qmp_source_backend_read_only": true,
+    "qmp_source_backend_nonboot": true
+  },
+  "observation": {
+    "fixed_source_link": "/dev/disk/by-id/virtio-SYMBIQUAL",
+    "device_wait_seconds": 30,
+    "fixed_source_link_observed": false,
+    "guest_entered_emergency_mode": true,
+    "guest_report_received": false,
+    "controller_deadline_seconds": 5700,
+    "failure": "TimeoutError: Landlock guest did not report and power off within 95 minutes",
+    "first_failed_acceptance_predicate": "The exact /dev/disk/by-id/virtio-SYMBIQUAL link did not exist before the fixed 30-second device wait expired.",
+    "landlock_driver_or_tests_executed": false
+  },
+  "resources": {
+    "preflight_peak_bytes": 27156480,
+    "source_authentication_peak_bytes": 96964608,
+    "first_boot": {
+      "memory_peak_bytes": 3221225472,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0,
+      "swap_max_bytes": 0
+    },
+    "second_guest_controller": {
+      "memory_max_bytes": 3221225472,
+      "memory_peak_bytes": 3221225472,
+      "memory_max_events": 1554,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0,
+      "swap_max_bytes": 0,
+      "cpu_quota": "200000 100000",
+      "pids_max": 64
+    },
+    "outer_controller": {
+      "memory_high_bytes": 4294967296,
+      "memory_max_bytes": 5368709120,
+      "memory_peak_bytes": 4298326016,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0,
+      "swap_max_bytes": 0,
+      "cpu_quota": "200000 100000",
+      "pids_max": 256
+    }
+  },
+  "cleanup": {
+    "qmp_quit_sent": true,
+    "exact_qemu_exit_proven": true,
+    "qmp_socket_removed": true,
+    "overlay_removed": true,
+    "all_four_containers_removed_and_absent": true,
+    "loop_devices_absent": true,
+    "loaded_image_removed": true,
+    "private_storage_removed": true,
+    "private_runroot_removed": true
+  },
+  "correction": {
+    "credential_free_image_owned_early_diagnostic": true,
+    "captures_bounded_whole_disk_sysfs_and_udev_properties": true,
+    "distinguishes_absent_serial_driver_rule_database_and_link_boundaries": true,
+    "creates_or_selects_a_fallback_device": false,
+    "fixed_link_selector_changed": false,
+    "device_and_controller_deadlines_changed": false,
+    "new_image_preflight_and_native_rerun_required": true
+  },
+  "claims": {
+    "accepted_second_guest_boot": false,
+    "landlock_qualified": false,
+    "containment_qualified": false,
+    "os_qualified": false,
+    "release_qualified": false
+  }
+}

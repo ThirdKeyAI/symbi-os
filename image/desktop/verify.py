@@ -46,7 +46,8 @@ def main():
         count += 1
     for name in ('/usr/bin/hyprpm', '/usr/lib/symbi/hyprland/bin/hyprpm'):
         if os.path.lexists(name): raise ValueError('Hyprland package manager remains installed')
-    for name in ('symbi-desktop-session', 'symbi-seed-config', 'symbi-launch-desktop-services'):
+    for name in ('symbi-desktop-session', 'symbi-seed-config', 'symbi-launch-desktop-services',
+                 'symbi-qualification-source-diagnostic.py'):
         if not os.access('/usr/libexec/'+name, os.X_OK): raise ValueError('Desktop helper is not executable')
     fmt = '%{NAME}\t%{EPOCHNUM}\t%{VERSION}\t%{RELEASE}\t%{ARCH}\n'
     inventory = subprocess.check_output(['rpm', '-qa', '--qf', fmt], text=True, timeout=30).splitlines()

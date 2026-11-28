@@ -1,0 +1,40 @@
+[Unit]
+Description=Record bounded hosted source-disk discovery diagnostics
+ConditionPathExists=!/etc/initrd-release
+Wants=systemd-udevd.service systemd-udev-trigger.service
+After=systemd-udevd.service systemd-udev-trigger.service
+Before=m.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/symbi-qualification-source-diagnostic.py
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=LANG=C.UTF-8
+User=root
+Group=root
+NoNewPrivileges=yes
+CapabilityBoundingSet=
+AmbientCapabilities=
+PrivateNetwork=yes
+PrivatePIDs=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+LockPersonality=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_NETLINK
+SystemCallArchitectures=native
+MemoryMax=64M
+MemorySwapMax=0
+CPUQuota=25%
+TasksMax=8
+TimeoutStartSec=20
+TimeoutStopSec=5
+StandardOutput=journal+console
+StandardError=journal+console

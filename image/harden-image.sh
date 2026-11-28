@@ -41,7 +41,17 @@ rm -f /usr/bin/hyprpm
 for unit in abrtd.service abrt-journal-core.service abrt-oops.service abrt-xorg.service; do
   ln -sfn /dev/null "/etc/systemd/system/$unit"
 done
-chmod 0755 /usr/libexec/symbi-seed-config /usr/libexec/symbi-desktop-session
+qualification_diagnostic=/usr/libexec/symbi-qualification-source-diagnostic.py
+qualification_diagnostic_sha256=1b4a2c137b286b7f166140d7b4bc7b56b19160e93c41e4f7a8e318780fd74c81
+[[ -f "$qualification_diagnostic" && ! -L "$qualification_diagnostic" ]] || {
+  printf 'Fixed qualification source diagnostic is absent.\n' >&2
+  exit 1
+}
+[[ $(sha256sum < "$qualification_diagnostic") == "$qualification_diagnostic_sha256  -" ]] || {
+  printf 'Fixed qualification source diagnostic differs.\n' >&2
+  exit 1
+}
+chmod 0755 /usr/libexec/symbi-seed-config /usr/libexec/symbi-desktop-session "$qualification_diagnostic"
 chmod 0644 /etc/profile.d/symbi-privacy.sh
 qualification_rule=/usr/lib/udev/rules.d/61-symbi-qualification-source.rules
 qualification_rule_sha256=0158d5f15b022e0f7404a82283c0b878e04c79e117437ed3bf20f03e5cc79732
