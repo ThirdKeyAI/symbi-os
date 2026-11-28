@@ -1,12 +1,56 @@
 {
-  "schema": 1,
-  "status": "pending",
+  "schema": 2,
+  "state": "pending",
   "selected": false,
+  "verified": false,
   "qualified": false,
   "container_qualified": false,
   "signature_qualified": false,
   "os_qualified": false,
   "release_qualified": false,
+  "repository": {
+    "id": 1472078858,
+    "full_name": "ThirdKeyAI/symbi-os"
+  },
+  "workflow": {
+    "id": null,
+    "path": ".github/workflows/ubuntu-fixture-packages.yml",
+    "event": "workflow_dispatch"
+  },
+  "run": {
+    "id": null,
+    "attempt": null,
+    "head_sha": null,
+    "head_branch": null,
+    "status": "pending",
+    "conclusion": null,
+    "repository": {"id": 1472078858, "full_name": "ThirdKeyAI/symbi-os"},
+    "head_repository": {"id": 1472078858, "full_name": "ThirdKeyAI/symbi-os"}
+  },
+  "artifacts": {
+    "candidate": {
+      "api": {
+        "id": null,
+        "name": "container-ubuntu-fixture-packages",
+        "size_in_bytes": null,
+        "digest": null,
+        "expired": null,
+        "workflow_run": null
+      },
+      "zip": {"bytes": null, "sha256": null}
+    },
+    "evidence": {
+      "api": {
+        "id": null,
+        "name": "container-ubuntu-fixture-package-evidence",
+        "size_in_bytes": null,
+        "digest": null,
+        "expired": null,
+        "workflow_run": null
+      },
+      "zip": {"bytes": null, "sha256": null}
+    }
+  },
   "rootfs": {
     "archive": "ubuntu-base-24.04.5-base-amd64.tar.gz",
     "url": "https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.5-base-amd64.tar.gz",
@@ -29,16 +73,8 @@
   "package_request": {
     "architecture": "amd64",
     "component": "main",
-    "suites": [
-      "noble",
-      "noble-updates",
-      "noble-security"
-    ],
-    "roots": [
-      "python3",
-      "git",
-      "ca-certificates"
-    ],
+    "suites": ["noble", "noble-updates", "noble-security"],
+    "roots": ["python3", "git", "ca-certificates"],
     "install_recommends": false
   },
   "sources": [
@@ -95,22 +131,22 @@
       "test-git-source.py": "82a02079c1a13799d03295e33ea4bc6f6120af7b8c4d25a840dcf023b4e0a075"
     }
   },
-  "producer": {
-    "workflow": null,
-    "run_id": null,
-    "run_attempt": null,
-    "head_sha": null
+  "candidate": {
+    "manifest": {"path": "manifest.json", "bytes": null, "sha256": null},
+    "producer_contract_sha256": null,
+    "release_metadata": [],
+    "package_indexes": [],
+    "package_count": 0,
+    "package_bytes": 0,
+    "packages": []
   },
-  "artifact": {
-    "id": null,
-    "name": "container-ubuntu-fixture-packages",
-    "bytes": null,
-    "sha256": null
+  "evidence": {
+    "producer_result": {
+      "path": "producer-result.json",
+      "bytes": null,
+      "sha256": null
+    },
+    "members": []
   },
-  "release_metadata": [],
-  "package_indexes": [],
-  "package_count": 0,
-  "package_bytes": 0,
-  "packages": [],
-  "scope": "Pending signed Ubuntu fixture package closure; no metadata payload, artifact, build, container, OS or release qualification"
+  "scope": "Pending offline fixture package selection; no artifact, verification, build, container, OS or release claim"
 }

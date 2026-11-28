@@ -31,13 +31,15 @@ fixture execution. The complete job has 4 GiB, two CPUs, no swap and a 110-minut
 deadline. Each fixture-image build has an additional 512 MiB/one-CPU ceiling;
 actual workers keep the upstream profile's limits and network restrictions.
 
-Only installation of signed Ubuntu packages into the development fixture image
-uses host networking. Its package versions and signed repository metadata are
-retained, and the resulting image ID is immutable before tests start. The image
-is not reproducible release output; Ubuntu package dependencies still require
-their own pinned release process if this fixture ever becomes a shipped input.
-No release environment, provider credentials or registry-write permission is
-available to the workflow.
+The prepared fixture-image route does not resolve packages during the build.
+Its authenticated intake must first materialize one reviewed package artifact
+whose manifest binds signed Ubuntu repository metadata and every exact `.deb`
+identity. The Dockerfile copies those local metadata and package bytes, runs
+`dpkg --unpack` and `dpkg --configure -a` under `--network=none`, and preserves
+the manifest with the image evidence. The public package-selection lock remains
+pending, so the workflow stops before package transfer or image construction.
+No fixture image, release or qualification claim follows, and no release
+environment, provider credentials or registry-write permission is available.
 
 The unprivileged trusted test account runs all three drivers sequentially for
 both backends. The full container filesystem driver has nine cases: upstream
@@ -121,11 +123,12 @@ acceptance, plus required reviews, are not established by these six drivers.
 ## Native fixture OCI export remains disabled
 
 The prepared exporter is not an extension of the passing evidence above. The
-current Dockerfile resolves Python, Git and CA packages live. The hosted source
-contract now selects merge `cd4b34282ade880c8ac3d5136d31ff80cde92794`, and
-run 45995824985 exercised that selection, but it produced evidence only: no OCI
-was exported or cold-loaded. The `native-fixture-build.lock.json` prerequisite
-slot remains pending and unchanged; the producer and upload stay disabled.
+current Dockerfile accepts only the authenticated local package closure and has
+no repository or package download step. The hosted source contract selects
+merge `cd4b34282ade880c8ac3d5136d31ff80cde92794`, and run 45995824985 exercised
+that source selection, but it produced evidence only: no OCI was exported or
+cold-loaded. The `native-fixture-build.lock.json` prerequisite slot remains
+pending; the producer and upload stay disabled.
 Activation requires a reviewed full package closure authenticated by signed
 Ubuntu Release/InRelease and Packages metadata, exact package identities,
 sizes and hashes, sequential verified downloads, and an offline
@@ -191,11 +194,13 @@ under the resolved checkout, and retains the private scratch for disposal with
 the ephemeral runner. It performs no recursive pathname cleanup or ownership
 change.
 
-This preparation is not wired to `container-fixtures.yml` or
-`native_fixture_build.py`. The current Dockerfile still performs its historical
-live apt installation, the committed Ubuntu lock remains pending and empty, and
-its public validator rejects a populated candidate. No image build, OCI export,
-cold load, selection or qualification is enabled by this slice.
+This preparation is wired to `container-fixtures.yml` and
+`native_fixture_build.py` only through fail-closed intake and preflight gates.
+The Dockerfile consumes the locally materialized `.deb` closure with `dpkg` and
+network disabled. The committed Ubuntu selection lock remains pending and
+empty, so intake stops before artifact API access and native preflight stops
+before image work. No image build, OCI export, cold load, selection or
+qualification is enabled while either lock is pending.
 
 The manual ubuntu-fixture-packages.yml workflow remains workflow_dispatch only.
 Its checked-in contract is now ready with the six exact InRelease and

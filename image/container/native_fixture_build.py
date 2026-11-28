@@ -50,7 +50,8 @@ MIN_FREE_AFTER_SAVE = (
 PREREQUISITE_FIELDS = {
     "schema", "state", "selected", "built", "qualified",
     "container_qualified", "os_qualified", "release_qualified",
-    "signature_qualified", "fixture_source", "limits", "blockers", "scope",
+    "signature_qualified", "fixture_source", "limits", "cold_load", "blockers",
+    "scope",
 }
 PREREQUISITE_LIMITS = {
     "compressed_oci_bytes": MAX_PRODUCED_ARCHIVE_BYTES,
@@ -64,6 +65,13 @@ PREREQUISITE_BLOCKERS = [
     "cold-load-by-manifest-digest",
     "artifact-upload-approval",
 ]
+COLD_LOAD_POLICY = {
+    "required": True,
+    "network": "none",
+    "reference": "manifest-digest",
+    "repository": IMAGE_REPOSITORY,
+    "verified": False,
+}
 PREREQUISITE_SCOPE = (
     "Native fixture producer remains disabled until authenticated offline "
     "packages, exact source alignment, cold load and upload approval exist"
@@ -211,10 +219,31 @@ def load_prerequisites(root, fixture_source):
             and value.get("signature_qualified") is False
             and value.get("fixture_source") == fixture_source
             and value.get("limits") == PREREQUISITE_LIMITS
+            and value.get("cold_load") == COLD_LOAD_POLICY
             and value.get("blockers") == PREREQUISITE_BLOCKERS
             and value.get("scope") == PREREQUISITE_SCOPE,
             "native fixture build prerequisite slot changed or made a claim")
     return {"ready": False, "blockers": list(value["blockers"])}
+
+
+def preflight_fixture_output(root):
+    """Fail before image work until package selection and export gates are ready."""
+    from image.container import ubuntu_fixture_inputs as package_inputs
+
+    root = Path(root).resolve()
+    package_lock = package_inputs.load_lock(root)
+    package_status = package_inputs.validate_lock(root, package_lock)
+    fixture_source = load_fixture_pin(root)
+    prerequisites = load_prerequisites(root, fixture_source)
+    blockers = []
+    if package_status["ready"] is not True:
+        blockers.append(package_status["blocker"])
+    if prerequisites["ready"] is not True:
+        blockers.extend(prerequisites["blockers"])
+    blockers = list(dict.fromkeys(blockers))
+    require(not blockers,
+            "native fixture producer is blocked: " + ",".join(blockers))
+    return {"ready": True, "cold_load": dict(COLD_LOAD_POLICY)}
 
 
 def _tar_members(stream):
@@ -609,22 +638,22 @@ def _export_fixture_output(root, image_id, environment=None, available_bytes=Non
 def build_fixture_output(root, image_id, environment=None, available_bytes=None):
     """Fail closed until every committed native producer prerequisite is ready."""
     root = Path(root).resolve()
-    fixture_source = load_fixture_pin(root)
-    prerequisites = load_prerequisites(root, fixture_source)
-    require(prerequisites["ready"] is True,
-            "native fixture producer is blocked: "
-            + ",".join(prerequisites["blockers"]))
+    preflight_fixture_output(root)
     return _export_fixture_output(
         root, image_id, environment=environment,
         available_bytes=available_bytes)
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", required=True, type=Path)
-    parser.add_argument("--image-id", required=True)
-    args = parser.parse_args()
-    record = build_fixture_output(args.root, args.image_id)
+    subparsers = parser.add_subparsers(dest="mode", required=True)
+    subparsers.add_parser("preflight")
+    export = subparsers.add_parser("export")
+    export.add_argument("--image-id", required=True)
+    args = parser.parse_args(argv)
+    record = (preflight_fixture_output(args.root) if args.mode == "preflight"
+              else build_fixture_output(args.root, args.image_id))
     print(json.dumps(record, sort_keys=True))
 
 

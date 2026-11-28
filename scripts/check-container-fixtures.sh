@@ -13,7 +13,11 @@ sudo systemd-run --unit="$unit" --wait --pipe --working-directory="$root" \
   --property=TasksMax=256 --property=Nice=10 --property=RuntimeMaxSec=110min \
   --property=Delegate=yes --property=DelegateSubgroup=supervisor --property=KillMode=control-group \
   /usr/bin/env -i PATH=/usr/local/bin:/usr/bin:/bin HOME=/root \
-  GITHUB_ACTIONS=true RUNNER_ENVIRONMENT=github-hosted "GITHUB_SHA=$GITHUB_SHA" "FIXTURE_USER=$(id -un)" \
+  GITHUB_ACTIONS=true RUNNER_ENVIRONMENT=github-hosted \
+  "GITHUB_EVENT_NAME=$GITHUB_EVENT_NAME" "GITHUB_REPOSITORY=$GITHUB_REPOSITORY" \
+  "GITHUB_SHA=$GITHUB_SHA" "GITHUB_RUN_ID=$GITHUB_RUN_ID" \
+  "GITHUB_RUN_ATTEMPT=$GITHUB_RUN_ATTEMPT" "GITHUB_REF_NAME=$GITHUB_REF_NAME" \
+  "FIXTURE_USER=$(id -un)" \
   GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_TERMINAL_PROMPT=0 \
   PYTHONDONTWRITEBYTECODE=1 python3 image/container/hosted/check.py \
   2>&1 | tee "$root/.cache/container-fixture-evidence/hosted-fixtures.log"

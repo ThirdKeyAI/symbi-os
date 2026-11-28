@@ -1,11 +1,6 @@
 name: Hosted Docker and gVisor fixtures
 
 on:
-  pull_request:
-    paths:
-      - image/container/hosted/**
-      - scripts/check-container-fixtures.sh
-      - .github/workflows/container-fixtures.yml
   workflow_dispatch:
 
 permissions:
@@ -25,6 +20,17 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           persist-credentials: false
+      - name: Authenticate and materialize the selected offline fixture packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/check-container-ubuntu-package-input.sh
+      - name: Require reviewed native export and cold-load prerequisites
+        run: python3 -m image.container.native_fixture_build --root . preflight
+      - name: Retain the current producer run identity for the native exporter
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/ThirdKeyAI/symbi-os/actions/runs/${GITHUB_RUN_ID}/attempts/${GITHUB_RUN_ATTEMPT}" > .cache/container-fixture-producer-run.json
       - name: Retrieve the exact checked development-binary artifact
         env:
           GH_TOKEN: ${{ github.token }}

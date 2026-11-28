@@ -23,6 +23,13 @@
     "manifest_bytes": 65536,
     "producer_cpu": 1
   },
+  "cold_load": {
+    "required": true,
+    "network": "none",
+    "reference": "manifest-digest",
+    "repository": "localhost/symbi-ci/native-fixture",
+    "verified": false
+  },
   "blockers": [
     "offline-ubuntu-package-closure",
     "fixture-source-alignment",
