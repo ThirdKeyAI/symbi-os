@@ -26,13 +26,12 @@ PROVISION_COMMAND_TIMEOUTS = {
     "lock-fixture-account": 10,
     "select-graphical-target": 10,
     "enable-display-manager": 15,
-    "remove-fixture-boot-wants": 240,
 }
 PROVISION_LOCAL_WORK_BUDGET_SECONDS = 30
-PROVISION_SERVICE_TIMEOUT_SECONDS = 360
+PROVISION_SERVICE_TIMEOUT_SECONDS = 120
 VERIFIER_SERVICE_TIMEOUT_SECONDS = 420
 FIRST_BOOT_ORCHESTRATION_BUDGET_SECONDS = 180
-FIRST_BOOT_CONTROLLER_MARGIN_SECONDS = 240
+FIRST_BOOT_CONTROLLER_MARGIN_SECONDS = 480
 FIRST_BOOT_TIMEOUT_SECONDS = 1200
 PROVISION_SUBPROCESS_BUDGET_SECONDS = sum(PROVISION_COMMAND_TIMEOUTS.values())
 PROVISION_PHASE_BUDGET_SECONDS = (
@@ -120,15 +119,6 @@ def run_phase(name, command):
     return result
 
 
-def remove_fixture_boot_wants():
-    """Stage one bounded deployment without the two first-boot fixture wants."""
-    run_phase("remove-fixture-boot-wants", [
-        "/usr/bin/rpm-ostree", "kargs",
-        "--delete-if-present=systemd.wants=p.service",
-        "--delete-if-present=systemd.wants=v.service",
-    ])
-
-
 def main():
     status("provision-start")
     product = Path("/sys/class/dmi/id/product_name").read_text().strip()
@@ -189,13 +179,12 @@ def main():
     run_phase("enable-display-manager", [
         "/usr/bin/systemctl", "enable", "--force", "sddm.service",
     ])
-    remove_fixture_boot_wants()
     state = {
         "schema": 1, "nonce": expected["nonce"], "source_binding": expected["source_binding"],
         "expected_sha256": digest(expected_path), "provision_sha256": digest(Path(__file__)),
         "kernel": platform.release(), "account_created": True, "password_set": False,
         "authorized_key_written": False, "production_image_modified": False,
-        "autologin_sha256": digest(autologin), "boot_wants_removed": True,
+        "autologin_sha256": digest(autologin), "transient_boot_units": True,
     }
     target = Path("/run/symbi-appliance-provision.json")
     target.write_text(json.dumps(state, sort_keys=True) + "\n")

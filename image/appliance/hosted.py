@@ -368,6 +368,19 @@ def _failure_input(path, maximum):
         return None, "changed"
 
 
+FAILURE_CONSOLE_PREFIX = re.compile(
+    rb"\A\[[ ]*[0-9]{1,10}\.[0-9]{6}\][ ]+"
+    rb"(?:symbi-appliance-provision|symbi-appliance-verify)"
+    rb"\[[1-9][0-9]{0,9}\]:[ ]+"
+)
+
+
+def _failure_log_payload(candidate):
+    """Remove only the reviewed journald console envelope, never arbitrary text."""
+    match = FAILURE_CONSOLE_PREFIX.match(candidate)
+    return candidate[match.end():] if match is not None else candidate
+
+
 def _failure_log(path, maximum):
     raw, refused = _failure_input(path, maximum)
     if refused is not None:
@@ -376,7 +389,7 @@ def _failure_log(path, maximum):
     observed = []
     lines = raw.splitlines()
     for line in lines:
-        candidate = line.strip()
+        candidate = _failure_log_payload(line.strip())
         if not candidate.startswith(status_prefix):
             continue
         try:
@@ -399,7 +412,7 @@ def _failure_log(path, maximum):
         raise ValueError("Incomplete appliance failure error-class allowlist")
     observed_errors = set()
     for line in lines:
-        candidate = line.strip()
+        candidate = _failure_log_payload(line.strip())
         for name, prefix in error_prefixes.items():
             if candidate == prefix or candidate.startswith(prefix + b":"):
                 observed_errors.add(name)

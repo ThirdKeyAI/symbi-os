@@ -1,5 +1,6 @@
 """Offline contract tests for the HIGHLY EXPERIMENTAL graphical appliance."""
 import ast
+import base64
 import copy
 from datetime import datetime, timezone
 import errno
@@ -13,6 +14,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from unittest import mock
 
@@ -21,11 +23,12 @@ import yaml
 from image.appliance.contract import (APPLIANCE_CONTAINER_LIMITS,
     APPLIANCE_CONTAINER_MEMORY_BYTES, APPLIANCE_CONTROLLER_MARGIN_BYTES,
     APPLIANCE_CONTROLLER_MEMORY_BYTES, ARTIFACT_NAME, FAILURE_STATUS_SENTINELS,
-    PROVISION_STATUS_PHASES, SCOPE, SDDM_CONFIGURATION,
+    PROVISION_STATUS_PHASES, SCOPE, SDDM_CONFIGURATION, TRANSIENT_BOOT_CREDENTIAL,
+    TRANSIENT_BOOT_DROPIN,
     VIRTUAL_DISK_BYTES, build_manifest, controller_failure_record, failure_record,
     firmware_arguments, installer_arguments, provision_qemu_arguments,
     reboot_qemu_arguments, user_launch_arguments, validate_guest_report,
-    validate_producer_failure_status, validate_reboot_report,
+    validate_producer_failure_status, validate_reboot_report, transient_boot_arguments,
     validate_source_binding)
 from image.appliance.hosted import (EVIDENCE_FILE_LIMITS,
                                     MAX_RETAINED_EVIDENCE_BYTES,
@@ -43,7 +46,10 @@ from image.appliance.prerequisite import (DOWNLOAD_WORKING_MARGIN_BYTES,
 from image.appliance.reboot import (bounded_log, ppm_observation,
                                     require_empty_output)
 from image.appliance.verify import (bound_regular, observe_bounded_walker,
-                                    path_absent, reviewed_launcher)
+                                    path_absent,
+                                    persistent_fixture_boot_references_absent,
+                                    reviewed_launcher,
+                                    transient_boot_dropin_is_exact)
 from image.atomic.hosted import MINIMUM_DISK_FREE_BYTES, enforce_appliance_final_status
 
 
@@ -143,7 +149,7 @@ def guest(expected):
                                 "virtio_pointer": True},
         "fixture_user": {"name": "symbi-test", "password_locked": True,
                          "non_wheel": True, "authorized_keys_absent": True},
-        "fixture_cleanup": {"boot_wants_removed": True, "persistent_scripts_absent": True,
+        "fixture_cleanup": {"persistent_boot_wants_absent": True, "persistent_scripts_absent": True,
                             "persistent_units_absent": True, "credentials_absent": True},
         "desktop_components": {"Hyprland": True, "Waybar": True, "Walker": True,
                                "portal": True, "first_login_seeded": True},
@@ -840,8 +846,8 @@ class InteractiveApplianceContract(unittest.TestCase):
     def test_installer_selects_graphical_target_and_ephemeral_units(self):
         command = installer_arguments("sha256:" + "a"*64)
         self.assertIn("--karg=systemd.unit=graphical.target", command)
-        self.assertIn("--karg=systemd.wants=p.service", command)
-        self.assertIn("--karg=systemd.wants=v.service", command)
+        self.assertNotIn("--karg=systemd.wants=p.service", command)
+        self.assertNotIn("--karg=systemd.wants=v.service", command)
         self.assertNotIn("--karg=systemd.unit=multi-user.target", command)
         self.assertEqual(command[-1], "/output/atomic.raw")
         for bad in ("latest", "sha256:abc", "sha256:" + "z"*64):
@@ -856,6 +862,148 @@ class InteractiveApplianceContract(unittest.TestCase):
         for forbidden in ("password", "authorized_keys", "private-key", "ssh-key"):
             self.assertNotIn(forbidden, text.lower())
         self.assertEqual(len(arguments), 10)
+
+    def test_transient_boot_units_are_exactly_credential_bound(self):
+        arguments = transient_boot_arguments()
+        self.assertEqual(arguments[0], "-smbios")
+        prefix = "type=11,value=io.systemd.credential.binary:"
+        self.assertTrue(arguments[1].startswith(prefix))
+        name, encoded = arguments[1][len(prefix):].split("=", 1)
+        self.assertEqual(name, TRANSIENT_BOOT_CREDENTIAL)
+        self.assertEqual(base64.b64decode(encoded, validate=True), TRANSIENT_BOOT_DROPIN)
+        self.assertEqual(TRANSIENT_BOOT_DROPIN, b"[Unit]\nWants=p.service v.service\n")
+        provision = provision_qemu_arguments()
+        self.assertEqual(provision.count(arguments[1]), 1)
+        self.assertNotIn(arguments[1], reboot_qemu_arguments())
+        self.assertNotIn(arguments[1], user_launch_arguments())
+
+    def test_transient_boot_dropin_is_exactly_loaded_and_runtime_only(self):
+        from image.appliance import verify
+
+        self.assertEqual(verify.TRANSIENT_BOOT_DROPIN, TRANSIENT_BOOT_DROPIN)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            runtime = root / "run/systemd/generator.early/graphical.target.d"
+            runtime.mkdir(parents=True)
+            for directory in (
+                    root / "run", root / "run/systemd",
+                    root / "run/systemd/generator.early", runtime):
+                directory.chmod(0o755)
+            dropin = runtime / "symbi-appliance.conf"
+            dropin.write_bytes(TRANSIENT_BOOT_DROPIN)
+            dropin.chmod(0o644)
+            persistent = root / "etc/systemd/system"
+            persistent.mkdir(parents=True)
+            loaded = subprocess.CompletedProcess(
+                [], 0, stdout=os.fspath(dropin) + "\n", stderr="")
+            with mock.patch("image.appliance.verify.run", side_effect=[loaded, loaded]):
+                self.assertTrue(transient_boot_dropin_is_exact(
+                    time.monotonic() + 10, path=dropin,
+                    persistent_roots=(persistent,), owner_uid=os.geteuid(),
+                    runtime_root=root / "run"))
+
+            other = root / "usr/lib/systemd/system/graphical.target.d/90-other.conf"
+            other.parent.mkdir(parents=True)
+            other.write_text("[Unit]\nRequires=p.service\n")
+            other.chmod(0o644)
+            graphical = subprocess.CompletedProcess(
+                [], 0, stdout=f"{dropin} {other}\n", stderr="")
+            with mock.patch("image.appliance.verify.run",
+                            side_effect=[graphical, loaded]):
+                self.assertFalse(transient_boot_dropin_is_exact(
+                    time.monotonic() + 10, path=dropin,
+                    persistent_roots=(persistent,), owner_uid=os.geteuid(),
+                    runtime_root=root / "run"))
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            runtime_root = root / "run"
+            runtime_root.mkdir()
+            outside = root / "persistent/systemd/generator.early/graphical.target.d"
+            outside.mkdir(parents=True)
+            (outside / "symbi-appliance.conf").write_bytes(TRANSIENT_BOOT_DROPIN)
+            (outside / "symbi-appliance.conf").chmod(0o644)
+            (runtime_root / "systemd").symlink_to(root / "persistent/systemd")
+            dropin = runtime_root / (
+                "systemd/generator.early/graphical.target.d/symbi-appliance.conf")
+            persistent = root / "etc/systemd/system"
+            persistent.mkdir(parents=True)
+            loaded = subprocess.CompletedProcess(
+                [], 0, stdout=os.fspath(dropin) + "\n", stderr="")
+            with mock.patch("image.appliance.verify.run", side_effect=[loaded, loaded]):
+                self.assertFalse(transient_boot_dropin_is_exact(
+                    time.monotonic() + 10, path=dropin,
+                    persistent_roots=(persistent,), owner_uid=os.geteuid(),
+                    runtime_root=runtime_root))
+
+    def test_persistent_fixture_boot_references_are_rejected(self):
+        cases = (
+            ("p.service", b"[Unit]\nDescription=fixture\n"),
+            ("graphical.target.d/symbi-appliance.conf",
+             b"[Unit]\nDescription=shadow\n"),
+            ("multi-user.target.d/90-fixture.conf",
+             b"[Unit]\nWants=v.service\n"),
+            ("multi-user.target.d/91-escaped.conf",
+             b"[Unit]\nWants=\\x70\\x2eservice\n"),
+            ("multi-user.target.d/92-quoted.conf",
+             b"[Unit]\nWants=\"v\"\".service\"\n"),
+            ("graphical.target", b"[Unit]\nRequires=p.service\n"),
+            ("basic.target.wants/p.service", None),
+        )
+        for relative, content in cases:
+            with self.subTest(relative=relative), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary) / "system"
+                root.mkdir()
+                target = root / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                if content is None:
+                    target.symlink_to("/run/systemd/generator.early/p.service")
+                else:
+                    target.write_bytes(content)
+                    target.chmod(0o644)
+                self.assertFalse(persistent_fixture_boot_references_absent(
+                    (root,), os.geteuid()))
+
+        with tempfile.TemporaryDirectory() as temporary:
+            base = Path(temporary)
+            root = base / "system"
+            root.mkdir()
+            hidden = base / "hidden-fragment"
+            hidden.write_text("[Unit]\nWants=p.service\n")
+            hidden.chmod(0o644)
+            (root / "graphical.target").symlink_to(hidden)
+            self.assertFalse(persistent_fixture_boot_references_absent(
+                (root,), os.geteuid()))
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "system"
+            wants = root / "graphical.target.wants"
+            wants.mkdir(parents=True)
+            fixture = root / "p.service"
+            fixture.write_text("[Service]\nExecStart=/bin/true\n")
+            fixture.chmod(0o644)
+            (wants / "fixture.service").symlink_to(fixture)
+            self.assertFalse(persistent_fixture_boot_references_absent(
+                (root,), os.geteuid()))
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "system"
+            dropin = root / "graphical.target.d/90-safe.conf"
+            dropin.parent.mkdir(parents=True)
+            dropin.write_text("[Unit]\nWants=sddm.service\n")
+            dropin.chmod(0o644)
+            (root / "default.target").symlink_to("../system/graphical.target")
+            (root / "graphical.target").write_text(
+                "[Unit]\nWants=multi-user.target\n")
+            (root / "graphical.target").chmod(0o644)
+            service = root / "sddm.service"
+            service.write_text("[Service]\nExecStart=/usr/bin/sddm\n")
+            service.chmod(0o644)
+            wants = root / "graphical.target.wants"
+            wants.mkdir()
+            (wants / "sddm.service").symlink_to(service)
+            self.assertTrue(persistent_fixture_boot_references_absent(
+                (root,), os.geteuid()))
 
     def test_both_boots_have_interactive_devices_and_no_network(self):
         for command in (provision_qemu_arguments(), reboot_qemu_arguments(), user_launch_arguments()):
@@ -916,19 +1064,13 @@ class InteractiveApplianceContract(unittest.TestCase):
         self.assertIn("HIGHLY EXPERIMENTAL disposable development appliance only", SDDM_CONFIGURATION)
         self.assertIn("no password or key", SDDM_CONFIGURATION)
 
-    def test_provision_serializes_one_karg_transaction_before_background_update(self):
-        from image.appliance import provision
-
+    def test_provision_uses_no_persistent_fixture_boot_transaction(self):
         unit = (ROOT / "image/appliance/p.service").read_text()
         self.assertIn("Before=display-manager.service sddm.service upgrade-on-boot.service", unit)
-        with mock.patch.object(provision, "run") as execute:
-            provision.remove_fixture_boot_wants()
-        execute.assert_called_once_with([
-            "/usr/bin/rpm-ostree", "kargs",
-            "--delete-if-present=systemd.wants=p.service",
-            "--delete-if-present=systemd.wants=v.service",
-        ], timeout=provision.PROVISION_COMMAND_TIMEOUTS[
-            "remove-fixture-boot-wants"])
+        source = (ROOT / "image/appliance/provision.py").read_text()
+        self.assertNotIn("rpm-ostree", source)
+        self.assertNotIn("systemd.wants=", source)
+        self.assertIn("transient_boot_units", source)
 
     def test_provision_and_first_boot_time_budgets_are_statically_closed(self):
         from image.appliance import contract, provision, verify
@@ -939,20 +1081,19 @@ class InteractiveApplianceContract(unittest.TestCase):
             "lock-fixture-account": 10,
             "select-graphical-target": 10,
             "enable-display-manager": 15,
-            "remove-fixture-boot-wants": 240,
         })
-        self.assertEqual(provision.PROVISION_SUBPROCESS_BUDGET_SECONDS, 300)
+        self.assertEqual(provision.PROVISION_SUBPROCESS_BUDGET_SECONDS, 60)
         self.assertEqual(provision.PROVISION_LOCAL_WORK_BUDGET_SECONDS, 30)
-        self.assertEqual(provision.PROVISION_PHASE_BUDGET_SECONDS, 330)
-        self.assertEqual(provision.PROVISION_SERVICE_TIMEOUT_SECONDS, 360)
+        self.assertEqual(provision.PROVISION_PHASE_BUDGET_SECONDS, 90)
+        self.assertEqual(provision.PROVISION_SERVICE_TIMEOUT_SECONDS, 120)
         self.assertEqual(provision.PROVISION_SERVICE_MARGIN_SECONDS, 30)
         self.assertEqual(provision.VERIFIER_SERVICE_TIMEOUT_SECONDS, 420)
         self.assertEqual(verify.VERIFIER_SERVICE_TIMEOUT_SECONDS, 420)
-        self.assertEqual(verify.VERIFIER_APPLICATION_BUDGET_SECONDS, 390)
-        self.assertEqual(verify.VERIFIER_SERVICE_MARGIN_SECONDS, 30)
+        self.assertEqual(verify.VERIFIER_APPLICATION_BUDGET_SECONDS, 400)
+        self.assertEqual(verify.VERIFIER_SERVICE_MARGIN_SECONDS, 20)
         self.assertEqual(verify.VERIFIER_PHASE_BUDGETS, {
             "graphical-session-and-portal": 260,
-            "fixed-commands": 45,
+            "fixed-commands": 55,
             "walker-lifecycle": 70,
             "local-validation-and-report": 15,
         })
@@ -961,12 +1102,16 @@ class InteractiveApplianceContract(unittest.TestCase):
             "package-query": 2,
             "package-verify": 8,
             "kargs": 10,
+            "graphical-dropin-paths": 5,
+            "default-dropin-paths": 5,
         })
         self.assertEqual(
             verify.FIXED_COMMAND_TIMEOUTS["get-default"]
             + 3 * (verify.FIXED_COMMAND_TIMEOUTS["package-query"]
                    + verify.FIXED_COMMAND_TIMEOUTS["package-verify"])
-            + verify.FIXED_COMMAND_TIMEOUTS["kargs"],
+            + verify.FIXED_COMMAND_TIMEOUTS["kargs"]
+            + verify.FIXED_COMMAND_TIMEOUTS["graphical-dropin-paths"]
+            + verify.FIXED_COMMAND_TIMEOUTS["default-dropin-paths"],
             verify.VERIFIER_PHASE_BUDGETS["fixed-commands"],
         )
         self.assertEqual(verify.WALKER_STEP_TIMEOUTS, {
@@ -985,7 +1130,7 @@ class InteractiveApplianceContract(unittest.TestCase):
                          + verify.VERIFIER_SERVICE_MARGIN_SECONDS,
                          verify.VERIFIER_SERVICE_TIMEOUT_SECONDS)
         self.assertEqual(provision.FIRST_BOOT_ORCHESTRATION_BUDGET_SECONDS, 180)
-        self.assertEqual(provision.FIRST_BOOT_CONTROLLER_MARGIN_SECONDS, 240)
+        self.assertEqual(provision.FIRST_BOOT_CONTROLLER_MARGIN_SECONDS, 480)
         self.assertEqual(provision.FIRST_BOOT_TIMEOUT_SECONDS, 1200)
         self.assertEqual(
             provision.FIRST_BOOT_TIMEOUT_SECONDS,
@@ -1054,8 +1199,14 @@ class InteractiveApplianceContract(unittest.TestCase):
 
         verifier_unit = (ROOT / "image/appliance/v.service").read_text()
         provisioner_unit = (ROOT / "image/appliance/p.service").read_text()
+        self.assertIn("SyslogIdentifier=symbi-appliance-provision", provisioner_unit)
+        self.assertIn("SyslogIdentifier=symbi-appliance-verify", verifier_unit)
         self.assertIn("Requires=p.service", verifier_unit)
         self.assertIn("After=p.service", verifier_unit)
+        self.assertIn("After=p.service sddm.service", verifier_unit)
+        self.assertNotIn("graphical.target", next(
+            line for line in verifier_unit.splitlines() if line.startswith("After=")
+        ))
         self.assertIn("SuccessAction=poweroff", verifier_unit)
         self.assertNotIn("OnFailure=poweroff.target", verifier_unit)
         self.assertNotIn("ExecStopPost=", verifier_unit)
@@ -1319,7 +1470,7 @@ class InteractiveApplianceContract(unittest.TestCase):
             if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
                 and node.func.id in {"run", "user_systemctl"})
         ]
-        self.assertEqual(len(calls), 11)
+        self.assertEqual(len(calls), 12)
         for call in calls:
             with self.subTest(line=call.lineno, function=call.func.id):
                 keywords = {item.arg for item in call.keywords}
@@ -1343,6 +1494,7 @@ class InteractiveApplianceContract(unittest.TestCase):
             "remaining_timeout(phase_deadline, PORTAL_START_TIMEOUT_SECONDS)",
             "remaining_timeout(application_deadline, FIXED_COMMAND_TIMEOUTS['get-default'])",
             "remaining_timeout(application_deadline, FIXED_COMMAND_TIMEOUTS['kargs'])",
+            "remaining_timeout(deadline, FIXED_COMMAND_TIMEOUTS[timeout_name])",
         ])
         self.assertEqual(source.count("subprocess.run("), 1)
 
@@ -1863,6 +2015,38 @@ class InteractiveApplianceContract(unittest.TestCase):
             })
             self.assertNotIn("shutdown-noise", json.dumps(diagnostic))
 
+    def test_child_failure_accepts_only_exact_python_console_framing(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "output"
+            evidence = output / "evidence"
+            evidence.mkdir(parents=True)
+            (output / "result.json").write_text(json.dumps(child_failure()) + "\n")
+            raw = (
+                b"[  255.123456] symbi-appliance-provision[686]: "
+                b"SYMBI_APPLIANCE_STATUS:provision-phase-timeout:"
+                b"enable-display-manager\n"
+                b"[  255.123457] symbi-appliance-provision[686]: "
+                b"subprocess.TimeoutExpired: private detail\n"
+                b"[  255.123458] symbi-appliance-verify[700]: "
+                b"SYMBI_APPLIANCE_STATUS:verifier-failed\n"
+            )
+            (evidence / "provision-serial.log").write_bytes(raw)
+
+            diagnostic, receipt = _failure_diagnostic(
+                output, "producer", source_binding()
+            )
+            self.assertIsNotNone(receipt)
+            item = diagnostic["logs"]["provision-serial.log"]
+            self.assertEqual(item["observed_sentinels"], [
+                "provision-phase-timeout:enable-display-manager",
+                "verifier-failed",
+            ])
+            self.assertEqual(item["observed_error_classes"], ["TimeoutExpired"])
+            serialized = json.dumps(diagnostic)
+            self.assertNotIn("255.123456", serialized)
+            self.assertNotIn("686", serialized)
+            self.assertNotIn("private detail", serialized)
+
     def test_child_failure_ignores_unknown_or_malformed_log_tokens(self):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "output"
@@ -1879,6 +2063,23 @@ class InteractiveApplianceContract(unittest.TestCase):
                 b"MemoryError without a colon\n"
                 b"not really ValueError: forged\n"
                 b"SYMBI_APPLIANCE_STATUS:\xff\xfe\n"
+                b"[  255.123456] sh[686]: SYMBI_APPLIANCE_STATUS:provision-start\n"
+                b"[  255.123456] python3[0]: SYMBI_APPLIANCE_STATUS:provision-start\n"
+                b"[  255.12345] python3[686]: SYMBI_APPLIANCE_STATUS:provision-start\n"
+                b"[  255.123456] python3[686]: \x1b[0mSYMBI_APPLIANCE_STATUS:provision-start\n"
+                b"prefix [  255.123456] python3[686]: SYMBI_APPLIANCE_STATUS:provision-start\n"
+                b"[  255.123456] python3[686]: SYMBI_APPLIANCE_STATUS:provision-start suffix\n"
+                b"[  255.123456] symbi-appliance-provision[0]: "
+                b"SYMBI_APPLIANCE_STATUS:provision-start\n"
+                b"[  255.123456] symbi-appliance-provision[686]: \x1b[0m"
+                b"SYMBI_APPLIANCE_STATUS:provision-start\n"
+                b"prefix [  255.123456] symbi-appliance-provision[686]: "
+                b"SYMBI_APPLIANCE_STATUS:provision-start\n"
+                b"[  255.123456] symbi-appliance-provision[686]: "
+                b"SYMBI_APPLIANCE_STATUS:provision-start suffix\n"
+                b"[  255.123456] symbi-appliance-provision[686]: "
+                b"[  1.000000] symbi-appliance-provision[1]: "
+                b"SYMBI_APPLIANCE_STATUS:provision-start\n"
             )
             (evidence / "provision-qemu.log").write_bytes(raw)
 

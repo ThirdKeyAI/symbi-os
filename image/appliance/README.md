@@ -41,19 +41,24 @@ clearly labelled SDDM autologin drop-in. The guest must observe SDDM, Hyprland,
 Waybar, the Hyprland portal payload, and the complete first-login seed. Walker must
 also be launched through a 512 MiB, zero-swap, one-CPU, 64-task transient user unit,
 observed as `/usr/bin/walker`, receive an exact successful `systemctl stop`, and be
-absent after that stop within fixed deadlines. Before the base image's background
-updater can open an rpm-ostree transaction, the provisioning unit removes both
-temporary boot wants in one bounded transaction. The guest then proves that neither
-want nor any provisioning script or unit was persisted. The six provisioning
-command deadlines total 300 seconds. Local work has a 30-second reserve and the
-360-second unit deadline retains another 30-second margin. Provisioning, the
+absent after that stop within fixed deadlines. QEMU supplies one binary systemd
+credential whose exact drop-in starts the two fixture units only for the first boot.
+The installer writes no fixture `systemd.wants` kernel argument, so provisioning
+does not stage an `rpm-ostree` deployment to remove one. The guest then proves that
+the exact root-owned drop-in is loaded from
+`/run/systemd/generator.early/graphical.target.d/symbi-appliance.conf`, that no
+other loaded drop-in names either fixture unit, and that no fixture unit, target
+link, target drop-in, or credential was written to a persistent systemd or
+credential-store root. The five provisioning
+command deadlines total 60 seconds. Local work has a 30-second reserve and the
+120-second unit deadline retains another 30-second margin. Provisioning, the
 420-second verifier, 180 seconds of boot and success-only shutdown work, and a
-240-second controller margin close exactly inside the first boot's 1,200-second deadline.
-The verifier's monotonic application budget is 390 seconds: 260 for the graphical
-session and portal, 45 for the exact fixed-command inventory, 70 for Walker's
+480-second controller margin close exactly inside the first boot's 1,200-second deadline.
+The verifier's monotonic application budget is 400 seconds: 260 for the graphical
+session and portal, 55 for the exact fixed-command inventory, 70 for Walker's
 launch and cleanup lifecycle, and 15 for local validation and report emission.
 Every verifier subprocess has an explicit deadline clamped to that outer budget,
-both graphical polls have finite attempt counts, and the unit retains 30 seconds
+both graphical polls have finite attempt counts, and the unit retains 20 seconds
 of service margin. Only the verifier unit's successful completion requests poweroff.
 A verifier failure or timeout leaves QEMU running until the host rejects it at the
 1,200-second controller deadline, including when the report channel received every
@@ -269,7 +274,8 @@ contains a fixed stage, source commit/tree, local cleanup, exact cgroup
 receipts, and any source-bound child-result diagnostic. That diagnostic is limited to
 the child-result type, a fixed producer phase and process status, byte counts for the
 approved QEMU and serial logs, explicitly untrusted allowlisted observations of
-lifecycle sentinels and traceback classes, and bounded guest-report state/size
+lifecycle sentinels and traceback classes from bare output or the exact fixed
+systemd console identifiers, and bounded guest-report state/size
 metadata. Log-derived observations are diagnostic hints only and cannot satisfy a
 gate or qualification claim. No private-input digest, log text, result message, or
 arbitrary excerpt is retained. Missing, empty, linked,

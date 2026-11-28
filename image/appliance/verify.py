@@ -22,11 +22,11 @@ SCOPE = (
     "security, containment or production-account qualification"
 )
 VERIFIER_SERVICE_TIMEOUT_SECONDS = 420
-VERIFIER_APPLICATION_BUDGET_SECONDS = 390
-VERIFIER_SERVICE_MARGIN_SECONDS = 30
+VERIFIER_APPLICATION_BUDGET_SECONDS = 400
+VERIFIER_SERVICE_MARGIN_SECONDS = 20
 VERIFIER_PHASE_BUDGETS = {
     "graphical-session-and-portal": 260,
-    "fixed-commands": 45,
+    "fixed-commands": 55,
     "walker-lifecycle": 70,
     "local-validation-and-report": 15,
 }
@@ -35,6 +35,8 @@ FIXED_COMMAND_TIMEOUTS = {
     "package-query": 2,
     "package-verify": 8,
     "kargs": 10,
+    "graphical-dropin-paths": 5,
+    "default-dropin-paths": 5,
 }
 WALKER_STEP_TIMEOUTS = {
     "reset-before": 5,
@@ -51,6 +53,25 @@ PORTAL_POLL_INTERVAL_SECONDS = 1
 GRAPHICAL_SESSION_POLL_ATTEMPTS = (
     VERIFIER_PHASE_BUDGETS["graphical-session-and-portal"]
     // GRAPHICAL_SESSION_POLL_INTERVAL_SECONDS
+)
+TRANSIENT_BOOT_DROPIN_PATH = Path(
+    "/run/systemd/generator.early/graphical.target.d/symbi-appliance.conf"
+)
+TRANSIENT_BOOT_DROPIN = b"[Unit]\nWants=p.service v.service\n"
+PERSISTENT_SYSTEMD_UNIT_ROOTS = (
+    Path("/etc/systemd/system.control"),
+    Path("/etc/systemd/system"),
+    Path("/etc/systemd/system.attached"),
+    Path("/usr/local/lib/systemd/system"),
+    Path("/usr/lib/systemd/system"),
+)
+FIXTURE_UNIT_NAMES = ("p.service", "v.service")
+MAX_SYSTEMD_ROOT_ENTRIES = 8192
+MAX_SYSTEMD_DROPIN_ENTRIES = 256
+MAX_SYSTEMD_DROPIN_BYTES = 64 * 1024
+MAX_SYSTEMD_DROPIN_TOTAL_BYTES = 2 * 1024 * 1024
+FIXTURE_UNIT_REFERENCE = re.compile(
+    rb"(?<![A-Za-z0-9_.@:-])(?:p|v)\.service(?![A-Za-z0-9_.@:-])"
 )
 PORTAL_POLL_ATTEMPTS = (
     VERIFIER_PHASE_BUDGETS["graphical-session-and-portal"]
@@ -233,6 +254,295 @@ def reviewed_launcher(root, expected):
 
 def path_absent(path):
     return not path.exists() and not path.is_symlink()
+
+
+def bounded_root_regular(path, maximum, owner_uid=0, required_mode=None,
+                         require_single_link=False):
+    """Read one direct, root-owned, non-writable regular file within a hard bound."""
+    if (type(maximum) is not int or maximum <= 0 or type(owner_uid) is not int
+            or owner_uid < 0 or type(require_single_link) is not bool
+            or (required_mode is not None
+            and (type(required_mode) is not int or not 0 <= required_mode <= 0o777))):
+        raise ValueError("Invalid bounded systemd file contract")
+    flags = os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW
+    try:
+        descriptor = os.open(os.fspath(path), flags)
+    except OSError:
+        return None
+    try:
+        info = os.fstat(descriptor)
+        if (not stat.S_ISREG(info.st_mode)
+                or (require_single_link and info.st_nlink != 1)
+                or info.st_uid != owner_uid or info.st_mode & 0o022
+                or (required_mode is not None
+                    and stat.S_IMODE(info.st_mode) != required_mode)
+                or not 0 < info.st_size <= maximum):
+            return None
+        with os.fdopen(descriptor, "rb", closefd=False) as stream:
+            raw = stream.read(maximum + 1)
+        if len(raw) != info.st_size or len(raw) > maximum:
+            return None
+        return raw
+    except OSError:
+        return None
+    finally:
+        os.close(descriptor)
+
+
+def systemd_config_references_fixture(raw):
+    """Conservatively C-unescape unit syntax before checking fixture unit names."""
+    if not isinstance(raw, bytes):
+        return True
+    collapsed = raw.replace(b"\\\r\n", b"").replace(b"\\\n", b"")
+    decoded = bytearray()
+    index = 0
+    simple = {
+        ord("a"): b"\a", ord("b"): b"\b", ord("f"): b"\f",
+        ord("n"): b"\n", ord("r"): b"\r", ord("t"): b"\t",
+        ord("v"): b"\v", ord("e"): b"\x1b", ord("s"): b" ",
+        ord("\\"): b"\\",
+        ord('"'): b'"', ord("'"): b"'",
+    }
+    while index < len(collapsed):
+        value = collapsed[index]
+        if value in {ord('"'), ord("'")}:
+            index += 1
+            continue
+        if value != ord("\\"):
+            decoded.append(value)
+            index += 1
+            continue
+        index += 1
+        if index >= len(collapsed):
+            return True
+        escape = collapsed[index]
+        if escape in simple:
+            decoded.extend(simple[escape])
+            index += 1
+            continue
+        if escape == ord("x"):
+            digits = collapsed[index + 1:index + 3]
+            if len(digits) != 2 or re.fullmatch(rb"[0-9A-Fa-f]{2}", digits) is None:
+                return True
+            decoded.append(int(digits, 16))
+            index += 3
+            continue
+        if escape in b"01234567":
+            end = index + 1
+            while end < min(index + 3, len(collapsed)) and collapsed[end] in b"01234567":
+                end += 1
+            number = int(collapsed[index:end], 8)
+            if number > 255:
+                return True
+            decoded.append(number)
+            index = end
+            continue
+        if escape in {ord("u"), ord("U")}:
+            width = 4 if escape == ord("u") else 8
+            digits = collapsed[index + 1:index + 1 + width]
+            if (len(digits) != width
+                    or re.fullmatch(rb"[0-9A-Fa-f]+", digits) is None):
+                return True
+            try:
+                decoded.extend(chr(int(digits, 16)).encode("utf-8"))
+            except (UnicodeError, ValueError):
+                return True
+            index += 1 + width
+            continue
+        return True
+    return FIXTURE_UNIT_REFERENCE.search(bytes(decoded)) is not None
+
+
+def runtime_path_is_direct(path, runtime_root=Path("/run"), owner_uid=0):
+    """Require every runtime path component to be a direct safe directory on /run."""
+    path = Path(path)
+    runtime_root = Path(runtime_root)
+    try:
+        relative = path.relative_to(runtime_root)
+    except ValueError:
+        return False
+    if not relative.parts or path.name != "symbi-appliance.conf":
+        return False
+    current = runtime_root
+    try:
+        root_info = current.lstat()
+    except OSError:
+        return False
+    for component in relative.parts[:-1]:
+        info = root_info if current == runtime_root else current.lstat()
+        if (stat.S_ISLNK(info.st_mode) or not stat.S_ISDIR(info.st_mode)
+                or info.st_uid != owner_uid or info.st_mode & 0o022):
+            return False
+        current /= component
+    try:
+        parent_info = current.lstat()
+        file_info = path.lstat()
+        resolved = path.resolve(strict=True)
+    except (OSError, RuntimeError):
+        return False
+    return (not stat.S_ISLNK(parent_info.st_mode)
+            and stat.S_ISDIR(parent_info.st_mode)
+            and parent_info.st_uid == owner_uid
+            and not parent_info.st_mode & 0o022
+            and resolved == path
+            and stat.S_ISREG(file_info.st_mode)
+            and file_info.st_dev == root_info.st_dev)
+
+
+def persistent_fixture_boot_references_absent(
+        roots=PERSISTENT_SYSTEMD_UNIT_ROOTS, owner_uid=0):
+    """Reject persistent fixture units, target links, and target drop-in references."""
+    if not isinstance(roots, (tuple, list)) or not roots:
+        return False
+    total_bytes = 0
+    scanned_fragments = set()
+    for root in roots:
+        root = Path(root)
+        try:
+            root_info = root.lstat()
+        except FileNotFoundError:
+            continue
+        except OSError:
+            return False
+        if stat.S_ISLNK(root_info.st_mode) or not stat.S_ISDIR(root_info.st_mode):
+            return False
+        for unit in FIXTURE_UNIT_NAMES:
+            if not path_absent(root / unit):
+                return False
+        if not path_absent(
+                root / "graphical.target.d" / "symbi-appliance.conf"):
+            return False
+        try:
+            entries = tuple(root.iterdir())
+        except OSError:
+            return False
+        if len(entries) > MAX_SYSTEMD_ROOT_ENTRIES:
+            return False
+        for entry in entries:
+            fragment = re.fullmatch(r".+\.target", entry.name)
+            relation = re.fullmatch(
+                r".+\.target\.(?:wants|requires|upholds)", entry.name)
+            dropin = entry.name == "target.d" or re.fullmatch(
+                r".+\.target\.d", entry.name)
+            if fragment is None and relation is None and dropin is None:
+                continue
+            try:
+                entry_info = entry.lstat()
+            except OSError:
+                return False
+            if fragment is not None:
+                if stat.S_ISLNK(entry_info.st_mode):
+                    try:
+                        source = entry.resolve(strict=True)
+                    except (OSError, RuntimeError):
+                        return False
+                    if source == Path("/dev/null"):
+                        continue
+                else:
+                    source = entry
+                identity = os.fspath(source)
+                if identity in scanned_fragments:
+                    continue
+                raw = bounded_root_regular(
+                    source, MAX_SYSTEMD_DROPIN_BYTES, owner_uid)
+                if raw is None:
+                    return False
+                scanned_fragments.add(identity)
+                total_bytes += len(raw)
+                if (total_bytes > MAX_SYSTEMD_DROPIN_TOTAL_BYTES
+                        or systemd_config_references_fixture(raw)):
+                    return False
+                continue
+            if stat.S_ISLNK(entry_info.st_mode) or not stat.S_ISDIR(entry_info.st_mode):
+                return False
+            if relation is not None:
+                try:
+                    links = tuple(entry.iterdir())
+                except OSError:
+                    return False
+                if len(links) > MAX_SYSTEMD_DROPIN_ENTRIES:
+                    return False
+                for link in links:
+                    try:
+                        link_info = link.lstat()
+                        target = os.readlink(link)
+                    except OSError:
+                        return False
+                    if (not stat.S_ISLNK(link_info.st_mode)
+                            or not 0 < len(target.encode("utf-8")) <= 4096
+                            or link.name in FIXTURE_UNIT_NAMES
+                            or FIXTURE_UNIT_REFERENCE.search(
+                                target.encode("utf-8")) is not None):
+                        return False
+                    try:
+                        resolved = link.resolve(strict=True)
+                    except (OSError, RuntimeError):
+                        return False
+                    if resolved.name in FIXTURE_UNIT_NAMES:
+                        return False
+                continue
+            try:
+                candidates = tuple(entry.iterdir())
+            except OSError:
+                return False
+            if len(candidates) > MAX_SYSTEMD_DROPIN_ENTRIES:
+                return False
+            for candidate in candidates:
+                if not candidate.name.endswith(".conf"):
+                    continue
+                raw = bounded_root_regular(
+                    candidate, MAX_SYSTEMD_DROPIN_BYTES, owner_uid)
+                if raw is None:
+                    return False
+                total_bytes += len(raw)
+                if (total_bytes > MAX_SYSTEMD_DROPIN_TOTAL_BYTES
+                        or systemd_config_references_fixture(raw)):
+                    return False
+    return True
+
+
+def transient_boot_dropin_is_exact(deadline, path=TRANSIENT_BOOT_DROPIN_PATH,
+                                   persistent_roots=PERSISTENT_SYSTEMD_UNIT_ROOTS,
+                                   owner_uid=0, runtime_root=Path("/run")):
+    """Bind the fixture Wants edge to one exact early-generator runtime drop-in."""
+    expected = os.fspath(path)
+    observed = {}
+    for unit, timeout_name in (
+            ("graphical.target", "graphical-dropin-paths"),
+            ("default.target", "default-dropin-paths")):
+        result = run([
+            "/usr/bin/systemctl", "show", "--property=DropInPaths", "--value",
+            unit,
+        ], timeout=remaining_timeout(
+            deadline, FIXED_COMMAND_TIMEOUTS[timeout_name]))
+        names = result.stdout.split()
+        if (len(names) > MAX_SYSTEMD_DROPIN_ENTRIES
+                or len(names) != len(set(names))):
+            return False
+        observed[unit] = names
+    if expected not in observed["graphical.target"]:
+        return False
+    if not runtime_path_is_direct(path, runtime_root, owner_uid):
+        return False
+    for names in observed.values():
+        for name in names:
+            if (not name.startswith("/")
+                    or any(character.isspace() for character in name)):
+                return False
+            candidate = Path(name)
+            raw = bounded_root_regular(
+                candidate, MAX_SYSTEMD_DROPIN_BYTES, owner_uid,
+                0o644 if candidate == Path(path) else None,
+                candidate == Path(path))
+            if raw is None:
+                return False
+            if candidate == Path(path):
+                if raw != TRANSIENT_BOOT_DROPIN:
+                    return False
+            elif systemd_config_references_fixture(raw):
+                return False
+    return persistent_fixture_boot_references_absent(
+        persistent_roots, owner_uid)
 
 
 def user_executables(uid, deadline):
@@ -532,7 +842,7 @@ def main():
             or state.get("account_created") is not True or state.get("password_set") is not False
             or state.get("authorized_key_written") is not False
             or state.get("production_image_modified") is not False
-            or state.get("boot_wants_removed") is not True
+            or state.get("transient_boot_units") is not True
             or state.get("expected_sha256") != digest(expected_path)
             or state.get("autologin_sha256") != expected.get("sddm_config_sha256")):
         raise ValueError("Ephemeral provisioning receipt is incomplete")
@@ -601,6 +911,8 @@ def main():
     ).stdout
     if "systemd.wants=p.service" in kargs or "systemd.wants=v.service" in kargs:
         raise ValueError("Fixture boot wants remain in the appliance deployment")
+    if not transient_boot_dropin_is_exact(application_deadline):
+        raise ValueError("Fixture boot units are not bound to one transient drop-in")
     local_deadline = min(
         application_deadline,
         time.monotonic() + VERIFIER_PHASE_BUDGETS["local-validation-and-report"],
@@ -616,8 +928,17 @@ def main():
         raise ValueError("Fixture script or unit leaked onto the appliance disk")
     persistent_credentials = tuple(
         base / name
-        for base in (Path("/etc/credstore"), Path("/etc/credstore.encrypted"))
-        for name in ("symbi-provision.py", "symbi-verify.py", "symbi-expected.json")
+        for base in (
+            Path("/etc/credstore"), Path("/etc/credstore.encrypted"),
+            Path("/usr/local/lib/credstore"),
+            Path("/usr/local/lib/credstore.encrypted"),
+            Path("/usr/lib/credstore"), Path("/usr/lib/credstore.encrypted"),
+        )
+        for name in (
+            "symbi-provision.py", "symbi-verify.py", "symbi-expected.json",
+            "systemd.extra-unit.p.service", "systemd.extra-unit.v.service",
+            "systemd.unit-dropin.graphical.target~symbi-appliance",
+        )
     )
     if any(not path_absent(path) for path in persistent_credentials):
         raise ValueError("Fixture credential payload leaked onto the appliance disk")
@@ -654,7 +975,7 @@ def main():
         "session": "symbi.desktop", "fixture_user": fixture_user,
         "interactive_devices": interactive,
         "fixture_cleanup": {
-            "boot_wants_removed": True, "persistent_scripts_absent": True,
+            "persistent_boot_wants_absent": True, "persistent_scripts_absent": True,
             "persistent_units_absent": True, "credentials_absent": True,
         },
         "desktop_components": {

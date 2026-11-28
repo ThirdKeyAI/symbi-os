@@ -1,4 +1,5 @@
 """Fail-closed contract for the hosted interactive development appliance."""
+import base64
 from datetime import datetime, timedelta, timezone
 import hashlib
 import json
@@ -58,7 +59,7 @@ FAILURE_ERROR_CLASSES = frozenset({
 })
 PROVISION_STATUS_PHASES = (
     "selinux-enforcement", "create-fixture-account", "lock-fixture-account",
-    "select-graphical-target", "enable-display-manager", "remove-fixture-boot-wants",
+    "select-graphical-target", "enable-display-manager",
 )
 FAILURE_STATUS_SENTINELS = frozenset({
     "provision-start", "provision-complete", "provision-failed",
@@ -85,6 +86,8 @@ User=symbi-test
 Session=symbi.desktop
 Relogin=true
 """
+TRANSIENT_BOOT_CREDENTIAL = "systemd.unit-dropin.graphical.target~symbi-appliance"
+TRANSIENT_BOOT_DROPIN = b"[Unit]\nWants=p.service v.service\n"
 
 
 def sha256(path):
@@ -122,7 +125,6 @@ def installer_arguments(manifest_digest):
         "--enforce-container-sigpolicy", "--filesystem=btrfs", "--generic-image",
         "--via-loopback", "--karg=console=ttyS0,115200n8", "--karg=selinux=1",
         "--karg=enforcing=1", "--karg=systemd.unit=graphical.target",
-        "--karg=systemd.wants=p.service", "--karg=systemd.wants=v.service",
         "/output/atomic.raw",
     ]
 
@@ -144,6 +146,15 @@ def firmware_arguments(directory=Path("/inputs")):
             raise ValueError("QEMU firmware credential name is too long")
         result += ["-fw_cfg", f"name={name},file={directory / filename}"]
     return result
+
+
+def transient_boot_arguments():
+    """Start fixture units from an in-memory system credential for this boot only."""
+    encoded = base64.b64encode(TRANSIENT_BOOT_DROPIN).decode("ascii")
+    credential = (
+        "io.systemd.credential.binary:" + TRANSIENT_BOOT_CREDENTIAL + "=" + encoded
+    )
+    return ["-smbios", "type=11,value=" + credential]
 
 
 def interactive_devices():
@@ -170,7 +181,7 @@ def provision_qemu_arguments():
         "-device", "virtserialport,chardev=report,name=org.symbi.appliance",
         "-serial", "file:/output/evidence/provision-serial.log",
         "-monitor", "none", "-display", "none",
-        *firmware_arguments(),
+        *firmware_arguments(), *transient_boot_arguments(),
     ]
 
 
@@ -478,7 +489,7 @@ def validate_guest_report(report, expected, probe_hash, expected_hash):
                 "authorized_keys_absent": True,
             }
             and report.get("fixture_cleanup") == {
-                "boot_wants_removed": True, "persistent_scripts_absent": True,
+                "persistent_boot_wants_absent": True, "persistent_scripts_absent": True,
                 "persistent_units_absent": True, "credentials_absent": True,
             }
             and report.get("desktop_components") == {
