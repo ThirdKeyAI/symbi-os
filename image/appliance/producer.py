@@ -23,6 +23,14 @@ def bounded(path, maximum):
         raise ValueError("Appliance output exceeded its bound: " + path.name)
 
 
+def load_guest_report(path):
+    """Read the final bounded report without turning its absence into a JSON error."""
+    if (not path.exists() or path.is_symlink() or not path.is_file()
+            or not 0 < path.stat().st_size <= 128*1024):
+        raise RuntimeError("Graphical fixture guest emitted no bounded guest report")
+    return unique_json(path.read_bytes())
+
+
 def main():
     if os.geteuid() != 10001 or not Path("/run/.containerenv").exists():
         raise SystemExit("Use only the unprivileged hosted appliance container")
@@ -87,8 +95,7 @@ def main():
         if child.returncode != 0:
             raise RuntimeError("Graphical fixture QEMU failed")
         report_path = evidence / "guest-report.json"
-        bounded(report_path, 128*1024)
-        report = unique_json(report_path.read_bytes())
+        report = load_guest_report(report_path)
         validate_guest_report(report, expected, sha256(inputs / "verify.py"),
                               sha256(inputs / "expected.json"))
         if report.get("autologin_sha256") != expected.get("sddm_config_sha256"):

@@ -197,6 +197,33 @@ class InteractiveApplianceContract(unittest.TestCase):
         self.assertIn("HIGHLY EXPERIMENTAL disposable development appliance only", SDDM_CONFIGURATION)
         self.assertIn("no password or key", SDDM_CONFIGURATION)
 
+    def test_provision_serializes_one_karg_transaction_before_background_update(self):
+        from image.appliance import provision
+
+        unit = (ROOT / "image/appliance/p.service").read_text()
+        self.assertIn("Before=display-manager.service sddm.service upgrade-on-boot.service", unit)
+        with mock.patch.object(provision, "run") as execute:
+            provision.remove_fixture_boot_wants()
+        execute.assert_called_once_with([
+            "/usr/bin/rpm-ostree", "kargs",
+            "--delete-if-present=systemd.wants=p.service",
+            "--delete-if-present=systemd.wants=v.service",
+        ], timeout=240)
+
+    def test_absent_guest_report_preserves_a_specific_failure(self):
+        from image.appliance.producer import load_guest_report
+
+        with tempfile.TemporaryDirectory() as temporary:
+            report = Path(temporary) / "guest-report.json"
+            for contents in (None, b""):
+                if contents is not None:
+                    report.write_bytes(contents)
+                with self.subTest(contents=contents), self.assertRaisesRegex(
+                        RuntimeError, "emitted no bounded guest report"):
+                    load_guest_report(report)
+                if report.exists():
+                    report.unlink()
+
     def test_walker_acceptance_launches_observes_and_stops_bounded_unit(self):
         processes = [set(), {"/usr/bin/walker"}, set()]
         with mock.patch("image.appliance.verify.user_executables",

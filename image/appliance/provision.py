@@ -67,6 +67,15 @@ def run(command, timeout=120):
     return result.stdout
 
 
+def remove_fixture_boot_wants():
+    """Stage one bounded deployment without the two first-boot fixture wants."""
+    run([
+        "/usr/bin/rpm-ostree", "kargs",
+        "--delete-if-present=systemd.wants=p.service",
+        "--delete-if-present=systemd.wants=v.service",
+    ], timeout=240)
+
+
 def main():
     product = Path("/sys/class/dmi/id/product_name").read_text().strip()
     if (os.geteuid() != 0 or product != "Symbi-Interactive-Appliance"
@@ -118,8 +127,7 @@ def main():
     autologin.chmod(0o644)
     run(["/usr/bin/systemctl", "set-default", "graphical.target"])
     run(["/usr/bin/systemctl", "enable", "--force", "sddm.service"])
-    for wanted in ("p.service", "v.service"):
-        run(["/usr/bin/rpm-ostree", "kargs", "--delete-if-present=systemd.wants=" + wanted])
+    remove_fixture_boot_wants()
     state = {
         "schema": 1, "nonce": expected["nonce"], "source_binding": expected["source_binding"],
         "expected_sha256": digest(expected_path), "provision_sha256": digest(Path(__file__)),

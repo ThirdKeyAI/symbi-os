@@ -41,9 +41,10 @@ clearly labelled SDDM autologin drop-in. The guest must observe SDDM, Hyprland,
 Waybar, the Hyprland portal payload, and the complete first-login seed. Walker must
 also be launched through a 512 MiB, zero-swap, one-CPU, 64-task transient user unit,
 observed as `/usr/bin/walker`, receive an exact successful `systemctl stop`, and be
-absent after that stop within fixed deadlines. It
-also removes the temporary boot wants and proves that no provisioning script or unit
-was persisted.
+absent after that stop within fixed deadlines. Before the base image's background
+updater can open an rpm-ostree transaction, the provisioning unit removes both
+temporary boot wants in one bounded transaction. The guest then proves that neither
+want nor any provisioning script or unit was persisted.
 
 The producer compresses the provisioned disk with qcow2 compressed clusters. A
 second isolated container mounts those exact bytes read-only, creates a fresh

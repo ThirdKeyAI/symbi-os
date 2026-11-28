@@ -1,7 +1,7 @@
 [Unit]
 Description=HIGHLY EXPERIMENTAL appliance fixture provisioner
 ConditionPathExists=!/etc/initrd-release
-Before=display-manager.service sddm.service
+Before=display-manager.service sddm.service upgrade-on-boot.service
 After=local-fs.target systemd-udev-trigger.service
 OnFailure=poweroff.target
 
