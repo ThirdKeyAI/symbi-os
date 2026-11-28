@@ -48,7 +48,14 @@ class FakeResponse:
 
 class UbuntuHostedProducerTests(unittest.TestCase):
     def setUp(self):
-        self.contract, self.lock = hosted.load_contract(ROOT)
+        self.committed_contract, self.lock = hosted.load_contract(ROOT)
+        self.contract = copy.deepcopy(self.committed_contract)
+        self.contract["state"] = "pending-discovery"
+        self.contract["scope"] = hosted.PENDING_SCOPE
+        for pin in self.contract["metadata_pins"]:
+            pin["inrelease"] = {"bytes": None, "sha256": None}
+            pin["packages_xz"] = {"bytes": None, "sha256": None}
+        hosted.validate_contract(ROOT, self.contract, self.lock)
 
     def hosted_environment(self):
         return {
@@ -110,27 +117,79 @@ class UbuntuHostedProducerTests(unittest.TestCase):
             }
         return contract
 
-    def test_committed_contract_is_strict_pending_discovery(self):
-        self.assertEqual(self.contract["schema"], 2)
-        self.assertEqual(self.contract["state"], "pending-discovery")
+    def test_committed_contract_is_exact_reviewed_ready_pin_set(self):
+        self.assertEqual(self.committed_contract["schema"], 2)
+        self.assertEqual(self.committed_contract["state"], "ready")
         self.assertEqual(
-            [row["mode"] for row in self.contract["freshness_policy"]],
+            [row["mode"]
+             for row in self.committed_contract["freshness_policy"]],
             ["immutable-release", "rolling-date", "rolling-date"],
         )
         self.assertEqual(
-            [row["suite"] for row in self.contract["metadata_pins"]],
-            packages.EXPECTED_REQUEST["suites"],
+            self.committed_contract["metadata_pins"],
+            [
+                {
+                    "suite": "noble",
+                    "inrelease": {
+                        "bytes": 255850,
+                        "sha256": (
+                            "cdb2f31d809f589719a53c6ad15f255b27569c405"
+                            "9542ada282aaa21b8e164b0"
+                        ),
+                    },
+                    "packages_xz": {
+                        "bytes": 1401160,
+                        "sha256": (
+                            "2a6a199e1031a5c279cb346646d594993f35b1c03"
+                            "dd4a82aaa0323980dd92451"
+                        ),
+                    },
+                },
+                {
+                    "suite": "noble-updates",
+                    "inrelease": {
+                        "bytes": 126125,
+                        "sha256": (
+                            "10dc47ad967e0513d877e0d55621c7393568894c4"
+                            "dbba1049232251630cb43c7"
+                        ),
+                    },
+                    "packages_xz": {
+                        "bytes": 1492208,
+                        "sha256": (
+                            "9e6336a8322f908dbeddcd2de57f19d22756fb11f"
+                            "161458f04204914ba85e6ff"
+                        ),
+                    },
+                },
+                {
+                    "suite": "noble-security",
+                    "inrelease": {
+                        "bytes": 126127,
+                        "sha256": (
+                            "a3849ffa5d069c5a6cc929dc55e1fd946aff6e3da"
+                            "4f97d88f20059b6b7d6d203"
+                        ),
+                    },
+                    "packages_xz": {
+                        "bytes": 1230772,
+                        "sha256": (
+                            "5c947649225178b587da69bd15724dff4d22d17d9"
+                            "11f60abf7213534ea494a90"
+                        ),
+                    },
+                },
+            ],
         )
-        self.assertTrue(all(
-            row[name] == {"bytes": None, "sha256": None}
-            for row in self.contract["metadata_pins"]
-            for name in ("inrelease", "packages_xz")
-        ))
+        self.assertEqual(self.committed_contract["scope"], hosted.READY_SCOPE)
         self.assertTrue(all(
             value is False
-            for key, value in self.contract["candidate"].items()
+            for key, value in self.committed_contract["candidate"].items()
             if key != "state"
         ))
+        hosted.validate_mode(self.committed_contract, "produce")
+        with self.assertRaisesRegex(ValueError, "metadata pin state"):
+            hosted.validate_mode(self.committed_contract, "discover")
 
     def test_contract_rejects_extra_fields_bool_ints_and_partial_pins(self):
         cases = []
@@ -200,7 +259,10 @@ class UbuntuHostedProducerTests(unittest.TestCase):
             for name in ("work", "evidence", "output"):
                 (base / name).mkdir(mode=0o700)
             with mock.patch.object(
-                    hosted, "validate_retained_inputs") as retained, \
+                    hosted, "load_contract",
+                    return_value=(self.contract, self.lock)), \
+                    mock.patch.object(
+                        hosted, "validate_retained_inputs") as retained, \
                     mock.patch.object(hosted, "validate_cgroup") as cgroup, \
                     mock.patch.object(hosted, "_run_rootfs") as rootfs, \
                     mock.patch.object(hosted, "fetch_exact") as fetch, \

@@ -282,21 +282,19 @@ contract still refuses it. All staged paths are private and descriptor-relative:
 every component is opened without following links and each file is hashed,
 parsed or copied through the same stable single-link descriptor.
 
-The separate `ubuntu-fixture-packages.yml` workflow is manual only. Its
-committed producer contract has state `pending-discovery` and null InRelease
-and Packages.xz pins. In that state `discover` authenticates the exact retained
-Ubuntu Base checksum/keyring and current repository metadata, then uploads only
-non-authoritative raw evidence. The wrapper creates a bounded transient unit for
-either mode; inside it, pending `produce` refuses before retained-input
-validation, in-cgroup inspection, authenticated producer commands or a network
-opener. Discovery also binds the clean
-checkout HEAD to `GITHUB_SHA` and retains the exact tree before retrieval. A
-later review must commit all six byte/hash pins and change the contract to
-`ready`. Only then can the same job
-run file-only apt and no-act dpkg phases with a new network namespace, stream
-the bound packages one at a time, validate the unselected candidate twice and
-reach the conditional candidate upload. The Dockerfile, native producer, image
-consumer and public pending lock remain unchanged.
+The separate ubuntu-fixture-packages.yml workflow is manual only. Its committed
+producer contract is now ready with all six exact InRelease and Packages.xz
+byte/hash pins independently reviewed from hosted discovery run 46070755519.
+The former pending state remains fail closed: it permits discovery and refuses
+production before retained-input validation, cgroup inspection, authenticated
+commands or a network opener. The committed ready state instead refuses
+discovery and permits the production path to reauthenticate those exact pins,
+run file-only apt and no-act dpkg phases in a new network namespace, stream
+bound packages one at a time, validate an unselected candidate twice and reach
+the conditional candidate upload. Production has not been dispatched. The
+Dockerfile, native producer, image consumer and public pending lock remain
+unchanged, and every candidate, selection, pass and qualification claim remains
+false.
 
 Freshness is bound to each exact source URL, suite, codename and signer. The
 immutable noble pocket has a unique signed `Date`, no `Valid-Until`, a 15-minute
