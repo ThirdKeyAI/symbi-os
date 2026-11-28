@@ -2061,7 +2061,7 @@ def _produce(root, lock, contract, work, evidence, output, runner,
         if name == "uris":
             plan = build.parse_apt_uri_plan(
                 stdout, repository, lock["sources"])
-    package_rows = build.bind_uri_plan_to_indexes(
+    plan, package_rows = build.bind_uri_plan_to_indexes(
         plan, index_inputs, lock["sources"])
     row, simulation, _ = runner.run(
         "apt-simulate", commands["simulate"],
