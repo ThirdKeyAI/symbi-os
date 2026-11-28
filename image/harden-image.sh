@@ -44,7 +44,7 @@ done
 chmod 0755 /usr/libexec/symbi-seed-config /usr/libexec/symbi-desktop-session
 chmod 0644 /etc/profile.d/symbi-privacy.sh
 qualification_rule=/usr/lib/udev/rules.d/61-symbi-qualification-source.rules
-qualification_rule_sha256=e3017893118981d02bf4e37ba079abe6362c06d856b63a0175fed7ea125fe01e
+qualification_rule_sha256=0158d5f15b022e0f7404a82283c0b878e04c79e117437ed3bf20f03e5cc79732
 [[ -f "$qualification_rule" && ! -L "$qualification_rule" ]] || {
   printf 'Fixed qualification source-device rule is absent.\n' >&2
   exit 1

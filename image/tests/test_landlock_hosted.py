@@ -506,10 +506,10 @@ class HostedLandlock(unittest.TestCase):
         self.assertIn("qualification_rule_sha256=" + digest, hardener)
         self.assertIn('sha256sum < "$qualification_rule"', hardener)
         mutations = {
-            "broad serial": raw.replace('ATTR{serial}=="SYMBIQUAL"',
-                                        'ATTR{serial}=="?*"'),
-            "parent serial": raw.replace('ATTR{serial}=="SYMBIQUAL"',
-                                         'ATTRS{serial}=="SYMBIQUAL"'),
+            "broad serial": raw.replace('ATTRS{serial}=="SYMBIQUAL"',
+                                        'ATTRS{serial}=="?*"'),
+            "event serial": raw.replace('ATTRS{serial}=="SYMBIQUAL"',
+                                        'ATTR{serial}=="SYMBIQUAL"'),
             "dynamic link": raw.replace("virtio-SYMBIQUAL", "virtio-$attr{serial}", 1),
             "all transports": raw.replace(', DRIVERS=="virtio_blk"', ""),
             "partitions": raw.replace('ENV{DEVTYPE}=="disk"', 'ENV{DEVTYPE}=="partition"'),
@@ -549,7 +549,7 @@ class HostedLandlock(unittest.TestCase):
         self.assertEqual(validate_block_identity(reversed_inventory, link)["path"],
                          "/dev/vdb")
 
-    def test_source_inventory_reads_the_block_event_serial(self):
+    def test_source_inventory_reads_the_virtio_parent_serial(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             sys_block = root / "sys/class/block"
@@ -557,15 +557,15 @@ class HostedLandlock(unittest.TestCase):
             entry = sys_block / "vda"
             (entry / "device").mkdir(parents=True)
             dev_root.mkdir()
-            (entry / "serial").write_text("SYMBIROOT")
-            (entry / "device/serial").write_text("WRONG-PARENT")
+            (entry / "serial").write_text("WRONG-EVENT")
+            (entry / "device/serial").write_text("SYMBIROOT")
             (entry / "dev").write_text("252:0\n")
             (entry / "ro").write_text("0\n")
             (dev_root / "vda").touch()
             rows = observe_block_inventory(sys_block, dev_root)
             self.assertEqual(len(rows), 1)
             self.assertEqual(rows[0]["serial"], "SYMBIROOT")
-            (entry / "serial").unlink()
+            (entry / "device/serial").unlink()
             self.assertEqual(observe_block_inventory(sys_block, dev_root), [])
 
     def test_source_block_identity_rejects_adversarial_aliases(self):

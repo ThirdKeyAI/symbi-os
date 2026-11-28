@@ -1,1 +1,1 @@
-ACTION=="add|change", SUBSYSTEM=="block", ENV{DEVTYPE}=="disk", ATTR{serial}=="SYMBIQUAL", DRIVERS=="virtio_blk", SYMLINK+="disk/by-id/virtio-SYMBIQUAL"
+ACTION=="add|change", SUBSYSTEM=="block", ENV{DEVTYPE}=="disk", ATTRS{serial}=="SYMBIQUAL", DRIVERS=="virtio_blk", SYMLINK+="disk/by-id/virtio-SYMBIQUAL"
