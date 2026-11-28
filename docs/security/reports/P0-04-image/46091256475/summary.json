@@ -1,0 +1,154 @@
+{
+  "schema": 1,
+  "image_build_passed": true,
+  "run": {
+    "id": 46091256475,
+    "head_branch": "card/P0-04-hosted-fix",
+    "head_sha": "22c751096e47d2f5ff74d8e5963a7079fa24576f",
+    "head_tree": "f2eb829db755bccb85904b986a2096869b71c6d0",
+    "job_id": 140812440285,
+    "job_name": "image",
+    "conclusion": "success",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46091256475"
+  },
+  "evidence_artifact": {
+    "id": 15241501774,
+    "name": "desktop-image-evidence-generic",
+    "bytes": 152106,
+    "digest": "sha256:817b999a689db984fe1ae958cf571da6481119d8674e407043c07dc8a10593f4",
+    "expires_at": "2026-12-12T01:11:28Z",
+    "downloaded_zip_digest_matched": true,
+    "regular_members": 196,
+    "uncompressed_bytes": 497620,
+    "strict_json_or_jsonl_documents": 15,
+    "unsafe_duplicate_encrypted_special_or_crc_failed_members": 0
+  },
+  "image_artifact": {
+    "id": 15241381990,
+    "name": "desktop-development-image-generic",
+    "bytes": 4177424549,
+    "server_digest": "sha256:2a04d8fe73c9af4431d1513889842ee5c14834555c4c81c0e447f9559a374329",
+    "expires_at": "2026-12-01T01:11:29Z",
+    "bounded_zip_audit": {
+      "explicit_range_responses_verified": true,
+      "successful_explicit_range_bytes_read": 67584,
+      "head_range": "bytes 0-2047/4177424549",
+      "tail_range": "bytes 4177359013-4177424548/4177424549",
+      "regular_members": 2,
+      "unsafe_duplicate_encrypted_special_or_colliding_members": 0,
+      "central_directory_offset": 4177424392,
+      "central_directory_bytes": 135,
+      "end_of_central_directory_offset": 4177424527,
+      "manifest_member": {
+        "name": "manifest.json",
+        "bytes": 628,
+        "crc32": 3645065145,
+        "sha256": "a4351b529038f9ed46268ed3391cf3e3cabb2b58579d3b803037d65790f3d1dd",
+        "crc_and_sha256_recomputed": true
+      },
+      "image_member": {
+        "name": "symbiont-os-generic.oci.tar.gz",
+        "bytes": 4177423629,
+        "crc32": 4119596378,
+        "sha256": "8fce0c0da63b972c9371afb05c2f886be3aacf19b1c6d7a53494daf2a5d90ff9",
+        "crc_and_sha256_recomputed": false
+      },
+      "full_artifact_digest_locally_recomputed": false
+    }
+  },
+  "manifest": {
+    "schema": 1,
+    "built": true,
+    "os_qualified": false,
+    "source_commit": "22c751096e47d2f5ff74d8e5963a7079fa24576f",
+    "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+    "variant": "generic",
+    "archive": {
+      "name": "symbiont-os-generic.oci.tar.gz",
+      "bytes": 4177423629,
+      "sha256": "8fce0c0da63b972c9371afb05c2f886be3aacf19b1c6d7a53494daf2a5d90ff9",
+      "image_id": "sha256:f7d84f2d01a4aaaa8c3b909a86a60ba06a6e82b426ea09dfb3c9af5a676c40f9"
+    },
+    "preparation_sha256": "95a9bfe67f88718b4cb49feb4e90dde3857f76ef3e7ab3eeda19f91ea7ab5ba8"
+  },
+  "installed_rule": {
+    "path": "/usr/lib/udev/rules.d/61-symbi-qualification-source.rules",
+    "bytes": 153,
+    "sha256": "e3017893118981d02bf4e37ba079abe6362c06d856b63a0175fed7ea125fe01e",
+    "preparation_and_build_context_match": true
+  },
+  "retained_controller_inputs": {
+    "preparation": {
+      "path": "docs/security/reports/P0-03-desktop/46091256475/preparation.json",
+      "bytes": 141217,
+      "sha256": "95a9bfe67f88718b4cb49feb4e90dde3857f76ef3e7ab3eeda19f91ea7ab5ba8"
+    },
+    "installed_package_inventory": {
+      "path": "docs/security/reports/P0-03-desktop/46091256475/install/installed-after-stdout.log",
+      "bytes": 88016,
+      "sha256": "4142fa70cff7227a164225f6ebff5bbbaf7816c5d5d864a4a47c454969445387",
+      "entries": 2184,
+      "unique_entries": 2184,
+      "sorted_sha256": "7af38020fc34399648c491a007e089982395582ad2f79448fb853a57c93effc4"
+    }
+  },
+  "checks": {
+    "preparation_passed": true,
+    "image_build_passed": true,
+    "installation_passed": true,
+    "installed_files_passed": true,
+    "installed_files_checked": 213,
+    "all_package_identities_preserved_after_build": true,
+    "all_build_containers_removed_and_absent": true,
+    "image_manifest_os_qualified": false
+  },
+  "resources": {
+    "preparation": {
+      "memory_max_bytes": 1073741824,
+      "memory_peak_bytes": 1073741824,
+      "swap_max_bytes": 0,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0
+    },
+    "image_build": {
+      "memory_max_bytes": 2147483648,
+      "memory_peak_bytes": 2147483648,
+      "swap_max_bytes": 0,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0
+    },
+    "installation": {
+      "memory_max_bytes": 2147483648,
+      "memory_peak_bytes": 371937280,
+      "swap_max_bytes": 0,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0
+    },
+    "outer_controller": {
+      "memory_max_bytes": 4294967296,
+      "reported_memory_peak_bytes": 4301189120,
+      "swap_max_bytes": 0,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0
+    }
+  },
+  "claims": {
+    "landlock_qualified": false,
+    "containment_qualified": false,
+    "os_qualified": false,
+    "signature_qualified": false,
+    "release_qualified": false
+  },
+  "next_gate": {
+    "atomic_preflight_required_before_landlock": true,
+    "current_preflight_lock_run": 45901694620,
+    "current_preflight_lock_manifest_digest": "sha256:1dcf72c2e3eda7e5480269b1559e3b5527c77fdb70d28983d4e29baa03b8de6e",
+    "current_preflight_lock_matches_this_image": false,
+    "landlock_ready": false
+  },
+  "limitations": "The small evidence ZIP was fully downloaded and audited. Only bounded head and tail ranges of the large image artifact were downloaded; its server digest and the OCI member digest remain to be streamed and rechecked by atomic preflight. That result must be reviewed and locked before Landlock can consume this image. No VM boot or qualification claim follows from this image build."
+}
