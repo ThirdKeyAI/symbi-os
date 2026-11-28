@@ -1,0 +1,125 @@
+{
+  "schema": 1,
+  "source": {
+    "schema": 1,
+    "variant": "generic",
+    "preflight_run": 46094435550,
+    "source_commit": "a04cea9737eba9650695f7461fe9e96503695d01",
+    "inspect_sha256": "b3a1e4db3e67a6dccd4a78c022c215538eabeccebb20e89666c734722374978f",
+    "prepare_sha256": "f37f0373ae093b402a47d4da2610e7ab7433e0767d99856b82702f870b66bd2e",
+    "manifest_digest": "sha256:1a08b504580f8f2f6dda9d913a2cbb4aa7039f4e18ebfb2eed01ce0a8381f9a3"
+  },
+  "run": {
+    "id": 46094435550,
+    "head_branch": "card/P0-04-hosted-fix",
+    "head_sha": "a04cea9737eba9650695f7461fe9e96503695d01",
+    "head_tree": "ea490f83886f098d5a03b30a9507a29dc09232c4",
+    "job_id": 140822445166,
+    "job_name": "preflight",
+    "conclusion": "success",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46094435550"
+  },
+  "artifact": {
+    "id": 15243321686,
+    "name": "atomic-image-preflight-generic",
+    "bytes": 62545,
+    "digest": "sha256:9a5c4f8f0c7c5467108fa2338d69757af71161ca3f0cf8700e2c1ead06d78fd2",
+    "expires_at": "2026-12-12T01:49:04Z",
+    "downloaded_digest_matched": true
+  },
+  "archive_audit": {
+    "regular_members": 41,
+    "uncompressed_bytes": 201042,
+    "strict_json_documents": 3,
+    "unsafe_duplicate_encrypted_special_colliding_or_crc_failed_members": 0,
+    "extracted": false
+  },
+  "image_binding": {
+    "desktop_lock_sha256": "4c4c49db576f9df9fa4a58cbaa6cd5f7b2bec07014a7740829edb0bc3229c0d6",
+    "image_artifact_id": 15241381990,
+    "image_artifact_bytes": 4177424549,
+    "image_artifact_sha256": "2a04d8fe73c9af4431d1513889842ee5c14834555c4c81c0e447f9559a374329",
+    "image_source_run": 46091256475,
+    "image_source_commit": "22c751096e47d2f5ff74d8e5963a7079fa24576f",
+    "manifest_sha256": "a4351b529038f9ed46268ed3391cf3e3cabb2b58579d3b803037d65790f3d1dd",
+    "oci_archive": {
+      "name": "symbiont-os-generic.oci.tar.gz",
+      "bytes": 4177423629,
+      "sha256": "8fce0c0da63b972c9371afb05c2f886be3aacf19b1c6d7a53494daf2a5d90ff9",
+      "image_id": "sha256:f7d84f2d01a4aaaa8c3b909a86a60ba06a6e82b426ea09dfb3c9af5a676c40f9"
+    },
+    "full_outer_archive_digest_recomputed": true,
+    "full_oci_archive_digest_recomputed": true,
+    "preparation_sha256": "95a9bfe67f88718b4cb49feb4e90dde3857f76ef3e7ab3eeda19f91ea7ab5ba8",
+    "installed_package_inventory": {
+      "entries": 2184,
+      "unique_entries": 2184,
+      "sha256": "4142fa70cff7227a164225f6ebff5bbbaf7816c5d5d864a4a47c454969445387",
+      "sorted_sha256": "7af38020fc34399648c491a007e089982395582ad2f79448fb853a57c93effc4"
+    }
+  },
+  "checks": {
+    "prepare_passed": true,
+    "inspect_passed": true,
+    "installed_files_checked": 213,
+    "installed_package_identities_preserved": true,
+    "kernel_version": "7.3.4-300.secureblue.1.fc45.x86_64",
+    "kernel_private_payload_removed": true,
+    "bootc_version": "1.17.1",
+    "filesystem_default": null,
+    "filesystem_argument_required": true,
+    "root_readonly": true,
+    "selinux_enforcing": true,
+    "trust_files_matched": true
+  },
+  "resources": {
+    "prepare": {
+      "memory_max_bytes": 1073741824,
+      "memory_peak_bytes": 27078656,
+      "memory_max_events": 0,
+      "swap_max_bytes": 0,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0,
+      "cpu_max": "100000 100000",
+      "pids_max": 64
+    },
+    "inspect": {
+      "memory_max_bytes": 4294967296,
+      "memory_peak_bytes": 4294971392,
+      "memory_max_events": 32576,
+      "swap_max_bytes": 0,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0,
+      "cpu_max": "200000 100000",
+      "pids_max": 256
+    },
+    "boot_input_probe": {
+      "memory_max_bytes": 536870912,
+      "memory_peak_bytes": 34623488,
+      "memory_max_events": 0,
+      "swap_max_bytes": 0,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0,
+      "cpu_max": "100000 100000",
+      "pids_max": 64
+    }
+  },
+  "cleanup": {
+    "containers_removed_and_absent": 3,
+    "loaded_image_removed_and_absent": true,
+    "kernel_private_payload_removed": true
+  },
+  "claims": {
+    "installation_attempted": false,
+    "guest_booted": false,
+    "landlock_qualified": false,
+    "containment_qualified": false,
+    "os_qualified": false,
+    "signature_qualified": false,
+    "release_qualified": false
+  },
+  "limitations": "This read-only preflight authenticated and fully streamed the retained development image, then inspected its bounded inputs. It did not install or boot the image. Native Landlock qualification remains a separate hosted gate."
+}

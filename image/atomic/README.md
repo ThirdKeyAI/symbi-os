@@ -9,15 +9,15 @@ The ordinary Atomic workflow now extends that harness through an exact retained
 predecessor, signed switch and booted rollback. Passing it does not establish
 desktop, sandbox, release or NVIDIA qualification.
 
-The current prerequisite passed in [preflight 45901694620](https://github.com/ThirdKeyAI/symbi-os/actions/runs/45901694620)
-at `370ac0af566cd94d7452fd415c59d3def9619b85` against the exact generic image
-built at `d436c6ee8a7ed159afa59db9bd82377ae8ea2389`: complete saved-archive
-identity, 212 installed files, 2,184 packages, protected kernel/initramfs hashes,
+The current prerequisite passed in [preflight 46094435550](https://github.com/ThirdKeyAI/symbi-os/actions/runs/46094435550)
+at `a04cea9737eba9650695f7461fe9e96503695d01` against the exact generic image
+built at `22c751096e47d2f5ff74d8e5963a7079fa24576f`: complete saved-archive
+identity, 213 installed files, 2,184 packages, protected kernel/initramfs hashes,
 bootc options, exact secureblue/Fedora identity and enforcing trust
 configuration. The hosted artifact retains all 41 original small files. The repository
 retains the two decision reports and a reconciliation binding the complete
-artifact identity and hashes. The earlier accepted prerequisite `45804599421` describes the
-predecessor image and remains part of the rollback input. Older failed runs
+artifact identity and hashes. The earlier accepted prerequisite `45901694620`
+describes the predecessor image and remains retained as historical evidence. Older failed runs
 remain failed: protected-initramfs access in `45799924739`, then incorrect
 OS/default-filesystem assumptions in `45802753036`. The latter showed that
 bootc has no configured filesystem default; this disposable test explicitly
@@ -491,6 +491,6 @@ present and host swap remains disabled.
 This is a development recovery proof, not release signing. Both fixture keys
 are generated offline and their private material is removed. The shipped
 default-reject policy remains in each image; the temporary update policy exists
-only in the disposable service mount namespace. The hosted run and current
-preflight binding are still pending. Eleven focused update tests and the full
+only in the disposable service mount namespace. The hosted update/rollback
+run is still pending. Eleven focused update tests and the full
 325-test image suite pass locally; the native VM result is not yet claimed.
