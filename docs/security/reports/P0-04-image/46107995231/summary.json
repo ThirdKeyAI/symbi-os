@@ -1,0 +1,142 @@
+{
+  "schema": 1,
+  "image_build_passed": true,
+  "run": {
+    "id": 46107995231,
+    "head_branch": "card/P0-04-hosted-fix",
+    "head_sha": "c6bf3ed9eba34562d886b6b315dd9cb46340c525",
+    "head_tree": "e690330bfdc98e401ee44916ab7de976ae28d424",
+    "job_id": 140864960974,
+    "job_name": "image",
+    "conclusion": "success",
+    "url": "https://github.com/ThirdKeyAI/symbi-os/actions/runs/46107995231"
+  },
+  "evidence_artifact": {
+    "id": 15248635914,
+    "name": "desktop-image-evidence-generic",
+    "bytes": 152202,
+    "digest": "sha256:c26e70dd8c6e1821d983bdc20ae2b547f3e85ced61b08dd3f5714944a528ee92",
+    "expires_at": "2026-12-12T04:38:47Z",
+    "downloaded_zip_digest_matched": true,
+    "regular_members": 196,
+    "compressed_member_bytes": 122278,
+    "uncompressed_bytes": 497707,
+    "strict_json_or_jsonl_documents": 15,
+    "unsafe_duplicate_encrypted_special_or_crc_failed_members": 0
+  },
+  "image_artifact": {
+    "id": 15247719935,
+    "name": "desktop-development-image-generic",
+    "bytes": 4177421526,
+    "server_digest": "sha256:b3b26053d89b2c5766cb6afbc5066ecb4882a4beaca9c142159de6f27a1edde4",
+    "expires_at": "2026-12-01T04:38:48Z",
+    "local_download_or_range_audit_performed": false,
+    "full_artifact_digest_locally_recomputed": false,
+    "full_stream_verification_required_by_next_gate": true
+  },
+  "manifest": {
+    "schema": 1,
+    "built": true,
+    "os_qualified": false,
+    "source_commit": "c6bf3ed9eba34562d886b6b315dd9cb46340c525",
+    "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+    "variant": "generic",
+    "archive": {
+      "name": "symbiont-os-generic.oci.tar.gz",
+      "bytes": 4177420606,
+      "sha256": "02763122742014c3d4a47e50218935d33ddb15b621b692feb10d439aeb57351e",
+      "image_id": "sha256:500360578de668b01b5c4db1bdd583800ce98f1063ba24445b1f84e97af93358"
+    },
+    "preparation_sha256": "5cef8a28c27effff123868f965fca278e1d0877c78a882c3f46451a3dfc1b58e"
+  },
+  "manifest_provenance": {
+    "source": "fully audited desktop-image-evidence-generic archive",
+    "bytes": 628,
+    "sha256": "cbfd9d81872dec9cc9198bb4adb89080f09670fa023344b4d7ab2a5acee607ee",
+    "outer_image_artifact_member_not_yet_read": true
+  },
+  "installed_rule": {
+    "path": "/usr/lib/udev/rules.d/61-symbi-qualification-source.rules",
+    "bytes": 154,
+    "sha256": "0158d5f15b022e0f7404a82283c0b878e04c79e117437ed3bf20f03e5cc79732",
+    "selector": "ATTRS{serial}==\"SYMBIQUAL\" and DRIVERS==\"virtio_blk\"",
+    "preparation_and_build_context_match": true
+  },
+  "retained_controller_inputs": {
+    "preparation": {
+      "path": "docs/security/reports/P0-03-desktop/46107995231/preparation.json",
+      "bytes": 141253,
+      "sha256": "5cef8a28c27effff123868f965fca278e1d0877c78a882c3f46451a3dfc1b58e"
+    },
+    "installed_package_inventory": {
+      "path": "docs/security/reports/P0-03-desktop/46107995231/install/installed-after-stdout.log",
+      "bytes": 88016,
+      "sha256": "4142fa70cff7227a164225f6ebff5bbbaf7816c5d5d864a4a47c454969445387",
+      "entries": 2184,
+      "unique_entries": 2184,
+      "sorted_sha256": "7af38020fc34399648c491a007e089982395582ad2f79448fb853a57c93effc4"
+    }
+  },
+  "checks": {
+    "preparation_passed": true,
+    "image_build_passed": true,
+    "installation_passed": true,
+    "installed_files_passed": true,
+    "installed_files_checked": 213,
+    "all_package_identities_preserved_after_build": true,
+    "all_build_containers_removed_and_absent": true,
+    "image_manifest_os_qualified": false
+  },
+  "resources": {
+    "preparation": {
+      "memory_max_bytes": 1073741824,
+      "memory_peak_bytes": 1073741824,
+      "swap_max_bytes": 0,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0
+    },
+    "image_build": {
+      "memory_max_bytes": 2147483648,
+      "memory_peak_bytes": 2147483648,
+      "swap_max_bytes": 0,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0
+    },
+    "installation": {
+      "memory_max_bytes": 2147483648,
+      "memory_peak_bytes": 372273152,
+      "swap_max_bytes": 0,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0
+    },
+    "outer_controller": {
+      "memory_max_bytes": 4294967296,
+      "memory_peak_bytes": 4320399360,
+      "swap_max_bytes": 0,
+      "oom_events": 0,
+      "oom_kill_events": 0,
+      "oom_group_kill_events": 0
+    }
+  },
+  "claims": {
+    "landlock_qualified": false,
+    "containment_qualified": false,
+    "os_qualified": false,
+    "signature_qualified": false,
+    "release_qualified": false
+  },
+  "next_gate": {
+    "atomic_preflight_required_before_landlock": true,
+    "atomic_preflight_requirement_satisfied": false,
+    "current_preflight_lock_run": 46094435550,
+    "current_preflight_lock_source_commit": "a04cea9737eba9650695f7461fe9e96503695d01",
+    "current_preflight_lock_manifest_digest": "sha256:1a08b504580f8f2f6dda9d913a2cbb4aa7039f4e18ebfb2eed01ce0a8381f9a3",
+    "current_preflight_lock_matches_this_image": false,
+    "preflight_evidence": "docs/security/reports/P0-03-atomic-preflight/46094435550-reconciled.json",
+    "landlock_ready": false
+  },
+  "limitations": "The evidence ZIP was fully downloaded and safely audited. The 4.18 GB image artifact was not downloaded or range-read locally. Its server metadata and evidence-supplied manifest are locked, but atomic preflight must fully stream and recompute the outer ZIP and inner OCI archive digests before any native qualification run. This build did not install or boot a disk image and makes no qualification claim."
+}

@@ -10,22 +10,24 @@ predecessor, signed switch and booted rollback. Passing it does not establish
 desktop, sandbox, release or NVIDIA qualification.
 
 The current generic image target is retained run
-[`46091256475`](https://github.com/ThirdKeyAI/symbi-os/actions/runs/46091256475)
-at `22c751096e47d2f5ff74d8e5963a7079fa24576f`, with 213 installed files and
+[`46107995231`](https://github.com/ThirdKeyAI/symbi-os/actions/runs/46107995231)
+at `c6bf3ed9eba34562d886b6b315dd9cb46340c525`, with 213 installed files and
 2,184 packages in its reviewed evidence. The combined desktop-image lock preserves
 the newer NVIDIA entry and has SHA-256
-`f11b8051e38a66b13b89beb7e5e77bcb0c8ac3a2c155d0258e41025f11a0962b`.
+`1a268651cccc61a5693ec9c3a519680b9cffc1844ffeda852f4d151b4b7d670c`.
 
 No Atomic preflight is selected for that combined lock. Reviewed preflight
 [`46094435550`](https://github.com/ThirdKeyAI/symbi-os/actions/runs/46094435550)
-at `a04cea9737eba9650695f7461fe9e96503695d01` covered the target generic image,
+at `a04cea9737eba9650695f7461fe9e96503695d01` covered the prior generic image
+built at `22c751096e47d2f5ff74d8e5963a7079fa24576f`,
 but its complete desktop-image lock had SHA-256
 `4c4c49db576f9df9fa4a58cbaa6cd5f7b2bec07014a7740829edb0bc3229c0d6`
 and its verifier predates the integrated head. Its reports are retained as
 historical evidence and are explicitly unselected. `preflight.lock.json` leaves all
 installation, boot, Landlock, OS, signature, and release claims false until a fresh
 generic preflight is run and reviewed at the integrated head. The strict validator
-therefore refuses installation with the pending marker.
+therefore refuses installation because the pending lock still binds the prior
+image and desktop-image lock.
 
 Historical prerequisite `45910498271` remains an archived regression fixture for
 the earlier `d436c6ee8a7ed159afa59db9bd82377ae8ea2389` generic image; it is not a

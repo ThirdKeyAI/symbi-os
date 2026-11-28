@@ -1,0 +1,2798 @@
+{
+  "passed": true,
+  "os_qualified": false,
+  "source_commit": "c6bf3ed9eba34562d886b6b315dd9cb46340c525",
+  "variant": "generic",
+  "limits": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "64"
+  },
+  "artifacts": {
+    "bluebuild": {
+      "lock": "image/development-builder.lock.json",
+      "lock_sha256": "56fabc0da8daf24e3afdd52e6d76d2a861415eee14ab7523dcfb5232521cf685",
+      "id": 15081564466,
+      "bytes": 68141988,
+      "sha256": "2ab11618c7d11c5599aa23a885fe0ad74dd8b73c7adb296e0d2427373432c3fb"
+    },
+    "hyprland": {
+      "lock": "image/hyprland/development-prefix.lock.json",
+      "lock_sha256": "484cf1c675b20c8e603ef6094ecd1e07c7e8fd58047bdba1e8f7eabfb26b0650",
+      "id": 15070319189,
+      "bytes": 73342447,
+      "sha256": "b86fde7463a786a5bb5763edf3ee23cfac3829e7c5b596ad829e4d4861814743"
+    },
+    "portal": {
+      "lock": "image/portal/consent-prefix.lock.json",
+      "lock_sha256": "c121351f04dc96550022a1815b962a6b052c7b153cb6e7e794a8ca3311e8f855",
+      "id": 15100886169,
+      "name": "portal-consent-prefix",
+      "bytes": 1461777,
+      "sha256": "d96d07ce422a3de7f12bb75f32a77f7df3f40e6386ee4ada644b7a5d7f92aa40"
+    },
+    "elephant": {
+      "lock": "image/launcher/development-binaries.lock.json",
+      "lock_sha256": "9baea0445ab8403fc5ed8bf6461ace6f562524b3167fe93eda1ee02965fbf124",
+      "id": 15079141579,
+      "bytes": 108468738,
+      "sha256": "dda8b3df435305f45928907b5631d6ab5547b943c65fb254df08a8d0d897df38"
+    },
+    "walker": {
+      "lock": "image/launcher/walker-development-binary.lock.json",
+      "lock_sha256": "262a46c02426d37cc51e70d5ddad85bc07a61bd18b7556e345be91edca606246",
+      "id": 15081693039,
+      "bytes": 7365060,
+      "sha256": "be2a8c621c3a99f03d8a475d7a6adb21fd6a00dbca601f79fd0f262ae213ac82"
+    },
+    "symbiont": {
+      "lock": "image/assembly/runtime-development.lock.json",
+      "lock_sha256": "68f2540541634e5b25f6cfb8417a2a5c20ee267073f617183999f9a804b6d42a",
+      "id": 15066141540,
+      "bytes": 529348296,
+      "sha256": "bed79f624444c6dc0c3a5105facdcd9ad637a26f4fcd6cacb6e10544c36a0724"
+    },
+    "hyprland-rpms": {
+      "lock": "image/hyprland/runtime-rpms.lock.json",
+      "lock_sha256": "d3bb98ae070021e20e695d5260eb97ab6c74fa4c3b60fca8e0227335c22af332",
+      "id": 15072725272,
+      "bytes": 362098,
+      "sha256": "ec4f092437c10b7ef63ab6c232240bb1c21898ece79d76bf10fbf47995a2cb85"
+    },
+    "walker-rpms": {
+      "lock": "image/launcher/runtime-rpms.lock.json",
+      "lock_sha256": "56de8100355c30a9912545bc502ac33dfee5a9de03a455bc114c53813bf69d71",
+      "id": 15068598980,
+      "name": "launcher-runtime-rpm-candidates",
+      "bytes": 42545,
+      "sha256": "43ef54a307fcb72b7dd878a0930683544ed50904f5c294a32c2e236a5d614a0a"
+    },
+    "symbiont-rpms": {
+      "lock": "image/assembly/runtime-rpms.lock.json",
+      "lock_sha256": "40163f101ecfc969c9e4bfe549e0cb5ffa3b25148dac42c3962c7af3f11b2142",
+      "id": 15084582682,
+      "bytes": 2896586,
+      "sha256": "bea530216afb23f6c370fe4027e76740287a588d917b1ff7c09a4c9081061fa0"
+    },
+    "portal-rpms": {
+      "lock": "image/portal/build-rpms.lock.json",
+      "lock_sha256": "81fb8788e0acb25ee15bcb6d38c7438c4cba102e1fd616d944ddc03f99375ab8",
+      "id": 15092560593,
+      "name": "portal-build-rpm-candidates",
+      "bytes": 153315325,
+      "sha256": "ce26dda0cab7e61de9c888503d2e5d3ff87e23f74e859fbfd270dd9de74c2565"
+    }
+  },
+  "checkpoints": [
+    {
+      "phase": "validate-target-and-builder",
+      "memory.current": "13611008",
+      "memory.peak": "13611008",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 13086720\nfile 176128\nkernel 196608\nkernel_stack 0\npagetables 110592\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 0\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 13082624\ninactive_file 167936\nactive_file 0\nunevictable 0\nslab_reclaimable 40920\nslab_unreclaimable 35240\nslab 76160\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 3560\npgmajfault 0\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   23540 kB",
+        "VmRSS:\t   23540 kB"
+      ]
+    },
+    {
+      "phase": "extract-compositor",
+      "memory.current": "13963264",
+      "memory.peak": "85942272",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 13348864\nfile 200704\nkernel 217088\nkernel_stack 0\npagetables 110592\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 16384\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 13348864\ninactive_file 200704\nactive_file 0\nunevictable 0\nslab_reclaimable 59296\nslab_unreclaimable 35040\nslab 94336\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 4683\npgmajfault 0\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   25720 kB",
+        "VmRSS:\t   23796 kB"
+      ]
+    },
+    {
+      "phase": "select-compositor-runtime",
+      "memory.current": "21762048",
+      "memory.peak": "228724736",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 18182144\nfile 1368064\nkernel 1904640\nkernel_stack 0\npagetables 118784\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 1179648\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 18182144\ninactive_file 1368064\nactive_file 0\nunevictable 0\nslab_reclaimable 1750216\nslab_unreclaimable 35040\nslab 1785256\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 30999\npgmajfault 0\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   28640 kB",
+        "VmRSS:\t   28524 kB"
+      ]
+    },
+    {
+      "phase": "extract-patched-portal",
+      "memory.current": "142069760",
+      "memory.peak": "228724736",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 19410944\nfile 119902208\nkernel 2297856\nkernel_stack 0\npagetables 122880\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 1265664\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 19410944\ninactive_file 119898112\nactive_file 0\nunevictable 0\nslab_reclaimable 2123048\nslab_unreclaimable 31192\nslab 2154240\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 31299\npgmajfault 0\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   29724 kB",
+        "VmRSS:\t   29724 kB"
+      ]
+    },
+    {
+      "phase": "extract-elephant",
+      "memory.current": "147009536",
+      "memory.peak": "228724736",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 19439616\nfile 124583936\nkernel 2453504\nkernel_stack 0\npagetables 122880\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 1462272\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 19439616\ninactive_file 124583936\nactive_file 0\nunevictable 0\nslab_reclaimable 2281072\nslab_unreclaimable 31352\nslab 2312424\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 31307\npgmajfault 0\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   29816 kB",
+        "VmRSS:\t   29816 kB"
+      ]
+    },
+    {
+      "phase": "extract-walker",
+      "memory.current": "217649152",
+      "memory.peak": "258674688",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 19443712\nfile 194961408\nkernel 2633728\nkernel_stack 0\npagetables 122880\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 1474560\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 19443712\ninactive_file 194961408\nactive_file 0\nunevictable 0\nslab_reclaimable 2458808\nslab_unreclaimable 31552\nslab 2490360\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 31308\npgmajfault 0\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   29820 kB",
+        "VmRSS:\t   29820 kB"
+      ]
+    },
+    {
+      "phase": "extract-symbiont",
+      "memory.current": "224866304",
+      "memory.peak": "258674688",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 19443712\nfile 202334208\nkernel 2654208\nkernel_stack 0\npagetables 122880\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 1482752\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 19443712\ninactive_file 202334208\nactive_file 0\nunevictable 0\nslab_reclaimable 2483760\nslab_unreclaimable 36216\nslab 2519976\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 31308\npgmajfault 0\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   29820 kB",
+        "VmRSS:\t   29820 kB"
+      ]
+    },
+    {
+      "phase": "copy-symbiont",
+      "memory.current": "225050624",
+      "memory.peak": "768782336",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 19443712\nfile 202342400\nkernel 2654208\nkernel_stack 0\npagetables 122880\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 1486848\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 19443712\ninactive_file 202342400\nactive_file 0\nunevictable 0\nslab_reclaimable 2492104\nslab_unreclaimable 36616\nslab 2528720\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 31308\npgmajfault 0\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   29820 kB",
+        "VmRSS:\t   29820 kB"
+      ]
+    },
+    {
+      "phase": "prepare-nerd-fonts",
+      "memory.current": "755568640",
+      "memory.peak": "768782336",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 19443712\nfile 731697152\nkernel 3874816\nkernel_stack 0\npagetables 122880\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 1486848\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 19443712\ninactive_file 731697152\nactive_file 0\nunevictable 0\nslab_reclaimable 3705480\nslab_unreclaimable 32584\nslab 3738064\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 31308\npgmajfault 0\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t   29820 kB",
+        "VmRSS:\t   29820 kB"
+      ]
+    },
+    {
+      "phase": "prepare-signed-rpms-and-licenses",
+      "memory.current": "761831424",
+      "memory.peak": "1012731904",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 24494080\nfile 731848704\nkernel 4857856\nkernel_stack 0\npagetables 135168\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 16384\nfile_dirty 1617920\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 24494080\ninactive_file 731828224\nactive_file 16384\nunevictable 0\nslab_reclaimable 4676160\nslab_unreclaimable 32584\nslab 4708744\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 68535\npgmajfault 2\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t  100036 kB",
+        "VmRSS:\t   34940 kB"
+      ]
+    },
+    {
+      "phase": "select-signed-portal-runtime",
+      "memory.current": "764530688",
+      "memory.peak": "1012731904",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 24494080\nfile 735178752\nkernel 4190208\nkernel_stack 0\npagetables 135168\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 16384\nfile_dirty 4939776\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 24494080\ninactive_file 735162368\nactive_file 16384\nunevictable 0\nslab_reclaimable 4007848\nslab_unreclaimable 32584\nslab 4040432\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 68535\npgmajfault 2\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t  100036 kB",
+        "VmRSS:\t   34940 kB"
+      ]
+    },
+    {
+      "phase": "prepare-image-trust",
+      "memory.current": "764973056",
+      "memory.peak": "1012731904",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 24494080\nfile 735260672\nkernel 4468736\nkernel_stack 0\npagetables 135168\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 16384\nfile_dirty 4988928\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 24494080\ninactive_file 735244288\nactive_file 16384\nunevictable 0\nslab_reclaimable 4284456\nslab_unreclaimable 36616\nslab 4321072\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 68535\npgmajfault 2\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t  100036 kB",
+        "VmRSS:\t   34940 kB"
+      ]
+    },
+    {
+      "phase": "validate-and-generate-containerfile",
+      "memory.current": "765386752",
+      "memory.peak": "1012731904",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 24498176\nfile 735662080\nkernel 4599808\nkernel_stack 0\npagetables 135168\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 16384\nfile_dirty 5386240\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 24498176\ninactive_file 735645696\nactive_file 16384\nunevictable 0\nslab_reclaimable 4415392\nslab_unreclaimable 32424\nslab 4447816\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 68536\npgmajfault 2\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t  100036 kB",
+        "VmRSS:\t   34944 kB"
+      ]
+    },
+    {
+      "phase": "complete",
+      "memory.current": "1073721344",
+      "memory.peak": "1073741824",
+      "memory.events": "low 0\nhigh 0\nmax 6865\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.stat": "anon 24506368\nfile 1041874944\nkernel 7335936\nkernel_stack 0\npagetables 135168\nsec_pagetables 0\npercpu 96\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 16384\nfile_dirty 0\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 24506368\ninactive_file 887164928\nactive_file 154652672\nunevictable 0\nslab_reclaimable 7144904\nslab_unreclaimable 40968\nslab 7185872\nworkingset_refault_anon 0\nworkingset_refault_file 238973\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 442649\npgsteal 441775\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 442649\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 441775\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 105215\npgmajfault 1761\npgrefill 232\npgactivate 874\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0\n",
+      "process_memory": [
+        "VmHWM:\t  100036 kB",
+        "VmRSS:\t   34952 kB"
+      ]
+    }
+  ],
+  "phase": "complete",
+  "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "component_compilation_base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
+  "prefix_link_rewrites": [
+    {
+      "name": "hyprland/bin/hyprland",
+      "original_target": "/usr/lib/symbi/hyprland/bin/Hyprland",
+      "relative_target": "Hyprland"
+    }
+  ],
+  "portal": {
+    "manifest_sha256": "95d4287f2598e34f02be2654a3ff8009c9b46e464592db325e5d08acea76a728",
+    "bindings": {
+      "image/portal/source-inputs.json": "759e7e4e4cbe63cb5c0ef39963e4f95b39a68b803e6d9100d10f3a40cc722514",
+      "image/hyprland/candidate-inputs.json": "d5c64bd34e52e4c61a14fde19ad429c31dcf3862d8c051bd029c4c73deca2ecb",
+      "image/hyprland/development-prefix.lock.json": "484cf1c675b20c8e603ef6094ecd1e07c7e8fd58047bdba1e8f7eabfb26b0650",
+      "image/hyprland/build-rpms.lock.json": "fe160b4ed81b2e4910df098f6648b499264e8d989eea07feb59a841ecc9131a4",
+      "image/hyprland/patches/0001-disable-native-loading.patch": "068d061f29c6ccbef25d402972a14c72195811e40888027b71760f6656f6eeff",
+      "image/portal/reviewed/hyprtoolkit/VERSION": "97a5d6e540a6120d09c39ddb667e0e8e2bac7fcc2ffef813b82e08fd60365bce",
+      "image/portal/reviewed/hyprtoolkit/CMakeLists.txt": "053653a92c0b7f6936e4a9c745d4281c6f5ac87be12d684503aba72ab3452195",
+      "image/portal/reviewed/hyprtoolkit/LICENSE": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143",
+      "image/portal/reviewed/hyprtoolkit/scripts/generateShaderIncludes.sh": "208b260558dd3de4519361b0ab6fb841f6736456ea430750ae8edbc43a24c17e",
+      "image/portal/reviewed/xdg-desktop-portal-hyprland/VERSION": "acb57a7135b2d7d6e665f67f056e21353023b93835f54def1ae523bf76f1bfb3",
+      "image/portal/reviewed/xdg-desktop-portal-hyprland/CMakeLists.txt": "b5d66bb400772968346edf61b6b568fba623bdf355bb8af8c2aa4c2a6354c450",
+      "image/portal/reviewed/xdg-desktop-portal-hyprland/LICENSE": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+      "image/portal/reviewed/xdg-desktop-portal-hyprland/hyprland-share-picker/CMakeLists.txt": "3f0439e00661d676cd370c496b8f9b473ef4dc362b9a40d3513f6a9e9c305c58",
+      "image/portal/reviewed/Hyprland-flake.lock": "db45c25bd98a86c5c5cb2494ff6994d39db7f2d0eb05fc98d27d30b6c833cabe",
+      "image/hyprland/build-requirements.json": "fa610060ebed142edc072cea832945da3da3e0d58bdf14cd1d35089f1302b92a",
+      "image/portal/build-rpms.lock.json": "81fb8788e0acb25ee15bcb6d38c7438c4cba102e1fd616d944ddc03f99375ab8",
+      "image/portal/development-prefix.lock.json": "abc80998ff1ec66160f0738a7e5fc0865b39c6a2e65fe7f7870633dde02a1240",
+      "image/portal/consent-inputs.json": "600eb0bc6f853ffcea25be529af0e28e2283d4ec6901805ae5f558b784d44be4",
+      "LICENSE": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+      "image/portal/consent-reviewed/LICENSE": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+      "image/portal/consent-reviewed/contrib/systemd/xdg-desktop-portal-hyprland.service.in": "ba6b2c223f6d674ac7b04d42b25af818ac0df8ab58fa424023d14b51f9f00db2",
+      "image/portal/consent-reviewed/hyprland-share-picker/Picker.cpp": "7f2e8895e528b07ee8f12769d3dcc675b0e8a4d9e8e39001c13139ca4ccd917b",
+      "image/portal/consent-reviewed/hyprland-share-picker/Picker.hpp": "708bf45cedc93962822a625ba06ef21fcf89cbccc7bd54344caec1f34369df40",
+      "image/portal/consent-reviewed/hyprland-share-picker/PickerData.cpp": "04c61402c60de8881c125df1b8348a8322833c3523af3676a9409c16932d677b",
+      "image/portal/consent-reviewed/hyprland-share-picker/PickerData.hpp": "c5dfd40a9e47ddd97b5e5905673e913e87ebcde07a9e9b0682bb9897643c78a8",
+      "image/portal/consent-reviewed/hyprland-share-picker/PickerDataTest.cpp": "f872f91bd7de1817f9a463baf6e28f85f6db6c06f2b919b466c720698abbdbd7",
+      "image/portal/consent-reviewed/hyprland-share-picker/main.cpp": "aacad7a0605cedd26a72029eff3fca20ee5bca1c52940561593ebdf066b3bac2",
+      "image/portal/consent-reviewed/org.freedesktop.impl.portal.desktop.hyprland.service.in": "0e3b4ffcff6b6e626974309165aa782ac996274eb03f446422fcd8df8561b2e0",
+      "image/portal/consent-reviewed/src/core/PortalManager.cpp": "aa990965d36d1c5a248ff6046ec0fddadeb2e7a5916b6dac9b6947ff5f95ad67",
+      "image/portal/consent-reviewed/src/portals/Screencopy.cpp": "c6c9f3a222411715190b17641618e63067cafa4d097a423aa186a2af0d4bdf98",
+      "image/portal/consent-reviewed/src/portals/Screencopy.hpp": "53b47796fe837aaf8dccee6b1717e76d4c053e5e8601eb9679021ceaf47071f8",
+      "image/portal/consent-reviewed/src/shared/ScreencopyShared.cpp": "fae2f5bb0188a1dafabafc47737bada52867ad7475a051409fbd06a17738b646",
+      "image/portal/consent-reviewed/src/shared/ScreencopyShared.hpp": "80dc2c048c9c183eb1d973ee0e950483bb5ec919b21fe242c06f24a92ab92356",
+      "image/portal/patches/0001-no-restore-tests.patch": "7b2ddb34ee84ecc54d0b50ea4acd6529f7841ccd0ef97844c2f72c5a478f6b4b",
+      "image/portal/patches/0002-require-fresh-screen-sharing-consent.patch": "ff242489a3f0a904f33e98c39db3eee23d836740649f0120032100c4b9a5629b",
+      "image/portal/consent-reviewed/LICENSE.symbi-os": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+      "image/hyprland/fedora-package-trust.json": "3801b3f6ad666bc0f762f2502fdaebac0eb051fbbadcb343fd2559e3b05ec443",
+      "image/portal/consent-prefix.lock.json": "c121351f04dc96550022a1815b962a6b052c7b153cb6e7e794a8ca3311e8f855"
+    },
+    "parent_manifest_sha256": "fbb337e28befd8a65f0c49a47eb7201cf7048062df0ea9b212b607df07e2e3d8",
+    "unchanged_retained_files": [
+      "include/hyprtoolkit/core/Animation.hpp",
+      "include/hyprtoolkit/core/Backend.hpp",
+      "include/hyprtoolkit/core/BackendServices.hpp",
+      "include/hyprtoolkit/core/CoreMacros.hpp",
+      "include/hyprtoolkit/core/EmbeddedBackend.hpp",
+      "include/hyprtoolkit/core/Input.hpp",
+      "include/hyprtoolkit/core/LogTypes.hpp",
+      "include/hyprtoolkit/core/Output.hpp",
+      "include/hyprtoolkit/core/SessionLock.hpp",
+      "include/hyprtoolkit/core/Timer.hpp",
+      "include/hyprtoolkit/element/Button.hpp",
+      "include/hyprtoolkit/element/Checkbox.hpp",
+      "include/hyprtoolkit/element/ColumnLayout.hpp",
+      "include/hyprtoolkit/element/Combobox.hpp",
+      "include/hyprtoolkit/element/Element.hpp",
+      "include/hyprtoolkit/element/Image.hpp",
+      "include/hyprtoolkit/element/Line.hpp",
+      "include/hyprtoolkit/element/Null.hpp",
+      "include/hyprtoolkit/element/ProgressBar.hpp",
+      "include/hyprtoolkit/element/RadioGroup.hpp",
+      "include/hyprtoolkit/element/Rectangle.hpp",
+      "include/hyprtoolkit/element/RowLayout.hpp",
+      "include/hyprtoolkit/element/ScrollArea.hpp",
+      "include/hyprtoolkit/element/Slider.hpp",
+      "include/hyprtoolkit/element/Spinbox.hpp",
+      "include/hyprtoolkit/element/Text.hpp",
+      "include/hyprtoolkit/element/Textbox.hpp",
+      "include/hyprtoolkit/palette/Color.hpp",
+      "include/hyprtoolkit/palette/Gradient.hpp",
+      "include/hyprtoolkit/palette/Palette.hpp",
+      "include/hyprtoolkit/system/Icons.hpp",
+      "include/hyprtoolkit/types/FontTypes.hpp",
+      "include/hyprtoolkit/types/ImageTypes.hpp",
+      "include/hyprtoolkit/types/PointerShape.hpp",
+      "include/hyprtoolkit/types/SizeType.hpp",
+      "include/hyprtoolkit/window/EmbeddedSurface.hpp",
+      "include/hyprtoolkit/window/Window.hpp",
+      "lib/libhyprtoolkit.so",
+      "lib/libhyprtoolkit.so.0.6.0",
+      "lib/libhyprtoolkit.so.6",
+      "lib/pkgconfig/hyprtoolkit.pc",
+      "lib/systemd/user/xdg-desktop-portal-hyprland.service",
+      "share/dbus-1/services/org.freedesktop.impl.portal.desktop.hyprland.service",
+      "share/licenses/hyprtoolkit/LICENSE",
+      "share/licenses/xdg-desktop-portal-hyprland/LICENSE",
+      "share/xdg-desktop-portal/portals/hyprland.portal"
+    ],
+    "native_negative_controls": {
+      "original_native_test_failed": true,
+      "allow-token_rejected": true,
+      "unknown-option_rejected": true
+    },
+    "consent_qualified": false,
+    "version": "1.5.0",
+    "runtime_package": {
+      "filename": "iniparser-4.2.6-5.fc45.x86_64.rpm",
+      "bytes": 26470,
+      "sha256": "8774475752a94ae62e9958819c03fa3977677d53c93b3b981a82f480b1767743",
+      "nevra": "iniparser-4.2.6-5.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    }
+  },
+  "fonts": {
+    "schema": 1,
+    "development_included": true,
+    "selected_for_release": false,
+    "security_qualified": false,
+    "os_qualified": false,
+    "source_commit": "c6bf3ed9eba34562d886b6b315dd9cb46340c525",
+    "inputs_sha256": "0cb5bd14ebc26cd3b5ca3ff27fac3f967a4d169fce14a9d8897f541518f620f6",
+    "candidate_manifest_sha256": "4f58767e18db601c999805b1e2bce91f5ce686ae94b84970a705c6c7b1f97668",
+    "archives": {
+      "JetBrainsMono.tar.xz": {
+        "members": 98,
+        "fonts": 96,
+        "expanded_bytes": 243185440,
+        "inventory_sha256": "935da0eb2e17ba99e514ab81df3c816c20927f522ecdbe560b057e50527b45ab"
+      },
+      "NerdFontsSymbolsOnly.tar.xz": {
+        "members": 5,
+        "fonts": 2,
+        "expanded_bytes": 5206217,
+        "inventory_sha256": "3d12ba9d80ad4eaaf608e2a72fd1d6fb3d5e036151d88bdbd366418d374140d5"
+      }
+    },
+    "font_count": 98,
+    "font_bytes": 248325788,
+    "font_paths": [
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Bold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-BoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ExtraBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ExtraBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ExtraLight.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ExtraLightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Italic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Light.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-LightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Medium.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-MediumItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Regular.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-SemiBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-SemiBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Thin.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ThinItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Bold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-BoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ExtraBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ExtraBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ExtraLight.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ExtraLightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Italic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Light.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-LightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Medium.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-MediumItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Regular.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-SemiBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-SemiBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Thin.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ThinItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Bold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-BoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ExtraBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ExtraBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ExtraLight.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ExtraLightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Italic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Light.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-LightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Medium.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-MediumItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Regular.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-SemiBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-SemiBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Thin.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ThinItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Bold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-BoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ExtraBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ExtraBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ExtraLight.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ExtraLightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Italic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Light.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-LightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Medium.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-MediumItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Regular.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-SemiBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-SemiBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Thin.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ThinItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Bold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-BoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ExtraBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ExtraBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ExtraLight.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ExtraLightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Italic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Light.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-LightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Medium.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-MediumItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Regular.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-SemiBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-SemiBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Thin.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ThinItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Bold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-BoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ExtraBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ExtraBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ExtraLight.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ExtraLightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Italic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Light.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-LightItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Medium.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-MediumItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Regular.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-SemiBold.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-SemiBoldItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Thin.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ThinItalic.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/Symbols/SymbolsNerdFont-Regular.ttf",
+      "/usr/share/fonts/symbi-nerd-fonts/Symbols/SymbolsNerdFontMono-Regular.ttf"
+    ],
+    "fontconfig": {
+      "aliases": 398,
+      "sha256": "c686f822818bd1c4c26ccb1314d16b277e77252f97a74483ca20b2165dbf7ec6"
+    },
+    "notice_count": 5,
+    "scope": "Development-image font payload; native parsing and booted desktop acceptance remain separate gates"
+  },
+  "image_trust": {
+    "release_trust_sha256": "1447ddf75aa552bc2344a033d5eacef8ecaf6e0ad259fc09d67ab03474d7f564",
+    "base_pins_sha256": "3c22f018716079a063c239f38c03b5a08017ec5d42f478b306a94adb23ce1dfb",
+    "release_repositories": {
+      "generic": "ghcr.io/thirdkeyai/symbiont-os",
+      "nvidia": "ghcr.io/thirdkeyai/symbiont-os-nvidia"
+    },
+    "files": {
+      "etc/containers/policy.json": {
+        "sha256": "974d657b12acca4cd4db7ca6f4788f65b0f366d2193bdb6f0502d6c239c1a7a5",
+        "bytes": 2376
+      },
+      "etc/containers/registries.d/symbiont.yaml": {
+        "sha256": "336ad92f00b0f2fb6954fbcab7fc6541d4333a884f6038900eb94f7300104bfa",
+        "bytes": 538
+      }
+    },
+    "signature_qualified": false,
+    "scope": "Installed enforcing policy preparation; actual signature/update/rollback controls remain required"
+  },
+  "payload": {
+    "etc/containers/policy.json": {
+      "sha256": "974d657b12acca4cd4db7ca6f4788f65b0f366d2193bdb6f0502d6c239c1a7a5",
+      "bytes": 2376,
+      "mode": 420
+    },
+    "etc/containers/registries.d/symbiont.yaml": {
+      "sha256": "336ad92f00b0f2fb6954fbcab7fc6541d4333a884f6038900eb94f7300104bfa",
+      "bytes": 538,
+      "mode": 420
+    },
+    "etc/fonts/conf.d/10-nerd-font-symbols.conf": {
+      "sha256": "c686f822818bd1c4c26ccb1314d16b277e77252f97a74483ca20b2165dbf7ec6",
+      "bytes": 52256,
+      "mode": 420
+    },
+    "usr/bin/Hyprland": {
+      "link": "../lib/symbi/hyprland/bin/Hyprland"
+    },
+    "usr/bin/elephant": {
+      "sha256": "e2c52e8db172d31e39531da945349855354a327b330bc572ccd27569c6f8d15f",
+      "bytes": 34445144,
+      "mode": 493
+    },
+    "usr/bin/hyprctl": {
+      "link": "../lib/symbi/hyprland/bin/hyprctl"
+    },
+    "usr/bin/symbi": {
+      "sha256": "1e90af1fe424ec37ad716bbc1e069c0bc7a78f59c49871b7e79506bda69f49c7",
+      "bytes": 520712360,
+      "mode": 493
+    },
+    "usr/bin/symbi-sandbox-supervisor": {
+      "sha256": "57af2b2931c891c8ee7df21ac063aea64571acc460ababdcb09b8df7ed21c269",
+      "bytes": 8635672,
+      "mode": 493
+    },
+    "usr/bin/walker": {
+      "sha256": "4566e3710ef9c04752e5268b472a88325ed813cd8846318315496bbd422ab31f",
+      "bytes": 7363968,
+      "mode": 493
+    },
+    "usr/lib/symbi/elephant/providers/desktopapplications.so": {
+      "sha256": "5764570124a7e1fc33a7003d2d75accf9e5a76f2b6f580600abe4609754b5085",
+      "bytes": 35904864,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/bin/Hyprland": {
+      "sha256": "0f5dc9a3bb14265516a1a7c16a90ff0ad54fda94c7caed5defb4b234ecb7f34a",
+      "bytes": 64816096,
+      "mode": 493
+    },
+    "usr/lib/symbi/hyprland/bin/hyprctl": {
+      "sha256": "683ed4ff31f059a018ea745f20bad543fa0ba7b655eabfcba4ed47755d1df028",
+      "bytes": 302672,
+      "mode": 493
+    },
+    "usr/lib/symbi/hyprland/bin/hyprland": {
+      "link": "Hyprland"
+    },
+    "usr/lib/symbi/hyprland/lib/libaquamarine.so": {
+      "link": "libaquamarine.so.15"
+    },
+    "usr/lib/symbi/hyprland/lib/libaquamarine.so.0.16.0": {
+      "sha256": "b4287d2eea93d2a8a83b7d5ec160934b294f758f6589903beba48541c3062c30",
+      "bytes": 1805688,
+      "mode": 493
+    },
+    "usr/lib/symbi/hyprland/lib/libaquamarine.so.15": {
+      "link": "libaquamarine.so.0.16.0"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprcursor.so": {
+      "link": "libhyprcursor.so.0"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprcursor.so.0": {
+      "link": "libhyprcursor.so.0.1.13"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprcursor.so.0.1.13": {
+      "sha256": "9961ab4b301be079a92597a9f90ea51d61899cf2b10fb074551bad1df91475c2",
+      "bytes": 504112,
+      "mode": 493
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprgraphics.so": {
+      "link": "libhyprgraphics.so.5"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprgraphics.so.0.6.0": {
+      "sha256": "228ca7a2ee5161cd26d00a5ebc7026de78de2c655f7e4d78d89bf8072c156f78",
+      "bytes": 285264,
+      "mode": 493
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprgraphics.so.5": {
+      "link": "libhyprgraphics.so.0.6.0"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprlang.so": {
+      "link": "libhyprlang.so.2"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprlang.so.0.6.8": {
+      "sha256": "91d21a31b230fc3076baeb91cf2dea7c275b905188a20070ebda745d6f36720e",
+      "bytes": 352688,
+      "mode": 493
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprlang.so.2": {
+      "link": "libhyprlang.so.0.6.8"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprutils.so": {
+      "link": "libhyprutils.so.13"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprutils.so.0.14.3": {
+      "sha256": "3b1b81dacdcfd36cd0a5cbce256919d1b46be8a9f2c69bd115199c46e227bb44",
+      "bytes": 819784,
+      "mode": 493
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprutils.so.13": {
+      "link": "libhyprutils.so.0.14.3"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprwire.so": {
+      "link": "libhyprwire.so.3"
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprwire.so.0.3.1": {
+      "sha256": "7bfd7cab30f684d7216d77513e5af259f0ebc3b5141b4147c4ce3782d1808c35",
+      "bytes": 497144,
+      "mode": 493
+    },
+    "usr/lib/symbi/hyprland/lib/libhyprwire.so.3": {
+      "link": "libhyprwire.so.0.3.1"
+    },
+    "usr/lib/symbi/hyprland/share/glaze/glazeConfig.cmake": {
+      "sha256": "c7f06a934567652bf88f4c6e163d8282e96b0babdd7cb73472233342c74e6a86",
+      "bytes": 1740,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/glaze/glazeConfigVersion.cmake": {
+      "sha256": "b5d282f493da2122b79e0d4a8320a0cfe09600aa667432a406f061231729ca24",
+      "bytes": 2303,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/glaze/glazeTargets.cmake": {
+      "sha256": "1d5751421b2f6f6d44f6af9a4519f31f89aeda220401dd33a5e791017c54d9a5",
+      "bytes": 4582,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hypr/hyprland.lua": {
+      "sha256": "5553823a068db8b7a8a8db08fdb27c26fd5fda7e6f4a3b3cf059c0829dfb1148",
+      "bytes": 12532,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hypr/lockdead.png": {
+      "sha256": "40b72bd747f3c2f3e35ad3a36044913ae5044f794fb64796c2e2112878061c4d",
+      "bytes": 163413,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hypr/lockdead2.png": {
+      "sha256": "21b8cad92c373629df17c759c03857b26ec9677bd1632f999501163c3cbf6e6b",
+      "bytes": 49466,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hypr/stubs/hl.meta.lua": {
+      "sha256": "163461a787ba92d81f946c14bed90a38a740ded9e010bd67c2bc4bec41320e1d",
+      "bytes": 76715,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hypr/wall0.png": {
+      "sha256": "0c5e15cefa96b5938db7ad817e29eb9447e6b0eef1efdb73600f2fa51390035e",
+      "bytes": 14194868,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hypr/wall1.png": {
+      "sha256": "dfe2c0231476fff83d50d0a146cb2701aa96ff660c6d0cd0a9c363c6bb911810",
+      "bytes": 6144371,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hypr/wall2.png": {
+      "sha256": "97bb1fed9b9e1b71fd8e814aec1bab71ddf5fbc6ffbd6a09c2d70b0881f8132e",
+      "bytes": 28264194,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-ctm-control-v1.xml": {
+      "sha256": "7e1bef7a2a935c05a7fb65d1bf98c2434037d869276248c926b56ea80a8bd2f4",
+      "bytes": 4425,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-focus-grab-v1.xml": {
+      "sha256": "0bc60c14d27f9079e0d1d9d706f91e67ad7da585f3b7f34ff7186a376c0285b4",
+      "bytes": 5447,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-global-shortcuts-v1.xml": {
+      "sha256": "00a2f728602c160cdaf67a5be61d1a503fcc0d95323456dbb2a6fa83b299d915",
+      "bytes": 4964,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-input-capture-v1.xml": {
+      "sha256": "fff89f6f9de622fefa1a62a6e6970f76683b6328454565583046abebcfe2c360",
+      "bytes": 6765,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-lock-notify-v1.xml": {
+      "sha256": "360589bc58a0a82768b477564f429dc4a8c016ae8311efad12e03f249ac704fc",
+      "bytes": 4280,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-surface-v1.xml": {
+      "sha256": "d1c37cf912b71696344d825ca85e948cb7a0406d86b6836d07ff0e8a7670c497",
+      "bytes": 5768,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-toplevel-export-v1.xml": {
+      "sha256": "2b8e16da22df333494b616a2c83394dcc9aac04405da535126d68106786441ad",
+      "bytes": 10245,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-toplevel-mapping-v1.xml": {
+      "sha256": "05464521a13c96ed274a8545d84ac03980d94b32bd55a8467c7949ed1a1ee96e",
+      "bytes": 4792,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-workspace-image-capture-source-v1.xml": {
+      "sha256": "8c8e4d3164c3574ca728fdca27dbc3c35b19845cdf352815b73ae2fdad840d5a",
+      "bytes": 4158,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/man/man1/Hyprland.1": {
+      "sha256": "bf3f3541818371dffbda7258e3653db5d09fda2edbc445649262ae505d4a9892",
+      "bytes": 1625,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/man/man1/hyprctl.1": {
+      "sha256": "a688f07ff54c22a2f16fea0cd3b0121710b78058656c9e118541f90d03952c3b",
+      "bytes": 3377,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/pkgconfig/hyprland-protocols.pc": {
+      "sha256": "c39fb5e4c23d1abbe9310cea2fe9989ca68f47841fb539e1b2c28147a531a71a",
+      "bytes": 198,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/pkgconfig/hyprland.pc": {
+      "sha256": "26a19c8b98794a98ec704fa069ffcf68c631d422640960c95b2338ecd5df9e5f",
+      "bytes": 520,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/wayland-sessions/hyprland.desktop": {
+      "sha256": "13f04806f266922f1a1306a441dc38616d7d3301ffcfe0ec6c1a56d2601e0964",
+      "bytes": 210,
+      "mode": 420
+    },
+    "usr/lib/symbi/hyprland/share/xdg-desktop-portal/hyprland-portals.conf": {
+      "sha256": "aa061ba0530569907cf280870cc2b86333e0d7c2965d9ac020f5b3e05e9bd2e2",
+      "bytes": 32,
+      "mode": 420
+    },
+    "usr/lib/symbi/portal/bin/hyprland-share-picker": {
+      "sha256": "5431d5f38487e4339a9052f493aadd7d08454603c0f5089a068f706538def843",
+      "bytes": 295808,
+      "mode": 493
+    },
+    "usr/lib/symbi/portal/lib/libhyprtoolkit.so": {
+      "link": "libhyprtoolkit.so.6"
+    },
+    "usr/lib/symbi/portal/lib/libhyprtoolkit.so.0.6.0": {
+      "sha256": "1a554314e525e93b3e63dc6db6429bb4d64d4c43dda3f0db0aa26a66bc148f90",
+      "bytes": 2650064,
+      "mode": 493
+    },
+    "usr/lib/symbi/portal/lib/libhyprtoolkit.so.6": {
+      "link": "libhyprtoolkit.so.0.6.0"
+    },
+    "usr/lib/symbi/portal/libexec/xdg-desktop-portal-hyprland": {
+      "sha256": "26b9e1ccddf6ab5c1c398b37154d10946d16d58ac55cfd16fa13be36f567ce9a",
+      "bytes": 1341224,
+      "mode": 493
+    },
+    "usr/lib/symbi/portal/share/licenses/hyprtoolkit/LICENSE": {
+      "sha256": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "usr/lib/symbi/portal/share/licenses/symbi-os-portal-patch/LICENSE": {
+      "sha256": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+      "bytes": 10784,
+      "mode": 420
+    },
+    "usr/lib/symbi/portal/share/licenses/xdg-desktop-portal-hyprland/LICENSE": {
+      "sha256": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+      "bytes": 1515,
+      "mode": 420
+    },
+    "usr/lib/systemd/user/xdg-desktop-portal-hyprland.service": {
+      "sha256": "0b94927fbc13c5d53b171e37679a13608d773e9f96906eb492722db06ef8b82b",
+      "bytes": 341,
+      "mode": 420
+    },
+    "usr/share/dbus-1/services/org.freedesktop.impl.portal.desktop.hyprland.service": {
+      "sha256": "b230f1ce2f898291a73ad2cb719aa9a5fe54c51a53bda378c8f805ec71b08c65",
+      "bytes": 180,
+      "mode": 420
+    },
+    "usr/share/doc/symbiont-os/development-inputs.json": {
+      "sha256": "061189f24c5eebfe7af9fa4ddc5bcdb3338d3c7891a131fdcdff6e4b7c3b2752",
+      "bytes": 42360,
+      "mode": 420
+    },
+    "usr/share/doc/symbiont-os/patches/0001-disable-native-loading.patch": {
+      "sha256": "068d061f29c6ccbef25d402972a14c72195811e40888027b71760f6656f6eeff",
+      "bytes": 7318,
+      "mode": 420
+    },
+    "usr/share/doc/symbiont-os/patches/0001-no-restore-tests.patch": {
+      "sha256": "7b2ddb34ee84ecc54d0b50ea4acd6529f7841ccd0ef97844c2f72c5a478f6b4b",
+      "bytes": 3953,
+      "mode": 420
+    },
+    "usr/share/doc/symbiont-os/patches/0001-packaged-application-provider-only.patch": {
+      "sha256": "9d46941a0540df0162772b04055bf306298e48f3bdcae2c5f3ec97ebb51a7204",
+      "bytes": 2647,
+      "mode": 420
+    },
+    "usr/share/doc/symbiont-os/patches/0002-require-fresh-screen-sharing-consent.patch": {
+      "sha256": "ff242489a3f0a904f33e98c39db3eee23d836740649f0120032100c4b9a5629b",
+      "bytes": 20855,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Bold.ttf": {
+      "sha256": "104897b8ff7f74674c8d6d81b6dbe9138e5c249b54d6c08c8b21600f75d3c5c1",
+      "bytes": 2491512,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-BoldItalic.ttf": {
+      "sha256": "8d5892b455cc166f8aac459182aa7a0d7df6cf2d70d61047deb8783fbd2b5d67",
+      "bytes": 2494624,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ExtraBold.ttf": {
+      "sha256": "a30da5101038f9efa128c87c7508e262d79d9709feadf43cf69a201cfc13ac2f",
+      "bytes": 2493984,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ExtraBoldItalic.ttf": {
+      "sha256": "4d79abe68d10d5013f15e3bf69efd643d8a163c4d7824d1e1d473c13f7ae56b5",
+      "bytes": 2495964,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ExtraLight.ttf": {
+      "sha256": "cff82d2ede085403fbe6cef49848291b884559a329af6dd5c62b5a894c9e91d9",
+      "bytes": 2489700,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ExtraLightItalic.ttf": {
+      "sha256": "54340639d79d1bd21132cda67ef092dd206f3a783f5168f8184b18b496db7cc8",
+      "bytes": 2490444,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Italic.ttf": {
+      "sha256": "dd76e7fe83fd2b1ae8e416efb3af8348d975b004648eb28e9a836e1fc4dd72a0",
+      "bytes": 2492084,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Light.ttf": {
+      "sha256": "f19b9cc0516482aea93ff3f526aead1cbf4376cf0835cad5824ee6ed97f2583c",
+      "bytes": 2491384,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-LightItalic.ttf": {
+      "sha256": "16386351d580fc3dd3e6b94d341e77cc8c04ed29821b5c4206c3f8396fb5a73a",
+      "bytes": 2492804,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Medium.ttf": {
+      "sha256": "158ff61f4229aa13048715789222048dd54c25e2ccd9d0d860c96ab68f9baba9",
+      "bytes": 2488856,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-MediumItalic.ttf": {
+      "sha256": "3c58ca4df4cdfc2276b4090d99e98cc19af37a089634859a4a36c7b41484a705",
+      "bytes": 2492088,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Regular.ttf": {
+      "sha256": "f726c0fb0db90a00920e8fa9ef281ccf9f5f848785ebcaca09bade9d15d38b58",
+      "bytes": 2489128,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-SemiBold.ttf": {
+      "sha256": "c6c436277646003b578a6c9ac2f4377dfb72f12cd24af9f760787ec241571bf9",
+      "bytes": 2490436,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-SemiBoldItalic.ttf": {
+      "sha256": "fd3271efe445c6b5e801a38ede34fd7b143c4668f8b9d63fb7263291e75e2e74",
+      "bytes": 2494540,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Thin.ttf": {
+      "sha256": "4eb3d68ab21744deaa6cff1353b6df67013a83e04437d1fdf6ce90c1b4c7afa5",
+      "bytes": 2486604,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ThinItalic.ttf": {
+      "sha256": "68620b30c95256b3a81dcd6ebad3545cc222ee146575175e7116b53520bb1548",
+      "bytes": 2489640,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Bold.ttf": {
+      "sha256": "f799fc4b215c7b7254bf6cee51c0bce122ac684b53b46fd3cb83d408a0ccf385",
+      "bytes": 2493472,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-BoldItalic.ttf": {
+      "sha256": "28ce03bcaf808f7fa64dcce6facb00319083bdb04cc4f61d41b9f6ad8f20c3e8",
+      "bytes": 2496612,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ExtraBold.ttf": {
+      "sha256": "7027b92cbe1536d4bbe56eca416e64baa64b32fea4497fd4673cf1715cf7ae85",
+      "bytes": 2495944,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ExtraBoldItalic.ttf": {
+      "sha256": "844e2f7cf51d433fb44be420ecdf4d4ecf9fb4400fe8263db135708d034df526",
+      "bytes": 2497952,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ExtraLight.ttf": {
+      "sha256": "3f1abb0ab790ec72fcd25f340bfcc246357638b9d95f717293e634d6cb2ea405",
+      "bytes": 2491664,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ExtraLightItalic.ttf": {
+      "sha256": "0f814da728de434928b1acaf8144ee413c401224605ad4dfe0e4ce1c5cf6fac8",
+      "bytes": 2492436,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Italic.ttf": {
+      "sha256": "336a3cef8770dab01c0fc9c6bb0c0473bfa82f90a4033fde2cc52d8aa410528c",
+      "bytes": 2494072,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Light.ttf": {
+      "sha256": "17c9522cf593213aa99c3eb0fb706df2fe84332eea99e943c0df267a84274350",
+      "bytes": 2493344,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-LightItalic.ttf": {
+      "sha256": "dd023898a54265068c77fff5aa71d9835ea394349c7c9a3e9ca381d5f704f02e",
+      "bytes": 2494792,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Medium.ttf": {
+      "sha256": "609259fa79a9e08721a2af1e71f7fa3009d374f890372c9d2816994cef683283",
+      "bytes": 2490820,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-MediumItalic.ttf": {
+      "sha256": "7bc728ba1152a5f420055fc44ae286b51c39c89d74f96dfb017b00f46952979f",
+      "bytes": 2494080,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Regular.ttf": {
+      "sha256": "d9a80146bbf2ff23b187316a3e82ee2a2ceab8220267fe09ac150ca46ab2c3bd",
+      "bytes": 2491088,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-SemiBold.ttf": {
+      "sha256": "1aa9684d0157dfad4bcfdcff6cde8f4c86b0929437502892dfa643901f8b878c",
+      "bytes": 2492396,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-SemiBoldItalic.ttf": {
+      "sha256": "6326e5f936bc5aa5e7146007123a9d794fc72cd99cd2cb7c907f0b008b28f4c8",
+      "bytes": 2496528,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Thin.ttf": {
+      "sha256": "7fd38e32651ee24659497203f6912b4d7912488b760bb577d9142339e7e86ff0",
+      "bytes": 2488564,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ThinItalic.ttf": {
+      "sha256": "6133bfcb4e514e55437715e4b7ac750130d8f1c66a5308677115a9bdb4c78ae4",
+      "bytes": 2491628,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Bold.ttf": {
+      "sha256": "f9480ead3e45a21f61a9a0bc25f7e20a7ac4782644414b91375e9fdb76fd2095",
+      "bytes": 2491328,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-BoldItalic.ttf": {
+      "sha256": "7ffde5e1dbb5b6b8484c6b129caf71959a6fca070612b215fdd54055d2c3889c",
+      "bytes": 2494440,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ExtraBold.ttf": {
+      "sha256": "f059818f3fdd78e03af6a6070279ac19bf9fef348353b425cf8fd0300fbf9eb6",
+      "bytes": 2493800,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ExtraBoldItalic.ttf": {
+      "sha256": "e11dbf74b5bcab87451550b5bec9395ce00da62e2ce0690853b4621ad64736e4",
+      "bytes": 2495780,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ExtraLight.ttf": {
+      "sha256": "d217c1bd022c9755d8e7759d790e98f255669d17202c77a2bafc9d721db4b9ec",
+      "bytes": 2489516,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ExtraLightItalic.ttf": {
+      "sha256": "41eccbbdd380c01ad418d105112f83b986ab84d399a21efee94bb1f7df984f42",
+      "bytes": 2490260,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Italic.ttf": {
+      "sha256": "a75147d8354b7fc1a0b0c8dede8f8169014c8fc7263505d085419975e8e21404",
+      "bytes": 2491900,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Light.ttf": {
+      "sha256": "fb9bf3749444db1da314af2f3ecefeb5d95cf09c5389f3be6a1aeb66659a81d7",
+      "bytes": 2491200,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-LightItalic.ttf": {
+      "sha256": "c91128f49e7a6f5cb8636e9834f2fcadb15a21bb1b2b82044cb10e6cb592ece4",
+      "bytes": 2492620,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Medium.ttf": {
+      "sha256": "711599c10ccd331cc3f012a2b3978bf330ff64e2986195894c3e00437f0c373f",
+      "bytes": 2488672,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-MediumItalic.ttf": {
+      "sha256": "90c630b04b2042db73176918e2231176de03f3b96f2e077bd714ceeb45daef98",
+      "bytes": 2491904,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Regular.ttf": {
+      "sha256": "a4588a46f132fbfd5c43a5f1e4184bda0101dfea7d86c2a0f8a0feb4b47f18da",
+      "bytes": 2488944,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-SemiBold.ttf": {
+      "sha256": "bcf68d438b7d99181bd67f94357fabf4405603dc03f4ad2f2d2e20a5b0c2b70a",
+      "bytes": 2490252,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-SemiBoldItalic.ttf": {
+      "sha256": "0255c14137cb95899dc44048f2b2c2324932b3d1a94020d88e505820e0878f6a",
+      "bytes": 2494356,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Thin.ttf": {
+      "sha256": "4bf9ad031a77226d1e0fee0d6e1b035ba179105ad302f95d2b087e7391fd76f2",
+      "bytes": 2486420,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ThinItalic.ttf": {
+      "sha256": "c1cad1d83247a48a4bf759f23a2628613af8bbaaf0b5359a8ffad2c5c3f50e71",
+      "bytes": 2489456,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Bold.ttf": {
+      "sha256": "e490660ad75e0b152c93b1604c2ea1a4ea675f1b8a3fe0d005b1998568f99f1f",
+      "bytes": 2575364,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-BoldItalic.ttf": {
+      "sha256": "19a2e3af8ccf99954941ea07e0a29df27574500f12016d86d6c4c059b825ffe1",
+      "bytes": 2576592,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ExtraBold.ttf": {
+      "sha256": "8af99acce860533a64926ebff131aa9f37806ffef9636798f36c3a4a526f9e32",
+      "bytes": 2577128,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ExtraBoldItalic.ttf": {
+      "sha256": "75971b5b5eebb295298c4d1872e2a8906c3023cb98480c42ed4a9496ad16fd79",
+      "bytes": 2578612,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ExtraLight.ttf": {
+      "sha256": "e5a2b97faa48e7597022f61da03d754f1f8be0cac290942781b27a4525307d75",
+      "bytes": 2571732,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ExtraLightItalic.ttf": {
+      "sha256": "2789601fa34509d4d5991a3c8ae5afc8e28ac09147e8769d9578662a39dcf20f",
+      "bytes": 2571028,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Italic.ttf": {
+      "sha256": "71d5466cc3ab31bee38b4e2c5cc99c2b41a749c4973ed4579b814ec992b0738e",
+      "bytes": 2573684,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Light.ttf": {
+      "sha256": "c9f9fc2d79825d3cee9817e29b1a79ddcb30bfef5d8061120ee024d1f4a96228",
+      "bytes": 2574020,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-LightItalic.ttf": {
+      "sha256": "96d97618018ed4d7b27321904c0bed37c2df7b746c772a2a0515124c582e39c6",
+      "bytes": 2573912,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Medium.ttf": {
+      "sha256": "c9405e11b36d071176e318263e7251e96e60f3804dfc5ac8b2806f1f8085b066",
+      "bytes": 2571468,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-MediumItalic.ttf": {
+      "sha256": "27693c0aa1c56ea46a8978d042772a81da184d3aae7fe7b6a2394b5dc51cd296",
+      "bytes": 2573632,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Regular.ttf": {
+      "sha256": "1c680e8cde9fcf8b88a5605ce8d1fb94dd3fb15841f7ca7bf4c55664855e5611",
+      "bytes": 2571596,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-SemiBold.ttf": {
+      "sha256": "d987f2994fa3000512ea6442e4b3fa8c96e0724262e2c5c9646f1ee02cae675e",
+      "bytes": 2574704,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-SemiBoldItalic.ttf": {
+      "sha256": "60571c34def77959bff1b8661e1cbce1bc0dee8e006ea78358b2af9990fd8587",
+      "bytes": 2576700,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Thin.ttf": {
+      "sha256": "87a846220f9470d78b66d3fdf2e108156c68ac89a2fa5f058a90ef5be9f0e322",
+      "bytes": 2567732,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ThinItalic.ttf": {
+      "sha256": "5c5935377631c86646e6fef3b0a739d4ff3771f632dc48f6963a727ad1b21063",
+      "bytes": 2569832,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Bold.ttf": {
+      "sha256": "bfcf9a917276ffc058867d87cbc8a5b2f1ab0f4b710e9170dc02763ccb80bd4b",
+      "bytes": 2577016,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-BoldItalic.ttf": {
+      "sha256": "9dba502e00e35209f6ed2a151c7376c051657b067cdebbc6e52d06cb9002cf31",
+      "bytes": 2578280,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ExtraBold.ttf": {
+      "sha256": "1c4ccf0d5fb2d45f04d3efd50f60951fb63281b0375ede992d2b4beb694d2daa",
+      "bytes": 2578780,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ExtraBoldItalic.ttf": {
+      "sha256": "0315f5729d19d7c4846ea06503850b0fed785263fc0d7f5bc636563782cbde42",
+      "bytes": 2580296,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ExtraLight.ttf": {
+      "sha256": "2ed4462e0332123bccd6d0e3ecfb92e9a9d9c02d7e7cacf2d272d5e4bae85e25",
+      "bytes": 2573384,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ExtraLightItalic.ttf": {
+      "sha256": "5a7bc5b7fa3005977be87a7171361e41ff999d65e79b2f47796e4f062dccd56a",
+      "bytes": 2572712,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Italic.ttf": {
+      "sha256": "31efd6ead98746f5b0afa1ee6dba60267ad48db36428360bee327bec10621f97",
+      "bytes": 2575368,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Light.ttf": {
+      "sha256": "d34f186f256c853a651d222bfad3afa942d4755b47eff70c13660cf94c24b20e",
+      "bytes": 2575672,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-LightItalic.ttf": {
+      "sha256": "8711d3a15e10e7552bc62dfb8d99dac681eca80c9f4dd59142b27785117c9250",
+      "bytes": 2575596,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Medium.ttf": {
+      "sha256": "a736c04959f32b69487956c9ccffa90e71903d3c85952886d42ecead0ca6cb1d",
+      "bytes": 2573120,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-MediumItalic.ttf": {
+      "sha256": "f21eb76516348ffa152a9727fe4e99fe8baedbb7359c38aeefd1f123d5f6d0fe",
+      "bytes": 2575316,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Regular.ttf": {
+      "sha256": "f2a5ea6cfab397445ffab00c0370927b66d61e560a05db5db271b42006381c1a",
+      "bytes": 2573248,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-SemiBold.ttf": {
+      "sha256": "d3955c56fca699f37ebc153d0a6e331b8784f66fd8a3af5e20c30b90869201c4",
+      "bytes": 2576360,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-SemiBoldItalic.ttf": {
+      "sha256": "0d2aa4c3955f612986e22d08f08b9c255b75107c07a6128ac24dc80281cc9d9c",
+      "bytes": 2578388,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Thin.ttf": {
+      "sha256": "734de2d7f2c70d2a02006ee219fbbe897b09fe83b15861f0f887c717a02695cf",
+      "bytes": 2569388,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ThinItalic.ttf": {
+      "sha256": "2c4e01f8eba50c6293a6c1084e807f5d33ef8b17e55e5d2c9bb677475c41da83",
+      "bytes": 2571520,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Bold.ttf": {
+      "sha256": "a391d2887d63add54d87a715fe257e522120eb4f1df52d104fa17984fcb68021",
+      "bytes": 2575180,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-BoldItalic.ttf": {
+      "sha256": "2118f3a6119e8967b20b71b6b8a6072711ef76ae0d10c4522a06323ac8935d5d",
+      "bytes": 2576408,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ExtraBold.ttf": {
+      "sha256": "80200df33ea31cd6185bde7c970fb86190b6670060475c1a1f069d0b2d8f0bb3",
+      "bytes": 2576944,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ExtraBoldItalic.ttf": {
+      "sha256": "df117705e411fbe80bb7c2e4f25e350328aa255e65d8368fb04016afaeeca853",
+      "bytes": 2578428,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ExtraLight.ttf": {
+      "sha256": "8cc4e91cb99b5e3bc96e5ffaecc38fc18232ed7687962644f212da2cf661f484",
+      "bytes": 2571548,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ExtraLightItalic.ttf": {
+      "sha256": "4a03c9b8eb41004a164e668483edf08081b818f76f24f889b6b2c35f73f05b86",
+      "bytes": 2570844,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Italic.ttf": {
+      "sha256": "904c69ce413b3c678b7762a94328b14077461db16b5d63b82c8370b9907387ff",
+      "bytes": 2573500,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Light.ttf": {
+      "sha256": "134069560904365335981ab7332e655db816fb5298849bb0dbe9ed61e3f00610",
+      "bytes": 2573836,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-LightItalic.ttf": {
+      "sha256": "1e7070062baaa9327d666b7217bad601c2bc42b638b81e12f2e95baa81c78f30",
+      "bytes": 2573728,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Medium.ttf": {
+      "sha256": "d60c8788140e939247f7af54a1ddc197d3099eecca77fff51880d678c029d98c",
+      "bytes": 2571284,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-MediumItalic.ttf": {
+      "sha256": "3b4fa1bc30e72a30fd7b2f6921d67f7c864b1d15be72ebec04821ad2709e8778",
+      "bytes": 2573448,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Regular.ttf": {
+      "sha256": "8a2803de76ad18ed82f465dfd17130032c34c031b263179d3047a547c7caa460",
+      "bytes": 2571412,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-SemiBold.ttf": {
+      "sha256": "b0c766130c81e328e1b31c7d1036574d7ce91f503c9856a4ec73565a44a32899",
+      "bytes": 2574520,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-SemiBoldItalic.ttf": {
+      "sha256": "97d0da5da9a227398a1da7aa16214cf7146696b3b56fcb63ea7385e853fa45ba",
+      "bytes": 2576516,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Thin.ttf": {
+      "sha256": "bb093be10f5406765ccea2a25d7adb4ce43840268e034e21dcd9d39c0bf76059",
+      "bytes": 2567548,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ThinItalic.ttf": {
+      "sha256": "8889eb97cf2a4f39159a99a07ddcc38c7d2f60eb678fa9d4e99e72185ededf82",
+      "bytes": 2569648,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/Symbols/SymbolsNerdFont-Regular.ttf": {
+      "sha256": "2839f0a572d4559f3f17a6fb74b8772e183f0c0a47150998ab194932cad55829",
+      "bytes": 2538772,
+      "mode": 420
+    },
+    "usr/share/fonts/symbi-nerd-fonts/Symbols/SymbolsNerdFontMono-Regular.ttf": {
+      "sha256": "fe471e538392f51910faab985fa8e192a39dd3426125edd15b71b3680df0e749",
+      "bytes": 2610012,
+      "mode": 420
+    },
+    "usr/share/licenses/symbi-nerd-fonts/Font-Logos-Unlicense": {
+      "sha256": "88d9b4eb60579c191ec391ca04c16130572d7eedc4a86daa58bf28c6e14c9bcd",
+      "bytes": 1210,
+      "mode": 420
+    },
+    "usr/share/licenses/symbi-nerd-fonts/JetBrains-Mono-OFL-1.1": {
+      "sha256": "30f0c136e3c88e422d0791acd97238870f9054a9729bc34cf2ff0d4ed8cac4ad",
+      "bytes": 4399,
+      "mode": 420
+    },
+    "usr/share/licenses/symbi-nerd-fonts/Nerd-Fonts-MIT": {
+      "sha256": "1f6ad4edae6479aaace3112ede5279a23284ae54b2a34db66357aef5f64df160",
+      "bytes": 6200,
+      "mode": 420
+    },
+    "usr/share/licenses/symbi-nerd-fonts/Nerd-Fonts-Symbols-MIT": {
+      "sha256": "84a7a98c82140fb12c37fe42b93805baa16024cb3e5acc599b7ffe612c55d847",
+      "bytes": 1082,
+      "mode": 420
+    },
+    "usr/share/licenses/symbi-nerd-fonts/upstream-license-audit.md": {
+      "sha256": "c2a3f634fa1e5001912f4f19a42fa86fdef5654691b70000f936089325aa404f",
+      "bytes": 8470,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/Elephant-GPL-3.0": {
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "bytes": 35149,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/Hyprland.LICENSE": {
+      "sha256": "e01df754903af0ab26babb317b5f5a62dd95f770b733c5275414dd3245d00ae7",
+      "bytes": 1521,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/Symbiont-Apache-2.0": {
+      "sha256": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+      "bytes": 10784,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/Walker-GPL-3.0": {
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "bytes": 35149,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/aquamarine.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/glaze.LICENSE": {
+      "sha256": "5d49e66411a0807a7c8d6b911b9a26b59e940c71aebe561a3ad8b0b80ac4b7b6",
+      "bytes": 1080,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/hyprcursor.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/hyprgraphics.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/hyprland-protocols.LICENSE": {
+      "sha256": "ea36a60a50dfa150ca3c5816cb6b0ad5b559da380e9f5b2babd4abbf7962a35a",
+      "bytes": 1524,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/hyprlang.LICENSE": {
+      "sha256": "a5681bf9b05db14d86776930017c647ad9e6e56ff6bbcfdf21e5848288dfaf1b",
+      "bytes": 7651,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/hyprutils.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/hyprwayland-scanner.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/hyprwire.LICENSE": {
+      "sha256": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "usr/share/licenses/symbiont-os/udis86.LICENSE": {
+      "sha256": "1070640aab24327354da44507627d1db6c67482a6facc8375a758796a05e3dff",
+      "bytes": 1337,
+      "mode": 420
+    },
+    "usr/share/xdg-desktop-portal/portals/hyprland.portal": {
+      "sha256": "43b2fe354c2d4cc51bd237be8b6586cc6b6f5681451a4079adf2a97909d73431",
+      "bytes": 281,
+      "mode": 420
+    }
+  },
+  "overlay": {
+    "etc/NetworkManager/conf.d/99-symbi-no-connectivity-check.conf": {
+      "sha256": "6e13e0bc7b133d9b3fc45e49a9caa51404160fc2d9e9fc0828bf08438ae1ab4b",
+      "bytes": 29,
+      "mode": 420
+    },
+    "etc/chromium/policies/managed/symbi-privacy.json": {
+      "sha256": "3d11dcb24648629b45a087d72207e8e29918209b866c9039f65d52b601e4e463",
+      "bytes": 649,
+      "mode": 420
+    },
+    "etc/firefox/policies/policies.json": {
+      "sha256": "f0388ac45bfdd5f026b5f8f5462ec8d19c8320b46659e82ffd417faade7a6def",
+      "bytes": 1584,
+      "mode": 420
+    },
+    "etc/fonts/conf.d/49-symbi-fonts.conf": {
+      "sha256": "e396cfbdedb73591573c7914a238e1a33df1c2ec43e3b046aff7406f87698ac0",
+      "bytes": 1456,
+      "mode": 420
+    },
+    "etc/profile.d/symbi-privacy.sh": {
+      "sha256": "2b207b3b81affc3fe4bf17608b21a35845e87b4946dc99b6a4aea74d32777225",
+      "bytes": 555,
+      "mode": 420
+    },
+    "usr/lib/udev/rules.d/61-symbi-qualification-source.rules": {
+      "sha256": "0158d5f15b022e0f7404a82283c0b878e04c79e117437ed3bf20f03e5cc79732",
+      "bytes": 154,
+      "mode": 420
+    },
+    "usr/libexec/symbi-desktop-session": {
+      "sha256": "2e38975b0d7e9e2ac4ede217dc2697ce9c2cd9b12177d664ea525015276023d4",
+      "bytes": 299,
+      "mode": 493
+    },
+    "usr/libexec/symbi-seed-config": {
+      "sha256": "0cb0108e6f52db57482738dc4c12bdbe5d2b544436746fa8015b6d0aab94c775",
+      "bytes": 1261,
+      "mode": 493
+    },
+    "usr/share/symbiont/defaults/hypr/appearance.lua": {
+      "sha256": "1dcd8ace9cf8f4973f671d84e20d5ba4cf689d6a42fa4d66e61c0cf1b323cb0a",
+      "bytes": 343,
+      "mode": 420
+    },
+    "usr/share/symbiont/defaults/hypr/bindings.lua": {
+      "sha256": "4a8e882f8a274db665610ca9dd06a472b0f5c50bed219a71d6d001aced522616",
+      "bytes": 8490,
+      "mode": 420
+    },
+    "usr/share/symbiont/defaults/hypr/hyprland.lua": {
+      "sha256": "c9c122da7ae34cfb3491b6ded9cbbd6f677d43cfd54839624d1bf1e316f901ac",
+      "bytes": 496,
+      "mode": 420
+    },
+    "usr/share/symbiont/defaults/hypr/input.lua": {
+      "sha256": "c92291506e7335a4c99c243467d8bd7f37dd25efc902119f78df8eef935eba1f",
+      "bytes": 345,
+      "mode": 420
+    },
+    "usr/share/symbiont/defaults/hypr/xdph.conf": {
+      "sha256": "f6771ee38b331066f5b92a8bdf055092367f67f9b0be90628bbf56f5c605ef33",
+      "bytes": 206,
+      "mode": 420
+    },
+    "usr/share/symbiont/defaults/kitty/kitty.conf": {
+      "sha256": "626caff88bc44306f398342cbb014a71dcd1acd308ed77c46b0bd8e4092dcfbd",
+      "bytes": 1237,
+      "mode": 420
+    },
+    "usr/share/symbiont/defaults/tmux/tmux.conf": {
+      "sha256": "1aaeb1057b73c408ec4ff8d7d48a735ef530a253baf1faa099b14ce421c551ed",
+      "bytes": 3080,
+      "mode": 420
+    },
+    "usr/share/symbiont/defaults/walker/config.toml": {
+      "sha256": "63a072f5b782ea605d96768076876e2dae6068e5487b9545e96750ceb5669698",
+      "bytes": 426,
+      "mode": 420
+    },
+    "usr/share/symbiont/defaults/walker/themes/symbi-tokyo-night/layout.xml": {
+      "sha256": "e4cd6f61bc9d1c835d90c57a90f33f01a1c4cf664ffff5e971e28450f7a72809",
+      "bytes": 5947,
+      "mode": 420
+    },
+    "usr/share/symbiont/defaults/walker/themes/symbi-tokyo-night/style.css": {
+      "sha256": "27a1d068483a74021b23129f9354261b4c53410d71e6a3606b69d5db8464af03",
+      "bytes": 1164,
+      "mode": 420
+    },
+    "usr/share/symbiont/defaults/waybar/config.jsonc": {
+      "sha256": "29c05c27c4870a25bee06a7541d4c8b205cdf543240aab202d96ad391e1d3926",
+      "bytes": 608,
+      "mode": 420
+    },
+    "usr/share/symbiont/defaults/waybar/style.css": {
+      "sha256": "e3bdbfc642c009cd801277e89c40cbc783bb2f3d349fd043668e3b4efce9411f",
+      "bytes": 416,
+      "mode": 420
+    },
+    "usr/share/wayland-sessions/symbi.desktop": {
+      "sha256": "0179ddf896ace19f934f2f4f502cf24ed6da0197987feaa6154ccdadb4b6946b",
+      "bytes": 142,
+      "mode": 420
+    },
+    "usr/lib/systemd/user/symbi-elephant.service": {
+      "sha256": "d724bc39db88d330068ccbab1a5b8ed6b30648a21c42ffeb11c8d2c1f996b43c",
+      "bytes": 221,
+      "mode": 420
+    },
+    "usr/libexec/symbi-launch-desktop-services": {
+      "sha256": "3ef0d169d9a4225c27f654cee1f79bb8f1fe4f7aefd1f26553d2315d12a9d967",
+      "bytes": 416,
+      "mode": 493
+    },
+    "usr/share/xdg-desktop-portal/hyprland-portals.conf": {
+      "sha256": "f78c100ca09f96539d2945703c3654187da2aacfafa506a69b43aae709a3590c",
+      "bytes": 120,
+      "mode": 420
+    }
+  },
+  "context": {
+    ".bluebuild-scripts_a654ee88/exports.sh": {
+      "sha256": "7bb804f8ff5c6f38b1a394e806335bfeafad01cb7b2b5083a12b240456d11b08",
+      "bytes": 2529,
+      "mode": 493
+    },
+    ".bluebuild-scripts_a654ee88/post_build.sh": {
+      "sha256": "31d0d7fa9a19f25ea5c85ce8f7e8b42e04497888d9919ff94155388bef5fa98b",
+      "bytes": 1380,
+      "mode": 493
+    },
+    ".bluebuild-scripts_a654ee88/pre_build.sh": {
+      "sha256": "6732063c1e32c92fd4e74b71d116ccf0092c30ac729f93621f2aeb58047c65ff",
+      "bytes": 731,
+      "mode": 493
+    },
+    ".bluebuild-scripts_a654ee88/run_module.sh": {
+      "sha256": "c16b953149daccbcda05c39f3cd8e47cf6256c349f5d406a1643b02f931d2d00",
+      "bytes": 1781,
+      "mode": 493
+    },
+    ".bluebuild-scripts_a654ee88/setup.sh": {
+      "sha256": "c60e2f1cd1101b91bfd124fc4c08f442f3abbb1a06bd7418b4170908b413e169",
+      "bytes": 1042,
+      "mode": 493
+    },
+    ".gitignore": {
+      "sha256": "4101bed5b2e32af64682cc2db27e297151fdc5a05162260d94bcea7328b693a3",
+      "bytes": 22,
+      "mode": 420
+    },
+    "Containerfile": {
+      "sha256": "f054042d40a1bc4a7c77cc04917180cfcf0d16af417d29b7de7e7e6eb41ce2f9",
+      "bytes": 2519,
+      "mode": 420
+    },
+    "LICENSE": {
+      "sha256": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+      "bytes": 10784,
+      "mode": 420
+    },
+    "image/desktop/session/usr/lib/systemd/user/symbi-elephant.service": {
+      "sha256": "d724bc39db88d330068ccbab1a5b8ed6b30648a21c42ffeb11c8d2c1f996b43c",
+      "bytes": 221,
+      "mode": 420
+    },
+    "image/desktop/session/usr/libexec/symbi-launch-desktop-services": {
+      "sha256": "3ef0d169d9a4225c27f654cee1f79bb8f1fe4f7aefd1f26553d2315d12a9d967",
+      "bytes": 416,
+      "mode": 493
+    },
+    "image/desktop/session/usr/share/symbiont/defaults/hypr/hyprland.lua": {
+      "sha256": "c9c122da7ae34cfb3491b6ded9cbbd6f677d43cfd54839624d1bf1e316f901ac",
+      "bytes": 496,
+      "mode": 420
+    },
+    "image/desktop/session/usr/share/xdg-desktop-portal/hyprland-portals.conf": {
+      "sha256": "f78c100ca09f96539d2945703c3654187da2aacfafa506a69b43aae709a3590c",
+      "bytes": 120,
+      "mode": 420
+    },
+    "image/harden-image.sh": {
+      "sha256": "0a82ca1fc77493e23f2235dec6cb194cc6d317ea9db5490e8d6776a2ce9686cb",
+      "bytes": 2411,
+      "mode": 420
+    },
+    "image/keys/secureblue-2026.pub": {
+      "sha256": "9cbd48de48d467f86e0f31f9454c6e0bb663f3d033ecd92143f62577eb1cb5eb",
+      "bytes": 178,
+      "mode": 420
+    },
+    "image/overlay/etc/NetworkManager/conf.d/99-symbi-no-connectivity-check.conf": {
+      "sha256": "6e13e0bc7b133d9b3fc45e49a9caa51404160fc2d9e9fc0828bf08438ae1ab4b",
+      "bytes": 29,
+      "mode": 420
+    },
+    "image/overlay/etc/chromium/policies/managed/symbi-privacy.json": {
+      "sha256": "3d11dcb24648629b45a087d72207e8e29918209b866c9039f65d52b601e4e463",
+      "bytes": 649,
+      "mode": 420
+    },
+    "image/overlay/etc/firefox/policies/policies.json": {
+      "sha256": "f0388ac45bfdd5f026b5f8f5462ec8d19c8320b46659e82ffd417faade7a6def",
+      "bytes": 1584,
+      "mode": 420
+    },
+    "image/overlay/etc/fonts/conf.d/49-symbi-fonts.conf": {
+      "sha256": "e396cfbdedb73591573c7914a238e1a33df1c2ec43e3b046aff7406f87698ac0",
+      "bytes": 1456,
+      "mode": 420
+    },
+    "image/overlay/etc/profile.d/symbi-privacy.sh": {
+      "sha256": "2b207b3b81affc3fe4bf17608b21a35845e87b4946dc99b6a4aea74d32777225",
+      "bytes": 555,
+      "mode": 420
+    },
+    "image/overlay/usr/lib/udev/rules.d/61-symbi-qualification-source.rules": {
+      "sha256": "0158d5f15b022e0f7404a82283c0b878e04c79e117437ed3bf20f03e5cc79732",
+      "bytes": 154,
+      "mode": 420
+    },
+    "image/overlay/usr/libexec/symbi-desktop-session": {
+      "sha256": "2e38975b0d7e9e2ac4ede217dc2697ce9c2cd9b12177d664ea525015276023d4",
+      "bytes": 299,
+      "mode": 493
+    },
+    "image/overlay/usr/libexec/symbi-seed-config": {
+      "sha256": "0cb0108e6f52db57482738dc4c12bdbe5d2b544436746fa8015b6d0aab94c775",
+      "bytes": 1261,
+      "mode": 493
+    },
+    "image/overlay/usr/share/symbiont/defaults/hypr/appearance.lua": {
+      "sha256": "1dcd8ace9cf8f4973f671d84e20d5ba4cf689d6a42fa4d66e61c0cf1b323cb0a",
+      "bytes": 343,
+      "mode": 420
+    },
+    "image/overlay/usr/share/symbiont/defaults/hypr/bindings.lua": {
+      "sha256": "4a8e882f8a274db665610ca9dd06a472b0f5c50bed219a71d6d001aced522616",
+      "bytes": 8490,
+      "mode": 420
+    },
+    "image/overlay/usr/share/symbiont/defaults/hypr/hyprland.lua": {
+      "sha256": "1d3f10e3f6eeb0cdd8e7fafe029727ffca79aa86af90ae3c3df9b8fcbb7a93c9",
+      "bytes": 469,
+      "mode": 420
+    },
+    "image/overlay/usr/share/symbiont/defaults/hypr/input.lua": {
+      "sha256": "c92291506e7335a4c99c243467d8bd7f37dd25efc902119f78df8eef935eba1f",
+      "bytes": 345,
+      "mode": 420
+    },
+    "image/overlay/usr/share/symbiont/defaults/hypr/xdph.conf": {
+      "sha256": "f6771ee38b331066f5b92a8bdf055092367f67f9b0be90628bbf56f5c605ef33",
+      "bytes": 206,
+      "mode": 420
+    },
+    "image/overlay/usr/share/symbiont/defaults/kitty/kitty.conf": {
+      "sha256": "626caff88bc44306f398342cbb014a71dcd1acd308ed77c46b0bd8e4092dcfbd",
+      "bytes": 1237,
+      "mode": 420
+    },
+    "image/overlay/usr/share/symbiont/defaults/tmux/tmux.conf": {
+      "sha256": "1aaeb1057b73c408ec4ff8d7d48a735ef530a253baf1faa099b14ce421c551ed",
+      "bytes": 3080,
+      "mode": 420
+    },
+    "image/overlay/usr/share/symbiont/defaults/walker/config.toml": {
+      "sha256": "63a072f5b782ea605d96768076876e2dae6068e5487b9545e96750ceb5669698",
+      "bytes": 426,
+      "mode": 420
+    },
+    "image/overlay/usr/share/symbiont/defaults/walker/themes/symbi-tokyo-night/layout.xml": {
+      "sha256": "e4cd6f61bc9d1c835d90c57a90f33f01a1c4cf664ffff5e971e28450f7a72809",
+      "bytes": 5947,
+      "mode": 420
+    },
+    "image/overlay/usr/share/symbiont/defaults/walker/themes/symbi-tokyo-night/style.css": {
+      "sha256": "27a1d068483a74021b23129f9354261b4c53410d71e6a3606b69d5db8464af03",
+      "bytes": 1164,
+      "mode": 420
+    },
+    "image/overlay/usr/share/symbiont/defaults/waybar/config.jsonc": {
+      "sha256": "29c05c27c4870a25bee06a7541d4c8b205cdf543240aab202d96ad391e1d3926",
+      "bytes": 608,
+      "mode": 420
+    },
+    "image/overlay/usr/share/symbiont/defaults/waybar/style.css": {
+      "sha256": "e3bdbfc642c009cd801277e89c40cbc783bb2f3d349fd043668e3b4efce9411f",
+      "bytes": 416,
+      "mode": 420
+    },
+    "image/overlay/usr/share/wayland-sessions/symbi.desktop": {
+      "sha256": "0179ddf896ace19f934f2f4f502cf24ed6da0197987feaa6154ccdadb4b6946b",
+      "bytes": 142,
+      "mode": 420
+    },
+    "image/vendor/omarchy/LICENSE": {
+      "sha256": "717ba1949502290f8e47688ae2e323acd06c8ca47aec9f7596b15f678c1af4a2",
+      "bytes": 1063,
+      "mode": 420
+    },
+    "image/vendor/ombuntu/LICENSE": {
+      "sha256": "f0a979ff292634dd3de88efb7e2e89be9c0f69ae6545591f58a32be9b43df183",
+      "bytes": 1136,
+      "mode": 420
+    },
+    "install-inputs/bounded_process.py": {
+      "sha256": "31353489fcf05bb3a6e7ddd423e6737ccd366e9ba3b328c04339dc96f3224788",
+      "bytes": 2222,
+      "mode": 420
+    },
+    "install-inputs/combined-lock.json": {
+      "sha256": "1b73d6b534715a0ca3f975d7c1864633c9a7082c95fd7d05a7ef4fde53b2278e",
+      "bytes": 2950,
+      "mode": 420
+    },
+    "install-inputs/fedora-45-primary.asc": {
+      "sha256": "846912c73a910dab32da8ef0c0d68cb89d11ff514f598d2d1dd96d04d58b2425",
+      "bytes": 1672,
+      "mode": 420
+    },
+    "install-inputs/guest_inventory.py": {
+      "sha256": "c214e843b92b0bb2c7ecdef047e35162165fa30a8381e88f22fcc17aefbbd9d8",
+      "bytes": 8382,
+      "mode": 420
+    },
+    "install-inputs/inputs.py": {
+      "sha256": "cc2672b17e2916d82adf1cc0de6b530c79c2da5441d2b01d88f27583ebf7f115",
+      "bytes": 2843,
+      "mode": 420
+    },
+    "install-inputs/install.py": {
+      "sha256": "def2c4ea06383ef51d558ab3301b6606294fc3e29277a632f5d56d664a4fefec",
+      "bytes": 6881,
+      "mode": 420
+    },
+    "install-inputs/package_identity.py": {
+      "sha256": "b745e4b72be4404bfe7291a11fd9c5378487fc4158ef957d2221f792e9fe90ab",
+      "bytes": 4174,
+      "mode": 420
+    },
+    "install-inputs/resolve_packages.py": {
+      "sha256": "9cde06bf10749202d5248b66dd0c50bf214edd08e37c12e48527b31ec2356bcd",
+      "bytes": 7915,
+      "mode": 420
+    },
+    "install-inputs/rpms/gtk4-layer-shell-1.3.0-3.fc45.x86_64.rpm": {
+      "sha256": "a9972d6b141f80a02ecec196d0967ef5cce0788bb09cba0c5ceac0dee3c6b09e",
+      "bytes": 37039,
+      "mode": 420
+    },
+    "install-inputs/rpms/iniparser-4.2.6-5.fc45.x86_64.rpm": {
+      "sha256": "8774475752a94ae62e9958819c03fa3977677d53c93b3b981a82f480b1767743",
+      "bytes": 26470,
+      "mode": 420
+    },
+    "install-inputs/rpms/libeis-1.6.0-3.fc45.x86_64.rpm": {
+      "sha256": "44ccf3c6f99af7f0aa9522fe2080164754644a74615612ea67e3b82ca8ac9e97",
+      "bytes": 59677,
+      "mode": 420
+    },
+    "install-inputs/rpms/muParser-2.3.5-6.fc45.x86_64.rpm": {
+      "sha256": "b86f69f9300cc8ba09662f4d196eb2a1b431c7548d21bc33c53636dfb2a5fcd2",
+      "bytes": 185483,
+      "mode": 420
+    },
+    "install-inputs/rpms/openssl3-libs-3.5.9-1.fc45.x86_64.rpm": {
+      "sha256": "60fdefdada231053ca4da86e69ecd2706fd09bab7690cf978c7f0b24d41c17fc",
+      "bytes": 2890302,
+      "mode": 420
+    },
+    "install-inputs/rpms/tomlplusplus-3.4.0-8.fc45.x86_64.rpm": {
+      "sha256": "f3ae3af984a168fc5eb2b0c6a12b6aab057bfc9bd40f5d280a99a50324d89d17",
+      "bytes": 108860,
+      "mode": 420
+    },
+    "install-inputs/runtime_install.py": {
+      "sha256": "d7d36d7a056861cafe058d3a31ae609d372257cbff6f0cfd77b6dc3bdd62e884",
+      "bytes": 9561,
+      "mode": 420
+    },
+    "payload/etc/containers/policy.json": {
+      "sha256": "974d657b12acca4cd4db7ca6f4788f65b0f366d2193bdb6f0502d6c239c1a7a5",
+      "bytes": 2376,
+      "mode": 420
+    },
+    "payload/etc/containers/registries.d/symbiont.yaml": {
+      "sha256": "336ad92f00b0f2fb6954fbcab7fc6541d4333a884f6038900eb94f7300104bfa",
+      "bytes": 538,
+      "mode": 420
+    },
+    "payload/etc/fonts/conf.d/10-nerd-font-symbols.conf": {
+      "sha256": "c686f822818bd1c4c26ccb1314d16b277e77252f97a74483ca20b2165dbf7ec6",
+      "bytes": 52256,
+      "mode": 420
+    },
+    "payload/usr/bin/Hyprland": {
+      "link": "../lib/symbi/hyprland/bin/Hyprland"
+    },
+    "payload/usr/bin/elephant": {
+      "sha256": "e2c52e8db172d31e39531da945349855354a327b330bc572ccd27569c6f8d15f",
+      "bytes": 34445144,
+      "mode": 493
+    },
+    "payload/usr/bin/hyprctl": {
+      "link": "../lib/symbi/hyprland/bin/hyprctl"
+    },
+    "payload/usr/bin/symbi": {
+      "sha256": "1e90af1fe424ec37ad716bbc1e069c0bc7a78f59c49871b7e79506bda69f49c7",
+      "bytes": 520712360,
+      "mode": 493
+    },
+    "payload/usr/bin/symbi-sandbox-supervisor": {
+      "sha256": "57af2b2931c891c8ee7df21ac063aea64571acc460ababdcb09b8df7ed21c269",
+      "bytes": 8635672,
+      "mode": 493
+    },
+    "payload/usr/bin/walker": {
+      "sha256": "4566e3710ef9c04752e5268b472a88325ed813cd8846318315496bbd422ab31f",
+      "bytes": 7363968,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/elephant/providers/desktopapplications.so": {
+      "sha256": "5764570124a7e1fc33a7003d2d75accf9e5a76f2b6f580600abe4609754b5085",
+      "bytes": 35904864,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/bin/Hyprland": {
+      "sha256": "0f5dc9a3bb14265516a1a7c16a90ff0ad54fda94c7caed5defb4b234ecb7f34a",
+      "bytes": 64816096,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/hyprland/bin/hyprctl": {
+      "sha256": "683ed4ff31f059a018ea745f20bad543fa0ba7b655eabfcba4ed47755d1df028",
+      "bytes": 302672,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/hyprland/bin/hyprland": {
+      "link": "Hyprland"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libaquamarine.so": {
+      "link": "libaquamarine.so.15"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libaquamarine.so.0.16.0": {
+      "sha256": "b4287d2eea93d2a8a83b7d5ec160934b294f758f6589903beba48541c3062c30",
+      "bytes": 1805688,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libaquamarine.so.15": {
+      "link": "libaquamarine.so.0.16.0"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprcursor.so": {
+      "link": "libhyprcursor.so.0"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprcursor.so.0": {
+      "link": "libhyprcursor.so.0.1.13"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprcursor.so.0.1.13": {
+      "sha256": "9961ab4b301be079a92597a9f90ea51d61899cf2b10fb074551bad1df91475c2",
+      "bytes": 504112,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprgraphics.so": {
+      "link": "libhyprgraphics.so.5"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprgraphics.so.0.6.0": {
+      "sha256": "228ca7a2ee5161cd26d00a5ebc7026de78de2c655f7e4d78d89bf8072c156f78",
+      "bytes": 285264,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprgraphics.so.5": {
+      "link": "libhyprgraphics.so.0.6.0"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprlang.so": {
+      "link": "libhyprlang.so.2"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprlang.so.0.6.8": {
+      "sha256": "91d21a31b230fc3076baeb91cf2dea7c275b905188a20070ebda745d6f36720e",
+      "bytes": 352688,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprlang.so.2": {
+      "link": "libhyprlang.so.0.6.8"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprutils.so": {
+      "link": "libhyprutils.so.13"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprutils.so.0.14.3": {
+      "sha256": "3b1b81dacdcfd36cd0a5cbce256919d1b46be8a9f2c69bd115199c46e227bb44",
+      "bytes": 819784,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprutils.so.13": {
+      "link": "libhyprutils.so.0.14.3"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprwire.so": {
+      "link": "libhyprwire.so.3"
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprwire.so.0.3.1": {
+      "sha256": "7bfd7cab30f684d7216d77513e5af259f0ebc3b5141b4147c4ce3782d1808c35",
+      "bytes": 497144,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/hyprland/lib/libhyprwire.so.3": {
+      "link": "libhyprwire.so.0.3.1"
+    },
+    "payload/usr/lib/symbi/hyprland/share/glaze/glazeConfig.cmake": {
+      "sha256": "c7f06a934567652bf88f4c6e163d8282e96b0babdd7cb73472233342c74e6a86",
+      "bytes": 1740,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/glaze/glazeConfigVersion.cmake": {
+      "sha256": "b5d282f493da2122b79e0d4a8320a0cfe09600aa667432a406f061231729ca24",
+      "bytes": 2303,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/glaze/glazeTargets.cmake": {
+      "sha256": "1d5751421b2f6f6d44f6af9a4519f31f89aeda220401dd33a5e791017c54d9a5",
+      "bytes": 4582,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hypr/hyprland.lua": {
+      "sha256": "5553823a068db8b7a8a8db08fdb27c26fd5fda7e6f4a3b3cf059c0829dfb1148",
+      "bytes": 12532,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hypr/lockdead.png": {
+      "sha256": "40b72bd747f3c2f3e35ad3a36044913ae5044f794fb64796c2e2112878061c4d",
+      "bytes": 163413,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hypr/lockdead2.png": {
+      "sha256": "21b8cad92c373629df17c759c03857b26ec9677bd1632f999501163c3cbf6e6b",
+      "bytes": 49466,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hypr/stubs/hl.meta.lua": {
+      "sha256": "163461a787ba92d81f946c14bed90a38a740ded9e010bd67c2bc4bec41320e1d",
+      "bytes": 76715,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hypr/wall0.png": {
+      "sha256": "0c5e15cefa96b5938db7ad817e29eb9447e6b0eef1efdb73600f2fa51390035e",
+      "bytes": 14194868,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hypr/wall1.png": {
+      "sha256": "dfe2c0231476fff83d50d0a146cb2701aa96ff660c6d0cd0a9c363c6bb911810",
+      "bytes": 6144371,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hypr/wall2.png": {
+      "sha256": "97bb1fed9b9e1b71fd8e814aec1bab71ddf5fbc6ffbd6a09c2d70b0881f8132e",
+      "bytes": 28264194,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-ctm-control-v1.xml": {
+      "sha256": "7e1bef7a2a935c05a7fb65d1bf98c2434037d869276248c926b56ea80a8bd2f4",
+      "bytes": 4425,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-focus-grab-v1.xml": {
+      "sha256": "0bc60c14d27f9079e0d1d9d706f91e67ad7da585f3b7f34ff7186a376c0285b4",
+      "bytes": 5447,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-global-shortcuts-v1.xml": {
+      "sha256": "00a2f728602c160cdaf67a5be61d1a503fcc0d95323456dbb2a6fa83b299d915",
+      "bytes": 4964,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-input-capture-v1.xml": {
+      "sha256": "fff89f6f9de622fefa1a62a6e6970f76683b6328454565583046abebcfe2c360",
+      "bytes": 6765,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-lock-notify-v1.xml": {
+      "sha256": "360589bc58a0a82768b477564f429dc4a8c016ae8311efad12e03f249ac704fc",
+      "bytes": 4280,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-surface-v1.xml": {
+      "sha256": "d1c37cf912b71696344d825ca85e948cb7a0406d86b6836d07ff0e8a7670c497",
+      "bytes": 5768,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-toplevel-export-v1.xml": {
+      "sha256": "2b8e16da22df333494b616a2c83394dcc9aac04405da535126d68106786441ad",
+      "bytes": 10245,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-toplevel-mapping-v1.xml": {
+      "sha256": "05464521a13c96ed274a8545d84ac03980d94b32bd55a8467c7949ed1a1ee96e",
+      "bytes": 4792,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/hyprland-protocols/protocols/hyprland-workspace-image-capture-source-v1.xml": {
+      "sha256": "8c8e4d3164c3574ca728fdca27dbc3c35b19845cdf352815b73ae2fdad840d5a",
+      "bytes": 4158,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/man/man1/Hyprland.1": {
+      "sha256": "bf3f3541818371dffbda7258e3653db5d09fda2edbc445649262ae505d4a9892",
+      "bytes": 1625,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/man/man1/hyprctl.1": {
+      "sha256": "a688f07ff54c22a2f16fea0cd3b0121710b78058656c9e118541f90d03952c3b",
+      "bytes": 3377,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/pkgconfig/hyprland-protocols.pc": {
+      "sha256": "c39fb5e4c23d1abbe9310cea2fe9989ca68f47841fb539e1b2c28147a531a71a",
+      "bytes": 198,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/pkgconfig/hyprland.pc": {
+      "sha256": "26a19c8b98794a98ec704fa069ffcf68c631d422640960c95b2338ecd5df9e5f",
+      "bytes": 520,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/wayland-sessions/hyprland.desktop": {
+      "sha256": "13f04806f266922f1a1306a441dc38616d7d3301ffcfe0ec6c1a56d2601e0964",
+      "bytes": 210,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/hyprland/share/xdg-desktop-portal/hyprland-portals.conf": {
+      "sha256": "aa061ba0530569907cf280870cc2b86333e0d7c2965d9ac020f5b3e05e9bd2e2",
+      "bytes": 32,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/portal/bin/hyprland-share-picker": {
+      "sha256": "5431d5f38487e4339a9052f493aadd7d08454603c0f5089a068f706538def843",
+      "bytes": 295808,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/portal/lib/libhyprtoolkit.so": {
+      "link": "libhyprtoolkit.so.6"
+    },
+    "payload/usr/lib/symbi/portal/lib/libhyprtoolkit.so.0.6.0": {
+      "sha256": "1a554314e525e93b3e63dc6db6429bb4d64d4c43dda3f0db0aa26a66bc148f90",
+      "bytes": 2650064,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/portal/lib/libhyprtoolkit.so.6": {
+      "link": "libhyprtoolkit.so.0.6.0"
+    },
+    "payload/usr/lib/symbi/portal/libexec/xdg-desktop-portal-hyprland": {
+      "sha256": "26b9e1ccddf6ab5c1c398b37154d10946d16d58ac55cfd16fa13be36f567ce9a",
+      "bytes": 1341224,
+      "mode": 493
+    },
+    "payload/usr/lib/symbi/portal/share/licenses/hyprtoolkit/LICENSE": {
+      "sha256": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/portal/share/licenses/symbi-os-portal-patch/LICENSE": {
+      "sha256": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+      "bytes": 10784,
+      "mode": 420
+    },
+    "payload/usr/lib/symbi/portal/share/licenses/xdg-desktop-portal-hyprland/LICENSE": {
+      "sha256": "91dd54e73712ac66eeddd06f0c79325d9e38a57eabe89430c6495ec064a9be23",
+      "bytes": 1515,
+      "mode": 420
+    },
+    "payload/usr/lib/systemd/user/xdg-desktop-portal-hyprland.service": {
+      "sha256": "0b94927fbc13c5d53b171e37679a13608d773e9f96906eb492722db06ef8b82b",
+      "bytes": 341,
+      "mode": 420
+    },
+    "payload/usr/share/dbus-1/services/org.freedesktop.impl.portal.desktop.hyprland.service": {
+      "sha256": "b230f1ce2f898291a73ad2cb719aa9a5fe54c51a53bda378c8f805ec71b08c65",
+      "bytes": 180,
+      "mode": 420
+    },
+    "payload/usr/share/doc/symbiont-os/development-inputs.json": {
+      "sha256": "061189f24c5eebfe7af9fa4ddc5bcdb3338d3c7891a131fdcdff6e4b7c3b2752",
+      "bytes": 42360,
+      "mode": 420
+    },
+    "payload/usr/share/doc/symbiont-os/patches/0001-disable-native-loading.patch": {
+      "sha256": "068d061f29c6ccbef25d402972a14c72195811e40888027b71760f6656f6eeff",
+      "bytes": 7318,
+      "mode": 420
+    },
+    "payload/usr/share/doc/symbiont-os/patches/0001-no-restore-tests.patch": {
+      "sha256": "7b2ddb34ee84ecc54d0b50ea4acd6529f7841ccd0ef97844c2f72c5a478f6b4b",
+      "bytes": 3953,
+      "mode": 420
+    },
+    "payload/usr/share/doc/symbiont-os/patches/0001-packaged-application-provider-only.patch": {
+      "sha256": "9d46941a0540df0162772b04055bf306298e48f3bdcae2c5f3ec97ebb51a7204",
+      "bytes": 2647,
+      "mode": 420
+    },
+    "payload/usr/share/doc/symbiont-os/patches/0002-require-fresh-screen-sharing-consent.patch": {
+      "sha256": "ff242489a3f0a904f33e98c39db3eee23d836740649f0120032100c4b9a5629b",
+      "bytes": 20855,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Bold.ttf": {
+      "sha256": "104897b8ff7f74674c8d6d81b6dbe9138e5c249b54d6c08c8b21600f75d3c5c1",
+      "bytes": 2491512,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-BoldItalic.ttf": {
+      "sha256": "8d5892b455cc166f8aac459182aa7a0d7df6cf2d70d61047deb8783fbd2b5d67",
+      "bytes": 2494624,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ExtraBold.ttf": {
+      "sha256": "a30da5101038f9efa128c87c7508e262d79d9709feadf43cf69a201cfc13ac2f",
+      "bytes": 2493984,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ExtraBoldItalic.ttf": {
+      "sha256": "4d79abe68d10d5013f15e3bf69efd643d8a163c4d7824d1e1d473c13f7ae56b5",
+      "bytes": 2495964,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ExtraLight.ttf": {
+      "sha256": "cff82d2ede085403fbe6cef49848291b884559a329af6dd5c62b5a894c9e91d9",
+      "bytes": 2489700,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ExtraLightItalic.ttf": {
+      "sha256": "54340639d79d1bd21132cda67ef092dd206f3a783f5168f8184b18b496db7cc8",
+      "bytes": 2490444,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Italic.ttf": {
+      "sha256": "dd76e7fe83fd2b1ae8e416efb3af8348d975b004648eb28e9a836e1fc4dd72a0",
+      "bytes": 2492084,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Light.ttf": {
+      "sha256": "f19b9cc0516482aea93ff3f526aead1cbf4376cf0835cad5824ee6ed97f2583c",
+      "bytes": 2491384,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-LightItalic.ttf": {
+      "sha256": "16386351d580fc3dd3e6b94d341e77cc8c04ed29821b5c4206c3f8396fb5a73a",
+      "bytes": 2492804,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Medium.ttf": {
+      "sha256": "158ff61f4229aa13048715789222048dd54c25e2ccd9d0d860c96ab68f9baba9",
+      "bytes": 2488856,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-MediumItalic.ttf": {
+      "sha256": "3c58ca4df4cdfc2276b4090d99e98cc19af37a089634859a4a36c7b41484a705",
+      "bytes": 2492088,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Regular.ttf": {
+      "sha256": "f726c0fb0db90a00920e8fa9ef281ccf9f5f848785ebcaca09bade9d15d38b58",
+      "bytes": 2489128,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-SemiBold.ttf": {
+      "sha256": "c6c436277646003b578a6c9ac2f4377dfb72f12cd24af9f760787ec241571bf9",
+      "bytes": 2490436,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-SemiBoldItalic.ttf": {
+      "sha256": "fd3271efe445c6b5e801a38ede34fd7b143c4668f8b9d63fb7263291e75e2e74",
+      "bytes": 2494540,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-Thin.ttf": {
+      "sha256": "4eb3d68ab21744deaa6cff1353b6df67013a83e04437d1fdf6ce90c1b4c7afa5",
+      "bytes": 2486604,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFont-ThinItalic.ttf": {
+      "sha256": "68620b30c95256b3a81dcd6ebad3545cc222ee146575175e7116b53520bb1548",
+      "bytes": 2489640,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Bold.ttf": {
+      "sha256": "f799fc4b215c7b7254bf6cee51c0bce122ac684b53b46fd3cb83d408a0ccf385",
+      "bytes": 2493472,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-BoldItalic.ttf": {
+      "sha256": "28ce03bcaf808f7fa64dcce6facb00319083bdb04cc4f61d41b9f6ad8f20c3e8",
+      "bytes": 2496612,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ExtraBold.ttf": {
+      "sha256": "7027b92cbe1536d4bbe56eca416e64baa64b32fea4497fd4673cf1715cf7ae85",
+      "bytes": 2495944,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ExtraBoldItalic.ttf": {
+      "sha256": "844e2f7cf51d433fb44be420ecdf4d4ecf9fb4400fe8263db135708d034df526",
+      "bytes": 2497952,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ExtraLight.ttf": {
+      "sha256": "3f1abb0ab790ec72fcd25f340bfcc246357638b9d95f717293e634d6cb2ea405",
+      "bytes": 2491664,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ExtraLightItalic.ttf": {
+      "sha256": "0f814da728de434928b1acaf8144ee413c401224605ad4dfe0e4ce1c5cf6fac8",
+      "bytes": 2492436,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Italic.ttf": {
+      "sha256": "336a3cef8770dab01c0fc9c6bb0c0473bfa82f90a4033fde2cc52d8aa410528c",
+      "bytes": 2494072,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Light.ttf": {
+      "sha256": "17c9522cf593213aa99c3eb0fb706df2fe84332eea99e943c0df267a84274350",
+      "bytes": 2493344,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-LightItalic.ttf": {
+      "sha256": "dd023898a54265068c77fff5aa71d9835ea394349c7c9a3e9ca381d5f704f02e",
+      "bytes": 2494792,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Medium.ttf": {
+      "sha256": "609259fa79a9e08721a2af1e71f7fa3009d374f890372c9d2816994cef683283",
+      "bytes": 2490820,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-MediumItalic.ttf": {
+      "sha256": "7bc728ba1152a5f420055fc44ae286b51c39c89d74f96dfb017b00f46952979f",
+      "bytes": 2494080,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Regular.ttf": {
+      "sha256": "d9a80146bbf2ff23b187316a3e82ee2a2ceab8220267fe09ac150ca46ab2c3bd",
+      "bytes": 2491088,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-SemiBold.ttf": {
+      "sha256": "1aa9684d0157dfad4bcfdcff6cde8f4c86b0929437502892dfa643901f8b878c",
+      "bytes": 2492396,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-SemiBoldItalic.ttf": {
+      "sha256": "6326e5f936bc5aa5e7146007123a9d794fc72cd99cd2cb7c907f0b008b28f4c8",
+      "bytes": 2496528,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-Thin.ttf": {
+      "sha256": "7fd38e32651ee24659497203f6912b4d7912488b760bb577d9142339e7e86ff0",
+      "bytes": 2488564,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontMono-ThinItalic.ttf": {
+      "sha256": "6133bfcb4e514e55437715e4b7ac750130d8f1c66a5308677115a9bdb4c78ae4",
+      "bytes": 2491628,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Bold.ttf": {
+      "sha256": "f9480ead3e45a21f61a9a0bc25f7e20a7ac4782644414b91375e9fdb76fd2095",
+      "bytes": 2491328,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-BoldItalic.ttf": {
+      "sha256": "7ffde5e1dbb5b6b8484c6b129caf71959a6fca070612b215fdd54055d2c3889c",
+      "bytes": 2494440,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ExtraBold.ttf": {
+      "sha256": "f059818f3fdd78e03af6a6070279ac19bf9fef348353b425cf8fd0300fbf9eb6",
+      "bytes": 2493800,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ExtraBoldItalic.ttf": {
+      "sha256": "e11dbf74b5bcab87451550b5bec9395ce00da62e2ce0690853b4621ad64736e4",
+      "bytes": 2495780,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ExtraLight.ttf": {
+      "sha256": "d217c1bd022c9755d8e7759d790e98f255669d17202c77a2bafc9d721db4b9ec",
+      "bytes": 2489516,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ExtraLightItalic.ttf": {
+      "sha256": "41eccbbdd380c01ad418d105112f83b986ab84d399a21efee94bb1f7df984f42",
+      "bytes": 2490260,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Italic.ttf": {
+      "sha256": "a75147d8354b7fc1a0b0c8dede8f8169014c8fc7263505d085419975e8e21404",
+      "bytes": 2491900,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Light.ttf": {
+      "sha256": "fb9bf3749444db1da314af2f3ecefeb5d95cf09c5389f3be6a1aeb66659a81d7",
+      "bytes": 2491200,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-LightItalic.ttf": {
+      "sha256": "c91128f49e7a6f5cb8636e9834f2fcadb15a21bb1b2b82044cb10e6cb592ece4",
+      "bytes": 2492620,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Medium.ttf": {
+      "sha256": "711599c10ccd331cc3f012a2b3978bf330ff64e2986195894c3e00437f0c373f",
+      "bytes": 2488672,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-MediumItalic.ttf": {
+      "sha256": "90c630b04b2042db73176918e2231176de03f3b96f2e077bd714ceeb45daef98",
+      "bytes": 2491904,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Regular.ttf": {
+      "sha256": "a4588a46f132fbfd5c43a5f1e4184bda0101dfea7d86c2a0f8a0feb4b47f18da",
+      "bytes": 2488944,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-SemiBold.ttf": {
+      "sha256": "bcf68d438b7d99181bd67f94357fabf4405603dc03f4ad2f2d2e20a5b0c2b70a",
+      "bytes": 2490252,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-SemiBoldItalic.ttf": {
+      "sha256": "0255c14137cb95899dc44048f2b2c2324932b3d1a94020d88e505820e0878f6a",
+      "bytes": 2494356,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-Thin.ttf": {
+      "sha256": "4bf9ad031a77226d1e0fee0d6e1b035ba179105ad302f95d2b087e7391fd76f2",
+      "bytes": 2486420,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNLNerdFontPropo-ThinItalic.ttf": {
+      "sha256": "c1cad1d83247a48a4bf759f23a2628613af8bbaaf0b5359a8ffad2c5c3f50e71",
+      "bytes": 2489456,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Bold.ttf": {
+      "sha256": "e490660ad75e0b152c93b1604c2ea1a4ea675f1b8a3fe0d005b1998568f99f1f",
+      "bytes": 2575364,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-BoldItalic.ttf": {
+      "sha256": "19a2e3af8ccf99954941ea07e0a29df27574500f12016d86d6c4c059b825ffe1",
+      "bytes": 2576592,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ExtraBold.ttf": {
+      "sha256": "8af99acce860533a64926ebff131aa9f37806ffef9636798f36c3a4a526f9e32",
+      "bytes": 2577128,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ExtraBoldItalic.ttf": {
+      "sha256": "75971b5b5eebb295298c4d1872e2a8906c3023cb98480c42ed4a9496ad16fd79",
+      "bytes": 2578612,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ExtraLight.ttf": {
+      "sha256": "e5a2b97faa48e7597022f61da03d754f1f8be0cac290942781b27a4525307d75",
+      "bytes": 2571732,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ExtraLightItalic.ttf": {
+      "sha256": "2789601fa34509d4d5991a3c8ae5afc8e28ac09147e8769d9578662a39dcf20f",
+      "bytes": 2571028,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Italic.ttf": {
+      "sha256": "71d5466cc3ab31bee38b4e2c5cc99c2b41a749c4973ed4579b814ec992b0738e",
+      "bytes": 2573684,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Light.ttf": {
+      "sha256": "c9f9fc2d79825d3cee9817e29b1a79ddcb30bfef5d8061120ee024d1f4a96228",
+      "bytes": 2574020,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-LightItalic.ttf": {
+      "sha256": "96d97618018ed4d7b27321904c0bed37c2df7b746c772a2a0515124c582e39c6",
+      "bytes": 2573912,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Medium.ttf": {
+      "sha256": "c9405e11b36d071176e318263e7251e96e60f3804dfc5ac8b2806f1f8085b066",
+      "bytes": 2571468,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-MediumItalic.ttf": {
+      "sha256": "27693c0aa1c56ea46a8978d042772a81da184d3aae7fe7b6a2394b5dc51cd296",
+      "bytes": 2573632,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Regular.ttf": {
+      "sha256": "1c680e8cde9fcf8b88a5605ce8d1fb94dd3fb15841f7ca7bf4c55664855e5611",
+      "bytes": 2571596,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-SemiBold.ttf": {
+      "sha256": "d987f2994fa3000512ea6442e4b3fa8c96e0724262e2c5c9646f1ee02cae675e",
+      "bytes": 2574704,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-SemiBoldItalic.ttf": {
+      "sha256": "60571c34def77959bff1b8661e1cbce1bc0dee8e006ea78358b2af9990fd8587",
+      "bytes": 2576700,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-Thin.ttf": {
+      "sha256": "87a846220f9470d78b66d3fdf2e108156c68ac89a2fa5f058a90ef5be9f0e322",
+      "bytes": 2567732,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFont-ThinItalic.ttf": {
+      "sha256": "5c5935377631c86646e6fef3b0a739d4ff3771f632dc48f6963a727ad1b21063",
+      "bytes": 2569832,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Bold.ttf": {
+      "sha256": "bfcf9a917276ffc058867d87cbc8a5b2f1ab0f4b710e9170dc02763ccb80bd4b",
+      "bytes": 2577016,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-BoldItalic.ttf": {
+      "sha256": "9dba502e00e35209f6ed2a151c7376c051657b067cdebbc6e52d06cb9002cf31",
+      "bytes": 2578280,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ExtraBold.ttf": {
+      "sha256": "1c4ccf0d5fb2d45f04d3efd50f60951fb63281b0375ede992d2b4beb694d2daa",
+      "bytes": 2578780,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ExtraBoldItalic.ttf": {
+      "sha256": "0315f5729d19d7c4846ea06503850b0fed785263fc0d7f5bc636563782cbde42",
+      "bytes": 2580296,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ExtraLight.ttf": {
+      "sha256": "2ed4462e0332123bccd6d0e3ecfb92e9a9d9c02d7e7cacf2d272d5e4bae85e25",
+      "bytes": 2573384,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ExtraLightItalic.ttf": {
+      "sha256": "5a7bc5b7fa3005977be87a7171361e41ff999d65e79b2f47796e4f062dccd56a",
+      "bytes": 2572712,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Italic.ttf": {
+      "sha256": "31efd6ead98746f5b0afa1ee6dba60267ad48db36428360bee327bec10621f97",
+      "bytes": 2575368,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Light.ttf": {
+      "sha256": "d34f186f256c853a651d222bfad3afa942d4755b47eff70c13660cf94c24b20e",
+      "bytes": 2575672,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-LightItalic.ttf": {
+      "sha256": "8711d3a15e10e7552bc62dfb8d99dac681eca80c9f4dd59142b27785117c9250",
+      "bytes": 2575596,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Medium.ttf": {
+      "sha256": "a736c04959f32b69487956c9ccffa90e71903d3c85952886d42ecead0ca6cb1d",
+      "bytes": 2573120,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-MediumItalic.ttf": {
+      "sha256": "f21eb76516348ffa152a9727fe4e99fe8baedbb7359c38aeefd1f123d5f6d0fe",
+      "bytes": 2575316,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Regular.ttf": {
+      "sha256": "f2a5ea6cfab397445ffab00c0370927b66d61e560a05db5db271b42006381c1a",
+      "bytes": 2573248,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-SemiBold.ttf": {
+      "sha256": "d3955c56fca699f37ebc153d0a6e331b8784f66fd8a3af5e20c30b90869201c4",
+      "bytes": 2576360,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-SemiBoldItalic.ttf": {
+      "sha256": "0d2aa4c3955f612986e22d08f08b9c255b75107c07a6128ac24dc80281cc9d9c",
+      "bytes": 2578388,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-Thin.ttf": {
+      "sha256": "734de2d7f2c70d2a02006ee219fbbe897b09fe83b15861f0f887c717a02695cf",
+      "bytes": 2569388,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontMono-ThinItalic.ttf": {
+      "sha256": "2c4e01f8eba50c6293a6c1084e807f5d33ef8b17e55e5d2c9bb677475c41da83",
+      "bytes": 2571520,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Bold.ttf": {
+      "sha256": "a391d2887d63add54d87a715fe257e522120eb4f1df52d104fa17984fcb68021",
+      "bytes": 2575180,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-BoldItalic.ttf": {
+      "sha256": "2118f3a6119e8967b20b71b6b8a6072711ef76ae0d10c4522a06323ac8935d5d",
+      "bytes": 2576408,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ExtraBold.ttf": {
+      "sha256": "80200df33ea31cd6185bde7c970fb86190b6670060475c1a1f069d0b2d8f0bb3",
+      "bytes": 2576944,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ExtraBoldItalic.ttf": {
+      "sha256": "df117705e411fbe80bb7c2e4f25e350328aa255e65d8368fb04016afaeeca853",
+      "bytes": 2578428,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ExtraLight.ttf": {
+      "sha256": "8cc4e91cb99b5e3bc96e5ffaecc38fc18232ed7687962644f212da2cf661f484",
+      "bytes": 2571548,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ExtraLightItalic.ttf": {
+      "sha256": "4a03c9b8eb41004a164e668483edf08081b818f76f24f889b6b2c35f73f05b86",
+      "bytes": 2570844,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Italic.ttf": {
+      "sha256": "904c69ce413b3c678b7762a94328b14077461db16b5d63b82c8370b9907387ff",
+      "bytes": 2573500,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Light.ttf": {
+      "sha256": "134069560904365335981ab7332e655db816fb5298849bb0dbe9ed61e3f00610",
+      "bytes": 2573836,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-LightItalic.ttf": {
+      "sha256": "1e7070062baaa9327d666b7217bad601c2bc42b638b81e12f2e95baa81c78f30",
+      "bytes": 2573728,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Medium.ttf": {
+      "sha256": "d60c8788140e939247f7af54a1ddc197d3099eecca77fff51880d678c029d98c",
+      "bytes": 2571284,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-MediumItalic.ttf": {
+      "sha256": "3b4fa1bc30e72a30fd7b2f6921d67f7c864b1d15be72ebec04821ad2709e8778",
+      "bytes": 2573448,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Regular.ttf": {
+      "sha256": "8a2803de76ad18ed82f465dfd17130032c34c031b263179d3047a547c7caa460",
+      "bytes": 2571412,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-SemiBold.ttf": {
+      "sha256": "b0c766130c81e328e1b31c7d1036574d7ce91f503c9856a4ec73565a44a32899",
+      "bytes": 2574520,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-SemiBoldItalic.ttf": {
+      "sha256": "97d0da5da9a227398a1da7aa16214cf7146696b3b56fcb63ea7385e853fa45ba",
+      "bytes": 2576516,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-Thin.ttf": {
+      "sha256": "bb093be10f5406765ccea2a25d7adb4ce43840268e034e21dcd9d39c0bf76059",
+      "bytes": 2567548,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/JetBrainsMono/JetBrainsMonoNerdFontPropo-ThinItalic.ttf": {
+      "sha256": "8889eb97cf2a4f39159a99a07ddcc38c7d2f60eb678fa9d4e99e72185ededf82",
+      "bytes": 2569648,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/Symbols/SymbolsNerdFont-Regular.ttf": {
+      "sha256": "2839f0a572d4559f3f17a6fb74b8772e183f0c0a47150998ab194932cad55829",
+      "bytes": 2538772,
+      "mode": 420
+    },
+    "payload/usr/share/fonts/symbi-nerd-fonts/Symbols/SymbolsNerdFontMono-Regular.ttf": {
+      "sha256": "fe471e538392f51910faab985fa8e192a39dd3426125edd15b71b3680df0e749",
+      "bytes": 2610012,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbi-nerd-fonts/Font-Logos-Unlicense": {
+      "sha256": "88d9b4eb60579c191ec391ca04c16130572d7eedc4a86daa58bf28c6e14c9bcd",
+      "bytes": 1210,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbi-nerd-fonts/JetBrains-Mono-OFL-1.1": {
+      "sha256": "30f0c136e3c88e422d0791acd97238870f9054a9729bc34cf2ff0d4ed8cac4ad",
+      "bytes": 4399,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbi-nerd-fonts/Nerd-Fonts-MIT": {
+      "sha256": "1f6ad4edae6479aaace3112ede5279a23284ae54b2a34db66357aef5f64df160",
+      "bytes": 6200,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbi-nerd-fonts/Nerd-Fonts-Symbols-MIT": {
+      "sha256": "84a7a98c82140fb12c37fe42b93805baa16024cb3e5acc599b7ffe612c55d847",
+      "bytes": 1082,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbi-nerd-fonts/upstream-license-audit.md": {
+      "sha256": "c2a3f634fa1e5001912f4f19a42fa86fdef5654691b70000f936089325aa404f",
+      "bytes": 8470,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/Elephant-GPL-3.0": {
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "bytes": 35149,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/Hyprland.LICENSE": {
+      "sha256": "e01df754903af0ab26babb317b5f5a62dd95f770b733c5275414dd3245d00ae7",
+      "bytes": 1521,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/Symbiont-Apache-2.0": {
+      "sha256": "4bf3292b8c1ed238912f516a0c068a23441812796972b1c87ff3af5abafe486c",
+      "bytes": 10784,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/Walker-GPL-3.0": {
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "bytes": 35149,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/aquamarine.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/glaze.LICENSE": {
+      "sha256": "5d49e66411a0807a7c8d6b911b9a26b59e940c71aebe561a3ad8b0b80ac4b7b6",
+      "bytes": 1080,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/hyprcursor.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/hyprgraphics.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/hyprland-protocols.LICENSE": {
+      "sha256": "ea36a60a50dfa150ca3c5816cb6b0ad5b559da380e9f5b2babd4abbf7962a35a",
+      "bytes": 1524,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/hyprlang.LICENSE": {
+      "sha256": "a5681bf9b05db14d86776930017c647ad9e6e56ff6bbcfdf21e5848288dfaf1b",
+      "bytes": 7651,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/hyprutils.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/hyprwayland-scanner.LICENSE": {
+      "sha256": "52d07f3457591b4496ae2e79b05efd63c7df72135666fa12428d83078c4c0de5",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/hyprwire.LICENSE": {
+      "sha256": "953ddedbcd7b01e88a78f928a55b83ae1edc8436e2bbbca3a25a29a0660df143",
+      "bytes": 1503,
+      "mode": 420
+    },
+    "payload/usr/share/licenses/symbiont-os/udis86.LICENSE": {
+      "sha256": "1070640aab24327354da44507627d1db6c67482a6facc8375a758796a05e3dff",
+      "bytes": 1337,
+      "mode": 420
+    },
+    "payload/usr/share/xdg-desktop-portal/portals/hyprland.portal": {
+      "sha256": "43b2fe354c2d4cc51bd237be8b6586cc6b6f5681451a4079adf2a97909d73431",
+      "bytes": 281,
+      "mode": 420
+    },
+    "recipe.json": {
+      "sha256": "167e0e01cd18d041518c8540f21fb52557ced1bca4d072c846383ee9e316ed33",
+      "bytes": 1342,
+      "mode": 420
+    }
+  },
+  "required_packages": [
+    {
+      "filename": "libeis-1.6.0-3.fc45.x86_64.rpm",
+      "bytes": 59677,
+      "sha256": "44ccf3c6f99af7f0aa9522fe2080164754644a74615612ea67e3b82ca8ac9e97",
+      "nevra": "libeis-1.6.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "muParser-2.3.5-6.fc45.x86_64.rpm",
+      "bytes": 185483,
+      "sha256": "b86f69f9300cc8ba09662f4d196eb2a1b431c7548d21bc33c53636dfb2a5fcd2",
+      "nevra": "muParser-2.3.5-6.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "BSD-2-Clause",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "tomlplusplus-3.4.0-8.fc45.x86_64.rpm",
+      "bytes": 108860,
+      "sha256": "f3ae3af984a168fc5eb2b0c6a12b6aab057bfc9bd40f5d280a99a50324d89d17",
+      "nevra": "tomlplusplus-3.4.0-8.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "gtk4-layer-shell-1.3.0-3.fc45.x86_64.rpm",
+      "bytes": 37039,
+      "sha256": "a9972d6b141f80a02ecec196d0967ef5cce0788bb09cba0c5ceac0dee3c6b09e",
+      "nevra": "gtk4-layer-shell-1.3.0-3.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "openssl3-libs-3.5.9-1.fc45.x86_64.rpm",
+      "bytes": 2890302,
+      "sha256": "60fdefdada231053ca4da86e69ecd2706fd09bab7690cf978c7f0b24d41c17fc",
+      "nevra": "openssl3-libs-1:3.5.9-1.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "Apache-2.0",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    },
+    {
+      "filename": "iniparser-4.2.6-5.fc45.x86_64.rpm",
+      "bytes": 26470,
+      "sha256": "8774475752a94ae62e9958819c03fa3977677d53c93b3b981a82f480b1767743",
+      "nevra": "iniparser-4.2.6-5.fc45.x86_64",
+      "vendor": "Fedora Project",
+      "license": "MIT",
+      "signature_verified": true,
+      "key_fingerprint": "4F50A6114CD5C6976A7F1179655A4B02F577861E"
+    }
+  ],
+  "cgroup_final": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "cpu.max": "100000 100000",
+    "pids.max": "64",
+    "memory.peak": "1073741824",
+    "memory.events": "low 0\nhigh 0\nmax 6866\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.stat": "usage_usec 8551251\nuser_usec 6208484\nsystem_usec 2342766\nnice_usec 6119000\ncore_sched.force_idle_usec 0\nnr_periods 222\nnr_throttled 1\nthrottled_usec 487\nnr_bursts 0\nburst_usec 0"
+  }
+}

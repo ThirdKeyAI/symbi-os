@@ -4,32 +4,32 @@
   "signature_qualified": false,
   "images": {
     "generic": {
-      "tested_commit": "22c751096e47d2f5ff74d8e5963a7079fa24576f",
-      "run_id": 46091256475,
-      "manifest_sha256": "a4351b529038f9ed46268ed3391cf3e3cabb2b58579d3b803037d65790f3d1dd",
+      "tested_commit": "c6bf3ed9eba34562d886b6b315dd9cb46340c525",
+      "run_id": 46107995231,
+      "manifest_sha256": "cbfd9d81872dec9cc9198bb4adb89080f09670fa023344b4d7ab2a5acee607ee",
       "manifest": {
         "schema": 1,
         "built": true,
         "os_qualified": false,
-        "source_commit": "22c751096e47d2f5ff74d8e5963a7079fa24576f",
+        "source_commit": "c6bf3ed9eba34562d886b6b315dd9cb46340c525",
         "base": "ghcr.io/secureblue/sericea-main-hardened@sha256:caa17270b07fa67fb8818ef25fdd9e5c9356d35e607b61c32daadc05ddbb8c8f",
         "variant": "generic",
         "archive": {
           "name": "symbiont-os-generic.oci.tar.gz",
-          "bytes": 4177423629,
-          "sha256": "8fce0c0da63b972c9371afb05c2f886be3aacf19b1c6d7a53494daf2a5d90ff9",
-          "image_id": "sha256:f7d84f2d01a4aaaa8c3b909a86a60ba06a6e82b426ea09dfb3c9af5a676c40f9"
+          "bytes": 4177420606,
+          "sha256": "02763122742014c3d4a47e50218935d33ddb15b621b692feb10d439aeb57351e",
+          "image_id": "sha256:500360578de668b01b5c4db1bdd583800ce98f1063ba24445b1f84e97af93358"
         },
-        "preparation_sha256": "95a9bfe67f88718b4cb49feb4e90dde3857f76ef3e7ab3eeda19f91ea7ab5ba8"
+        "preparation_sha256": "5cef8a28c27effff123868f965fca278e1d0877c78a882c3f46451a3dfc1b58e"
       },
       "artifact": {
-        "id": 15241381990,
+        "id": 15247719935,
         "name": "desktop-development-image-generic",
-        "bytes": 4177424549,
-        "sha256": "2a04d8fe73c9af4431d1513889842ee5c14834555c4c81c0e447f9559a374329"
+        "bytes": 4177421526,
+        "sha256": "b3b26053d89b2c5766cb6afbc5066ecb4882a4beaca9c142159de6f27a1edde4"
       },
-      "expires_at": "2026-12-01T01:11:29Z",
-      "evidence": "docs/security/reports/P0-04-image/46091256475/summary.json"
+      "expires_at": "2026-12-01T04:38:48Z",
+      "evidence": "docs/security/reports/P0-04-image/46107995231/summary.json"
     },
     "nvidia": {
       "tested_commit": "d436c6ee8a7ed159afa59db9bd82377ae8ea2389",
